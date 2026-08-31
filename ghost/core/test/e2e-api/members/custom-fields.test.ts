@@ -45,10 +45,10 @@ describe('Member Custom Fields Members API', function () {
 
     fieldCounter += 1;
     const { body } = await adminAgent
-      .post('members/custom_fields/')
-      .body({ members_custom_fields: [{ name: `Shoe size ${fieldCounter}`, type: 'short_text' }] })
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name: `Shoe size ${fieldCounter}`, type: 'short_text' }] })
       .expectStatus(201);
-    fieldKey = body.members_custom_fields[0].key;
+    fieldKey = body.members_metafields[0].key;
 
     await adminAgent
       .put(`members/${memberId}/`)

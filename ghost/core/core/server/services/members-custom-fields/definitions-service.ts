@@ -665,6 +665,24 @@ function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
   let mongoQuery: Record<string, unknown>;
   try {
     mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
+  } catch (err) {
+    throw new errors.BadRequestError({
+      message: 'Could not parse the filter parameter.',
+      property: 'filter',
+      err: err as Error,
+    });
+  }
+  // The route's namespace segment is the namespace filter. A `namespace` clause here
+  // would reach mongo-knex as a column the table does not have, so it is refused with
+  // the fix named rather than surfaced as a SQL error. Lifted when a cross-namespace
+  // browse exists to serve it.
+  if (filterReferencesAttribute(mongoQuery, 'namespace')) {
+    throw new errors.BadRequestError({
+      message: 'Filtering on namespace is not supported. Scope by the namespace route instead.',
+      property: 'filter',
+    });
+  }
+  try {
     knexify(query, mongoQuery, { tableName: TABLE });
   } catch (err) {
     throw new errors.BadRequestError({
@@ -683,12 +701,18 @@ function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
 // $and/$or/$nor combinators — so a status filter at any nesting counts as the
 // caller opting in to (or out of) archived fields.
 function filterReferencesStatus(query: Record<string, unknown>): boolean {
+  return filterReferencesAttribute(query, 'status');
+}
+
+function filterReferencesAttribute(query: Record<string, unknown>, attribute: string): boolean {
   return Object.entries(query).some(([key, value]) => {
-    if (key === 'status') {
+    if (key === attribute) {
       return true;
     }
     if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
-      return value.some((sub) => filterReferencesStatus(sub as Record<string, unknown>));
+      return value.some((sub) =>
+        filterReferencesAttribute(sub as Record<string, unknown>, attribute),
+      );
     }
     return false;
   });

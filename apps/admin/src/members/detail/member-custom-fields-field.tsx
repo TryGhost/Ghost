@@ -305,7 +305,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   disabled,
 }) => {
   const { data, isLoading } = useCustomFieldDefinitions();
-  const fields = data?.members_custom_fields ?? [];
+  const fields = data ?? [];
   const values = getEditableCustomFieldValues(customFields);
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
 

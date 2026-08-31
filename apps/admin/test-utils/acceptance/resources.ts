@@ -66,7 +66,7 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
-  /** Envelope key when it differs from the path segment (e.g. 'members/custom_fields' → members_custom_fields). */
+  /** Envelope key when it differs from the path segment (e.g. 'members/metafields/custom' → members_metafields). */
   envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
@@ -256,8 +256,8 @@ const membersResource = defineResource<Member>({
  * declares that growth itself via the function form (`() => fields`).
  */
 const memberCustomFieldsResource = defineResource({
-  resource: 'members/custom_fields',
-  envelopeKey: 'members_custom_fields',
+  resource: 'members/metafields/custom',
+  envelopeKey: 'members_metafields',
   semantics: { kind: 'passthrough' },
 });
 

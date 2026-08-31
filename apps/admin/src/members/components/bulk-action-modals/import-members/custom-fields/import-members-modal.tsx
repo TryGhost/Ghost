@@ -81,7 +81,7 @@ export function ImportMembersModal({
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
   const customFieldColumns = useMemo(
-    () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
+    () => memberCustomFieldCsvColumns(customFieldsData ?? []),
     [customFieldsData],
   );
   // The file-reader effect waits for this before its first parse: the custom field

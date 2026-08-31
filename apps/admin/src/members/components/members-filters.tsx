@@ -142,7 +142,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   // fields ride along so a saved segment on a since-archived field still renders its
   // read-only pill.
   const { data: customFieldsData } = useCustomFieldDefinitionsIncludingArchived();
-  const catalogCustomFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+  const catalogCustomFields = customFieldsData ?? EMPTY_CUSTOM_FIELDS;
   // The picker offers active fields only.
   const customFields = useMemo(
     () => catalogCustomFields.filter((field) => field.status === 'active'),

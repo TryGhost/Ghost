@@ -1377,9 +1377,9 @@ describe('Members API', function () {
 
       async function createField(name, type) {
         const { body } = await adminAgent
-          .post('/members/custom_fields/')
-          .body({ members_custom_fields: [{ name, type }] });
-        return body.members_custom_fields[0].key;
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [{ name, type }] });
+        return body.members_metafields[0].key;
       }
 
       async function sendCheckoutWebhook(email, sessionExtras) {

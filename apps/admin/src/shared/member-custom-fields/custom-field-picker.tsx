@@ -241,7 +241,7 @@ function CreateFieldInline({
 
     try {
       const response = await createField({ name: name.trim(), type: typeId });
-      const field = response.members_custom_fields?.[0];
+      const field = response.members_metafields?.[0];
       if (!field) {
         setSaveError('The field was created but could not be selected. Choose it from the list.');
         setCanRetry(false);

@@ -231,11 +231,11 @@ describe('Members export -> import round-trip', function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 
     const fieldRes = await request
-      .post(localUtils.API.getApiQuery('members/custom_fields/'))
+      .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name: 'Round Trip Field', type: 'short_text' }] })
+      .send({ members_metafields: [{ name: 'Round Trip Field', type: 'short_text' }] })
       .expect(201);
-    const customFieldKey = fieldRes.body.members_custom_fields[0].key;
+    const customFieldKey = fieldRes.body.members_metafields[0].key;
 
     const srcEmail = 'rtcf-src@example.com';
     await models.Member.add({
@@ -341,11 +341,11 @@ describe('Members export -> import round-trip', function () {
     );
 
     const fieldRes = await request
-      .post(localUtils.API.getApiQuery('members/custom_fields/'))
+      .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name: 'Shipping Address', type: 'address' }] })
+      .send({ members_metafields: [{ name: 'Shipping Address', type: 'address' }] })
       .expect(201);
-    const addressKey = fieldRes.body.members_custom_fields[0].key;
+    const addressKey = fieldRes.body.members_metafields[0].key;
 
     const emails = await seedMembers('rtaddr', addressLabel.get('name'));
     // A plain member with no address, so a fresh re-import proves an all-blank address

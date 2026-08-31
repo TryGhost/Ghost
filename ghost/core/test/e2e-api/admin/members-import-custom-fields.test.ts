@@ -20,11 +20,13 @@ describe('Members import — custom fields', function () {
 
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string): Promise<string> {
-    const res = await (request.post(localUtils.API.getApiQuery('members/custom_fields/')) as any)
+    const res = await (
+      request.post(localUtils.API.getApiQuery('members/metafields/custom/')) as any
+    )
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name, type }] })
+      .send({ members_metafields: [{ name, type }] })
       .expect(201);
-    return res.body.members_custom_fields[0].key;
+    return res.body.members_metafields[0].key;
   }
 
   // Upload a CSV built inline. `mapping` is the header -> target map the mapping step

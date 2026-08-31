@@ -56,8 +56,8 @@ export function defaultBootRequests() {
     },
     browseMemberCustomFieldDefinitions: {
       method: 'GET',
-      path: /^\/members\/custom_fields\/(\?|$)/,
-      response: browseResponse('members_custom_fields', []),
+      path: /^\/members\/metafields\/custom\/(\?|$)/,
+      response: browseResponse('members_metafields', []),
     },
     browseActiveTheme: {
       method: 'GET',
