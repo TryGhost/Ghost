@@ -1,9 +1,6 @@
 const moment = require('moment-timezone');
 const DatabaseInfo = require('@tryghost/database-info');
 
-/** @typedef {'day'|'week'|'month'} SeriesAggregation */
-
-/** @type {{readonly DAY: 'day', readonly WEEK: 'week', readonly MONTH: 'month'}} */
 const SERIES_AGGREGATIONS = {
   DAY: 'day',
   WEEK: 'week',
@@ -12,8 +9,6 @@ const SERIES_AGGREGATIONS = {
 
 /**
  * Pick a bucket size that keeps the number of points in a chart readable.
- * @param {{dateFrom: string|null, dateTo: string|null}} range
- * @returns {SeriesAggregation}
  */
 function resolveSeriesAggregation({ dateFrom, dateTo }) {
   if (!dateFrom || !dateTo) {
@@ -35,8 +30,6 @@ function resolveSeriesAggregation({ dateFrom, dateTo }) {
  * SQL, which has no IANA database, so the offset has to be a constant; both
  * the bucket expression and the series fill must use this same value or they
  * disagree about which calendar day a boundary row belongs to.
- * @param {string} timezone
- * @returns {number}
  */
 function getFixedOffsetMinutes(timezone) {
   return moment.tz(timezone).utcOffset();
@@ -45,11 +38,6 @@ function getFixedOffsetMinutes(timezone) {
 /**
  * Build the select and group fragments for a calendar bucket in the requested
  * IANA timezone (timestamps are stored in UTC).
- * @param {*} knex
- * @param {string} column
- * @param {number} tzOffsetMins
- * @param {SeriesAggregation} aggregation
- * @returns {{select: import('knex').Knex.Raw, group: import('knex').Knex.Raw}}
  */
 function getSeriesBucket(knex, column, tzOffsetMins, aggregation) {
   if (DatabaseInfo.isSQLite(knex)) {
@@ -94,8 +82,6 @@ function getSeriesBucket(knex, column, tzOffsetMins, aggregation) {
 /**
  * Normalise a bucket key returned by the driver, which is a string on SQLite
  * and can be a Date on MySQL.
- * @param {string|Date} value
- * @returns {string}
  */
 function formatBucketDate(value) {
   if (!(value instanceof Date)) {
@@ -117,13 +103,6 @@ function formatBucketDate(value) {
  *
  * A range with no rows returns an empty series rather than a row of zeroes per
  * bucket, which is what callers key their empty state off.
- * @template {{date: string}} T
- * @param {T[]} rows
- * @param {{dateFrom: string|null, dateTo: string|null}} range
- * @param {number} offsetMinutes
- * @param {SeriesAggregation} aggregation
- * @param {(date: string) => T} makeEmptyRow
- * @returns {T[]}
  */
 function fillSeries(rows, range, offsetMinutes, aggregation, makeEmptyRow) {
   if (rows.length === 0) {
@@ -136,7 +115,6 @@ function fillSeries(rows, range, offsetMinutes, aggregation, makeEmptyRow) {
   const sortedDates = [...byDate.keys()].sort();
   // Wall-clock time under the fixed offset, kept in UTC mode so no further
   // DST shifting can happen while walking the window.
-  /** @param {string} utcDate */
   const toLocal = (utcDate) => moment.utc(utcDate).add(offsetMinutes, 'minutes');
   const rangeStart = range.dateFrom
     ? toLocal(range.dateFrom).startOf('day')

@@ -25,8 +25,6 @@ class CommentsOverviewStatsService {
 
   /**
    * Aggregate comment analytics for the moderation dashboard.
-   * @param {CommentsOverviewOptions} options
-   * @returns {Promise<CommentsOverview>}
    */
   async getOverview(options) {
     const timezone = options.timezone || 'UTC';
@@ -60,32 +58,19 @@ class CommentsOverviewStatsService {
     };
   }
 
-  /**
-   * @param {import('knex').Knex.QueryBuilder} query
-   * @param {string} column
-   * @param {{dateFrom: string|null, dateTo: string|null}} range
-   */
   _applyRange(query, column, { dateFrom, dateTo }) {
     applyDateFilter(query, dateFrom, dateTo, column);
     return query;
   }
 
-  /**
-   * @param {import('knex').Knex} knex
-   */
   _hasReport(knex) {
-    return /** @this {import('knex').Knex.QueryBuilder} */ function () {
+    return function () {
       this.select(knex.raw('1'))
         .from('comment_reports')
         .whereRaw('comment_reports.comment_id = comments.id');
     };
   }
 
-  /**
-   * @param {import('knex').Knex} knex
-   * @param {{dateFrom: string|null, dateTo: string|null}} range
-   * @returns {Promise<CommentsOverviewTotals>}
-   */
   async _getTotals(knex, range) {
     const commentsQuery = knex('comments')
       .whereIn('status', VISIBLE_STATUSES)
@@ -108,13 +93,6 @@ class CommentsOverviewStatsService {
     };
   }
 
-  /**
-   * @param {import('knex').Knex} knex
-   * @param {{dateFrom: string|null, dateTo: string|null}} range
-   * @param {string} timezone
-   * @param {'day'|'week'|'month'} aggregation
-   * @returns {Promise<CommentsOverviewSeriesItem[]>}
-   */
   async _getSeries(knex, range, timezone, aggregation) {
     const offsetMinutes = getFixedOffsetMinutes(timezone);
     const bucket = getSeriesBucket(knex, 'comments.created_at', offsetMinutes, aggregation);
@@ -164,12 +142,6 @@ class CommentsOverviewStatsService {
     }));
   }
 
-  /**
-   * @param {import('knex').Knex} knex
-   * @param {{dateFrom: string|null, dateTo: string|null}} range
-   * @param {number} [limit]
-   * @returns {Promise<CommentsOverviewTopPost[]>}
-   */
   async _getTopPosts(knex, range, limit = 25) {
     const query = knex('comments')
       .join('posts', 'posts.id', 'comments.post_id')
@@ -182,7 +154,7 @@ class CommentsOverviewStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = /** @type {TopPostRow[]} */ (await query);
+    const rows = await query;
     return rows.map((row) => ({
       id: row.id,
       title: row.title,
@@ -195,10 +167,6 @@ class CommentsOverviewStatsService {
    * Member email is deliberately not selected here. The response is surfaced
    * as aggregate analytics, and the id is enough for the UI to drill through
    * to the member record, which enforces its own permissions.
-   * @param {import('knex').Knex} knex
-   * @param {{dateFrom: string|null, dateTo: string|null}} range
-   * @param {number} [limit]
-   * @returns {Promise<CommentsOverviewTopMember[]>}
    */
   async _getTopMembers(knex, range, limit = 25) {
     const query = knex('comments')
@@ -213,7 +181,7 @@ class CommentsOverviewStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = /** @type {TopMemberRow[]} */ (await query);
+    const rows = await query;
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
@@ -223,21 +191,6 @@ class CommentsOverviewStatsService {
 }
 
 module.exports = CommentsOverviewStatsService;
-
-/**
- * @typedef {Object} TopPostRow
- * @property {string} id
- * @property {string} title
- * @property {string} slug
- * @property {string|number} count
- */
-
-/**
- * @typedef {Object} TopMemberRow
- * @property {string} id
- * @property {string|null} name
- * @property {string|number} count
- */
 
 /**
  * @typedef {Object} CommentsOverviewTotals
@@ -274,14 +227,7 @@ module.exports = CommentsOverviewStatsService;
  * @property {CommentsOverviewTotals} totals
  * @property {CommentsOverviewTotals|null} previous_totals
  * @property {CommentsOverviewSeriesItem[]} series
- * @property {'day'|'week'|'month'} series_aggregation
+ * @property {string} series_aggregation
  * @property {CommentsOverviewTopPost[]} top_posts
  * @property {CommentsOverviewTopMember[]} top_members
- */
-
-/**
- * @typedef {Object} CommentsOverviewOptions
- * @property {string} date_from
- * @property {string} date_to
- * @property {string} [timezone]
  */
