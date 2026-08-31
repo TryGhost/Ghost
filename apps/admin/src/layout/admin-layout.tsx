@@ -83,9 +83,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         !admin7Ready && 'invisible',
         admin7Enabled && 'admin7',
         pageChromeEnabled &&
-          'overflow-hidden [--content-width:1080px] [--page-gutter:40px] [--sidebar-width:316px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-[var(--border-subtle)] [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
+          'overflow-hidden [--content-width:1080px] [--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-[var(--border-subtle)] [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
       )}
       open={!!currentUser && sidebarVisible}
+      style={
+        pageChromeEnabled ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined
+      }
     >
       {sidebarVisible && <AppSidebar variant={pageChromeEnabled ? 'floating' : undefined} />}
       <SidebarInset

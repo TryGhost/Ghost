@@ -17,7 +17,9 @@
     .shade.shade-admin,
     #ember-basic-dropdown-wormhole,
     #ember-modal-wormhole,
-    #ember-liquid-wormhole
+    #ember-liquid-wormhole,
+    #ember-alerts-wormhole,
+    #ember-notifications-wormhole
   ) {
   --font-sans:
     'Inter Admin 7', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
@@ -39,7 +41,9 @@
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
         #ember-modal-wormhole,
-        #ember-liquid-wormhole
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
       )
   )
   :where(button, input, optgroup, select, textarea) {
@@ -211,9 +215,10 @@ body.react-admin #root .shade.shade-admin {
   overflow: hidden;
 }
 
-/* Ember starts as a body-level sibling before React's bridge relocates it.
-   Only the bridge-owned copy inside #root should ever be paintable. */
-body.react-admin > #ember-app {
+/* Keep the server-rendered loader visible while the React bundle boots. Once
+   React commits its mount marker, hide a still-detached Ember root until the
+   bridge relocates it into the shell. */
+body.react-admin:has(> #root [data-react-admin-mounted]) > #ember-app {
   visibility: hidden;
 }
 

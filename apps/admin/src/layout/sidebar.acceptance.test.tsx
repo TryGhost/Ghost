@@ -81,6 +81,45 @@ describe('Sidebar navigation', () => {
     expect(shell).toHaveClass('admin7');
   });
 
+  it('shows the existing shell when Admin 7 config cannot be loaded', async () => {
+    fakeTags([]);
+    await renderAdminApp('/tags', {
+      boot: {
+        browseConfig: {
+          response: { errors: [{ message: 'Config unavailable' }] },
+          responseStatus: 400,
+        },
+      },
+    });
+
+    const getShell = () =>
+      document
+        .querySelector('[data-sidebar="sidebar"]')
+        ?.closest('[class~="group/sidebar-wrapper"]');
+    await expect.poll(getShell).toBeTruthy();
+    await expect.poll(() => getShell()?.classList.contains('invisible')).toBe(false);
+    expect(getShell()).not.toHaveClass('admin7');
+  });
+
+  it('uses default preferences when accessibility JSON is malformed', async () => {
+    fakeTags([]);
+    const me = currentUserResponse();
+    me.users[0].accessibility = '{invalid json';
+
+    await renderAdminApp('/tags', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: me } },
+    });
+
+    const getShell = () =>
+      document
+        .querySelector('[data-sidebar="sidebar"]')
+        ?.closest('[class~="group/sidebar-wrapper"]');
+    await expect.poll(getShell).toBeTruthy();
+    await expect.poll(() => getShell()?.classList.contains('invisible')).toBe(false);
+    expect(getShell()).toHaveClass('admin7');
+  });
+
   it('uses the static Admin 7 shell without reading the saved menu visibility', async () => {
     fakeTags([]);
     const me = currentUserResponse();
@@ -130,8 +169,62 @@ describe('Sidebar navigation', () => {
 
     expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
     expect(document.querySelector('[data-sidebar="sidebar"]')?.parentElement).toHaveClass('p-2');
+    const shell = document.querySelector<HTMLElement>('[class~="group/sidebar-wrapper"]')!;
+    const sidebarSlot = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!
+      .parentElement!.previousElementSibling as HTMLElement;
+    expect(getComputedStyle(shell).getPropertyValue('--sidebar-width')).toBe('316px');
+    expect(sidebarSlot.getBoundingClientRect().width).toBe(316);
     expect(document.querySelector('[data-state="collapsed"]')).toBeNull();
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
+  });
+
+  it('applies Admin 7 typography to legacy alert and notification portals', async () => {
+    fakeTags([]);
+    await renderAdminApp('/tags', { labs: { admin7PageChrome: true } });
+    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
+
+    const shell = document.querySelector<HTMLElement>('.admin7')!;
+    const createdHosts: HTMLElement[] = [];
+    const hosts = ['ember-alerts-wormhole', 'ember-notifications-wormhole'].map((id) => {
+      const existing = document.getElementById(id);
+      if (existing) {
+        return existing;
+      }
+      const host = document.createElement('div');
+      host.id = id;
+      document.body.appendChild(host);
+      createdHosts.push(host);
+      return host;
+    });
+
+    try {
+      for (const host of hosts) {
+        expect(getComputedStyle(host).fontFamily).toBe(getComputedStyle(shell).fontFamily);
+        expect(getComputedStyle(host).fontFeatureSettings).toBe(
+          getComputedStyle(shell).fontFeatureSettings,
+        );
+      }
+    } finally {
+      createdHosts.forEach((host) => host.remove());
+    }
+  });
+
+  it('keeps the boot loader visible until React commits its mount marker', async () => {
+    await renderAdminApp('/site');
+
+    const marker = document.querySelector<HTMLElement>('[data-react-admin-mounted]')!;
+    const emberApp = document.getElementById('ember-app')!;
+    const bridgeHost = emberApp.parentElement!;
+
+    try {
+      document.body.appendChild(emberApp);
+      expect(getComputedStyle(emberApp).visibility).toBe('hidden');
+      marker.removeAttribute('data-react-admin-mounted');
+      expect(getComputedStyle(emberApp).visibility).toBe('visible');
+    } finally {
+      marker.setAttribute('data-react-admin-mounted', '');
+      bridgeHost.appendChild(emberApp);
+    }
   });
 
   it('keeps the existing sidebar treatment when Admin 7 page chrome is disabled', async () => {
