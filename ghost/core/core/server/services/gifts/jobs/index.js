@@ -43,14 +43,14 @@ function scheduleJob(key, name, jobFile) {
 }
 
 module.exports = {
-  async scheduleGiftCleanupJob(classBasedJobs) {
+  async scheduleGiftCleanupJob(jobsService) {
     if (alreadyScheduledOrTest('cleanup')) {
       return;
     }
 
     const cron = randomOffPeakDailyCron();
     logging.info(`[Background Job] clean-gifts scheduled at ${cron}`);
-    await classBasedJobs.scheduleRecurring(new CleanGiftsJob(), { cron });
+    await jobsService.scheduleRecurring(new CleanGiftsJob(), { cron });
 
     hasScheduled.cleanup = true;
   },
