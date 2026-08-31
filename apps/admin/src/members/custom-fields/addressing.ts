@@ -81,12 +81,18 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
     },
 
     matchCompound(node): CompoundMatch | null {
+      const ownsKey = (candidate: string) => boundKey === undefined || candidate === boundKey;
+
       const children = getCompoundChildren(node, '$and');
 
       if (!children) {
         const keyValue = node[KEY_ATTRIBUTE];
 
         if (typeof keyValue === 'string') {
+          if (!ownsKey(keyValue)) {
+            return null;
+          }
+
           return {
             kind: 'predicate',
             predicate: {
@@ -100,6 +106,10 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
         const negatedKey = readNegatedString(keyValue);
 
         if (negatedKey !== null) {
+          if (!ownsKey(negatedKey)) {
+            return null;
+          }
+
           return {
             kind: 'predicate',
             predicate: {
@@ -147,7 +157,7 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
         }
       }
 
-      if (!fieldKey) {
+      if (!fieldKey || !ownsKey(fieldKey)) {
         return null;
       }
 
