@@ -781,8 +781,6 @@ jobs:
           --health-timeout=5s
           --health-retries=60
     env:
-      DB: mysql8
-      NODE_ENV: testing-mysql
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled }}
     name: Acceptance tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
@@ -888,9 +886,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
-    env:
-      DB: mysql8
-      NODE_ENV: testing-mysql
     name: Legacy tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
