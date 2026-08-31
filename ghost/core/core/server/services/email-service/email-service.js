@@ -397,6 +397,13 @@ class EmailService {
   }
 
   /**
+   * @param {import('./jobs/send-email-job').default} job
+   */
+  async sendEmail(job) {
+    await this.#batchSendingService.emailJob({ emailId: job.emailId });
+  }
+
+  /**
    * @params {string|null} [audienceStatus] - the audience's free/paid status
    *   ('status:free' / 'status:-free'), see EmailRenderer#describeSegment
    * @return {import('./email-renderer').MemberLike}
