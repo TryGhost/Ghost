@@ -1,4 +1,3 @@
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
 import { filterNamesKey } from '@/shared/filters';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -16,32 +15,38 @@ export interface MemberFilterSources {
 }
 
 /**
- * The site's own newsletters and custom fields, for whoever is reading a filter.
+ * The site's newsletters and its custom field definitions. The members page needs both
+ * to read a filter accurately: which newsletters exist decides what a
+ * `newsletters.<slug>` clause means, and a custom field's definition decides how its
+ * values compare.
  *
- * "Not here yet" and "not coming at all" are different answers, and the difference is the whole
- * point of this: the page waits for the first, and must never wait for the second or it waits
- * for good. Undefined is still loading. An empty list means there is nothing to load — the
- * feature is off, the request failed, or this filter never mentioned one.
+ * `undefined` means the answer has not arrived and the caller may wait for it. An empty
+ * array means no answer is coming and the caller must not wait: newsletters are empty
+ * when the request failed or the current filter names none, and custom fields are empty
+ * when the request failed.
  *
- * Not waiting is safe. A filter still reads without these; it is just read less precisely.
+ * Waiting is optional either way. A filter is still readable without these lists, just
+ * with less accurate labels and value types.
  */
 export function useMemberFilterSources(filterParam: string | undefined): MemberFilterSources {
-  const wantsCustomFields = filterNamesKey(filterParam, CUSTOM_FIELDS_PREFIX);
   const wantsNewsletters = filterNamesKey(filterParam, NEWSLETTERS_PREFIX);
 
   const { data: newslettersData, isError: newslettersFailed } = useBrowseNewsletters({
     searchParams: { limit: '100' },
     enabled: wantsNewsletters,
   });
+  // Requested on every members page, not only when the current filter already names a
+  // custom field. Picking a custom field in the filter bar puts it into the URL on the
+  // first keystroke; if the definitions were still unrequested at that moment, the new
+  // filter would be interpreted by the catch-all "any custom field" entry in
+  // member-fields.ts, which treats every value as text. The filter bar's picker requests
+  // the same definitions, so this shares that cached request rather than adding one.
   const { data: customFieldsData, isError: customFieldsFailed } =
-    useCustomFieldDefinitionsIncludingArchived({ enabled: wantsCustomFields });
+    useCustomFieldDefinitionsIncludingArchived();
 
   return {
     newsletters:
       !wantsNewsletters || newslettersFailed ? NO_NEWSLETTERS : newslettersData?.newsletters,
-    customFields:
-      !wantsCustomFields || customFieldsFailed
-        ? NO_CUSTOM_FIELDS
-        : customFieldsData?.members_custom_fields,
+    customFields: customFieldsFailed ? NO_CUSTOM_FIELDS : customFieldsData?.members_custom_fields,
   };
 }
