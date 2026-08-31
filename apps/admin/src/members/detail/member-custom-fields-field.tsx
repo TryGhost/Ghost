@@ -25,9 +25,9 @@ import {
 import { toast } from 'sonner';
 import {
   formatMemberCustomFieldValue,
-  useBrowseMemberCustomFields,
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableAddressValue, EditableCustomFieldValue } from './member-detail-edit';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -304,7 +304,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   customFields,
   disabled,
 }) => {
-  const { data, isLoading } = useBrowseMemberCustomFields();
+  const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data?.members_custom_fields ?? [];
   const values = getEditableCustomFieldValues(customFields);
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);

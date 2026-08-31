@@ -3,10 +3,8 @@ import { CUSTOM_FIELDS_PREFIX, CUSTOM_FIELD_OPERATORS } from '@/members/member-f
 import { CUSTOM_FIELD_SET_OPERATORS } from './addressing';
 import { FilterSegmentInput, FilterSegmentSelect } from '@tryghost/shade/patterns';
 import { createOperatorOptions, listsOperator } from '@/shared/filters';
-import {
-  memberCustomFieldParts,
-  useBrowseMemberCustomFieldsIncludingArchived,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { memberCustomFieldParts } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { CustomRendererProps } from '@tryghost/shade/patterns';
 
 const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
@@ -17,7 +15,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   onOperatorChange,
   readOnly,
 }) => {
-  const { data } = useBrowseMemberCustomFieldsIncludingArchived();
+  const { data } = useCustomFieldDefinitionsIncludingArchived();
   const definitions = data?.members_custom_fields ?? [];
 
   const fieldKey = (field.key ?? '').slice(CUSTOM_FIELDS_PREFIX.length);

@@ -12,8 +12,8 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * filter restored (and the same members matched) proves the compound grammar
  * parses back to exactly what produced it.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields
- * flag that gates the whole feature.
+ * React member detail (the value editor is React-only) plus the membersCustomFields flag,
+ * which is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 

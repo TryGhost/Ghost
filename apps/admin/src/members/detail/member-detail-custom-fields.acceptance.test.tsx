@@ -11,8 +11,6 @@ import {
 } from '@test-utils/acceptance';
 import { memberDetailScreen } from './member-detail.screen';
 
-const FLAGS = { labs: { membersCustomFields: true } };
-
 const FIELDS = [
   {
     key: 'job_title',
@@ -41,10 +39,8 @@ const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', coun
 
 /**
  * The world the member detail screen reads at mount, plus the custom-fields
- * definitions. Values ride the member read payload (`custom_fields`), exactly
- * as the API returns them when the membersCustomFields flag is on. The world
- * is stateful: a PUT's merge patch is applied (null deletes), so the refetch
- * a save triggers returns the saved state.
+ * definitions. The world is stateful: a PUT's merge patch is applied (null deletes), so
+ * the refetch a save triggers returns the saved state.
  */
 function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>) {
   let current: Record<string, unknown> = { ...m };
@@ -80,7 +76,7 @@ describe('Member detail custom fields', () => {
   it('renders the member’s values as a read-only record, addresses as one line', async () => {
     const m = member({ name: 'Ada Lovelace' });
     fakeMemberDetailWorld(m, { job_title: 'Editor', home_address: ADDRESS });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
     await expect
@@ -95,7 +91,7 @@ describe('Member detail custom fields', () => {
   it('saves one field through its own editor without touching the page Save', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor', company: 'Ghost' });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
@@ -114,7 +110,7 @@ describe('Member detail custom fields', () => {
   it('leaves an unsaved page edit intact when a custom field is saved', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     // Dirty the page draft by editing the name, without saving it.
     await memberDetailScreen.nameInput().fill('Ada L.');
@@ -139,7 +135,7 @@ describe('Member detail custom fields', () => {
   it('clears a value by saving an emptied editor (null merge patch)', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('');
@@ -156,7 +152,7 @@ describe('Member detail custom fields', () => {
   it('a dirty editor refuses casual dismissal; a pristine one closes freely', async () => {
     const m = member({ name: 'Ada Lovelace' });
     fakeMemberDetailWorld(m, { job_title: 'Editor' });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     // Dirty: Escape must NOT close it — typed values can't be lost to a
     // stray key or click; Cancel is the one explicit discard.
@@ -177,7 +173,7 @@ describe('Member detail custom fields', () => {
   it('cancelling the editor discards the edit', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Publisher');
@@ -190,7 +186,7 @@ describe('Member detail custom fields', () => {
   it('saves an address that leaves sub-fields the country does not use empty', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     // Hong Kong has no postal code, so leaving it empty is a complete address
     // rather than an incomplete one.
@@ -212,7 +208,7 @@ describe('Member detail custom fields', () => {
   it('blocks saving a malformed country code with an inline error, then saves once fixed', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByLabelText('Address line 1').fill('1 Main St');
@@ -256,7 +252,7 @@ describe('Member detail custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Job title').click();
     await modal().getByLabelText('Job title').fill('Editor');
@@ -278,7 +274,7 @@ describe('Member detail custom fields', () => {
       events: [],
       meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
     });
-    await renderAdminApp(`/members/${m.id}`, FLAGS);
+    await renderAdminApp(`/members/${m.id}`);
 
     await expect.element(memberDetailScreen.nameInput()).toBeVisible();
     await expect.element(memberDetailScreen.customFieldsSection()).not.toBeInTheDocument();

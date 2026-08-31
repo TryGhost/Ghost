@@ -15,6 +15,10 @@ const createCustomFieldValuesStub = () => ({
   applyWrite: sinon.stub().resolves(),
 });
 
+const createCustomFieldDefinitionsStub = (hasAnyActive = false) => ({
+  hasAnyActive: sinon.stub().resolves(hasAnyActive),
+});
+
 describe('MemberBreadService', function () {
   afterEach(function () {
     sinon.restore();
@@ -72,7 +76,6 @@ describe('MemberBreadService', function () {
         stripeService: { configured: true },
         memberAttributionService: { getAttributionFromContext: sinon.stub().resolves(null) },
         emailService: {},
-        labsService: { isSet: sinon.stub().returns(false) },
         newslettersService: { browse: sinon.stub().resolves([]) },
         settingsCache: { get: sinon.stub() },
         emailSuppressionList: { getSuppressionData: getSuppressionDataStub },
@@ -80,6 +83,7 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         customFieldValues,
+        customFieldDefinitions: createCustomFieldDefinitionsStub(),
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -332,7 +336,6 @@ describe('MemberBreadService', function () {
         stripeService: { configured: stripeConfigured },
         memberAttributionService: { getAttributionFromContext: sinon.stub().resolves(null) },
         emailService: {},
-        labsService: { isSet: sinon.stub().returns(false) },
         newslettersService: { browse: sinon.stub().resolves([]) },
         settingsCache: { get: sinon.stub() },
         emailSuppressionList: { getSuppressionData: getSuppressionDataStub },
@@ -340,6 +343,7 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         customFieldValues: createCustomFieldValuesStub(),
+        customFieldDefinitions: createCustomFieldDefinitionsStub(),
       });
 
       sinon.stub(service, 'read').resolves({ id: 'member_123' });
@@ -524,9 +528,10 @@ describe('MemberBreadService', function () {
         emailSuppressionList: emailSuppressionListStub,
         nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
         offersAPI: options.offersAPI || defaultOffersAPI,
-        labsService: options.labsService || { isSet: sinon.stub().returns(false) },
         giftService: options.giftService || defaultGiftService,
         customFieldValues: options.customFieldValues || defaultCustomFieldValues,
+        customFieldDefinitions:
+          options.customFieldDefinitions || createCustomFieldDefinitionsStub(),
       });
     };
 
@@ -570,6 +575,15 @@ describe('MemberBreadService', function () {
 
       assert.equal(member.id, memberModelJSON.id);
       assert.equal(member.email, memberModelJSON.email);
+    });
+
+    it('carries custom fields on a site that defines them', async function () {
+      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
+      const memberBreadService = getService({ customFieldDefinitions });
+
+      const member = await memberBreadService.read({ id: MEMBER_ID });
+
+      assert.deepEqual(member.custom_fields, {});
     });
 
     it('returns a member with subscriptions', async function () {

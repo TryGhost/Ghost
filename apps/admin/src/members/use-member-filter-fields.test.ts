@@ -261,7 +261,6 @@ describe('useMemberFilterFields', () => {
   it('gives each defined custom field its own named entry', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
-        customFieldsEnabled: true,
         customFields: [
           { key: 'shipping_address', name: 'Shipping address', type: 'address' },
           { key: 'job_title', name: 'Job title', type: 'short_text' },
@@ -282,7 +281,6 @@ describe('useMemberFilterFields', () => {
   it('omits the custom fields group when no fields are defined', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
-        customFieldsEnabled: true,
         customFields: [],
         siteTimezone: 'UTC',
       }),
@@ -291,14 +289,8 @@ describe('useMemberFilterFields', () => {
     expect(result.current.map((group) => group.group)).not.toContain('Custom fields');
   });
 
-  it('omits the custom fields group when the flag is off', () => {
-    const { result } = renderHook(() =>
-      useMemberFilterFields({
-        customFieldsEnabled: false,
-        customFields: [{ key: 'job_title', name: 'Job title', type: 'short_text' }],
-        siteTimezone: 'UTC',
-      }),
-    );
+  it('omits the custom fields group when none are passed at all', () => {
+    const { result } = renderHook(() => useMemberFilterFields({ siteTimezone: 'UTC' }));
 
     expect(result.current.map((group) => group.group)).not.toContain('Custom fields');
   });

@@ -1380,6 +1380,7 @@ describe('Member Custom Fields Admin API', function () {
       // so neither path should see it as a write. Create and edit resolve that
       // question with the same schema, so they cannot drift on it.
       const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+      await createField({ name: 'Favourite topic' });
 
       await agent
         .post('members/')
@@ -1441,7 +1442,10 @@ describe('Member Custom Fields Admin API', function () {
 
       await setStatus(field.key, 'archived');
 
-      assert.deepEqual(await readValues(memberId), {});
+      // Archiving the site's only field takes the whole key off the payload, not just the
+      // value: with nothing active, the member reads exactly as it did before the site
+      // ever defined a field.
+      assert.equal(await readValues(memberId), undefined);
       // The row survives archiving — only the definition was hidden, and the
       // value is still attached to it (restoring the field brings it back).
       const rows = await models.Base.knex('members_custom_field_values').where(
@@ -1873,81 +1877,35 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  describe('Values with the flag disabled', function () {
-    beforeEach(function () {
-      mockManager.restore();
-      mockManager.mockLabsDisabled('membersCustomFields');
-    });
-
-    it('ignores custom_fields on a member edit and never returns them', async function () {
-      // The schema declares `custom_fields` on every site, so with the feature
-      // off the key reaches the service and is dropped there: the edit succeeds,
-      // the rest of it applies, and the values are ignored.
-      //
-      // The field and value are set up with the flag on, then the flag goes
-      // off for the request under test.
-      mockManager.restore();
-      mockManager.mockLabsEnabled('membersCustomFields');
-      const field = await createField({ name: 'Favourite topic' });
+  describe('Values on a site that defines no fields', function () {
+    it('omits custom_fields from the member payload entirely', async function () {
       const memberId = await createMember();
-      await setValues(memberId, { [field.key]: 'Ghosts' });
-      mockManager.restore();
-      mockManager.mockLabsDisabled('membersCustomFields');
-
-      await agent
-        .put(`members/${memberId}/`)
-        .body({ members: [{ name: 'Renamed', custom_fields: { [field.key]: 'Opera' } }] })
-        .expectStatus(200);
 
       const { body } = await agent
         .get(`members/${memberId}/?include=custom_fields`)
         .expectStatus(200);
-      assert.equal(body.members[0].custom_fields, undefined);
-      assert.equal(body.members[0].name, 'Renamed');
-
-      // The value the request tried to write was dropped with the flag off.
-      mockManager.restore();
-      mockManager.mockLabsEnabled('membersCustomFields');
-      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
+      assert.equal(Object.hasOwn(body.members[0], 'custom_fields'), false);
     });
 
-    it('ignores custom_fields on a member create', async function () {
-      // The not-supported-on-create refusal is gated behind the feature too:
-      // with it off, the key is dropped and the create succeeds.
-      const { body } = await agent
-        .post('members/')
-        .body({
-          members: [
-            {
-              email: 'create-flag-off@example.com',
-              custom_fields: { 'favourite-topic': 'Ghosts' },
-            },
-          ],
-        })
-        .expectStatus(201);
-
-      assert.equal(body.members[0].custom_fields, undefined);
-    });
-
-    it('ignores a malformed custom_fields rather than rejecting it', async function () {
-      // The schema declares `custom_fields` on every site, so any shape it
-      // judged would be judged on sites without the feature too. Leaving it
-      // unconstrained is what keeps the flag the only thing that matters here.
+    it('refuses a write naming a field rather than discarding it', async function () {
       const memberId = await createMember();
 
-      for (const malformed of [null, 'not-an-object', 42, []]) {
-        await agent
-          .put(`members/${memberId}/`)
-          .body({ members: [{ custom_fields: malformed }] })
-          .expectStatus(200);
-      }
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ name: 'Renamed', custom_fields: { favourite_topic: 'Opera' } }] })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'custom_fields.favourite_topic');
 
-      await agent
-        .post('members/')
-        .body({
-          members: [{ email: 'create-malformed@example.com', custom_fields: 'not-an-object' }],
-        })
-        .expectStatus(201);
+      const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.notEqual(read.members[0].name, 'Renamed');
+    });
+
+    it('carries the key once a field exists, even with no value against it', async function () {
+      const memberId = await createMember();
+      await createField({ name: 'Favourite topic' });
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.deepEqual(body.members[0].custom_fields, {});
     });
   });
 

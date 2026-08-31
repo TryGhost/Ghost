@@ -71,6 +71,7 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   customFieldValues,
+  customFieldDefinitions,
 }) {
   const tokenService = new TokenService({
     privateKey,
@@ -145,7 +146,6 @@ module.exports = function MembersAPI({
         });
       },
     },
-    labsService,
     stripeService: stripeAPIService,
     memberAttributionService,
     emailSuppressionList,
@@ -154,6 +154,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     customFieldValues,
+    customFieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();

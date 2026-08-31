@@ -56,8 +56,13 @@ describe('Member Custom Fields Members API', function () {
       .expectStatus(200);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     mockManager.restore();
+    // Whether a member payload carries custom fields at all follows from the site defining
+    // any, so a definition left behind here changes the shape of member responses in every
+    // suite that runs after this one.
+    await models.Base.knex('members_custom_field_values').del();
+    await models.Base.knex('members_custom_fields').del();
   });
 
   it('does not return custom fields to the member who holds them', async function () {

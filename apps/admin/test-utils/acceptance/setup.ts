@@ -4,6 +4,7 @@ import { cleanup } from 'vitest-browser-react';
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
 import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
+import { resetDeclaredResources } from './resources';
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
@@ -33,6 +34,7 @@ afterEach(async () => {
     await settleRequests();
   } finally {
     resetFakeApi();
+    resetDeclaredResources();
     window.location.hash = '';
     verifyNoUnhandledRequests();
   }

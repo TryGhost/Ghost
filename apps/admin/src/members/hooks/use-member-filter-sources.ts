@@ -1,8 +1,7 @@
 import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
 import { filterNamesKey } from '@/shared/filters';
-import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import type { CustomFieldDefinition } from '@/members/custom-fields/filter-fields';
 import type { NewsletterDefinition } from '@/members/newsletter-filter-fields';
 
@@ -27,9 +26,7 @@ export interface MemberFilterSources {
  * Not waiting is safe. A filter still reads without these; it is just read less precisely.
  */
 export function useMemberFilterSources(filterParam: string | undefined): MemberFilterSources {
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-  const wantsCustomFields =
-    customFieldsEnabled && filterNamesKey(filterParam, CUSTOM_FIELDS_PREFIX);
+  const wantsCustomFields = filterNamesKey(filterParam, CUSTOM_FIELDS_PREFIX);
   const wantsNewsletters = filterNamesKey(filterParam, NEWSLETTERS_PREFIX);
 
   const { data: newslettersData, isError: newslettersFailed } = useBrowseNewsletters({
@@ -37,9 +34,7 @@ export function useMemberFilterSources(filterParam: string | undefined): MemberF
     enabled: wantsNewsletters,
   });
   const { data: customFieldsData, isError: customFieldsFailed } =
-    useBrowseMemberCustomFieldsIncludingArchived({
-      enabled: wantsCustomFields,
-    });
+    useCustomFieldDefinitionsIncludingArchived({ enabled: wantsCustomFields });
 
   return {
     newsletters:
