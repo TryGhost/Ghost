@@ -357,7 +357,7 @@ export function MappingStep({
   // the request itself cannot disagree.
   //
   // Empty rather than omitted, because the importer carries a column the mapping does not
-  // name through under its own header — which is how an unnamed custom_fields.* column
+  // name through under its own header — which is how an unnamed metafields.custom.* column
   // survives to be read. Leaving a column out of the mapping is the opposite of leaving it
   // out of the import.
   const importMapping: Record<string, string | null> = Object.fromEntries(

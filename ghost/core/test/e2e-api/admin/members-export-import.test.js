@@ -211,7 +211,7 @@ describe('Members export -> import round-trip', function () {
       /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
     );
     assert.equal(
-      csv.includes('custom_fields.'),
+      csv.includes('metafields.custom.'),
       false,
       'no custom field columns when the site defines none',
     );
@@ -223,7 +223,7 @@ describe('Members export -> import round-trip', function () {
     await assertSurvivesWithCoreFields(emails);
   });
 
-  // With the flag on, the export gains a custom_fields.* column and the import now
+  // With the flag on, the export gains a metafields.custom.* column and the import now
   // consumes it. Re-importing under a fresh email creates the member from the CSV, so
   // the core fields and the custom field value both reconstruct -- closing the round
   // trip the base issue describes.
@@ -261,12 +261,12 @@ describe('Members export -> import round-trip', function () {
     // The export produces the custom field column, guarding the leading = with an
     // apostrophe so a spreadsheet won't read it as a formula.
     assert.ok(
-      csv.includes(`custom_fields.${customFieldKey}`),
+      csv.includes(`metafields.custom.${customFieldKey}`),
       'export includes the custom field column',
     );
     assert.equal(
       Papa.parse(csv, { header: true }).data.find((r) => r.email === srcEmail)[
-        `custom_fields.${customFieldKey}`
+        `metafields.custom.${customFieldKey}`
       ],
       `'${formulaValue}`,
     );
@@ -330,7 +330,7 @@ describe('Members export -> import round-trip', function () {
   });
 
   // The Stripe column defers this import, so it also checks the JSON spool carries
-  // custom_fields.* columns through. A value-less member exports all-blank address cells,
+  // metafields.custom.* columns through. A value-less member exports all-blank address cells,
   // which re-import as untouched rather than failing the row.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
@@ -385,7 +385,7 @@ describe('Members export -> import round-trip', function () {
 
     const csv = await exportSet(addressLabel.get('slug'));
     assert.ok(
-      csv.includes(`custom_fields.${addressKey}.line1`),
+      csv.includes(`metafields.custom.${addressKey}.line1`),
       'export expands the address into sub-columns',
     );
 

@@ -151,7 +151,7 @@ describe('buildImportResponse', () => {
     // A reason may quote a cell the publisher wrote, and a CSV cell legally holds
     // both a comma and a newline.
     const punctuated =
-      'custom_fields.home_address.country: Enter a 2-letter country code, like US.';
+      'metafields.custom.home_address.country: Enter a 2-letter country code, like US.';
     const multiline = '"Gold\nPlan" is not a valid tier.';
     const result = buildImportResponse({
       meta: {
@@ -270,13 +270,13 @@ describe('buildImportResponse', () => {
           invalid: [
             {
               email: 'a@test.com',
-              'custom_fields.home_address.country': 'IRL',
+              'metafields.custom.home_address.country': 'IRL',
               errors: [
                 'Missing email address',
-                'custom_fields.home_address.country: Enter a 2-letter country code, like US.',
+                'metafields.custom.home_address.country: Enter a 2-letter country code, like US.',
               ],
               error:
-                'Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US.',
+                'Missing email address\nmetafields.custom.home_address.country: Enter a 2-letter country code, like US.',
             },
           ],
         },
@@ -289,11 +289,11 @@ describe('buildImportResponse', () => {
     const [header] = csv.split('\r\n');
 
     expect(header).toBe(
-      '"email","name","note","stripe_customer_id","created_at","labels","custom_fields.home_address.country","gift_id","error"',
+      '"email","name","note","stripe_customer_id","created_at","labels","metafields.custom.home_address.country","gift_id","error"',
     );
     expect(csv).toContain('"IRL"');
     expect(csv).toContain(
-      '"Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US."',
+      '"Missing email address\nmetafields.custom.home_address.country: Enter a 2-letter country code, like US."',
     );
   });
 });

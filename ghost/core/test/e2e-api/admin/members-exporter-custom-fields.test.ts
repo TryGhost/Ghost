@@ -23,7 +23,7 @@ const ADDRESS_SUB_FIELDS = ['line1', 'line2', 'city', 'state', 'postal_code', 'c
 
 /** Custom field columns are namespaced so a minted key can never take a core column. */
 function columnFor(key: string, subField?: string) {
-  return subField ? `custom_fields.${key}.${subField}` : `custom_fields.${key}`;
+  return subField ? `metafields.custom.${key}.${subField}` : `metafields.custom.${key}`;
 }
 
 function addressColumnsFor(key: string) {

@@ -33,7 +33,7 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 // leave that request unhandled.
 const customFieldsBrowsePath = new RegExp('^/members/metafields/custom/(\\?|$)');
 
-const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
+const EXPORTED_CSV = 'email,metafields.custom.nickname\nada@example.com,Countess\n';
 
 /**
  * The world the import modal reads: no custom fields defined yet, a create that mints a
@@ -199,7 +199,7 @@ describe('Import members custom fields', () => {
         email: 'email',
         name: 'name',
         nickname: '',
-        city: 'custom_fields.name',
+        city: 'metafields.custom.name',
         postcode: '',
       });
   });
@@ -379,7 +379,7 @@ describe('Import members custom fields', () => {
   });
 
   // Leaving a column out of the mapping is how the importer is told to carry it through
-  // under its own header, which for a custom_fields.* column means importing it. So a
+  // under its own header, which for a metafields.custom.* column means importing it. So a
   // deselected column has to be named with an empty target, not omitted.
   it('names every column it is not importing rather than omitting it', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
@@ -652,9 +652,11 @@ describe('Import members custom fields', () => {
 
     // A Ghost export re-imported where its field no longer exists: nothing matches, so it
     // starts out of the import with nothing chosen for it.
-    await importToggle('custom_fields.nickname').click();
-    await expect.element(fieldSelect('custom_fields.nickname')).toHaveTextContent('Select field');
-    await fieldSelect('custom_fields.nickname').click();
+    await importToggle('metafields.custom.nickname').click();
+    await expect
+      .element(fieldSelect('metafields.custom.nickname'))
+      .toHaveTextContent('Select field');
+    await fieldSelect('metafields.custom.nickname').click();
 
     // Both kinds are reachable from the one list, without choosing between them first.
     // Exact, or "Email" also matches "Subscribed to emails".
