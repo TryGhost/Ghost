@@ -99,6 +99,27 @@ describe('Resume interrupted sends', function () {
     sinon.assert.calledOnce(mailgunStub);
   });
 
+  it('resumes an email left pending before its job started', async function () {
+    const { emailModel } = await sendEmail(agent);
+    const batches = (await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` }))
+      .models;
+    await batches[0].save(
+      { status: 'pending', mailgun_message_id: null },
+      { patch: true, autoRefresh: false },
+    );
+    await emailModel.save({ status: 'pending' }, { patch: true, autoRefresh: false });
+
+    const mailgunStub = mockManager.getMailgunCreateMessageStub();
+    mailgunStub.resetHistory();
+
+    await emailService.service.resumeInterruptedSends();
+    await waitForEmailStatus(emailModel.id);
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'submitted');
+    sinon.assert.calledOnce(mailgunStub);
+  });
+
   it('marks email as failed when an orphan submitting batch is encountered', async function () {
     // Same setup, but this time one of the batches is left as `submitting` — the orphan
     // state a crashed worker leaves behind. The (b) short-circuit fix should refuse to
