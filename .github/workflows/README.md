@@ -33,6 +33,19 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 ## Secrets
 
 - Expose a secret only to the job that uses it. Do not make secrets available to jobs that run untrusted code.
+- **Never pass a secret to a local action (`uses: ./...`) on a `pull_request` run.** A `pull_request` run executes the merge commit (`GITHUB_REF` is `refs/pull/N/merge`), so the workflow file and every local action it calls are PR-authored — an input you pass is an input the PR reads. A guard _inside_ the action is too late; the secret is already an input. Gate it at the caller:
+
+  ```yaml
+  # Bad — the PR controls .github/actions/foo/action.yml
+  github-token: ${{ secrets.SOME_PAT }}
+
+  # Good — push runs publish, PR runs get an empty string
+  github-token: ${{ github.event_name != 'pull_request' && secrets.SOME_PAT || '' }}
+  ```
+
+  Fork PRs get no secrets, so this bites on same-repo branches — and there it is damage control rather than a boundary, since anyone who can push a branch can also edit the workflow. What it does buy is that a compromised dependency or third-party action in that job never sees the secret.
+
+- **A secret is exposed to its whole job, not just its step.** Steps share a runner, so PR-authored code running earlier in the job — a repo script, a build, a lifecycle hook — can shadow a binary on `$GITHUB_PATH` or write `$GITHUB_ENV` and capture the secret from a later step. If a job checks out PR code, keep secrets out of it entirely and do the privileged work in a separate job with no checkout.
 - Prefer OIDC (`id-token: write`) over long-lived stored secrets where the provider supports it.
 
 ## Supply chain
@@ -54,4 +67,5 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 3. Trigger is `pull_request` unless `pull_request_target` is genuinely required and safe.
 4. No `${{ github.event.* }}` inside `run:`.
 5. Third-party actions pinned to SHAs.
-6. Secrets scoped to the jobs that use them.
+6. Secrets scoped to the jobs that use them, and never passed to a local action on a `pull_request` run.
+7. No job both checks out PR code and holds a secret.

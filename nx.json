@@ -43,16 +43,7 @@
     },
     "test:ci:*": {
       "cache": true,
-      "inputs": [
-        "default",
-        "^default",
-        {
-          "env": "DB"
-        },
-        {
-          "env": "NODE_ENV"
-        }
-      ]
+      "inputs": ["default", "^default"]
     },
     "dev": {
       "dependsOn": ["^dev"],

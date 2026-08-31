@@ -46,7 +46,8 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseActiveTheme`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
 
 ```ts
-// Labs flags (sugar for lockstep settings + config overrides):
+// Labs flags (sugar for lockstep settings + config overrides; merges into
+// any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
 
 // Persisted user state, e.g. what's-new preferences:

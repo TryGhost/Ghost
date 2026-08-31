@@ -78,12 +78,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'React tag details',
-    description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
-  },
-  {
     title: 'Member custom fields',
     description: 'Let admins create and manage custom field definitions for members',
     flag: 'membersCustomFields',

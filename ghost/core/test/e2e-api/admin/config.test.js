@@ -41,8 +41,8 @@ describe('Config API', function () {
         .expectStatus(200)
         .matchBodySnapshot({
           config: {
-            database: stringMatching(/sqlite3|mysql|mysql2/),
-            environment: stringMatching(/^testing/),
+            database: 'mysql8',
+            environment: 'testing-mysql',
             version: stringMatching(/\d+\.\d+\.\d+/),
             // labs is matched dynamically so adding/removing feature
             // flags doesn't churn the snapshot
@@ -67,7 +67,7 @@ describe('Config API', function () {
         })
         .matchHeaderSnapshot({
           'content-version': anyContentVersion,
-          'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
+          'content-length': anyContentLength, // Length can differ slightly based on environment and version values
           etag: anyEtag,
         });
     });
