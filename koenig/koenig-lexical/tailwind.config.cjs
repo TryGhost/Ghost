@@ -5,12 +5,17 @@ module.exports = {
     important: '.koenig-lexical',
     content: [
         './src/**/*.{js,jsx,ts,tsx}',
-        './demo/**/*.{js,jsx,ts,tsx}'
+        './demo/**/*.{js,jsx,ts,tsx}',
+        '../kg-unsplash-selector/src/**/*.{js,jsx,ts,tsx}'
     ],
     darkMode: 'class',
     theme: {
         colors: {
             accent: 'var(--kg-accent-color, #ff0095)',
+            'surface-panel': 'var(--surface-panel, #FFF)',
+            foreground: 'var(--foreground, #15171A)',
+            'muted-foreground': 'var(--muted-foreground, #7C8B9A)',
+            border: 'var(--border, #DDE1E5)',
             transparent: 'transparent',
             current: 'currentColor',
             white: '#FFF',

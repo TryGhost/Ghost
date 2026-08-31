@@ -136,6 +136,12 @@ export class PostEditorPage extends AdminPage {
   readonly publishSaveButton: Locator;
   readonly updateFlowButton: Locator;
   readonly revertToDraftButton: Locator;
+  /**
+   * The back link. Located by its test attribute rather than by role: its
+   * accessible name carries the inlined arrow icon's title, so "Posts" is
+   * really "arrow-left Posts".
+   */
+  readonly backButton: Locator;
 
   readonly settingsMenu: SettingsMenu;
 
@@ -155,6 +161,7 @@ export class PostEditorPage extends AdminPage {
     this.publishSaveButton = page.locator('[data-test-button="publish-save"]').first();
     this.updateFlowButton = page.locator('[data-test-button="update-flow"]').first();
     this.revertToDraftButton = page.locator('[data-test-button="revert-to-draft"]');
+    this.backButton = page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
   }

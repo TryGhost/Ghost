@@ -9,8 +9,12 @@ import buildPostData, {
 import type { PostImportRow } from './row';
 import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
-import type { Clock, ImportRunStore, RowOutcome } from './store';
+import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
+import type { PreparedPostRow, PreparedPostRows } from './reader';
+import { MediaInliningFailure, type PostMediaInlining } from './media';
+import type { ImportFileStager, StagedImportFile } from './staged-file';
+import ContentCSVImportJob from '../jobs/content-csv-import-job';
 
 export type { ImportRequest } from './schema';
 
@@ -18,9 +22,9 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
-// The CSV is parsed inside the request (the uploaded temp file is deleted when the
-// response is sent); the parsed rows are handed to an in-process background job
-// that writes one post per row.
+// The upload is staged because the request temp file is deleted with the response.
+// Request-time parsing preserves synchronous validation and the current row count;
+// the class-based job reparses the staged file so its payload stays serializable.
 
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {
@@ -31,7 +35,15 @@ export interface ImportAccepted {
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
-type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PostImportRow[]>;
+export interface EmailNotifications {
+  send(run: ImportRun, recipient: string): Promise<unknown>;
+  getDefaultRecipient(): Promise<string>;
+}
+
+type ReadRows = (
+  path: string,
+  mapping?: Record<string, string>,
+) => Promise<PreparedPostRows | PostImportRow[]>;
 type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
 
 const messages = {
@@ -44,7 +56,7 @@ const messages = {
 
 function logLifecycle(message: string): void {
   try {
-    logging.info(`[Background Job] content-import ${message}`);
+    logging.info(`[Background Job] ${ContentCSVImportJob.type} ${message}`);
   } catch {
     // Observability must not change whether an import is queued or resolves.
   }
@@ -60,7 +72,10 @@ interface ImporterDeps {
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
-  addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
+  createMediaInliner: () => PostMediaInlining;
+  email: EmailNotifications;
+  dispatchJob: (job: ContentCSVImportJob) => Promise<void>;
+  fileStager: ImportFileStager;
   report: FailureReporter;
   store: ImportRunStore;
   urlForPost: (post: WrittenPost) => string;
@@ -83,7 +98,10 @@ class ContentCSVImporter {
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
-  private _addJob: ImporterDeps['addJob'];
+  private _createMediaInliner: () => PostMediaInlining;
+  private _email: EmailNotifications;
+  private _dispatchJob: ImporterDeps['dispatchJob'];
+  private _fileStager: ImportFileStager;
   private _report: FailureReporter;
   private _store: ImportRunStore;
   private _urlForPost: (post: WrittenPost) => string;
@@ -98,7 +116,10 @@ class ContentCSVImporter {
     getHtmlToLexical,
     getMarkdownToHtml,
     getCleanHTML,
-    addJob,
+    createMediaInliner,
+    email,
+    dispatchJob,
+    fileStager,
     report,
     store,
     urlForPost,
@@ -112,7 +133,10 @@ class ContentCSVImporter {
     this._getHtmlToLexical = getHtmlToLexical;
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
-    this._addJob = addJob;
+    this._createMediaInliner = createMediaInliner;
+    this._email = email;
+    this._dispatchJob = dispatchJob;
+    this._fileStager = fileStager;
     this._report = report;
     this._store = store;
     this._urlForPost = urlForPost;
@@ -122,86 +146,131 @@ class ContentCSVImporter {
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
-    const source = await this._prepareSource(request);
-    let rows: PostImportRow[];
+    const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
+    let stagedFile: StagedImportFile;
     try {
-      rows = await this._readRows(source.filePath, request.mapping);
+      stagedFile = await this._fileStager.stage(request);
     } catch (error) {
-      await this.cleanupSource(source.cleanup);
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
         err: error,
       });
     }
+    let handedOff = false;
 
-    // Temporary while import state is held in memory: the durable job
-    // system milestone removes the cap.
-    if (rows.length > MAX_POSTS) {
-      await this.cleanupSource(source.cleanup);
-      throw new errors.ValidationError({
-        message: tpl(messages.tooManyPosts, { max: MAX_POSTS }),
-      });
-    }
-
-    const runId = this._newRunId();
-    const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
-    this._store.create(runId, rows.length);
-
-    logLifecycle('queued');
     try {
-      this._addJob({
-        job: () => this.runImportJob(runId, importTagNames, rows, source),
-        offloaded: false,
-        name: 'content-import',
-      });
-    } catch (error) {
-      this._store.fail(runId, messageOf(error));
+      const stagedRequest = {
+        filePath: stagedFile.path,
+        fileName: stagedFile.name,
+        mapping: request.mapping,
+        requestUserEmail: request.requestUserEmail,
+      };
+      const { source, preparedRows } = await this.readPreparedRows(stagedRequest);
       await this.cleanupSource(source.cleanup);
-      throw error;
-    }
 
-    return { importId: runId, total: rows.length };
+      this.assertWithinPostLimit(preparedRows.rows);
+
+      const runId = this._newRunId();
+      const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
+      this._store.create(runId, preparedRows.rows.length, preparedRows.columns);
+      const job = new ContentCSVImportJob({
+        importId: runId,
+        file: stagedFile,
+        mapping: request.mapping,
+        importTagNames,
+        emailRecipient,
+      });
+
+      logLifecycle('queued');
+      try {
+        await this._dispatchJob(job);
+      } catch (error) {
+        this._store.fail(runId, messageOf(error));
+        this._store.release(runId);
+        throw error;
+      }
+
+      handedOff = true;
+      return { importId: runId, total: preparedRows.rows.length };
+    } finally {
+      if (!handedOff) {
+        await this.cleanupStagedFile(stagedFile);
+      }
+    }
   }
 
-  // Must resolve in every case: the job manager reads a rejected inline job as a
-  // defect in the job itself, and there is no retry behind it.
-  private async runImportJob(
+  async handle(job: ContentCSVImportJob): Promise<void> {
+    let source: PreparedImportSource | undefined;
+
+    try {
+      const prepared = await this.readPreparedRows({
+        filePath: job.file.path,
+        fileName: job.file.name,
+        mapping: job.mapping,
+      });
+      source = prepared.source;
+      this.assertWithinPostLimit(prepared.preparedRows.rows);
+      await this.processRows(
+        job.importId,
+        job.importTagNames,
+        prepared.preparedRows.rows,
+        prepared.source,
+      );
+    } catch (error) {
+      this._store.fail(job.importId, messageOf(error));
+      throw error;
+    } finally {
+      if (source) {
+        await this.cleanupSource(source.cleanup);
+      }
+      const run = this._store.get(job.importId);
+      if (run) {
+        await this.settle(() => this._email.send(run, job.emailRecipient));
+      }
+      this._store.release(job.importId);
+      await this.cleanupStagedFile(job.file);
+    }
+  }
+
+  allSettled(): Promise<void> {
+    return this._store.allSettled();
+  }
+
+  private async processRows(
     runId: string,
     importTagNames: string[],
-    rows: PostImportRow[],
+    rows: PreparedPostRow[],
     source: PreparedImportSource,
   ): Promise<void> {
-    const startedAt = Date.now();
-    logLifecycle('started');
     let urlFailureCount = 0;
     let firstUrlFailure: unknown;
-    let failed = false;
 
     try {
       if (source.assets) {
         await source.assets.store();
-        source.assets.rewriteRows(rows);
+        source.assets.rewriteRows(rows.map(({ data }) => data));
       }
 
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
+      const media = this._createMediaInliner();
       let successfulWrites = 0;
-      let failedWrites = 0;
-      let firstWriteFailure: unknown;
+      let failedRows = 0;
+      let firstRowFailure: unknown;
 
-      for (const [index, row] of rows.entries()) {
-        const line = index + 2;
+      for (const preparedRow of rows) {
+        const { data: row, source: sourceCells, line } = preparedRow;
         let data: PostData;
 
         try {
           data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml, cleanHTML);
         } catch (error) {
           if (error instanceof RowSkipped) {
-            this._store.record(runId, {
+            this.recordOutcome(runId, sourceCells, {
               line,
               title: row.title || null,
-              status: 'skipped',
+              status: 'failed',
               reason: messageOf(error),
             });
             continue;
@@ -209,6 +278,27 @@ class ContentCSVImporter {
 
           // Anything other than an expected source-row refusal is an importer
           // failure. Stop the run before misclassifying it as a lost write.
+          throw error;
+        }
+
+        try {
+          await media.inline(data);
+        } catch (error) {
+          if (error instanceof MediaInliningFailure) {
+            if (failedRows === 0) {
+              firstRowFailure = error;
+            }
+            failedRows += 1;
+            this.recordOutcome(runId, sourceCells, {
+              line,
+              title: row.title,
+              status: 'failed',
+              reason: messageOf(error),
+              mediaFailures: error.failures,
+            });
+            continue;
+          }
+
           throw error;
         }
 
@@ -230,6 +320,7 @@ class ContentCSVImporter {
             },
             {
               sourceUpdatedAt: row.updated_at,
+              runTagName: importTagNames[1],
               authorNames: row.authors,
               authorEmails: row.author_emails,
               tagNames: row.tags,
@@ -237,11 +328,12 @@ class ContentCSVImporter {
           );
 
           if (result.status === 'skipped') {
-            this._store.record(runId, {
+            this.recordOutcome(runId, sourceCells, {
               line,
               title: row.title,
               status: 'skipped',
               reason: result.reason,
+              duplicate: result.duplicate,
             });
             continue;
           }
@@ -251,11 +343,11 @@ class ContentCSVImporter {
           warnings = result.warnings;
           successfulWrites += 1;
         } catch (error) {
-          if (failedWrites === 0) {
-            firstWriteFailure = error;
+          if (failedRows === 0) {
+            firstRowFailure = error;
           }
-          failedWrites += 1;
-          this._store.record(runId, {
+          failedRows += 1;
+          this.recordOutcome(runId, sourceCells, {
             line,
             title: row.title,
             status: 'failed',
@@ -269,6 +361,7 @@ class ContentCSVImporter {
           title: row.title,
           status: writeStatus,
           postId: post.id,
+          postType: data.type,
           ...(warnings.length > 0 ? { warnings } : {}),
         };
         try {
@@ -279,17 +372,17 @@ class ContentCSVImporter {
           }
           urlFailureCount += 1;
         }
-        this._store.record(runId, outcome);
+        this.recordOutcome(runId, sourceCells, outcome);
       }
 
-      if (failedWrites > 0 && successfulWrites === 0) {
+      if (failedRows > 0 && successfulWrites === 0) {
         this._report(
           new errors.InternalServerError({
             message: tpl(messages.allWritesFailed, {
-              count: failedWrites,
-              postNoun: failedWrites === 1 ? 'post' : 'posts',
+              count: failedRows,
+              postNoun: failedRows === 1 ? 'post' : 'posts',
             }),
-            err: firstWriteFailure,
+            err: firstRowFailure,
           }),
         );
       }
@@ -297,15 +390,45 @@ class ContentCSVImporter {
       this.reportUrlFailures(urlFailureCount, firstUrlFailure);
       this._store.finish(runId);
     } catch (error) {
-      failed = true;
       this.reportUrlFailures(urlFailureCount, firstUrlFailure);
-      this._report(error);
-      this._store.fail(runId, messageOf(error));
-    } finally {
-      await this.cleanupSource(source.cleanup);
-      const outcome = failed ? 'failed after' : 'completed in';
-      logLifecycle(`${outcome} ${Date.now() - startedAt}ms`);
+      throw error;
     }
+  }
+
+  private async readPreparedRows(
+    request: ImportRequest,
+  ): Promise<{ source: PreparedImportSource; preparedRows: PreparedPostRows }> {
+    const source = await this._prepareSource(request);
+    try {
+      const result = await this._readRows(source.filePath, request.mapping);
+      const preparedRows = Array.isArray(result)
+        ? { columns: [], rows: result.map((data, index) => ({ data, line: index + 2 })) }
+        : result;
+      return { source, preparedRows };
+    } catch (error) {
+      await this.cleanupSource(source.cleanup);
+      throw new errors.ValidationError({
+        message: tpl(messages.unreadableFile),
+        err: error,
+      });
+    }
+  }
+
+  private assertWithinPostLimit(rows: PreparedPostRow[]): void {
+    // Temporary while import state is held in memory: M8 removes the cap.
+    if (rows.length > MAX_POSTS) {
+      throw new errors.ValidationError({
+        message: tpl(messages.tooManyPosts, { max: MAX_POSTS }),
+      });
+    }
+  }
+
+  private recordOutcome(
+    runId: string,
+    source: Record<string, string> | undefined,
+    outcome: RowOutcome,
+  ): void {
+    this._store.record(runId, source ? { ...outcome, source } : outcome);
   }
 
   private reportUrlFailures(count: number, firstFailure: unknown): void {
@@ -325,6 +448,22 @@ class ContentCSVImporter {
   private async cleanupSource(cleanup: () => Promise<void>): Promise<void> {
     try {
       await cleanup();
+    } catch (error) {
+      this._report(error);
+    }
+  }
+
+  private async cleanupStagedFile(file: StagedImportFile): Promise<void> {
+    try {
+      await this._fileStager.remove(file);
+    } catch (error) {
+      this._report(error);
+    }
+  }
+
+  private async settle(operation: () => Promise<unknown>): Promise<void> {
+    try {
+      await operation();
     } catch (error) {
       this._report(error);
     }

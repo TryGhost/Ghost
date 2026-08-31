@@ -13,8 +13,14 @@ export type CheckoutQuestion = z.infer<typeof CheckoutQuestion>;
  * under one parameter, but a publisher keeps a name and an address in different fields.
  */
 export const ShippingCollection = z.object({
-  /** ISO 3166-1 alpha-2. A processor will not render an address form without them. */
-  allowedCountries: z.array(z.string()),
+  /**
+   * ISO 3166-1 alpha-2, or null for everywhere the processor ships.
+   *
+   * Null rather than a stored enumeration of every country, because that list moves: the
+   * day the processor adds one, a saved "everywhere" would silently be a restriction that
+   * excludes it, and nothing would say so.
+   */
+  allowedCountries: z.array(z.string()).nullable(),
   nameCustomFieldKey: z.string(),
   addressCustomFieldKey: z.string(),
 });
@@ -51,7 +57,7 @@ export const emptyCheckoutConfig = (tierId: string): TierCheckoutConfig => ({
 });
 
 export const CheckoutOptions = z.object({
-  shippingAllowedCountries: z.array(z.string()),
+  shippingAllowedCountries: z.array(z.string()).nullable(),
   taxNumber: z.boolean(),
 });
 export type CheckoutOptions = z.infer<typeof CheckoutOptions>;

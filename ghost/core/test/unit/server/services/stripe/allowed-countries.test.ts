@@ -1,10 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, it, assert } from 'vitest';
-import {
-  STRIPE_ALLOWED_COUNTRIES,
-  isStripeAllowedCountry,
-} from '../../../../../core/server/services/stripe/services/checkout/allowed-countries';
+import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from '@tryghost/checkout';
 
 /**
  * The list was measured against the live API rather than taken from the SDK, because the

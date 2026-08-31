@@ -2,9 +2,10 @@ import logging from '@tryghost/logging';
 import {
   MAX_CHECKOUT_CUSTOM_FIELDS,
   MAX_CHECKOUT_LABEL_LENGTH,
+  STRIPE_ALLOWED_COUNTRIES,
   isCheckoutEligible,
   type CheckoutEligibleFieldType,
-} from './field-ports';
+} from '@tryghost/checkout';
 import type { ResolvedCheckout, ResolvedQuestion } from '../../../tier-checkout-config';
 
 /**
@@ -118,15 +119,20 @@ export function stripeCheckoutCollectionOptions(
   }
 
   if (checkout.shipping) {
-    // The country list is what makes this reach Stripe at all. An empty
-    // `shipping_address_collection` form-encodes to nothing, so a request built that
-    // way carries no parameter and Stripe accepts it precisely because it was never
-    // asked to collect anything — which reads as success and collects no addresses.
+    // Ghost stores "everywhere" as no list, because the set of countries moves and a
+    // stored copy of it would quietly become a restriction. Stripe has no such sentinel:
+    // `allowed_countries` is the only key `shipping_address_collection` has, so a request
+    // that omits it carries no parameter at all, and Stripe accepts it precisely because
+    // it was never asked to collect anything — a session that succeeds and collects no
+    // address. So everywhere is expanded to every country here, at the one point that
+    // builds the request.
     //
-    // Defended again here rather than trusted from the settings screen: this is the
-    // checkout path, and a malformed configuration must cost the collection rather than
-    // throw inside a session build.
-    if (checkout.shipping.allowedCountries.length === 0) {
+    // An empty list is neither everywhere nor a real restriction, and would encode to the
+    // same absent parameter. Defended here rather than trusted from the settings screen:
+    // this is the checkout path, and a malformed configuration must cost the collection
+    // rather than throw inside a session build.
+    const allowedCountries = checkout.shipping.allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES];
+    if (allowedCountries.length === 0) {
       logging.warn(
         {
           event: { name: 'stripe.checkout.collection_skipped' },
@@ -136,9 +142,7 @@ export function stripeCheckoutCollectionOptions(
         'Skipping a Stripe checkout collection',
       );
     } else {
-      options.shipping_address_collection = {
-        allowed_countries: checkout.shipping.allowedCountries,
-      };
+      options.shipping_address_collection = { allowed_countries: allowedCountries };
     }
   }
 

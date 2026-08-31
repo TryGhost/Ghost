@@ -52,6 +52,7 @@ const PRIVATE_FEATURES = [
   'pictureImageFormats',
   'getHelperDeduplication',
   'membersCustomFields',
+  'membersImportRedesign',
   'paywallImprovements',
   'tagDetailsReact',
   'selfServeArchives',
@@ -63,6 +64,7 @@ const PRIVATE_FEATURES = [
   'smarterCounts',
   'giftSubscriptions',
   'commentAnalytics',
+  'postsListReact',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

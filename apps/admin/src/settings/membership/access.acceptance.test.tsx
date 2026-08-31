@@ -30,6 +30,12 @@ function configWithPublicSiteAccessLimit() {
 async function choose(selectTestId: string, option: string) {
   await settingsScreen.access().getByTestId(selectTestId).click();
   await settingsScreen.selectOptionExact(option).click();
+  // Choosing an option starts the dropdown's close, it does not finish it: the
+  // list stays mounted and the body keeps `pointer-events: none` until the
+  // teardown completes. Anything clicked inside that window races it — the
+  // click is either refused or opens a layer the teardown then dismisses — so
+  // wait the dropdown out before the caller touches the next control.
+  await expect(settingsScreen.selectOptionExact(option)).toHaveCount(0);
 }
 
 describe('Access settings', () => {

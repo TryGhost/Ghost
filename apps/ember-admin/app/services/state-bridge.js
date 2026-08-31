@@ -22,6 +22,7 @@ const emberDataTypeMapping = {
     TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
+    TiersCheckoutConfigResponseType: null, // tier checkout collection only exists in React admin
     UsersResponseType: {type: 'user'},
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };

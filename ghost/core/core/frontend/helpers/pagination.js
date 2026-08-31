@@ -9,7 +9,7 @@ const _ = require('lodash');
 
 const messages = {
   invalidData:
-    'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/themes/helpers/pagination/.',
+    'The {{pagination}} helper was used outside of a paginated context. See https://docs.ghost.org/themes/helpers/pagination/.',
   valuesMustBeDefined: 'All values must be defined for page, pages, limit and total',
   nextPrevValuesMustBeNumeric: 'Invalid value, Next/Prev must be a number',
   valuesMustBeNumeric: 'Invalid value, check page, pages, limit and total are numbers',
@@ -26,7 +26,7 @@ module.exports = function pagination(options) {
     throw new errors.IncorrectUsageError({
       level: 'normal',
       message: tpl(messages.invalidData),
-      help: 'https://ghost.org/docs/themes/helpers/pagination/',
+      help: 'https://docs.ghost.org/themes/helpers/pagination/',
     });
   }
 

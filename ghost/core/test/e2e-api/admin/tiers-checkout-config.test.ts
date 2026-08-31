@@ -455,10 +455,11 @@ describe('Tier Checkout Admin API', function () {
       );
     });
 
-    // Turning it on is one decision; where a parcel goes is not something Ghost can guess.
-    it('still refuses to collect an address without a country to deliver to', async function () {
+    // Turning it on is one decision; where the address lands is not something Ghost can
+    // guess. Where the parcel goes it can: no countries means everywhere.
+    it('still refuses to collect an address without saying where it lands', async function () {
       const body = await setCheckout({ shipping: { collect: true } }, 422);
-      assert.match(body.errors[0].context, /at least one country/);
+      assert.match(body.errors[0].context, /which custom field this is collected into/);
     });
 
     // Ghost keeps no convention about where a collected value belongs, so a request that
@@ -483,13 +484,30 @@ describe('Tier Checkout Admin API', function () {
       assert.equal((await readCheckout()).shipping.address.custom_field_key, 'delivery_address');
     });
 
-    // An address form cannot be rendered without a country list. Stripe's reference
-    // calls it optional, but an empty collection object form-encodes to nothing, so a
-    // request built that way never asks Stripe to collect anything at all.
-    it('refuses to collect an address without countries to collect it in', async function () {
+    // Countries are a restriction, so naming none is not an incomplete request — it is a
+    // publisher who delivers everywhere. Stored as the absence of a list rather than a
+    // copy of every country, because that set moves: an enumeration saved today silently
+    // becomes a restriction the day the processor adds one.
+    it('delivers everywhere when the request names no countries', async function () {
       await createField({ name: 'Delivery address', type: 'address' });
 
-      const body = await setCheckout(shipping({ allowed_countries: undefined }), 422);
+      await setCheckout(shipping({ allowed_countries: undefined }));
+
+      const config = await readCheckout();
+      assert.equal(config.shipping.collect, true);
+      assert.equal(
+        'allowed_countries' in config.shipping,
+        false,
+        'everywhere reads back as no list, the same way it was written',
+      );
+    });
+
+    // Naming none and naming an empty list are different statements. A publisher who
+    // cleared the list said something, and it was not "deliver worldwide".
+    it('refuses an empty list of countries', async function () {
+      await createField({ name: 'Delivery address', type: 'address' });
+
+      const body = await setCheckout(shipping({ allowed_countries: [] }), 422);
       assert.match(body.errors[0].context, /at least one country/);
     });
 
@@ -643,17 +661,25 @@ describe('Tier Checkout Admin API', function () {
     });
 
     // Turning collection back on is a fresh statement of where a publisher delivers, not a
-    // resumption of the last one: the countries have to be given again, so a tier cannot
-    // quietly start delivering somewhere the publisher has since stopped.
-    it('stops collecting, and asks where to deliver again before it will resume', async function () {
+    // resumption of the last one. Resuming without countries is therefore everywhere, and
+    // must not quietly inherit the list from before — a tier that once delivered only to
+    // GB would otherwise keep refusing everyone else, with nothing in the request saying so.
+    it('stops collecting, and does not inherit the old countries when it resumes', async function () {
       await createField({ name: 'Delivery address', type: 'address' });
 
       await setCheckout(shipping());
       await setCheckout({ shipping: { collect: false } });
       assert.equal((await readCheckout()).shipping, undefined);
 
-      const body = await setCheckout(shipping({ allowed_countries: undefined }), 422);
-      assert.match(body.errors[0].context, /at least one country/);
+      await setCheckout(shipping({ allowed_countries: undefined }));
+
+      const config = await readCheckout();
+      assert.equal(config.shipping.collect, true);
+      assert.equal(
+        'allowed_countries' in config.shipping,
+        false,
+        'the GB it delivered to before came back with it',
+      );
     });
   });
 

@@ -83,6 +83,19 @@ describe('AutomationsList', () => {
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
+  it('hides run analytics when stats are unavailable', () => {
+    const automationsWithoutStats = automations.map(
+      ({ stats: _stats, ...automation }) => automation,
+    );
+
+    renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
+
+    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
+    expect(screen.queryByText('1,432')).not.toBeInTheDocument();
+  });
+
   it('links each row to the automation sequence by id', () => {
     renderWithRouter(<AutomationsList automations={automations} />);
 

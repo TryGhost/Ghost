@@ -368,6 +368,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
+  const assert = require('node:assert/strict');
   const metrics = require('@tryghost/metrics');
   const db = require('./server/data/db');
   const models = require('./server/models');
@@ -381,6 +382,13 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
   await stripe.init();
+  giftService.init({
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+  });
+  const giftDeliveryService = giftService.deliveryService;
+  assert(giftDeliveryService, 'Gift delivery service should be initialized');
 
   await Promise.all([
     identityTokens.init(),
@@ -403,6 +411,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
       db,
       domainEvents,
       emailSuppressionList,
+      giftDeliveryService,
       membersRepository: members.api.members,
       models,
       metrics,
@@ -420,11 +429,6 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     recommendationsService.init(),
     statsService.init(),
     explorePingService.init(),
-    giftService.init({
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-    }),
     machinePaymentsService.init(),
     automationsService.init({
       domainEvents,
@@ -479,12 +483,34 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  const jobsService = require('./server/services/jobs-service').getInstance();
+
   // Runs before activitypub.init for the same reason as the send recovery
   // above: gifts would otherwise go uncleaned for the life of the process
   // if an unrelated background service fails.
   try {
     const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftCleanupJob(require('./server/services/jobs-service').getInstance());
+    await giftJobs.scheduleGiftCleanupJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  // Runs before activitypub.init for the same reason as the gift cleanup
+  // above: tokens and expired comped subscriptions would otherwise go
+  // uncleaned for the life of the process if an unrelated background
+  // service fails.
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleTokenCleanupJob();
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleExpiredCompCleanupJob();
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -503,17 +529,11 @@ async function initBackgroundServices({ config }) {
   }
 
   try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob();
+    const updateCheck = require('./server/services/update-check');
+    await updateCheck.scheduleJobs(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
-  }
-
-  const updateCheck = require('./server/services/update-check');
-  updateCheck.scheduleRecurringJobs();
-  if (config.get('updateCheck:forceUpdate')) {
-    updateCheck.scheduleBootJob();
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
@@ -658,11 +678,16 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       require('./server/services/jobs-service/register-job-handlers').default;
     const mediaInliner = require('./server/services/media-inliner');
     const db = require('./server/data/db');
+    const models = require('./server/models');
+    const events = require('./server/lib/common/events');
     const jobsService = jobsServiceWrapper.init();
     registerJobHandlers({
       jobsService,
       db,
       logging,
+      models,
+      events,
+      sentry,
       mediaInliner: mediaInliner.getInstance(),
     });
     await jobsService.start();

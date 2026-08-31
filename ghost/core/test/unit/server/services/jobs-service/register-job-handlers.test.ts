@@ -5,23 +5,49 @@ import logging from '@tryghost/logging';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
+import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
 
 describe('register-job-handlers', function () {
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
-  let db: { knex: sinon.SinonStub };
+  let db: { knex: sinon.SinonStub & { transaction?: sinon.SinonStub } };
   let loggingStub: sinon.SinonStubbedInstance<typeof logging>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
+  let models: { Member: { findOne: sinon.SinonStub } };
+  let events: { emit: sinon.SinonStub };
+  let sentry: { captureException: sinon.SinonStub };
+
+  // Handlers are looked up by their job type rather than registration order,
+  // so adding a handler does not silently shift which one a test exercises.
+  function handlerFor(type: string) {
+    const call = jobsService.handle
+      .getCalls()
+      .find((c) => (c.args[0] as { type?: string }).type === type);
+    assert.ok(call, `a handler is registered for ${type}`);
+    return call!.args[1] as (job: unknown) => Promise<void>;
+  }
 
   beforeEach(function () {
     jobsService = sinon.createStubInstance(JobsService);
     db = { knex: sinon.stub() };
     loggingStub = sinon.stub(logging);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
+    models = { Member: { findOne: sinon.stub() } };
+    events = { emit: sinon.stub() };
+    sentry = { captureException: sinon.stub() };
 
-    registerJobHandlers({ jobsService, db, logging: loggingStub, mediaInliner });
+    registerJobHandlers({
+      jobsService,
+      db,
+      logging: loggingStub,
+      models,
+      events,
+      sentry,
+      mediaInliner,
+    });
   });
 
   afterEach(function () {
@@ -32,7 +58,7 @@ describe('register-job-handlers', function () {
   // exists for: a dispatch that lands before boot has built the service must
   // fail loudly rather than reading undefined off the module.
   it('fails a clean-gifts delivery when the gift service is not initialised', async function () {
-    const cleanGiftsHandler = jobsService.handle.secondCall.args[1];
+    const cleanGiftsHandler = handlerFor('clean-gifts');
 
     await assert.rejects(async () => {
       await cleanGiftsHandler({});
@@ -43,7 +69,7 @@ describe('register-job-handlers', function () {
     const deleteStub = sinon.stub().resolves(2);
     const whereStub = sinon.stub().returns({ delete: deleteStub });
     db.knex.withArgs('tokens').returns({ where: whereStub });
-    const cleanTokensHandler = jobsService.handle.firstCall.args[1];
+    const cleanTokensHandler = handlerFor('clean-tokens');
 
     await cleanTokensHandler({});
 
@@ -55,8 +81,26 @@ describe('register-job-handlers', function () {
     assert.equal(metadata.system.deleted_count, 2);
   });
 
+  it('runs clean-expired-comped with the injected database, models, events and logger', async function () {
+    db.knex.transaction = sinon.stub().callsFake(async (fn: (trx: unknown) => unknown) => {
+      const trx = () => ({
+        where: () => ({ select: async () => [] }),
+      });
+      return fn(trx);
+    });
+    const cleanExpiredCompedHandler = handlerFor('clean-expired-comped');
+
+    await cleanExpiredCompedHandler({});
+
+    const completionLog = loggingStub.info.getCalls().find((call) => {
+      const metadata = call.args[0] as { system?: { event?: string } };
+      return metadata?.system?.event === 'clean_expired_comped.completed';
+    });
+    assert.ok(completionLog, 'the handler runs the task against the injected dependencies');
+  });
+
   it('runs external-media-inliner with the injected media inliner', async function () {
-    const externalMediaInlinerHandler = jobsService.handle.thirdCall.args[1];
+    const externalMediaInlinerHandler = handlerFor('external-media-inliner');
     const job = new ExternalMediaInlinerJob({ domains: ['https://example.com'] });
 
     await externalMediaInlinerHandler(job);
@@ -67,11 +111,39 @@ describe('register-job-handlers', function () {
   it('propagates external-media-inliner failures', async function () {
     const error = new Error('Inlining failed');
     mediaInliner.inline.rejects(error);
-    const externalMediaInlinerHandler = jobsService.handle.thirdCall.args[1];
+    const externalMediaInlinerHandler = handlerFor('external-media-inliner');
     const job = new ExternalMediaInlinerJob({ domains: ['https://example.com'] });
 
     await assert.rejects(async () => {
       await externalMediaInlinerHandler(job);
     }, error);
+  });
+
+  it('routes content CSV import jobs to the content import service', async function () {
+    const job = new ContentCSVImportJob({
+      importId: 'run_test',
+      file: { path: '/tmp/staged-import', name: 'posts.zip' },
+      mapping: { Headline: 'title' },
+      importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
+      emailRecipient: 'owner@example.com',
+    });
+    const contentImportHandler = handlerFor('content-csv-import');
+
+    await assert.rejects(
+      () => contentImportHandler(job),
+      /Content import service used before init/,
+    );
+  });
+
+  // Under the test env the update check executor exits at its environment
+  // gate, so invoking the registered handler proves the wiring without
+  // touching the network.
+  it('registers the update-check handler', async function () {
+    // handlerFor matches on the type string, not class identity: the module
+    // under test loads its job class through the CJS cache, a different
+    // instance from this file's ESM import.
+    const updateCheckHandler = handlerFor('update-check');
+
+    await updateCheckHandler(new UpdateCheckJob());
   });
 });

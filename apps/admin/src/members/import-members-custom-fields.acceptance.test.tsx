@@ -11,7 +11,10 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 
-const FLAGS = { labs: { membersCustomFields: true } };
+// Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
+// exercises it for. They are separate switches — the redesign ships without custom fields.
+const FLAGS = { labs: { membersImportRedesign: true, membersCustomFields: true } };
+const WITHOUT_CUSTOM_FIELDS = { labs: { membersImportRedesign: true } };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -37,10 +40,10 @@ const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
  * key from the name the way the service does, and a browse reflecting what has been
  * created, so the picker behaves as it would against a real site.
  */
-function fakeCustomFieldsWorld() {
-  const fields: Array<Record<string, unknown>> = [];
+function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = []) {
+  const fields: Array<Record<string, unknown>> = [...definedFields];
   fakeMembers([member({ name: 'Ada Lovelace' })]);
-  fakeMemberCustomFields(() => fields);
+  const browseApi = fakeMemberCustomFields(() => fields);
   const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
@@ -58,8 +61,18 @@ function fakeCustomFieldsWorld() {
     fields.push(field);
     return { members_custom_fields: [field] };
   });
-  return { createApi, uploadApi };
+  return { browseApi, createApi, uploadApi };
 }
+
+/** A field the site has already defined, for proving what an import does and does not offer. */
+const NICKNAME_FIELD = {
+  key: 'nickname',
+  name: 'Nickname',
+  type: 'text',
+  status: 'active',
+  created_at: '2026-08-05T00:00:00.000Z',
+  updated_at: null,
+};
 
 /**
  * The mapping as it went over the wire: the upload is multipart, carrying one
@@ -746,5 +759,44 @@ describe('Import members custom fields', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
     await expect.element(importMembersScreen.leaveConfirmationText()).toBeVisible();
+  });
+
+  // The redesigned dialog ships on its own flag, ahead of custom fields. Off, it has to be a
+  // plain mapping of columns onto the member fields Ghost already has, with nothing about
+  // custom fields anywhere in it — including on a site that has some defined.
+  describe('with custom fields off', () => {
+    it('offers no custom field, and no way to make one', async () => {
+      const { browseApi } = fakeCustomFieldsWorld([NICKNAME_FIELD]);
+      await renderAdminApp('/members', WITHOUT_CUSTOM_FIELDS);
+      await openMappingStep();
+
+      await importToggle('nickname').click();
+      await fieldSelect('nickname').click();
+
+      // Exact, or "Email" also matches "Subscribed to emails".
+      await expect.element(importMembersScreen.option('Email', { exact: true })).toBeVisible();
+      await expect.element(importMembersScreen.option('Nickname')).not.toBeInTheDocument();
+      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
+
+      // Not merely unrendered: the definitions are never asked for. That query also gates the
+      // first parse of the file, so leaving it enabled and unanswerable would hold the mapping
+      // step on a spinner — which reaching the table above already rules out.
+      expect(browseApi.requests).toHaveLength(0);
+    });
+
+    it('says no field matches a search rather than offering to make one', async () => {
+      fakeCustomFieldsWorld();
+      await renderAdminApp('/members', WITHOUT_CUSTOM_FIELDS);
+      await openMappingStep();
+
+      await importToggle('nickname').click();
+      await fieldSelect('nickname').click();
+      await userEvent.fill(importMembersScreen.searchFieldsInput(), 'zzzz');
+
+      // The offer to add a field was the list's only force-mounted item, so without it a
+      // fruitless search would leave the list blank with nothing said.
+      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
+      await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
+    });
   });
 });
