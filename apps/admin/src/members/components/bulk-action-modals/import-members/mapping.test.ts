@@ -5,6 +5,7 @@ import {
   formatImportError,
   getFieldMappings,
   sampleData,
+  suggestedFieldName,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
 import { describe, expect, it } from 'vitest';
 import type { MemberCustomFieldCsvColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -199,5 +200,23 @@ describe('mapping helpers', () => {
 
     expect(mapping.email).toBe('email');
     expect(mapping['custom_fields.contact_email']).toBe('custom_fields.contact_email');
+  });
+
+  describe('suggestedFieldName', () => {
+    it('strips the namespace and un-slugs a column from a Ghost export', () => {
+      expect(suggestedFieldName('custom_fields.nickname')).toBe('Nickname');
+      expect(suggestedFieldName('custom_fields.favorite-animal')).toBe('Favorite animal');
+    });
+
+    // The part is a separate question the form asks, so it must not end up in the name.
+    it('names the field, not the part, for a composite column', () => {
+      expect(suggestedFieldName('custom_fields.home-address.city')).toBe('Home address');
+      expect(suggestedFieldName('custom_fields.home-address.postal_code')).toBe('Home address');
+    });
+
+    it('keeps a column from anywhere else as the publisher wrote it', () => {
+      expect(suggestedFieldName('Job Title')).toBe('Job Title');
+      expect(suggestedFieldName('job_title')).toBe('Job title');
+    });
   });
 });
