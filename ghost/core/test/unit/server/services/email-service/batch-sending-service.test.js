@@ -1129,6 +1129,30 @@ describe('Batch Sending Service', function () {
 
       const insertedRecipients = calls.flatMap((call) => call.args[0]);
       assert.equal(insertedRecipients.length, 1);
+      sinon.assert.calledWithExactly(db.increment, { email_count: 1 });
+    });
+
+    it('increments total and tracked member counters in the recipient transaction', async function () {
+      const EmailBatch = createModelClass({});
+      const db = createDb({});
+      const service = new BatchSendingService({ models: { EmailBatch }, db });
+      const email = createModel({ track_opens: true });
+      const members = [
+        createModel({ email: 'one@example.com', uuid: 'member-1' }).toJSON(),
+        createModel({ email: 'two@example.com', uuid: 'member-2' }).toJSON(),
+      ];
+
+      await service.createBatch(email, null, members, {});
+
+      sinon.assert.calledOnceWithExactly(db.increment, {
+        email_count: 1,
+        email_tracked_count: 1,
+      });
+      assert.equal(
+        db.transacting.callCount,
+        3,
+        'recipient, counter, and rate writes share a transaction',
+      );
     });
   });
 

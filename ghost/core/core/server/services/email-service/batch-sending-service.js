@@ -34,6 +34,7 @@ class BatchSendingService {
   #db;
   #sentry;
   #getRequiredUrlRelations;
+  #createBatchStageHook;
   #shuttingDown = false;
   #inFlight = new Set();
 
@@ -67,6 +68,7 @@ class BatchSendingService {
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
+   * @param {(stage: string) => Promise<void>|void} [dependencies.createBatchStageHook]
    */
   constructor({
     emailRenderer,
@@ -81,6 +83,7 @@ class BatchSendingService {
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
+    createBatchStageHook,
   }) {
     this.#emailRenderer = emailRenderer;
     this.#sendingService = sendingService;
@@ -91,6 +94,7 @@ class BatchSendingService {
     this.#db = db;
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
+    this.#createBatchStageHook = createBatchStageHook;
 
     if (BEFORE_RETRY_CONFIG) {
       this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -679,6 +683,49 @@ class BatchSendingService {
       `Inserting ${recipientData.length} recipients for email ${email.id} batch ${batch.id}`,
     );
     await insertQuery;
+    await this.#createBatchStageHook?.('after-recipient-insert');
+
+    const memberIdsByRecipientCount = new Map();
+    const recipientCountByMember = new Map();
+    for (const recipient of recipientData) {
+      recipientCountByMember.set(
+        recipient.member_id,
+        (recipientCountByMember.get(recipient.member_id) || 0) + 1,
+      );
+    }
+    for (const [memberId, recipientCount] of recipientCountByMember) {
+      const memberIds = memberIdsByRecipientCount.get(recipientCount) || [];
+      memberIds.push(memberId);
+      memberIdsByRecipientCount.set(recipientCount, memberIds);
+    }
+
+    for (const [recipientCount, memberIds] of memberIdsByRecipientCount) {
+      const increments = { email_count: recipientCount };
+      if (email.get('track_opens')) {
+        increments.email_tracked_count = recipientCount;
+      }
+
+      const memberUpdate = this.#db.knex('members').whereIn('id', memberIds).increment(increments);
+      if (options.transacting) {
+        memberUpdate.transacting(options.transacting);
+      }
+      await memberUpdate;
+
+      if (email.get('track_opens')) {
+        const rateUpdate = this.#db.knex('members').whereIn('id', memberIds);
+        if (options.transacting) {
+          rateUpdate.transacting(options.transacting);
+        }
+        await rateUpdate.update({
+          email_open_rate: this.#db.knex.raw(
+            'CASE WHEN email_tracked_count IS NULL THEN email_open_rate WHEN email_tracked_count >= ? THEN ROUND(email_opened_count * 100.0 / email_tracked_count) ELSE NULL END',
+            [5],
+          ),
+        });
+      }
+    }
+    await this.#createBatchStageHook?.('after-member-counter-update');
+
     return batch;
   }
 
