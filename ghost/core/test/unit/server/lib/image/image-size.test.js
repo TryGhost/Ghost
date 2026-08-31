@@ -575,6 +575,107 @@ describe('lib/image: image size', function () {
       );
       assert.equal(requestMock.isDone(), true);
     });
+
+    describe('concurrent lookups', function () {
+      it('[success] coalesces concurrent lookups for the same URL into a single request', async function () {
+        const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
+        const expectedImageObject = { height: 1, url, width: 1 };
+
+        // Only one interceptor is registered — if the second/third concurrent call
+        // issued its own request, nock would have no interceptor left to match it
+        // and that call would reject, failing this test.
+        const requestMock = nock('http://img.stockfresh.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(200, GIF1x1);
+
+        const imageSize = createImageSize();
+
+        const [res1, res2, res3] = await Promise.all([
+          imageSize.getImageSizeFromUrl(url),
+          imageSize.getImageSizeFromUrl(url),
+          imageSize.getImageSizeFromUrl(url),
+        ]);
+
+        assert.equal(requestMock.isDone(), true);
+        assertImageObject(res1, expectedImageObject);
+        assertImageObject(res2, expectedImageObject);
+        assertImageObject(res3, expectedImageObject);
+      });
+
+      it('[success] does not coalesce concurrent lookups for different URLs', async function () {
+        const url1 = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
+        const url2 = 'http://img.stockfresh.com/files/f/feedough/x/12/1540353_20925116.jpg';
+
+        const requestMock1 = nock('http://img.stockfresh.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(200, GIF1x1);
+        const requestMock2 = nock('http://img.stockfresh.com')
+          .get('/files/f/feedough/x/12/1540353_20925116.jpg')
+          .reply(200, GIF1x1);
+
+        const imageSize = createImageSize();
+
+        const [res1, res2] = await Promise.all([
+          imageSize.getImageSizeFromUrl(url1),
+          imageSize.getImageSizeFromUrl(url2),
+        ]);
+
+        assert.equal(requestMock1.isDone(), true);
+        assert.equal(requestMock2.isDone(), true);
+        assertImageObject(res1, { height: 1, url: url1, width: 1 });
+        assertImageObject(res2, { height: 1, url: url2, width: 1 });
+      });
+
+      it('[success] issues a fresh request for a later, non-concurrent lookup of the same URL', async function () {
+        const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
+        const imageSize = createImageSize();
+
+        const requestMock1 = nock('http://img.stockfresh.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(200, GIF1x1);
+        await imageSize.getImageSizeFromUrl(url);
+        assert.equal(requestMock1.isDone(), true);
+
+        // The in-flight entry should have been cleaned up after the first lookup
+        // resolved, so this second, non-overlapping call issues its own request
+        // rather than reusing a stale settled promise.
+        const requestMock2 = nock('http://img.stockfresh.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(200, GIF1x1);
+        await imageSize.getImageSizeFromUrl(url);
+        assert.equal(requestMock2.isDone(), true);
+      });
+
+      it('[failure] rejects every concurrent caller when the shared lookup fails, then allows a retry', async function () {
+        const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg';
+
+        const requestMock1 = nock('http://noimagehere.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(404);
+
+        const imageSize = createImageSize();
+
+        const results = await Promise.allSettled([
+          imageSize.getImageSizeFromUrl(url),
+          imageSize.getImageSizeFromUrl(url),
+        ]);
+
+        assert.equal(requestMock1.isDone(), true);
+        assert.equal(results[0].status, 'rejected');
+        assert.equal(results[1].status, 'rejected');
+        assert.equal(results[0].reason.errorType, 'NotFoundError');
+        assert.equal(results[1].reason.errorType, 'NotFoundError');
+
+        // In-flight entry must be cleared even on failure, so a later retry
+        // gets a real second chance instead of reusing the rejected promise.
+        const requestMock2 = nock('http://noimagehere.com')
+          .get('/files/f/feedough/x/11/1540353_20925115.jpg')
+          .reply(200, GIF1x1);
+        const retryResult = await imageSize.getImageSizeFromUrl(url);
+        assert.equal(requestMock2.isDone(), true);
+        assertImageObject(retryResult, { height: 1, url, width: 1 });
+      });
+    });
   });
 
   describe('getImageSizeFromStoragePath', function () {
