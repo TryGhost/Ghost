@@ -2330,6 +2330,7 @@ jobs:
     # Serialize per-app publishes so two quick main merges can't both compute the
     # same next-patch number and collide on npm. Different apps still publish in
     # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
+    environment: npm-release
     concurrency:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false
