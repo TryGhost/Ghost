@@ -282,10 +282,10 @@ export const CUSTOM_FIELD_OPERATORS = [
  * fields, and there is one bag today. An extension bringing its own bag would bring its
  * own namespace, which is a change to what this resolves to rather than to its callers.
  */
-export const CUSTOM_FIELDS_PREFIX = 'custom_fields.';
+export const CUSTOM_FIELDS_PREFIX = 'metafields.custom.';
 
 const CUSTOM_FIELD: FieldDescriptor = {
-  key: 'custom_fields.:key',
+  key: 'metafields.custom.:key',
   icon: 'text',
   type: 'text',
   addressing: customFieldAddressing(),

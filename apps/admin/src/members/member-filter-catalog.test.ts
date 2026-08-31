@@ -37,7 +37,7 @@ describe("a site's own definitions add precision, not correctness", () => {
   });
 
   it('keeps a clause naming a custom field that no longer exists', () => {
-    const nql = "(custom_fields.key:'deleted'+custom_fields.value:~'x')";
+    const nql = "(metafields.key:'custom.deleted'+metafields.value:~'x')";
 
     expect(roundTrip(resolved, nql)).toBe(nql);
   });
@@ -45,22 +45,22 @@ describe("a site's own definitions add precision, not correctness", () => {
   it('reads every shape before the definitions arrive, losing nothing', () => {
     for (const nql of [
       '(newsletters.slug:daily+email_disabled:0)',
-      "(custom_fields.key:'company'+custom_fields.value:'Ghost')",
-      "custom_fields.key:'company'",
+      "(metafields.key:'custom.company'+metafields.value:'Ghost')",
+      "metafields.key:'custom.company'",
     ]) {
       expect(roundTrip(pending, nql)).toBe(nql);
     }
   });
 
   it('gives a known custom field its own entry, and an unknown one the shared entry', () => {
-    expect(resolved['custom_fields.company']).toBeDefined();
-    expect(pending['custom_fields.company']).toBeUndefined();
-    expect(pending['custom_fields.:key']).toBeDefined();
+    expect(resolved['metafields.custom.company']).toBeDefined();
+    expect(pending['metafields.custom.company']).toBeUndefined();
+    expect(pending['metafields.custom.:key']).toBeDefined();
   });
 });
 
 describe('waiting protects precision, not the clauses', () => {
-  const customFieldFilter = "(custom_fields.key:'company'+custom_fields.value:'Ghost')";
+  const customFieldFilter = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
 
   it('waits while a source the filter names is in flight', () => {
     expect(canReadMemberFilter(customFieldFilter, { customFields: undefined })).toBe(false);
@@ -76,26 +76,30 @@ describe('waiting protects precision, not the clauses', () => {
   });
 
   it('does not wait for sources a quoted value only happens to mention', () => {
-    // Someone searching their members for the literal text "custom_fields." or
+    // Someone searching their members for the literal text "metafields." or
     // "newsletters.slug" is not asking about custom fields or newsletters, and waiting for
     // those to load would leave the filter unreadable until something else resolved them.
-    expect(canReadMemberFilter("name:~'custom_fields.'", { customFields: undefined })).toBe(true);
+    expect(canReadMemberFilter("name:~'metafields.'", { customFields: undefined })).toBe(true);
     expect(canReadMemberFilter("name:~'newsletters.slug'", { newsletters: undefined })).toBe(true);
   });
 
   it('still waits when the source is named as a clause key, wherever it sits', () => {
-    expect(canReadMemberFilter("custom_fields.key:'company'", { customFields: undefined })).toBe(
-      false,
-    );
     expect(
-      canReadMemberFilter("(status:paid+custom_fields.key:'company')", { customFields: undefined }),
+      canReadMemberFilter("metafields.key:'custom.company'", { customFields: undefined }),
     ).toBe(false);
     expect(
-      canReadMemberFilter("status:paid,custom_fields.key:'company'", { customFields: undefined }),
+      canReadMemberFilter("(status:paid+metafields.key:'custom.company')", {
+        customFields: undefined,
+      }),
     ).toBe(false);
-    expect(canReadMemberFilter("custom_fields.key:-'company'", { customFields: undefined })).toBe(
-      false,
-    );
+    expect(
+      canReadMemberFilter("status:paid,metafields.key:'custom.company'", {
+        customFields: undefined,
+      }),
+    ).toBe(false);
+    expect(
+      canReadMemberFilter("metafields.key:-'custom.company'", { customFields: undefined }),
+    ).toBe(false);
   });
 
   it('waits for newsletters the same way', () => {
@@ -109,6 +113,6 @@ describe('waiting protects precision, not the clauses', () => {
     const parsed = parseMemberFilter(customFieldFilter, 'UTC', pending);
 
     expect(parsed).toHaveLength(1);
-    expect(parsed[0].field).toBe('custom_fields.company');
+    expect(parsed[0].field).toBe('metafields.custom.company');
   });
 });

@@ -230,7 +230,7 @@ const patternColumnHydrators: Record<
     ) => { label: string; getValue: ColumnValueReader } | null)
   | undefined
 > = {
-  'custom_fields.:key': ({ key }, { customFields }) => {
+  'metafields.custom.:key': ({ key }, { customFields }) => {
     const field = customFields?.find((candidate) => candidate.key === key);
 
     if (!field) {
