@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  CUSTOM_NAMESPACE,
-  formatIdentity,
-  isKnownNamespace,
-  parseIdentity,
-} from '../src/identity.ts';
+import { formatIdentity, parseIdentity } from '../src/identity.ts';
 
 describe('parseIdentity', () => {
   it('reads a field identity as namespace then key', () => {
@@ -25,7 +20,7 @@ describe('parseIdentity', () => {
     expect(parseIdentity('custom.a.b.c')).toEqual({ namespace: 'custom', key: 'a', path: 'b.c' });
   });
 
-  it('parses a well-formed identity in a namespace that does not exist', () => {
+  it('parses any namespace: namespaces are data, not a registry', () => {
     expect(parseIdentity('transistor.private_url')).toEqual({
       namespace: 'transistor',
       key: 'private_url',
@@ -58,13 +53,5 @@ describe('formatIdentity', () => {
     expect(formatIdentity({ namespace: 'custom', key: 'company', path: null })).toBe(
       'custom.company',
     );
-  });
-});
-
-describe('isKnownNamespace', () => {
-  it('knows the publisher namespace and nothing else yet', () => {
-    expect(isKnownNamespace(CUSTOM_NAMESPACE)).toBe(true);
-    expect(isKnownNamespace('ghost')).toBe(false);
-    expect(isKnownNamespace('transistor')).toBe(false);
   });
 });

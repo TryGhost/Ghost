@@ -15,13 +15,13 @@
 // row's path — so every filter is one `$elemMatch` over them: positive asserts a matching
 // leaf exists, `$not` asserts none does. The transformer emits it straight, with no id
 // lookup and no field catalog read, which is what lets the Member model chain it inline
-// on every members query rather than each call site remembering to wire it. Only the
-// namespace is checked against the registry, failing closed: the storage holds the
-// `custom` namespace alone, so any other would otherwise silently match nothing. A key
-// that names no current field matches no leaf; the admin never offers an archived or
-// deleted field in the filter UI, though the API leaves them queryable.
+// on every members query rather than each call site remembering to wire it. No namespace
+// is checked against anything: namespaces are data, and an identity in a namespace that
+// holds no fields matches no leaf — the same non-event as a key that names no current
+// field. The admin never offers an archived or deleted field in the filter UI, though
+// the API leaves them queryable.
 import errors from '@tryghost/errors';
-import { isKnownNamespace, parseIdentity } from '@tryghost/custom-field-types/identity';
+import { CUSTOM_NAMESPACE, parseIdentity } from '@tryghost/custom-field-types/identity';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -86,10 +86,15 @@ function parseLeafAddress(raw: unknown): LeafTarget {
       message: `A metafield filter names a field as namespace.key, for example (${KEY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
     });
   }
-  if (!isKnownNamespace(identity.namespace)) {
-    throw new errors.BadRequestError({
-      message: `Unknown metafield namespace "${identity.namespace}".`,
-    });
+  // The query boundary: the values table predates namespace storage and holds the
+  // publisher's fields alone, under bare keys. An identity in any other namespace
+  // names rows that cannot exist yet, so it matches by its full dotted form, which
+  // no bare key can equal — nothing, without a registry saying so. The closed
+  // namespace prefactor (#30227) shows the destination: a leaves view carrying
+  // namespace and key columns, at which point both arms collapse into one
+  // condition on those columns and this boundary disappears.
+  if (identity.namespace !== CUSTOM_NAMESPACE) {
+    return { key: typeof raw === 'string' ? raw : '', path: identity.path };
   }
   return { key: identity.key, path: identity.path };
 }

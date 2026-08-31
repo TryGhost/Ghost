@@ -1,17 +1,17 @@
 import { z } from 'zod';
 import { FieldTypeSchema } from '@tryghost/custom-field-types';
-import { CUSTOM_NAMESPACE } from '@tryghost/custom-field-types/identity';
 import { FieldStatusSchema } from './schema';
 
 // The domain shape of a field definition (camelCase; distinct from the DB row).
 //
-// `namespace` is a literal because the storage layer does not know fields have one: every
-// field the schema can hold is the publisher's, so the codec states it rather than reads
-// it. When app namespaces arrive the literal widens and the codec starts reading a column,
-// and nothing above the codec moves.
+// `namespace` is plain data: which namespaces exist is decided by whoever declares
+// fields, not by a type. The storage layer predates namespace storage and holds the
+// publisher's fields alone, so today the codec states the one namespace it implicitly
+// is; when storage learns namespaces the codec reads a column instead, and nothing
+// above it moves.
 export const CustomField = z.object({
   id: z.string(),
-  namespace: z.literal(CUSTOM_NAMESPACE),
+  namespace: z.string(),
   key: z.string(),
   name: z.string(),
   type: FieldTypeSchema,

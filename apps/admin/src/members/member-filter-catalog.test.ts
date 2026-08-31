@@ -9,8 +9,13 @@ const SOURCES = {
     { slug: 'daily', name: 'Daily' },
   ],
   customFields: [
-    { key: 'company', name: 'Company', type: 'short_text' as const },
-    { key: 'shipping_address', name: 'Shipping address', type: 'address' as const },
+    { namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' as const },
+    {
+      namespace: 'custom',
+      key: 'shipping_address',
+      name: 'Shipping address',
+      type: 'address' as const,
+    },
   ],
 };
 
@@ -55,7 +60,7 @@ describe("a site's own definitions add precision, not correctness", () => {
   it('gives a known custom field its own entry, and an unknown one the shared entry', () => {
     expect(resolved['metafields.custom.company']).toBeDefined();
     expect(pending['metafields.custom.company']).toBeUndefined();
-    expect(pending['metafields.custom.:key']).toBeDefined();
+    expect(pending['metafields.:namespace.:key']).toBeDefined();
   });
 });
 

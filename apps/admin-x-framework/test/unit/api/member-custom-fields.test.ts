@@ -65,6 +65,7 @@ export {
 };
 
 const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
+  namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',
   type: 'short_text',
@@ -81,7 +82,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Nickname',
           fieldName: 'Nickname',
-          value: 'custom_fields.nickname',
+          value: 'metafields.custom.nickname',
           type: 'short_text',
         },
       ]);
@@ -97,42 +98,42 @@ describe('member custom fields api helpers', () => {
           label: 'Shipping Address (Address line 1)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 1',
-          value: 'custom_fields.shipping_address.line1',
+          value: 'metafields.custom.shipping_address.line1',
           type: 'address',
         },
         {
           label: 'Shipping Address (Address line 2)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 2',
-          value: 'custom_fields.shipping_address.line2',
+          value: 'metafields.custom.shipping_address.line2',
           type: 'address',
         },
         {
           label: 'Shipping Address (City)',
           fieldName: 'Shipping Address',
           partLabel: 'City',
-          value: 'custom_fields.shipping_address.city',
+          value: 'metafields.custom.shipping_address.city',
           type: 'address',
         },
         {
           label: 'Shipping Address (State)',
           fieldName: 'Shipping Address',
           partLabel: 'State',
-          value: 'custom_fields.shipping_address.state',
+          value: 'metafields.custom.shipping_address.state',
           type: 'address',
         },
         {
           label: 'Shipping Address (Postal code)',
           fieldName: 'Shipping Address',
           partLabel: 'Postal code',
-          value: 'custom_fields.shipping_address.postal_code',
+          value: 'metafields.custom.shipping_address.postal_code',
           type: 'address',
         },
         {
           label: 'Shipping Address (Country)',
           fieldName: 'Shipping Address',
           partLabel: 'Country',
-          value: 'custom_fields.shipping_address.country',
+          value: 'metafields.custom.shipping_address.country',
           type: 'address',
         },
       ]);
@@ -149,7 +150,7 @@ describe('member custom fields api helpers', () => {
         label: 'Address (Home) (City)',
         fieldName: 'Address (Home)',
         partLabel: 'City',
-        value: 'custom_fields.address_home.city',
+        value: 'metafields.custom.address_home.city',
         type: 'address',
       });
     });
@@ -171,7 +172,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Mystery',
           fieldName: 'Mystery',
-          value: 'custom_fields.mystery',
+          value: 'metafields.custom.mystery',
           type: 'a_type_from_the_future',
         },
       ]);

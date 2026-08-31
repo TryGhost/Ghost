@@ -351,16 +351,19 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(list[0].key, active.key);
     });
 
-    it('404s every route under a namespace that does not exist', async function () {
-      // The namespace segment addresses a collection, and only namespaces that
-      // exist resolve — `custom` alone today. An app-shaped or misspelled
-      // segment is a collection that isn't there, not an empty one.
-      await agent.get('members/metafields/transistor/').expectStatus(404);
+    it('treats a namespace with no fields as an ordinary empty collection', async function () {
+      // Namespaces are data, not a registry: an app-shaped or misspelled segment
+      // is a namespace holding no fields yet, so a browse is empty, a read finds
+      // nothing, and only defining fields there is refused — that structure
+      // belongs to whoever declares the namespace, which is not this API.
+      const { body } = await agent.get('members/metafields/transistor/').expectStatus(200);
+      assert.deepEqual(body.members_metafields, []);
       await agent.get('members/metafields/transistor/some_key/').expectStatus(404);
-      await agent
+      const refused = await agent
         .post('members/metafields/transistor/')
         .body({ members_metafields: [{ name: 'Nope', type: 'short_text' }] })
-        .expectStatus(404);
+        .expectStatus(422);
+      assert.equal(refused.body.errors[0].property, 'namespace');
     });
 
     it('rejects a namespace filter, naming the route as the way to scope', async function () {
@@ -1349,16 +1352,18 @@ describe('Member Custom Fields Admin API', function () {
         .expectStatus(422);
     });
 
-    it('rejects values under a namespace that does not exist', async function () {
-      // The wire nests values under their namespace so app namespaces have
-      // somewhere to appear; until one exists, `custom` is the only key the
-      // bag may hold, and anything else is refused with its address.
+    it('refuses a value in a namespace holding no fields, as an unknown field', async function () {
+      // Namespaces are data: a namespace nobody has declared fields in is not a
+      // different kind of error from a key nobody minted. The day an app
+      // declares this field, the same write starts succeeding with no change
+      // to any of this.
       const memberId = await createMember();
       const { body } = await agent
         .put(`members/${memberId}/`)
         .body({ members: [{ metafields: { transistor: { private_url: 'https://x' } } }] })
         .expectStatus(422);
-      assert.equal(body.errors[0].property, 'metafields.transistor');
+      assert.equal(body.errors[0].property, 'metafields.transistor.private_url');
+      assert.match(body.errors[0].context, /Unknown custom field/);
     });
 
     it('rejects a key too long to name a field, without echoing it back', async function () {
@@ -1369,7 +1374,7 @@ describe('Member Custom Fields Admin API', function () {
       const hugeKey = 'k'.repeat(200000);
 
       const body = await setValues(memberId, { [hugeKey]: 'v' }, 422);
-      assert.equal(body.errors[0].property, 'metafields.custom');
+      assert.equal(body.errors[0].property, 'metafields');
       assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
     });
 
@@ -1387,7 +1392,7 @@ describe('Member Custom Fields Admin API', function () {
 
       const overCeiling = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`k${i}`, 'v']));
       const refused = await setValues(memberId, overCeiling, 422);
-      assert.equal(refused.errors[0].property, 'metafields.custom');
+      assert.equal(refused.errors[0].property, 'metafields');
       assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
     });
 
@@ -1414,23 +1419,25 @@ describe('Member Custom Fields Admin API', function () {
       }
     });
 
-    it('treats a create and an edit the same on what counts as setting values', async function () {
-      // An object carrying only a `__proto__` key names no value once parsed,
-      // so neither path should see it as a write. Create and edit resolve that
-      // question with the same schema, so they cannot drift on it.
+    it('refuses a __proto__ key as an unknown field rather than dropping it', async function () {
+      // A key nobody could mint is refused loudly, not silently dropped — the
+      // same rule as any unknown name — and it stays a plain map key on the way
+      // through, so the prototype is never touched. Create refuses it as
+      // value-setting; edit refuses it as an unknown field, by its address.
       const payload = JSON.parse('{"__proto__": {"polluted": true}}');
       await createField({ name: 'Favourite topic' });
 
       await agent
         .post('members/')
         .body({ members: [{ email: 'create-proto@example.com', metafields: { custom: payload } }] })
-        .expectStatus(201);
+        .expectStatus(422);
 
       const memberId = await createMember();
-      await agent
+      const { body } = await agent
         .put(`members/${memberId}/`)
         .body({ members: [{ metafields: { custom: payload } }] })
-        .expectStatus(200);
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'metafields.custom.__proto__');
 
       assert.deepEqual(await readValues(memberId), {});
       assert.equal(

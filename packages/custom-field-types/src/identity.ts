@@ -12,26 +12,25 @@
  * standing at the member level, and each context writes it exactly once — the payload
  * key, the route prefix, the CSV column prefix, the filter relation alias — never twice.
  *
- * One namespace exists today. The storage layer does not know that fields have a
- * namespace at all; the codec above it holds every field in `custom`. When apps bring
- * their own namespaces, this registry is where they appear.
+ * Namespaces are data, not a registry: a field's namespace arrives with the field, and
+ * everything above the storage layer carries it through without knowing which
+ * namespaces exist. One is stored today (see `CUSTOM_NAMESPACE`).
  */
 
 export const QUALIFIER = 'metafields';
 
 export const SEPARATOR = '.';
 
-export const CUSTOM_NAMESPACE = 'custom';
-
-/** The namespaces that exist. Fields in an unknown namespace cannot be addressed. */
-export const KNOWN_NAMESPACES = [CUSTOM_NAMESPACE] as const;
-export type Namespace = (typeof KNOWN_NAMESPACES)[number];
-
 /**
- * Names no app-assigned namespace may ever take: the publisher's, and the platform's
- * own for the standard catalog to come.
+ * The publisher's namespace. Not a registry entry — namespaces are data, arriving
+ * with whoever declares fields — but the storage layer predates namespace storage
+ * and holds the publisher's fields alone, so the query boundary needs the one
+ * namespace it implicitly is. Nothing above that boundary may branch on this: an
+ * unknown namespace is a namespace with no fields yet, the same non-event as an
+ * unknown key, so that a namespace arriving as data starts working with no code
+ * change above the storage layer.
  */
-export const RESERVED_NAMESPACES = [CUSTOM_NAMESPACE, 'ghost'] as const;
+export const CUSTOM_NAMESPACE = 'custom';
 
 /**
  * The shape of one identity segment. The same allowlist the key minter enforces, held
@@ -45,10 +44,6 @@ export interface FieldIdentity {
   key: string;
   /** The dotted part path into a composite value, or null for the field itself. */
   path: string | null;
-}
-
-export function isKnownNamespace(namespace: string): namespace is Namespace {
-  return (KNOWN_NAMESPACES as readonly string[]).includes(namespace);
 }
 
 export function formatIdentity({ namespace, key, path }: FieldIdentity): string {

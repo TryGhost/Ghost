@@ -1,5 +1,5 @@
 import { subFieldsOf, type FieldType } from './index.ts';
-import { CUSTOM_NAMESPACE, QUALIFIER } from './identity.ts';
+import { CUSTOM_NAMESPACE, QUALIFIER, SEPARATOR as ID_SEPARATOR } from './identity.ts';
 
 /**
  * How a field's value maps onto CSV columns.
@@ -18,27 +18,34 @@ const SEPARATOR = '.';
 
 /**
  * Custom field columns carry the full address: the metafields qualifier, then the
- * field's identity. A field's key is minted from a name the publisher chose, so
- * nothing stops it landing on a column the export already has — a field named
- * "Email" mints the key `email`. Unqualified, that column would quietly take the
- * place of the member's address; and once app namespaces exist, the qualifier is
- * what tells a metafield column from a dotted column someone added to the file by
- * hand. It is the same address every other surface speaks — a filter, an error
- * path — so a column reads like the field it came from.
+ * field's own identity — its namespace comes from the field, never from here. A
+ * field's key is minted from a name the publisher chose, so nothing stops it
+ * landing on a column the export already has — a field named "Email" mints the key
+ * `email`. Unqualified, that column would quietly take the place of the member's
+ * address; and the qualifier is what tells a metafield column from a dotted column
+ * someone added to the file by hand, whichever namespaces exist. It is the same
+ * address every other surface speaks — a filter, an error path — so a column reads
+ * like the field it came from.
  */
-const NAMESPACE = `${QUALIFIER}${SEPARATOR}${CUSTOM_NAMESPACE}`;
+const PREFIX = `${QUALIFIER}${SEPARATOR}`;
 
 /**
- * The column vocabulary this replaced. Files exported before the rename live on
- * disk indefinitely, so the importer keeps reading the old columns; nothing has
- * written them since.
+ * The column vocabulary this replaced, which only ever held the publisher's
+ * fields. Files exported before the rename live on disk indefinitely, so the
+ * importer keeps reading the old columns; nothing has written them since.
  */
 const LEGACY_NAMESPACE = 'custom_fields';
 
 /** A field definition reduced to what CSV needs to know about it. */
 export interface CsvField {
+  namespace: string;
   key: string;
   type: FieldType;
+}
+
+/** The field's identity, the middle of every column name it occupies. */
+function identityOf(field: CsvField): string {
+  return `${field.namespace}${ID_SEPARATOR}${field.key}`;
 }
 
 function toCell(value: unknown): string {
@@ -63,7 +70,7 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+  const column = `${PREFIX}${identityOf(field)}`;
   const subFields = subFieldsOf(field.type);
   return subFields
     ? subFields.map((sub) => ({ column: `${column}${SEPARATOR}${sub}`, subField: sub }))
@@ -72,27 +79,37 @@ export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
 
 export function isCustomFieldColumn(column: string): boolean {
   return (
-    column === NAMESPACE ||
-    column.startsWith(`${NAMESPACE}${SEPARATOR}`) ||
+    column === QUALIFIER ||
+    column.startsWith(PREFIX) ||
     column === LEGACY_NAMESPACE ||
     column.startsWith(`${LEGACY_NAMESPACE}${SEPARATOR}`)
   );
 }
 
-// A row is read by the current column name first, falling back to the legacy one, so
-// an old export re-imports without remapping. The parser only ever sets a string cell
-// for these columns, so a non-string is an absent column.
-function cellFor(row: Record<string, unknown>, tail: string): string | undefined {
-  const current = row[`${NAMESPACE}${SEPARATOR}${tail}`];
+// A row is read by the current column name first, falling back to the legacy one —
+// which only ever named the publisher's fields — so an old export re-imports without
+// remapping. The parser only ever sets a string cell for these columns, so a
+// non-string is an absent column.
+function cellFor(
+  row: Record<string, unknown>,
+  field: CsvField,
+  tail: string | null,
+): string | undefined {
+  const suffix = tail === null ? '' : `${SEPARATOR}${tail}`;
+  const current = row[`${PREFIX}${identityOf(field)}${suffix}`];
   if (typeof current === 'string') {
     return current;
   }
-  const legacy = row[`${LEGACY_NAMESPACE}${SEPARATOR}${tail}`];
+  if (field.namespace !== CUSTOM_NAMESPACE) {
+    return undefined;
+  }
+  const legacy = row[`${LEGACY_NAMESPACE}${SEPARATOR}${field.key}${suffix}`];
   return typeof legacy === 'string' ? legacy : undefined;
 }
 
 /**
  * The CSV cells for one member's custom field values, keyed by column name.
+ * `values` is the wire shape — values nested one level by namespace.
  *
  * Every column of every field passed in is present in the result, whether or not
  * the member holds a value for it. Callers derive the CSV header from a single
@@ -100,14 +117,14 @@ function cellFor(row: Record<string, unknown>, tail: string): string | undefined
  */
 export function csvCellsForFields(
   fields: readonly CsvField[],
-  values: Record<string, unknown>,
+  values: Record<string, Record<string, unknown> | undefined>,
 ): Record<string, string> {
   const cells: Record<string, string> = {};
 
   for (const field of fields) {
-    const value = values[field.key];
+    const value = values[field.namespace]?.[field.key];
     const subFields = subFieldsOf(field.type);
-    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+    const column = `${PREFIX}${identityOf(field)}`;
 
     if (!subFields) {
       cells[column] = toCell(value);
@@ -125,8 +142,8 @@ export function csvCellsForFields(
 
 /**
  * The inverse of `csvCellsForFields`: read a row's custom field cells into the values a
- * member write takes. Only the passed fields are read, so a column naming no active field
- * is dropped rather than erroring.
+ * member write takes, keyed by field identity (`namespace.key`). Only the passed fields
+ * are read, so a column naming no active field is dropped rather than erroring.
  *
  * `decodeCell` turns a raw cell into its value; it defaults to identity. The caller owns
  * any de-serialization the specific file needs — the members importer passes one that
@@ -154,11 +171,11 @@ export function fieldValuesFromCsvRow(
     const subFields = subFieldsOf(field.type);
 
     if (!subFields) {
-      const cell = cellFor(row, field.key);
+      const cell = cellFor(row, field, null);
       if (cell !== undefined) {
         const decoded = decodeCell(cell);
         if (!isBlank(decoded)) {
-          values[field.key] = decoded;
+          values[identityOf(field)] = decoded;
         }
       }
       continue;
@@ -167,7 +184,7 @@ export function fieldValuesFromCsvRow(
     let anyColumnPresent = false;
     const composite: Record<string, string> = {};
     for (const sub of subFields) {
-      const cell = cellFor(row, `${field.key}${SEPARATOR}${sub}`);
+      const cell = cellFor(row, field, sub);
       if (cell === undefined) {
         continue;
       }
@@ -179,7 +196,7 @@ export function fieldValuesFromCsvRow(
     }
 
     if (anyColumnPresent && Object.keys(composite).length > 0) {
-      values[field.key] = composite;
+      values[identityOf(field)] = composite;
     }
   }
 

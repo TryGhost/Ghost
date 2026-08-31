@@ -446,7 +446,7 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
   function renderWithSources(sources: {
     newsletters?: { slug: string; name: string }[];
-    customFields?: { key: string; name: string; type: 'short_text' }[];
+    customFields?: { namespace: string; key: string; name: string; type: 'short_text' }[];
   }) {
     return renderHook(
       () => {
@@ -463,7 +463,7 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
   it('reads and writes normally once they have', async () => {
     const { result } = renderWithSources({
-      customFields: [{ key: 'company', name: 'Company', type: 'short_text' }],
+      customFields: [{ namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' }],
     });
 
     await waitFor(() => {

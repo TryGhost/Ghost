@@ -72,17 +72,24 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
 }
 
 /**
- * The custom field values from a member's `metafields.custom` payload, normalized:
+ * The custom field values from a member's `metafields` payload — every namespace,
+ * keyed by field identity (`namespace.key`) — normalized:
  * strings trimmed, address sub-fields trimmed with empty ones dropped, and
  * empty values ('' / {} / null) collapsing to an absent key — so "no value"
  * reads identically however it's represented. Feeds the read-only value rows
  * and seeds the per-field editor.
  */
 export function getEditableCustomFieldValues(
-  customFields: Record<string, unknown> | null | undefined,
+  metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
 ): Record<string, EditableCustomFieldValue> {
+  const flattened: Record<string, unknown> = {};
+  for (const [namespace, records] of Object.entries(metafields ?? {})) {
+    for (const [fieldKey, fieldValue] of Object.entries(records ?? {})) {
+      flattened[`${namespace}.${fieldKey}`] = fieldValue;
+    }
+  }
   const values: Record<string, EditableCustomFieldValue> = {};
-  for (const [key, value] of Object.entries(customFields ?? {})) {
+  for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -299,12 +306,12 @@ function customFieldValueToSave(
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  fieldKey: string,
+  field: { namespace: string; key: string },
   value: EditableCustomFieldValue,
 ): EditMemberData {
   return {
     id: memberId,
-    metafields: { custom: { [fieldKey]: customFieldValueToSave(value) ?? null } },
+    metafields: { [field.namespace]: { [field.key]: customFieldValueToSave(value) ?? null } },
   };
 }
 
@@ -350,7 +357,7 @@ export function getCustomFieldValidationErrors(
 
 /**
  * Field-level errors from a failed member save. The values service names the
- * offending field in `property` as `metafields.custom.<key>[.<subfield>]` with the
+ * offending field in `property` as `metafields.<ns>.<key>[.<subfield>]` with the
  * reason in `context` (see members-custom-fields/values-service.ts), so the
  * message can be rendered under the exact input it belongs to. Returns
  * undefined when the failure isn't custom-fields shaped, letting callers fall
@@ -370,8 +377,8 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
   )?.data;
   const errors: Record<string, string> = {};
   for (const apiError of data?.errors ?? []) {
-    if (apiError.property?.startsWith('metafields.custom.')) {
-      errors[apiError.property.slice('metafields.custom.'.length)] =
+    if (apiError.property?.startsWith('metafields.')) {
+      errors[apiError.property.slice('metafields.'.length)] =
         apiError.context || apiError.message || 'Invalid value.';
     }
   }

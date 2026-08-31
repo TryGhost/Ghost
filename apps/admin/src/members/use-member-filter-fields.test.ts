@@ -262,8 +262,13 @@ describe('useMemberFilterFields', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
         customFields: [
-          { key: 'shipping_address', name: 'Shipping address', type: 'address' },
-          { key: 'job_title', name: 'Job title', type: 'short_text' },
+          {
+            namespace: 'custom',
+            key: 'shipping_address',
+            name: 'Shipping address',
+            type: 'address',
+          },
+          { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' },
         ],
         siteTimezone: 'UTC',
       }),

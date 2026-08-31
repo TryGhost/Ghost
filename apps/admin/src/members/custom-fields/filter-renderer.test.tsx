@@ -5,12 +5,16 @@ import type { FilterFieldConfig } from '@tryghost/shade/patterns';
 
 vi.mock('@/shared/member-custom-fields/use-definitions', () => ({
   useCustomFieldDefinitionsIncludingArchived: () => ({
-    data: {
-      members_custom_fields: [
-        { key: 'birthday', name: 'Birthday', type: 'short_text', status: 'active' },
-        { key: 'shipping', name: 'Shipping', type: 'address', status: 'active' },
-      ],
-    },
+    data: [
+      {
+        namespace: 'custom',
+        key: 'birthday',
+        name: 'Birthday',
+        type: 'short_text',
+        status: 'active',
+      },
+      { namespace: 'custom', key: 'shipping', name: 'Shipping', type: 'address', status: 'active' },
+    ],
   }),
 }));
 
@@ -34,7 +38,7 @@ function renderPill({
   defaultOperator,
   operator,
   onOperatorChange = () => {},
-  fieldKey = 'custom_fields.birthday',
+  fieldKey = 'metafields.custom.birthday',
   label = 'Birthday',
   values = ['', ''],
 }: {
@@ -117,7 +121,7 @@ describe('CustomFieldFilterRenderer operators', () => {
       operators: TEXT_OPERATORS,
       defaultOperator: 'is-set',
       operator: 'is-set',
-      fieldKey: 'custom_fields.shipping',
+      fieldKey: 'metafields.custom.shipping',
       label: 'Shipping',
     });
 
@@ -131,7 +135,7 @@ describe('CustomFieldFilterRenderer operators', () => {
       operators: TEXT_OPERATORS,
       defaultOperator: 'is-set',
       operator: 'contains',
-      fieldKey: 'custom_fields.shipping',
+      fieldKey: 'metafields.custom.shipping',
       label: 'Shipping',
       values: ['city', 'London'],
     });

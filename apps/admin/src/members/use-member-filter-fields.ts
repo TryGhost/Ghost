@@ -8,7 +8,7 @@ import {
   FIELD_ICONS,
 } from '@/shared/filters';
 import type { FieldIcon } from '@/shared/filters';
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyIsUnder } from '@/shared/filters';
 import type { StaticMemberFieldKey } from '@/members/member-fields';
 import {
@@ -41,11 +41,16 @@ interface UseMemberFilterFieldsOptions {
   membersTrackSources?: boolean;
   emailTrackOpens?: boolean;
   emailTrackClicks?: boolean;
-  customFields?: Array<{ key: string; name: string; type: MemberCustomField['type'] }>;
+  customFields?: Array<{
+    namespace: string;
+    key: string;
+    name: string;
+    type: MemberCustomField['type'];
+  }>;
   // Archived fields still referenced by the current filter. Rendered as disabled,
   // removable-only pills so a saved segment stays visible and undoable even though
   // the field is no longer offered in the picker.
-  archivedCustomFields?: Array<{ key: string; name: string }>;
+  archivedCustomFields?: Array<{ namespace: string; key: string; name: string }>;
   siteTimezone?: string;
 }
 
@@ -312,8 +317,8 @@ export function useMemberFilterFields({
     ): FilterFieldConfig {
       const parameterised = keyIsUnder(key, 'newsletters')
         ? fields['newsletters.:slug']
-        : keyIsUnder(key, CUSTOM_FIELDS_PREFIX)
-          ? fields['metafields.custom.:key']
+        : keyIsUnder(key, METAFIELDS_FIELD_PREFIX)
+          ? fields['metafields.:namespace.:key']
           : undefined;
       const field = fields[key] ?? parameterised;
 

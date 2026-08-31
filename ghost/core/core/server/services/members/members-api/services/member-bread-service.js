@@ -462,7 +462,7 @@ module.exports = class MemberBREADService {
     if (withCustomFields) {
       const customFields = await this.fetchCustomFieldValues([member.id]);
       if (customFields) {
-        member.custom_fields = customFields.get(member.id) ?? {};
+        member.metafields = customFields.get(member.id) ?? {};
       }
     }
 
@@ -822,7 +822,7 @@ module.exports = class MemberBREADService {
         delete member.products;
       }
       if (customFieldsByMember) {
-        member.custom_fields = customFieldsByMember.get(model.id) ?? {};
+        member.metafields = customFieldsByMember.get(model.id) ?? {};
       }
       member.email_suppression = {
         suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

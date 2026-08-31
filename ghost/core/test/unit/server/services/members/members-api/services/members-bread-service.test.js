@@ -587,7 +587,7 @@ describe('MemberBreadService', function () {
 
       const member = await memberBreadService.read({ id: MEMBER_ID }, { withCustomFields: false });
 
-      assert.equal(Object.hasOwn(member, 'custom_fields'), false);
+      assert.equal(Object.hasOwn(member, 'metafields'), false);
       assert.equal(customFieldDefinitions.hasAnyActive.called, false);
       assert.equal(customFieldValues.getValuesForMembers.called, false);
     });
@@ -598,7 +598,7 @@ describe('MemberBreadService', function () {
 
       const member = await memberBreadService.read({ id: MEMBER_ID });
 
-      assert.deepEqual(member.custom_fields, {});
+      assert.deepEqual(member.metafields, {});
     });
 
     it('returns a member with subscriptions', async function () {
