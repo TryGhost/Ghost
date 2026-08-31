@@ -100,6 +100,7 @@ describe('CommentsStatsService', function () {
         reported: 0,
       });
       assert.deepEqual(result.series, []);
+      assert.equal(result.series_aggregation, 'day');
       assert.deepEqual(result.top_posts, []);
       assert.deepEqual(result.top_members, []);
     });
@@ -134,10 +135,18 @@ describe('CommentsStatsService', function () {
         commenters: 11,
         reported: 3,
       });
-      assert.deepEqual(result.series, [
+      assert.equal(result.series.length, 31);
+      assert.deepEqual(result.series.slice(9, 11), [
         { date: '2026-01-10', count: 5, commenters: 4, reported: 0 },
         { date: '2026-01-11', count: 7, commenters: 5, reported: 2 },
       ]);
+      assert.deepEqual(result.series[0], {
+        date: '2026-01-01',
+        count: 0,
+        commenters: 0,
+        reported: 0,
+      });
+      assert.equal(result.series_aggregation, 'day');
       assert.deepEqual(result.top_posts[0], {
         id: 'post-1',
         title: 'Post One',
@@ -159,7 +168,7 @@ describe('CommentsStatsService', function () {
             totals: { count: 0, commenters: 0 },
             reportedTotals: { reported: '4' },
             series: [],
-            reportedSeries: [{ date: '2026-02-15', reported: '4' }],
+            reportedSeries: [{ date: '2026-02-01', reported: '4' }],
           }),
         },
       });
@@ -167,8 +176,9 @@ describe('CommentsStatsService', function () {
       const result = await service.getOverview({});
 
       assert.deepEqual(result.series, [
-        { date: '2026-02-15', count: 0, commenters: 0, reported: 4 },
+        { date: '2026-02-01', count: 0, commenters: 0, reported: 4 },
       ]);
+      assert.equal(result.series_aggregation, 'month');
       assert.equal(captured.comment_reports, undefined);
     });
 
@@ -253,7 +263,7 @@ describe('CommentsStatsService', function () {
           comments: commentsHandler({
             totals: { count: 0, commenters: 0 },
             reportedTotals: { reported: 0 },
-            series: [{ date: new Date('2026-03-07T00:00:00.000Z'), count: 4, commenters: 3 }],
+            series: [{ date: new Date('2026-03-01T00:00:00.000Z'), count: 4, commenters: 3 }],
           }),
         },
       });
@@ -261,7 +271,98 @@ describe('CommentsStatsService', function () {
       const result = await service.getOverview({});
 
       assert.deepEqual(result.series, [
-        { date: '2026-03-07', count: 4, commenters: 3, reported: 0 },
+        { date: '2026-03-01', count: 4, commenters: 3, reported: 0 },
+      ]);
+    });
+
+    it('returns true distinct commenter counts in server-side weekly buckets', async function () {
+      const { service, captured } = createService({
+        tableResults: {
+          comments: commentsHandler({
+            totals: { count: 30, commenters: 9 },
+            reportedTotals: { reported: 0 },
+            series: [{ date: '2026-01-05', count: 20, commenters: 9 }],
+          }),
+        },
+      });
+
+      const result = await service.getOverview({
+        dateFrom: '2026-01-01',
+        dateTo: '2026-04-01',
+      });
+
+      assert.equal(result.series_aggregation, 'week');
+      assert.deepEqual(
+        result.series.find((row) => row.date === '2026-01-05'),
+        { date: '2026-01-05', count: 20, commenters: 9, reported: 0 },
+      );
+
+      const seriesQuery = captured.comments.find(
+        (qb) => qb.groupByRaw.called && !qb.whereExists.called,
+      );
+      assert.deepEqual(seriesQuery.countDistinct.firstCall.args, [{ commenters: 'member_id' }]);
+    });
+
+    it('keeps every bucket when the range crosses a DST change', async function () {
+      // Buckets are computed in SQL with a single offset sampled at request
+      // time (+10:00 here), while the range bounds are DST-aware for January
+      // (+11:00). A comment just after the range opens buckets to 2025-12-31,
+      // one day before the DST-aware range start, so the fill window has to be
+      // built from the sampled offset or that bucket disappears.
+      sinon.useFakeTimers({ now: Date.parse('2026-08-15T00:00:00.000Z'), toFake: ['Date'] });
+
+      const { service } = createService({
+        tableResults: {
+          comments: commentsHandler({
+            totals: { count: '9', commenters: '3' },
+            reportedTotals: { reported: 0 },
+            series: [
+              { date: '2025-12-31', count: '7', commenters: '2' },
+              { date: '2026-01-15', count: '2', commenters: '1' },
+            ],
+          }),
+        },
+      });
+
+      const result = await service.getOverview({
+        dateFrom: '2026-01-01',
+        dateTo: '2026-01-31',
+        timezone: 'Australia/Sydney',
+      });
+
+      const seriesTotal = result.series.reduce((sum, row) => sum + row.count, 0);
+      assert.equal(
+        seriesTotal,
+        result.totals.comments,
+        'series must account for every comment counted in the KPI',
+      );
+      assert.deepEqual(
+        result.series.find((row) => row.date === '2025-12-31'),
+        { date: '2025-12-31', count: 7, commenters: 2, reported: 0 },
+      );
+    });
+
+    it('merges buckets the fill window would otherwise drop', async function () {
+      const { service } = createService({
+        tableResults: {
+          comments: commentsHandler({
+            totals: { count: '5', commenters: '2' },
+            reportedTotals: { reported: 0 },
+            series: [
+              { date: '2025-06-01', count: '4', commenters: '1' },
+              { date: '2026-01-02', count: '1', commenters: '1' },
+            ],
+          }),
+        },
+      });
+
+      const result = await service.getOverview({ dateFrom: '2026-01-01', dateTo: '2026-01-03' });
+
+      assert.deepEqual(result.series, [
+        { date: '2025-06-01', count: 4, commenters: 1, reported: 0 },
+        { date: '2026-01-01', count: 0, commenters: 0, reported: 0 },
+        { date: '2026-01-02', count: 1, commenters: 1, reported: 0 },
+        { date: '2026-01-03', count: 0, commenters: 0, reported: 0 },
       ]);
     });
 

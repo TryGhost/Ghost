@@ -42,4 +42,29 @@ describe('applyCommentFilters', () => {
       { field: 'created_at', operator: 'is-or-less', values: ['2026-02-08'] },
     ]);
   });
+
+  it('applies an explicit date range alongside another field', () => {
+    const next = applyCommentFilters(
+      [createFilter('created_at', 'is-or-less', ['2025-01-01'])],
+      [
+        {
+          field: 'created_at',
+          operator: 'is-or-greater',
+          value: '2026-01-01',
+        },
+        {
+          field: 'created_at',
+          operator: 'is-or-less',
+          value: '2026-01-31',
+        },
+        { field: 'post', value: 'post-1' },
+      ],
+    );
+
+    expect(stripIds(next)).toEqual([
+      { field: 'created_at', operator: 'is-or-greater', values: ['2026-01-01'] },
+      { field: 'created_at', operator: 'is-or-less', values: ['2026-01-31'] },
+      { field: 'post', operator: 'is', values: ['post-1'] },
+    ]);
+  });
 });

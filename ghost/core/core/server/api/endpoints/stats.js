@@ -446,6 +446,13 @@ const controller = {
       docName: 'comments',
       method: 'browse',
     },
+    cache: statsService.cache,
+    generateCacheKeyData(frame) {
+      return {
+        method: 'commentsOverview',
+        options: frame.options,
+      };
+    },
     async query(frame) {
       const overview = await commentsService.stats.getOverview({
         dateFrom: frame?.options?.date_from,

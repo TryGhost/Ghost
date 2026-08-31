@@ -23,8 +23,8 @@ import {
   formatPercentage,
 } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { getAggregationStrategy, sanitizeChartData } from '@/shared/analytics/chart-helpers';
 import { getPreviousPeriodText } from '@/comments/utils/period-text';
+import { truncateLeadingEmptyData } from '@/shared/analytics/chart-helpers';
 import { type CommentFilterPatch } from '@/comments/apply-comment-filters';
 
 type MetricKey = 'comments' | 'commenters' | 'reported';
@@ -41,6 +41,7 @@ interface OverviewKpiTabsProps {
   totals: CommentsOverviewTotals | undefined;
   previousTotals: CommentsOverviewTotals | null | undefined;
   series: CommentsOverviewSeriesItem[] | undefined;
+  seriesAggregation: 'day' | 'week' | 'month';
   range: number;
   isLoading: boolean;
   onApplyFilters: (patches: CommentFilterPatch[]) => void;
@@ -130,6 +131,7 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
   totals,
   previousTotals,
   series,
+  seriesAggregation,
   range,
   isLoading,
   onApplyFilters,
@@ -137,11 +139,17 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
   const [currentTab, setCurrentTab] = useState<MetricKey>('comments');
   const config = TAB_CONFIG[currentTab];
   const gradientId = `comments-bar-gradient-${currentTab}`;
-  const isDailyAggregation = getAggregationStrategy(range, series ?? []) === 'none';
+  const isDailyAggregation = seriesAggregation === 'day';
+  const displayRange =
+    seriesAggregation === 'month'
+      ? STATS_RANGES.last12Months.value
+      : seriesAggregation === 'week'
+        ? STATS_RANGES.last3Months.value
+        : range;
 
   const handleBarClick = (data: unknown) => {
     const record = data as { date?: string; payload?: { date?: string } } | undefined;
-    const date = record?.date ?? record?.payload?.date;
+    const date = rawDateFromPayload(record) ?? rawDateFromPayload(record?.payload);
     if (!isDailyAggregation || !date) {
       return;
     }
@@ -156,13 +164,7 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
     if (!series || series.length === 0) {
       return [] as { date: string; value: number; formattedValue: string }[];
     }
-    const aggregated = sanitizeChartData<CommentsOverviewSeriesItem>(
-      series,
-      range,
-      config.seriesField,
-      'sum',
-    );
-    return aggregated.map((point) => {
+    const points = series.map((point) => {
       const rawValue = Number(point[config.seriesField]) || 0;
       return {
         date: point.date,
@@ -170,7 +172,12 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
         formattedValue: formatNumber(rawValue),
       };
     });
-  }, [series, range, config.seriesField]);
+    // "All time" is a fixed 1000-day window, so a younger site gets a run of
+    // empty leading buckets. Trim them like the other analytics charts do.
+    return range === STATS_RANGES.allTime.value
+      ? truncateLeadingEmptyData(points, 'value')
+      : points;
+  }, [series, config.seriesField, range]);
 
   const chartConfig: ChartConfig = {
     value: { label: config.label, color: config.color },
@@ -244,7 +251,7 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
                 <Recharts.XAxis
                   axisLine={false}
                   dataKey="date"
-                  tickFormatter={(date: string) => formatDisplayDateWithRange(date, range)}
+                  tickFormatter={(date: string) => formatDisplayDateWithRange(date, displayRange)}
                   tickLine={false}
                   tickMargin={10}
                 />
@@ -263,7 +270,7 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({
                         const payload = item?.payload as { date?: string } | undefined;
                         const rawDate = rawDateFromPayload(payload);
                         const tooltipDate = rawDate
-                          ? formatDisplayDateWithRange(rawDate, range)
+                          ? formatDisplayDateWithRange(rawDate, displayRange)
                           : '';
                         return (
                           <div className="flex w-full flex-col">

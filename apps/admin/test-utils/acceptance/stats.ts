@@ -197,6 +197,7 @@ export const fakeAdminStats = {
       totals: { comments: 0, commenters: 0, reported: 0 },
       previous_totals: { comments: 0, commenters: 0, reported: 0 },
       series: [],
+      series_aggregation: 'day',
       top_posts: [],
       top_members: [],
     },

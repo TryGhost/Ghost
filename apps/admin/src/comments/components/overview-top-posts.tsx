@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Card,
@@ -51,6 +51,7 @@ const OverviewTopPosts: React.FC<OverviewTopPostsProps> = ({
   isLoading,
   onRowClick,
 }) => {
+  const [sheetOpen, setSheetOpen] = useState(false);
   const hasData = posts && posts.length > 0;
   const previewPosts = posts ? posts.slice(0, PREVIEW_LIMIT) : [];
   const canViewAll = posts ? posts.length > PREVIEW_LIMIT : false;
@@ -74,7 +75,7 @@ const OverviewTopPosts: React.FC<OverviewTopPostsProps> = ({
       </CardContent>
       {canViewAll && (
         <CardFooter>
-          <Sheet>
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="outline">
                 View all <LucideIcon.TableOfContents />
@@ -87,7 +88,12 @@ const OverviewTopPosts: React.FC<OverviewTopPostsProps> = ({
                   Posts with the most comments {getPeriodText(range)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="group/datalist">{renderRows(posts ?? [], onRowClick)}</div>
+              <div className="group/datalist">
+                {renderRows(posts ?? [], (postId) => {
+                  setSheetOpen(false);
+                  onRowClick(postId);
+                })}
+              </div>
             </SheetContent>
           </Sheet>
         </CardFooter>

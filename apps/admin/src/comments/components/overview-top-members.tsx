@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Card,
@@ -54,6 +54,7 @@ const OverviewTopMembers: React.FC<OverviewTopMembersProps> = ({
   isLoading,
   onRowClick,
 }) => {
+  const [sheetOpen, setSheetOpen] = useState(false);
   const hasData = members && members.length > 0;
   const previewMembers = members ? members.slice(0, PREVIEW_LIMIT) : [];
   const canViewAll = members ? members.length > PREVIEW_LIMIT : false;
@@ -77,7 +78,7 @@ const OverviewTopMembers: React.FC<OverviewTopMembersProps> = ({
       </CardContent>
       {canViewAll && (
         <CardFooter>
-          <Sheet>
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="outline">
                 View all <LucideIcon.TableOfContents />
@@ -90,7 +91,12 @@ const OverviewTopMembers: React.FC<OverviewTopMembersProps> = ({
                   Members who commented most {getPeriodText(range)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="group/datalist">{renderRows(members ?? [], onRowClick)}</div>
+              <div className="group/datalist">
+                {renderRows(members ?? [], (memberId) => {
+                  setSheetOpen(false);
+                  onRowClick(memberId);
+                })}
+              </div>
             </SheetContent>
           </Sheet>
         </CardFooter>

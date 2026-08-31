@@ -305,6 +305,7 @@ export type CommentsOverview = {
   totals: CommentsOverviewTotals;
   previous_totals: CommentsOverviewTotals | null;
   series: CommentsOverviewSeriesItem[];
+  series_aggregation: 'day' | 'week' | 'month';
   top_posts: CommentsOverviewTopPost[];
   top_members: CommentsOverviewTopMember[];
 };

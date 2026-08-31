@@ -420,6 +420,7 @@ describe('Stats API', function () {
       assert.equal(typeof overview.totals.reported, 'number');
       assert.ok('previous_totals' in overview, 'expected previous_totals key');
       assert.ok(Array.isArray(overview.series));
+      assert.ok(['day', 'week', 'month'].includes(overview.series_aggregation));
       assert.ok(Array.isArray(overview.top_posts));
       assert.ok(Array.isArray(overview.top_members));
     });
