@@ -155,6 +155,39 @@ describe('Comments Service: CommentsController', function () {
     });
   });
 
+  it('resolves the post ID from single-post legacy filters before checking access', async function () {
+    for (const filter of [
+      "post_id:'post-id'",
+      "post_id:'post-id'+status:published",
+      "(status:published,status:hidden)+post_id:'post-id'",
+    ]) {
+      const { controller, service } = createController();
+
+      await controller.browse(createFrame({ options: { filter } }));
+
+      const options = service.getComments.firstCall.args[0];
+      assert.equal(options.post_id, 'post-id');
+      assert.deepEqual(options.mongoTransformer({ status: 'published' }), {
+        $and: [{ post_id: 'post-id' }, { status: 'published' }],
+      });
+    }
+  });
+
+  it('does not infer an authorized post from OR, list, or exclusion filters', async function () {
+    for (const filter of [
+      "post_id:'public-post',post_id:'paid-post'",
+      "post_id:['public-post','paid-post']",
+      "post_id:-'public-post'",
+      "(post_id:'public-post',status:published)+status:-deleted",
+    ]) {
+      const { controller, service } = createController();
+
+      await controller.browse(createFrame({ options: { filter } }));
+
+      assert.equal(service.getComments.firstCall.args[0].post_id, undefined);
+    }
+  });
+
   it('uses one service method for admin reply visibility', async function () {
     const { controller, service } = createController();
     const frame = createFrame();

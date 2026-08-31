@@ -492,6 +492,38 @@ describe('Comments Service: CommentsService', function () {
         errors.NotFoundError,
       );
     });
+
+    it('throws NoPermissionError when the member lacks access to the post', async function () {
+      const { instance } = createClassInstance();
+      instance.contentGating.checkPostAccess.returns('block');
+
+      await assert.rejects(
+        instance.getCommentByID('comment-id', {
+          columns: ['id'],
+          context: { member: { id: 'member-id' } },
+        }),
+        errors.NoPermissionError,
+      );
+    });
+
+    it('checks post access for an anonymous visitor without fetching a member', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getCommentByID('comment-id', { columns: ['id'] });
+
+      sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+      sinon.assert.notCalled(models.Member.findOne);
+      sinon.assert.calledWith(instance.contentGating.checkPostAccess, { id: 'post-id' }, null);
+    });
+
+    it('does not check post access for admin requests', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getCommentByID('comment-id', { columns: ['id'], isAdmin: true });
+
+      sinon.assert.notCalled(models.Post.findOne);
+      sinon.assert.notCalled(instance.contentGating.checkPostAccess);
+    });
   });
 
   describe('replyToComment', function () {
@@ -761,7 +793,10 @@ describe('Comments Service: CommentsService', function () {
     it('preserves net score ordering', async function () {
       const { instance, models } = createClassInstance();
 
-      await instance.getComments({ order: 'count__net_score desc, created_at desc' });
+      await instance.getComments({
+        post_id: 'post-id',
+        order: 'count__net_score desc, created_at desc',
+      });
 
       sinon.assert.calledWith(
         models.Comment.findPage,
@@ -769,6 +804,136 @@ describe('Comments Service: CommentsService', function () {
           order: 'count__net_score desc, created_at desc',
         }),
       );
+    });
+
+    it('rejects browsing without a post_id even when a filter is supplied', async function () {
+      const { instance, models } = createClassInstance();
+
+      for (const options of [{}, { filter: 'post_id:post-id' }]) {
+        await assert.rejects(instance.getComments(options), errors.ValidationError);
+      }
+
+      sinon.assert.notCalled(models.Post.findOne);
+      sinon.assert.notCalled(models.Comment.findPage);
+    });
+
+    it('throws NoPermissionError when the member lacks access to the post', async function () {
+      const { instance, models } = createClassInstance();
+      instance.contentGating.checkPostAccess.returns('block');
+
+      await assert.rejects(
+        instance.getComments({
+          post_id: 'post-id',
+          context: { member: { id: 'member-id' } },
+        }),
+        errors.NoPermissionError,
+      );
+
+      sinon.assert.notCalled(models.Comment.findPage);
+    });
+
+    it('fetches comments when the member has access to the post', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getComments({
+        post_id: 'post-id',
+        context: { member: { id: 'member-id' } },
+      });
+
+      sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+      sinon.assert.calledWith(models.Member.findOne, { id: 'member-id' });
+      sinon.assert.called(models.Comment.findPage);
+    });
+
+    it('checks post access for an anonymous visitor without fetching a member', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getComments({ post_id: 'post-id' });
+
+      sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+      sinon.assert.notCalled(models.Member.findOne);
+      sinon.assert.calledWith(instance.contentGating.checkPostAccess, { id: 'post-id' }, null);
+      sinon.assert.called(models.Comment.findPage);
+    });
+  });
+
+  describe('getReplies', function () {
+    it('checks the post using a lean lookup without loading the entire thread', async function () {
+      const { instance, models, commentFetchModels } = createClassInstance();
+
+      await instance.getReplies('comment-id', { limit: 1, transacting: 'transaction' });
+
+      sinon.assert.notCalled(models.Comment.findOne);
+      sinon.assert.calledWithExactly(commentFetchModels[0].fetch, {
+        columns: ['id', 'post_id'],
+        transacting: 'transaction',
+      });
+      sinon.assert.calledWith(models.Comment.findPage, sinon.match({ limit: 1 }));
+    });
+
+    it('rejects a missing parent before reading replies', async function () {
+      const { instance, models } = createClassInstance();
+
+      await assert.rejects(instance.getReplies('missing-id', {}), errors.NotFoundError);
+
+      sinon.assert.notCalled(models.Post.findOne);
+      sinon.assert.notCalled(models.Comment.findPage);
+    });
+
+    it('allows hidden and deleted parents to anchor visible replies', async function () {
+      for (const commentStatus of ['hidden', 'deleted']) {
+        const { instance, models } = createClassInstance({ commentStatus });
+
+        await instance.getReplies('comment-id', {});
+
+        sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+        sinon.assert.called(models.Comment.findPage);
+      }
+    });
+
+    it('does not check post access for admin requests', async function () {
+      // Admin and Content API routes both call into comments-service. The call to checkPostAccess
+      // is short-circuited for admin callers.
+      const { instance, models } = createClassInstance();
+
+      await instance.getReplies('comment-id', { isAdmin: true });
+
+      sinon.assert.notCalled(models.Post.findOne);
+      sinon.assert.notCalled(instance.contentGating.checkPostAccess);
+      sinon.assert.called(models.Comment.findPage);
+    });
+
+    it("throws NoPermissionError when the member lacks access to the parent comment's post", async function () {
+      const { instance, models } = createClassInstance();
+      instance.contentGating.checkPostAccess.returns('block');
+
+      await assert.rejects(
+        instance.getReplies('comment-id', { context: { member: { id: 'member-id' } } }),
+        errors.NoPermissionError,
+      );
+
+      sinon.assert.notCalled(models.Comment.findPage);
+    });
+
+    it('fetches replies when the member has access to the post', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getReplies('comment-id', { context: { member: { id: 'member-id' } } });
+
+      sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+      sinon.assert.calledWith(models.Member.findOne, { id: 'member-id' });
+      sinon.assert.called(models.Comment.findPage);
+    });
+
+    it('checks post access for an anonymous visitor without fetching a member', async function () {
+      const { instance, models } = createClassInstance();
+
+      await instance.getReplies('comment-id', {});
+
+      sinon.assert.calledWith(models.Post.findOne, { id: 'post-id' });
+      sinon.assert.notCalled(models.Member.findOne);
+      sinon.assert.calledWith(instance.contentGating.checkPostAccess, { id: 'post-id' }, null);
+      sinon.assert.called(models.Comment.findPage);
     });
   });
 
@@ -789,6 +954,21 @@ describe('Comments Service: CommentsService', function () {
           ),
         }),
       );
+    });
+  });
+
+  describe('checkPostAccess', function () {
+    it('selects the denial message for the requested action', async function () {
+      const { instance, models, memberModel } = createClassInstance();
+      const postModel = await models.Post.findOne({ id: 'post-id' });
+      instance.contentGating.checkPostAccess.returns('block');
+
+      assert.throws(() => instance.checkPostAccess(postModel, memberModel), {
+        message: 'You do not have permission to comment on this post.',
+      });
+      assert.throws(() => instance.checkPostAccess(postModel, memberModel, { action: 'read' }), {
+        message: 'You do not have permission to read comments on this post',
+      });
     });
   });
 });
