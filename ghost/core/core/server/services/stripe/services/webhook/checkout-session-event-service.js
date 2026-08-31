@@ -1,7 +1,10 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const { canWelcomeEmailReplaceSignupPaidEmail } = require('../../../lib/member-signup-contexts');
+const {
+  SIGNUP_CONTEXTS,
+  canWelcomeEmailReplaceSignupPaidEmail,
+} = require('../../../lib/member-signup-contexts');
 const { collectedByPort } = require('../checkout/completed-session');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
@@ -335,6 +338,7 @@ module.exports = class CheckoutSessionEventService {
       email: customer.email,
     });
 
+    const memberPreexisted = Boolean(member);
     const checkoutType = _.get(session, 'metadata.checkoutType');
 
     if (!member) {
@@ -426,7 +430,7 @@ module.exports = class CheckoutSessionEventService {
     // After the subscription work, and deliberately not part of it: a value the member
     // gave us for free must never be able to fail the webhook. A throw here would make
     // Stripe retry the event and risk doing the payment work twice.
-    await this.writeCollectedFields(member.id, session);
+    await this.writeCollectedFields(member.id, session, { memberPreexisted });
 
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
@@ -457,8 +461,10 @@ module.exports = class CheckoutSessionEventService {
    *
    * @param {string} memberId
    * @param {import('stripe').Stripe.Checkout.Session} session
+   * @param {object} options
+   * @param {boolean} options.memberPreexisted Whether the member's record existed before this event resolved it
    */
-  async writeCollectedFields(memberId, session) {
+  async writeCollectedFields(memberId, session, { memberPreexisted }) {
     // Stamped at create time. A session predating this feature carries none. Read
     // outside the try so a failure below can name the tier whose answers were lost.
     const tierId = session.metadata?.ghostTierId;
@@ -469,6 +475,25 @@ module.exports = class CheckoutSessionEventService {
       }
 
       if (!tierId) {
+        return;
+      }
+
+      // A checkout can be started with nothing but an email address, and typing an
+      // email is not proof of owning it. Values may land on the member this event just
+      // created — that record holds nothing the buyer didn't supply — but a record
+      // that existed before the checkout belongs to whoever verified that email, so it
+      // is only written when the session was created by a signed-in member.
+      const wasAuthenticated =
+        session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
+      if (memberPreexisted && !wasAuthenticated) {
+        logging.warn(
+          {
+            event: { name: 'stripe_checkout.collected_fields.write_skipped' },
+            memberId,
+            tierId,
+          },
+          'Skipped storing the fields an unverified checkout collected for an existing member',
+        );
         return;
       }
 

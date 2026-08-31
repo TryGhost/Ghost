@@ -38,7 +38,6 @@ describe('post import row schema', function () {
       slug: '',
       feature_image: 'undefined',
       meta_title: '',
-      frontmatter: '',
       comment_id: '',
       authors: '',
       author_emails: 'undefined',
@@ -48,7 +47,6 @@ describe('post import row schema', function () {
     assert.equal(parsed.slug, undefined);
     assert.equal(parsed.feature_image, undefined);
     assert.equal(parsed.meta_title, undefined);
-    assert.equal(parsed.frontmatter, undefined);
     assert.equal(parsed.comment_id, undefined);
     assert.equal(parsed.authors, undefined);
     assert.equal(parsed.author_emails, undefined);

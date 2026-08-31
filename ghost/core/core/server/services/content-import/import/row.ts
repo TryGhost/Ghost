@@ -34,7 +34,6 @@ export const EDITORIAL_POST_FIELDS = [
   'custom_template',
   'codeinjection_head',
   'codeinjection_foot',
-  'frontmatter',
 ] as const;
 
 // An empty cell (or the literal 'undefined') reads as absent, not as a value.
@@ -82,7 +81,6 @@ export const postImportRowSchema = z
     custom_template: optionalCell,
     codeinjection_head: optionalCell,
     codeinjection_foot: optionalCell,
-    frontmatter: optionalCell,
   })
   .loose();
 

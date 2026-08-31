@@ -1692,6 +1692,58 @@ describe('Members API', function () {
         assert.equal(member.status, 'paid');
         assert.deepEqual(member.custom_fields, {});
       });
+
+      // A checkout session can be started with nothing but an email address, and typing
+      // an email is not proof of owning it. The tests above all write onto the member
+      // the webhook itself created, which is safe: that record holds nothing the buyer
+      // didn't supply. A record that existed before the checkout is only written when
+      // the session was started by a signed-in member.
+      it('does not write onto a member that existed before an unverified checkout', async function () {
+        const email = 'checkout-collected-preexisting@email.com';
+        const { body: created } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+        await adminAgent
+          .put(`/members/${created.members[0].id}/`)
+          .body({ members: [{ custom_fields: { [fieldKeys.question]: 'Small' } }] })
+          .expectStatus(200);
+
+        const member = await sendCheckoutWebhook(email, {
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          shipping: {
+            name: 'Someone Else',
+            address: { line1: '1 High Street', country: 'GB' },
+          },
+        });
+
+        assert.equal(member.status, 'paid', 'the payment work still happened');
+        assert.equal(
+          member.custom_fields[fieldKeys.question],
+          'Small',
+          'the stored answer was not overwritten',
+        );
+        assert.equal(member.custom_fields[fieldKeys.recipient], undefined);
+        assert.equal(member.custom_fields[fieldKeys.address], undefined);
+      });
+
+      it('writes onto an existing member when the checkout was started signed in', async function () {
+        const email = 'checkout-collected-signed-in@email.com';
+        await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+
+        const member = await sendCheckoutWebhook(email, {
+          metadata: {
+            ghostTierId: (await getPaidProduct()).id,
+            ghostSignupContext: 'already_authenticated',
+          },
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+        });
+
+        assert.equal(member.custom_fields[fieldKeys.question], 'Large');
+      });
     });
 
     it('Will create a member with default newsletter subscriptions', async function () {

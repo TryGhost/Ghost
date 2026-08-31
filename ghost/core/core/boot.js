@@ -327,7 +327,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient }) {
+async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -393,7 +393,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   await Promise.all([
     identityTokens.init(),
     memberAttribution.init(),
-    mentionsService.init(),
+    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -502,7 +502,7 @@ async function initBackgroundServices({ config }) {
   // service fails.
   try {
     const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob();
+    await memberJobs.scheduleTokenCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -510,7 +510,7 @@ async function initBackgroundServices({ config }) {
 
   try {
     const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleExpiredCompCleanupJob();
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -670,25 +670,27 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    await initServices({ ghostServer, config, prometheusClient });
+    const jobsService = require('./server/services/jobs-service').init();
+
+    await initServices({ ghostServer, config, prometheusClient, jobsService });
 
     debug('Begin: Register job handlers');
-    const jobsServiceWrapper = require('./server/services/jobs-service');
+    const assert = require('node:assert/strict');
     const registerJobHandlers =
       require('./server/services/jobs-service/register-job-handlers').default;
     const mediaInliner = require('./server/services/media-inliner');
-    const db = require('./server/data/db');
-    const models = require('./server/models');
-    const events = require('./server/lib/common/events');
-    const jobsService = jobsServiceWrapper.init();
+    const gifts = require('./server/services/gifts');
+    const memberJobs = require('./server/services/members/jobs');
+    const mentionsService = require('./server/services/mentions');
+    memberJobs.init();
+    assert(gifts.service, 'Gift service should be initialized');
+    assert(mentionsService.controller, 'Mentions controller should be initialized');
     registerJobHandlers({
       jobsService,
-      db,
-      logging,
-      models,
-      events,
-      sentry,
+      memberJobs,
+      giftService: gifts.service,
       mediaInliner: mediaInliner.getInstance(),
+      mentionsController: mentionsService.controller,
     });
     await jobsService.start();
     debug('End: Register job handlers');

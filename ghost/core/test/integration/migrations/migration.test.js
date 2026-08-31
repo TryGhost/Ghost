@@ -54,11 +54,7 @@ describe('Migrations', function () {
 
     it('should have idempotent migrations', async function () {
       // Delete all knowledge that we've run migrations so we can run them again
-      if (dbUtils.isMySQL()) {
-        await db.knex('migrations').whereILike('version', `${currentMajor}.%`).del();
-      } else {
-        await db.knex('migrations').whereLike('version', `${currentMajor}.%`).del();
-      }
+      await db.knex('migrations').whereILike('version', `${currentMajor}.%`).del();
 
       await knexMigrator.migrate({
         force: true,

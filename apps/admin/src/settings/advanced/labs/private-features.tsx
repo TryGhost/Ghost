@@ -45,6 +45,11 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 page chrome',
+    description: 'Enable the new Admin page chrome on desktop in light mode.',
+    flag: 'admin7PageChrome',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -71,12 +76,6 @@ const features: Feature[] = [
     description:
       'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication',
-  },
-  {
-    title: 'React tag details',
-    description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
   },
   {
     title: 'Member custom fields',

@@ -78,17 +78,27 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
           echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      # pnpm's cache dir, not the store dir that setup-node's `cache: pnpm`
+      # already handles. On a hit `pnpm install` reuses the cached verdict and
+      # skips verification entirely; on a miss it checks all ~4.4k lockfile
+      # entries (~7s, and ~670MB of registry metadata pulled into the cache
+      # dir) and the post-step saves the new verdict.
+      - name: Restore pnpm lockfile verification cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/pnpm/lockfile-verified.jsonl
+          key: pnpm-lockfile-verified-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
+
+      # The only job that verifies the lockfile against the supply-chain
+      # policies in pnpm-workspace.yaml (minimumReleaseAge, trustPolicy,
+      # tarball-URL binding, tarball integrity). pnpm re-runs that whole pass
+      # on every install and --filter does not narrow it, so every other job —
+      # all of which need this one and install the same lockfile — sets
+      # trust-lockfile to skip the redundant re-verification.
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          install-args: --ignore-scripts
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
       # API and hid the errors — see scripts/nx-set-shas.js.
@@ -102,23 +112,6 @@ jobs:
           # the run rather than falling back to the previous commit.
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
         run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
-
-      - name: Check user org membership
-        id: check_user_org_membership
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Looking up: ${{ github.triggering_actor }}"
-          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
-
-          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
-
-          if [ "$LOOKUP_USER" == "204" ]; then
-            echo "User is in the org"
-            echo "is_member=true" >> $GITHUB_OUTPUT
-          else
-            echo "User is not in the org"
-            echo "is_member=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
@@ -325,7 +318,6 @@ jobs:
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
-      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -346,18 +338,13 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags origin main
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      # The script's only runtime dep is semver, so install @internal/scripts
-      # alone rather than the whole workspace — ~0.5s and a single package.
-      - name: Install scripts dependencies
-        run: pnpm install --frozen-lockfile --filter @internal/scripts --prod --ignore-scripts
+          trust-lockfile: 'true'
+          # The script's only runtime dep is semver, so install @internal/scripts
+          # alone rather than the whole workspace — ~0.5s and a single package.
+          install-args: --filter @internal/scripts --prod --ignore-scripts
 
       - name: Check app version bump
         env:
@@ -404,16 +391,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
@@ -465,11 +446,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # Only needs pnpm and node on PATH for the checker scripts.
+          install: 'false'
+          store-cache: 'false'
 
       - name: Check internal package golden path
         run: node scripts/check-internal-packages.js
@@ -486,14 +468,11 @@ jobs:
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter @tryghost/i18n... --ignore-scripts
+          trust-lockfile: 'true'
+          install-args: --filter @tryghost/i18n... --ignore-scripts
 
       - name: Run i18n tests
         run: pnpm --filter @tryghost/i18n test
@@ -512,14 +491,10 @@ jobs:
       COVERAGE: ${{ needs.job_setup.outputs.coverage_enabled }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - run: pnpm nx run ghost-admin:test
         env:
@@ -560,18 +535,13 @@ jobs:
           # Boot activates the default theme, which is a submodule
           submodules: true
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # --force for the same reason as job_unit-tests: better-sqlite3 is an
-        # optionalDependency and boot uses it for the development database.
-        run: pnpm install --frozen-lockfile --force
+          trust-lockfile: 'true'
+          # --force for the same reason as job_unit-tests: better-sqlite3 is an
+          # optionalDependency and boot uses it for the development database.
+          install-args: --force
 
       - name: Install hyperfine
         uses: ./.github/actions/install-hyperfine
@@ -593,7 +563,9 @@ jobs:
           series: Benchmark
           metric: Boot time
           title: Boot time (dev tree)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   # Boot time of the production image, as a series separate from job_perf-tests:
   # that one tracks the code, this one tracks what ships (NODE_ENV=production, no
@@ -685,7 +657,9 @@ jobs:
           series: Production image
           metric: Boot time
           title: Boot time (production image)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   job_unit-tests:
     runs-on: ubuntu-latest
@@ -699,20 +673,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ matrix.node }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        # (ghost core's test:unit job requires better-sqlite3)
-        run: pnpm install --frozen-lockfile --force
+          trust-lockfile: 'true'
+          # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
+          # installing/linking it when restoring from a cached store. --force
+          # ensures all optional deps are installed regardless.
+          # (ghost core's test:unit job requires better-sqlite3)
+          install-args: --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -795,22 +764,14 @@ jobs:
           --health-timeout=5s
           --health-retries=60
     env:
-      DB: mysql8
-      NODE_ENV: testing-mysql
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled }}
     name: Acceptance tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ needs.job_setup.outputs.node_version }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -902,24 +863,15 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
-    env:
-      DB: mysql8
-      NODE_ENV: testing-mysql
     name: Legacy tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           submodules: true
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ needs.job_setup.outputs.node_version }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - name: Set env vars (MySQL)
         run: |
@@ -963,20 +915,15 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # Each matrix leg only Playwright-tests one app, so scope the install to that
-        # app's dependency subgraph instead of the whole monorepo (which drags in
-        # ghost/core, ghost-admin and unrelated apps). nx and the app's workspace deps
-        # are still installed; the nx project name matches the package name.
-        run: pnpm install --frozen-lockfile --filter ${{ matrix.app }}...
+          trust-lockfile: 'true'
+          # Each matrix leg only Playwright-tests one app, so scope the install to that
+          # app's dependency subgraph instead of the whole monorepo (which drags in
+          # ghost/core, ghost-admin and unrelated apps). nx and the app's workspace deps
+          # are still installed; the nx project name matches the package name.
+          install-args: --filter ${{ matrix.app }}...
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -1163,16 +1110,10 @@ jobs:
     name: Stripe fixture checks
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       # Needs no Ghost, no Docker and no browser, so it does not belong in the e2e
       # matrix that waits on the image. Run through nx so the target pulls in the
@@ -1199,19 +1140,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # Admin's nx build fans out across the whole frontend graph (ghost-admin,
-        # admin-x-*, shade, koenig-lexical) via nx dependsOn rather than package
-        # deps, so a filtered install would miss pieces — install the full workspace.
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
+          # Admin's nx build fans out across the whole frontend graph (ghost-admin,
+          # admin-x-*, shade, koenig-lexical) via nx dependsOn rather than package
+          # deps, so a filtered install would miss pieces — install the full workspace.
 
       - name: Build admin
         # IS_SHIPPING enables the Sentry vite plugin in koenig-lexical: it
@@ -1288,18 +1223,13 @@ jobs:
           # archive — without them the tarball ships empty theme dirs.
           submodules: true
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # pack only needs ghost and its dependency subgraph (dev deps included, to
-        # build the prod closure below) — not the whole monorepo.
-        run: pnpm install --frozen-lockfile --filter "ghost..."
+          trust-lockfile: 'true'
+          # pack only needs ghost and its dependency subgraph (dev deps included, to
+          # build the prod closure below) — not the whole monorepo.
+          install-args: --filter ghost...
 
       - name: Verify tag matches package.json
         if: startsWith(github.ref, 'refs/tags/v')
@@ -1949,17 +1879,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
@@ -1989,6 +1912,20 @@ jobs:
     # Inherits the run_e2e gate transitively via job_docker (which builds the
     # ghost-e2e image).
     if: needs.job_docker.result == 'success'
+    permissions:
+      contents: read
+      packages: read # read the internal tinybird-local-slim package
+    env:
+      # Use the distilled Tinybird image instead of upstream: it needs several GB
+      # less runner disk, which is what keeps the analytics shards inside the disk
+      # budget. See docker/tinybird-local-slim/README.md.
+      #
+      # Its GHCR package is internal (the upstream licence only permits
+      # distribution within our own organization), so it is unreadable from a
+      # cross-repo PR's scoped token — those runs stay on the upstream image.
+      # infra-up.sh falls back on a failed pull regardless, so an unexpected
+      # permission gap degrades rather than breaks.
+      GHOST_E2E_TINYBIRD_SLIM: ${{ github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     strategy:
       fail-fast: true
       matrix:
@@ -2060,6 +1997,16 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
+      - name: Log in to GitHub Container Registry
+        # Needed to read the internal tinybird-local-slim package.
+        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        continue-on-error: true
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Pull Tinybird CLI image
         id: pull_tb_cli
         if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tb_cli != 'true'
@@ -2096,17 +2043,14 @@ jobs:
           image-tags: ${{ needs.job_docker.outputs.image-e2e-tags }}
           artifact-name: docker-image-e2e
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # The Playwright container runs against the host's bind-mounted node_modules,
-        # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
-        # (admin, apps, ghost/core). Scope the install to cut shard setup time.
-        run: pnpm install --frozen-lockfile --filter @tryghost/e2e...
+          trust-lockfile: 'true'
+          # The Playwright container runs against the host's bind-mounted node_modules,
+          # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
+          # (admin, apps, ghost/core). Scope the install to cut shard setup time.
+          install-args: --filter @tryghost/e2e...
 
       - name: Report Analytics runner disk usage
         if: matrix.analytics == 'true'
@@ -2179,14 +2123,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -2344,6 +2284,7 @@ jobs:
     # Serialize per-app publishes so two quick main merges can't both compute the
     # same next-patch number and collide on npm. Different apps still publish in
     # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
+    environment: npm-release
     concurrency:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false
@@ -2366,15 +2307,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          trust-lockfile: 'true'
 
       - name: Determine release version
         id: release

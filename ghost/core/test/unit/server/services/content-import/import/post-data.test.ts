@@ -210,7 +210,7 @@ describe('buildPostData', function () {
     assert.equal(data.comment_id, 'legacy-source-123');
   });
 
-  it('puts feature metadata, SEO, social fields, and frontmatter in posts_meta', function () {
+  it('puts feature metadata, SEO, and social fields in posts_meta', function () {
     const data = buildPostData(
       row({
         title: 'Metadata post',
@@ -224,7 +224,6 @@ describe('buildPostData', function () {
         twitter_image: 'https://example.com/twitter.jpg',
         twitter_title: 'Twitter title',
         twitter_description: 'Twitter description',
-        frontmatter: 'key: value',
       }),
       htmlToLexical,
       TAGS,
@@ -241,8 +240,18 @@ describe('buildPostData', function () {
       twitter_image: 'https://example.com/twitter.jpg',
       twitter_title: 'Twitter title',
       twitter_description: 'Twitter description',
-      frontmatter: 'key: value',
     });
+  });
+
+  it('ignores an unmapped frontmatter source column', function () {
+    const data = buildPostData(
+      row({ title: 'Unsupported metadata', frontmatter: 'key: value' }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.posts_meta, undefined);
+    assert.equal('frontmatter' in data, false);
   });
 
   it('omits every date when the cell is absent, leaving the model to stamp now', function () {

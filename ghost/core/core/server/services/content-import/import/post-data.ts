@@ -26,7 +26,6 @@ export interface PostsMetaData {
   twitter_image?: string;
   twitter_title?: string;
   twitter_description?: string;
-  frontmatter?: string;
 }
 
 // The values handed to models.Post.add. Content is lexical only: under
@@ -78,7 +77,6 @@ const META_FIELDS = [
   'twitter_image',
   'twitter_title',
   'twitter_description',
-  'frontmatter',
 ] as const;
 
 export default function buildPostData(

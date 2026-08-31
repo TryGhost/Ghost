@@ -3,32 +3,28 @@ import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
 
-// require, not import: these must resolve to the same CommonJS module
-// instances that core/server/services/members/jobs/index.js loads, so the
-// init() here is the instance scheduleExpiredCompCleanupJob() reads.
-const jobsService = require('../../../../../../core/server/services/jobs-service');
-const adapterManager = require('../../../../../../core/server/services/adapter-manager').default;
+// require, not import: this must resolve to the same CommonJS module instance
+// the boot layer loads, so the module-level "already scheduled" state is shared.
 const memberJobs = require('../../../../../../core/server/services/members/jobs');
+const CleanExpiredCompedJob =
+  require('../../../../../../core/server/services/members/jobs/clean-expired-comped-job').default;
 
 describe('member jobs: expired comped cleanup scheduling', function () {
-  let scheduleStub: sinon.SinonStub;
+  let jobsService: { scheduleRecurring: sinon.SinonStub };
 
   beforeEach(function () {
-    jobsService.init();
-    const backend = adapterManager.getAdapter('jobs');
-    scheduleStub = sinon.stub(backend, 'scheduleRecurring');
+    jobsService = { scheduleRecurring: sinon.stub().resolves() };
   });
 
-  afterEach(async function () {
-    await jobsService.shutdown({ timeoutMs: 100 });
+  afterEach(function () {
     sinon.restore();
   });
 
   it('does not schedule expired comped cleanup under the test environment', async function () {
-    await memberJobs.scheduleExpiredCompCleanupJob();
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
 
     assert.ok(
-      scheduleStub.notCalled,
+      jobsService.scheduleRecurring.notCalled,
       'expired comped cleanup must not be scheduled under NODE_ENV=test*',
     );
   });
@@ -38,18 +34,18 @@ describe('member jobs: expired comped cleanup scheduling', function () {
     sinon.stub(logging, 'info');
     process.env.NODE_ENV = 'production';
     try {
-      await memberJobs.scheduleExpiredCompCleanupJob();
-      await memberJobs.scheduleExpiredCompCleanupJob();
+      await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
+      await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
     } finally {
       process.env.NODE_ENV = originalEnv;
     }
 
     assert.ok(
-      scheduleStub.calledOnce,
+      jobsService.scheduleRecurring.calledOnce,
       'clean-expired-comped is scheduled once, however often scheduling is attempted',
     );
-    const [envelope, schedule] = scheduleStub.firstCall.args;
-    assert.equal(envelope.type, 'clean-expired-comped');
+    const [job, schedule] = jobsService.scheduleRecurring.firstCall.args;
+    assert.ok(job instanceof CleanExpiredCompedJob);
     assert.match(
       schedule.cron,
       /^\d{1,2} \d{1,2} [0-5] \* \* \*$/,

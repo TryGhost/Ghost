@@ -492,7 +492,13 @@ export function fakeEditSettings(): EditSettingsCapture {
     requests.push(body);
 
     const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
-    const response: SettingsResponse = settingsResponse({ settings: overrides });
+    // The fixture accepts Labs separately; otherwise it overwrites the saved
+    // JSON with defaults and a feature toggle immediately appears unchecked.
+    const labs =
+      typeof overrides.labs === 'string'
+        ? (JSON.parse(overrides.labs) as Record<string, boolean>)
+        : undefined;
+    const response: SettingsResponse = settingsResponse({ settings: overrides, labs });
     return HttpResponse.json(response);
   });
 

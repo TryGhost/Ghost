@@ -2,12 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
   renderAdminApp,
-  settingsResponse,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
@@ -29,13 +27,7 @@ const archivedField = {
   updated_at: '2026-07-13T00:00:00.000Z',
 };
 
-function customFieldsBoot() {
-  const labs = { membersCustomFields: true };
-  return {
-    browseConfig: { response: configResponse({ labs }) },
-    browseSettings: { response: settingsResponse({ labs }) },
-  };
-}
+const flagOn = { labs: { membersCustomFields: true } };
 
 type CustomField = typeof companyField;
 
@@ -73,7 +65,7 @@ describe('Custom fields', () => {
   it('lists each field with its user-facing type, opting into archived fields', async () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     // Browse hides archived by default; Settings asks for both statuses.
     await expect
@@ -92,7 +84,7 @@ describe('Custom fields', () => {
     const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
       members_custom_fields: [{ ...companyField, key: 'job_title', name: 'Job Title' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -114,7 +106,7 @@ describe('Custom fields', () => {
     const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
       members_custom_fields: [{ ...companyField, key: 'bio', name: 'Bio', type: 'long_text' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -147,7 +139,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -167,7 +159,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
       members_custom_fields: [{ ...companyField, name: 'Employer' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -186,7 +178,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
       members_custom_fields: [{ ...companyField, status: 'archived' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     await settingsScreen.customFieldModal().getByRole('button', { name: 'Archive' }).click();
@@ -209,7 +201,7 @@ describe('Custom fields', () => {
   it('splits fields into Active and Archived tabs', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     // Active tab is the default and shows only active fields.
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
@@ -229,7 +221,7 @@ describe('Custom fields', () => {
       name: `Field ${index}`,
     }));
     fakeCustomFields(manyFields);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -255,7 +247,7 @@ describe('Custom fields', () => {
       name: `Field ${index}`,
     }));
     fakeCustomFieldsWithCreate(initialFields, { ...companyField, key: 'newest', name: 'Newest' });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -287,7 +279,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(3);
@@ -340,7 +332,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -388,7 +380,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -418,7 +410,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -451,7 +443,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -480,7 +472,7 @@ describe('Custom fields', () => {
   it('does not offer dragging on the archived tab', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     // An archived field holds its place in the order, but there is nowhere to see
     // it, so there is nothing to drag it through.
@@ -496,7 +488,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
     const deleteApi = fakeAdminEndpoint('DELETE', '/members/custom_fields/old_hobby/', {});
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -526,7 +518,7 @@ describe('Custom fields', () => {
   it('does not expose permanent deletion for an active field', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     // Deletion lives behind the header menu, and an active field has none —
     // the UI can't reach delete, matching the API's archived-only rule.
@@ -538,7 +530,7 @@ describe('Custom fields', () => {
   it('shows no tabs at all while no fields exist', async () => {
     fakeSettingsScreens();
     fakeCustomFields([]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await expect.element(settingsScreen.customFields()).toBeVisible();
     await expect(settingsScreen.customFields().getByRole('tab')).toHaveCount(0);
@@ -550,7 +542,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/old_hobby/', {
       members_custom_fields: [{ ...archivedField, status: 'active' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
