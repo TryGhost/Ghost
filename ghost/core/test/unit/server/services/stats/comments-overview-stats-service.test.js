@@ -2,8 +2,8 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const knexLib = require('knex');
 const {
-  CommentsStatsService,
-} = require('../../../../../core/server/services/stats/comments-stats-service');
+  CommentsOverviewStatsService,
+} = require('../../../../../core/server/services/stats/comments-overview-stats-service');
 const { getDateBoundaries } = require('../../../../../core/server/services/stats/utils/date-utils');
 
 function makeQB(resultFn) {
@@ -47,7 +47,7 @@ function createService({ tableResults = {} } = {}) {
   knex.client = { config: { client: 'mysql2' } };
 
   return {
-    service: new CommentsStatsService({ knex }),
+    service: new CommentsOverviewStatsService({ knex }),
     knex,
     captured,
   };
@@ -81,7 +81,7 @@ function commentsHandler({
   };
 }
 
-describe('CommentsStatsService', function () {
+describe('CommentsOverviewStatsService', function () {
   afterEach(function () {
     sinon.restore();
   });
@@ -191,11 +191,14 @@ describe('CommentsStatsService', function () {
         assert.ok(!('email' in member), 'top_members rows must not carry member email');
       }
 
-      const membersQuery = captured.comments.find((qb) => qb.join.called);
+      const membersQuery = captured.comments.find(
+        (qb) => qb.join.called && qb.join.firstCall.args[0] === 'members',
+      );
+      assert.ok(membersQuery, 'expected a top_members query joining members');
       const selected = membersQuery.select.firstCall.args;
       assert.ok(
         !selected.some((column) => String(column).includes('email')),
-        'members query must not select an email column',
+        'top_members query must not select an email column',
       );
     });
 
@@ -445,7 +448,7 @@ describe('CommentsStatsService', function () {
         connection: { filename: ':memory:' },
         useNullAsDefault: true,
       });
-      const service = new CommentsStatsService({ knex });
+      const service = new CommentsOverviewStatsService({ knex });
 
       try {
         await knex.schema.createTable('comments', (table) => {

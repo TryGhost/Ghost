@@ -58,7 +58,7 @@ export interface CommentsOverviewOptions {
   timezone?: string;
 }
 
-interface CommentsStatsServiceDeps {
+interface CommentsOverviewStatsServiceDeps {
   knex: Knex;
 }
 
@@ -91,10 +91,10 @@ interface TopMemberRow {
   count: string | number;
 }
 
-export class CommentsStatsService {
+export class CommentsOverviewStatsService {
   private readonly knex: Knex;
 
-  constructor(deps: CommentsStatsServiceDeps) {
+  constructor(deps: CommentsOverviewStatsServiceDeps) {
     this.knex = deps.knex;
   }
 

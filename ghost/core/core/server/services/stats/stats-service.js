@@ -4,7 +4,7 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
-const { CommentsStatsService } = require('./comments-stats-service');
+const { CommentsOverviewStatsService } = require('./comments-overview-stats-service');
 class StatsService {
   /**
    * @param {object} deps
@@ -14,7 +14,7 @@ class StatsService {
    * @param {ReferrersStatsService} deps.referrers
    * @param {PostsStatsService} deps.posts
    * @param {ContentStatsService} deps.content
-   * @param {CommentsStatsService} deps.comments
+   * @param {CommentsOverviewStatsService} deps.comments
    **/
   constructor(deps) {
     this.mrr = deps.mrr;
@@ -284,7 +284,7 @@ class StatsService {
       referrers: new ReferrersStatsService(deps),
       posts: new PostsStatsService(depsWithTinybird),
       content: new ContentStatsService(depsWithTinybird),
-      comments: new CommentsStatsService(deps),
+      comments: new CommentsOverviewStatsService(deps),
     });
   }
 }
