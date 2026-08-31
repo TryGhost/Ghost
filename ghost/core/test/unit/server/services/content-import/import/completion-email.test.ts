@@ -44,6 +44,7 @@ describe('content import completion email', function () {
     assert.match(email.html, /Updated:<\/strong> 1/);
     assert.match(email.html, /Skipped:<\/strong> 1/);
     assert.match(email.html, /Failed:<\/strong> 1/);
+    assert.doesNotMatch(email.html, /see attached errors\.csv/);
     assert.match(email.html, /1<\/strong> post has warnings/);
   });
 
@@ -51,7 +52,16 @@ describe('content import completion email', function () {
     const email = buildCompletionEmail(
       run({
         total: 1,
-        rows: [{ line: 2, title: 'Failed', status: 'failed', reason: 'Write failed' }],
+        sourceColumns: ['title'],
+        rows: [
+          {
+            line: 2,
+            title: 'Failed',
+            status: 'failed',
+            reason: 'Write failed',
+            source: { title: 'Failed' },
+          },
+        ],
       }),
       'owner@example.com',
       ADMIN_URL,
@@ -59,6 +69,7 @@ describe('content import completion email', function () {
 
     assert.equal(email.subject, 'Your content import was unsuccessful');
     assert.match(email.html, /processed 1 row:/);
+    assert.match(email.html, /Failed:<\/strong> 1 \(see attached errors\.csv\)/);
   });
 
   it('attaches a report for a completely clean run', function () {
@@ -78,6 +89,7 @@ describe('content import completion email', function () {
       email.attachments.map(({ filename }) => filename),
       ['report.csv'],
     );
+    assert.doesNotMatch(email.html, /see attached errors\.csv/);
   });
 
   it('attaches both the report and actionable errors file in stable order', function () {
@@ -103,6 +115,7 @@ describe('content import completion email', function () {
       email.attachments.map(({ filename }) => filename),
       ['report.csv', 'errors.csv'],
     );
+    assert.match(email.html, /Failed:<\/strong> 1 \(see attached errors\.csv\)/);
   });
 
   it('uses plural warning copy for multiple warning-bearing posts', function () {
@@ -131,6 +144,7 @@ describe('content import completion email', function () {
     assert.equal(email.subject, 'Your content import could not be completed');
     assert.match(email.html, /Something went wrong on our end/);
     assert.doesNotMatch(email.html, /database password/);
+    assert.doesNotMatch(email.html, /see attached errors\.csv/);
   });
 
   it('omits attachments when a fatal run stopped before processing a row', function () {

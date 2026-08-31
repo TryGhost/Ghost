@@ -207,7 +207,7 @@ describe('Posts Importer API', function () {
     assert.match(email.html, /Created:<\/strong> 2/);
     assert.match(email.html, /Updated:<\/strong> 0/);
     assert.match(email.html, /Skipped:<\/strong> 2/);
-    assert.match(email.html, /Failed:<\/strong> 2/);
+    assert.match(email.html, /Failed:<\/strong> 2 \(see attached errors\.csv\)/);
     assert.equal(email.attachments.length, 2);
     const report = email.attachments.find(({ filename }) => filename === 'report.csv');
     assert.ok(report);
@@ -283,7 +283,7 @@ describe('Posts Importer API', function () {
       subject: 'Your content import was unsuccessful',
     });
     assert.match(email.html, /Skipped:<\/strong> 0/);
-    assert.match(email.html, /Failed:<\/strong> 1/);
+    assert.match(email.html, /Failed:<\/strong> 1 \(see attached errors\.csv\)/);
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
