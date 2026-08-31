@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
@@ -45,6 +46,15 @@ const sharedSsrConfig = {
   resolve: { conditions: ['source', 'node'] },
 };
 
+/*
+ * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
+ * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
+ * 4-core runner measured 2.08x (e2e) and 1.79x (integration) against a 2-core
+ * one purely on worker count. `legacy` runs on the threads pool, so the
+ * "forks 2 hangs" wedge below is not in play here.
+ */
+const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
 const sharedDbConfig = {
@@ -57,6 +67,7 @@ const sharedDbConfig = {
   // here except `legacy`, which sets pool: 'threads' (see its note below).
   pool: 'forks' as const,
   isolate: false,
+  maxWorkers: getWorkerCount(),
   sequence: { shuffle: { files: !!process.env.CI } },
   setupFiles: ['./test/utils/vitest-setup-db.ts'],
   resolveSnapshotPath,

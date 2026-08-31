@@ -1,5 +1,6 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { EditorView } from '@uiw/react-codemirror';
 
 import {
   configResponse,
@@ -133,10 +134,24 @@ function problemLists(): HTMLElement[] {
   return [...dialog.querySelectorAll<HTMLElement>(`[data-testid="${THEME_PROBLEM_LIST_TESTID}"]`)];
 }
 
+/**
+ * Replaces the editor's contents through CodeMirror itself. Playwright's
+ * `fill()` costs ~2s per freshly mounted editor here; a transaction drives the
+ * same onChange path in ~50ms.
+ */
 async function editorTextbox() {
   const editor = settingsScreen.themeCodeEditorModal().getByRole('textbox').first();
   await expect.element(editor).toBeVisible();
-  return editor;
+  return Object.assign(editor, {
+    setContent: (text: string) => {
+      const view = EditorView.findFromDOM(editor.element() as HTMLElement);
+      if (!view) {
+        throw new Error('CodeMirror EditorView not found for the theme editor');
+      }
+      view.focus();
+      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
+    },
+  });
 }
 
 describe('Theme settings', () => {
@@ -636,7 +651,7 @@ describe('Theme settings', () => {
     await expect.element(modal).toHaveTextContent(/Edit theme/);
     await expect.element(modal).toHaveTextContent(/json/i);
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await expect.element(modal).toHaveTextContent(/1 file modified/);
     await modal.getByRole('button', { name: 'Save' }).click();
     await settingsScreen
@@ -658,7 +673,10 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
+    await expect
+      .element(settingsScreen.themeCodeEditorModal())
+      .toHaveTextContent(/1 file modified/);
     window.dispatchEvent(
       new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
     );
@@ -701,7 +719,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     await settingsScreen
       .themeEditorConfirmModal()
@@ -733,7 +751,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     await settingsScreen
       .themeEditorConfirmModal()
@@ -765,7 +783,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     await settingsScreen
       .themeEditorConfirmModal()
@@ -788,7 +806,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     await settingsScreen
       .themeEditorConfirmModal()
@@ -806,7 +824,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/casper');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"casper","version":"1.0.0"}\n');
+    editor.setContent('{"name":"casper","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     const inputModal = settingsScreen.themeEditorInputModal();
     await inputModal.getByLabelText('Theme name').fill('Foo Bar!');
@@ -830,7 +848,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/casper');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"casper","version":"1.0.0"}\n');
+    editor.setContent('{"name":"casper","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Save' }).click();
     await settingsScreen.themeEditorInputModal().getByLabelText('Theme name').fill('casper-edited');
     await settingsScreen.themeEditorInputModal().getByRole('button', { name: 'Continue' }).click();
@@ -984,7 +1002,7 @@ describe('Theme settings', () => {
     await renderAdminApp('/settings/theme/edit/edition');
 
     const editor = await editorTextbox();
-    await editor.fill('{"name":"edition","version":"1.0.0"}\n');
+    editor.setContent('{"name":"edition","version":"1.0.0"}\n');
     await settingsScreen.themeCodeEditorModal().getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.themeEditorConfirmModal())

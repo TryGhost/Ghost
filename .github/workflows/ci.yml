@@ -734,7 +734,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_acceptance-tests:
-    runs-on: ubuntu-latest
+    # Private copies of this repo get 2-core runners, where vitest's DB suite
+    # falls to a single worker; the public repo's runner is already 4-core.
+    runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -903,7 +905,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_apps_acceptance-tests:
-    runs-on: ubuntu-latest
+    # Admin is by far the largest suite here and is CPU-bound; the other apps
+    # are not starved on the default runner. See job_acceptance-tests above.
+    runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
     if: needs.job_setup.outputs.affected_playwright_projects != '[]'
     name: App Playwright Acceptance Tests
