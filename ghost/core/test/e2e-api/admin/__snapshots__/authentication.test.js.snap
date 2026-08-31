@@ -1,5 +1,23 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`Authentication API generateResetToken Cannot generate a reset token for a suspended user 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This account has been suspended.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
 exports[`Authentication API generateResetToken Cannot generate reset token without required info 1: [body] 1`] = `
 Object {
   "errors": Array [
