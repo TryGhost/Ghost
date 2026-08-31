@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
-import logging from '@tryghost/logging';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
@@ -13,12 +12,8 @@ const registerJobHandlers =
 
 describe('register-job-handlers', function () {
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
-  let db: { knex: sinon.SinonStub & { transaction?: sinon.SinonStub } };
-  let loggingStub: sinon.SinonStubbedInstance<typeof logging>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
-  let models: { Member: { findOne: sinon.SinonStub } };
-  let events: { emit: sinon.SinonStub };
-  let sentry: { captureException: sinon.SinonStub };
+  let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
   let giftService: { cleanup: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
@@ -33,21 +28,16 @@ describe('register-job-handlers', function () {
 
   beforeEach(function () {
     jobsService = sinon.createStubInstance(JobsService);
-    db = { knex: sinon.stub() };
-    loggingStub = sinon.stub(logging);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
-    models = { Member: { findOne: sinon.stub() } };
-    events = { emit: sinon.stub() };
-    sentry = { captureException: sinon.stub() };
+    memberJobs = {
+      cleanTokens: sinon.stub().resolves(0),
+      cleanExpiredComped: sinon.stub().resolves(),
+    };
     giftService = { cleanup: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
-      db,
-      logging: loggingStub,
-      models,
-      events,
-      sentry,
+      memberJobs,
       giftService,
       mediaInliner,
     });
@@ -65,38 +55,20 @@ describe('register-job-handlers', function () {
     assert.ok(giftService.cleanup.calledOnce);
   });
 
-  it('runs clean-tokens with the injected database and logger', async function () {
-    const deleteStub = sinon.stub().resolves(2);
-    const whereStub = sinon.stub().returns({ delete: deleteStub });
-    db.knex.withArgs('tokens').returns({ where: whereStub });
+  it('runs clean-tokens with the injected member jobs module', async function () {
     const cleanTokensHandler = handlerFor('clean-tokens');
 
     await cleanTokensHandler({});
 
-    assert.ok(db.knex.calledOnceWithExactly('tokens'));
-    assert.ok(loggingStub.info.calledOnce);
-    const metadata = loggingStub.info.firstCall.args[0] as {
-      system: { deleted_count: number };
-    };
-    assert.equal(metadata.system.deleted_count, 2);
+    assert.ok(memberJobs.cleanTokens.calledOnce);
   });
 
-  it('runs clean-expired-comped with the injected database, models, events and logger', async function () {
-    db.knex.transaction = sinon.stub().callsFake(async (fn: (trx: unknown) => unknown) => {
-      const trx = () => ({
-        where: () => ({ select: async () => [] }),
-      });
-      return fn(trx);
-    });
+  it('runs clean-expired-comped with the injected member jobs module', async function () {
     const cleanExpiredCompedHandler = handlerFor('clean-expired-comped');
 
     await cleanExpiredCompedHandler({});
 
-    const completionLog = loggingStub.info.getCalls().find((call) => {
-      const metadata = call.args[0] as { system?: { event?: string } };
-      return metadata?.system?.event === 'clean_expired_comped.completed';
-    });
-    assert.ok(completionLog, 'the handler runs the task against the injected dependencies');
+    assert.ok(memberJobs.cleanExpiredComped.calledOnce);
   });
 
   it('runs external-media-inliner with the injected media inliner', async function () {

@@ -679,18 +679,13 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       require('./server/services/jobs-service/register-job-handlers').default;
     const mediaInliner = require('./server/services/media-inliner');
     const gifts = require('./server/services/gifts');
-    const db = require('./server/data/db');
-    const models = require('./server/models');
-    const events = require('./server/lib/common/events');
+    const memberJobs = require('./server/services/members/jobs');
     const jobsService = jobsServiceWrapper.init();
+    memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     registerJobHandlers({
       jobsService,
-      db,
-      logging,
-      models,
-      events,
-      sentry,
+      memberJobs,
       giftService: gifts.service,
       mediaInliner: mediaInliner.getInstance(),
     });
