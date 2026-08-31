@@ -96,6 +96,38 @@ Object {
 }
 `;
 
+exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal on a paid site 1: [body] 1`] = `
+Object {
+  "site": Object {
+    "accent_color": "#FF1A75",
+    "allow_external_signup": false,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    "description": "Thoughts, stories and ideas",
+    "icon": null,
+    "locale": "en",
+    "logo": null,
+    "site_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    "timezone": "Etc/UTC",
+    "title": "Ghost",
+    "url": "http://127.0.0.1:2369/",
+    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+/,
+  },
+}
+`;
+
+exports[`Site Public Settings Sets allow_external_signup to false when the free plan is hidden in Portal on a paid site 2: [headers] 1`] = `
+Object {
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Site Public Settings Sets allow_self_signup to false when members are invite only 1: [body] 1`] = `
 Object {
   "site": Object {

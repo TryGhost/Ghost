@@ -131,6 +131,63 @@ describe('Settings Helpers', function () {
     });
   });
 
+  describe('allowSelfSignup', function () {
+    function createSettingsHelpers({ signupAccess, portalPlans, stripeConnected }) {
+      const fakeSettings = createSettingsMock({
+        setDirect: stripeConnected,
+        setConnect: stripeConnected,
+      });
+      fakeSettings.get.withArgs('members_signup_access').returns(signupAccess);
+      fakeSettings.get.withArgs('portal_plans').returns(portalPlans);
+
+      return new SettingsHelpers({
+        settingsCache: fakeSettings,
+        config: configUtils.config,
+        urlUtils: {},
+        labs: {},
+        limitService,
+      });
+    }
+
+    it('returns true when signup access is "all" and the free plan is visible in Portal', function () {
+      const settingsHelpers = createSettingsHelpers({
+        signupAccess: 'all',
+        portalPlans: ['free', 'monthly', 'yearly'],
+        stripeConnected: true,
+      });
+      assert.equal(settingsHelpers.allowSelfSignup(), true);
+    });
+
+    it('returns false when the free plan is hidden in Portal on a paid site', function () {
+      const settingsHelpers = createSettingsHelpers({
+        signupAccess: 'all',
+        portalPlans: ['monthly', 'yearly'],
+        stripeConnected: true,
+      });
+      assert.equal(settingsHelpers.allowSelfSignup(), false);
+    });
+
+    it('returns true when the free plan is hidden in Portal but paid members are disabled', function () {
+      const settingsHelpers = createSettingsHelpers({
+        signupAccess: 'all',
+        portalPlans: [],
+        stripeConnected: false,
+      });
+      assert.equal(settingsHelpers.allowSelfSignup(), true);
+    });
+
+    it('returns false when signup access is not "all"', function () {
+      for (const signupAccess of ['invite', 'paid', 'none']) {
+        const settingsHelpers = createSettingsHelpers({
+          signupAccess,
+          portalPlans: ['free'],
+          stripeConnected: true,
+        });
+        assert.equal(settingsHelpers.allowSelfSignup(), false);
+      }
+    });
+  });
+
   describe('getMembersValidationKey', function () {
     it('returns a key that can be used to validate members', function () {
       const fakeSettings = createSettingsMock({ setDirect: true, setConnect: true });

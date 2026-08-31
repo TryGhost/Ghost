@@ -1,4 +1,9 @@
-const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  matchers,
+  mockManager,
+} = require('../../utils/e2e-framework');
 const { anyEtag, stringMatching, anyContentLength, anyUuid } = matchers;
 const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
@@ -20,12 +25,27 @@ describe('Site Public Settings', function () {
 
   afterEach(async function () {
     await models.Settings.edit(
-      {
-        key: 'members_signup_access',
-        value: 'all',
-      },
+      [
+        {
+          key: 'members_signup_access',
+          value: 'all',
+        },
+        {
+          key: 'portal_plans',
+          value: JSON.stringify(['free']),
+        },
+        {
+          key: 'stripe_secret_key',
+          value: null,
+        },
+        {
+          key: 'stripe_publishable_key',
+          value: null,
+        },
+      ],
       { context: { internal: true } },
     );
+    mockManager.restore();
   });
 
   it('Can retrieve site pubic config', async function () {
@@ -45,6 +65,37 @@ describe('Site Public Settings', function () {
         key: 'members_signup_access',
         value: 'invite',
       },
+      { context: { internal: true } },
+    );
+
+    const { body } = await membersAgent
+      .get('/api/site')
+      .matchBodySnapshot(siteMatcherObject)
+      .matchHeaderSnapshot({
+        etag: anyEtag,
+        'content-length': anyContentLength,
+      });
+    assert.equal(body.site.allow_external_signup, false);
+  });
+
+  it('Sets allow_external_signup to false when the free plan is hidden in Portal on a paid site', async function () {
+    mockManager.mockStripe();
+
+    await models.Settings.edit(
+      [
+        {
+          key: 'stripe_secret_key',
+          value: 'sk_test_blah',
+        },
+        {
+          key: 'stripe_publishable_key',
+          value: 'pk_test_blah',
+        },
+        {
+          key: 'portal_plans',
+          value: JSON.stringify(['monthly', 'yearly']),
+        },
+      ],
       { context: { internal: true } },
     );
 

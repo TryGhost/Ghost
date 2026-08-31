@@ -27,8 +27,20 @@ class SettingsHelpers {
     return this.settingsCache.get('members_signup_access') === 'invite';
   }
 
+  /**
+   * Whether the site actively offers free signup, not just whether the API permits it.
+   * Hiding "Free" in Portal on a paid site removes free signup from the UI without changing
+   * members_signup_access, so this must stay false in that case — it feeds the public
+   * allow_self_signup / allow_external_signup flags that other sites use to decide whether
+   * to show a one-click subscribe option for recommendations. API-level signup enforcement
+   * lives in members-config-provider getAllowSelfSignup, which only checks signup access.
+   */
   allowSelfSignup() {
-    return this.settingsCache.get('members_signup_access') === 'all';
+    return (
+      this.settingsCache.get('members_signup_access') === 'all' &&
+      ((this.settingsCache.get('portal_plans') ?? []).includes('free') ||
+        !this.arePaidMembersEnabled())
+    );
   }
 
   /**
