@@ -88,6 +88,9 @@ describe('content import schema', function () {
     assert.deepEqual(issuesFor({ Headline: 'title', Body: 'not_a_field' }), [
       'Unknown post field mapping: "not_a_field"',
     ]);
+    assert.deepEqual(issuesFor({ Headline: 'title', Metadata: 'frontmatter' }), [
+      'Unknown post field mapping: "frontmatter"',
+    ]);
     assert.deepEqual(issuesFor({ Headline: 'title', Duplicate: 'title' }), [
       'Post field is mapped more than once: "title"',
     ]);
