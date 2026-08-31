@@ -2,7 +2,7 @@ const { fixtureManager, mockManager } = require('./e2e-framework');
 const moment = require('moment');
 const models = require('../../core/server/models');
 const sinon = require('sinon');
-const jobManager = require('../../core/server/services/jobs/job-service');
+const emailService = require('../../core/server/services/email-service');
 const escapeRegExp = require('lodash/escapeRegExp');
 const assert = require('node:assert/strict');
 const { assertMatchSnapshot } = require('./assertions');
@@ -13,6 +13,109 @@ const getDefaultNewsletter = async function () {
 };
 
 let postCounter = 0;
+
+const emailJobTracker = {
+  dispatched: new Map(),
+  completed: new Map(),
+  waiters: new Set(),
+
+  reset() {
+    this.dispatched.clear();
+    this.completed.clear();
+    this.waiters.clear();
+  },
+
+  count(map, emailId) {
+    map.set(emailId, (map.get(emailId) || 0) + 1);
+    this.resolveWaiters();
+  },
+
+  resolveWaiters() {
+    for (const waiter of this.waiters) {
+      if (waiter.ready()) {
+        clearTimeout(waiter.timeout);
+        this.waiters.delete(waiter);
+        waiter.resolve();
+      }
+    }
+  },
+
+  waitUntil(ready) {
+    if (ready()) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const waiter = { ready, resolve, timeout: null };
+      waiter.timeout = setTimeout(() => {
+        this.waiters.delete(waiter);
+        reject(
+          new Error(
+            `Timed out waiting for email jobs: dispatched=${JSON.stringify(Object.fromEntries(this.dispatched))} completed=${JSON.stringify(Object.fromEntries(this.completed))}`,
+          ),
+        );
+      }, 10_000);
+      this.waiters.add(waiter);
+    });
+  },
+};
+
+let trackedBatchSendingService;
+let originalScheduleEmail;
+let originalEmailJob;
+
+function installEmailJobTracker() {
+  const batchSendingService = emailService.batchSendingService;
+  assert(batchSendingService, 'batch sending service must be initialized before tracking jobs');
+
+  if (trackedBatchSendingService !== batchSendingService) {
+    if (trackedBatchSendingService) {
+      trackedBatchSendingService.scheduleEmail = originalScheduleEmail;
+      trackedBatchSendingService.emailJob = originalEmailJob;
+    }
+
+    trackedBatchSendingService = batchSendingService;
+    originalScheduleEmail = batchSendingService.scheduleEmail;
+    originalEmailJob = batchSendingService.emailJob;
+
+    batchSendingService.scheduleEmail = function (email) {
+      emailJobTracker.count(emailJobTracker.dispatched, email.id);
+      return originalScheduleEmail.apply(this, arguments);
+    };
+
+    batchSendingService.emailJob = async function ({ emailId }) {
+      try {
+        return await originalEmailJob.apply(this, arguments);
+      } finally {
+        emailJobTracker.count(emailJobTracker.completed, emailId);
+      }
+    };
+  }
+
+  emailJobTracker.reset();
+}
+
+beforeEach(function () {
+  installEmailJobTracker();
+});
+
+function waitForEmailJob(emailId) {
+  return emailJobTracker.waitUntil(() => {
+    const dispatched = emailJobTracker.dispatched.get(emailId) || 0;
+    return dispatched > 0 && (emailJobTracker.completed.get(emailId) || 0) >= dispatched;
+  });
+}
+
+function allEmailJobsSettled() {
+  return emailJobTracker.waitUntil(() => {
+    for (const [emailId, count] of emailJobTracker.dispatched) {
+      if ((emailJobTracker.completed.get(emailId) || 0) < count) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
 
 async function createPublishedPostEmail(agent, settings = {}, email_recipient_filter) {
   const post = {
@@ -69,7 +172,6 @@ let lastEmailModel;
  */
 async function sendEmail(agent, settings, email_recipient_filter) {
   // Prepare a post and email model
-  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
   const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
   assert.ok(emailModel.get('subject'));
@@ -78,7 +180,7 @@ async function sendEmail(agent, settings, email_recipient_filter) {
   assert.equal(emailModel.get('source_type'), 'lexical');
 
   // Await sending job
-  await completedPromise;
+  await waitForEmailJob(emailModel.id);
 
   await emailModel.refresh();
   assert.equal(emailModel.get('status'), 'submitted');
@@ -95,7 +197,6 @@ async function sendEmail(agent, settings, email_recipient_filter) {
  */
 async function sendFailedEmail(agent, settings, email_recipient_filter) {
   // Prepare a post and email model
-  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
   const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
   assert.ok(emailModel.get('subject'));
@@ -104,7 +205,7 @@ async function sendFailedEmail(agent, settings, email_recipient_filter) {
   assert.equal(emailModel.get('source_type'), 'lexical');
 
   // Await sending job
-  await completedPromise;
+  await waitForEmailJob(emailModel.id);
 
   await emailModel.refresh();
   assert.equal(emailModel.get('status'), 'failed');
@@ -228,4 +329,6 @@ module.exports = {
   retryEmail,
   matchEmailSnapshot,
   getLastEmail,
+  waitForEmailJob,
+  allEmailJobsSettled,
 };

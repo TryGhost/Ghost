@@ -4,7 +4,6 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const { settingsCache } = require('../../../../core/server/services/settings-helpers');
@@ -17,6 +16,7 @@ const {
   matchEmailSnapshot,
   getDefaultNewsletter,
   retryEmail,
+  allEmailJobsSettled,
 } = require('../../../utils/batch-email-utils');
 const {
   setupEmailVerificationUtils,
@@ -146,7 +146,7 @@ describe('Batch sending tests', function () {
       { context: { internal: true } },
     );
     mockManager.restore();
-    await jobManager.allSettled();
+    await allEmailJobsSettled();
 
     // Drop any members a test created so they don't leak into later tests —
     // a leaked subscriber shifts recipient counts and cascades failures.
@@ -243,7 +243,7 @@ describe('Batch sending tests', function () {
     await Promise.all(emailModels.map((model) => emailService.service.retryEmail(model)));
 
     // Await sending job
-    await jobManager.allSettled();
+    await allEmailJobsSettled();
 
     // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
     // (pending/failed -> submitting) ensures only one job actually sends. The already
@@ -614,7 +614,7 @@ describe('Batch sending tests', function () {
     const infoLog = sinon.stub(logging, 'info');
 
     await retryEmail(agent, emailModel.id);
-    await jobManager.allSettled();
+    await allEmailJobsSettled();
 
     const skipLogs = infoLog
       .getCalls()
