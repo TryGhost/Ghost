@@ -22,7 +22,7 @@ describe('Email Service', function () {
       members: null,
     };
     verificicationRequired = false;
-    scheduleEmail = sinon.stub().returns();
+    scheduleEmail = sinon.stub().resolves();
     scheduleRecurringNewslettersJob = sinon.stub().resolves();
     settings = {};
     settingsCache = {
@@ -491,7 +491,7 @@ describe('Email Service', function () {
         }),
       });
 
-      scheduleEmail.throws(new Error('Test error'));
+      scheduleEmail.rejects(new Error('Test error'));
 
       const email = await service.createEmail(post);
       sinon.assert.calledOnce(scheduleEmail);
@@ -509,7 +509,7 @@ describe('Email Service', function () {
         }),
       });
 
-      scheduleEmail.throws(new Error());
+      scheduleEmail.rejects(new Error());
 
       const email = await service.createEmail(post);
       sinon.assert.calledOnce(scheduleEmail);
@@ -545,6 +545,21 @@ describe('Email Service', function () {
 
       await service.retryEmail(email);
       sinon.assert.calledOnce(scheduleEmail);
+    });
+
+    it('Restores failed status and preserves the error if scheduling fails', async function () {
+      const schedulingError = new Error('Scheduling failed');
+      const email = createModel({
+        status: 'failed',
+        error: 'Original send error',
+        post: createModel({ status: 'published' }),
+      });
+      scheduleEmail.rejects(schedulingError);
+
+      await assert.rejects(() => service.retryEmail(email), schedulingError);
+
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), 'Original send error');
     });
 
     it('Does not schedule email again if draft', async function () {
@@ -653,6 +668,49 @@ describe('Email Service', function () {
       await localService.resumeInterruptedSends();
 
       sinon.assert.calledTwice(scheduleEmail);
+      sinon.assert.calledOnce(errorLog);
+    });
+
+    it('Continues recovery after a dispatch failure', async function () {
+      const errorLog = sinon.stub(logging, 'error');
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const emails = [
+        createModel({
+          id: 'bad-dispatch',
+          status: 'pending',
+          post: createModel({ status: 'published' }),
+        }),
+        createModel({
+          id: 'good-dispatch',
+          status: 'pending',
+          post: createModel({ status: 'published' }),
+        }),
+      ];
+      scheduleEmail.onFirstCall().rejects(new Error('Queue unavailable'));
+      scheduleEmail.onSecondCall().resolves();
+      const localService = new EmailService({
+        emailSegmenter: { getMembersCount: () => Promise.resolve(0) },
+        limitService: {
+          isLimited: () => false,
+          errorIfIsOverLimit: () => {},
+          errorIfWouldGoOverLimit: () => {},
+        },
+        verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
+        models: { Email: { findAll: filterAwareFindAll(emails) } },
+        batchSendingService: { scheduleEmail, updateStatusLock },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledTwice(scheduleEmail);
+      assert.equal(scheduleEmail.firstCall.args[0], emails[0]);
+      assert.equal(scheduleEmail.secondCall.args[0], emails[1]);
       sinon.assert.calledOnce(errorLog);
     });
 
