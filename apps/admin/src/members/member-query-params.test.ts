@@ -181,7 +181,7 @@ describe('custom field columns', () => {
   ];
 
   const filterOn = (key: string): FilterPredicate[] => [
-    { id: '1', field: `custom_fields.${key}`, operator: 'contains', values: ['x'] },
+    { id: '1', field: `metafields.custom.${key}`, operator: 'contains', values: ['x'] },
   ];
 
   it('names one column per field filtered on, from the field itself', () => {
@@ -190,7 +190,7 @@ describe('custom field columns', () => {
         key,
         label,
       })),
-    ).toEqual([{ key: 'custom_fields.job_title', label: 'Job title' }]);
+    ).toEqual([{ key: 'metafields.custom.job_title', label: 'Job title' }]);
   });
 
   // The template resolves to one shared definition for every custom field, so two
@@ -199,8 +199,8 @@ describe('custom field columns', () => {
     const filters = [...filterOn('job_title'), ...filterOn('shipping_address')];
 
     expect(getMemberActiveColumns(filters, { customFields }).map((column) => column.key)).toEqual([
-      'custom_fields.job_title',
-      'custom_fields.shipping_address',
+      'metafields.custom.job_title',
+      'metafields.custom.shipping_address',
     ]);
   });
 
@@ -223,7 +223,7 @@ describe('custom field columns', () => {
   it('reads a scalar value by key', () => {
     const m = member({ metafields: { custom: { job_title: 'Editor' } } });
 
-    expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toEqual({
+    expect(columnFor('metafields.custom.job_title', { customFields }).getValue(m, 'UTC')).toEqual({
       text: 'Editor',
     });
   });
@@ -243,13 +243,15 @@ describe('custom field columns', () => {
     });
 
     expect(
-      columnFor('custom_fields.shipping_address', { customFields }).getValue(m, 'UTC'),
+      columnFor('metafields.custom.shipping_address', { customFields }).getValue(m, 'UTC'),
     ).toEqual({ text: '1 Main St, Berlin, 10115, DE' });
   });
 
   it('returns null when the member has no value', () => {
     const m = member({ metafields: { custom: {} } });
 
-    expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toBeNull();
+    expect(
+      columnFor('metafields.custom.job_title', { customFields }).getValue(m, 'UTC'),
+    ).toBeNull();
   });
 });

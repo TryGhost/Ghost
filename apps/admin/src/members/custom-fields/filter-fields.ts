@@ -40,7 +40,7 @@ function compositeFilterType(type: MemberCustomField['type']): FilterTypeId {
   return partFilterTypes[0] ?? 'text';
 }
 
-export const CUSTOM_FIELD_CLAUSE = 'custom_fields.';
+export const CUSTOM_FIELD_CLAUSE = 'metafields.';
 
 export interface CustomFieldDefinition {
   key: string;
@@ -52,7 +52,7 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
   const kind = memberCustomFieldKind(definition.type);
 
   return {
-    key: `custom_fields.${definition.key}`,
+    key: `metafields.custom.${definition.key}`,
     icon: 'text',
     type: kind === 'record' ? compositeFilterType(definition.type) : SCALAR_KIND_FILTER_TYPE[kind],
     addressing: customFieldAddressing(definition.key),

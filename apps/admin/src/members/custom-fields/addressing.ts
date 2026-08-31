@@ -1,6 +1,5 @@
 import { escapeNqlString } from '@tryghost/nql-string';
 import {
-  keyBelow,
   PRESENCE_OPERATORS,
   getCompoundChildren,
   readNegatedString,
@@ -8,17 +7,34 @@ import {
 } from '@/shared/filters';
 import type { CompoundMatch, PresenceAddressing } from '@/shared/filters';
 
-const RELATION = 'custom_fields';
+const RELATION = 'metafields';
 const KEY_ATTRIBUTE = `${RELATION}.key`;
 const VALUE_ATTRIBUTE = `${RELATION}.value`;
-const PATH_ATTRIBUTE = `${RELATION}.path`;
 
-export const CUSTOM_FIELD_KEY_PREFIX = 'custom_fields.';
+export const CUSTOM_FIELD_KEY_PREFIX = 'metafields.custom.';
+
+// The identity the key clause carries: the field's namespace and key, extended with a
+// part path to name one leaf of a composite value. Bound to the publisher's namespace
+// here because these fields are the publisher's.
+function identityOf(fieldKey: string, subfield: string): string {
+  return subfield ? `custom.${fieldKey}.${subfield}` : `custom.${fieldKey}`;
+}
+
+function parseCustomIdentity(raw: unknown): { key: string; subfield: string } | null {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const [namespace, key, ...parts] = raw.split('.');
+  if (namespace !== 'custom' || !key) {
+    return null;
+  }
+  return { key, subfield: parts.join('.') };
+}
 
 export const CUSTOM_FIELD_SET_OPERATORS = PRESENCE_OPERATORS;
 
-function keyClause(fieldKey: string): string {
-  return `${KEY_ATTRIBUTE}:${escapeNqlString(fieldKey)}`;
+function keyClause(identity: string): string {
+  return `${KEY_ATTRIBUTE}:${escapeNqlString(identity)}`;
 }
 
 function readValues(values: unknown[]): { subfield: string; value: unknown } {
@@ -43,20 +59,19 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
       }
 
       return {
-        valueKey: subfield ? `${VALUE_ATTRIBUTE}.${subfield}` : VALUE_ATTRIBUTE,
-        companions: [keyClause(fieldKey)],
+        valueKey: VALUE_ATTRIBUTE,
+        companions: [keyClause(identityOf(fieldKey, subfield))],
         values: [value],
       };
     },
 
     // The shape of these clauses is not ours to choose. The members API rewrites them into a
     // single lookup over the rows holding custom field values, and it only accepts two forms:
-    // a lone key clause, or a key clause grouped with one path or value clause. See
-    // ghost/core/core/server/services/members-custom-fields/filter.ts.
+    // a lone key clause carrying a leaf identity, or a key clause grouped with one value
+    // clause. See ghost/core/core/server/services/members-custom-fields/filter.ts.
     //
-    // A minus sign inside the group also negates the whole lookup, so `key:'x'+path:-'country'`
-    // asks for members with no x/country value at all, not for one whose part is something
-    // else. Anything else is either a 400 or a quietly wrong set of members.
+    // The identity names the leaf, so a part's presence is the bare key clause with the
+    // part path in the identity; its negation asks for members with no such leaf at all.
     addressPresence(predicate, ctx) {
       const fieldKey = boundKey ?? ctx.params.key;
       const { subfield } = readValues(predicate.values);
@@ -65,15 +80,13 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
         return null;
       }
 
+      const identity = identityOf(fieldKey, subfield);
+
       if (predicate.operator === 'is-set') {
-        return subfield
-          ? [`(${keyClause(fieldKey)}+${PATH_ATTRIBUTE}:${escapeNqlString(subfield)})`]
-          : [keyClause(fieldKey)];
+        return [keyClause(identity)];
       }
 
-      return subfield
-        ? [`(${keyClause(fieldKey)}+${PATH_ATTRIBUTE}:-${escapeNqlString(subfield)})`]
-        : [`${KEY_ATTRIBUTE}:-${escapeNqlString(fieldKey)}`];
+      return [`${KEY_ATTRIBUTE}:-${escapeNqlString(identity)}`];
     },
 
     match() {
@@ -86,36 +99,36 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
       const children = getCompoundChildren(node, '$and');
 
       if (!children) {
-        const keyValue = node[KEY_ATTRIBUTE];
+        const identity = parseCustomIdentity(node[KEY_ATTRIBUTE]);
 
-        if (typeof keyValue === 'string') {
-          if (!ownsKey(keyValue)) {
+        if (identity) {
+          if (!ownsKey(identity.key)) {
             return null;
           }
 
           return {
             kind: 'predicate',
             predicate: {
-              field: `${CUSTOM_FIELD_KEY_PREFIX}${keyValue}`,
+              field: `${CUSTOM_FIELD_KEY_PREFIX}${identity.key}`,
               operator: 'is-set',
-              values: ['', ''],
+              values: [identity.subfield, ''],
             },
           };
         }
 
-        const negatedKey = readNegatedString(keyValue);
+        const negated = parseCustomIdentity(readNegatedString(node[KEY_ATTRIBUTE]));
 
-        if (negatedKey !== null) {
-          if (!ownsKey(negatedKey)) {
+        if (negated) {
+          if (!ownsKey(negated.key)) {
             return null;
           }
 
           return {
             kind: 'predicate',
             predicate: {
-              field: `${CUSTOM_FIELD_KEY_PREFIX}${negatedKey}`,
+              field: `${CUSTOM_FIELD_KEY_PREFIX}${negated.key}`,
               operator: 'is-not-set',
-              values: ['', ''],
+              values: [negated.subfield, ''],
             },
           };
         }
@@ -127,56 +140,26 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
         return null;
       }
 
-      let fieldKey: string | undefined;
-      let valueEntry: { subfield: string; raw: unknown } | undefined;
-      let pathEntry: { subfield: string; negated: boolean } | undefined;
+      let identity: { key: string; subfield: string } | undefined;
+      let valueRaw: unknown;
+      let hasValue = false;
 
       for (const child of children) {
-        if (typeof child[KEY_ATTRIBUTE] === 'string') {
-          fieldKey = child[KEY_ATTRIBUTE];
+        const parsed = parseCustomIdentity(child[KEY_ATTRIBUTE]);
+        if (parsed) {
+          identity = parsed;
         }
-
-        for (const childKey of Object.keys(child)) {
-          if (childKey === VALUE_ATTRIBUTE) {
-            valueEntry = { subfield: '', raw: child[childKey] };
-          } else if (keyBelow(childKey, VALUE_ATTRIBUTE)) {
-            valueEntry = {
-              subfield: keyBelow(childKey, VALUE_ATTRIBUTE) ?? '',
-              raw: child[childKey],
-            };
-          } else if (childKey === PATH_ATTRIBUTE) {
-            const raw = child[childKey];
-            const negatedPath = readNegatedString(raw);
-
-            if (typeof raw === 'string') {
-              pathEntry = { subfield: raw, negated: false };
-            } else if (negatedPath !== null) {
-              pathEntry = { subfield: negatedPath, negated: true };
-            }
-          }
+        if (VALUE_ATTRIBUTE in child) {
+          valueRaw = child[VALUE_ATTRIBUTE];
+          hasValue = true;
         }
       }
 
-      if (!fieldKey || !ownsKey(fieldKey)) {
+      if (!identity || !hasValue || !ownsKey(identity.key)) {
         return null;
       }
 
-      if (pathEntry) {
-        return {
-          kind: 'predicate',
-          predicate: {
-            field: `${CUSTOM_FIELD_KEY_PREFIX}${fieldKey}`,
-            operator: pathEntry.negated ? 'is-not-set' : 'is-set',
-            values: [pathEntry.subfield, ''],
-          },
-        };
-      }
-
-      if (!valueEntry) {
-        return null;
-      }
-
-      const comparator = toComparator(valueEntry.raw);
+      const comparator = toComparator(valueRaw);
 
       if (!comparator) {
         return null;
@@ -184,8 +167,8 @@ export function customFieldAddressing(boundKey?: string): PresenceAddressing {
 
       return {
         kind: 'value',
-        field: `${CUSTOM_FIELD_KEY_PREFIX}${fieldKey}`,
-        leadingValues: [valueEntry.subfield],
+        field: `${CUSTOM_FIELD_KEY_PREFIX}${identity.key}`,
+        leadingValues: [identity.subfield],
         comparator,
       };
     },

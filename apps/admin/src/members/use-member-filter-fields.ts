@@ -52,7 +52,7 @@ interface UseMemberFilterFieldsOptions {
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
 
-type PickerKey = StaticMemberFieldKey | `newsletters.${string}` | `custom_fields.${string}`;
+type PickerKey = StaticMemberFieldKey | `newsletters.${string}` | `metafields.${string}`;
 
 const BASIC_ORDER = [
   'name',
@@ -313,7 +313,7 @@ export function useMemberFilterFields({
       const parameterised = keyIsUnder(key, 'newsletters')
         ? fields['newsletters.:slug']
         : keyIsUnder(key, CUSTOM_FIELDS_PREFIX)
-          ? fields['custom_fields.:key']
+          ? fields['metafields.custom.:key']
           : undefined;
       const field = fields[key] ?? parameterised;
 
@@ -406,7 +406,7 @@ export function useMemberFilterFields({
     // "Custom field" door. A simple field filters on its value; a composite field's
     // renderer opens its parts (plus "Any") in the pill.
     const customFieldFields = customFields.map((field) =>
-      createFieldConfig(`custom_fields.${field.key}`, {
+      createFieldConfig(`metafields.custom.${field.key}`, {
         label: field.name,
         // The dropdown entry and the added filter show the field type's own icon
         // rather than a generic custom-field mark.
@@ -427,7 +427,7 @@ export function useMemberFilterFields({
     // so the picker's own de-dup keeps it out of the add-list — it only ever
     // renders as an existing pill.
     const archivedFieldFields = archivedCustomFields.map((field) =>
-      createFieldConfig(`custom_fields.${field.key}`, {
+      createFieldConfig(`metafields.custom.${field.key}`, {
         label: field.name,
         icon: React.createElement(LucideIcon.Archive, { className: 'size-4' }),
         // Read-only: the operator and value stay visible so the segment reads
