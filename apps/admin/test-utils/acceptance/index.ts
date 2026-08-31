@@ -1,6 +1,7 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { fakeAnalyticsOverview } from './analytics';
 export { currentRoute, renderAdminApp } from './render-admin-app';
+export { renderSettingsScreen, renderPostsListScreen } from './screens';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export {
   defineResource,
@@ -31,6 +32,10 @@ export type {
   BrowseQuery,
   EditSettingsCapture,
   FakeMembersOptions,
+  FakeTagsOptions,
+  TagUpdateBody,
+  FakeMemberCustomFieldsOptions,
+  CustomFieldCreateBody,
   ResourceCapture,
   ResourceOptions,
   ResourceSemantics,
@@ -74,10 +79,12 @@ export {
   comment,
   commentThread,
   configResponse,
+  connectedStripeSettings,
   currentUserResponse,
   defaultThemesResponse,
   label,
   member,
+  memberCustomField,
   memberStatusStat,
   mrrHistoryStat,
   newsletter,
@@ -123,8 +130,10 @@ export type {
   Comment,
   CommentThread,
   CurrentUserResponse,
+  ConnectedStripeSettings,
   Label,
   Member,
+  MemberCustomField,
   MemberStatusStat,
   MrrHistoryStat,
   Newsletter,
@@ -138,6 +147,7 @@ export type {
   PostStats,
   ReplySpec,
   SettingsResponse,
+  SettingValue,
   StaffInvite,
   StaffRole,
   StaffRoleName,

@@ -4,6 +4,10 @@ export type { Builder, RequiredBuilder, RequiredBuilderInput } from './factory';
 export { tag } from './builders/tag';
 export type { Tag } from './builders/tag';
 export { member } from './builders/member';
+export { memberCustomField } from './builders/member-custom-field';
+export type { MemberCustomField } from './builders/member-custom-field';
+export { connectedStripeSettings } from './builders/stripe-settings';
+export type { ConnectedStripeSettings } from './builders/stripe-settings';
 export type { Member, MemberNewsletter, MemberTier } from './builders/member';
 export { label } from './builders/label';
 export type { Label } from './builders/label';
@@ -112,3 +116,4 @@ export type {
   SettingsResponse,
   SiteResponse,
 } from './fixtures';
+export type { SettingValue } from './fixtures/data/settings';

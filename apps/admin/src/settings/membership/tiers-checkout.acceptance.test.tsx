@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
+  connectedStripeSettings,
+  memberCustomField,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
-  fakeSettingsScreens,
   fakeTiers,
-  renderAdminApp,
-  settingsResponse,
+  renderSettingsScreen,
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -20,41 +19,12 @@ const supporterTier = tier({
   slug: 'basic-supporter',
 });
 
-const addressField = {
+const addressField = memberCustomField({
   key: 'shipping_address',
   name: 'Shipping Address',
   type: 'address',
-  status: 'active',
-  created_at: '2026-07-13T00:00:00.000Z',
-  updated_at: null as string | null,
-};
-
-const nameField = {
-  ...addressField,
-  key: 'recipient_name',
-  name: 'Recipient Name',
-  type: 'short_text',
-};
-
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
-  return settingsResponse({
-    ...overrides,
-    settings: {
-      stripe_connect_display_name: 'Dummy',
-      stripe_connect_livemode: false,
-      stripe_connect_account_id: 'acct_123',
-      stripe_connect_publishable_key: 'pk_test_123',
-      stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
-    },
-  });
-}
-
-// The flag lives in settings and config in lockstep, and Stripe rides along in settings.
-const flagOnBoot = {
-  browseConfig: { response: configResponse({ labs: { membersCustomFields: true } }) },
-  browseSettings: { response: stripeSettings({ labs: { membersCustomFields: true } }) },
-};
+});
+const nameField = memberCustomField({ key: 'recipient_name', name: 'Recipient Name' });
 
 const supporterConfig = {
   tier_id: supporterTier.id,
@@ -70,7 +40,6 @@ const supporterConfig = {
 
 /** The world most specs share: both tiers, both fields, and a declared configuration. */
 function checkoutWorld(configs: object[] = []) {
-  fakeSettingsScreens();
   fakeTiers([freeTier, supporterTier]);
   fakeMemberCustomFields([addressField, nameField]);
   fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: configs });
@@ -89,12 +58,11 @@ async function openSupporterModal() {
 
 describe('Tier checkout collection', () => {
   it('keeps the tier modal untouched and the endpoint unqueried while the flag is off', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     const configApi = fakeAdminEndpoint('GET', '/tiers/checkout_config/', {
       tiers_checkout_config: [],
     });
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     const modal = await openSupporterModal();
     await expect(modal.getByText('Checkout', { exact: true })).toHaveCount(0);
@@ -104,7 +72,6 @@ describe('Tier checkout collection', () => {
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
   // Core without this endpoint must keep existing tier editing intact.
   it('renders the tier modal without the section against a Core without the endpoint', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     // The flag also shows the Custom fields settings group, which browses the fields.
     fakeMemberCustomFields([]);
@@ -114,7 +81,10 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
       { status: 404 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await expect(modal.getByText('Checkout', { exact: true })).toHaveCount(0);
@@ -122,7 +92,6 @@ describe('Tier checkout collection', () => {
   });
 
   it("holds the section's place with an explanation when the configuration read fails", async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     fakeMemberCustomFields([]);
     fakeAdminEndpoint(
@@ -131,7 +100,10 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'InternalServerError', message: 'Something went wrong.' }] },
       { status: 500 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByText(/could not be loaded/)).toBeVisible();
@@ -140,7 +112,10 @@ describe('Tier checkout collection', () => {
 
   it('shows no checkout section on the free tier', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     await settingsScreen.tiers().getByText(freeTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -150,7 +125,10 @@ describe('Tier checkout collection', () => {
 
   it('reflects the saved configuration and writes nothing when untouched', async () => {
     const putApi = checkoutWorld([supporterConfig]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -182,7 +160,10 @@ describe('Tier checkout collection', () => {
     const everywhere = { ...supporterConfig.shipping };
     delete (everywhere as { allowed_countries?: string[] }).allowed_countries;
     checkoutWorld([{ ...supporterConfig, shipping: everywhere }]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -192,7 +173,10 @@ describe('Tier checkout collection', () => {
 
   it('validates destinations inline before anything is written', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -204,7 +188,10 @@ describe('Tier checkout collection', () => {
 
   it('saves the chosen collections, stating every block explicitly', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -240,7 +227,6 @@ describe('Tier checkout collection', () => {
   // picker it names, carrying the server's own words rather than a guess restated here.
   it('shows a refused destination against the picker that named it', async () => {
     const refusal = 'An archived custom field cannot receive collected data. Restore it first.';
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     fakeMemberCustomFields([addressField, nameField]);
     fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
@@ -259,7 +245,10 @@ describe('Tier checkout collection', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -280,17 +269,16 @@ describe('Tier checkout collection', () => {
   });
 
   it('creates a destination field from inside the picker', async () => {
-    let fields = [addressField];
     const created = { ...nameField, key: 'gift_recipient', name: 'Gift Recipient' };
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    fakeMemberCustomFields(() => fields);
-    fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
-    const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
-      fields = [...fields, created];
-      return { members_custom_fields: [created] };
+    const { create: createApi } = fakeMemberCustomFields([addressField], {
+      create: { response: created },
     });
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -318,7 +306,6 @@ describe('Tier checkout collection', () => {
       yearly_price: 8000,
     });
     let saved = false;
-    fakeSettingsScreens();
     fakeTiers(() => (saved ? [freeTier, supporterTier, createdTier] : [freeTier, supporterTier]));
     fakeMemberCustomFields([addressField, nameField]);
     fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
@@ -335,7 +322,10 @@ describe('Tier checkout collection', () => {
         ],
       }),
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     await settingsScreen.tiers().getByRole('button', { name: 'Add tier' }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -377,7 +367,10 @@ describe('Tier checkout collection', () => {
 
   it('closes without confirmation after saving checkout edits', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect business tax ID').click();
@@ -392,7 +385,10 @@ describe('Tier checkout collection', () => {
 
   it('asks before discarding unsaved checkout edits', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderSettingsScreen('/settings', {
+      labs: { membersCustomFields: true },
+      settings: connectedStripeSettings(),
+    });
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect phone number').click();

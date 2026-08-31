@@ -2,13 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
+  connectedStripeSettings,
   fakeAdminEndpoint,
   fakeEditSettings,
-  fakeSettingsScreens,
   fakeTiers,
-  renderAdminApp,
-  settingsResponse,
+  renderSettingsScreen,
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -21,39 +19,6 @@ const supporterTier = tier({
   benefits: ['Simple benefit'],
 });
 
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
-  return settingsResponse({
-    ...overrides,
-    settings: {
-      stripe_connect_display_name: 'Dummy',
-      stripe_connect_livemode: false,
-      stripe_connect_account_id: 'acct_123',
-      stripe_connect_publishable_key: 'pk_test_123',
-      stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
-    },
-  });
-}
-
-function withoutSettings(keys: string[]) {
-  const response = stripeSettings({ labs: { machinePayments: true } });
-  response.settings = response.settings.filter(({ key }) => !keys.includes(key));
-  return response;
-}
-
-function stripeLimitConfig() {
-  const config = configResponse();
-  config.config.hostSettings = {
-    limits: {
-      limitStripeConnect: {
-        disabled: true,
-        error: "Your current plan doesn't support Stripe Connect.",
-      },
-    },
-  };
-  return config;
-}
-
 describe('Tier settings', () => {
   it('validates and creates a paid tier in the visible list', async () => {
     const created = tier({
@@ -64,13 +29,12 @@ describe('Tier settings', () => {
       yearly_price: 8000,
     });
     let saved = false;
-    fakeSettingsScreens();
     fakeTiers(() => (saved ? [freeTier, supporterTier, created] : [freeTier, supporterTier]));
     const createApi = fakeAdminEndpoint('POST', '/tiers/', () => {
       saved = true;
       return { tiers: [created] };
     });
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     await settingsScreen.tiers().getByRole('button', { name: 'Add tier' }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -103,10 +67,9 @@ describe('Tier settings', () => {
       trial_days: 7,
       benefits: ['Simple benefit', 'New benefit'],
     };
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     const editApi = fakeAdminEndpoint('PUT', `/tiers/${supporterTier.id}/`, { tiers: [updated] });
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     await settingsScreen.tiers().getByText(supporterTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -147,10 +110,9 @@ describe('Tier settings', () => {
       welcome_page_url: '/welcome-page/',
       benefits: ['First benefit', 'Second benefit'],
     };
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
     const editApi = fakeAdminEndpoint('PUT', `/tiers/${freeTier.id}/`, { tiers: [updated] });
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     await settingsScreen.tiers().getByText(freeTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -179,9 +141,8 @@ describe('Tier settings', () => {
       ...supporterTier,
       benefits: Array.from({ length: 12 }, (_, index) => `Benefit ${index + 1}`),
     };
-    fakeSettingsScreens();
     fakeTiers([freeTier, scrollingTier]);
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     await settingsScreen.tiers().getByText(scrollingTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -229,13 +190,12 @@ describe('Tier settings', () => {
 
   it('moves a tier between the Active and Archived tabs when archived and reactivated', async () => {
     let currentSupporter = supporterTier;
-    fakeSettingsScreens();
     fakeTiers(() => [freeTier, currentSupporter]);
     const editApi = fakeAdminEndpoint('PUT', `/tiers/${supporterTier.id}/`, ({ body }) => {
       currentSupporter = (body as { tiers: [typeof supporterTier] }).tiers[0];
       return { tiers: [currentSupporter] };
     });
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     const section = settingsScreen.tiers();
     const tierName = section.getByText(supporterTier.name, { exact: true });
@@ -281,11 +241,10 @@ describe('Tier settings', () => {
 
   it('shows a hidden paid tier as unchecked in portal signup options and saves enabling it', async () => {
     const hidden = { ...supporterTier, visibility: 'none' as const };
-    fakeSettingsScreens();
     fakeTiers([freeTier, hidden]);
     fakeEditSettings();
     const tierApi = fakeAdminEndpoint('PUT', `/tiers/${hidden.id}/`, ({ body }) => body);
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
+    await renderSettingsScreen('/settings', { settings: connectedStripeSettings() });
 
     await settingsScreen.portal().getByRole('button', { name: 'Customize' }).click();
     const modal = settingsScreen.portalModal();
@@ -302,10 +261,14 @@ describe('Tier settings', () => {
   });
 
   it('blocks Stripe connection when the plan limit applies', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings', {
-      boot: { browseConfig: { response: stripeLimitConfig() } },
+    await renderSettingsScreen('/settings', {
+      limits: {
+        limitStripeConnect: {
+          disabled: true,
+          error: "Your current plan doesn't support Stripe Connect.",
+        },
+      },
     });
 
     await settingsScreen.tiers().getByRole('button', { name: 'Connect with Stripe' }).click();
@@ -318,13 +281,15 @@ describe('Tier settings', () => {
   });
 
   it('allows an already-connected site to manage Stripe despite the plan limit', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings', {
-      boot: {
-        browseConfig: { response: stripeLimitConfig() },
-        browseSettings: { response: stripeSettings() },
+    await renderSettingsScreen('/settings', {
+      limits: {
+        limitStripeConnect: {
+          disabled: true,
+          error: "Your current plan doesn't support Stripe Connect.",
+        },
       },
+      settings: connectedStripeSettings(),
     });
 
     await settingsScreen
@@ -337,11 +302,10 @@ describe('Tier settings', () => {
   });
 
   it('shows agent payment controls when the lab is on and the backend has deployed them', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings', {
+    await renderSettingsScreen('/settings', {
       labs: { machinePayments: true },
-      boot: { browseSettings: { response: stripeSettings({ labs: { machinePayments: true } }) } },
+      settings: connectedStripeSettings(),
     });
 
     await expect
@@ -353,11 +317,11 @@ describe('Tier settings', () => {
   });
 
   it('hides agent payment controls when the backend has not deployed them', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings', {
+    await renderSettingsScreen('/settings', {
       labs: { machinePayments: true },
-      boot: { browseSettings: { response: withoutSettings(['machine_payments_enabled']) } },
+      settings: connectedStripeSettings(),
+      omitSettings: ['machine_payments_enabled'],
     });
 
     await expect(settingsScreen.tiers().getByText('Accept payments from AI agents')).toHaveCount(0);
@@ -365,10 +329,14 @@ describe('Tier settings', () => {
   });
 
   it('blocks direct access to Stripe connection when the plan limit applies', async () => {
-    fakeSettingsScreens();
     fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings/stripe-connect', {
-      boot: { browseConfig: { response: stripeLimitConfig() } },
+    await renderSettingsScreen('/settings/stripe-connect', {
+      limits: {
+        limitStripeConnect: {
+          disabled: true,
+          error: "Your current plan doesn't support Stripe Connect.",
+        },
+      },
     });
 
     await expect

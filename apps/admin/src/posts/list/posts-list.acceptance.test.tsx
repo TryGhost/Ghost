@@ -3,13 +3,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   fakePages,
   fakePosts,
-  fakePostsListScreen,
+  renderPostsListScreen,
   renderAdminApp,
   type ResourceCapture,
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
-const FLAG_ON = { labs: { postsListReact: true } };
 const FLAG_OFF = { labs: { postsListReact: false } };
 
 /**
@@ -30,7 +29,6 @@ describe('Posts and pages list flag', () => {
   // content is irrelevant here, this file is only about which implementation
   // serves the route.
   beforeEach(() => {
-    fakePostsListScreen();
     postsApi = fakePosts([]);
     pagesApi = fakePages([]);
   });
@@ -40,14 +38,14 @@ describe('Posts and pages list flag', () => {
     { resource: 'pages', route: '/pages', title: 'Pages', newLabel: 'New page' },
   ] as const)('$route', ({ resource, route, title, newLabel }) => {
     it('renders the React screen when the flag is on', async () => {
-      await renderAdminApp(route, FLAG_ON);
+      await renderPostsListScreen(route);
 
       await expect.element(postsListScreen.page(resource)).toBeVisible();
       await expect.element(postsListScreen.title(resource, title)).toBeVisible();
     });
 
     it('offers the primary create action', async () => {
-      await renderAdminApp(route, FLAG_ON);
+      await renderPostsListScreen(route);
 
       await expect.element(postsListScreen.newLink(resource, newLabel)).toBeVisible();
     });
@@ -57,7 +55,7 @@ describe('Posts and pages list flag', () => {
     // there is no Ember app in this harness, so it can't be checked here.
 
     it('defers to Ember when the flag is off', async () => {
-      await renderAdminApp(route, FLAG_OFF);
+      await renderPostsListScreen(route, FLAG_OFF);
 
       await expect(postsListScreen.page(resource)).toHaveCount(0);
     });
@@ -72,7 +70,7 @@ describe('Posts and pages list flag', () => {
   // The two routes share one gate implementation, so a copy-paste slip would
   // silently serve the wrong screen.
   it('serves each route its own resource', async () => {
-    await renderAdminApp('/pages', FLAG_ON);
+    await renderPostsListScreen('/pages');
 
     await expect.element(postsListScreen.page('pages')).toBeVisible();
     await expect(postsListScreen.page('posts')).toHaveCount(0);

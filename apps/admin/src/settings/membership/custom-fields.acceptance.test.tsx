@@ -2,40 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
+  memberCustomField,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
-  fakeSettingsScreens,
-  renderAdminApp,
-  settingsResponse,
+  renderSettingsScreen,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
-const companyField = {
-  key: 'company',
-  name: 'Company',
-  type: 'short_text',
-  status: 'active',
-  created_at: '2026-07-13T00:00:00.000Z',
-  updated_at: null as string | null,
-};
-
-const archivedField = {
+const companyField = memberCustomField({ key: 'company', name: 'Company' });
+const archivedField = memberCustomField({
   key: 'old_hobby',
   name: 'Old hobby',
-  type: 'short_text',
   status: 'archived',
-  created_at: '2026-07-12T00:00:00.000Z',
-  updated_at: '2026-07-13T00:00:00.000Z',
-};
-
-function customFieldsBoot() {
-  const labs = { membersCustomFields: true };
-  return {
-    browseConfig: { response: configResponse({ labs }) },
-    browseSettings: { response: settingsResponse({ labs }) },
-  };
-}
+});
 
 type CustomField = typeof companyField;
 
@@ -43,37 +22,18 @@ function fakeCustomFields(fields: CustomField[] = [companyField]) {
   return fakeMemberCustomFields(fields);
 }
 
-/**
- * Mutations invalidate and refetch the list, so a spec observing the list
- * after a create serves it from state that grows when the POST lands; the
- * created entity is declared by the spec, the fake invents nothing.
- * Post-mutation outcomes of edits and deletes are server behavior, owned by
- * the API suite (ghost/core e2e-api member-custom-fields) — those specs
- * assert the outgoing request and the refetch instead.
- */
-function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField) {
-  let fields = initial;
-  fakeMemberCustomFields(() => fields);
-  return fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
-    fields = [...fields, created];
-    return { members_custom_fields: [created] };
-  });
-}
-
 describe('Custom fields', () => {
   it('stays hidden and does not query the closed endpoint while the flag is off', async () => {
-    fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     await expect(settingsScreen.customFields()).toHaveCount(0);
     expect(customFieldsApi.requests).toHaveLength(0);
   });
 
   it('lists each field with its user-facing type, opting into archived fields', async () => {
-    fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     // Browse hides archived by default; Settings asks for both statuses.
     await expect
@@ -87,12 +47,11 @@ describe('Custom fields', () => {
   });
 
   it('validates and creates a short-text field without sending a key', async () => {
-    fakeSettingsScreens();
     fakeCustomFields();
     const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
       members_custom_fields: [{ ...companyField, key: 'job_title', name: 'Job Title' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -109,12 +68,11 @@ describe('Custom fields', () => {
   });
 
   it('creates the selected long-text field type', async () => {
-    fakeSettingsScreens();
     fakeCustomFields();
     const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
       members_custom_fields: [{ ...companyField, key: 'bio', name: 'Bio', type: 'long_text' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -130,7 +88,6 @@ describe('Custom fields', () => {
   });
 
   it('shows an API duplicate-name error on the name field without leaking the envelope message', async () => {
-    fakeSettingsScreens();
     fakeCustomFields();
     const createApi = fakeAdminEndpoint(
       'POST',
@@ -147,7 +104,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -162,12 +119,11 @@ describe('Custom fields', () => {
   });
 
   it('renames a field without allowing its type to change', async () => {
-    fakeSettingsScreens();
     fakeCustomFields();
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
       members_custom_fields: [{ ...companyField, name: 'Employer' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -181,12 +137,11 @@ describe('Custom fields', () => {
   });
 
   it('archives a field only after destructive confirmation', async () => {
-    fakeSettingsScreens();
     fakeCustomFields();
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
       members_custom_fields: [{ ...companyField, status: 'archived' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     await settingsScreen.customFieldModal().getByRole('button', { name: 'Archive' }).click();
@@ -207,9 +162,8 @@ describe('Custom fields', () => {
   });
 
   it('splits fields into Active and Archived tabs', async () => {
-    fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     // Active tab is the default and shows only active fields.
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
@@ -222,14 +176,13 @@ describe('Custom fields', () => {
   });
 
   it('collapses long lists behind Show all, five at a time like recommendations', async () => {
-    fakeSettingsScreens();
     const manyFields = Array.from({ length: 7 }, (_, index) => ({
       ...companyField,
       key: `field_${index}`,
       name: `Field ${index}`,
     }));
     fakeCustomFields(manyFields);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -248,14 +201,15 @@ describe('Custom fields', () => {
   });
 
   it('reveals a just-created field even when the list is collapsed', async () => {
-    fakeSettingsScreens();
     const initialFields = Array.from({ length: 6 }, (_, index) => ({
       ...companyField,
       key: `field_${index}`,
       name: `Field ${index}`,
     }));
-    fakeCustomFieldsWithCreate(initialFields, { ...companyField, key: 'newest', name: 'Newest' });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    const fieldsApi = fakeMemberCustomFields(initialFields, {
+      create: { response: memberCustomField({ key: 'newest', name: 'Newest' }) },
+    });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -269,6 +223,9 @@ describe('Custom fields', () => {
 
     await expect(rows).toHaveCount(7);
     await expect.element(rows.last()).toHaveTextContent('Newest');
+    expect(fieldsApi.create.lastRequest?.body).toEqual({
+      members_custom_fields: [{ name: 'Newest', type: 'short_text' }],
+    });
 
     // Save holds the modal open for its ~500ms saving state. Verify the
     // async save has completed and the parent-controlled modal unmounts.
@@ -276,7 +233,6 @@ describe('Custom fields', () => {
   });
 
   it('reorders a field by dragging it, sending the whole list in its new order', async () => {
-    fakeSettingsScreens();
     const shirtField = { ...companyField, key: 'shirt_size', name: 'Shirt size' };
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     let currentFields = [companyField, shirtField, nicknameField];
@@ -287,7 +243,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(3);
@@ -321,7 +277,6 @@ describe('Custom fields', () => {
   });
 
   it('leaves the dragged field where it was dropped while the request is in flight', async () => {
-    fakeSettingsScreens();
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     let currentFields = [companyField, nicknameField];
     fakeMemberCustomFields(() => currentFields);
@@ -340,7 +295,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -359,7 +314,6 @@ describe('Custom fields', () => {
   });
 
   it('puts the list back and says why when the order is refused', async () => {
-    fakeSettingsScreens();
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     // What the server has, and what this screen does not know about yet: a third
     // field a colleague added since the page loaded.
@@ -388,7 +342,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -406,7 +360,6 @@ describe('Custom fields', () => {
   });
 
   it('sends the archived fields too, keeping their places in the order', async () => {
-    fakeSettingsScreens();
     const shirtField = { ...companyField, key: 'shirt_size', name: 'Shirt size' };
     // Archived between the two active fields, which is the arrangement that catches a
     // move applied to the visible tab instead of the whole list.
@@ -418,7 +371,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -438,7 +391,6 @@ describe('Custom fields', () => {
   });
 
   it('reorders from a collapsed list without disturbing the fields behind Show all', async () => {
-    fakeSettingsScreens();
     let currentFields = Array.from({ length: 7 }, (_, index) => ({
       ...companyField,
       key: `field_${index}`,
@@ -451,7 +403,7 @@ describe('Custom fields', () => {
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
       return { members_custom_fields: currentFields };
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -478,9 +430,8 @@ describe('Custom fields', () => {
   });
 
   it('does not offer dragging on the archived tab', async () => {
-    fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     // An archived field holds its place in the order, but there is nowhere to see
     // it, so there is nothing to drag it through.
@@ -493,10 +444,9 @@ describe('Custom fields', () => {
   });
 
   it('permanently deletes an archived field from the header menu, after a heavy warning', async () => {
-    fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
     const deleteApi = fakeAdminEndpoint('DELETE', '/members/custom_fields/old_hobby/', {});
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -524,9 +474,8 @@ describe('Custom fields', () => {
   });
 
   it('does not expose permanent deletion for an active field', async () => {
-    fakeSettingsScreens();
     fakeCustomFields([companyField]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     // Deletion lives behind the header menu, and an active field has none —
     // the UI can't reach delete, matching the API's archived-only rule.
@@ -536,21 +485,19 @@ describe('Custom fields', () => {
   });
 
   it('shows no tabs at all while no fields exist', async () => {
-    fakeSettingsScreens();
     fakeCustomFields([]);
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await expect.element(settingsScreen.customFields()).toBeVisible();
     await expect(settingsScreen.customFields().getByRole('tab')).toHaveCount(0);
   });
 
   it('reactivates an archived field after confirmation, as a status edit', async () => {
-    fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
     const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/old_hobby/', {
       members_custom_fields: [{ ...archivedField, status: 'active' }],
     });
-    await renderAdminApp('/settings', { boot: customFieldsBoot() });
+    await renderSettingsScreen('/settings', { labs: { membersCustomFields: true } });
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
+import { fakeEditSettings, renderSettingsScreen } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
 const primaryNavigation = settingsScreen.navigationPrimaryPanel;
@@ -10,9 +10,8 @@ const newItem = () => primaryNavigation().newItem();
 
 describe('Navigation settings', () => {
   it('edits primary and secondary navigation', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/navigation/edit');
+    await renderSettingsScreen('/settings/navigation/edit');
 
     const modal = settingsScreen.navigationModal();
     const primaryTab = modal.getByRole('tab', { name: 'Primary' });
@@ -56,8 +55,7 @@ describe('Navigation settings', () => {
   });
 
   it('validates existing items and clears errors while editing', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/navigation/edit');
+    await renderSettingsScreen('/settings/navigation/edit');
 
     const item = existingItem();
     await item.getByLabelText('Label').fill('');
@@ -77,8 +75,7 @@ describe('Navigation settings', () => {
   });
 
   it('validates and adds a new item', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/navigation/edit');
+    await renderSettingsScreen('/settings/navigation/edit');
 
     await expect(primaryNavigation().itemEditors()).toHaveCount(2);
     const item = newItem();
@@ -106,9 +103,8 @@ describe('Navigation settings', () => {
   });
 
   it('confirms before discarding unsaved changes', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/navigation/edit');
+    await renderSettingsScreen('/settings/navigation/edit');
 
     await newItem().getByLabelText('Label').fill('Label');
     await newItem().getByLabelText('URL').fill('https://google.com');

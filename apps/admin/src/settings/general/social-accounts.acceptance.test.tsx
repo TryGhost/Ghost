@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
-import {
-  fakeEditSettings,
-  fakeSettingsScreens,
-  renderAdminApp,
-  settingsResponse,
-  type SettingsResponse,
-} from '@test-utils/acceptance';
+import { fakeEditSettings, renderSettingsScreen, settingsResponse } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
 const newPlatformKeys = [
@@ -78,17 +72,10 @@ const editedSocialSettings = [
   },
 ] as const;
 
-function withoutSettings(keys: string[]): SettingsResponse {
-  const response = settingsResponse();
-  response.settings = response.settings.filter(({ key }) => !keys.includes(key));
-  return response;
-}
-
 describe('Social account settings', () => {
   it('edits all publication social URLs', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     await expect
@@ -110,9 +97,8 @@ describe('Social account settings', () => {
   });
 
   it('hides new platforms when the backend has not deployed them', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings', {
-      boot: { browseSettings: { response: withoutSettings(newPlatformKeys) } },
+    await renderSettingsScreen('/settings', {
+      omitSettings: newPlatformKeys,
     });
 
     const section = settingsScreen.socialAccounts();
@@ -124,13 +110,8 @@ describe('Social account settings', () => {
   });
 
   it('shows all new platforms when any migrated key is present', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings', {
-      boot: {
-        browseSettings: {
-          response: withoutSettings(newPlatformKeys.filter((key) => key !== 'threads')),
-        },
-      },
+    await renderSettingsScreen('/settings', {
+      omitSettings: newPlatformKeys.filter((key) => key !== 'threads'),
     });
 
     for (const label of platformLabels) {
@@ -139,8 +120,7 @@ describe('Social account settings', () => {
   });
 
   it('restores values on cancel', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     const linkedin = section.getByLabelText('LinkedIn');
@@ -154,8 +134,7 @@ describe('Social account settings', () => {
   });
 
   it('normalizes and validates social URLs', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     const cases = [
@@ -230,8 +209,7 @@ describe('Social account settings', () => {
   });
 
   it('keeps invalid input after a valid value', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     const instagram = section.getByLabelText('Instagram');
@@ -247,8 +225,7 @@ describe('Social account settings', () => {
   });
 
   it('does not rewrite a Mastodon handle while typing', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const mastodon = settingsScreen.socialAccounts().getByLabelText('Mastodon');
     await mastodon.click();
@@ -259,8 +236,7 @@ describe('Social account settings', () => {
   });
 
   it('allows a federated Mastodon URL', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     const mastodon = section.getByLabelText('Mastodon');
@@ -273,9 +249,8 @@ describe('Social account settings', () => {
   });
 
   it('does not block unrelated saves on a stale stored value', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings', {
+    await renderSettingsScreen('/settings', {
       boot: {
         browseSettings: { response: settingsResponse({ settings: { threads: '@ghost.tld.' } }) },
       },
@@ -295,9 +270,8 @@ describe('Social account settings', () => {
   });
 
   it('blocks a first invalid edit when another field is dirty', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.socialAccounts();
     await section.getByLabelText('Facebook').fill('fb');

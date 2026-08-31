@@ -6,9 +6,11 @@ import {
   currentUserResponse,
   settingsResponse,
   siteResponse,
+  type Setting,
 } from '@tryghost/test-data';
 
 import { registerAdminApiHandler, registerRoute } from './worker';
+import { createAdminState, type AdminScenarioOptions } from './state';
 
 /**
  * The requests the admin shell fires on boot regardless of route, handled by
@@ -61,7 +63,7 @@ export function defaultBootRequests() {
     },
     editUserPreferences: {
       method: 'PUT',
-      path: /^\/users\/\w+\/\?include=roles/,
+      path: /^\/users\/[^/]+\/\?include=roles/,
       // The framework caches this response as the current user, so a
       // canned reply would wipe the client's write — echo the body.
       response: async (request: Request) => {
@@ -191,30 +193,145 @@ async function respond(config: BootRequestConfig, request: Request): Promise<Res
   });
 }
 
-/** The persistent lowest-priority resolver for the boot table; runtime handlers and overrides win. */
+let state: ReturnType<typeof createAdminState> | undefined;
+let rawSettings = false;
+let rawUser = false;
+
+function currentState() {
+  return (state ??= createAdminState());
+}
+
+/** Reset only after pending requests have drained. */
+export function resetBootState(): void {
+  state = undefined;
+  rawSettings = false;
+  rawUser = false;
+}
+
+/** The composed user for incidental screen chrome, resolved at request time. */
+export function currentBootUser() {
+  return currentState().readUser();
+}
+
+/** Settings writes share the seed unless the test explicitly owns a raw read response. */
+export function editBootSettings(edits: Setting[]) {
+  return rawSettings
+    ? settingsResponse({
+        settings: Object.fromEntries(edits.map(({ key, value }) => [key, value])),
+      })
+    : currentState().editSettings(edits);
+}
+
+function runtimeBootRequests(
+  overrides: BootOverrides = {},
+): Record<BootRequestName, BootRequestConfig> {
+  const defaults: Record<BootRequestName, BootRequestConfig> = defaultBootRequests();
+  defaults.browseSettings.response = () => currentState().readSettings();
+  defaults.browseConfig.response = () => currentState().readConfig();
+  defaults.browseMe.response = () => currentState().readUser();
+  if (!rawUser) {
+    const status = overrides.editUserPreferences?.responseStatus ?? 200;
+    defaults.editUserPreferences.response = async (request: Request) => {
+      const body = (await request.clone().json()) as { users?: Array<Record<string, unknown>> };
+      return currentState().editUser(body.users?.[0] ?? {}, status >= 200 && status < 300);
+    };
+  }
+  return defaults;
+}
+
+function matchesEntry(
+  name: string,
+  config: BootRequestConfig,
+  request: Request,
+  apiPath: string,
+  rawResponse = false,
+): boolean {
+  if (!matches(config, request.method, apiPath)) {
+    return false;
+  }
+  if (name === 'editUserPreferences' && !rawUser && !rawResponse) {
+    const id = apiPath.match(/^\/users\/([^/]+)\//)?.[1];
+    return id !== undefined && currentState().isCurrentUser(decodeURIComponent(id));
+  }
+  return true;
+}
+
+/** The persistent lowest-priority resolver; explicit fakes and presets win. */
 export async function defaultBootResolver(
   request: Request,
   apiPath: string,
 ): Promise<Response | undefined> {
-  const config = Object.values(defaultBootRequests()).find((entry) =>
-    matches(entry, request.method, apiPath),
+  const entry = Object.entries(runtimeBootRequests()).find(([name, config]) =>
+    matchesEntry(name, config, request, apiPath),
   );
-  return config ? await respond(config, request) : undefined;
+  return entry ? await respond(entry[1], request) : undefined;
 }
 
-/** Register per-test boot overrides (higher priority than the defaults). */
+/** Register explicit per-test boot overrides, preserving their registration priority. */
 export function installBootOverrides(overrides: BootOverrides): void {
-  const defaults = defaultBootRequests();
+  const defaults = runtimeBootRequests(overrides);
   const entries = Object.entries(overrides)
     .filter(([, override]) => Boolean(override))
-    .map(([name, override]) => ({ ...defaults[name as BootRequestName], ...override }));
-
-  for (const config of entries) {
+    .map(([name, override]) => ({
+      name,
+      rawResponse: override?.response !== undefined,
+      config: {
+        ...defaults[name as BootRequestName],
+        ...override,
+        response:
+          override?.response === undefined
+            ? defaults[name as BootRequestName].response
+            : override.response,
+      },
+    }));
+  for (const { config } of entries) {
     registerRoute(config.method, config.path);
   }
-
   registerAdminApiHandler(async (request, apiPath) => {
-    const config = entries.find((entry) => matches(entry, request.method, apiPath));
-    return config ? await respond(config, request) : undefined;
+    const entry = entries.find(({ name, config, rawResponse }) =>
+      matchesEntry(name, config, request, apiPath, rawResponse),
+    );
+    return entry ? await respond(entry.config, request) : undefined;
   });
+}
+
+/** Configure once before mounting; callbacks remain raw and are never awaited at setup. */
+export function configureAdminScenario({
+  boot = {},
+  ...options
+}: AdminScenarioOptions & { boot?: BootOverrides } = {}): void {
+  const conflicts: Array<[boolean, BootRequestName, string]> = [
+    [
+      options.settings !== undefined || options.omitSettings !== undefined,
+      'browseSettings',
+      'settings/omitSettings',
+    ],
+    [options.config !== undefined || options.limits !== undefined, 'browseConfig', 'config/limits'],
+    [options.user !== undefined, 'browseMe', 'user'],
+  ];
+  for (const [supplied, name, input] of conflicts) {
+    if (supplied && boot[name]?.response !== undefined) {
+      throw new Error(
+        `${input} conflicts with boot.${name}.response. Declare the read seed with scenario options or a raw response, not both.`,
+      );
+    }
+  }
+  state = createAdminState(options);
+  rawSettings = boot.browseSettings?.response !== undefined;
+  rawUser = boot.browseMe?.response !== undefined;
+
+  const overrides = { ...boot };
+  if (options.labs) {
+    const composed = composeLabsBootOverrides(options.labs, boot);
+    // Only raw bodies need wrapping. Managed reads must remain live after a write.
+    if (rawSettings) {
+      overrides.browseSettings = composed.browseSettings;
+    }
+    if (boot.browseConfig?.response !== undefined) {
+      overrides.browseConfig = composed.browseConfig;
+    }
+  }
+  if (Object.keys(overrides).length > 0) {
+    installBootOverrides(overrides);
+  }
 }

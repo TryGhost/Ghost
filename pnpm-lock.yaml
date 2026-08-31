@@ -4225,6 +4225,9 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.5.0
+      '@tryghost/custom-field-types':
+        specifier: workspace:*
+        version: link:../../custom-field-types
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

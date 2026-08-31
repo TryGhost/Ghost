@@ -198,12 +198,32 @@ type AdminApiResolver = (
   apiPath: string,
 ) => Promise<Response | undefined> | Response | undefined;
 
+// Screen defaults are resolved below all explicit handlers, even when installed last.
+const screenDefaultResolvers: AdminApiResolver[] = [];
+let installingScreenDefaults = false;
+
+/** Internal synchronous registration scope; legacy fake calls retain explicit priority. */
+export function withScreenDefaults(install: () => void): void {
+  const previous = installingScreenDefaults;
+  installingScreenDefaults = true;
+  try {
+    install();
+  } finally {
+    installingScreenDefaults = previous;
+  }
+}
+
 /**
  * Register a runtime admin-API handler; a resolver returning `undefined`
  * falls through to the boot table, then the 418 catch-all.
  */
 export function registerAdminApiHandler(resolver: AdminApiResolver): void {
-  runningWorker().use(
+  const activeWorker = runningWorker();
+  if (installingScreenDefaults) {
+    screenDefaultResolvers.unshift(resolver);
+    return;
+  }
+  activeWorker.use(
     http.all(ADMIN_API_PATTERN, async ({ request }) => {
       return await resolver(request, toAdminApiPath(request.url));
     }),
@@ -292,16 +312,27 @@ export function fakeEndpoint(
   };
 }
 
-export interface CapturedEndpointRequest {
+export interface CapturedEndpointRequest<TBody = unknown> {
   url: string;
   /** Parsed JSON request body, or undefined when there is none. */
-  body: unknown;
+  body: TBody;
 }
 
-export interface EndpointCapture {
+export interface EndpointCapture<TBody = unknown> {
   /** Every matched request, oldest first. */
-  requests: CapturedEndpointRequest[];
-  readonly lastRequest: CapturedEndpointRequest | undefined;
+  requests: CapturedEndpointRequest<TBody>[];
+  readonly lastRequest: CapturedEndpointRequest<TBody> | undefined;
+}
+
+/** Mutable request ledger shared by concrete resource operations. */
+export function createEndpointCapture<TBody = unknown>(): EndpointCapture<TBody> {
+  const requests: CapturedEndpointRequest<TBody>[] = [];
+  return {
+    requests,
+    get lastRequest() {
+      return requests[requests.length - 1];
+    },
+  };
 }
 
 export interface SitePreviewRequest {
@@ -425,6 +456,15 @@ export async function startFakeApi({
 
   // Initial handlers persist across resetHandlers(); order is priority.
   worker = setupWorker(
+    http.all(ADMIN_API_PATTERN, async ({ request }) => {
+      for (const resolve of screenDefaultResolvers) {
+        const response = await resolve(request, toAdminApiPath(request.url));
+        if (response !== undefined) {
+          return response;
+        }
+      }
+      return undefined;
+    }),
     // Shell boot table.
     http.all(ADMIN_API_PATTERN, async ({ request }) => {
       return await resolver(request, toAdminApiPath(request.url));
@@ -480,6 +520,7 @@ export async function startFakeApi({
 export function resetFakeApi(): void {
   routesDuringLastTest = [...registeredRoutes];
   worker?.resetHandlers();
+  screenDefaultResolvers.length = 0;
   registeredRoutes.length = bootRouteCount;
   trackedSitePreviewUrls.clear();
 }

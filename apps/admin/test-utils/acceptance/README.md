@@ -25,7 +25,7 @@ await expect.poll(currentRoute).toBe("/members");   // URL assertions
 await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);   // DOM state no locator reaches
 ```
 
-**One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
+**One render per test.** Each `renderAdminApp` gets a fresh QueryClient. The fake API retains managed settings and current-user edits through refetches within the test, then resets after pending requests drain. There is no reload; a journey that needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
@@ -41,22 +41,97 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 **THE RULE:** fakes never implement NQL — declare the response and assert the outgoing filter string instead (see the doc comment in `resources.ts`).
 
-## The boot table
+## Constructing a scenario
 
-The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseActiveTheme`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
+Import builders, fakes, and render helpers from `@test-utils/acceptance`. Builders come from `@tryghost/test-data`, shared with e2e. Render options describe the settings, config, and current user without editing API envelopes:
 
 ```ts
-// Labs flags (sugar for lockstep settings + config overrides; merges into
-// any browseSettings/browseConfig boot override, named flags winning):
-await renderAdminApp("/tags", {labs: {someFlag: true}});
+await renderSettingsScreen('/settings', {
+  settings: {...connectedStripeSettings(), title: 'My publication'},
+  labs: {machinePayments: true},
+  omitSettings: ['machine_payments_enabled'], // An older backend lacks this setting
+  limits: {staff: {max: 4}},
+});
 
-// Persisted user state, e.g. what's-new preferences:
-const me = currentUserResponse();
-me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01T00:00:00.000Z"}});
-await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
+fakeTags([]);
+await renderAdminApp('/tags', {
+  config: {stats: {id: 'analytics-site'}},
+  user: {
+    roles: ['Editor'],
+    accessibility: {whatsNew: {lastSeenDate: '2025-01-01T00:00:00.000Z'}},
+  },
+});
 ```
 
-Boot responses are STATELESS — a canned reply per request, nothing is stored — with one exception: `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write).
+These are separate tests: use one render per test.
+
+| Option         | Behavior                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `settings`     | Overrides values by key; other defaults remain. `null` is a value.                                                        |
+| `omitSettings` | Removes keys entirely. Unrelated saves leave them absent. Supplying and omitting the same key is an error.                |
+| `labs`         | Sets flags in both settings and config, including explicit `false`. Use this instead of `settings.labs` or `config.labs`. |
+| `config`       | Overrides top-level fields. Nested objects replace; there is no general deep merge.                                       |
+| `limits`       | Replaces named limits while retaining other limits and host settings. Cannot accompany `config.hostSettings.limits`.      |
+| `user`         | Overrides the current user. Role names expand to role objects; accessibility is serialized to the API string.             |
+
+Settings writes remain opt-in. Register `fakeEditSettings()` when the test saves: successful edits merge into the scenario, so later writes and refetches retain unrelated settings, omissions, and Stripe credentials. A labs save also updates managed config. Current-user preferences writes are handled by default, preserve the seeded identity, and are visible on subsequent reads. Writes to another user require an explicit fake; otherwise they 418.
+
+### Screen presets
+
+`renderSettingsScreen(route?, options?)` installs the incidental settings-screen reads. `renderPostsListScreen(route?, options?)` installs the posts-list defaults and enables `postsListReact`; an explicit `labs: {postsListReact: false}` still wins. Both return the same result as `renderAdminApp`.
+
+```ts
+fakeTiers([tier({name: 'Supporter'})]);
+const settingsApi = fakeEditSettings(); // The preset does not enable saves
+await renderSettingsScreen('/settings', {settings: connectedStripeSettings()});
+// Interact with the settings UI, then assert settingsApi's captured writes.
+```
+
+Presets supply defaults below explicit fakes, even if the explicit fake was registered first. Among explicit fakes, the latest matching registration still wins: register an error after a resource fake to reject a request, or register a replacement after an error to recover. Presets do not enable tag updates or custom-field creates either. The lower-level `fakeSettingsScreens()` and `fakePostsListScreen()` remain available with their existing explicit registration behavior.
+
+### Raw boot overrides
+
+The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseActiveTheme`, `editUserPreferences`. Use `boot` for response errors, callbacks, and unusual wire shapes:
+
+```ts
+await renderAdminApp('/tags', {
+  boot: {browseConfig: {response: {errors: [{message: 'Unavailable'}]}, responseStatus: 400}},
+});
+```
+
+A raw response replaces the named entry's body; method/path stay fixed, and callbacks run at request time. Status-only overrides retain the managed response. Supplying `settings`/`omitSettings`, `config`/`limits`, or `user` alongside the corresponding raw read response is an error: choose one source for that read. `labs` remains compatible with raw settings/config bodies and callbacks; named flags win when the response has a recognized envelope. Use a raw settings response when the labs key itself must be absent.
+
+Raw reads do not seed managed state. A raw `browseSettings` keeps the legacy stateless settings-write echo; a raw `browseMe` keeps the legacy preferences echo. Their subsequent reads still serve the raw response. A raw preferences-write override can accompany a managed `user` seed, but does not commit edits; a failed status-only preference write does not commit either.
+
+## Opt-in resource operations
+
+Browse-only declarations retain their existing signatures and behavior. Opt into the concrete operations needed by a journey:
+
+```ts
+const news = tag({name: 'News', slug: 'news'});
+const tagsApi = fakeTags([news], {read: true, update: true});
+await renderAdminApp('/tags/news', {labs: {tagDetailsReact: true}});
+// Edit and save through the UI. Reads by ID or the new slug now see the edit.
+await expect.poll(() => tagsApi.update.lastRequest?.body.tags[0].name).toBe('Renamed');
+```
+
+Tag detail reads support ID and slug; updates support ID and preserve it. Declare the full collection once, including every tag the test navigates to. The fake does not transform edited values or simulate creation/deletion. A missing tag returns 404. Browse requests use the existing `.requests`/`.lastRequest` capture; opted-in operations have typed `.read` and `.update` captures. Mutable fakes clone the seed and require arrays, not browse callbacks.
+
+Inline `true` options give required capture properties. With boolean variables, captures are optional because the operation may be disabled; use `tagsApi.update?.lastRequest` or retain literal types with `as const` when extracting fixed options.
+
+```ts
+const fieldsApi = fakeMemberCustomFields(
+  [memberCustomField({key: 'company', name: 'Company'})],
+  {create: {response: memberCustomField({key: 'department', name: 'Department'})}},
+);
+await renderSettingsScreen('/settings', {labs: {membersCustomFields: true}});
+// Create through the UI. The declared result joins subsequent browse responses.
+await expect.poll(() => fieldsApi.create.lastRequest?.body).toEqual({
+  members_custom_fields: [{name: 'Department', type: 'short_text'}],
+});
+```
+
+Custom-field creation consumes exactly one declared response; another POST 418s. The fake does not generate keys or implement server validation. Use an explicit endpoint for reorder/edit/delete or other behavior. An explicit error handler registered after either mutable fake rejects the write without changing its collection.
 
 ## Faking a resource that has no fake yet
 

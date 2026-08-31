@@ -6,11 +6,10 @@ import {
   fakeAdminEndpoint,
   fakeLabels,
   fakeOffers,
-  fakeSettingsScreens,
   fakeTiers,
   label,
   offer,
-  renderAdminApp,
+  renderSettingsScreen,
   settingsResponse,
   tier,
 } from '@test-utils/acceptance';
@@ -27,9 +26,8 @@ describe('Default recipient settings', () => {
     { choice: 'Usually nobody', filter: null },
     { choice: 'Paid-members only', filter: 'status:-free' },
   ])('saves the standard recipient choice: $choice', async ({ choice, filter }) => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/newsletters');
+    await renderSettingsScreen('/settings/newsletters');
 
     const section = settingsScreen.defaultRecipients();
     await expect
@@ -51,12 +49,11 @@ describe('Default recipient settings', () => {
     const supporter = tier({ id: '645453f4d254799990dd0e22', name: 'Basic Supporter' });
     const firstLabel = label({ name: 'first-label', slug: 'first-label' });
     const firstOffer = offer({ id: '6487ea6464fca78ec2fff5fe', name: 'First offer' });
-    fakeSettingsScreens();
     fakeTiers([supporter]);
     fakeLabels([firstLabel]);
     fakeOffers([firstOffer]);
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/newsletters');
+    await renderSettingsScreen('/settings/newsletters');
 
     const section = settingsScreen.defaultRecipients();
     await selectDefaultRecipients('Specific people');
@@ -84,7 +81,6 @@ describe('Default recipient settings', () => {
     const supporter = tier({ id: '645453f4d254799990dd0e22', name: 'Basic Supporter' });
     const firstLabel = label({ name: 'first-label', slug: 'first-label' });
     const firstOffer = offer({ id: '6487ea6464fca78ec2fff5fe', name: 'First offer' });
-    fakeSettingsScreens();
     fakeTiers([supporter]);
     fakeLabels([firstLabel]);
     fakeOffers([firstOffer]);
@@ -94,7 +90,7 @@ describe('Default recipient settings', () => {
         editor_default_email_recipients_filter: `${supporter.id},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
       },
     });
-    await renderAdminApp('/settings/newsletters', {
+    await renderSettingsScreen('/settings/newsletters', {
       boot: { browseSettings: { response: settings } },
     });
 
@@ -108,7 +104,6 @@ describe('Default recipient settings', () => {
   it('restores the saved segment when cancelling changes', async () => {
     const savedTier = tier({ id: '645453f4d254799990dd0e22', name: 'Basic Supporter' });
     const addedTier = tier({ id: '645453f4d254799990dd0e23', name: 'Premium Supporter' });
-    fakeSettingsScreens();
     fakeTiers([savedTier, addedTier]);
     fakeLabels([]);
     fakeOffers([]);
@@ -118,7 +113,7 @@ describe('Default recipient settings', () => {
         editor_default_email_recipients_filter: savedTier.id,
       },
     });
-    await renderAdminApp('/settings/newsletters', {
+    await renderSettingsScreen('/settings/newsletters', {
       boot: { browseSettings: { response: settings } },
     });
 
@@ -137,7 +132,6 @@ describe('Default recipient settings', () => {
   it('retries failed segment hydration without dropping the saved filter', async () => {
     const savedTier = tier({ id: '645453f4d254799990dd0e22', name: 'Basic Supporter' });
     const addedTier = tier({ id: '645453f4d254799990dd0e23', name: 'Premium Supporter' });
-    fakeSettingsScreens();
     fakeLabels([]);
     fakeOffers([]);
     fakeAdminEndpoint(
@@ -153,7 +147,7 @@ describe('Default recipient settings', () => {
         editor_default_email_recipients_filter: savedTier.id,
       },
     });
-    await renderAdminApp('/settings/newsletters', {
+    await renderSettingsScreen('/settings/newsletters', {
       boot: { browseSettings: { response: settings } },
     });
 

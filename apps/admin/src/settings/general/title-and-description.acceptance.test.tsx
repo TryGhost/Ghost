@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
+import { fakeEditSettings, renderSettingsScreen } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
 describe('Title and description settings', () => {
   it('edits the title and description', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.titleAndDescription();
     await expect.element(section.getByText('Test Site', { exact: true })).toBeVisible();
@@ -30,9 +29,8 @@ describe('Title and description settings', () => {
   });
 
   it('validates the title without saving', async () => {
-    fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.titleAndDescription();
     await section.getByRole('button', { name: 'Edit' }).click();
@@ -50,8 +48,7 @@ describe('Title and description settings', () => {
   });
 
   it('restores the title and description on cancel', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings');
+    await renderSettingsScreen('/settings');
 
     const section = settingsScreen.titleAndDescription();
     await section.getByRole('button', { name: 'Edit' }).click();

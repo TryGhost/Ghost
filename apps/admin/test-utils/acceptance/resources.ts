@@ -4,16 +4,15 @@ import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
 import {
   activeThemeResponse,
   browseResponse,
-  currentUserResponse,
-  settingsResponse,
   type Automation,
   type Comment,
   type Label,
   type Member,
+  type MemberCustomField,
   type Newsletter,
   type Offer,
   type Post,
-  type SettingsResponse,
+  type Setting,
   type StaffInvite,
   type StaffRole,
   type StaffUser,
@@ -22,8 +21,11 @@ import {
   type Tier,
 } from '@tryghost/test-data';
 
+import { currentBootUser, editBootSettings } from './boot';
+
 import {
   fakeAdminEndpoint,
+  createEndpointCapture,
   record418,
   registerAdminApiHandler,
   registerRoute,
@@ -204,7 +206,7 @@ export function defineResource<TEntity>({
 }
 
 /** Tags list fake: declared-query semantics for the tags tabs and remote tag pickers. */
-export const fakeTags = defineResource<Tag>({
+const tagsResource = defineResource<Tag>({
   resource: 'tags',
   semantics: {
     kind: 'declared-query',
@@ -215,6 +217,88 @@ export const fakeTags = defineResource<Tag>({
     },
   },
 });
+
+export interface FakeTagsOptions {
+  read?: boolean;
+  update?: boolean;
+}
+export type TagUpdateBody = { tags: Partial<Tag>[] };
+type TagCaptures<T extends FakeTagsOptions> = ResourceCapture &
+  Partial<{ read: EndpointCapture<undefined>; update: EndpointCapture<TagUpdateBody> }> &
+  (T extends { read: true } ? { read: EndpointCapture<undefined> } : object) &
+  (T extends { update: true } ? { update: EndpointCapture<TagUpdateBody> } : object);
+
+export function fakeTags(respondWith: RespondWith<Tag>): ResourceCapture;
+export function fakeTags<T extends FakeTagsOptions>(tags: Tag[], options: T): TagCaptures<T>;
+/** Opt into detail reads and/or updates; browse-only callers retain their existing semantics. */
+export function fakeTags(
+  respondWith: RespondWith<Tag>,
+  { read = false, update = false }: FakeTagsOptions = {},
+) {
+  if (!read && !update) {
+    return tagsResource(respondWith);
+  }
+  if (!Array.isArray(respondWith)) {
+    throw new Error('Tag reads/updates need a declared array, not a browse callback.');
+  }
+  const tags = structuredClone(respondWith);
+  const capture = tagsResource(() => tags);
+  const reads = createEndpointCapture<undefined>();
+  const updates = createEndpointCapture<TagUpdateBody>();
+  if (read) {
+    Object.assign(capture, { read: reads });
+    registerRoute('GET', '/tags/<id>/ or /tags/slug/<slug>/');
+  }
+  if (update) {
+    Object.assign(capture, { update: updates });
+    registerRoute('PUT', '/tags/<id>/');
+  }
+  registerAdminApiHandler(async (request, apiPath) => {
+    const match = apiPath.split('?')[0].match(/^\/tags\/(?:slug\/([^/]+)|([^/]+))\/$/);
+    if (!match) {
+      return undefined;
+    }
+    const reading = read && request.method === 'GET';
+    const updating = update && request.method === 'PUT' && match[2] !== undefined;
+    if (!reading && !updating) {
+      return undefined;
+    }
+    const index = tags.findIndex((tag) =>
+      match[1] !== undefined
+        ? tag.slug === decodeURIComponent(match[1])
+        : tag.id === decodeURIComponent(match[2]),
+    );
+    if (reading) {
+      reads.requests.push({ url: request.url, body: undefined });
+    }
+    let body: TagUpdateBody | undefined;
+    if (updating) {
+      body = (await request.json()) as TagUpdateBody;
+      updates.requests.push({ url: request.url, body });
+    }
+    if (index === -1) {
+      return HttpResponse.json(
+        { errors: [{ type: 'NotFoundError', message: 'Tag not found.' }] },
+        { status: 404 },
+      );
+    }
+    if (updating) {
+      if (
+        !body ||
+        !Array.isArray(body.tags) ||
+        body.tags.length !== 1 ||
+        !body.tags[0] ||
+        typeof body.tags[0] !== 'object'
+      ) {
+        record418(`${request.method} ${apiPath} — expected one tag in the update envelope`);
+        return new HttpResponse('Expected one tag in the update envelope.', { status: 418 });
+      }
+      tags[index] = { ...tags[index], ...structuredClone(body.tags[0]), id: tags[index].id };
+    }
+    return HttpResponse.json({ tags: [tags[index]] });
+  });
+  return capture;
+}
 
 /** Automations list fake: the browse request carries no query the fake would need to interpret. */
 export const fakeAutomations = defineResource<Automation>({
@@ -251,15 +335,63 @@ const membersResource = defineResource<Member>({
  * shape) for every browse — the plain read and Settings' archived-inclusive
  * `?filter=status:[active,archived]` variant alike; assert the outgoing
  * filter, not served subsets. Values ride the member read payload, and the
- * create/edit/reorder/delete mutations are one-off endpoints — declare those
- * with `fakeAdminEndpoint`. A spec observing the list grow across a create
- * declares that growth itself via the function form (`() => fields`).
+ * edit/reorder/delete mutations are one-off endpoints. Opt into one declared
+ * create result with `{create: {response: memberCustomField(...)}}` when the
+ * test needs the subsequent browse to reflect it.
  */
-export const fakeMemberCustomFields = defineResource({
+const customFieldsResource = defineResource<unknown>({
   resource: 'members/custom_fields',
   envelopeKey: 'members_custom_fields',
   semantics: { kind: 'passthrough' },
 });
+
+export type CustomFieldCreateBody = {
+  members_custom_fields: Array<Pick<MemberCustomField, 'name' | 'type'>>;
+};
+export interface FakeMemberCustomFieldsOptions {
+  create: { response: MemberCustomField };
+}
+
+export function fakeMemberCustomFields(respondWith: RespondWith<unknown>): ResourceCapture;
+export function fakeMemberCustomFields(
+  fields: MemberCustomField[],
+  options: FakeMemberCustomFieldsOptions,
+): ResourceCapture & { create: EndpointCapture<CustomFieldCreateBody> };
+/** A declared POST result joins the collection; no server-side key generation is simulated. */
+export function fakeMemberCustomFields(
+  respondWith: RespondWith<unknown>,
+  options?: FakeMemberCustomFieldsOptions,
+) {
+  if (!options) {
+    return customFieldsResource(respondWith);
+  }
+  if (!Array.isArray(respondWith)) {
+    throw new Error('Custom-field creation needs a declared array, not a browse callback.');
+  }
+  const fields = structuredClone(respondWith);
+  const created = structuredClone(options.create.response);
+  const capture = customFieldsResource(() => fields);
+  const create = createEndpointCapture<CustomFieldCreateBody>();
+  let consumed = false;
+  registerRoute('POST', '/members/custom_fields/');
+  registerAdminApiHandler(async (request, apiPath) => {
+    if (request.method !== 'POST' || apiPath !== '/members/custom_fields/') {
+      return undefined;
+    }
+    create.requests.push({
+      url: request.url,
+      body: (await request.json()) as CustomFieldCreateBody,
+    });
+    if (consumed) {
+      record418('POST /members/custom_fields/ — declared create response already consumed');
+      return new HttpResponse('Declare another create response for another POST.', { status: 418 });
+    }
+    consumed = true;
+    fields.push(created);
+    return HttpResponse.json({ members_custom_fields: [created] });
+  });
+  return Object.assign(capture, { create });
+}
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({
@@ -407,13 +539,13 @@ export const fakeActions = defineResource<Omit<Action, 'context'> & { context: s
  * (themes), membership (tiers/newsletters), growth (recommendations, offers,
  * referrer stats) and advanced (integrations, automated emails).
  *
- * Defaults are the minimal believable world: the boot table's owner as the
+ * Defaults are the minimal believable world: the composed current user as the
  * only staff user, the canned active theme, and empty lists everywhere else.
  * Screen-specific data a spec asserts on is declared in the spec — a fake
  * registered after this one wins (e.g. `fakeOffers([...])`).
  */
 export function fakeSettingsScreens(): void {
-  fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+  fakeUsers(() => currentBootUser().users as unknown as StaffUser[]);
   fakeInvites([]);
   fakeRoles([]);
   themesResource(activeThemeResponse().themes);
@@ -466,7 +598,7 @@ export function fakePostsListScreen(): void {
   fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, { users: [] });
 }
 
-type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };
+type SettingsPutBody = { settings: Setting[] };
 
 export interface EditSettingsCapture {
   /** Every PUT /settings/ body, oldest first. */
@@ -475,9 +607,9 @@ export interface EditSettingsCapture {
 }
 
 /**
- * Handles PUT /settings/ the way Ghost does — echoes back the full settings
- * world with the submitted keys applied — and captures every request body so
- * specs can assert exactly what the UI saved.
+ * Handles PUT /settings/ and captures every request body. Edits merge into the
+ * managed settings seed and survive refetches; a raw browseSettings override
+ * retains the legacy stateless echo instead.
  */
 export function fakeEditSettings(): EditSettingsCapture {
   const requests: SettingsPutBody[] = [];
@@ -491,9 +623,7 @@ export function fakeEditSettings(): EditSettingsCapture {
     const body = (await request.json()) as SettingsPutBody;
     requests.push(body);
 
-    const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
-    const response: SettingsResponse = settingsResponse({ settings: overrides });
-    return HttpResponse.json(response);
+    return HttpResponse.json(editBootSettings(body.settings));
   });
 
   return {

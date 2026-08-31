@@ -3,22 +3,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   allowUnhandledRequests,
   currentRoute,
-  currentUserResponse,
   fakeAdminEndpoint,
   renderAdminApp,
-  staffRole,
   type CapturedEndpointRequest,
   type EndpointCapture,
-  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
-import type { StaffRoleName } from '@tryghost/test-data';
 import { onboardingScreen } from '@/onboarding/onboarding.screen';
-
-function asRole(name: StaffRoleName): RenderAdminAppOptions {
-  const me = currentUserResponse();
-  me.users[0].roles = [staffRole({ name })];
-  return { boot: { browseMe: { response: me } } };
-}
 
 const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? 'null');
 
@@ -45,13 +35,13 @@ describe('Home route', () => {
   it('sends admins to Analytics', async () => {
     // The analytics screens own their request graph; these specs assert only the dispatch.
     allowUnhandledRequests();
-    await renderAdminApp('/', asRole('Administrator'));
+    await renderAdminApp('/', { user: { roles: ['Administrator'] } });
 
     await expect.poll(currentRoute).toBe('/analytics');
   });
 
   it('sends contributors to Posts', async () => {
-    await renderAdminApp('/', asRole('Contributor'));
+    await renderAdminApp('/', { user: { roles: ['Contributor'] } });
 
     await expect
       .poll(homeHandoff)
@@ -59,7 +49,7 @@ describe('Home route', () => {
   });
 
   it('sends other staff roles to Site', async () => {
-    await renderAdminApp('/', asRole('Author'));
+    await renderAdminApp('/', { user: { roles: ['Author'] } });
 
     await expect
       .poll(homeHandoff)
@@ -84,7 +74,7 @@ describe('Home route', () => {
   it('continues admins to Analytics without starting the checklist on firstStart', async () => {
     allowUnhandledRequests();
     const preferencesApi = fakePreferenceEdits();
-    await renderAdminApp('/?firstStart=true', asRole('Administrator'));
+    await renderAdminApp('/?firstStart=true', { user: { roles: ['Administrator'] } });
 
     await expect.poll(currentRoute).toBe('/analytics');
     // Unrelated preference writes (e.g. the what's-new init) may happen,

@@ -21,7 +21,8 @@
     "lint": "eslint src/ test/ --cache"
   },
   "dependencies": {
-    "@faker-js/faker": "catalog:"
+    "@faker-js/faker": "catalog:",
+    "@tryghost/custom-field-types": "workspace:*"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

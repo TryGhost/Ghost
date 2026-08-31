@@ -5,15 +5,10 @@ import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/ad
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
 
-import { composeLabsBootOverrides, installBootOverrides, type BootOverrides } from './boot';
+import { configureAdminScenario, type BootOverrides } from './boot';
+import type { AdminScenarioOptions } from './state';
 
-export interface RenderAdminAppOptions {
-  /**
-   * Labs flags for this test; compiles to lockstep settings + config boot
-   * overrides (the admin client reads labs from both). Merges into any
-   * `boot` override for those entries; flags named here win.
-   */
-  labs?: Record<string, boolean>;
+export interface RenderAdminAppOptions extends AdminScenarioOptions {
   /**
    * Boot-table overrides keyed by entry name (see boot.ts); `labs` flags
    * merge into `browseConfig`/`browseSettings` override responses.
@@ -37,13 +32,9 @@ export function currentRoute(): string {
  */
 export async function renderAdminApp(
   route: string = '/',
-  { labs, boot }: RenderAdminAppOptions = {},
+  options: RenderAdminAppOptions = {},
 ): Promise<Awaited<ReturnType<typeof render>>> {
-  const overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
-
-  if (Object.keys(overrides).length > 0) {
-    installBootOverrides(overrides);
-  }
+  configureAdminScenario(options);
 
   // Mirror the production host page (index.html): the react-admin body
   // class and the #root mount point drive the shell's grid layout — without

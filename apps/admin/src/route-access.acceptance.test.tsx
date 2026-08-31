@@ -7,16 +7,7 @@ import {
   currentUserResponse,
   fakeTags,
   renderAdminApp,
-  staffRole,
-  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
-import type { StaffRoleName } from '@tryghost/test-data';
-
-function asRole(name: StaffRoleName): RenderAdminAppOptions {
-  const me = currentUserResponse();
-  me.users[0].roles = [staffRole({ name })];
-  return { boot: { browseMe: { response: me } } };
-}
 
 // Denied routes redirect to the home route through the router; only the home
 // dispatch itself may then hand off cross-app (asserted in home.acceptance).
@@ -31,7 +22,7 @@ describe('Route access', () => {
   });
 
   it('redirects a contributor away from settings', async () => {
-    await renderAdminApp('/settings/design', asRole('Contributor'));
+    await renderAdminApp('/settings/design', { user: { roles: ['Contributor'] } });
 
     await expect.poll(currentRoute).toBe('/');
   });
@@ -39,26 +30,26 @@ describe('Route access', () => {
   it('keeps a contributor on their own profile settings', async () => {
     // The settings app owns its request graph; this spec asserts only the shell routing.
     allowUnhandledRequests();
-    await renderAdminApp(`/settings/staff/${OWNER_SLUG}`, asRole('Contributor'));
+    await renderAdminApp(`/settings/staff/${OWNER_SLUG}`, { user: { roles: ['Contributor'] } });
 
     await expect.poll(currentRoute).toBe(`/settings/staff/${OWNER_SLUG}`);
     expect(homeHandoff()).toBe(null);
   });
 
   it("redirects an author away from another staff member's profile settings", async () => {
-    await renderAdminApp('/settings/staff/someone-else', asRole('Author'));
+    await renderAdminApp('/settings/staff/someone-else', { user: { roles: ['Author'] } });
 
     await expect.poll(currentRoute).toBe('/');
   });
 
   it('redirects a contributor away from tags', async () => {
-    await renderAdminApp('/tags', asRole('Contributor'));
+    await renderAdminApp('/tags', { user: { roles: ['Contributor'] } });
 
     await expect.poll(currentRoute).toBe('/');
   });
 
   it('redirects an editor away from members', async () => {
-    await renderAdminApp('/members', asRole('Editor'));
+    await renderAdminApp('/members', { user: { roles: ['Editor'] } });
 
     await expect.poll(currentRoute).toBe('/');
   });
