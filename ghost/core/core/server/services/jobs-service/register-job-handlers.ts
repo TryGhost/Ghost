@@ -10,6 +10,7 @@ import * as contentImport from '../content-import';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
+import SendEmailJob from '../email-service/jobs/send-email-job';
 
 const updateCheck = require('../update-check');
 
@@ -22,6 +23,9 @@ interface RegisterJobHandlersDependencies {
   giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
   mentionsController: MentionController;
+  batchSendingService: {
+    emailJob(data: { emailId: string }): Promise<void>;
+  };
 }
 
 export default function registerJobHandlers({
@@ -30,6 +34,7 @@ export default function registerJobHandlers({
   giftService,
   mediaInliner,
   mentionsController,
+  batchSendingService,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -57,5 +62,9 @@ export default function registerJobHandlers({
 
   jobsService.handle(ProcessWebmentionJob, async (job) => {
     await mentionsController.processWebmention(job);
+  });
+
+  jobsService.handle(SendEmailJob, async (job) => {
+    await batchSendingService.emailJob({ emailId: job.emailId });
   });
 }
