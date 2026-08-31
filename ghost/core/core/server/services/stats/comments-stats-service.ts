@@ -53,8 +53,8 @@ export interface CommentsOverview {
 }
 
 export interface CommentsOverviewOptions {
-  date_from?: string;
-  date_to?: string;
+  date_from: string;
+  date_to: string;
   timezone?: string;
 }
 
@@ -101,7 +101,7 @@ export class CommentsStatsService {
   /**
    * Aggregate comment analytics for the moderation dashboard.
    */
-  async getOverview(options: CommentsOverviewOptions = {}): Promise<CommentsOverview> {
+  async getOverview(options: CommentsOverviewOptions): Promise<CommentsOverview> {
     const timezone = options.timezone || 'UTC';
     const dateOptions = {
       date_from: options.date_from,
