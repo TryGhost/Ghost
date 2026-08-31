@@ -1,10 +1,9 @@
-import errors from '@tryghost/errors';
 import { JobsService } from './jobs-service';
+import type { GiftService } from '../gifts/gift-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import cleanTokens from '../members/jobs/clean-tokens-task';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
 import cleanExpiredComped from '../members/jobs/clean-expired-comped-task';
-import * as gifts from '../gifts';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
 import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
@@ -30,6 +29,7 @@ interface RegisterJobHandlersDependencies {
   };
   events: { emit(name: string, model: unknown, options: Record<string, unknown>): void };
   sentry: { captureException(err: unknown): void };
+  giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
 }
 
@@ -40,6 +40,7 @@ export default function registerJobHandlers({
   models,
   events,
   sentry,
+  giftService,
   mediaInliner,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
@@ -51,12 +52,7 @@ export default function registerJobHandlers({
   });
 
   jobsService.handle(CleanGiftsJob, async () => {
-    if (!gifts.service) {
-      throw new errors.IncorrectUsageError({
-        message: 'clean-gifts ran before the gifts service was initialised',
-      });
-    }
-    await gifts.service.cleanup();
+    await giftService.cleanup();
   });
 
   jobsService.handle(ExternalMediaInlinerJob, async (job) => {

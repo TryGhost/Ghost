@@ -19,6 +19,7 @@ describe('register-job-handlers', function () {
   let models: { Member: { findOne: sinon.SinonStub } };
   let events: { emit: sinon.SinonStub };
   let sentry: { captureException: sinon.SinonStub };
+  let giftService: { cleanup: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -38,6 +39,7 @@ describe('register-job-handlers', function () {
     models = { Member: { findOne: sinon.stub() } };
     events = { emit: sinon.stub() };
     sentry = { captureException: sinon.stub() };
+    giftService = { cleanup: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
@@ -46,6 +48,7 @@ describe('register-job-handlers', function () {
       models,
       events,
       sentry,
+      giftService,
       mediaInliner,
     });
   });
@@ -54,15 +57,12 @@ describe('register-job-handlers', function () {
     sinon.restore();
   });
 
-  // Nothing initialises the gifts service here, which is the state the guard
-  // exists for: a dispatch that lands before boot has built the service must
-  // fail loudly rather than reading undefined off the module.
-  it('fails a clean-gifts delivery when the gift service is not initialised', async function () {
+  it('runs clean-gifts with the injected gift service', async function () {
     const cleanGiftsHandler = handlerFor('clean-gifts');
 
-    await assert.rejects(async () => {
-      await cleanGiftsHandler({});
-    }, /clean-gifts ran before the gifts service was initialised/);
+    await cleanGiftsHandler({});
+
+    assert.ok(giftService.cleanup.calledOnce);
   });
 
   it('runs clean-tokens with the injected database and logger', async function () {
