@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const knexLib = require('knex');
 const CommentsStatsService = require('../../../../../core/server/services/comments/comments-stats-service');
 
 function makeQB(resultFn) {
@@ -383,6 +384,72 @@ describe('CommentsStatsService', function () {
       );
       assert.ok(totalsQuery.whereIn.called);
       assert.deepEqual(totalsQuery.whereIn.firstCall.args[1], ['published', 'hidden']);
+    });
+  });
+
+  describe('SQLite bucket queries', function () {
+    it('executes day and week buckets with a non-UTC half-hour offset', async function () {
+      const knex = knexLib({
+        client: 'better-sqlite3',
+        connection: { filename: ':memory:' },
+        useNullAsDefault: true,
+      });
+      const service = new CommentsStatsService({ db: { knex } });
+
+      try {
+        await knex.schema.createTable('comments', (table) => {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('status');
+          table.dateTime('created_at');
+        });
+        await knex.schema.createTable('comment_reports', (table) => {
+          table.string('comment_id');
+        });
+        await knex('comments').insert([
+          {
+            id: 'comment-1',
+            member_id: 'member-1',
+            status: 'published',
+            created_at: '2026-01-04 19:00:00',
+          },
+          {
+            id: 'comment-2',
+            member_id: 'member-1',
+            status: 'published',
+            created_at: '2026-01-06 00:00:00',
+          },
+          {
+            id: 'comment-3',
+            member_id: 'member-2',
+            status: 'published',
+            created_at: '2026-01-11 18:45:00',
+          },
+        ]);
+
+        const dayRange = service._resolveRange('2026-01-01', '2026-01-30', 'Asia/Kolkata');
+        const daySeries = await service._getSeries(knex, dayRange, 'Asia/Kolkata', 'day');
+        assert.deepEqual(
+          daySeries.filter((row) => row.count > 0),
+          [
+            { date: '2026-01-05', count: 1, commenters: 1, reported: 0 },
+            { date: '2026-01-06', count: 1, commenters: 1, reported: 0 },
+            { date: '2026-01-12', count: 1, commenters: 1, reported: 0 },
+          ],
+        );
+
+        const weekRange = service._resolveRange('2026-01-01', '2026-04-30', 'Asia/Kolkata');
+        const weekSeries = await service._getSeries(knex, weekRange, 'Asia/Kolkata', 'week');
+        assert.deepEqual(
+          weekSeries.filter((row) => row.count > 0),
+          [
+            { date: '2026-01-05', count: 2, commenters: 1, reported: 0 },
+            { date: '2026-01-12', count: 1, commenters: 1, reported: 0 },
+          ],
+        );
+      } finally {
+        await knex.destroy();
+      }
     });
   });
 });

@@ -1,5 +1,30 @@
 const statsService = require('../../services/stats');
 const commentsService = require('../../services/comments');
+const { BadRequestError } = require('@tryghost/errors');
+const moment = require('moment-timezone');
+
+function validateCommentsOverviewOptions({
+  date_from: dateFrom,
+  date_to: dateTo,
+  timezone = 'UTC',
+}) {
+  if (!moment.tz.zone(timezone)) {
+    throw new BadRequestError({ message: 'Invalid timezone.' });
+  }
+
+  for (const [name, value] of [
+    ['date_from', dateFrom],
+    ['date_to', dateTo],
+  ]) {
+    if (value && !moment(value, 'YYYY-MM-DD', true).isValid()) {
+      throw new BadRequestError({ message: `Invalid ${name}. Expected YYYY-MM-DD.` });
+    }
+  }
+
+  if (dateFrom && dateTo && moment(dateFrom).isAfter(moment(dateTo))) {
+    throw new BadRequestError({ message: 'date_from must be before or equal to date_to.' });
+  }
+}
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -442,6 +467,9 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['date_from', 'date_to', 'timezone'],
+    validation(frame) {
+      validateCommentsOverviewOptions(frame.options);
+    },
     permissions: {
       docName: 'comments',
       method: 'browse',
@@ -450,7 +478,11 @@ const controller = {
     generateCacheKeyData(frame) {
       return {
         method: 'commentsOverview',
-        options: frame.options,
+        options: {
+          date_from: frame.options.date_from,
+          date_to: frame.options.date_to,
+          timezone: frame.options.timezone,
+        },
       };
     },
     async query(frame) {
