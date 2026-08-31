@@ -13,6 +13,7 @@ import { memberDetailScreen } from './member-detail.screen';
 
 const FIELDS = [
   {
+    namespace: 'custom',
     key: 'job_title',
     name: 'Job title',
     type: 'short_text',
@@ -20,6 +21,7 @@ const FIELDS = [
     updated_at: null,
   },
   {
+    namespace: 'custom',
     key: 'company',
     name: 'Company',
     type: 'long_text',
@@ -27,6 +29,7 @@ const FIELDS = [
     updated_at: null,
   },
   {
+    namespace: 'custom',
     key: 'home_address',
     name: 'Home address',
     type: 'address',

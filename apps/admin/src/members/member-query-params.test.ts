@@ -176,8 +176,13 @@ describe('a subscription column reads the resolved current_subscription', () => 
 
 describe('custom field columns', () => {
   const customFields = [
-    { key: 'job_title', name: 'Job title', type: 'short_text' as const },
-    { key: 'shipping_address', name: 'Shipping address', type: 'address' as const },
+    { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' as const },
+    {
+      namespace: 'custom',
+      key: 'shipping_address',
+      name: 'Shipping address',
+      type: 'address' as const,
+    },
   ];
 
   const filterOn = (key: string): FilterPredicate[] => [

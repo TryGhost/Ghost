@@ -13,8 +13,8 @@ import {
 // invariant those tests can only observe indirectly: the key set is fixed by the
 // field definitions alone, never by which values a given member happens to hold.
 describe('custom field CSV cells', function () {
-  const nickname = { key: 'nickname', type: 'short_text' } as const;
-  const address = { key: 'shipping_address', type: 'address' } as const;
+  const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
+  const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
 
   const ADDRESS_COLUMNS = [
     'metafields.custom.shipping_address.line1',
@@ -26,7 +26,7 @@ describe('custom field CSV cells', function () {
   ];
 
   it('gives a scalar field one column', function () {
-    assert.deepEqual(csvCellsForFields([nickname], { nickname: 'Bex' }), {
+    assert.deepEqual(csvCellsForFields([nickname], { custom: { nickname: 'Bex' } }), {
       'metafields.custom.nickname': 'Bex',
     });
   });
@@ -34,8 +34,8 @@ describe('custom field CSV cells', function () {
   // A key is minted from a publisher-chosen name, so it can land on a column the
   // export already has. Namespacing is what stops the value taking its place.
   it('namespaces a key that collides with a core export column', function () {
-    const cells = csvCellsForFields([{ key: 'email', type: 'short_text' }], {
-      email: 'a nickname',
+    const cells = csvCellsForFields([{ namespace: 'custom', key: 'email', type: 'short_text' }], {
+      custom: { email: 'a nickname' },
     });
 
     assert.deepEqual(cells, { 'metafields.custom.email': 'a nickname' });
@@ -44,13 +44,15 @@ describe('custom field CSV cells', function () {
 
   it('expands a composite field into a column per sub-field', function () {
     const cells = csvCellsForFields([address], {
-      shipping_address: {
-        line1: '1 High Street',
-        line2: 'Flat 2',
-        city: 'London',
-        state: 'Greater London',
-        postal_code: 'E1 6AN',
-        country: 'GB',
+      custom: {
+        shipping_address: {
+          line1: '1 High Street',
+          line2: 'Flat 2',
+          city: 'London',
+          state: 'Greater London',
+          postal_code: 'E1 6AN',
+          country: 'GB',
+        },
       },
     });
 
@@ -63,12 +65,14 @@ describe('custom field CSV cells', function () {
   // value for must still produce its columns or it vanishes from the whole file.
   it('produces the same columns whether or not the member holds a value', function () {
     const withValues = csvCellsForFields([nickname, address], {
-      nickname: 'Bex',
-      shipping_address: {
-        line1: '1 High Street',
-        city: 'London',
-        postal_code: 'E1 6AN',
-        country: 'GB',
+      custom: {
+        nickname: 'Bex',
+        shipping_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'E1 6AN',
+          country: 'GB',
+        },
       },
     });
     const withNothing = csvCellsForFields([nickname, address], {});
@@ -82,11 +86,13 @@ describe('custom field CSV cells', function () {
 
   it('leaves a cell empty for a sub-field the value omits', function () {
     const cells = csvCellsForFields([address], {
-      shipping_address: {
-        line1: '9 Long Lane',
-        city: 'Bristol',
-        postal_code: 'BS1 4DJ',
-        country: 'GB',
+      custom: {
+        shipping_address: {
+          line1: '9 Long Lane',
+          city: 'Bristol',
+          postal_code: 'BS1 4DJ',
+          country: 'GB',
+        },
       },
     });
 
@@ -95,7 +101,7 @@ describe('custom field CSV cells', function () {
   });
 
   it('treats an explicit null as no value', function () {
-    assert.deepEqual(csvCellsForFields([nickname], { nickname: null }), {
+    assert.deepEqual(csvCellsForFields([nickname], { custom: { nickname: null } }), {
       'metafields.custom.nickname': '',
     });
   });
@@ -105,20 +111,24 @@ describe('custom field CSV cells', function () {
 // the error report echoes, so they are derived from the same primitives the cells are.
 describe('custom field CSV columns', function () {
   it('gives a scalar field one namespaced column holding no particular part', function () {
-    assert.deepEqual(csvColumnsForField({ key: 'nickname', type: 'short_text' }), [
-      { column: 'metafields.custom.nickname', subField: null },
-    ]);
+    assert.deepEqual(
+      csvColumnsForField({ namespace: 'custom', key: 'nickname', type: 'short_text' }),
+      [{ column: 'metafields.custom.nickname', subField: null }],
+    );
   });
 
   it('gives a composite field one column per sub-field, each naming the part it holds', function () {
-    assert.deepEqual(csvColumnsForField({ key: 'shipping_address', type: 'address' }), [
-      { column: 'metafields.custom.shipping_address.line1', subField: 'line1' },
-      { column: 'metafields.custom.shipping_address.line2', subField: 'line2' },
-      { column: 'metafields.custom.shipping_address.city', subField: 'city' },
-      { column: 'metafields.custom.shipping_address.state', subField: 'state' },
-      { column: 'metafields.custom.shipping_address.postal_code', subField: 'postal_code' },
-      { column: 'metafields.custom.shipping_address.country', subField: 'country' },
-    ]);
+    assert.deepEqual(
+      csvColumnsForField({ namespace: 'custom', key: 'shipping_address', type: 'address' }),
+      [
+        { column: 'metafields.custom.shipping_address.line1', subField: 'line1' },
+        { column: 'metafields.custom.shipping_address.line2', subField: 'line2' },
+        { column: 'metafields.custom.shipping_address.city', subField: 'city' },
+        { column: 'metafields.custom.shipping_address.state', subField: 'state' },
+        { column: 'metafields.custom.shipping_address.postal_code', subField: 'postal_code' },
+        { column: 'metafields.custom.shipping_address.country', subField: 'country' },
+      ],
+    );
   });
 
   it('recognises a custom field column by its namespace', function () {
@@ -138,12 +148,12 @@ describe('custom field CSV columns', function () {
 // End-to-end round-tripping is proven in the member import HTTP API tests; the row-level
 // reading rules are pinned here.
 describe('reading custom field values from a CSV row', function () {
-  const nickname = { key: 'nickname', type: 'short_text' } as const;
-  const address = { key: 'shipping_address', type: 'address' } as const;
+  const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
+  const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
 
   it('reads a scalar column into its value', function () {
     assert.deepEqual(fieldValuesFromCsvRow([nickname], { 'metafields.custom.nickname': 'Bex' }), {
-      nickname: 'Bex',
+      'custom.nickname': 'Bex',
     });
   });
 
@@ -153,12 +163,19 @@ describe('reading custom field values from a CSV row', function () {
 
   it('reads a legacy column, so a file exported before the rename re-imports', function () {
     assert.deepEqual(fieldValuesFromCsvRow([nickname], { 'custom_fields.nickname': 'Bex' }), {
-      nickname: 'Bex',
+      'custom.nickname': 'Bex',
     });
     assert.deepEqual(
       fieldValuesFromCsvRow([address], { 'custom_fields.shipping_address.city': 'London' }),
-      { shipping_address: { city: 'London' } },
+      { 'custom.shipping_address': { city: 'London' } },
     );
+  });
+
+  it('never reads a legacy column for a field outside the publisher namespace', function () {
+    // The legacy vocabulary only ever named the publisher's fields, so a field
+    // from any other namespace has no legacy column to fall back to.
+    const appField = { namespace: 'transistor', key: 'nickname', type: 'short_text' } as const;
+    assert.deepEqual(fieldValuesFromCsvRow([appField], { 'custom_fields.nickname': 'Bex' }), {});
   });
 
   it('prefers the current column when a row somehow carries both vocabularies', function () {
@@ -167,7 +184,7 @@ describe('reading custom field values from a CSV row', function () {
         'metafields.custom.nickname': 'Bex',
         'custom_fields.nickname': 'Old',
       }),
-      { nickname: 'Bex' },
+      { 'custom.nickname': 'Bex' },
     );
   });
 
@@ -182,7 +199,7 @@ describe('reading custom field values from a CSV row', function () {
         'metafields.custom.nickname': 'Bex',
         'metafields.custom.unknown': 'ignored',
       }),
-      { nickname: 'Bex' },
+      { 'custom.nickname': 'Bex' },
     );
   });
 
@@ -212,7 +229,7 @@ describe('reading custom field values from a CSV row', function () {
         'metafields.custom.shipping_address.country': 'GB',
       }),
       {
-        shipping_address: {
+        'custom.shipping_address': {
           line1: '1 High Street',
           city: 'London',
           postal_code: 'E1 6AN',
@@ -232,7 +249,7 @@ describe('reading custom field values from a CSV row', function () {
         'metafields.custom.shipping_address.name': 'Bex Jones',
         'metafields.custom.shipping_address.city': 'London',
       }),
-      { shipping_address: { city: 'London' } },
+      { 'custom.shipping_address': { city: 'London' } },
     );
   });
 
@@ -243,7 +260,7 @@ describe('reading custom field values from a CSV row', function () {
       fieldValuesFromCsvRow([address], {
         'metafields.custom.shipping_address.city': 'London',
       }),
-      { shipping_address: { city: 'London' } },
+      { 'custom.shipping_address': { city: 'London' } },
     );
   });
 
@@ -255,7 +272,7 @@ describe('reading custom field values from a CSV row', function () {
       fieldValuesFromCsvRow([nickname], { 'metafields.custom.nickname': ' Bex ' }, (cell) =>
         cell.trim(),
       ),
-      { nickname: 'Bex' },
+      { 'custom.nickname': 'Bex' },
     );
     assert.deepEqual(
       fieldValuesFromCsvRow([nickname], { 'metafields.custom.nickname': '   ' }, (cell) =>

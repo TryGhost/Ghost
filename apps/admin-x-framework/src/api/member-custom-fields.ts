@@ -24,9 +24,10 @@ export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/custom-field
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/custom-field-types';
 
 export type MemberCustomField = {
-  // One namespace exists today: every field a publisher defines lives in `custom`.
-  // Carried on the resource so consumers are already typed for the namespaced world.
-  namespace: 'custom';
+  // The namespace that declared the field — data from the API, never assumed.
+  // Every field a publisher defines arrives in `custom`; ids, columns and value
+  // lookups all derive from this so other namespaces flow through untouched.
+  namespace: string;
   // Fields are addressed by their namespace and immutable key; the DB id is never exposed.
   key: string;
   name: string;
@@ -153,16 +154,18 @@ export const memberCustomFieldCsvColumns = (
 ): MemberCustomFieldCsvColumn[] => {
   return fields.flatMap((field) => {
     const labels = partLabelsFor(field.type);
-    return csvColumnsForField({ key: field.key, type: field.type }).map(({ column, subField }) => {
-      const partLabel = subField === null ? undefined : labels[subField];
-      return {
-        value: column,
-        fieldName: field.name,
-        ...(partLabel === undefined ? {} : { partLabel }),
-        label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
-        type: field.type,
-      };
-    });
+    return csvColumnsForField({ namespace: field.namespace, key: field.key, type: field.type }).map(
+      ({ column, subField }) => {
+        const partLabel = subField === null ? undefined : labels[subField];
+        return {
+          value: column,
+          fieldName: field.name,
+          ...(partLabel === undefined ? {} : { partLabel }),
+          label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+          type: field.type,
+        };
+      },
+    );
   });
 };
 

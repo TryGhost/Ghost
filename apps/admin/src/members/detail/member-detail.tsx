@@ -466,9 +466,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                                     value can't exist before its member does. */}
                   {member && (
                     <MemberCustomFieldsField
-                      customFields={member.metafields?.custom}
                       disabled={activeMutation.isPending}
                       memberId={member.id}
+                      metafields={member.metafields}
                     />
                   )}
 

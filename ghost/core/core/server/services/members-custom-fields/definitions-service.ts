@@ -4,6 +4,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import { CustomField } from './models';
 import { FieldTypeSchema, type FieldType } from '@tryghost/custom-field-types';
+import { CUSTOM_NAMESPACE } from '@tryghost/custom-field-types/identity';
 import { customFieldCodec } from './codec';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
 import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
@@ -123,7 +124,34 @@ export class CustomFieldDefinitionsService {
     return Boolean(field);
   }
 
-  async browse(options: { filter?: string } = {}): Promise<CustomField[]> {
+  /**
+   * The query boundary: the table predates namespace storage and holds the
+   * publisher's fields alone. A namespace holding no fields is an ordinary empty
+   * collection, not an error — namespaces are data, and one can exist before any
+   * field does — so reads scope to nothing and mutations refuse, and the day the
+   * storage learns namespaces this is where the scoping widens.
+   */
+  private isStored(namespace: string): boolean {
+    return namespace === CUSTOM_NAMESPACE;
+  }
+
+  // Defining and ordering fields is the publisher managing their own collection;
+  // another namespace's structure belongs to whoever declares it, which is not this
+  // API. Refused as input rather than 404ed: the address is understood, the request
+  // is what cannot be honoured.
+  private assertDefinable(namespace: string): void {
+    if (!this.isStored(namespace)) {
+      throw new errors.ValidationError({
+        message: `Fields cannot be defined in the "${namespace}" namespace.`,
+        property: 'namespace',
+      });
+    }
+  }
+
+  async browse(options: { namespace?: string; filter?: string } = {}): Promise<CustomField[]> {
+    if (options.namespace !== undefined && !this.isStored(options.namespace)) {
+      return [];
+    }
     // Archived fields are hidden by default: most surfaces (member details, the
     // filter picker, the importer) only ever want active fields. A caller-
     // supplied `filter` can widen that — Settings pulls active and archived
@@ -148,8 +176,8 @@ export class CustomFieldDefinitionsService {
     return rows.map((row) => z.decode(customFieldCodec, row));
   }
 
-  async read(key: string): Promise<CustomField> {
-    const [field] = await this.list(fieldByKey(this.knex, key));
+  async read(namespace: string, key: string): Promise<CustomField> {
+    const [field] = this.isStored(namespace) ? await this.list(fieldByKey(this.knex, key)) : [];
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -166,7 +194,8 @@ export class CustomFieldDefinitionsService {
    * batch, so two items sharing a name are caught and two items deriving the same
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
-  async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
+  async add(context: RequestContext, namespace: string, input: unknown): Promise<CustomField[]> {
+    this.assertDefinable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
     const parsed = AddFieldsInput.safeParse(input);
@@ -372,7 +401,12 @@ export class CustomFieldDefinitionsService {
    * fresh rank, so a move is well-defined even where every rank is still the default.
    * Returns every definition, archived included, matching what the request named.
    */
-  async reorder(context: RequestContext, input: unknown): Promise<CustomField[]> {
+  async reorder(
+    context: RequestContext,
+    namespace: string,
+    input: unknown,
+  ): Promise<CustomField[]> {
+    this.assertDefinable(namespace);
     const parsed = ReorderInput.safeParse(input);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
@@ -504,7 +538,15 @@ export class CustomFieldDefinitionsService {
     }
   }
 
-  async edit(context: RequestContext, key: string, input: unknown): Promise<CustomField> {
+  async edit(
+    context: RequestContext,
+    namespace: string,
+    key: string,
+    input: unknown,
+  ): Promise<CustomField> {
+    if (!this.isStored(namespace)) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
     const parsed = EditFieldInput.safeParse(input);
     if (!parsed.success) {
       throw new errors.ValidationError({
@@ -514,7 +556,7 @@ export class CustomFieldDefinitionsService {
     }
     const patch = parsed.data;
 
-    const existing = await this.read(key);
+    const existing = await this.read(CUSTOM_NAMESPACE, key);
 
     // Key and type are immutable after creation: values are addressed by key
     // and interpreted by type, so changing either would silently orphan or
@@ -571,7 +613,7 @@ export class CustomFieldDefinitionsService {
       });
     }
 
-    return this.read(key);
+    return this.read(CUSTOM_NAMESPACE, key);
   }
 
   /**
@@ -581,7 +623,10 @@ export class CustomFieldDefinitionsService {
    * which makes accidental data loss a deliberate two-step. Archiving is the
    * reversible soft state (see `edit` with a status change).
    */
-  async destroy(context: RequestContext, key: string): Promise<void> {
+  async destroy(context: RequestContext, namespace: string, key: string): Promise<void> {
+    if (!this.isStored(namespace)) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
     const field = await this.knex(TABLE).where('key', key).first();
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });

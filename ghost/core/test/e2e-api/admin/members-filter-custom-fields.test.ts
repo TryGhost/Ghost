@@ -304,12 +304,14 @@ describe('Members filtering by custom fields', function () {
   });
 
   describe('identity validation', function () {
-    it('rejects a key naming a namespace that does not exist', async function () {
-      // The storage holds the `custom` namespace alone, so any other would
-      // silently match nothing; refused with the namespace named instead.
-      await agent
-        .get(`members/?filter=${encodeURIComponent("metafields.key:'transistor.private_url'")}`)
-        .expectStatus(400);
+    it('matches nobody for a namespace holding no fields', async function () {
+      // Namespaces are data: an identity in a namespace with no fields matches
+      // no leaf, exactly like a key nobody minted — not an error, an absence.
+      await createField({ name: 'Company' });
+      await createMember({ company: 'Ghost' });
+
+      const matched = await browse("metafields.key:'transistor.private_url'");
+      assert.deepEqual(matched, []);
     });
 
     it('rejects a bare key with no namespace segment', async function () {

@@ -6,6 +6,10 @@ import { DbBoundField, FIELD_STATUS } from './schema';
 import type { CustomFieldValuesService, PlannedWrite } from './values-service';
 
 const FIELDS_TABLE = 'members_custom_fields';
+
+// The bindings store references publisher fields by bare key (its FK), so the
+// identity handed to the values service is stated here, at that store's boundary.
+const { CUSTOM_NAMESPACE } = require('@tryghost/custom-field-types/identity');
 const BINDINGS_TABLE = 'members_custom_field_bindings';
 
 export interface BoundField {
@@ -81,7 +85,7 @@ export class CustomFieldBindingsService {
   private async writeOne(memberId: string, into: BoundField, value: unknown): Promise<void> {
     let planned: PlannedWrite[];
     try {
-      planned = await this.values.planWrite({ [into.key]: value });
+      planned = await this.values.planWrite({ [`${CUSTOM_NAMESPACE}.${into.key}`]: value });
     } catch (err) {
       logging.warn(
         {

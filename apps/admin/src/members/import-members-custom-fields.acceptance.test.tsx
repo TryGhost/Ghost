@@ -51,6 +51,7 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
     const [input] = (body as { members_metafields: Array<{ name: string; type: string }> })
       .members_metafields;
     const field = {
+      namespace: 'custom',
       key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
       name: input.name.trim(),
       type: input.type,
@@ -66,6 +67,7 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
 
 /** A field the site has already defined, for proving what an import does and does not offer. */
 const NICKNAME_FIELD = {
+  namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',
   type: 'short_text',

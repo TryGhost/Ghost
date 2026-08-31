@@ -10,6 +10,7 @@ import {
 import { settingsScreen } from '@/settings/settings.screen';
 
 const companyField = {
+  namespace: 'custom',
   key: 'company',
   name: 'Company',
   type: 'short_text',
@@ -19,6 +20,7 @@ const companyField = {
 };
 
 const archivedField = {
+  namespace: 'custom',
   key: 'old_hobby',
   name: 'Old hobby',
   type: 'short_text',

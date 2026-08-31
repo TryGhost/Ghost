@@ -44,7 +44,7 @@ describe('memberFields', () => {
       'offer_redemptions',
       'count.active_stripe_customers',
       'newsletters.:slug',
-      'metafields.custom.:key',
+      'metafields.:namespace.:key',
     ]);
   });
 

@@ -34,10 +34,10 @@ import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-c
 
 interface MemberCustomFieldsFieldProps {
   memberId: string;
-  // The member's saved values (`member.metafields.custom` from the read), keyed
-  // by field key. Server truth — edits never live on the page draft; each
-  // field saves individually through its own editor.
-  customFields: Record<string, unknown> | undefined;
+  // The member's saved values (`member.metafields` from the read), nested by
+  // namespace then field key. Server truth — edits never live on the page
+  // draft; each field saves individually through its own editor.
+  metafields: Record<string, Record<string, unknown> | undefined> | undefined;
   disabled?: boolean;
 }
 
@@ -174,7 +174,9 @@ const MemberCustomFieldEditModal: React.FC<{
   // Strip this field's key prefix so the input sees '' / 'subfield' keys.
   const inputErrors = Object.fromEntries(
     Object.entries(errors).map(([key, message]) => [
-      key === field.key ? '' : key.slice(field.key.length + 1),
+      key === `${field.namespace}.${field.key}`
+        ? ''
+        : key.slice(`${field.namespace}.${field.key}`.length + 1),
       message,
     ]),
   );
@@ -185,8 +187,8 @@ const MemberCustomFieldEditModal: React.FC<{
   // refuses casual dismissal — Cancel is the one explicit way to discard,
   // so typed values can never be lost by a stray click.
   const isDirty = !dequal(
-    getEditableCustomFieldValues({ [field.key]: value }),
-    getEditableCustomFieldValues({ [field.key]: initialValue }),
+    getEditableCustomFieldValues({ [field.namespace]: { [field.key]: value } }),
+    getEditableCustomFieldValues({ [field.namespace]: { [field.key]: initialValue } }),
   );
 
   const onSave = () => {
@@ -205,7 +207,7 @@ const MemberCustomFieldEditModal: React.FC<{
       setSaveAttempted(true);
       return;
     }
-    editMutation.mutate(buildCustomFieldSavePayload(memberId, field.key, value), {
+    editMutation.mutate(buildCustomFieldSavePayload(memberId, field, value), {
       onSuccess: () => {
         toast.success(`${field.name} saved`);
         onClose();
@@ -301,12 +303,12 @@ const MemberCustomFieldEditModal: React.FC<{
  */
 const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   memberId,
-  customFields,
+  metafields,
   disabled,
 }) => {
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
-  const values = getEditableCustomFieldValues(customFields);
+  const values = getEditableCustomFieldValues(metafields);
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
 
   if (isLoading || fields.length === 0) {
@@ -330,7 +332,11 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
           <ul>
             {fields.map((field) => {
               // Null rather than an empty line, so an unset value shows its placeholder.
-              const display = formatMemberCustomFieldValue(field.type, values[field.key]) || null;
+              const display =
+                formatMemberCustomFieldValue(
+                  field.type,
+                  values[`${field.namespace}.${field.key}`],
+                ) || null;
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
                 // previous row's via :has), so the hover tint floats free of the
@@ -389,7 +395,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <MemberCustomFieldEditModal
           key={editingField.key}
           field={editingField}
-          initialValue={values[editingField.key]}
+          initialValue={values[`${editingField.namespace}.${editingField.key}`]}
           memberId={memberId}
           onClose={() => setEditingField(null)}
         />

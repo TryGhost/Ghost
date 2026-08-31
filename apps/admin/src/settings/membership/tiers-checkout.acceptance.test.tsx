@@ -20,6 +20,7 @@ const supporterTier = tier({
 });
 
 const addressField = {
+  namespace: 'custom',
   key: 'shipping_address',
   name: 'Shipping Address',
   type: 'address',

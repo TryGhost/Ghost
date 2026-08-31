@@ -129,12 +129,13 @@ export type Member = {
   last_seen_at: string | null;
   last_commented_at: string | null;
   // Values of the custom fields a publisher has defined on member records, nested
-  // by namespace then field key — `custom` is the publisher's namespace and the
-  // only one that exists today. Optional because a site that has defined none gets
-  // no key at all, rather than an empty object. Values differ by field type, a
-  // string for text and an object for an address, so they arrive as unknown and
-  // each consumer narrows to what it expects.
-  metafields?: { custom?: Record<string, unknown> };
+  // by namespace then field key. Namespaces are data — whatever the backend
+  // serializes flows through — and the publisher's fields arrive under `custom`.
+  // Optional because a site that has defined none gets no key at all, rather than
+  // an empty object. Values differ by field type, a string for text and an object
+  // for an address, so they arrive as unknown and each consumer narrows to what
+  // it expects.
+  metafields?: Record<string, Record<string, unknown> | undefined>;
   can_comment?: boolean;
   commenting?: {
     disabled: boolean;
@@ -550,7 +551,7 @@ export interface EditMemberData {
   // added there is writable here without this line being edited. Every key is checked
   // against the fields the site has defined, so naming one that does not exist is
   // rejected rather than ignored.
-  metafields?: { custom: Record<string, FieldValue | null> };
+  metafields?: Record<string, Record<string, FieldValue | null>>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({

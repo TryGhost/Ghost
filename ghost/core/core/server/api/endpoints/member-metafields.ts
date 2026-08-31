@@ -1,7 +1,5 @@
-import { isKnownNamespace } from '@tryghost/custom-field-types/identity';
 import { actingContext, definitions } from '../../services/members-custom-fields';
 
-const errors = require('@tryghost/errors');
 const permissionsService = require('../../services/permissions');
 
 interface Frame {
@@ -17,18 +15,6 @@ interface Frame {
 // `permissions: true` handler would try to load a model that doesn't exist).
 function canThis(frame: Frame) {
   return permissionsService.canThis(frame.options.context);
-}
-
-// Every route carries a namespace segment, and only namespaces that exist resolve —
-// today that is `custom` alone. 404 rather than 422: the segment addresses a
-// collection, and an unknown namespace is a collection that isn't there.
-function assertKnownNamespace(frame: Frame): void {
-  if (!isKnownNamespace(frame.options.namespace)) {
-    throw new errors.NotFoundError({
-      message: 'Metafield namespace not found.',
-      property: 'namespace',
-    });
-  }
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };
@@ -49,8 +35,10 @@ const controller = {
       return canThis(frame).browse.member_custom_field();
     },
     query(frame: Frame) {
-      assertKnownNamespace(frame);
-      return definitions!.browse({ filter: frame.options.filter as string | undefined });
+      return definitions!.browse({
+        namespace: frame.options.namespace,
+        filter: frame.options.filter as string | undefined,
+      });
     },
   },
 
@@ -62,8 +50,7 @@ const controller = {
       return canThis(frame).read.member_custom_field(frame.options.key);
     },
     query(frame: Frame) {
-      assertKnownNamespace(frame);
-      return definitions!.read(frame.options.key);
+      return definitions!.read(frame.options.namespace, frame.options.key);
     },
   },
 
@@ -79,8 +66,11 @@ const controller = {
     // all-or-nothing. A client sending a single definition (as Admin does)
     // is just the one-item case and sees no change.
     query(frame: Frame) {
-      assertKnownNamespace(frame);
-      return definitions!.add(actingContext(frame.options.context), frame.data.members_metafields);
+      return definitions!.add(
+        actingContext(frame.options.context),
+        frame.options.namespace,
+        frame.data.members_metafields,
+      );
     },
   },
 
@@ -93,9 +83,9 @@ const controller = {
       return canThis(frame).edit.member_custom_field();
     },
     query(frame: Frame) {
-      assertKnownNamespace(frame);
       return definitions!.reorder(
         actingContext(frame.options.context),
+        frame.options.namespace,
         frame.data.members_metafields,
       );
     },
@@ -109,9 +99,9 @@ const controller = {
       return canThis(frame).edit.member_custom_field(frame.options.key);
     },
     query(frame: Frame) {
-      assertKnownNamespace(frame);
       return definitions!.edit(
         actingContext(frame.options.context),
+        frame.options.namespace,
         frame.options.key,
         frame.data.members_metafields[0],
       );
@@ -127,8 +117,11 @@ const controller = {
       return canThis(frame).destroy.member_custom_field(frame.options.key);
     },
     async query(frame: Frame) {
-      assertKnownNamespace(frame);
-      await definitions!.destroy(actingContext(frame.options.context), frame.options.key);
+      await definitions!.destroy(
+        actingContext(frame.options.context),
+        frame.options.namespace,
+        frame.options.key,
+      );
       return null;
     },
   },

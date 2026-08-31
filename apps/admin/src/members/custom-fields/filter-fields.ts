@@ -1,4 +1,4 @@
-import { customFieldAddressing } from './addressing';
+import { METAFIELDS_FIELD_PREFIX, customFieldAddressing, metafieldFieldId } from './addressing';
 import {
   memberCustomFieldKind,
   memberCustomFieldParts,
@@ -40,9 +40,10 @@ function compositeFilterType(type: MemberCustomField['type']): FilterTypeId {
   return partFilterTypes[0] ?? 'text';
 }
 
-export const CUSTOM_FIELD_CLAUSE = 'metafields.';
+export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 
 export interface CustomFieldDefinition {
+  namespace: string;
   key: string;
   name: string;
   type: MemberCustomField['type'];
@@ -52,10 +53,10 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
   const kind = memberCustomFieldKind(definition.type);
 
   return {
-    key: `metafields.custom.${definition.key}`,
+    key: metafieldFieldId(definition),
     icon: 'text',
     type: kind === 'record' ? compositeFilterType(definition.type) : SCALAR_KIND_FILTER_TYPE[kind],
-    addressing: customFieldAddressing(definition.key),
+    addressing: customFieldAddressing(definition),
     ui: {
       label: definition.name,
       type: 'custom',
