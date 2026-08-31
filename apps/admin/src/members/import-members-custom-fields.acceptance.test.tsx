@@ -31,7 +31,7 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 // Every browse of the field list, whether or not it carries a status filter: the members
 // screen behind this modal asks for archived fields too, and an exact-path fake would
 // leave that request unhandled.
-const customFieldsBrowsePath = new RegExp('^/members/custom_fields/(\\?|$)');
+const customFieldsBrowsePath = new RegExp('^/members/metafields/custom/(\\?|$)');
 
 const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
 
@@ -47,9 +47,9 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
   const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
-  const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', ({ body }) => {
-    const [input] = (body as { members_custom_fields: Array<{ name: string; type: string }> })
-      .members_custom_fields;
+  const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', ({ body }) => {
+    const [input] = (body as { members_metafields: Array<{ name: string; type: string }> })
+      .members_metafields;
     const field = {
       key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
       name: input.name.trim(),
@@ -59,7 +59,7 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
       updated_at: null,
     };
     fields.push(field);
-    return { members_custom_fields: [field] };
+    return { members_metafields: [field] };
   });
   return { browseApi, createApi, uploadApi };
 }
@@ -130,7 +130,7 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ name: 'Nickname', type: 'short_text' }],
+        members_metafields: [{ name: 'Nickname', type: 'short_text' }],
       });
 
     // The row carries the new field immediately, from the create response: the browse query
@@ -280,7 +280,7 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ name: 'Shipping address', type: 'address' }],
+        members_metafields: [{ name: 'Shipping address', type: 'address' }],
       });
 
     // The form is gone and its row's picker is open in its place, showing that field's
@@ -301,7 +301,7 @@ describe('Import members custom fields', () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
       'POST',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -331,7 +331,7 @@ describe('Import members custom fields', () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
       'POST',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -365,7 +365,7 @@ describe('Import members custom fields', () => {
     // A 2xx the client cannot use: an older bundle against a newer server, a proxy that
     // reshapes the envelope. The field is created either way, so the form must not claim
     // otherwise and send them to create a second one.
-    fakeAdminEndpoint('POST', '/members/custom_fields/', { members_custom_fields: [] });
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', { members_metafields: [] });
     await renderAdminApp('/members', FLAGS);
     await openMappingStep();
 

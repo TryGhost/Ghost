@@ -195,36 +195,42 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Member custom field definitions. Reading them is open: a site that has never
-  // turned the flag on has none, so the answer is an empty list rather than a 404, and
-  // Admin can ask without first knowing whether it may. Changing them is gated.
+  // Member metafield definitions, one namespace per route: the URL is the field's
+  // address with dots as slashes, and the controller resolves only namespaces that
+  // exist (`custom` alone today). Reading is open: a site that has never turned the
+  // flag on has none, so the answer is an empty list rather than a 404, and Admin can
+  // ask without first knowing whether it may. Changing them is gated.
   // Registered before /members/:id so the literal path isn't captured by :id.
-  router.get('/members/custom_fields', mw.authAdminApi, http(api.membersCustomFields.browse));
+  router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
   router.post(
-    '/members/custom_fields',
+    '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.add),
+    http(api.membersMetafields.add),
   );
-  // A PUT on the collection sets the publisher's order for the whole list.
+  // A PUT on the namespace collection sets the publisher's order for the whole list.
   router.put(
-    '/members/custom_fields',
+    '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.reorder),
+    http(api.membersMetafields.reorder),
   );
-  router.get('/members/custom_fields/:key', mw.authAdminApi, http(api.membersCustomFields.read));
+  router.get(
+    '/members/metafields/:namespace/:key',
+    mw.authAdminApi,
+    http(api.membersMetafields.read),
+  );
   router.put(
-    '/members/custom_fields/:key',
+    '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.edit),
+    http(api.membersMetafields.edit),
   );
   router.delete(
-    '/members/custom_fields/:key',
+    '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.destroy),
+    http(api.membersMetafields.destroy),
   );
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

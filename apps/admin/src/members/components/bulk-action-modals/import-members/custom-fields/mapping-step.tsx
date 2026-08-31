@@ -222,7 +222,7 @@ export function MappingStep({
     let field;
     try {
       const response = await createField({ name, type });
-      field = response.members_custom_fields?.[0];
+      field = response.members_metafields?.[0];
     } catch (error) {
       reportCreateFailure(error);
       return;

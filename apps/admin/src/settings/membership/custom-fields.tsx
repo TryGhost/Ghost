@@ -197,7 +197,7 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   // The order just drawn, held as keys over whatever the server says — so a field added
   // or removed elsewhere still appears or goes. It states an order, never a set.
   const [drawnOrder, setDrawnOrder] = useState<string[] | null>(null);
-  const serverFields = data?.members_custom_fields;
+  const serverFields = data;
   const fields = useMemo(() => {
     const known = serverFields || [];
     return drawnOrder ? inOrderOf(drawnOrder, known) : known;

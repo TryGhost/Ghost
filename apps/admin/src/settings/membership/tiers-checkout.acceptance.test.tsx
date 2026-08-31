@@ -281,9 +281,9 @@ describe('Tier checkout collection', () => {
     fakeTiers([freeTier, supporterTier]);
     fakeMemberCustomFields(() => fields);
     fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
-    const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
       fields = [...fields, created];
-      return { members_custom_fields: [created] };
+      return { members_metafields: [created] };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -300,7 +300,7 @@ describe('Tier checkout collection', () => {
       .element(modal.getByLabelText('Save recipient name as'))
       .toHaveTextContent(created.name);
     expect(createApi.lastRequest?.body).toEqual({
-      members_custom_fields: [{ name: created.name, type: 'short_text' }],
+      members_metafields: [{ name: created.name, type: 'short_text' }],
     });
   });
 

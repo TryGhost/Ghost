@@ -47,6 +47,6 @@ export function useMemberFilterSources(filterParam: string | undefined): MemberF
   return {
     newsletters:
       !wantsNewsletters || newslettersFailed ? NO_NEWSLETTERS : newslettersData?.newsletters,
-    customFields: customFieldsFailed ? NO_CUSTOM_FIELDS : customFieldsData?.members_custom_fields,
+    customFields: customFieldsFailed ? NO_CUSTOM_FIELDS : customFieldsData,
   };
 }

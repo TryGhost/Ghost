@@ -24,7 +24,10 @@ export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/custom-field
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/custom-field-types';
 
 export type MemberCustomField = {
-  // Fields are addressed by their immutable key; the DB id is never exposed.
+  // One namespace exists today: every field a publisher defines lives in `custom`.
+  // Carried on the resource so consumers are already typed for the namespaced world.
+  namespace: 'custom';
+  // Fields are addressed by their namespace and immutable key; the DB id is never exposed.
   key: string;
   name: string;
   // The same field-type enum the backend validates against, so admin and
@@ -293,9 +296,11 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
 
 export const memberCustomFieldKind = (type: FieldType): FieldKind => FIELD_TYPES[type].kind;
 
+// The wire envelope. It stays inside this file: hooks unwrap it, so no consumer ever
+// reads a response key — the wire shape has exactly one owner.
 export interface MemberCustomFieldsResponseType {
   meta?: Meta;
-  members_custom_fields: MemberCustomField[];
+  members_metafields: MemberCustomField[];
 }
 
 const dataType = 'MemberCustomFieldsResponseType';
@@ -303,9 +308,10 @@ const dataType = 'MemberCustomFieldsResponseType';
 // a drag that waits for a round-trip snaps back under the cursor.
 export const memberCustomFieldsDataType = dataType;
 
-export const useBrowseMemberCustomFields = createQuery<MemberCustomFieldsResponseType>({
+export const useBrowseMemberCustomFields = createQuery<MemberCustomField[]>({
   dataType,
-  path: '/members/custom_fields/',
+  path: '/members/metafields/custom/',
+  returnData: (raw) => (raw as MemberCustomFieldsResponseType).members_metafields,
 });
 
 // Browse hides archived fields by default. Settings is the one surface that
@@ -322,8 +328,8 @@ export const useCreateMemberCustomField = createMutation<
   Pick<MemberCustomField, 'name' | 'type'>
 >({
   method: 'POST',
-  path: () => '/members/custom_fields/',
-  body: (field) => ({ members_custom_fields: [field] }),
+  path: () => '/members/metafields/custom/',
+  body: (field) => ({ members_metafields: [field] }),
   invalidateQueries: { dataType },
   // The created field is put into the cached lists as well as refetched, so a screen that
   // has just made one can use it in the same breath instead of waiting for a round trip or
@@ -339,13 +345,13 @@ export const useCreateMemberCustomField = createMutation<
     emberUpdateType: 'skip',
     update: (newData, currentData) => {
       const current = currentData as MemberCustomFieldsResponseType | undefined;
-      if (!current?.members_custom_fields) {
+      if (!current?.members_metafields) {
         return currentData;
       }
-      const created = newData.members_custom_fields.filter(
-        (field) => !current.members_custom_fields.some((existing) => existing.key === field.key),
+      const created = newData.members_metafields.filter(
+        (field) => !current.members_metafields.some((existing) => existing.key === field.key),
       );
-      return { ...current, members_custom_fields: [...current.members_custom_fields, ...created] };
+      return { ...current, members_metafields: [...current.members_metafields, ...created] };
     },
   },
 });
@@ -358,8 +364,8 @@ export const useEditMemberCustomField = createMutation<
   Pick<MemberCustomField, 'key'> & Partial<Pick<MemberCustomField, 'name' | 'status'>>
 >({
   method: 'PUT',
-  path: (field) => `/members/custom_fields/${field.key}/`,
-  body: ({ key: _key, ...patch }) => ({ members_custom_fields: [patch] }),
+  path: (field) => `/members/metafields/custom/${field.key}/`,
+  body: ({ key: _key, ...patch }) => ({ members_metafields: [patch] }),
   invalidateQueries: { dataType },
 });
 
@@ -377,8 +383,8 @@ export const useReorderMemberCustomFields = createMutation<
   MemberCustomField[]
 >({
   method: 'PUT',
-  path: () => '/members/custom_fields/',
-  body: (fields) => ({ members_custom_fields: fields.map(({ key }) => ({ key })) }),
+  path: () => '/members/metafields/custom/',
+  body: (fields) => ({ members_metafields: fields.map(({ key }) => ({ key })) }),
   // The response is the settled order, so it is written straight to the cached lists
   // rather than refetched. A reorder only succeeds when it named exactly the fields the
   // site has, so a success carries no news about the set — only about its order — and
@@ -394,13 +400,13 @@ export const useReorderMemberCustomFields = createMutation<
     emberUpdateType: 'skip',
     update: (newData, currentData) => {
       const current = currentData as MemberCustomFieldsResponseType | undefined;
-      if (!current?.members_custom_fields) {
+      if (!current?.members_metafields) {
         return currentData;
       }
-      const settledOrder = newData.members_custom_fields.map(({ key }) => key);
+      const settledOrder = newData.members_metafields.map(({ key }) => key);
       return {
         ...current,
-        members_custom_fields: inOrderOf(settledOrder, current.members_custom_fields),
+        members_metafields: inOrderOf(settledOrder, current.members_metafields),
       };
     },
   },
@@ -430,6 +436,6 @@ export const inOrderOf = (
 // archiving and reactivating are separate status edits over PUT.
 export const useDeleteMemberCustomField = createMutation<void, string>({
   method: 'DELETE',
-  path: (key) => `/members/custom_fields/${key}/`,
+  path: (key) => `/members/metafields/custom/${key}/`,
   invalidateQueries: { dataType },
 });

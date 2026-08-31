@@ -33,7 +33,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   readOnly,
 }) => {
   const { data } = useCustomFieldDefinitionsIncludingArchived();
-  const definitions = data?.members_custom_fields ?? [];
+  const definitions = data ?? [];
 
   const fieldKey = (field.key ?? '').slice(CUSTOM_FIELDS_PREFIX.length);
   const definition = definitions.find((candidate) => candidate.key === fieldKey);

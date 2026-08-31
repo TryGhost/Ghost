@@ -21,10 +21,10 @@ describe('Members filtering by custom fields', function () {
 
   async function createField(field: { name: string; type?: string }) {
     const { body } = await agent
-      .post('members/custom_fields/')
-      .body({ members_custom_fields: [{ type: 'short_text', ...field }] })
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ type: 'short_text', ...field }] })
       .expectStatus(201);
-    return body.members_custom_fields[0];
+    return body.members_metafields[0];
   }
 
   let memberCounter = 0;
@@ -126,8 +126,8 @@ describe('Members filtering by custom fields', function () {
       await createMember({ company: 'Ghost' });
       const noCompany = await createMember();
       await agent
-        .put(`members/custom_fields/${field.key}/`)
-        .body({ members_custom_fields: [{ status: 'archived' }] })
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ status: 'archived' }] })
         .expectStatus(200);
 
       const matched = await browse("custom_fields.key:-'company'");
