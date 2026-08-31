@@ -4,7 +4,6 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load-playwright-container-env.sh"
 GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
-export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-e2e}"
 
 echo "Preparing E2E build-mode runtime"
 echo "Playwright image: ${PLAYWRIGHT_IMAGE}"

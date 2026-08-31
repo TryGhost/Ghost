@@ -11,7 +11,6 @@ MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE="$MODE"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
 MYSQL_TMPFS_ENABLED="${GHOST_E2E_MYSQL_TMPFS:-true}"
-E2E_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-e2e}"
 
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
@@ -36,4 +35,4 @@ if [[ "$ANALYTICS_ENABLED" == "true" ]]; then
   services+=(tinybird-local analytics)
 fi
 
-docker compose --project-name "$E2E_COMPOSE_PROJECT" "${compose_files[@]}" up -d --wait "${services[@]}"
+docker compose "${compose_files[@]}" up -d --wait "${services[@]}"

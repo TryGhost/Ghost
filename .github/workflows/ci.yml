@@ -2121,7 +2121,7 @@ jobs:
         env:
           CHANGED_TB_CLI: ${{ needs.job_setup.outputs.changed_tb_cli }}
         run: |
-          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-e2e}-tb-cli"
+          COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
           # GHCR's :latest is only republished from main, so it can't reflect a
           # Dockerfile change under review — build from source when this PR
           # touches it, otherwise take the prebuilt fast path.

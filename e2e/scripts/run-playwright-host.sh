@@ -10,10 +10,6 @@ cd "$REPO_ROOT"
 GHOST_E2E_MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE
 
-if [[ "$GHOST_E2E_MODE" == "build" ]]; then
-  export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-e2e}"
-fi
-
 if [[ "$GHOST_E2E_MODE" == "dev" ]]; then
   echo "E2E mode: dev (detected admin dev server at $LOCAL_ADMIN_DEV_SERVER_URL)"
 else
