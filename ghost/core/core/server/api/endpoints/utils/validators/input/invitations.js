@@ -4,7 +4,6 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-  noEmailProvided: 'No email provided.',
   noNameProvided: 'No name provided.',
   noPasswordProvided: 'No password provided.',
   noTokenProvided: 'No token provided.',
@@ -19,10 +18,6 @@ module.exports = {
 
     if (!data.token) {
       return Promise.reject(new errors.ValidationError({ message: tpl(messages.noTokenProvided) }));
-    }
-
-    if (!data.email) {
-      return Promise.reject(new errors.ValidationError({ message: tpl(messages.noEmailProvided) }));
     }
 
     if (!data.password) {
