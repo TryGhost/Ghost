@@ -483,12 +483,14 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  const jobsService = require('./server/services/jobs-service').getInstance();
+
   // Runs before activitypub.init for the same reason as the send recovery
   // above: gifts would otherwise go uncleaned for the life of the process
   // if an unrelated background service fails.
   try {
     const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftCleanupJob(require('./server/services/jobs-service').getInstance());
+    await giftJobs.scheduleGiftCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -526,10 +528,12 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
-  const updateCheck = require('./server/services/update-check');
-  updateCheck.scheduleRecurringJobs();
-  if (config.get('updateCheck:forceUpdate')) {
-    updateCheck.scheduleBootJob();
+  try {
+    const updateCheck = require('./server/services/update-check');
+    await updateCheck.scheduleJobs(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).

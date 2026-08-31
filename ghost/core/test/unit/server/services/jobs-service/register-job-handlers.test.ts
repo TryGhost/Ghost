@@ -6,6 +6,7 @@ import { JobsService } from '../../../../../core/server/services/jobs-service/jo
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -132,5 +133,17 @@ describe('register-job-handlers', function () {
       () => contentImportHandler(job),
       /Content import service used before init/,
     );
+  });
+
+  // Under the test env the update check executor exits at its environment
+  // gate, so invoking the registered handler proves the wiring without
+  // touching the network.
+  it('registers the update-check handler', async function () {
+    // handlerFor matches on the type string, not class identity: the module
+    // under test loads its job class through the CJS cache, a different
+    // instance from this file's ESM import.
+    const updateCheckHandler = handlerFor('update-check');
+
+    await updateCheckHandler(new UpdateCheckJob());
   });
 });

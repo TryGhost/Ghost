@@ -10,6 +10,9 @@ import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
+import UpdateCheckJob from '../update-check/jobs/update-check-job';
+
+const updateCheck = require('../update-check');
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -62,5 +65,9 @@ export default function registerJobHandlers({
 
   jobsService.handle(ContentCSVImportJob, async (job) => {
     await contentImport.handleJob(job);
+  });
+
+  jobsService.handle(UpdateCheckJob, async () => {
+    await updateCheck({ rethrowErrors: true });
   });
 }
