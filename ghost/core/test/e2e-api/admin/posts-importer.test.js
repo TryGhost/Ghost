@@ -1026,6 +1026,10 @@ describe('Posts Importer API', function () {
         reason: /Unknown post field mapping: "newsletter_id"/,
       },
       {
+        mapping: { First: 'title', Second: 'frontmatter' },
+        reason: /Unknown post field mapping: "frontmatter"/,
+      },
+      {
         mapping: { First: 'title', Second: 'title' },
         reason: /Post field is mapped more than once: "title"/,
       },
@@ -1044,6 +1048,25 @@ describe('Posts Importer API', function () {
       const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
       assert.match(body.errors[0].message, reason);
     }
+  });
+
+  it('Ignores an unmapped frontmatter identity header', async function () {
+    await agent.loginAsOwner();
+
+    const frontmatterCsvPath = await csvFile(
+      'posts-import-frontmatter.csv',
+      'title,frontmatter\nFrontmatter source column,key: value\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', frontmatterCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'Frontmatter source column' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    assert.equal(post.related('posts_meta').get('frontmatter'), undefined);
   });
 
   it('Imports each CSV row as a post with its content and publish date', async function () {
