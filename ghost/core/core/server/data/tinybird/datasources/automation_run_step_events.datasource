@@ -1,0 +1,9 @@
+SCHEMA >
+    `site_uuid` UUID `json:$.site_uuid`,
+    `id` String `json:$.id`,
+    `updated_at` DateTime `json:$.updated_at`,
+    `inserted_at` DateTime64(3) `json:$.inserted_at` DEFAULT now64(),
+    `payload` String `json:$.payload`
+
+ENGINE MergeTree
+ENGINE_SORTING_KEY site_uuid, id
