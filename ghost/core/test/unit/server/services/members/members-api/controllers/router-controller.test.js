@@ -292,6 +292,63 @@ describe('RouterController', function () {
       );
     });
 
+    describe('existing member subscription restrictions', function () {
+      it.each([
+        ['paid', true],
+        ['paid', false],
+        ['free', false],
+        ['comped', false],
+        ['gift', false],
+      ])('blocks a %s member when authenticated is %s', async function (status, isAuthenticated) {
+        const sendEmailWithMagicLink = sinon.stub().resolves();
+        const routerController = new RouterController({ paymentsService, sendEmailWithMagicLink });
+
+        await assert.rejects(
+          routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            email: 'member@example.com',
+            isAuthenticated,
+            metadata: {},
+          }),
+          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+        );
+
+        sinon.assert.notCalled(getPaymentLinkSpy);
+        if (isAuthenticated) {
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        } else {
+          sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+            email: 'member@example.com',
+            requestedType: 'signin',
+          });
+        }
+      });
+
+      it.each(['free', 'comped', 'gift'])(
+        'allows an authenticated %s member to subscribe',
+        async function (status) {
+          const sendEmailWithMagicLink = sinon.stub().resolves();
+          const routerController = new RouterController({
+            paymentsService,
+            sendEmailWithMagicLink,
+          });
+
+          await routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            isAuthenticated: true,
+            metadata: {},
+          });
+
+          sinon.assert.calledOnce(getPaymentLinkSpy);
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        },
+      );
+    });
+
     it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
       const routerController = new RouterController({
         tiersService,
