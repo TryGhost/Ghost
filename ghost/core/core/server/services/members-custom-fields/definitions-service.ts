@@ -118,6 +118,11 @@ export class CustomFieldDefinitionsService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
+  async hasAnyActive(): Promise<boolean> {
+    const [field] = await this.list(activeFields(this.knex).limit(1));
+    return Boolean(field);
+  }
+
   async browse(options: { filter?: string } = {}): Promise<CustomField[]> {
     // Archived fields are hidden by default: most surfaces (member details, the
     // filter picker, the importer) only ever want active fields. A caller-

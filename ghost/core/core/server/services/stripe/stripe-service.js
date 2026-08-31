@@ -134,7 +134,6 @@ module.exports = class StripeService {
         memberWelcomeEmailService.init();
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
       },
-      labsService: labs,
       // A getter because the custom field services are built during boot: reading the
       // binding at construction would capture the empty value it had beforehand.
       get customFieldBindings() {

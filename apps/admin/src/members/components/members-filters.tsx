@@ -22,8 +22,7 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   useEmailPostValueSource,
@@ -135,7 +134,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const emailValueSource = useEmailPostValueSource();
   const labelValueSource = useLabelValueSource();
   const { valueSource: tierValueSource, hasMultipleTiers } = useTierValueSource();
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
   // The archived-inclusive browse, fetched eagerly: this is the query the hydration gate
   // in Members waits on once a filter names a custom field, and a pill reaches the URL on
   // the first keystroke — if the gate finds this cache cold it unmounts the whole page to
@@ -143,9 +141,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   // fetching it here is what keeps that wait confined to fresh page loads. Archived
   // fields ride along so a saved segment on a since-archived field still renders its
   // read-only pill.
-  const { data: customFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: customFieldsEnabled,
-  });
+  const { data: customFieldsData } = useCustomFieldDefinitionsIncludingArchived();
   const catalogCustomFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
   // The picker offers active fields only.
   const customFields = useMemo(
@@ -181,7 +177,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     emailTrackOpens,
     emailTrackClicks,
     siteTimezone,
-    customFieldsEnabled,
     customFields,
     archivedCustomFields,
   });

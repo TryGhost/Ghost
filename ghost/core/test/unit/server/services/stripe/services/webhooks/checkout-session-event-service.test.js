@@ -1228,16 +1228,6 @@ describe('CheckoutSessionEventService', function () {
         );
       });
 
-      it('does not write when the flag is off', async function () {
-        labsService.isSet.returns(false);
-        memberRepository.get.resolves(null);
-        session.metadata.ghostSignupContext = 'already_authenticated';
-
-        await service.handleSubscriptionEvent(session);
-
-        sinon.assert.notCalled(customFieldBindings.writeCollected);
-      });
-
       it('does not write when the session names no tier', async function () {
         memberRepository.get.resolves(null);
         delete session.metadata.ghostTierId;

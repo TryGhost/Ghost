@@ -321,18 +321,12 @@ describe('Members API — exportCSV with custom fields', function () {
     assert.equal(rowFor(member.id)[columnFor(kept.key)], 'Bex');
   });
 
-  // Fields can only be created while the flag is on, so this is the site that
-  // defined fields and then had the flag turned back off.
-  it('omits custom field columns when the flag is disabled', async function () {
-    const nickname = await createField('Nickname', 'short_text');
-
-    const member = await createMember({ [nickname.key]: 'Bex' });
-
-    mockManager.mockLabsDisabled('membersCustomFields');
+  it('omits custom field columns on a site that defines none', async function () {
+    const member = await createMember({});
 
     const { columns, rowFor } = await exportCSV();
 
     assert.deepEqual(columns, CORE_COLUMNS);
-    assert.equal(rowFor(member.id)[columnFor(nickname.key)], undefined);
+    assert.equal(rowFor(member.id)['custom_fields.nickname'], undefined);
   });
 });
