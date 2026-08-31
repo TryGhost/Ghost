@@ -74,7 +74,7 @@ describe('AutomationsList', () => {
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
-    expect(screen.getByText('14 days ago')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
+    expect(screen.getByText('Jul 21')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
   });
 
   it('renders Never when an automation has no last entry', () => {
