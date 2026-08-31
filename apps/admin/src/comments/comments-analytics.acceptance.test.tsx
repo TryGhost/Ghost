@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { comment, fakeAdminStats, fakeComments, renderAdminApp } from '@test-utils/acceptance';
+import {
+  comment,
+  fakeAdminStats,
+  fakeComments,
+  fakePages,
+  fakePosts,
+  post,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { commentsScreen } from './comments.screen';
 
 describe('Comments analytics rail', () => {
@@ -24,6 +32,9 @@ describe('Comments analytics rail', () => {
   it('filters the list to a top post', async () => {
     const onPost = comment({ html: '<p>On the popular post</p>' });
     const commentsApi = fakeComments(({ filter }) => (filter ? [onPost] : [onPost]));
+    // The applied post filter renders a chip, which resolves the post's title.
+    fakePosts([post({ id: 'post-1', title: 'Popular post' })]);
+    fakePages([]);
     fakeAdminStats.commentsOverview({
       totals: { comments: 1, commenters: 1, reported: 0 },
       previous_totals: { comments: 0, commenters: 0, reported: 0 },

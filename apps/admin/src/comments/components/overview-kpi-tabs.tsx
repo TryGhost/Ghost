@@ -3,12 +3,12 @@ import {
   BarChartLoadingIndicator,
   Card,
   CardContent,
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   Tabs,
   TabsList,
+  type ChartConfig,
 } from '@tryghost/shade/components';
 import { KpiTabTrigger, KpiTabValue } from '@tryghost/shade/patterns';
 import {
