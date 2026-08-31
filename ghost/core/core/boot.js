@@ -409,7 +409,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
       config,
