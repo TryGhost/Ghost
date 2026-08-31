@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const knexLib = require('knex');
-const CommentsStatsService = require('../../../../../core/server/services/stats/comments-stats-service');
+const {
+  CommentsStatsService,
+} = require('../../../../../core/server/services/stats/comments-stats-service');
 const { getDateBoundaries } = require('../../../../../core/server/services/stats/utils/date-utils');
 
 function makeQB(resultFn) {

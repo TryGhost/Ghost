@@ -1,38 +1,107 @@
-const {
+import type { Knex } from 'knex';
+import {
   getDateBoundaries,
   getPreviousDateBoundaries,
   applyDateFilter,
   validateDateRangeOptions,
-} = require('./utils/date-utils');
-const {
+} from './utils/date-utils';
+import {
   resolveSeriesAggregation,
   getFixedOffsetMinutes,
   getSeriesBucket,
   formatBucketDate,
   fillSeries,
-} = require('./utils/series-utils');
+  type DateRange,
+  type SeriesAggregation,
+} from './utils/series-utils';
 
-const VISIBLE_STATUSES = ['published', 'hidden'];
+const VISIBLE_STATUSES = ['published', 'hidden'] as const;
 
-module.exports = class CommentsStatsService {
-  /**
-   * @param {object} deps
-   * @param {import('knex').Knex} deps.knex - Database client
-   */
-  constructor(deps) {
+export interface CommentsOverviewTotals {
+  comments: number;
+  commenters: number;
+  reported: number;
+}
+
+export interface CommentsOverviewSeriesItem {
+  date: string;
+  count: number;
+  commenters: number;
+  reported: number;
+}
+
+export interface CommentsOverviewTopPost {
+  id: string;
+  title: string;
+  slug: string;
+  count: number;
+}
+
+export interface CommentsOverviewTopMember {
+  id: string;
+  name: string | null;
+  count: number;
+}
+
+export interface CommentsOverview {
+  totals: CommentsOverviewTotals;
+  previous_totals: CommentsOverviewTotals | null;
+  series: CommentsOverviewSeriesItem[];
+  series_aggregation: SeriesAggregation;
+  top_posts: CommentsOverviewTopPost[];
+  top_members: CommentsOverviewTopMember[];
+}
+
+export interface CommentsOverviewOptions {
+  date_from?: string;
+  date_to?: string;
+  timezone?: string;
+}
+
+interface CommentsStatsServiceDeps {
+  knex: Knex;
+}
+
+interface CountRow {
+  count: string | number;
+  commenters?: string | number;
+}
+
+interface ReportedCountRow {
+  reported: string | number;
+}
+
+interface BucketedCountRow {
+  date: string | Date;
+  count: string | number;
+  commenters?: string | number;
+  reported?: string | number;
+}
+
+interface TopPostRow {
+  id: string;
+  title: string;
+  slug: string;
+  count: string | number;
+}
+
+interface TopMemberRow {
+  id: string;
+  name: string | null;
+  count: string | number;
+}
+
+export class CommentsStatsService {
+  private readonly knex: Knex;
+
+  constructor(deps: CommentsStatsServiceDeps) {
     this.knex = deps.knex;
   }
 
   /**
    * Aggregate comment analytics for the moderation dashboard.
-   *
-   * @param {object} options
-   * @param {string} [options.date_from] - Inclusive lower bound (YYYY-MM-DD), interpreted in `timezone`
-   * @param {string} [options.date_to] - Inclusive upper bound (YYYY-MM-DD), interpreted in `timezone`
-   * @param {string} [options.timezone='UTC'] - IANA timezone the bounds are expressed in
-   * @returns {Promise<{totals: object, previous_totals: object|null, series: Array<object>, series_aggregation: string, top_posts: Array<object>, top_members: Array<object>}>}
    */
-  async getOverview(options = {}) {
+  async getOverview(options: CommentsOverviewOptions = {}): Promise<CommentsOverview> {
     const timezone = options.timezone || 'UTC';
     const dateOptions = {
       date_from: options.date_from,
@@ -64,33 +133,40 @@ module.exports = class CommentsStatsService {
     };
   }
 
-  _applyRange(query, column, { dateFrom, dateTo }) {
+  private _applyRange(
+    query: Knex.QueryBuilder,
+    column: string,
+    { dateFrom, dateTo }: DateRange,
+  ): Knex.QueryBuilder {
     applyDateFilter(query, dateFrom, dateTo, column);
     return query;
   }
 
-  _hasReport(knex) {
-    return function () {
+  private _hasReport(knex: Knex) {
+    return function (this: Knex.QueryBuilder) {
       this.select(knex.raw('1'))
         .from('comment_reports')
         .whereRaw('comment_reports.comment_id = comments.id');
     };
   }
 
-  async _getTotals(knex, range) {
+  private async _getTotals(knex: Knex, range: DateRange): Promise<CommentsOverviewTotals> {
     const commentsQuery = knex('comments')
-      .whereIn('status', VISIBLE_STATUSES)
+      .whereIn('status', [...VISIBLE_STATUSES])
       .count({ count: '*' })
       .countDistinct({ commenters: 'member_id' });
     this._applyRange(commentsQuery, 'comments.created_at', range);
 
     const reportedQuery = knex('comments')
-      .whereIn('status', VISIBLE_STATUSES)
+      .whereIn('status', [...VISIBLE_STATUSES])
       .whereExists(this._hasReport(knex))
       .countDistinct({ reported: 'id' });
     this._applyRange(reportedQuery, 'comments.created_at', range);
 
-    const [[commentsRow], [reportedRow]] = await Promise.all([commentsQuery, reportedQuery]);
+    const [[commentsRow], [reportedRow]] = await Promise.all([
+      commentsQuery as Promise<CountRow[]>,
+      reportedQuery as Promise<ReportedCountRow[]>,
+    ]);
 
     return {
       comments: Number(commentsRow.count) || 0,
@@ -99,12 +175,17 @@ module.exports = class CommentsStatsService {
     };
   }
 
-  async _getSeries(knex, range, timezone, aggregation) {
+  private async _getSeries(
+    knex: Knex,
+    range: DateRange,
+    timezone: string,
+    aggregation: SeriesAggregation,
+  ): Promise<CommentsOverviewSeriesItem[]> {
     const offsetMinutes = getFixedOffsetMinutes(timezone);
     const bucket = getSeriesBucket(knex, 'comments.created_at', offsetMinutes, aggregation);
 
     const commentsQuery = knex('comments')
-      .whereIn('status', VISIBLE_STATUSES)
+      .whereIn('status', [...VISIBLE_STATUSES])
       .select(bucket.select)
       .count({ count: '*' })
       .countDistinct({ commenters: 'member_id' })
@@ -113,7 +194,7 @@ module.exports = class CommentsStatsService {
     this._applyRange(commentsQuery, 'comments.created_at', range);
 
     const reportedQuery = knex('comments')
-      .whereIn('status', VISIBLE_STATUSES)
+      .whereIn('status', [...VISIBLE_STATUSES])
       .whereExists(this._hasReport(knex))
       .select(bucket.select)
       .countDistinct({ reported: 'id' })
@@ -121,9 +202,12 @@ module.exports = class CommentsStatsService {
       .orderByRaw('date ASC');
     this._applyRange(reportedQuery, 'comments.created_at', range);
 
-    const [commentsRows, reportedRows] = await Promise.all([commentsQuery, reportedQuery]);
+    const [commentsRows, reportedRows] = await Promise.all([
+      commentsQuery as Promise<BucketedCountRow[]>,
+      reportedQuery as Promise<BucketedCountRow[]>,
+    ]);
 
-    const byDate = new Map();
+    const byDate = new Map<string, CommentsOverviewSeriesItem>();
     for (const row of commentsRows) {
       const date = formatBucketDate(row.date);
       byDate.set(date, {
@@ -148,10 +232,14 @@ module.exports = class CommentsStatsService {
     }));
   }
 
-  async _getTopPosts(knex, range, limit = 25) {
+  private async _getTopPosts(
+    knex: Knex,
+    range: DateRange,
+    limit = 25,
+  ): Promise<CommentsOverviewTopPost[]> {
     const query = knex('comments')
       .join('posts', 'posts.id', 'comments.post_id')
-      .whereIn('comments.status', VISIBLE_STATUSES)
+      .whereIn('comments.status', [...VISIBLE_STATUSES])
       .select('posts.id as id', 'posts.title as title', 'posts.slug as slug')
       .count({ count: 'comments.id' })
       .groupBy('posts.id', 'posts.title', 'posts.slug')
@@ -160,7 +248,7 @@ module.exports = class CommentsStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = await query;
+    const rows = (await query) as TopPostRow[];
     return rows.map((row) => ({
       id: row.id,
       title: row.title,
@@ -174,10 +262,14 @@ module.exports = class CommentsStatsService {
    * as aggregate analytics, and the id is enough for the UI to drill through
    * to the member record, which enforces its own permissions.
    */
-  async _getTopMembers(knex, range, limit = 25) {
+  private async _getTopMembers(
+    knex: Knex,
+    range: DateRange,
+    limit = 25,
+  ): Promise<CommentsOverviewTopMember[]> {
     const query = knex('comments')
       .join('members', 'members.id', 'comments.member_id')
-      .whereIn('comments.status', VISIBLE_STATUSES)
+      .whereIn('comments.status', [...VISIBLE_STATUSES])
       .whereNotNull('comments.member_id')
       .select('members.id as id', 'members.name as name')
       .count({ count: 'comments.id' })
@@ -187,11 +279,11 @@ module.exports = class CommentsStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = await query;
+    const rows = (await query) as TopMemberRow[];
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
       count: Number(row.count) || 0,
     }));
   }
-};
+}

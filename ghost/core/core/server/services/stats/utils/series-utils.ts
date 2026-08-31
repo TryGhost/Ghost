@@ -1,24 +1,33 @@
-const moment = require('moment-timezone');
-const DatabaseInfo = require('@tryghost/database-info');
+import moment from 'moment-timezone';
+import DatabaseInfo from '@tryghost/database-info';
+import type { Knex } from 'knex';
 
-const SERIES_AGGREGATIONS = /** @type {{DAY: 'day', WEEK: 'week', MONTH: 'month'}} */ ({
+export type SeriesAggregation = 'day' | 'week' | 'month';
+
+export type DateRange = {
+  dateFrom: string | null;
+  dateTo: string | null;
+};
+
+export interface SeriesRow {
+  date: string;
+}
+
+export const SERIES_AGGREGATIONS = {
   DAY: 'day',
   WEEK: 'week',
   MONTH: 'month',
-});
+} as const;
 
-/**
- * @typedef {'day'|'week'|'month'} SeriesAggregation
- * @typedef {{dateFrom: string|null, dateTo: string|null}} DateRange
- * @typedef {{date: string}} SeriesRow
- */
+export interface SeriesBucket {
+  select: Knex.Raw;
+  group: Knex.Raw;
+}
 
 /**
  * Pick a bucket size that keeps the number of points in a chart readable.
- * @param {DateRange} range - Boundaries from `getDateBoundaries`
- * @returns {SeriesAggregation}
  */
-function resolveSeriesAggregation({ dateFrom, dateTo }) {
+export function resolveSeriesAggregation({ dateFrom, dateTo }: DateRange): SeriesAggregation {
   if (!dateFrom || !dateTo) {
     return SERIES_AGGREGATIONS.MONTH;
   }
@@ -38,28 +47,25 @@ function resolveSeriesAggregation({ dateFrom, dateTo }) {
  * SQL, which has no IANA database, so the offset has to be a constant; both
  * the bucket expression and the series fill must use this same value or they
  * disagree about which calendar day a boundary row belongs to.
- * @param {string} timezone - IANA timezone
- * @returns {number} Offset in minutes
  */
-function getFixedOffsetMinutes(timezone) {
+export function getFixedOffsetMinutes(timezone: string): number {
   return moment.tz(timezone).utcOffset();
 }
 
 /**
  * Build the select and group fragments for a calendar bucket in the requested
  * IANA timezone (timestamps are stored in UTC).
- *
- * @param {any} knex - Database client
- * @param {string} column - Fully qualified timestamp column to bucket
- * @param {number} tzOffsetMins - Offset from `getFixedOffsetMinutes`
- * @param {SeriesAggregation} aggregation
- * @returns {{select: import('knex').Knex.Raw, group: import('knex').Knex.Raw}}
  */
-function getSeriesBucket(knex, column, tzOffsetMins, aggregation) {
+export function getSeriesBucket(
+  knex: Knex,
+  column: string,
+  tzOffsetMins: number,
+  aggregation: SeriesAggregation,
+): SeriesBucket {
   if (DatabaseInfo.isSQLite(knex)) {
     const dateModifier = `${Math.sign(tzOffsetMins) === -1 ? '' : '+'}${tzOffsetMins} minutes`;
     let expression = 'DATE(??, ?)';
-    const bindings = [column, dateModifier];
+    const bindings: Array<string> = [column, dateModifier];
 
     if (aggregation === SERIES_AGGREGATIONS.WEEK) {
       expression = "DATE(??, ?, 'weekday 0', '-6 days')";
@@ -80,7 +86,7 @@ function getSeriesBucket(knex, column, tzOffsetMins, aggregation) {
   const utcOffset = `${Math.sign(tzOffsetMins) === -1 ? '-' : '+'}${hours}:${mins < 10 ? '0' : ''}${mins}`;
   const localDate = "DATE(CONVERT_TZ(??, '+00:00', ?))";
   let expression = localDate;
-  let bindings = [column, utcOffset];
+  let bindings: Array<string> = [column, utcOffset];
 
   if (aggregation === SERIES_AGGREGATIONS.WEEK) {
     expression = `DATE_SUB(${localDate}, INTERVAL WEEKDAY(${localDate}) DAY)`;
@@ -98,10 +104,8 @@ function getSeriesBucket(knex, column, tzOffsetMins, aggregation) {
 /**
  * Normalise a bucket key returned by the driver, which is a string on SQLite
  * and can be a Date on MySQL.
- * @param {string|Date} value
- * @returns {string} `YYYY-MM-DD`
  */
-function formatBucketDate(value) {
+export function formatBucketDate(value: string | Date): string {
   if (!(value instanceof Date)) {
     return String(value);
   }
@@ -121,32 +125,27 @@ function formatBucketDate(value) {
  *
  * A range with no rows returns an empty series rather than a row of zeroes per
  * bucket, which is what callers key their empty state off.
- *
- * @template {SeriesRow} T
- * @param {T[]} rows - Rows returned by the bucketed query
- * @param {DateRange} range - Boundaries from `getDateBoundaries`
- * @param {number} offsetMinutes - Offset from `getFixedOffsetMinutes`
- * @param {SeriesAggregation} aggregation
- * @param {(date: string) => T} makeEmptyRow - Builds a zeroed row for a missing bucket
- * @returns {T[]}
  */
-function fillSeries(rows, range, offsetMinutes, aggregation, makeEmptyRow) {
+export function fillSeries<T extends SeriesRow>(
+  rows: T[],
+  range: DateRange,
+  offsetMinutes: number,
+  aggregation: SeriesAggregation,
+  makeEmptyRow: (date: string) => T,
+): T[] {
   if (rows.length === 0) {
     return [];
   }
 
   const byDate = new Map(rows.map((row) => [row.date, row]));
-  const unit = /** @type {moment.unitOfTime.StartOf} */ (
-    aggregation === SERIES_AGGREGATIONS.WEEK ? 'isoWeek' : aggregation
-  );
-  const incrementUnit = /** @type {moment.unitOfTime.DurationConstructor} */ (
-    aggregation === SERIES_AGGREGATIONS.WEEK ? 'week' : aggregation
-  );
+  const unit: moment.unitOfTime.StartOf =
+    aggregation === SERIES_AGGREGATIONS.WEEK ? 'isoWeek' : aggregation;
+  const incrementUnit: moment.unitOfTime.DurationConstructor =
+    aggregation === SERIES_AGGREGATIONS.WEEK ? 'week' : aggregation;
   const sortedDates = [...byDate.keys()].sort();
   // Wall-clock time under the fixed offset, kept in UTC mode so no further
   // DST shifting can happen while walking the window.
-  const toLocal = (/** @type {string} */ utcDate) =>
-    moment.utc(utcDate).add(offsetMinutes, 'minutes');
+  const toLocal = (utcDate: string) => moment.utc(utcDate).add(offsetMinutes, 'minutes');
   const rangeStart = range.dateFrom
     ? toLocal(range.dateFrom).startOf('day')
     : moment.utc(sortedDates[0]).startOf(unit);
@@ -155,8 +154,8 @@ function fillSeries(rows, range, offsetMinutes, aggregation, makeEmptyRow) {
     : moment.utc(sortedDates[sortedDates.length - 1]).startOf(unit);
   const cursor = rangeStart.clone().startOf(unit);
   const lastBucket = rangeEnd.clone().startOf(unit);
-  const result = [];
-  const filled = new Set();
+  const result: T[] = [];
+  const filled = new Set<string>();
 
   while (cursor.isSameOrBefore(lastBucket)) {
     const key = cursor.format('YYYY-MM-DD');
@@ -182,12 +181,3 @@ function fillSeries(rows, range, offsetMinutes, aggregation, makeEmptyRow) {
 
   return result;
 }
-
-module.exports = {
-  SERIES_AGGREGATIONS,
-  resolveSeriesAggregation,
-  getFixedOffsetMinutes,
-  getSeriesBucket,
-  formatBucketDate,
-  fillSeries,
-};
