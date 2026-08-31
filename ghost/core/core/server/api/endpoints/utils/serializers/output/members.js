@@ -132,9 +132,11 @@ function serializeMember(member, options) {
   }
 
   // Present on a read whenever the flag is on; absent otherwise, and absent on
-  // browse. An empty object is a member with no values set.
+  // browse unless asked for. An empty object is a member with no values set.
+  // Values are flat internally — only the `custom` namespace exists to store —
+  // and gain their namespace level here, where the wire shape is owned.
   if (json.custom_fields) {
-    serialized.custom_fields = json.custom_fields;
+    serialized.metafields = { custom: json.custom_fields };
   }
 
   serialized.current_subscription = json.current_subscription || null;

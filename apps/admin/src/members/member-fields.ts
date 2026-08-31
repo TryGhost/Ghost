@@ -305,7 +305,7 @@ const CUSTOM_FIELD: FieldDescriptor = {
     // names: the values are what the column will hold, and they travel on the same
     // request the filter already sends. The API takes this include whether or not
     // the flag is on, and returns values only when it is.
-    columnInclude: 'custom_fields',
+    columnInclude: 'metafields',
   },
 };
 

@@ -97,7 +97,7 @@ module.exports = class MemberBREADService {
    * member.
    *
    * Returns null when the site has no custom fields defined. That tells the caller to
-   * leave the `custom_fields` key off the member payload entirely, rather than send an
+   * leave the `metafields` key off the member payload entirely, rather than send an
    * empty object. The distinction matters because most Ghost sites have never defined a
    * custom field, and a key added to an API response cannot be taken back later without
    * breaking whoever started reading it, so those sites keep the member payload they had
@@ -105,7 +105,7 @@ module.exports = class MemberBREADService {
    *
    * Reading a single member returns that member's custom field values without the request
    * asking for them. Listing many members returns each member's values only when the
-   * request asks, with `include=custom_fields`. Both must produce the same shape when
+   * request asks, with `include=metafields`. Both must produce the same shape when
    * values are present.
    * @param {string[]} memberIds
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
@@ -470,19 +470,19 @@ module.exports = class MemberBREADService {
   }
 
   async add(data, options) {
-    // Values cannot be set on create, only on a subsequent edit. `namesValues`
-    // both judges the body and rejects a malformed one, so a body refused here is
-    // refused on edit for the same reason.
-    if (this.customFieldValues.namesValues(data.custom_fields)) {
+    // Values cannot be set on create, only on a subsequent edit. `unwrapWire`
+    // validates the namespace level and `namesValues` the record under it, so a
+    // body refused here is refused on edit for the same reason.
+    if (this.customFieldValues.namesValues(this.customFieldValues.unwrapWire(data.metafields))) {
       throw new errors.ValidationError({
         message: tpl(messages.customFieldsOnAdd),
-        property: 'custom_fields',
+        property: 'metafields',
       });
     }
 
     // Not a member column, so it comes off before the repository sees it. Only
     // an absent key or one naming no values gets this far.
-    delete data.custom_fields;
+    delete data.metafields;
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -579,10 +579,12 @@ module.exports = class MemberBREADService {
     delete data.last_seen_at;
 
     // Values live in their own table, so they come off the member data before
-    // the repository sees it — `custom_fields` is not a member column.
-    const customFields = data.custom_fields;
+    // the repository sees it — `metafields` is not a member column. The wire
+    // nests values under their namespace; `unwrapWire` validates that level and
+    // hands back the flat record the values service speaks.
+    const customFields = this.customFieldValues.unwrapWire(data.metafields);
     const writeCustomFields = customFields !== undefined;
-    delete data.custom_fields;
+    delete data.metafields;
 
     // Plan (which validates) before the member is touched, so a bad value 422s
     // here rather than after the member edit has been applied — and keep the

@@ -4,6 +4,11 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/custom-field-types';
+import {
+  CUSTOM_NAMESPACE,
+  QUALIFIER,
+  isKnownNamespace,
+} from '@tryghost/custom-field-types/identity';
 import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
@@ -34,6 +39,17 @@ type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
 // Values stay `unknown`: each is validated by its own field type, which is not known
 // until the key is resolved to a definition.
 const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
+
+/**
+ * The wire property naming one field in a member payload error, or, with no key,
+ * the namespace's values object itself. Values are flat inside this service — only
+ * `custom` exists to store — but every property path a client sees speaks the full
+ * address: this service judges what sits under `metafields.custom`, so its errors
+ * point there; only `unwrapWire`, which judges the namespace level, points at
+ * `metafields` or `metafields.<namespace>`.
+ */
+const wireProperty = (key?: string): string =>
+  [QUALIFIER, CUSTOM_NAMESPACE, ...(key === undefined ? [] : [key])].join('.');
 
 interface ActiveField {
   id: string;
@@ -127,11 +143,43 @@ export class CustomFieldValuesService {
     if (!parsed.success) {
       throw new errors.ValidationError({
         message: 'Custom field values must be an object keyed by field key.',
-        property: 'custom_fields',
+        property: wireProperty(),
       });
     }
 
     return parsed.data;
+  }
+
+  /**
+   * Unwrap the wire shape of member metafields — values nested one level under their
+   * namespace — into the flat record of custom-namespace values the rest of this
+   * service speaks. The wire nests so app namespaces have somewhere to appear; the
+   * values are flat past this point because only `custom` exists to store.
+   *
+   * `undefined` in, `undefined` out, so an absent bag stays distinguishable from an
+   * empty one. A bag that is not an object, or that names a namespace that does not
+   * exist, is refused with the full wire address in `property`.
+   */
+  unwrapWire(input: unknown): unknown {
+    if (input === undefined) {
+      return undefined;
+    }
+    if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+      throw new errors.ValidationError({
+        message: 'Metafields must be an object keyed by namespace.',
+        property: QUALIFIER,
+      });
+    }
+    const bag = input as Record<string, unknown>;
+    for (const namespace of Object.keys(bag)) {
+      if (!isKnownNamespace(namespace)) {
+        throw new errors.ValidationError({
+          message: `Unknown metafield namespace: ${namespace}`,
+          property: [QUALIFIER, namespace].join('.'),
+        });
+      }
+    }
+    return bag[CUSTOM_NAMESPACE];
   }
 
   /**
@@ -161,7 +209,7 @@ export class CustomFieldValuesService {
     if (keys.length > maxKeys) {
       throw new errors.ValidationError({
         message: `Custom field values are limited to ${maxKeys} fields per request.`,
-        property: 'custom_fields',
+        property: wireProperty(),
       });
     }
 
@@ -176,7 +224,7 @@ export class CustomFieldValuesService {
         // applies the same rule to the parts of a composite value.
         throw new errors.ValidationError({
           message: `Unknown custom field: ${key}`,
-          property: `custom_fields.${key}`,
+          property: wireProperty(key),
         });
       }
 
@@ -197,7 +245,7 @@ export class CustomFieldValuesService {
         const issue = value.error.issues[0];
         throw new errors.ValidationError({
           message: issue.message,
-          property: [`custom_fields.${key}`, ...issue.path].join('.'),
+          property: [wireProperty(key), ...issue.path].join('.'),
         });
       }
       writes.push({ field, value: value.data });

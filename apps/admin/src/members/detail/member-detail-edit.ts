@@ -72,7 +72,7 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
 }
 
 /**
- * The custom field values from a member's `custom_fields` payload, normalized:
+ * The custom field values from a member's `metafields.custom` payload, normalized:
  * strings trimmed, address sub-fields trimmed with empty ones dropped, and
  * empty values ('' / {} / null) collapsing to an absent key — so "no value"
  * reads identically however it's represented. Feeds the read-only value rows
@@ -302,7 +302,10 @@ export function buildCustomFieldSavePayload(
   fieldKey: string,
   value: EditableCustomFieldValue,
 ): EditMemberData {
-  return { id: memberId, custom_fields: { [fieldKey]: customFieldValueToSave(value) ?? null } };
+  return {
+    id: memberId,
+    metafields: { custom: { [fieldKey]: customFieldValueToSave(value) ?? null } },
+  };
 }
 
 /**
@@ -347,7 +350,7 @@ export function getCustomFieldValidationErrors(
 
 /**
  * Field-level errors from a failed member save. The values service names the
- * offending field in `property` as `custom_fields.<key>[.<subfield>]` with the
+ * offending field in `property` as `metafields.custom.<key>[.<subfield>]` with the
  * reason in `context` (see members-custom-fields/values-service.ts), so the
  * message can be rendered under the exact input it belongs to. Returns
  * undefined when the failure isn't custom-fields shaped, letting callers fall
@@ -367,8 +370,8 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
   )?.data;
   const errors: Record<string, string> = {};
   for (const apiError of data?.errors ?? []) {
-    if (apiError.property?.startsWith('custom_fields.')) {
-      errors[apiError.property.slice('custom_fields.'.length)] =
+    if (apiError.property?.startsWith('metafields.custom.')) {
+      errors[apiError.property.slice('metafields.custom.'.length)] =
         apiError.context || apiError.message || 'Invalid value.';
     }
   }

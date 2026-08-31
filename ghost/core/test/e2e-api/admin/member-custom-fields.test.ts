@@ -52,13 +52,13 @@ describe('Member Custom Fields Admin API', function () {
 
   async function readValues(memberId: string) {
     const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
-    return body.members[0].custom_fields;
+    return body.members[0].metafields?.custom;
   }
 
   async function setValues(memberId: string, customFields: Record<string, unknown>, status = 200) {
     const { body } = await agent
       .put(`members/${memberId}/`)
-      .body({ members: [{ custom_fields: customFields }] })
+      .body({ members: [{ metafields: { custom: customFields } }] })
       .expectStatus(status);
     return body;
   }
@@ -1129,10 +1129,10 @@ describe('Member Custom Fields Admin API', function () {
 
       const { body } = await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ custom_fields: { [field.key]: 'Ghosts' } }] })
+        .body({ members: [{ metafields: { custom: { [field.key]: 'Ghosts' } } }] })
         .expectStatus(200);
 
-      assert.deepEqual(body.members[0].custom_fields, { [field.key]: 'Ghosts' });
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
     });
 
     it('carries values on browse only when asked, like tiers', async function () {
@@ -1141,10 +1141,10 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, { [field.key]: 'Ghosts' });
 
       const plain = (await agent.get('members/').expectStatus(200)).body;
-      assert.equal(plain.members[0].custom_fields, undefined);
+      assert.equal(plain.members[0].metafields, undefined);
 
-      const included = (await agent.get('members/?include=custom_fields').expectStatus(200)).body;
-      assert.deepEqual(included.members[0].custom_fields, { [field.key]: 'Ghosts' });
+      const included = (await agent.get('members/?include=metafields').expectStatus(200)).body;
+      assert.deepEqual(included.members[0].metafields.custom, { [field.key]: 'Ghosts' });
     });
 
     it('gives each member on a browse page its own values', async function () {
@@ -1160,13 +1160,13 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(first, { [field.key]: 'Ghosts' });
       await setValues(third, { [field.key]: 'Opera' });
 
-      const { body } = await agent.get('members/?include=custom_fields').expectStatus(200);
+      const { body } = await agent.get('members/?include=metafields').expectStatus(200);
       const byId = new Map(body.members.map((m: { id: string }) => [m.id, m]));
 
-      assert.deepEqual((byId.get(first) as any).custom_fields, { [field.key]: 'Ghosts' });
+      assert.deepEqual((byId.get(first) as any).metafields.custom, { [field.key]: 'Ghosts' });
       // A member with no values gets an empty object, not a missing key.
-      assert.deepEqual((byId.get(second) as any).custom_fields, {});
-      assert.deepEqual((byId.get(third) as any).custom_fields, { [field.key]: 'Opera' });
+      assert.deepEqual((byId.get(second) as any).metafields.custom, {});
+      assert.deepEqual((byId.get(third) as any).metafields.custom, { [field.key]: 'Opera' });
     });
 
     it('updates a value that is already set', async function () {
@@ -1331,7 +1331,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
     });
 
-    it('rejects custom_fields when creating a member', async function () {
+    it('rejects metafields when creating a member', async function () {
       // Setting values on create is a later vertical; the API rejects rather
       // than silently dropping them, so the gap is explicit.
       const field = await createField({ name: 'Favourite topic' });
@@ -1340,10 +1340,25 @@ describe('Member Custom Fields Admin API', function () {
         .post('members/')
         .body({
           members: [
-            { email: 'create-with-values@example.com', custom_fields: { [field.key]: 'Ghosts' } },
+            {
+              email: 'create-with-values@example.com',
+              metafields: { custom: { [field.key]: 'Ghosts' } },
+            },
           ],
         })
         .expectStatus(422);
+    });
+
+    it('rejects values under a namespace that does not exist', async function () {
+      // The wire nests values under their namespace so app namespaces have
+      // somewhere to appear; until one exists, `custom` is the only key the
+      // bag may hold, and anything else is refused with its address.
+      const memberId = await createMember();
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ metafields: { transistor: { private_url: 'https://x' } } }] })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'metafields.transistor');
     });
 
     it('rejects a key too long to name a field, without echoing it back', async function () {
@@ -1354,7 +1369,7 @@ describe('Member Custom Fields Admin API', function () {
       const hugeKey = 'k'.repeat(200000);
 
       const body = await setValues(memberId, { [hugeKey]: 'v' }, 422);
-      assert.equal(body.errors[0].property, 'custom_fields');
+      assert.equal(body.errors[0].property, 'metafields.custom');
       assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
     });
 
@@ -1372,11 +1387,11 @@ describe('Member Custom Fields Admin API', function () {
 
       const overCeiling = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`k${i}`, 'v']));
       const refused = await setValues(memberId, overCeiling, 422);
-      assert.equal(refused.errors[0].property, 'custom_fields');
+      assert.equal(refused.errors[0].property, 'metafields.custom');
       assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
     });
 
-    it('refuses a malformed custom_fields identically on create and on edit', async function () {
+    it('refuses a malformed metafields identically on create and on edit', async function () {
       // The schema lets every shape through, so the service is the only thing
       // judging it, and both verbs judge it the same way. A body too malformed
       // to be a write is refused rather than accepted and dropped.
@@ -1386,17 +1401,16 @@ describe('Member Custom Fields Admin API', function () {
         const created = await agent
           .post('members/')
           .body({
-            members: [{ email: `create-malformed-${index}@example.com`, custom_fields: malformed }],
+            members: [{ email: `create-malformed-${index}@example.com`, metafields: malformed }],
           })
           .expectStatus(422);
-        assert.equal(created.body.errors[0].property, 'custom_fields');
+        assert.equal(created.body.errors[0].property, 'metafields');
 
-        const edited = await setValues(
-          memberId,
-          malformed as unknown as Record<string, unknown>,
-          422,
-        );
-        assert.equal(edited.errors[0].property, 'custom_fields');
+        const edited = await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ metafields: malformed }] })
+          .expectStatus(422);
+        assert.equal(edited.body.errors[0].property, 'metafields');
       }
     });
 
@@ -1409,13 +1423,13 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent
         .post('members/')
-        .body({ members: [{ email: 'create-proto@example.com', custom_fields: payload }] })
+        .body({ members: [{ email: 'create-proto@example.com', metafields: { custom: payload } }] })
         .expectStatus(201);
 
       const memberId = await createMember();
       await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ custom_fields: payload }] })
+        .body({ members: [{ metafields: { custom: payload } }] })
         .expectStatus(200);
 
       assert.deepEqual(await readValues(memberId), {});
@@ -1426,12 +1440,14 @@ describe('Member Custom Fields Admin API', function () {
       );
     });
 
-    it('accepts an empty custom_fields when creating a member', async function () {
+    it('accepts an empty metafields when creating a member', async function () {
       // `{}` asks for nothing, and an edit treats it as a no-op, so a client
       // whose serializer always emits the key can still create members.
       await agent
         .post('members/')
-        .body({ members: [{ email: 'create-empty-values@example.com', custom_fields: {} }] })
+        .body({
+          members: [{ email: 'create-empty-values@example.com', metafields: { custom: {} } }],
+        })
         .expectStatus(201);
     });
 
@@ -1449,7 +1465,7 @@ describe('Member Custom Fields Admin API', function () {
 
       const body = await setValues(memberId, { not_a_field: 'x' }, 422);
 
-      assert.equal(body.errors[0].property, 'custom_fields.not_a_field');
+      assert.equal(body.errors[0].property, 'metafields.custom.not_a_field');
     });
 
     it('rejects a value for an archived field', async function () {
@@ -1563,7 +1579,7 @@ describe('Member Custom Fields Admin API', function () {
 
       const body = await setValues(memberId, { [field.key]: { not: 'a string' } }, 422);
 
-      assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
     });
 
     it('points at the offending sub-field of a composite value', async function () {
@@ -1576,7 +1592,7 @@ describe('Member Custom Fields Admin API', function () {
         422,
       );
 
-      assert.equal(body.errors[0].property, `custom_fields.${field.key}.country`);
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}.country`);
     });
 
     it('round-trips an address that omits the sub-fields its country has no use for', async function () {
@@ -1667,7 +1683,7 @@ describe('Member Custom Fields Admin API', function () {
 
       const body = await setValues(memberId, { [field.key]: {} }, 422);
 
-      assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
     });
 
     it('refuses a part of a composite value it does not recognise', async function () {
@@ -1685,7 +1701,7 @@ describe('Member Custom Fields Admin API', function () {
         { [field.key]: { ...address, city: 'Cork', citty: 'Dublin' } },
         422,
       );
-      assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
 
       // The parts it named alongside the typo are not written either: a refused write
       // leaves what was already stored exactly as it was.
@@ -1706,7 +1722,9 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ name: 'Should not persist', custom_fields: { not_a_field: 'x' } }] })
+        .body({
+          members: [{ name: 'Should not persist', metafields: { custom: { not_a_field: 'x' } } }],
+        })
         .expectStatus(422);
 
       const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
@@ -1773,7 +1791,7 @@ describe('Member Custom Fields Admin API', function () {
         422,
       );
 
-      assert.equal(body.errors[0].property, `custom_fields.${field.key}.line1`);
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}.line1`);
     });
 
     it('rejects an over-long postal code', async function () {
@@ -1862,7 +1880,9 @@ describe('Member Custom Fields Admin API', function () {
       const editedEvents = await countMemberEditedEvents(memberId, async () => {
         await agent
           .put(`members/${memberId}/`)
-          .body({ members: [{ name: 'Renamed', custom_fields: { [field.key]: 'Ghosts' } }] })
+          .body({
+            members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }],
+          })
           .expectStatus(200);
       });
 
@@ -1883,7 +1903,7 @@ describe('Member Custom Fields Admin API', function () {
       const editedEvents = await countMemberEditedEvents(memberId, async () => {
         await agent
           .put(`members/${memberId}/`)
-          .body({ members: [{ email, custom_fields: { [field.key]: 'Ghosts' } }] })
+          .body({ members: [{ email, metafields: { custom: { [field.key]: 'Ghosts' } } }] })
           .expectStatus(200);
       });
 
@@ -1891,7 +1911,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal((await memberEditedActions(memberId)).length, 1);
     });
 
-    it('fires no member.edited when the custom_fields object is empty', async function () {
+    it('fires no member.edited when the metafields object is empty', async function () {
       const memberId = await createMember();
       await models.Base.knex('actions').where('resource_id', memberId).del();
 
@@ -1903,13 +1923,11 @@ describe('Member Custom Fields Admin API', function () {
   });
 
   describe('Values on a site that defines no fields', function () {
-    it('omits custom_fields from the member payload entirely', async function () {
+    it('omits metafields from the member payload entirely', async function () {
       const memberId = await createMember();
 
-      const { body } = await agent
-        .get(`members/${memberId}/?include=custom_fields`)
-        .expectStatus(200);
-      assert.equal(Object.hasOwn(body.members[0], 'custom_fields'), false);
+      const { body } = await agent.get(`members/${memberId}/?include=metafields`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
     });
 
     it('refuses a write naming a field rather than discarding it', async function () {
@@ -1917,9 +1935,11 @@ describe('Member Custom Fields Admin API', function () {
 
       const { body } = await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ name: 'Renamed', custom_fields: { favourite_topic: 'Opera' } }] })
+        .body({
+          members: [{ name: 'Renamed', metafields: { custom: { favourite_topic: 'Opera' } } }],
+        })
         .expectStatus(422);
-      assert.equal(body.errors[0].property, 'custom_fields.favourite_topic');
+      assert.equal(body.errors[0].property, 'metafields.custom.favourite_topic');
 
       const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
       assert.notEqual(read.members[0].name, 'Renamed');
@@ -1930,7 +1950,7 @@ describe('Member Custom Fields Admin API', function () {
       await createField({ name: 'Favourite topic' });
 
       const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
-      assert.deepEqual(body.members[0].custom_fields, {});
+      assert.deepEqual(body.members[0].metafields, { custom: {} });
     });
   });
 
@@ -2194,7 +2214,7 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ name: 'Renamed', custom_fields: { [field.key]: 'Ghosts' } }] })
+        .body({ members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }] })
         .expectStatus(200);
 
       const actions = await memberEditedActionsViaApi(memberId);
@@ -2212,7 +2232,7 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent
         .put(`members/${memberId}/`)
-        .body({ members: [{ email, custom_fields: { [field.key]: 'Ghosts' } }] })
+        .body({ members: [{ email, metafields: { custom: { [field.key]: 'Ghosts' } } }] })
         .expectStatus(200);
 
       const actions = await memberEditedActionsViaApi(memberId);

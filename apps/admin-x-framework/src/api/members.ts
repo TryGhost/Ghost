@@ -128,11 +128,13 @@ export type Member = {
   };
   last_seen_at: string | null;
   last_commented_at: string | null;
-  // Values of the custom fields a publisher has defined on member records, keyed by
-  // field. Optional because a site that has defined none gets no key at all, rather than
-  // an empty object. Values differ by field type, a string for text and an object for an
-  // address, so they arrive as unknown and each consumer narrows to what it expects.
-  custom_fields?: Record<string, unknown>;
+  // Values of the custom fields a publisher has defined on member records, nested
+  // by namespace then field key — `custom` is the publisher's namespace and the
+  // only one that exists today. Optional because a site that has defined none gets
+  // no key at all, rather than an empty object. Values differ by field type, a
+  // string for text and an object for an address, so they arrive as unknown and
+  // each consumer narrows to what it expects.
+  metafields?: { custom?: Record<string, unknown> };
   can_comment?: boolean;
   commenting?: {
     disabled: boolean;
@@ -548,15 +550,15 @@ export interface EditMemberData {
   // added there is writable here without this line being edited. Every key is checked
   // against the fields the site has defined, so naming one that does not exist is
   // rejected rather than ignored.
-  custom_fields?: Record<string, FieldValue | null>;
+  metafields?: { custom: Record<string, FieldValue | null> };
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
   method: 'PUT',
   path: ({ id }) => `/members/${id}/`,
-  // `custom_fields` is asked back only when the payload writes it, so the
+  // `metafields` is asked back only when the payload writes it, so the
   // request stays valid on sites where the flag (and the include) is off.
-  searchParams: (payload) => ({ include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers' }),
+  searchParams: (payload) => ({ include: payload.metafields ? 'tiers,metafields' : 'tiers' }),
   body: ({ id, ...rest }) => ({ members: [{ id, ...rest }] }),
   invalidateQueries: { dataType },
 });

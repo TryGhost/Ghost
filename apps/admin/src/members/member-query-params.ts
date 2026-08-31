@@ -242,7 +242,10 @@ const patternColumnHydrators: Record<
       // The catalog turns whatever type the field is into one line, so this reads a
       // composite the same way the member detail screen does.
       getValue: (member) => {
-        const text = formatMemberCustomFieldValue(field.type, member.custom_fields?.[field.key]);
+        const text = formatMemberCustomFieldValue(
+          field.type,
+          member.metafields?.custom?.[field.key],
+        );
         return text ? { text } : null;
       },
     };
