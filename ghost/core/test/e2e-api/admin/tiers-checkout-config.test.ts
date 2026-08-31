@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { PORT_FIELD, STRIPE_PORT } from '@tryghost/checkout';
 
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -61,7 +62,7 @@ describe('Tier Checkout Admin API', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
+    mockManager.mockLabsEnabled('stripeCheckoutCollection');
   });
 
   afterEach(async function () {
@@ -1082,17 +1083,48 @@ describe('Tier Checkout Admin API', function () {
     // Reading is open, because a tier that collects nothing reads the same either way and
     // the checkout has to build its session whatever the flag says. Configuring is not.
     it('still reads with the flag off', async function () {
-      mockManager.mockLabsDisabled('membersCustomFields');
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
       const { body } = await agent.get(`tiers/${tierId}/checkout_config/`).expectStatus(200);
       assert.deepEqual(body.tiers_checkout_config[0].custom_fields, []);
     });
 
     it('cannot be configured with the flag off', async function () {
-      mockManager.mockLabsDisabled('membersCustomFields');
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
       await agent
         .put(`tiers/${tierId}/checkout_config/`)
         .body({ tiers_checkout_config: [{ custom_fields: [] }] })
         .expectStatus(404);
+    });
+
+    it('provisions the destination fields when they cannot be managed', async function () {
+      mockManager.mockLabsDisabled('membersCustomFields');
+      await agent
+        .put(`tiers/${tierId}/checkout_config/`)
+        .body({
+          tiers_checkout_config: [
+            {
+              shipping: {
+                collect: true,
+                name: { custom_field_key: PORT_FIELD[STRIPE_PORT.shippingName].key },
+                address: { custom_field_key: PORT_FIELD[STRIPE_PORT.shippingAddress].key },
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent.get('members/custom_fields/').expectStatus(200);
+      assert.deepEqual(
+        body.members_custom_fields.map((f: { key: string; name: string; type: string }) => ({
+          key: f.key,
+          name: f.name,
+          type: f.type,
+        })),
+        [
+          { key: 'shipping_name', name: 'Shipping Name', type: 'short_text' },
+          { key: 'shipping_address', name: 'Shipping Address', type: 'address' },
+        ],
+      );
     });
 
     // The tier resource is generally available, so this concept must not appear on it.

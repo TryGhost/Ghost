@@ -805,7 +805,7 @@ describe('Create Stripe Checkout Session', function () {
       // The tests above register persistent interceptors and never clean them up, so
       // one of theirs would answer these requests and the body would never be seen.
       nock.cleanAll();
-      mockManager.mockLabsEnabled('membersCustomFields');
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
       const {
         body: { tiers },
       } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
@@ -1270,8 +1270,8 @@ describe('Create Stripe Checkout Session', function () {
       );
     });
 
-    // Turning the flag off has to stop collection without anyone unpicking the
-    // configuration first.
+    // Turning the collection flag off has to stop the checkout asking, without anyone
+    // unpicking the configuration first.
     it('asks for nothing with the flag off, however the tier is configured', async function () {
       const {
         body: {
@@ -1284,7 +1284,7 @@ describe('Create Stripe Checkout Session', function () {
         .put(`/tiers/${paidTier.id}/checkout_config/`)
         .body({ tiers_checkout_config: [{ custom_fields: [{ key: question.key }] }] });
 
-      mockManager.mockLabsDisabled('membersCustomFields');
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
       const sessionBody = await startCheckout();
 
       assert.deepEqual(

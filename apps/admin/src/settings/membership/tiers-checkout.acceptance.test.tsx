@@ -47,9 +47,10 @@ function stripeSettings() {
   });
 }
 
-// The harness composes the flag into settings and config; Stripe rides along in settings.
+// The harness composes the flags into settings and config; Stripe rides along in settings.
+// Collection puts the card on the tier; field management adds the destination pickers.
 const flagOn = {
-  labs: { membersCustomFields: true },
+  labs: { stripeCheckoutCollection: true, membersCustomFields: true },
   boot: { browseSettings: { response: stripeSettings() } },
 };
 
@@ -213,11 +214,8 @@ describe('Tier checkout collection', () => {
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect.poll(() => putApi.requests.length).toBe(1);
 
-    const sent = (
-      putApi.lastRequest?.body as {
-        tiers_checkout_config: [{ shipping: { collect: boolean; allowed_countries?: string[] } }];
-      }
-    ).tiers_checkout_config[0];
+    const sent = (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+      .tiers_checkout_config[0];
     expect(sent).toMatchObject({
       shipping: {
         collect: true,
@@ -399,5 +397,73 @@ describe('Tier checkout collection', () => {
     await expect.element(confirmation).toBeVisible();
     await page.getByRole('button', { name: 'Leave' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
+  });
+
+  describe('without field management', () => {
+    const collectionOnly = {
+      labs: { stripeCheckoutCollection: true, membersCustomFields: false },
+      boot: { browseSettings: { response: stripeSettings() } },
+    };
+
+    it('shows the toggles and no destination pickers', async () => {
+      checkoutWorld();
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).toBeVisible();
+      await modal.getByLabelText('Collect shipping address').click();
+      await expect(modal.getByLabelText('Save address as')).toHaveCount(0);
+      await expect(modal.getByLabelText('Save recipient name as')).toHaveCount(0);
+    });
+
+    it('saves the port default keys, with nothing to validate', async () => {
+      const putApi = checkoutWorld();
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).not.toBeChecked();
+
+      await modal.getByLabelText('Collect shipping address').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+
+      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await expect.poll(() => putApi.requests.length).toBe(1);
+      expect(
+        (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+          .tiers_checkout_config[0],
+      ).toMatchObject({
+        shipping: {
+          collect: true,
+          name: { custom_field_key: 'shipping_name' },
+          address: { custom_field_key: 'shipping_address' },
+        },
+      });
+    });
+
+    it('keeps a binding that was already chosen', async () => {
+      const putApi = checkoutWorld([supporterConfig]);
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
+
+      await modal.getByLabelText('Collect phone number').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+
+      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await expect.poll(() => putApi.requests.length).toBe(1);
+      expect(
+        (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+          .tiers_checkout_config[0],
+      ).toMatchObject({
+        shipping: {
+          collect: true,
+          name: { custom_field_key: nameField.key },
+          address: { custom_field_key: addressField.key },
+        },
+      });
+    });
   });
 });
