@@ -303,10 +303,10 @@ export type CommentsOverviewTopMember = {
 
 export type CommentsOverview = {
   totals: CommentsOverviewTotals;
-  previousTotals: CommentsOverviewTotals | null;
+  previous_totals: CommentsOverviewTotals | null;
   series: CommentsOverviewSeriesItem[];
-  topPosts: CommentsOverviewTopPost[];
-  topMembers: CommentsOverviewTopMember[];
+  top_posts: CommentsOverviewTopPost[];
+  top_members: CommentsOverviewTopMember[];
 };
 
 export type CommentsOverviewResponseType = {

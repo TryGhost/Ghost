@@ -1,5 +1,3 @@
-const errors = require('@tryghost/errors');
-const labs = require('../../../shared/labs');
 const statsService = require('../../services/stats');
 const commentsService = require('../../services/comments');
 
@@ -449,9 +447,6 @@ const controller = {
       method: 'browse',
     },
     async query(frame) {
-      if (!labs.isSet('commentAnalytics')) {
-        throw new errors.NotFoundError();
-      }
       const overview = await commentsService.stats.getOverview({
         dateFrom: frame?.options?.date_from,
         dateTo: frame?.options?.date_to,

@@ -57,13 +57,6 @@ const PRIVATE_FEATURES = [
   'tagDetailsReact',
   'selfServeArchives',
   'machinePayments',
-  'urlCache',
-  'lexicalIndicators',
-  'emailCustomization',
-  'indexnow',
-  'smarterCounts',
-  'giftSubscriptions',
-  'commentAnalytics',
   'postsListReact',
 ];
 

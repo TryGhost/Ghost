@@ -1,17 +1,24 @@
+import CommentsAnalytics from './components/comments-analytics';
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
 import { Box, Container } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
-import { FilterBar, PageHeader, createFilter } from '@tryghost/shade/patterns';
+import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { adminCommentIncludes, useBrowseComments } from '@tryghost/admin-x-framework/api/comments';
 import { keepPreviousData } from '@tanstack/react-query';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { applyCommentFilters, type CommentFilterPatch } from './apply-comment-filters';
 import { serializeCommentFilters } from './comment-filter-query';
 import { shouldDelayCommentDateFilterHydration, useFilterState } from './hooks/use-filter-state';
+import { useOverviewRange } from './hooks/use-overview-range';
+import {
+  useCommentsOverviewRail,
+  useCommentsOverviewSearchParams,
+} from './hooks/use-comments-overview-rail';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 
@@ -28,14 +35,17 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { filters, nql, setFilters } = useFilterState(timezone);
+  const { range, setRange, dateFrom, dateTo } = useOverviewRange(timezone);
+  const overviewSearchParams = useCommentsOverviewSearchParams(dateFrom, dateTo, timezone);
+  const {
+    data: overviewData,
+    isLoading: overviewLoading,
+    showRail,
+  } = useCommentsOverviewRail(overviewSearchParams);
   const dislikesEnabled = true;
-  const handleAddFilter = useCallback(
-    (field: string, value: string, operator: string = 'is') => {
-      const nextFilters = [
-        ...filters.filter((filter) => filter.field !== field),
-        createFilter(field, operator, [value]),
-      ];
 
+  const commitFilters = useCallback(
+    (nextFilters: ReturnType<typeof applyCommentFilters>) => {
       if (!singleCommentId) {
         setFilters(nextFilters, { replace: false });
         return;
@@ -53,8 +63,23 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
 
       setSearchParams(nextSearchParams, { replace: false });
     },
-    [filters, searchParams, setFilters, setSearchParams, singleCommentId, timezone],
+    [searchParams, setFilters, setSearchParams, singleCommentId, timezone],
   );
+
+  const handleApplyFilters = useCallback(
+    (patches: CommentFilterPatch[]) => {
+      commitFilters(applyCommentFilters(filters, patches));
+    },
+    [commitFilters, filters],
+  );
+
+  const handleAddFilter = useCallback(
+    (field: string, value: string, operator: string = 'is') => {
+      handleApplyFilters([{ field, value, operator }]);
+    },
+    [handleApplyFilters],
+  );
+
   const effectiveFilter = useMemo(() => {
     if (singleCommentId) {
       return `id:${escapeNqlString(singleCommentId)}`;
@@ -90,86 +115,105 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
-        <ListPage data-testid="comments-page">
-          <ListPage.Header>
-            <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left>
-                <PageHeader.Title>Comments</PageHeader.Title>
-              </PageHeader.Left>
-              {!singleCommentId && !hasFilters && (
-                <PageHeader.Actions>
-                  <PageHeader.ActionGroup>
-                    <CommentsFilters
-                      filters={filters}
-                      siteTimezone={timezone}
-                      onFiltersChange={setFilters}
-                    />
-                  </PageHeader.ActionGroup>
-                </PageHeader.Actions>
+        <div
+          className={
+            showRail
+              ? 'block grow lg:grid lg:grid-cols-[minmax(0,1fr)_460px]'
+              : 'flex h-full flex-col'
+          }
+        >
+          {showRail && (
+            <aside className="px-4 pt-4 lg:sticky lg:top-0 lg:col-start-2 lg:row-start-1 lg:max-h-screen lg:self-start lg:overflow-y-auto lg:border-l lg:border-border lg:px-8 lg:pt-8">
+              <CommentsAnalytics
+                data={overviewData}
+                isLoading={overviewLoading}
+                range={range}
+                setRange={setRange}
+                onApplyFilters={handleApplyFilters}
+              />
+            </aside>
+          )}
+          <ListPage className="lg:col-start-1 lg:row-start-1" data-testid="comments-page">
+            <ListPage.Header>
+              <PageHeader blurredBackground={false} sticky={false}>
+                <PageHeader.Left>
+                  <PageHeader.Title>Comments</PageHeader.Title>
+                </PageHeader.Left>
+                {!singleCommentId && !hasFilters && (
+                  <PageHeader.Actions>
+                    <PageHeader.ActionGroup>
+                      <CommentsFilters
+                        filters={filters}
+                        siteTimezone={timezone}
+                        onFiltersChange={setFilters}
+                      />
+                    </PageHeader.ActionGroup>
+                  </PageHeader.Actions>
+                )}
+              </PageHeader>
+              {!singleCommentId && hasFilters && (
+                <FilterBar>
+                  <CommentsFilters
+                    filters={filters}
+                    siteTimezone={timezone}
+                    onFiltersChange={setFilters}
+                  />
+                </FilterBar>
               )}
-            </PageHeader>
-            {!singleCommentId && hasFilters && (
-              <FilterBar>
-                <CommentsFilters
-                  filters={filters}
-                  siteTimezone={timezone}
-                  onFiltersChange={setFilters}
-                />
-              </FilterBar>
-            )}
-          </ListPage.Header>
-          <ListPage.Body>
-            {shouldShowLoading ? (
-              <div className="flex flex-1 items-center justify-center">
-                <LoadingIndicator size="lg" />
-              </div>
-            ) : isError ? (
-              <div className="flex flex-1 flex-col items-center justify-center">
-                <h2 className="mb-2 text-xl font-medium">Error loading comments</h2>
-                <p className="mb-4 text-muted-foreground">Please reload the page to try again</p>
-                <Button onClick={() => window.location.reload()}>Reload page</Button>
-              </div>
-            ) : !data?.comments.length ? (
-              <div className="flex flex-1 items-center justify-center">
-                {singleCommentId ? (
-                  <div className="flex flex-col items-center">
-                    <EmptyIndicator title="Comment not found">
+            </ListPage.Header>
+            <ListPage.Body>
+              {shouldShowLoading ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <LoadingIndicator size="lg" />
+                </div>
+              ) : isError ? (
+                <div className="flex flex-1 flex-col items-center justify-center">
+                  <h2 className="mb-2 text-xl font-medium">Error loading comments</h2>
+                  <p className="mb-4 text-muted-foreground">Please reload the page to try again</p>
+                  <Button onClick={() => window.location.reload()}>Reload page</Button>
+                </div>
+              ) : !data?.comments.length ? (
+                <div className="flex flex-1 items-center justify-center">
+                  {singleCommentId ? (
+                    <div className="flex flex-col items-center">
+                      <EmptyIndicator title="Comment not found">
+                        <LucideIcon.MessageSquare />
+                      </EmptyIndicator>
+                      <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
+                        Show all comments
+                      </Button>
+                    </div>
+                  ) : (
+                    <EmptyIndicator title="No comments yet">
                       <LucideIcon.MessageSquare />
                     </EmptyIndicator>
-                    <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
-                      Show all comments
-                    </Button>
-                  </div>
-                ) : (
-                  <EmptyIndicator title="No comments yet">
-                    <LucideIcon.MessageSquare />
-                  </EmptyIndicator>
-                )}
-              </div>
-            ) : (
-              <>
-                <CommentsList
-                  dislikesEnabled={dislikesEnabled}
-                  fetchNextPage={() => void fetchNextPage()}
-                  hasNextPage={hasNextPage}
-                  isFetchingNextPage={isFetchingNextPage}
-                  isLoading={isFetching && !isFetchingNextPage}
-                  items={data?.comments ?? []}
-                  resetKey={resetKey}
-                  totalItems={data?.meta?.pagination?.total ?? 0}
-                  onAddFilter={handleAddFilter}
-                />
-                {singleCommentId && (
-                  <div className="flex justify-center py-8">
-                    <Button variant="outline" onClick={handleShowAllComments}>
-                      Show all comments
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </ListPage.Body>
-        </ListPage>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <CommentsList
+                    dislikesEnabled={dislikesEnabled}
+                    fetchNextPage={() => void fetchNextPage()}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    isLoading={isFetching && !isFetchingNextPage}
+                    items={data?.comments ?? []}
+                    resetKey={resetKey}
+                    totalItems={data?.meta?.pagination?.total ?? 0}
+                    onAddFilter={handleAddFilter}
+                  />
+                  {singleCommentId && (
+                    <div className="flex justify-center py-8">
+                      <Button variant="outline" onClick={handleShowAllComments}>
+                        Show all comments
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </ListPage.Body>
+          </ListPage>
+        </div>
       </Container>
     </Box>
   );

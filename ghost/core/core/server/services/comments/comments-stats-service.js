@@ -1,6 +1,8 @@
 const moment = require('moment-timezone');
 const { getDateBoundaries, applyDateFilter } = require('../stats/utils/date-utils');
 
+const VISIBLE_STATUSES = ['published', 'hidden'];
+
 module.exports = class CommentsStatsService {
   constructor(deps) {
     this.db = deps.db;
@@ -56,22 +58,29 @@ module.exports = class CommentsStatsService {
    * @param {string} [options.dateFrom] - Inclusive lower bound (YYYY-MM-DD), interpreted in `timezone`
    * @param {string} [options.dateTo] - Inclusive upper bound (YYYY-MM-DD), interpreted in `timezone`
    * @param {string} [options.timezone='UTC'] - IANA timezone the bounds are expressed in
-   * @returns {Promise<{totals: object, previousTotals: object|null, series: Array, topPosts: Array, topMembers: Array}>}
+   * @returns {Promise<{totals: object, previous_totals: object|null, series: Array, top_posts: Array, top_members: Array}>}
    */
   async getOverview({ dateFrom, dateTo, timezone } = {}) {
     const knex = this.db.knex;
-    const range = this._resolveRange(dateFrom, dateTo, timezone);
-    const previousRange = this._resolvePreviousRange(dateFrom, dateTo, timezone);
+    const tz = timezone || 'UTC';
+    const range = this._resolveRange(dateFrom, dateTo, tz);
+    const previousRange = this._resolvePreviousRange(dateFrom, dateTo, tz);
 
     const [totals, previousTotals, series, topPosts, topMembers] = await Promise.all([
       this._getTotals(knex, range),
       previousRange ? this._getTotals(knex, previousRange) : Promise.resolve(null),
-      this._getSeries(knex, range),
+      this._getSeries(knex, range, tz),
       this._getTopPosts(knex, range),
       this._getTopMembers(knex, range),
     ]);
 
-    return { totals, previousTotals, series, topPosts, topMembers };
+    return {
+      totals,
+      previous_totals: previousTotals,
+      series,
+      top_posts: topPosts,
+      top_members: topMembers,
+    };
   }
 
   _resolveRange(dateFrom, dateTo, timezone) {
@@ -103,15 +112,57 @@ module.exports = class CommentsStatsService {
     return query;
   }
 
+  _isSQLite(knex) {
+    const client = knex.client?.config?.client;
+    return client === 'sqlite3' || client === 'better-sqlite3' || !client;
+  }
+
+  /**
+   * Calendar-day bucket in the requested IANA timezone (UTC storage).
+   */
+  _dayBucket(knex, column, timezone) {
+    const tzOffsetMins = moment.tz(timezone).utcOffset();
+
+    if (this._isSQLite(knex)) {
+      const dateModifier = `${Math.sign(tzOffsetMins) === -1 ? '' : '+'}${tzOffsetMins} minutes`;
+      return {
+        select: knex.raw('CAST(DATE(??, ?) as CHAR) as date', [column, dateModifier]),
+        group: knex.raw('CAST(DATE(??, ?) as CHAR)', [column, dateModifier]),
+      };
+    }
+
+    const mins = Math.abs(tzOffsetMins) % 60;
+    const hours = (Math.abs(tzOffsetMins) - mins) / 60;
+    const utcOffset = `${Math.sign(tzOffsetMins) === -1 ? '-' : '+'}${hours}:${mins < 10 ? '0' : ''}${mins}`;
+    return {
+      select: knex.raw("CAST(DATE(CONVERT_TZ(??, '+00:00', ?)) as CHAR) as date", [
+        column,
+        utcOffset,
+      ]),
+      group: knex.raw("CAST(DATE(CONVERT_TZ(??, '+00:00', ?)) as CHAR)", [column, utcOffset]),
+    };
+  }
+
+  _hasReport(knex) {
+    return function () {
+      this.select(knex.raw('1'))
+        .from('comment_reports')
+        .whereRaw('comment_reports.comment_id = comments.id');
+    };
+  }
+
   async _getTotals(knex, range) {
     const commentsQuery = knex('comments')
-      .where('status', 'published')
+      .whereIn('status', VISIBLE_STATUSES)
       .count({ count: '*' })
       .countDistinct({ commenters: 'member_id' });
     this._applyRange(commentsQuery, 'comments.created_at', range);
 
-    const reportedQuery = knex('comment_reports').countDistinct({ reported: 'comment_id' });
-    this._applyRange(reportedQuery, 'comment_reports.created_at', range);
+    const reportedQuery = knex('comments')
+      .whereIn('status', VISIBLE_STATUSES)
+      .whereExists(this._hasReport(knex))
+      .countDistinct({ reported: 'id' });
+    this._applyRange(reportedQuery, 'comments.created_at', range);
 
     const [commentsRow] = await commentsQuery;
     const [reportedRow] = await reportedQuery;
@@ -123,24 +174,28 @@ module.exports = class CommentsStatsService {
     };
   }
 
-  async _getSeries(knex, range) {
+  async _getSeries(knex, range, timezone) {
+    const bucket = this._dayBucket(knex, 'comments.created_at', timezone);
+
     const commentsQuery = knex('comments')
-      .where('status', 'published')
-      .select(knex.raw('DATE(created_at) as date'))
+      .whereIn('status', VISIBLE_STATUSES)
+      .select(bucket.select)
       .count({ count: '*' })
       .countDistinct({ commenters: 'member_id' })
-      .groupByRaw('DATE(created_at)')
-      .orderByRaw('DATE(created_at) ASC');
+      .groupByRaw(bucket.group)
+      .orderByRaw('date ASC');
     this._applyRange(commentsQuery, 'comments.created_at', range);
 
-    const reportsQuery = knex('comment_reports')
-      .select(knex.raw('DATE(created_at) as date'))
-      .countDistinct({ reported: 'comment_id' })
-      .groupByRaw('DATE(created_at)')
-      .orderByRaw('DATE(created_at) ASC');
-    this._applyRange(reportsQuery, 'comment_reports.created_at', range);
+    const reportedQuery = knex('comments')
+      .whereIn('status', VISIBLE_STATUSES)
+      .whereExists(this._hasReport(knex))
+      .select(bucket.select)
+      .countDistinct({ reported: 'id' })
+      .groupByRaw(bucket.group)
+      .orderByRaw('date ASC');
+    this._applyRange(reportedQuery, 'comments.created_at', range);
 
-    const [commentsRows, reportsRows] = await Promise.all([commentsQuery, reportsQuery]);
+    const [commentsRows, reportedRows] = await Promise.all([commentsQuery, reportedQuery]);
 
     const byDate = new Map();
     for (const row of commentsRows) {
@@ -152,7 +207,7 @@ module.exports = class CommentsStatsService {
         reported: 0,
       });
     }
-    for (const row of reportsRows) {
+    for (const row of reportedRows) {
       const date = typeof row.date === 'string' ? row.date : this._formatDate(row.date);
       const existing = byDate.get(date) || { date, count: 0, commenters: 0, reported: 0 };
       existing.reported = Number(row.reported) || 0;
@@ -175,7 +230,7 @@ module.exports = class CommentsStatsService {
   async _getTopPosts(knex, range, limit = 25) {
     const query = knex('comments')
       .join('posts', 'posts.id', 'comments.post_id')
-      .where('comments.status', 'published')
+      .whereIn('comments.status', VISIBLE_STATUSES)
       .select('posts.id as id', 'posts.title as title', 'posts.slug as slug')
       .count({ count: 'comments.id' })
       .groupBy('posts.id', 'posts.title', 'posts.slug')
@@ -196,7 +251,7 @@ module.exports = class CommentsStatsService {
   async _getTopMembers(knex, range, limit = 25) {
     const query = knex('comments')
       .join('members', 'members.id', 'comments.member_id')
-      .where('comments.status', 'published')
+      .whereIn('comments.status', VISIBLE_STATUSES)
       .whereNotNull('comments.member_id')
       .select('members.id as id', 'members.name as name', 'members.email as email')
       .count({ count: 'comments.id' })

@@ -379,34 +379,6 @@ describe('Stats API', function () {
         });
     });
 
-    describe('Comments overview', function () {
-      it('returns the overview payload with expected shape', async function () {
-        const { body } = await agent.get('/stats/comments/').expectStatus(200).matchHeaderSnapshot({
-          'content-version': anyContentVersion,
-          'content-length': anyContentLength,
-          etag: anyEtag,
-        });
-
-        assert.ok(Array.isArray(body.stats), 'expected stats array in response');
-        assert.equal(body.stats.length, 1, 'expected a single overview object');
-
-        const overview = body.stats[0];
-        assert.ok(overview.totals, 'expected totals');
-        assert.equal(typeof overview.totals.comments, 'number');
-        assert.equal(typeof overview.totals.commenters, 'number');
-        assert.equal(typeof overview.totals.reported, 'number');
-        assert.ok('previousTotals' in overview, 'expected previousTotals key');
-        assert.ok(Array.isArray(overview.series));
-        assert.ok(Array.isArray(overview.topPosts));
-        assert.ok(Array.isArray(overview.topMembers));
-      });
-
-      it('accepts date_from and date_to range parameters', async function () {
-        await agent
-          .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
-          .expectStatus(200);
-      });
-    });
     it('Returns empty results when postIds parameter is missing', async function () {
       await agent
         .post('/stats/posts-member-counts')
@@ -427,6 +399,39 @@ describe('Stats API', function () {
         .matchBodySnapshot({
           stats: [{}],
         });
+    });
+  });
+
+  describe('Comments overview', function () {
+    it('returns the overview payload with expected shape', async function () {
+      const { body } = await agent.get('/stats/comments/').expectStatus(200).matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        'content-length': anyContentLength,
+        etag: anyEtag,
+      });
+
+      assert.ok(Array.isArray(body.stats), 'expected stats array in response');
+      assert.equal(body.stats.length, 1, 'expected a single overview object');
+
+      const overview = body.stats[0];
+      assert.ok(overview.totals, 'expected totals');
+      assert.equal(typeof overview.totals.comments, 'number');
+      assert.equal(typeof overview.totals.commenters, 'number');
+      assert.equal(typeof overview.totals.reported, 'number');
+      assert.ok('previous_totals' in overview, 'expected previous_totals key');
+      assert.ok(Array.isArray(overview.series));
+      assert.ok(Array.isArray(overview.top_posts));
+      assert.ok(Array.isArray(overview.top_members));
+    });
+
+    it('accepts date_from and date_to range parameters and returns previous_totals', async function () {
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
+        .expectStatus(200);
+
+      const overview = body.stats[0];
+      assert.ok(overview.previous_totals);
+      assert.equal(typeof overview.previous_totals.comments, 'number');
     });
   });
 });
