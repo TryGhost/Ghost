@@ -4,6 +4,7 @@ const logging = require('@tryghost/logging');
 /** @import {FetchData} from './email-analytics-service' */
 
 const AGGREGATE_MEMBER_STATS_METRIC_NAME = 'email_analytics_aggregate_member_stats_count';
+const MEMBER_RECONCILIATION_BATCH_SIZE = 100;
 exports.AGGREGATE_MEMBER_STATS_METRIC_NAME = AGGREGATE_MEMBER_STATS_METRIC_NAME;
 
 /**
@@ -14,6 +15,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
+  #emailIdsForReconciliation = new Set();
 
   #lastAggregation = Date.now();
 
@@ -61,6 +63,9 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       // Flush all batched updates to the database
       await this.#emailEventProcessor.flushBatchedUpdates();
+      for (const emailId of result.emailIds) {
+        this.#emailIdsForReconciliation.add(emailId);
+      }
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
@@ -90,6 +95,50 @@ class NewsletterEmailAnalyticsBatchProcessor {
    * }>}
    */
   async aggregate({ includeOpenedEvents, processingResult, isFinal }) {
+    const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
+    if (useBatchProcessing) {
+      for (const emailId of processingResult.emailIds) {
+        this.#emailIdsForReconciliation.add(emailId);
+      }
+      const shouldReset =
+        Date.now() - this.#lastAggregation > 5 * 60 * 1000 ||
+        processingResult.memberIds.length > 5000;
+
+      if (!isFinal) {
+        if (shouldReset) {
+          processingResult.reset();
+          this.#lastAggregation = Date.now();
+          return { emailAggregationTimeMs: 0, memberAggregationTimeMs: 0 };
+        }
+        return null;
+      }
+
+      if (this.#emailIdsForReconciliation.size === 0) {
+        return null;
+      }
+
+      const emailAggregationStart = Date.now();
+      for (const emailId of this.#emailIdsForReconciliation) {
+        await this.#aggregateEmailStats(emailId, includeOpenedEvents);
+      }
+      const emailAggregationTimeMs = Date.now() - emailAggregationStart;
+
+      const memberAggregationStart = Date.now();
+      const reconciledMemberCount = await this.#queries.reconcileMemberStats(
+        MEMBER_RECONCILIATION_BATCH_SIZE,
+      );
+      const memberAggregationTimeMs = Date.now() - memberAggregationStart;
+      this.#prometheusClient
+        ?.getMetric(AGGREGATE_MEMBER_STATS_METRIC_NAME)
+        ?.inc(reconciledMemberCount);
+
+      this.#emailIdsForReconciliation.clear();
+      processingResult.reset();
+      this.#lastAggregation = Date.now();
+
+      return { emailAggregationTimeMs, memberAggregationTimeMs };
+    }
+
     /** @type {boolean} */ let shouldAggregate;
     if (isFinal) {
       shouldAggregate = Boolean(
@@ -237,8 +286,6 @@ class NewsletterEmailAnalyticsBatchProcessor {
    * @returns {Promise<{emailAggregationTimeMs: number, memberAggregationTimeMs: number}>}
    */
   async #aggregateStats({ emailIds = [], memberIds = [] }, includeOpenedEvents = true) {
-    const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
-
     const emailAggregationStart = Date.now();
     for (const emailId of emailIds) {
       await this.#aggregateEmailStats(emailId, includeOpenedEvents);
@@ -248,26 +295,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
     const memberMetric = this.#prometheusClient?.getMetric(AGGREGATE_MEMBER_STATS_METRIC_NAME);
 
     const memberAggregationStart = Date.now();
-    if (useBatchProcessing) {
-      // Batched mode: process 100 members at a time
-      logging.info(
-        `[EmailAnalytics] Aggregating stats for ${memberIds.length} members using BATCHED mode (batch size: 100)`,
-      );
-      const BATCH_SIZE = 100;
-      for (let i = 0; i < memberIds.length; i += BATCH_SIZE) {
-        const batch = memberIds.slice(i, i + BATCH_SIZE);
-        await this.#aggregateMemberStatsBatch(batch);
-        memberMetric?.inc(batch.length);
-      }
-    } else {
-      // Sequential mode: process one member at a time
-      logging.info(
-        `[EmailAnalytics] Aggregating stats for ${memberIds.length} members using SEQUENTIAL mode`,
-      );
-      for (const memberId of memberIds) {
-        await this.#aggregateMemberStats(memberId);
-        memberMetric?.inc();
-      }
+    logging.info(
+      `[EmailAnalytics] Aggregating stats for ${memberIds.length} members using SEQUENTIAL mode`,
+    );
+    for (const memberId of memberIds) {
+      await this.#aggregateMemberStats(memberId);
+      memberMetric?.inc();
     }
     const memberAggregationTimeMs = Date.now() - memberAggregationStart;
 
@@ -291,15 +324,6 @@ class NewsletterEmailAnalyticsBatchProcessor {
    */
   async #aggregateMemberStats(memberId) {
     return this.#queries.aggregateMemberStats(memberId);
-  }
-
-  /**
-   * Aggregate member stats for multiple members in a batch.
-   * @param {string[]} memberIds - Array of member IDs to aggregate stats for.
-   * @returns {Promise<void>}
-   */
-  async #aggregateMemberStatsBatch(memberIds) {
-    return this.#queries.aggregateMemberStatsBatch(memberIds);
   }
 }
 

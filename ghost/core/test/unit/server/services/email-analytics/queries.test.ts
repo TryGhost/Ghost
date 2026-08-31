@@ -39,6 +39,7 @@ const createDatabase = async (): Promise<Knex> => {
   await database.schema.createTable('members', (table) => {
     table.text('id').primary();
     table.integer('email_count').notNullable().defaultTo(0);
+    table.integer('email_tracked_count').unsigned();
     table.integer('email_opened_count').notNullable().defaultTo(0);
     table.integer('email_open_rate');
   });
@@ -454,6 +455,7 @@ describe('Email analytics queries', function () {
 
       const member = await knex('members').where('id', 'member-1').first();
       assert.equal(member.email_count, 5);
+      assert.equal(member.email_tracked_count, 5);
       assert.equal(member.email_opened_count, 2);
       assert.equal(member.email_open_rate, 40);
     });
@@ -473,6 +475,7 @@ describe('Email analytics queries', function () {
 
       const member = await knex('members').where('id', 'member-1').first();
       assert.equal(member.email_count, 2);
+      assert.equal(member.email_tracked_count, 1);
       assert.equal(member.email_opened_count, 1);
       assert.equal(member.email_open_rate, 75);
     });
@@ -488,6 +491,7 @@ describe('Email analytics queries', function () {
 
       const member = await knex('members').where('id', 'member-1').first();
       assert.equal(member.email_count, 0);
+      assert.equal(member.email_tracked_count, 0);
       assert.equal(member.email_opened_count, 0);
       assert.equal(member.email_open_rate, 40);
     });
@@ -533,24 +537,28 @@ describe('Email analytics queries', function () {
         {
           id: 'member-1',
           email_count: 5,
+          email_tracked_count: 5,
           email_opened_count: 2,
           email_open_rate: 40,
         },
         {
           id: 'member-2',
           email_count: 1,
+          email_tracked_count: 1,
           email_opened_count: 1,
           email_open_rate: null,
         },
         {
           id: 'member-3',
           email_count: 0,
+          email_tracked_count: 0,
           email_opened_count: 0,
           email_open_rate: null,
         },
         {
           id: 'untouched-member',
           email_count: 9,
+          email_tracked_count: null,
           email_opened_count: 8,
           email_open_rate: 89,
         },
@@ -565,6 +573,39 @@ describe('Email analytics queries', function () {
 
     it('ignores missing member IDs', async function () {
       await assert.doesNotReject(queries.aggregateMemberStatsBatch(['missing-member']));
+    });
+  });
+
+  describe('reconcileMemberStats', function () {
+    it('walks members in bounded batches and persists its cursor', async function () {
+      await insertEmail('tracked-email', true);
+      for (const memberId of ['member-1', 'member-2', 'member-3']) {
+        await insertMember(memberId);
+        await insertRecipient({
+          email_id: 'tracked-email',
+          member_id: memberId,
+          opened_at: '2026-08-11T10:00:00.000Z',
+        });
+      }
+
+      assert.equal(await queries.reconcileMemberStats(2), 2);
+      assert.deepEqual(await knex('members').select('id', 'email_tracked_count').orderBy('id'), [
+        { id: 'member-1', email_tracked_count: 1 },
+        { id: 'member-2', email_tracked_count: 1 },
+        { id: 'member-3', email_tracked_count: null },
+      ]);
+
+      assert.equal(await queries.reconcileMemberStats(2), 1);
+      assert.equal((await knex('members').where('id', 'member-3').first()).email_tracked_count, 1);
+
+      const job = await knex('jobs').where('name', 'email-analytics-member-reconciliation').first();
+      assert.deepEqual(JSON.parse(job.metadata), { memberCursor: 'member-3' });
+
+      assert.equal(await queries.reconcileMemberStats(2), 2);
+      const wrappedJob = await knex('jobs')
+        .where('name', 'email-analytics-member-reconciliation')
+        .first();
+      assert.deepEqual(JSON.parse(wrappedJob.metadata), { memberCursor: 'member-2' });
     });
   });
 });
