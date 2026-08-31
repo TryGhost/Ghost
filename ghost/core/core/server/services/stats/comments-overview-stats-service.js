@@ -74,7 +74,7 @@ class CommentsOverviewStatsService {
    * @param {import('knex').Knex} knex
    */
   _hasReport(knex) {
-    return function () {
+    return /** @this {import('knex').Knex.QueryBuilder} */ function () {
       this.select(knex.raw('1'))
         .from('comment_reports')
         .whereRaw('comment_reports.comment_id = comments.id');
@@ -182,7 +182,7 @@ class CommentsOverviewStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = await query;
+    const rows = /** @type {TopPostRow[]} */ (await query);
     return rows.map((row) => ({
       id: row.id,
       title: row.title,
@@ -213,7 +213,7 @@ class CommentsOverviewStatsService {
       .limit(limit);
     this._applyRange(query, 'comments.created_at', range);
 
-    const rows = await query;
+    const rows = /** @type {TopMemberRow[]} */ (await query);
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
@@ -223,6 +223,21 @@ class CommentsOverviewStatsService {
 }
 
 module.exports = CommentsOverviewStatsService;
+
+/**
+ * @typedef {Object} TopPostRow
+ * @property {string} id
+ * @property {string} title
+ * @property {string} slug
+ * @property {string|number} count
+ */
+
+/**
+ * @typedef {Object} TopMemberRow
+ * @property {string} id
+ * @property {string|null} name
+ * @property {string|number} count
+ */
 
 /**
  * @typedef {Object} CommentsOverviewTotals
