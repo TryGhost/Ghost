@@ -81,11 +81,11 @@ describe('content import errors file', function () {
     const parsed = papaparse.parse<Record<string, string>>(csv, { header: true });
     assert.deepEqual(parsed.meta.fields, [
       'import_status_2',
+      'import_reason',
+      'import_media_failures',
       'Body',
       'Headline',
       'import_status',
-      'import_reason',
-      'import_media_failures',
     ]);
     assert.equal(parsed.data[0].Headline, "'=Failed()");
     assert.equal(parsed.data[0].import_status, 'publisher value');
@@ -119,8 +119,10 @@ describe('content import errors file', function () {
 
     assert.ok(csv);
     const parsed = papaparse.parse(csv, { header: true });
-    assert.equal(parsed.meta.fields?.[0], 'import_status_3');
-    assert.ok(parsed.meta.fields?.includes('import_reason_2'));
-    assert.ok(parsed.meta.fields?.includes('import_media_failures_2'));
+    assert.deepEqual(parsed.meta.fields?.slice(0, 3), [
+      'import_status_3',
+      'import_reason_2',
+      'import_media_failures_2',
+    ]);
   });
 });
