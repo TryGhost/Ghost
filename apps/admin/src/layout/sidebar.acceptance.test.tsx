@@ -178,6 +178,37 @@ describe('Sidebar navigation', () => {
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
   });
 
+  it('applies the Admin 7 page chrome in dark mode', async () => {
+    fakeTags([]);
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
+
+    await renderAdminApp('/tags', {
+      labs: { admin7PageChrome: true },
+      boot: { browseMe: { response: me } },
+    });
+
+    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
+
+    const shell = document.querySelector<HTMLElement>('.admin7')!;
+    const sidebar = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!;
+    const tagsPage = page.getByTestId('tags-page').element();
+    const pageContainer = tagsPage.parentElement!;
+    const pageHeader = tagsPage.querySelector('[data-list-page="header"]')!;
+    const noShadowReference = document.createElement('div');
+    noShadowReference.className = 'shadow-none';
+    shell.appendChild(noShadowReference);
+
+    expect(getComputedStyle(shell).getPropertyValue('--sidebar-width')).toBe('316px');
+    expect(getComputedStyle(sidebar).borderRadius).not.toBe('0px');
+    expect(getComputedStyle(sidebar).borderTopStyle).toBe('solid');
+    expect(getComputedStyle(sidebar).boxShadow).toBe(getComputedStyle(noShadowReference).boxShadow);
+    expect(getComputedStyle(pageContainer).maxWidth).toBe('1080px');
+    expect(getComputedStyle(tagsPage).paddingLeft).toBe('40px');
+    expect(getComputedStyle(pageHeader).paddingTop).toBe('28px');
+  });
+
   it('applies Admin 7 typography to legacy alert and notification portals', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', { labs: { admin7PageChrome: true } });

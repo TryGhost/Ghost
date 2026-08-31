@@ -14,12 +14,11 @@ export function useAdmin7({ hasNavigation, isEligibleUser }: Admin7Eligibility) 
   });
   const flagEnabled = config?.config.labs?.admin7PageChrome === true;
   const isMobile = useIsMobile();
-  const { resolvedTheme, isThemeReady } = useThemeContext();
+  const { isThemeReady } = useThemeContext();
   const { pathname } = useLocation();
   const isReady =
     !isEligibleUser || isMobile || (!isConfigPending && (!flagEnabled || isThemeReady));
-  const enabled =
-    flagEnabled && isEligibleUser && !isMobile && isThemeReady && resolvedTheme === 'light';
+  const enabled = flagEnabled && isEligibleUser && !isMobile && isThemeReady;
   const isSettings = /^\/settings(?:\/|$)/.test(pathname);
 
   return {

@@ -54,7 +54,7 @@ describe('Settings layout', () => {
     },
   );
 
-  it('retains existing Settings typography in dark mode', async () => {
+  it('uses Admin 7 typography without page chrome in dark mode', async () => {
     fakeSettingsScreens();
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
@@ -64,10 +64,13 @@ describe('Settings layout', () => {
     });
     await expect.element(settingsScreen.search()).toBeVisible();
     await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
-    expect(getComputedStyle(settingsScreen.search().element()).fontFamily).not.toContain(
+    expect(getComputedStyle(settingsScreen.search().element()).fontFamily).toContain(
       'Inter Admin 7',
     );
-    expect(document.querySelector('.admin7')).toBeNull();
+    expect(document.querySelector('.admin7')).not.toBeNull();
+    expect(
+      getComputedStyle(document.querySelector('.admin7')!).getPropertyValue('--content-width'),
+    ).toBe('');
   });
 
   it('limits Settings typography to desktop without opting into page chrome', async () => {
