@@ -4,11 +4,13 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load-playwright-container-env.sh"
 GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
+TINYBIRD_SLIM_ENABLED="${GHOST_E2E_TINYBIRD_SLIM:-false}"
 
 echo "Preparing E2E build-mode runtime"
 echo "Playwright image: ${PLAYWRIGHT_IMAGE}"
 echo "Gateway image: ${GATEWAY_IMAGE}"
 echo "Analytics enabled: ${ANALYTICS_ENABLED}"
+echo "Tinybird slim image: ${TINYBIRD_SLIM_ENABLED}"
 
 pids=()
 labels=()
@@ -27,7 +29,7 @@ run_bg() {
 
 run_bg "pull-gateway-image" docker pull "$GATEWAY_IMAGE"
 run_bg "pull-playwright-image" ensure_playwright_image
-run_bg "start-infra" env GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS="$ANALYTICS_ENABLED" bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
+run_bg "start-infra" env GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS="$ANALYTICS_ENABLED" GHOST_E2E_TINYBIRD_SLIM="$TINYBIRD_SLIM_ENABLED" bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
 
 for i in "${!pids[@]}"; do
     if ! wait "${pids[$i]}"; then

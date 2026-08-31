@@ -1970,6 +1970,20 @@ jobs:
     # Inherits the run_e2e gate transitively via job_docker (which builds the
     # ghost-e2e image).
     if: needs.job_docker.result == 'success'
+    permissions:
+      contents: read
+      packages: read # read the internal tinybird-local-slim package
+    env:
+      # Use the distilled Tinybird image instead of upstream: it needs several GB
+      # less runner disk, which is what keeps the analytics shards inside the disk
+      # budget. See docker/tinybird-local-slim/README.md.
+      #
+      # Its GHCR package is internal (the upstream licence only permits
+      # distribution within our own organization), so it is unreadable from a
+      # cross-repo PR's scoped token — those runs stay on the upstream image.
+      # infra-up.sh falls back on a failed pull regardless, so an unexpected
+      # permission gap degrades rather than breaks.
+      GHOST_E2E_TINYBIRD_SLIM: ${{ github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     strategy:
       fail-fast: true
       matrix:
@@ -2040,6 +2054,16 @@ jobs:
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
+
+      - name: Log in to GitHub Container Registry
+        # Needed to read the internal tinybird-local-slim package.
+        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        continue-on-error: true
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull Tinybird CLI image
         id: pull_tb_cli

@@ -80,6 +80,18 @@ snapshot restore cycles stay fast and isolated from local development data.
 Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
 `GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
 
+Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
+slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
+disk, against ~2.1GB and ~6.9GB for upstream. CI enables it so the analytics jobs
+fit inside the runner disk budget. Override the image/tag with
+`GHOST_E2E_TINYBIRD_SLIM_IMAGE`. Local dev (`compose.dev.analytics.yaml`) always
+uses the upstream image.
+
+The slim image's GHCR package is internal, so a pull can legitimately fail — most
+often on a PR from a public fork, whose token cannot read it. `infra-up.sh` warns
+and falls back to the upstream image rather than failing the run. CI leaves the
+flag off for cross-repo PRs so those runs skip the doomed pull entirely.
+
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
 ```bash
