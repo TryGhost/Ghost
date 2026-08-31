@@ -11,8 +11,8 @@ import {
 import { registerAdminApiHandler, registerRoute } from './worker';
 
 /**
- * The requests the admin shell fires on boot regardless of route, handled by
- * default so specs never mention them. Override per test keyed by entry
+ * The requests the admin shell fires on boot regardless of route, and the lookups a
+ * page fires on every mount, handled by default so specs never mention them. Override per test keyed by entry
  * name: `renderAdminApp("/", {boot: {browseMe: {response: ...}}})`. Canned
  * responses come from @tryghost/test-data; this harness must not import test
  * data from admin-x-framework.
@@ -53,6 +53,11 @@ export function defaultBootRequests() {
       method: 'GET',
       path: '/members/?limit=1',
       response: browseResponse('members', [], { limit: 1 }),
+    },
+    browseMemberCustomFieldDefinitions: {
+      method: 'GET',
+      path: /^\/members\/custom_fields\/(\?|$)/,
+      response: browseResponse('members_custom_fields', []),
     },
     browseActiveTheme: {
       method: 'GET',
