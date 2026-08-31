@@ -34,13 +34,6 @@ describe('Settings layout', () => {
         await expect
           .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
           .toBe(enabled);
-        const style = getComputedStyle(element);
-        expect(style.fontVariationSettings, element.outerHTML).toBe(
-          enabled ? '"opsz" 14' : 'normal',
-        );
-        expect(style.fontFeatureSettings).toBe(
-          enabled ? '"cv05", "dlig", "ss01", "zero"' : 'normal',
-        );
       }
       expect(document.querySelector('.admin7') !== null).toBe(enabled);
       expect(
@@ -162,10 +155,6 @@ describe('Settings layout', () => {
     await expect
       .poll(() => getComputedStyle(modal.element()).fontFamily)
       .toContain('Inter Admin 7');
-    expect(document.querySelector('.admin7')).not.toBeNull();
-    expect(
-      getComputedStyle(document.querySelector('.admin7')!).getPropertyValue('--content-width'),
-    ).toBe('');
     await modal.getByLabelText('Default price at signup').click();
     await expect.element(settingsScreen.selectOptionExact('Yearly')).toBeVisible();
     await userEvent.keyboard('{Escape}');

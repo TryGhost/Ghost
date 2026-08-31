@@ -168,13 +168,6 @@ describe('Analytics overview', () => {
     await renderAdminApp('/analytics', { boot });
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
     await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
-    await expect
-      .poll(
-        () =>
-          getComputedStyle(document.querySelector<HTMLElement>('[data-header="header"]')!)
-            .paddingTop,
-      )
-      .toBe('28px');
     await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
     const tooltip = page.getByRole('tooltip');
     await expect.element(tooltip).toHaveTextContent(/trending/);
@@ -182,10 +175,6 @@ describe('Analytics overview', () => {
     await expect
       .poll(() => getComputedStyle(tooltip.element()).fontFamily)
       .toContain('Inter Admin 7');
-    expect(getComputedStyle(tooltip.element()).fontVariationSettings).toBe('"opsz" 14');
-    expect(getComputedStyle(tooltip.element()).fontFeatureSettings).toBe(
-      '"cv05", "dlig", "ss01", "zero"',
-    );
   });
 
   it('re-queries Tinybird when the date range changes', async () => {

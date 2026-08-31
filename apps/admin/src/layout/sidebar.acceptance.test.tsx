@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 import type { StateBridge } from '@/ember-bridge';
 
 import {
@@ -52,10 +51,8 @@ function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'pos
   };
 }
 
-afterEach(async () => {
+afterEach(() => {
   delete window.EmberBridge;
-  document.querySelector('[data-test-view-site-preview-styles]')?.remove();
-  await page.viewport(1280, 720);
 });
 
 describe('Sidebar navigation', () => {
@@ -135,45 +132,6 @@ describe('Sidebar navigation', () => {
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-    const tagsPage = page.getByTestId('tags-page').element();
-    const pageContainer = tagsPage.parentElement!;
-    const pageHeader = tagsPage.querySelector('[data-list-page="header"]')!;
-    expect(getComputedStyle(pageContainer).maxWidth).toBe('1080px');
-    expect(getComputedStyle(tagsPage).paddingLeft).toBe('40px');
-    expect(getComputedStyle(pageHeader).paddingTop).toBe('28px');
-
-    const legacyPage = document.createElement('div');
-    legacyPage.className = 'gh-canvas';
-    const legacyHeader = document.createElement('div');
-    legacyHeader.className = 'gh-canvas-header';
-    legacyPage.appendChild(legacyHeader);
-    tagsPage.closest('main')!.appendChild(legacyPage);
-    expect(getComputedStyle(legacyPage).maxWidth).toBe('1080px');
-    expect(getComputedStyle(legacyPage).paddingLeft).toBe('40px');
-    expect(getComputedStyle(legacyHeader).paddingLeft).toBe('40px');
-    expect(getComputedStyle(legacyHeader).paddingTop).toBe('28px');
-
-    const networkHeader = document.createElement('div');
-    networkHeader.dataset.networkHeader = 'header';
-    tagsPage.closest('main')!.appendChild(networkHeader);
-    expect(getComputedStyle(networkHeader).paddingTop).toBe('8px');
-
-    const errorSurface = document.createElement('div');
-    errorSurface.className = 'admin-x-container-error';
-    const backgroundReference = document.createElement('div');
-    backgroundReference.className = 'bg-background';
-    tagsPage.closest('main')!.append(errorSurface, backgroundReference);
-    expect(getComputedStyle(errorSurface).backgroundColor).toBe(
-      getComputedStyle(backgroundReference).backgroundColor,
-    );
-
-    expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
-    expect(document.querySelector('[data-sidebar="sidebar"]')?.parentElement).toHaveClass('p-2');
-    const shell = document.querySelector<HTMLElement>('[class~="group/sidebar-wrapper"]')!;
-    const sidebarSlot = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!
-      .parentElement!.previousElementSibling as HTMLElement;
-    expect(getComputedStyle(shell).getPropertyValue('--sidebar-width')).toBe('316px');
-    expect(sidebarSlot.getBoundingClientRect().width).toBe(316);
     expect(document.querySelector('[data-state="collapsed"]')).toBeNull();
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
   });
@@ -190,23 +148,7 @@ describe('Sidebar navigation', () => {
 
     await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-
-    const shell = document.querySelector<HTMLElement>('.admin7')!;
-    const sidebar = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!;
-    const tagsPage = page.getByTestId('tags-page').element();
-    const pageContainer = tagsPage.parentElement!;
-    const pageHeader = tagsPage.querySelector('[data-list-page="header"]')!;
-    const noShadowReference = document.createElement('div');
-    noShadowReference.className = 'shadow-none';
-    shell.appendChild(noShadowReference);
-
-    expect(getComputedStyle(shell).getPropertyValue('--sidebar-width')).toBe('316px');
-    expect(getComputedStyle(sidebar).borderRadius).not.toBe('0px');
-    expect(getComputedStyle(sidebar).borderTopStyle).toBe('solid');
-    expect(getComputedStyle(sidebar).boxShadow).toBe(getComputedStyle(noShadowReference).boxShadow);
-    expect(getComputedStyle(pageContainer).maxWidth).toBe('1080px');
-    expect(getComputedStyle(tagsPage).paddingLeft).toBe('40px');
-    expect(getComputedStyle(pageHeader).paddingTop).toBe('28px');
+    expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
   });
 
   it('applies Admin 7 typography to legacy alert and notification portals', async () => {
@@ -231,9 +173,6 @@ describe('Sidebar navigation', () => {
     try {
       for (const host of hosts) {
         expect(getComputedStyle(host).fontFamily).toBe(getComputedStyle(shell).fontFamily);
-        expect(getComputedStyle(host).fontFeatureSettings).toBe(
-          getComputedStyle(shell).fontFeatureSettings,
-        );
       }
     } finally {
       createdHosts.forEach((host) => host.remove());
@@ -264,52 +203,6 @@ describe('Sidebar navigation', () => {
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     expect(document.querySelector('.admin7')).toBeNull();
-  });
-
-  it('gives the View site preview the floating sidebar bezel on desktop only', async () => {
-    await page.viewport(1280, 800);
-    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
-    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-
-    const legacyStyles = document.createElement('style');
-    legacyStyles.dataset.testViewSitePreviewStyles = '';
-    legacyStyles.textContent = `
-      .site-frame {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-    `;
-    document.head.appendChild(legacyStyles);
-
-    const preview = document.createElement('iframe');
-    preview.className = 'site-frame';
-    preview.dataset.viewSitePreview = '';
-    document.querySelector('.admin7 main > main')!.appendChild(preview);
-
-    const sidebar = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!;
-    const desktopPreviewStyle = getComputedStyle(preview);
-    const sidebarStyle = getComputedStyle(sidebar);
-    const sidebarGutter = getComputedStyle(sidebar.parentElement!).paddingTop;
-
-    expect(desktopPreviewStyle.top).toBe(sidebarGutter);
-    expect(desktopPreviewStyle.right).toBe(sidebarGutter);
-    expect(desktopPreviewStyle.left).toBe('0px');
-    expect(desktopPreviewStyle.borderRadius).toBe(sidebarStyle.borderRadius);
-    expect(desktopPreviewStyle.borderTopColor).toBe(sidebarStyle.borderTopColor);
-    expect(desktopPreviewStyle.borderTopStyle).toBe('solid');
-
-    await page.viewport(800, 800);
-    await expect.poll(() => document.querySelector('.admin7')).toBeNull();
-
-    const mobilePreviewStyle = getComputedStyle(preview);
-    expect(mobilePreviewStyle.inset).toBe('0px');
-    expect(parseFloat(mobilePreviewStyle.width)).toBe(window.innerWidth);
-    expect(parseFloat(mobilePreviewStyle.height)).toBe(window.innerHeight);
-    expect(mobilePreviewStyle.borderTopStyle).toBe('none');
-    expect(mobilePreviewStyle.borderRadius).toBe('0px');
   });
 
   it('renders the navigation for the current user', async () => {

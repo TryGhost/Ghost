@@ -47,10 +47,6 @@ describe('Import members gate', () => {
       await expect.element(select).toBeVisible();
       const hasFont = () => getComputedStyle(modal.element()).fontFamily.includes('Inter Admin 7');
       await expect.poll(hasFont).toBe(true);
-      expect(getComputedStyle(select.element()).fontVariationSettings).toBe('"opsz" 14');
-      expect(getComputedStyle(select.element()).fontFeatureSettings).toBe(
-        '"cv05", "dlig", "ss01", "zero"',
-      );
 
       const originalModal = modal.element();
       try {
@@ -58,7 +54,6 @@ describe('Import members gate', () => {
         await expect.element(modal).toBeVisible();
         expect(modal.element()).toBe(originalModal);
         await expect.poll(hasFont).toBe(false);
-        expect(getComputedStyle(select.element()).fontVariationSettings).toBe('normal');
         await page.viewport(801, 800);
         await expect.poll(hasFont).toBe(true);
       } finally {

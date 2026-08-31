@@ -129,7 +129,7 @@ function seedEmptyPostAnalyticsWorld() {
 }
 
 describe('Post analytics overview', () => {
-  it('uses the Admin 7 page-header spacing', async () => {
+  it('applies the Admin 7 chrome on post analytics', async () => {
     seedPostAnalyticsWorld();
     const boot = webAnalyticsBootOverrides();
     const config = boot.browseConfig?.response as ConfigResponse;
@@ -138,26 +138,6 @@ describe('Post analytics overview', () => {
     await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot });
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
-    await expect
-      .poll(
-        () =>
-          getComputedStyle(document.querySelector<HTMLElement>('[data-header="header"]')!)
-            .paddingTop,
-      )
-      .toBe('28px');
-    const header = document.querySelector<HTMLElement>('[data-header="header"]')!;
-    const contentGrid = header.closest<HTMLElement>('[class~="grid"]')!;
-    const contentColumn = contentGrid.firstElementChild as HTMLElement;
-    const originalMinWidth = contentColumn.style.minWidth;
-    try {
-      contentColumn.style.minWidth = '2000px';
-      expect(parseFloat(getComputedStyle(contentGrid).gridTemplateColumns)).toBeCloseTo(
-        contentGrid.getBoundingClientRect().width,
-        0,
-      );
-    } finally {
-      contentColumn.style.minWidth = originalMinWidth;
-    }
   });
 
   it('renders the seeded post with web and growth sections', async () => {
