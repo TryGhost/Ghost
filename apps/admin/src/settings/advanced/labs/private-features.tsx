@@ -79,8 +79,15 @@ const features: Feature[] = [
   },
   {
     title: 'Member custom fields',
-    description: 'Let admins create and manage custom field definitions for members',
+    description:
+      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
     flag: 'membersCustomFields',
+  },
+  {
+    title: 'Stripe checkout collection',
+    description:
+      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+    flag: 'stripeCheckoutCollection',
   },
   {
     title: 'Members import redesign',
