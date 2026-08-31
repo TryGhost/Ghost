@@ -63,8 +63,8 @@ function formatNumber(value: number): string {
   return value.toLocaleString();
 }
 
-function summaryItems(counts: OutcomeCounts): string {
-  const items = [
+function summaryItems(counts: OutcomeCounts, hasErrorsFile: boolean): string {
+  const items: Array<[string, number]> = [
     ['Created', counts.created],
     ['Updated', counts.updated],
     ['Skipped', counts.skipped],
@@ -72,10 +72,11 @@ function summaryItems(counts: OutcomeCounts): string {
   ];
 
   return items
-    .map(
-      ([label, count]) =>
-        `<li style="margin-bottom: 6px;"><strong>${label}:</strong> ${formatNumber(count as number)}</li>`,
-    )
+    .map(([label, count]) => {
+      const attachmentCopy =
+        label === 'Failed' && hasErrorsFile ? ' (see attached errors.csv)' : '';
+      return `<li style="margin-bottom: 6px;"><strong>${label}:</strong> ${formatNumber(count)}${attachmentCopy}</li>`;
+    })
     .join('');
 }
 
@@ -130,7 +131,12 @@ function importedPostLinks(run: ImportRun, adminUrl: string): string {
       <p style="font-size: 16px; line-height: 25px; color: #3A464C;">${filteredLinks}</p>`;
 }
 
-function renderCompletionEmail(run: ImportRun, recipient: string, adminUrl: string): string {
+function renderCompletionEmail(
+  run: ImportRun,
+  recipient: string,
+  adminUrl: string,
+  hasErrorsFile: boolean,
+): string {
   const counts = countsFor(run);
   const heading = headingFor(run, counts);
   const warningCopy = counts.warningRows
@@ -155,7 +161,7 @@ function renderCompletionEmail(run: ImportRun, recipient: string, adminUrl: stri
       <h1 style="color: #15212A; font-size: 21px; line-height: 25px; margin: 0 0 24px;">${heading}</h1>
       ${failureCopy}
       <p style="font-size: 16px; line-height: 25px; color: #3A464C;">The import processed ${formatNumber(run.total)} ${run.total === 1 ? 'row' : 'rows'}:</p>
-      <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts)}</ul>
+      <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts, hasErrorsFile)}</ul>
       ${warningCopy}
       ${importedPostLinks(run, adminUrl)}
       <p style="color: #738A94; font-size: 11px; line-height: 18px; margin-top: 64px;">This email was sent to <a href="mailto:${escapedRecipient}" style="color: #738A94;">${escapedRecipient}</a>.</p>
@@ -192,7 +198,7 @@ export default function buildCompletionEmail(
   return {
     to: recipient,
     subject: headingFor(run, counts),
-    html: renderCompletionEmail(run, recipient, adminUrl),
+    html: renderCompletionEmail(run, recipient, adminUrl, Boolean(errorsFile)),
     forceTextContent: true,
     attachments,
   };
