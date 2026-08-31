@@ -339,7 +339,6 @@ export class GiftEmailService {
     const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
     const { html, text } = await this.renderer.renderDelivery({
       siteTitle,
-      siteUrl,
       siteIconUrl: this.blogIcon.getIconUrl({ absolute: true, fallbackToDefault: false }),
       siteDomain,
       accentColor: this.accentColor,
