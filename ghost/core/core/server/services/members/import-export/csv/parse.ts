@@ -53,7 +53,7 @@ export default function parse(
           if (headerMapping && Object.hasOwn(headerMapping, header)) {
             // An empty target is the caller naming a column to leave out, which
             // it has to name: an unnamed column carries through below, and for a
-            // custom_fields.* column carrying through means being imported. So
+            // metafields.custom.* column carrying through means being imported. So
             // omitting a column from the mapping is the opposite of excluding it.
             if (!headerMapping[header]) {
               continue;
@@ -61,7 +61,7 @@ export default function parse(
             row[headerMapping[header]] = value;
           } else if (isSafeColumnName(header)) {
             // Carry any unmapped column through untouched, so the import is not
-            // constrained to a known vocabulary: a custom_fields.* column
+            // constrained to a known vocabulary: a metafields.custom.* column
             // survives parsing even though nothing consumes it yet.
             row[header] = value;
           }

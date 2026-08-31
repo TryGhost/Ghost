@@ -85,7 +85,7 @@ export function ImportMembersModal({
     [customFieldsData],
   );
   // The file-reader effect waits for this before its first parse: the custom field
-  // definitions must be loaded or auto-detection would miss custom_fields.* columns on a
+  // definitions must be loaded or auto-detection would miss metafields.custom.* columns on a
   // fast upload. It flips false -> true once and stays true (a refetch keeps data defined),
   // so readiness never re-triggers the read.
   // Ready, or never going to be. A failed query has no representation in `data`, so waiting

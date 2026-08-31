@@ -30,11 +30,18 @@ export {
  * touched. It is a starting point either way, and the form lets them edit it.
  */
 export function suggestedFieldName(column: string): string {
-  // A custom field column is `custom_fields.<key>` or `custom_fields.<key>.<part>`. The name
-  // being suggested is the field's, so the part is dropped: `custom_fields.home-address.city`
-  // names a field called "Home address" whose City part this column holds, and the part is
-  // asked for separately. A bare `custom_fields` column has no key, so it suggests the namespace itself.
-  const segments = isCustomFieldColumn(column) ? column.split('.').slice(1, 2) : [column];
-  const words = (segments[0] ?? column).replace(/[._-]+/g, ' ').trim();
+  // A custom field column is `metafields.custom.<key>` or `metafields.custom.<key>.<part>`
+  // — the qualifier, the namespace, then the key. The name being suggested is the
+  // field's, so the part is dropped: `metafields.custom.home_address.city` names a field
+  // called "Home address" whose City part this column holds, and the part is asked for
+  // separately. Legacy `custom_fields.<key>` columns from old exports carry the key one
+  // segment earlier, so the key is whatever follows the recognised prefix.
+  const segments = column.split('.');
+  const key = isCustomFieldColumn(column)
+    ? segments[0] === 'metafields'
+      ? segments[2]
+      : segments[1]
+    : column;
+  const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }

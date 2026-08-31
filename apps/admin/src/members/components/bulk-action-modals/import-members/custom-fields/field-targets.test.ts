@@ -10,7 +10,7 @@ const membershipFields = [
 const customColumn = (
   overrides: Partial<MemberCustomFieldCsvColumn> = {},
 ): MemberCustomFieldCsvColumn => ({
-  value: 'custom_fields.nickname',
+  value: 'metafields.custom.nickname',
   fieldName: 'Nickname',
   label: 'Nickname',
   type: 'short_text',
@@ -45,7 +45,7 @@ describe('field targets', () => {
         membershipFields: [],
         customFieldColumns: [
           customColumn({
-            value: 'custom_fields.shipping_address.city',
+            value: 'metafields.custom.shipping_address.city',
             fieldName: 'Shipping Address',
             partLabel: 'City',
             label: 'Shipping Address (City)',
@@ -56,7 +56,7 @@ describe('field targets', () => {
 
       expect(allTargets(groups)).toEqual([
         {
-          value: 'custom_fields.shipping_address.city',
+          value: 'metafields.custom.shipping_address.city',
           source: 'custom',
           fieldName: 'Shipping Address',
           partLabel: 'City',
@@ -139,7 +139,7 @@ describe('field targets', () => {
         membershipFields,
         customFieldColumns: [
           customColumn({
-            value: 'custom_fields.name.city',
+            value: 'metafields.custom.name.city',
             fieldName: 'Name',
             partLabel: 'City',
             label: 'Name (City)',
@@ -153,7 +153,7 @@ describe('field targets', () => {
 
     it('marks only against the targets in the list it is given', () => {
       const custom = [
-        customColumn({ value: 'custom_fields.tier', fieldName: 'Tier', label: 'Tier' }),
+        customColumn({ value: 'metafields.custom.tier', fieldName: 'Tier', label: 'Tier' }),
       ];
 
       expect(badged(fieldTargets({ membershipFields, customFieldColumns: custom }))).toEqual([]);
