@@ -705,11 +705,13 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const memberJobs = require('./server/services/members/jobs');
     const mentionsService = require('./server/services/mentions');
     const membersService = require('./server/services/members');
+    const emailService = require('./server/services/email-service');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
     assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
     assert(membersService.handleImportJob, 'Members service should be initialized');
+    assert(emailService.service, 'Email service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
@@ -718,6 +720,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mentionsController: mentionsService.controller,
       mentionsSendingService: mentionsService.sendingService,
       membersService,
+      emailService: emailService.service,
     });
     await jobsService.start();
     debug('End: Register job handlers');

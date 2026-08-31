@@ -15,6 +15,8 @@ import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
 import SendWebmentionsJob from '../mentions/send-webmentions-job';
+import type EmailService from '../email-service/email-service';
+import SendEmailJob from '../email-service/jobs/send-email-job';
 
 const updateCheck = require('../update-check');
 
@@ -39,6 +41,7 @@ interface RegisterJobHandlersDependencies {
   membersService: {
     handleImportJob(job: MembersImportJob): Promise<void>;
   };
+  emailService: EmailService;
 }
 
 export default function registerJobHandlers({
@@ -49,6 +52,7 @@ export default function registerJobHandlers({
   mentionsController,
   mentionsSendingService,
   membersService,
+  emailService,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -97,4 +101,8 @@ export default function registerJobHandlers({
     },
     WEBMENTIONS_QUEUE,
   );
+
+  jobsService.handle(SendEmailJob, async (job) => {
+    await emailService.handleSendEmailJob(job);
+  });
 }

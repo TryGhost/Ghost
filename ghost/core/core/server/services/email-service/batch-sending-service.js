@@ -203,8 +203,8 @@ class BatchSendingService {
   }
 
   /**
-   * @private
-   * @param {{emailId: string}} data Data passed from the job service. We only need the emailId because we need to refetch the email anyway to make sure the status is right and 'locked'.
+   * Sends an email after refetching it and acquiring its status lock.
+   * @param {{emailId: string}} data Identifier of the email to refetch and lock.
    */
   async emailJob({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
