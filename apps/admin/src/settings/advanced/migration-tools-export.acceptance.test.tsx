@@ -29,9 +29,8 @@ function fakeExportDownload() {
 }
 
 async function renderWithArchiveHost() {
-  const config = configResponse({ labs: { selfServeArchives: true } });
-  (config.config as { hostSettings?: object }).hostSettings = {
-    ...(config.config as { hostSettings?: object }).hostSettings,
+  const config = configResponse();
+  config.config.hostSettings = {
     export: { webhookUrl: 'https://archives.example.com/generate' },
   };
   await renderAdminApp('/settings/advanced', {
