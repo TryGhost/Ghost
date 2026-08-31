@@ -143,6 +143,8 @@ class EmailServiceWrapper {
     }
 
     this.renderer = emailRenderer;
+    // Boot reads this to wire the send-email job handler to the constructed service.
+    this.batchSendingService = batchSendingService;
 
     this.service = new EmailService({
       batchSendingService,
