@@ -229,6 +229,8 @@ function cheerioLoad(html) {
  * @prop {string} id
  * @prop {RegExp} token
  * @prop {(member: MemberLike) => string} getValue
+ * @prop {boolean} [trusted] - Value is server-generated, so it is inserted into the
+ *   html body as-is instead of being HTML-escaped. Defaults to false (escaped).
  */
 
 /**
@@ -920,18 +922,21 @@ class EmailRenderer {
         getValue: (member) => {
           return this.createUnsubscribeUrl(member.uuid, { newsletterUuid });
         },
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       {
         id: 'manage_account_url',
         getValue: () => {
           return this.createManageAccountUrl();
         },
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       {
         id: 'uuid',
         getValue: (member) => {
           return member.uuid;
         },
+        trusted: true, // Server-generated identifier
       },
       {
         id: 'key',
@@ -941,6 +946,7 @@ class EmailRenderer {
             .update(member.uuid)
             .digest('hex');
         },
+        trusted: true, // Server-generated hmac
       },
       {
         id: 'first_name',
@@ -1000,6 +1006,7 @@ class EmailRenderer {
           return this.createUnsubscribeUrl(member.uuid, { newsletterUuid });
         },
         required: true, // Used in email headers
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       // Unique ID used for ad images to bypass ESP image proxies
       {
@@ -1007,6 +1014,7 @@ class EmailRenderer {
         getValue: () => {
           return crypto.randomUUID();
         },
+        trusted: true, // Server-generated identifier
       },
     ];
 
@@ -1043,6 +1051,7 @@ class EmailRenderer {
             getValue: fallback
               ? (member) => definition.getValue(member) || fallback
               : definition.getValue,
+            trusted: definition.trusted === true,
           });
         }
       }
@@ -1056,6 +1065,7 @@ class EmailRenderer {
           originalId: definition.id,
           token: new RegExp(`%%\\{${definition.id}\\}%%`, 'g'),
           getValue: definition.getValue,
+          trusted: definition.trusted === true,
         });
       }
     }

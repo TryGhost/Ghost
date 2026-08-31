@@ -37,7 +37,7 @@ describe('Create Stripe Checkout Session', function () {
     mockManager.restore();
   });
 
-  it('Does not allow to create a checkout session if the customerEmail is associated with a paid member', async function () {
+  it('Does not allow an unauthenticated request to create a checkout session for an existing paid member', async function () {
     const {
       body: { tiers },
     } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
@@ -48,6 +48,50 @@ describe('Create Stripe Checkout Session', function () {
       .post('/api/create-stripe-checkout-session/')
       .body({
         customerEmail: 'paid@test.com',
+        tierId: paidTier.id,
+        cadence: 'month',
+      })
+      .expectStatus(403)
+      .matchBodySnapshot({
+        errors: [
+          {
+            id: matchers.anyUuid,
+            code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION',
+          },
+        ],
+      })
+      .matchHeaderSnapshot({
+        etag: matchers.anyEtag,
+      });
+  });
+
+  it('Does not allow an authenticated paid member to create another subscription', async function () {
+    const {
+      body: { tiers },
+    } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+    const paidTier = tiers.find((tier) => tier.type === 'paid');
+    const member = await models.Member.findOne({ email: 'paid@test.com' });
+    const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+    const { body } = await membersAgent
+      .post('/api/create-stripe-checkout-session/')
+      .body({ identity, tierId: paidTier.id, cadence: 'month' })
+      .expectStatus(403);
+
+    assert.equal(body.errors[0].code, 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION');
+  });
+
+  it('Does not allow an unauthenticated request to create a checkout session for an existing free member', async function () {
+    const {
+      body: { tiers },
+    } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+    const paidTier = tiers.find((tier) => tier.type === 'paid');
+
+    await membersAgent
+      .post('/api/create-stripe-checkout-session/')
+      .body({
+        customerEmail: 'member1@test.com',
         tierId: paidTier.id,
         cadence: 'month',
       })
@@ -252,7 +296,8 @@ describe('Create Stripe Checkout Session', function () {
       .matchBodySnapshot()
       .matchHeaderSnapshot();
   });
-  it('Does allow to create a checkout session if the customerEmail is not associated with a paid member', async function () {
+
+  it('Does allow to create a checkout session if the customerEmail is not associated with an existing member', async function () {
     const {
       body: { tiers },
     } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');

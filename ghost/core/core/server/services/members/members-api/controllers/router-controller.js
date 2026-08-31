@@ -599,11 +599,11 @@ module.exports = class RouterController {
     if (member) {
       options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
 
-      const restrictCheckout = member.get('status') === 'paid';
+      // Existing paid members must manage their subscription instead of creating another.
+      // Other members must prove ownership of the provided email before checking out.
+      const restrictCheckout = member.get('status') === 'paid' || !options.isAuthenticated;
 
       if (restrictCheckout) {
-        // This member is already subscribed to a paid tier
-        // We don't want to create a duplicate subscription
         if (!options.isAuthenticated && options.email) {
           try {
             await this._sendEmailWithMagicLink({ email: options.email, requestedType: 'signin' });
