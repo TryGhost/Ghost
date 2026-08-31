@@ -235,8 +235,10 @@ describe('Posts Importer API', function () {
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const { data: errorRows, meta } = papaparse.parse(errorsFile.content.trim(), { header: true });
-    assert.deepEqual(meta.fields.slice(0, 7), [
+    assert.deepEqual(meta.fields.slice(0, 9), [
       'import_status',
+      'import_reason',
+      'import_media_failures',
       'title',
       'slug',
       'status',
@@ -287,12 +289,12 @@ describe('Posts Importer API', function () {
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
     assert.deepEqual(parsed.meta.fields, [
       'import_status_2',
+      'import_reason',
+      'import_media_failures',
       'Body',
       'Headline',
       'State',
       'import_status',
-      'import_reason',
-      'import_media_failures',
     ]);
     assert.equal(parsed.data[0].Body, '<p>Keep source cells</p>');
     assert.equal(parsed.data[0].Headline, 'ZIP invalid');

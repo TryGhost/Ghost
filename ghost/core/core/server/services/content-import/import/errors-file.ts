@@ -28,7 +28,7 @@ export default function buildErrorsFile(run: ImportRun): string | undefined {
   const [outcomeColumn, reasonColumn, mediaFailuresColumn] = ANNOTATION_NAMES.map((name) =>
     uniqueColumnName(name, usedColumns),
   );
-  const columns = [outcomeColumn, ...run.sourceColumns, reasonColumn, mediaFailuresColumn];
+  const columns = [outcomeColumn, reasonColumn, mediaFailuresColumn, ...run.sourceColumns];
 
   return serialize(
     rows.map((row) => {
