@@ -215,6 +215,35 @@ describe('LastSeenAtUpdater', function () {
       sinon.assert.calledOnce(db.update);
     });
 
+    it('leaves batched EmailOpenedEvents to the page transaction', async function () {
+      const now = moment('2022-02-28T18:00:00Z').utc();
+      const updater = new LastSeenAtUpdater({
+        services: { settingsCache: { get: sinon.stub().returns('Etc/UTC') } },
+        getMembersApi() {
+          return {};
+        },
+        db: {},
+        events,
+        config: {
+          get: sinon.stub().withArgs('emailAnalytics:batchProcessing').returns(true),
+        },
+      });
+      updater.subscribe(DomainEvents);
+      sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
+
+      DomainEvents.dispatch(
+        EmailOpenedEvent.create({
+          memberId: '1',
+          emailRecipientId: '1',
+          emailId: '1',
+          timestamp: now.toDate(),
+        }),
+      );
+      await DomainEvents.allSettled();
+
+      sinon.assert.notCalled(updater.updateLastSeenAtWithoutKnownLastSeen);
+    });
+
     it('Catches errors in updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
       const now = moment('2022-02-28T18:00:00Z').utc();
       const settingsCache = sinon.stub().returns('Etc/UTC');
