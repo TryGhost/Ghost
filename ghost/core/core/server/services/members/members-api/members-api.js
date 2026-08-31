@@ -356,11 +356,11 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email });
+    return memberBREADService.read({ email }, { withCustomFields: false });
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId });
+    return memberBREADService.read({ transient_id: transientId }, { withCustomFields: false });
   }
 
   async function cycleTransientId(memberId) {

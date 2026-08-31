@@ -389,7 +389,16 @@ module.exports = class MemberBREADService {
     }
   }
 
-  async read(data, options = {}) {
+  /**
+   * @param {object} data
+   * @param {object} [options]
+   * @param {boolean} [options.withCustomFields] Pass false to leave custom field values
+   *   off the result. Ghost calls this method to identify a signed-in reader on every page
+   *   view of a themed site, and that caller renders the member through a fixed list of
+   *   fields that has never included custom ones. Fetching them there costs two database
+   *   queries per page view whose results are then thrown away.
+   */
+  async read(data, { withCustomFields = true, ...options } = {}) {
     const defaultWithRelated = [
       'labels',
       'stripeSubscriptions',
@@ -450,9 +459,11 @@ module.exports = class MemberBREADService {
     const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
     member.unsubscribe_url = unsubscribeUrl;
 
-    const customFields = await this.fetchCustomFieldValues([member.id]);
-    if (customFields) {
-      member.custom_fields = customFields.get(member.id) ?? {};
+    if (withCustomFields) {
+      const customFields = await this.fetchCustomFieldValues([member.id]);
+      if (customFields) {
+        member.custom_fields = customFields.get(member.id) ?? {};
+      }
     }
 
     return member;

@@ -577,6 +577,18 @@ describe('MemberBreadService', function () {
       assert.equal(member.email, memberModelJSON.email);
     });
 
+    it('asks nothing about custom fields when the caller does not want them', async function () {
+      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
+      const customFieldValues = createCustomFieldValuesStub();
+      const memberBreadService = getService({ customFieldDefinitions, customFieldValues });
+
+      const member = await memberBreadService.read({ id: MEMBER_ID }, { withCustomFields: false });
+
+      assert.equal(Object.hasOwn(member, 'custom_fields'), false);
+      assert.equal(customFieldDefinitions.hasAnyActive.called, false);
+      assert.equal(customFieldValues.getValuesForMembers.called, false);
+    });
+
     it('carries custom fields on a site that defines them', async function () {
       const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
       const memberBreadService = getService({ customFieldDefinitions });
