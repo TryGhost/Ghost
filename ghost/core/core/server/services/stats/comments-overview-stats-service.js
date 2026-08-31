@@ -23,9 +23,6 @@ class CommentsOverviewStatsService {
     this.knex = knex;
   }
 
-  /**
-   * Aggregate comment analytics for the moderation dashboard.
-   */
   async getOverview(options) {
     const timezone = options.timezone || 'UTC';
     const dateOptions = {
@@ -58,11 +55,6 @@ class CommentsOverviewStatsService {
     };
   }
 
-  _applyRange(query, column, { dateFrom, dateTo }) {
-    applyDateFilter(query, dateFrom, dateTo, column);
-    return query;
-  }
-
   _hasReport(knex) {
     return function () {
       this.select(knex.raw('1'))
@@ -76,13 +68,13 @@ class CommentsOverviewStatsService {
       .whereIn('status', VISIBLE_STATUSES)
       .count({ count: '*' })
       .countDistinct({ commenters: 'member_id' });
-    this._applyRange(commentsQuery, 'comments.created_at', range);
+    applyDateFilter(commentsQuery, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const reportedQuery = knex('comments')
       .whereIn('status', VISIBLE_STATUSES)
       .whereExists(this._hasReport(knex))
       .countDistinct({ reported: 'id' });
-    this._applyRange(reportedQuery, 'comments.created_at', range);
+    applyDateFilter(reportedQuery, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const [[commentsRow], [reportedRow]] = await Promise.all([commentsQuery, reportedQuery]);
 
@@ -104,7 +96,7 @@ class CommentsOverviewStatsService {
       .countDistinct({ commenters: 'member_id' })
       .groupByRaw(bucket.group)
       .orderByRaw('date ASC');
-    this._applyRange(commentsQuery, 'comments.created_at', range);
+    applyDateFilter(commentsQuery, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const reportedQuery = knex('comments')
       .whereIn('status', VISIBLE_STATUSES)
@@ -113,7 +105,7 @@ class CommentsOverviewStatsService {
       .countDistinct({ reported: 'id' })
       .groupByRaw(bucket.group)
       .orderByRaw('date ASC');
-    this._applyRange(reportedQuery, 'comments.created_at', range);
+    applyDateFilter(reportedQuery, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const [commentsRows, reportedRows] = await Promise.all([commentsQuery, reportedQuery]);
 
@@ -152,7 +144,7 @@ class CommentsOverviewStatsService {
       .orderBy('count', 'desc')
       .orderBy('posts.id', 'asc')
       .limit(limit);
-    this._applyRange(query, 'comments.created_at', range);
+    applyDateFilter(query, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const rows = await query;
     return rows.map((row) => ({
@@ -163,11 +155,7 @@ class CommentsOverviewStatsService {
     }));
   }
 
-  /**
-   * Member email is deliberately not selected here. The response is surfaced
-   * as aggregate analytics, and the id is enough for the UI to drill through
-   * to the member record, which enforces its own permissions.
-   */
+  // Member email is not selected; id is enough for drill-through under member permissions.
   async _getTopMembers(knex, range, limit = 25) {
     const query = knex('comments')
       .join('members', 'members.id', 'comments.member_id')
@@ -179,7 +167,7 @@ class CommentsOverviewStatsService {
       .orderBy('count', 'desc')
       .orderBy('members.id', 'asc')
       .limit(limit);
-    this._applyRange(query, 'comments.created_at', range);
+    applyDateFilter(query, range.dateFrom, range.dateTo, 'comments.created_at');
 
     const rows = await query;
     return rows.map((row) => ({
@@ -191,43 +179,3 @@ class CommentsOverviewStatsService {
 }
 
 module.exports = CommentsOverviewStatsService;
-
-/**
- * @typedef {Object} CommentsOverviewTotals
- * @property {number} comments
- * @property {number} commenters
- * @property {number} reported
- */
-
-/**
- * @typedef {Object} CommentsOverviewSeriesItem
- * @property {string} date
- * @property {number} count
- * @property {number} commenters
- * @property {number} reported
- */
-
-/**
- * @typedef {Object} CommentsOverviewTopPost
- * @property {string} id
- * @property {string} title
- * @property {string} slug
- * @property {number} count
- */
-
-/**
- * @typedef {Object} CommentsOverviewTopMember
- * @property {string} id
- * @property {string|null} name
- * @property {number} count
- */
-
-/**
- * @typedef {Object} CommentsOverview
- * @property {CommentsOverviewTotals} totals
- * @property {CommentsOverviewTotals|null} previous_totals
- * @property {CommentsOverviewSeriesItem[]} series
- * @property {string} series_aggregation
- * @property {CommentsOverviewTopPost[]} top_posts
- * @property {CommentsOverviewTopMember[]} top_members
- */
