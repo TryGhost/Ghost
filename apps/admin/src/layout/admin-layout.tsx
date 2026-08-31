@@ -36,6 +36,14 @@ const admin7PageChromeClassName = [
   'admin7:[&_.gh-canvas-header]:px-(--page-gutter)',
   'admin7:[&_.gh-canvas-header]:pt-[28px]!',
   'admin7:[&_.gh-canvas-header]:pb-[28px]!',
+  'admin7:[&_[data-view-site-preview]]:inset-y-2!',
+  'admin7:[&_[data-view-site-preview]]:right-2!',
+  'admin7:[&_[data-view-site-preview]]:left-0!',
+  'admin7:[&_[data-view-site-preview]]:h-[calc(100%-16px)]!',
+  'admin7:[&_[data-view-site-preview]]:w-[calc(100%-8px)]!',
+  'admin7:[&_[data-view-site-preview]]:rounded-xl!',
+  'admin7:[&_[data-view-site-preview]]:border!',
+  'admin7:[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
 interface AdminLayoutProps {

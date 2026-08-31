@@ -52,8 +52,10 @@ function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'pos
   };
 }
 
-afterEach(() => {
+afterEach(async () => {
   delete window.EmberBridge;
+  document.querySelector('[data-test-view-site-preview-styles]')?.remove();
+  await page.viewport(1280, 720);
 });
 
 describe('Sidebar navigation', () => {
@@ -138,6 +140,52 @@ describe('Sidebar navigation', () => {
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     expect(document.querySelector('.admin7')).toBeNull();
+  });
+
+  it('gives the View site preview the floating sidebar bezel on desktop only', async () => {
+    await page.viewport(1280, 800);
+    await renderAdminApp('/site', { labs: { admin7PageChrome: true } });
+    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
+
+    const legacyStyles = document.createElement('style');
+    legacyStyles.dataset.testViewSitePreviewStyles = '';
+    legacyStyles.textContent = `
+      .site-frame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+    `;
+    document.head.appendChild(legacyStyles);
+
+    const preview = document.createElement('iframe');
+    preview.className = 'site-frame';
+    preview.dataset.viewSitePreview = '';
+    document.querySelector('.admin7 main > main')!.appendChild(preview);
+
+    const sidebar = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')!;
+    const desktopPreviewStyle = getComputedStyle(preview);
+    const sidebarStyle = getComputedStyle(sidebar);
+    const sidebarGutter = getComputedStyle(sidebar.parentElement!).paddingTop;
+
+    expect(desktopPreviewStyle.top).toBe(sidebarGutter);
+    expect(desktopPreviewStyle.right).toBe(sidebarGutter);
+    expect(desktopPreviewStyle.left).toBe('0px');
+    expect(desktopPreviewStyle.borderRadius).toBe(sidebarStyle.borderRadius);
+    expect(desktopPreviewStyle.borderTopColor).toBe(sidebarStyle.borderTopColor);
+    expect(desktopPreviewStyle.borderTopStyle).toBe('solid');
+
+    await page.viewport(800, 800);
+    await expect.poll(() => document.querySelector('.admin7')).toBeNull();
+
+    const mobilePreviewStyle = getComputedStyle(preview);
+    expect(mobilePreviewStyle.inset).toBe('0px');
+    expect(parseFloat(mobilePreviewStyle.width)).toBe(window.innerWidth);
+    expect(parseFloat(mobilePreviewStyle.height)).toBe(window.innerHeight);
+    expect(mobilePreviewStyle.borderTopStyle).toBe('none');
+    expect(mobilePreviewStyle.borderRadius).toBe('0px');
   });
 
   it('renders the navigation for the current user', async () => {
