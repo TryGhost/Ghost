@@ -44,10 +44,10 @@ const messages = {
   resourceNotFound: '{resource} not found.',
 };
 
-// `custom_fields` is a browse include only: a read returns values whenever the
+// `metafields` is a browse include only: a read returns values whenever the
 // flag is on, the same way it returns tiers. Values are not a member relation, so
 // the input serializer lifts the key out of withRelated before the model sees it.
-const allowedIncludes = ['email_recipients', 'products', 'tiers', 'custom_fields'];
+const allowedIncludes = ['email_recipients', 'products', 'tiers', 'metafields'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

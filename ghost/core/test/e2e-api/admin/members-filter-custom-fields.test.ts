@@ -46,7 +46,7 @@ describe('Members filtering by custom fields', function () {
     if (customFields) {
       await agent
         .put(`members/${id}/`)
-        .body({ members: [{ custom_fields: customFields }] })
+        .body({ members: [{ metafields: { custom: customFields } }] })
         .expectStatus(200);
     }
     return { id, email };

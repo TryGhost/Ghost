@@ -34,7 +34,7 @@ import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-c
 
 interface MemberCustomFieldsFieldProps {
   memberId: string;
-  // The member's saved values (`member.custom_fields` from the read), keyed
+  // The member's saved values (`member.metafields.custom` from the read), keyed
   // by field key. Server truth — edits never live on the page draft; each
   // field saves individually through its own editor.
   customFields: Record<string, unknown> | undefined;

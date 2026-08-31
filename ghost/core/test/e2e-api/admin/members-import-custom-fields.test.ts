@@ -56,7 +56,7 @@ describe('Members import — custom fields', function () {
     const res = await (
       request.get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(email)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(email)}&include=metafields`,
         ),
       ) as any
     )
@@ -107,7 +107,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], 'Bex');
+    assert.equal(member.metafields?.custom?.[key], 'Bex');
   });
 
   // A blank cell must not wipe an existing value: it means "no data for this row", the
@@ -117,14 +117,14 @@ describe('Members import — custom fields', function () {
     const email = 'cf-blank-keeps@example.com';
 
     await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
-    assert.equal((await findMember(email)).custom_fields?.[key], 'Bex');
+    assert.equal((await findMember(email)).metafields?.custom?.[key], 'Bex');
 
     const res = await importCSV(`email,custom_fields.${key}\n${email},\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'the blank cell did not clear the value',
     );
@@ -142,7 +142,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], 'Bex');
+    assert.equal(member.metafields?.custom?.[key], 'Bex');
   });
 
   // The mapping step's deselected column. It has to name the column with an empty target
@@ -166,7 +166,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1, 'the member still imports, without that column');
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], undefined);
+    assert.equal(member.metafields?.custom?.[key], undefined);
     assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
   });
 
@@ -179,7 +179,7 @@ describe('Members import — custom fields', function () {
 
     await importCSV(csv, { 'Email Address': 'email', 'Preferred Name': `custom_fields.${key}` });
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'the column imports while it is mapped',
     );
@@ -192,7 +192,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'and stops once it is emptied',
     );
@@ -213,7 +213,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.deepEqual(member.custom_fields?.[key], {
+    assert.deepEqual(member.metafields?.custom?.[key], {
       line1: '1 High Street',
       city: 'London',
       postal_code: 'E1 6AN',
@@ -232,7 +232,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.deepEqual(member.custom_fields?.[key], { city: 'London' });
+    assert.deepEqual(member.metafields?.custom?.[key], { city: 'London' });
   });
 
   // The sub-field equivalent of the blank-cell rule above: a sub-field is a field, so a
@@ -246,7 +246,7 @@ describe('Members import — custom fields', function () {
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,E1 6AN,GB\n`);
-    assert.deepEqual((await findMember(email)).custom_fields?.[key], {
+    assert.deepEqual((await findMember(email)).metafields?.custom?.[key], {
       line1: '1 High Street',
       city: 'London',
       postal_code: 'E1 6AN',
@@ -258,7 +258,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.deepEqual(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       { line1: '2 Low Street', city: 'London', postal_code: 'E1 6AN', country: 'GB' },
       'the columns the file did not carry kept their stored values',
     );
@@ -286,7 +286,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.deepEqual(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', postal_code: 'E1 6AN', country: 'HK' },
       'the blanked cell left the stored postal code alone',
     );
@@ -302,7 +302,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
-    assert.deepEqual((await findMember(email)).custom_fields?.[key], { country: 'GB' });
+    assert.deepEqual((await findMember(email)).metafields?.custom?.[key], { country: 'GB' });
   });
 
   // A stray space is not data. Read as a value it would make this address all-whitespace,
@@ -316,7 +316,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], undefined, 'the whitespace cell set no address');
+    assert.equal(member.metafields?.custom?.[key], undefined, 'the whitespace cell set no address');
   });
 
   // The parts of an address are rows, so an import that names one column touches one
@@ -361,7 +361,7 @@ describe('Members import — custom fields', function () {
     // Read next to a spreadsheet, so it names the column down to the sub-field.
     assert.equal(
       res.body.meta.stats.invalid[0].error,
-      `custom_fields.${key}.country: Enter a 2-letter country code, like US.`,
+      `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`,
     );
 
     assert.equal(await findMember(email), undefined, 'the failed row created no member');
@@ -376,7 +376,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.invalid.length, 1);
 
-    const reason = `custom_fields.${key}.country: Enter a 2-letter country code, like US.`;
+    const reason = `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`;
     assert.deepEqual(res.body.meta.stats.invalid[0].errors, [reason]);
     assert.equal(res.body.meta.stats.invalid[0].error, reason);
   });
@@ -391,7 +391,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.invalid.length, 1);
     assert.equal(
       res.body.meta.stats.invalid[0].error,
-      `custom_fields.${key}: Use 255 characters or fewer.`,
+      `metafields.custom.${key}: Use 255 characters or fewer.`,
     );
 
     assert.equal(await findMember(email), undefined);
@@ -437,7 +437,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], '=SUM(A1:A9)');
+    assert.equal(member.metafields?.custom?.[key], '=SUM(A1:A9)');
   });
 
   // Recorded at the moment of the write because it cannot be reconstructed afterwards.

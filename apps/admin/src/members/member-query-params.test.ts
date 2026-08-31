@@ -217,11 +217,11 @@ describe('custom field columns', () => {
     expect(
       buildMemberListSearchParams({ filters: filterOn('job_title'), nql: 'x', search: '' })
         ?.include,
-    ).toBe('labels,tiers,custom_fields');
+    ).toBe('labels,tiers,metafields');
   });
 
   it('reads a scalar value by key', () => {
-    const m = member({ custom_fields: { job_title: 'Editor' } });
+    const m = member({ metafields: { custom: { job_title: 'Editor' } } });
 
     expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toEqual({
       text: 'Editor',
@@ -230,12 +230,14 @@ describe('custom field columns', () => {
 
   it('reads a composite value as one line', () => {
     const m = member({
-      custom_fields: {
-        shipping_address: {
-          line1: '1 Main St',
-          city: 'Berlin',
-          postal_code: '10115',
-          country: 'DE',
+      metafields: {
+        custom: {
+          shipping_address: {
+            line1: '1 Main St',
+            city: 'Berlin',
+            postal_code: '10115',
+            country: 'DE',
+          },
         },
       },
     });
@@ -246,7 +248,7 @@ describe('custom field columns', () => {
   });
 
   it('returns null when the member has no value', () => {
-    const m = member({ custom_fields: {} });
+    const m = member({ metafields: { custom: {} } });
 
     expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toBeNull();
   });

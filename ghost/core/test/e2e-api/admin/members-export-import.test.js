@@ -253,7 +253,7 @@ describe('Members export -> import round-trip', function () {
     await request
       .put(localUtils.API.getApiQuery(`members/${src.id}/`))
       .set('Origin', config.get('url'))
-      .send({ members: [{ custom_fields: { [customFieldKey]: formulaValue } }] })
+      .send({ members: [{ metafields: { custom: { [customFieldKey]: formulaValue } } }] })
       .expect(200);
 
     const csv = await exportSet(customLabel.get('slug'));
@@ -276,13 +276,13 @@ describe('Members export -> import round-trip', function () {
     const srcRead = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(srcEmail)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(srcEmail)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
       .expect(200);
     assert.equal(
-      srcRead.body.members.find((m) => m.email === srcEmail).custom_fields?.[customFieldKey],
+      srcRead.body.members.find((m) => m.email === srcEmail).metafields?.custom?.[customFieldKey],
       formulaValue,
     );
 
@@ -306,7 +306,7 @@ describe('Members export -> import round-trip', function () {
     const freshRes = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshEmail)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshEmail)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -323,7 +323,7 @@ describe('Members export -> import round-trip', function () {
     // ...and so does the custom field value, with the formula guard stripped back off
     // so it does not accrete an apostrophe on the round trip.
     assert.equal(
-      fresh.custom_fields?.[customFieldKey],
+      fresh.metafields?.custom?.[customFieldKey],
       formulaValue,
       'custom field value round-trips',
     );
@@ -368,12 +368,14 @@ describe('Members export -> import round-trip', function () {
       .send({
         members: [
           {
-            custom_fields: {
-              [addressKey]: {
-                line1: '1 High Street',
-                city: 'London',
-                postal_code: 'E1 6AN',
-                country: 'GB',
+            metafields: {
+              custom: {
+                [addressKey]: {
+                  line1: '1 High Street',
+                  city: 'London',
+                  postal_code: 'E1 6AN',
+                  country: 'GB',
+                },
               },
             },
           },
@@ -398,7 +400,7 @@ describe('Members export -> import round-trip', function () {
     const reCore = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshCore)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshCore)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -406,7 +408,7 @@ describe('Members export -> import round-trip', function () {
     const core = reCore.body.members.find((m) => m.email === freshCore);
     assertExists(core, 'addressed member created from the CSV');
     assert.deepEqual(
-      core.custom_fields?.[addressKey],
+      core.metafields?.custom?.[addressKey],
       {
         line1: '1 High Street',
         city: 'London',
@@ -420,7 +422,7 @@ describe('Members export -> import round-trip', function () {
     const rePlain = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshPlain)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshPlain)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -428,7 +430,7 @@ describe('Members export -> import round-trip', function () {
     const plain = rePlain.body.members.find((m) => m.email === freshPlain);
     assertExists(plain, 'value-less member created from the CSV');
     assert.equal(
-      plain.custom_fields?.[addressKey],
+      plain.metafields?.custom?.[addressKey],
       undefined,
       'no address written for a value-less member',
     );

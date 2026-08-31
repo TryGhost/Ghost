@@ -29,7 +29,7 @@ describe('CustomFieldValuesService', function () {
           () => service().namesValues(malformed),
           (error: { errorType?: string; property?: string }) => {
             assert.equal(error.errorType, 'ValidationError');
-            assert.equal(error.property, 'custom_fields');
+            assert.equal(error.property, 'metafields.custom');
             return true;
           },
           `expected ${JSON.stringify(malformed)} to be rejected`,
