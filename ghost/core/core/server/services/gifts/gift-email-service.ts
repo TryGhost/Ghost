@@ -164,7 +164,7 @@ export class GiftEmailService {
   }
 
   private get accentShade(): string {
-    return this.mixAccentColor('#15212A', 0.72, '#738A94');
+    return this.mixAccentColor('#15212A', 0.72, '#5B6B73');
   }
 
   private formatDate(date: Date): string {

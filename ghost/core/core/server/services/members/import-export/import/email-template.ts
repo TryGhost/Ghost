@@ -205,7 +205,7 @@ export default function renderImportEmail({
               <tr>
                 <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-top: 80px; padding-bottom: 10px;">
                     <div class="footer">
-                      <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #738A94; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;">This email was sent from <a href="${siteUrl.href}" style="color: #738A94;">${siteUrl.host}</a> to <a href="mailto:${emailRecipient}" style="color: #738A94;">${emailRecipient}</a></p>
+                      <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: #5B6B73; font-weight: normal; margin: 0; line-height: 18px; margin-bottom: 0px; font-size: 11px;">This email was sent from <a href="${siteUrl.href}" style="color: #5B6B73;">${siteUrl.host}</a> to <a href="mailto:${emailRecipient}" style="color: #5B6B73;">${emailRecipient}</a></p>
                     </div>
                 </td>
               </tr>
