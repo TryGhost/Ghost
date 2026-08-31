@@ -4,7 +4,7 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
-const { CommentsOverviewStatsService } = require('./comments-overview-stats-service');
+const CommentsOverviewStatsService = require('./comments-overview-stats-service');
 class StatsService {
   /**
    * @param {object} deps
