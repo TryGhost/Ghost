@@ -1,11 +1,28 @@
 import React, { useEffect } from 'react';
-import { CUSTOM_FIELDS_PREFIX, CUSTOM_FIELD_OPERATORS } from '@/members/member-fields';
+import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
 import { CUSTOM_FIELD_SET_OPERATORS } from './addressing';
 import { FilterSegmentInput, FilterSegmentSelect } from '@tryghost/shade/patterns';
 import { createOperatorOptions, listsOperator } from '@/shared/filters';
 import { memberCustomFieldParts } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
-import type { CustomRendererProps } from '@tryghost/shade/patterns';
+import type { CustomRendererProps, FilterFieldConfig } from '@tryghost/shade/patterns';
+
+// "Is set" and "is not set" apply to a field of any value type.
+const PRESENCE_ONLY_OPTIONS = createOperatorOptions(CUSTOM_FIELD_SET_OPERATORS);
+
+function offeredOperators(field: FilterFieldConfig<string>, wholeComposite: boolean) {
+  const declared = field.operators?.length ? field.operators : PRESENCE_ONLY_OPTIONS;
+  const options = wholeComposite
+    ? declared.filter((option) => listsOperator(CUSTOM_FIELD_SET_OPERATORS, option.value))
+    : declared;
+  const ids = options.map((option) => option.value);
+  const fallback =
+    field.defaultOperator && ids.includes(field.defaultOperator)
+      ? field.defaultOperator
+      : (ids[0] ?? 'is-set');
+
+  return { options, ids, fallback };
+}
 
 const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   field,
@@ -32,15 +49,18 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   const [subfield = '', value = ''] = values;
   const isWholeField = subfield === '';
 
-  const operators =
-    isComposite && isWholeField ? CUSTOM_FIELD_SET_OPERATORS : CUSTOM_FIELD_OPERATORS;
+  const {
+    options: operatorOptions,
+    ids: operators,
+    fallback: fallbackOperator,
+  } = offeredOperators(field, isComposite && isWholeField);
 
   useEffect(() => {
-    if (readOnly || !onOperatorChange || listsOperator(operators, operator)) {
+    if (readOnly || !onOperatorChange || operators.includes(operator)) {
       return;
     }
-    onOperatorChange('is-set');
-  }, [readOnly, operator, operators, onOperatorChange]);
+    onOperatorChange(fallbackOperator);
+  }, [readOnly, operator, operators, fallbackOperator, onOperatorChange]);
 
   const needsValue = !listsOperator(CUSTOM_FIELD_SET_OPERATORS, operator);
   const partOptions = [{ value: '', label: 'Any' }, ...parts];
@@ -61,7 +81,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
       {onOperatorChange && (
         <FilterSegmentSelect
           ariaLabel={`${fieldLabel} operator`}
-          options={createOperatorOptions(operators)}
+          options={operatorOptions}
           readOnly={readOnly}
           testId="custom-field-filter-operator"
           value={operator}
