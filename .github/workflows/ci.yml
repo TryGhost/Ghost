@@ -103,23 +103,6 @@ jobs:
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
         run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
-      - name: Check user org membership
-        id: check_user_org_membership
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Looking up: ${{ github.triggering_actor }}"
-          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
-
-          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
-
-          if [ "$LOOKUP_USER" == "204" ]; then
-            echo "User is in the org"
-            echo "is_member=true" >> $GITHUB_OUTPUT
-          else
-            echo "User is not in the org"
-            echo "is_member=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
         uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
@@ -325,7 +308,6 @@ jobs:
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
       is_six_pr: ${{ env.IS_SIX_PR }}
-      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_perf_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'perf-tests') }}
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
@@ -593,7 +575,9 @@ jobs:
           series: Benchmark
           metric: Boot time
           title: Boot time (dev tree)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   # Boot time of the production image, as a series separate from job_perf-tests:
   # that one tracks the code, this one tracks what ships (NODE_ENV=production, no
@@ -685,7 +669,9 @@ jobs:
           series: Production image
           metric: Boot time
           title: Boot time (production image)
-          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          # Only push runs publish, and only they get the token: a pull_request run
+          # executes PR-authored code, including this local action's own definition.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.CANARY_DOCKER_BUILD || '' }}
 
   job_unit-tests:
     runs-on: ubuntu-latest
@@ -2344,6 +2330,7 @@ jobs:
     # Serialize per-app publishes so two quick main merges can't both compute the
     # same next-patch number and collide on npm. Different apps still publish in
     # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
+    environment: npm-release
     concurrency:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false
