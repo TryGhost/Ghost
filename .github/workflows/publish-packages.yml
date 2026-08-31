@@ -67,15 +67,11 @@ jobs:
           # the token, so don't leave it in .git/config for later steps.
           persist-credentials: false
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          # Publishing runs against the public registry with a cold store on purpose.
+          store-cache: 'false'
 
       - name: Configure .npmrc
         run: |
