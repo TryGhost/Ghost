@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.js';
+import { resolveBaseCommit } from './lib/pr-base.js';
 
 const MONITORED_APP_PATHS = PUBLIC_APPS.map((app) => app.path);
 
@@ -128,25 +129,8 @@ export function checkAppConsistency(app, prVersion, prDefaultsVersion) {
   return null;
 }
 
-// `pull_request.base.sha` in the event payload freezes when the event fires and
-// goes stale as the base branch moves on; a diff rooted there blames the PR for
-// the base branch's own drift. Prefer the live tip of the base ref, which the
-// workflow fetches right before running this; the payload SHA is the fallback
-// for contexts that fetched nothing.
-function resolveBaseSha() {
-  const baseRef = process.env.PR_BASE_REF;
-  if (baseRef) {
-    try {
-      return runGit(['rev-parse', `origin/${baseRef}`]);
-    } catch {
-      // The ref was not fetched in this checkout; the payload SHA still works.
-    }
-  }
-  return process.env.PR_BASE_SHA;
-}
-
 function main() {
-  const baseSha = resolveBaseSha();
+  const baseSha = resolveBaseCommit();
   const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
 
   if (!baseSha) {

@@ -1,8 +1,8 @@
-import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import camelcaseKeys from 'camelcase-keys';
 
 import { findPackagesNeedingChangeset } from './lib/pnpm.js';
+import { resolveBaseCommit, rootAtMergeBase } from './lib/pr-base.js';
 import { INTERNAL_DOCS_PATTERN } from './lib/constants.js';
 
 const { values, positionals } = parseArgs({
@@ -27,22 +27,14 @@ const { testPattern = [], changedFilesIgnorePattern = [] } = camelcaseKeys(value
 // The comparison must be rooted at the PR's fork point, not at a tip of the
 // base branch: a tree-diff from the live tip charges the PR with every base
 // commit it has not rebased onto yet, while the event payload's PR_BASE_SHA
-// freezes at event time and drifts the other way. The merge-base of the base
-// ref and the head is right in both cases. Prefer the live base ref (fetched
-// by CI just before this runs) for finding it; fall back to the payload SHA.
-const liveBase = process.env.PR_BASE_REF && `origin/${process.env.PR_BASE_REF}`;
+// freezes at event time and drifts the other way. resolveBaseCommit picks the
+// freshest base available and rootAtMergeBase confines the diff to what the
+// branch actually changed.
 const [
-  requestedBase = liveBase || process.env.PR_BASE_SHA || 'main',
+  requestedBase = resolveBaseCommit() || 'main',
   headCommit = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA || 'HEAD',
 ] = positionals;
-let baseCommit = requestedBase;
-try {
-  baseCommit = execFileSync('git', ['merge-base', requestedBase, headCommit || 'HEAD'], {
-    encoding: 'utf8',
-  }).trim();
-} catch {
-  // One of the refs is unknown in this checkout; downstream reports it better.
-}
+const baseCommit = rootAtMergeBase(requestedBase, headCommit || 'HEAD');
 // Always applied — the release policy, not a default callers can replace.
 const ignorePatterns = [INTERNAL_DOCS_PATTERN, ...testPattern, ...changedFilesIgnorePattern];
 

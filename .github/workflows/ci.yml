@@ -336,7 +336,12 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch PR base branch
-        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -376,7 +381,12 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch PR base branch
-        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - name: Check migration integrity
         env:
