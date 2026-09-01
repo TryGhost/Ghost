@@ -7,6 +7,7 @@ import {
   type CommentsOverview,
   type CommentsOverviewResponseType,
 } from '@tryghost/admin-x-framework/api/stats';
+import { Button } from '@tryghost/shade/components';
 import { type CommentFilterPatch } from '@/comments/apply-comment-filters';
 
 interface CommentsAnalyticsProps {
@@ -15,6 +16,7 @@ interface CommentsAnalyticsProps {
   dateTo?: string;
   setRange: (range: number) => void;
   isLoading: boolean;
+  isError?: boolean;
   data: CommentsOverviewResponseType | undefined;
   onApplyFilters: (patches: CommentFilterPatch[]) => void;
 }
@@ -34,6 +36,7 @@ const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({
   dateTo,
   setRange,
   isLoading,
+  isError = false,
   data,
   onApplyFilters,
 }) => {
@@ -52,29 +55,41 @@ const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({
         <h2 className="text-lg font-semibold tracking-tight">Analytics</h2>
         <DateRangeSelect range={range} onRangeChange={setRange} />
       </div>
-      <OverviewKpiTabs
-        isLoading={isLoading}
-        previousTotals={data ? overview.previous_totals : undefined}
-        range={range}
-        series={data ? overview.series : undefined}
-        seriesAggregation={overview.series_aggregation}
-        totals={data ? overview.totals : undefined}
-        onApplyFilters={onApplyFilters}
-      />
-      <OverviewTopPosts
-        isLoading={isLoading}
-        posts={data ? overview.top_posts : undefined}
-        range={range}
-        onRowClick={(postId) => onApplyFilters([...rangePatches, { field: 'post', value: postId }])}
-      />
-      <OverviewTopMembers
-        isLoading={isLoading}
-        members={data ? overview.top_members : undefined}
-        range={range}
-        onRowClick={(memberId) =>
-          onApplyFilters([...rangePatches, { field: 'author', value: memberId }])
-        }
-      />
+      {isError ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <h2 className="mb-2 text-xl font-medium">Error loading analytics</h2>
+          <p className="mb-4 text-muted-foreground">Please reload the page to try again</p>
+          <Button onClick={() => window.location.reload()}>Reload page</Button>
+        </div>
+      ) : (
+        <>
+          <OverviewKpiTabs
+            isLoading={isLoading}
+            previousTotals={data ? overview.previous_totals : undefined}
+            range={range}
+            series={data ? overview.series : undefined}
+            seriesAggregation={overview.series_aggregation}
+            totals={data ? overview.totals : undefined}
+            onApplyFilters={onApplyFilters}
+          />
+          <OverviewTopPosts
+            isLoading={isLoading}
+            posts={data ? overview.top_posts : undefined}
+            range={range}
+            onRowClick={(postId) =>
+              onApplyFilters([...rangePatches, { field: 'post', value: postId }])
+            }
+          />
+          <OverviewTopMembers
+            isLoading={isLoading}
+            members={data ? overview.top_members : undefined}
+            range={range}
+            onRowClick={(memberId) =>
+              onApplyFilters([...rangePatches, { field: 'author', value: memberId }])
+            }
+          />
+        </>
+      )}
     </div>
   );
 };

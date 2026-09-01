@@ -40,6 +40,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   const {
     data: overviewData,
     isLoading: overviewLoading,
+    isError: overviewError,
     showRail,
   } = useCommentsOverviewRail(overviewSearchParams);
   const dislikesEnabled = true;
@@ -128,6 +129,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
                 data={overviewData}
                 dateFrom={dateFrom}
                 dateTo={dateTo}
+                isError={overviewError}
                 isLoading={overviewLoading}
                 range={range}
                 setRange={setRange}

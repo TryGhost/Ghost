@@ -24,6 +24,7 @@ export function useCommentsOverviewRail(searchParams: {
   return {
     data,
     isLoading,
+    isError: failed && !missingBackend,
     showRail: !missingBackend,
   };
 }

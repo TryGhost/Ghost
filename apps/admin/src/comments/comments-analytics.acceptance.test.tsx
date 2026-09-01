@@ -77,4 +77,35 @@ describe('Comments analytics rail', () => {
     await expect.element(commentsScreen.commentRow('Still listed')).toBeVisible();
     await expect.element(commentsScreen.analytics()).not.toBeInTheDocument();
   });
+
+  it('shows an error state when the overview request fails', async () => {
+    fakeComments([comment({ html: '<p>Still listed</p>' })]);
+    fakeAdminStats.commentsOverview(
+      {
+        totals: { comments: 0, commenters: 0, reported: 0 },
+        previous_totals: null,
+        series: [],
+        series_aggregation: 'day',
+        top_posts: [],
+        top_members: [],
+      },
+      { status: 500 },
+    );
+    await renderAdminApp('/comments');
+
+    await expect.element(commentsScreen.commentRow('Still listed')).toBeVisible();
+    await expect.element(commentsScreen.analytics()).toBeVisible();
+    // Hook retries non-404 failures up to 3 times with backoff before settling.
+    await expect
+      .element(commentsScreen.analytics().getByText('Error loading analytics'), {
+        timeout: 15_000,
+      })
+      .toBeVisible();
+    await expect
+      .element(commentsScreen.analytics().getByRole('button', { name: 'Reload page' }))
+      .toBeVisible();
+    await expect
+      .element(commentsScreen.analytics().getByText('No comments in this period'))
+      .not.toBeInTheDocument();
+  });
 });
