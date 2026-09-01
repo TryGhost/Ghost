@@ -8,6 +8,7 @@ vi.mock('@/shared/member-custom-fields/use-definitions', () => ({
     data: {
       members_custom_fields: [
         { key: 'birthday', name: 'Birthday', type: 'short_text', status: 'active' },
+        { key: 'shipping', name: 'Shipping', type: 'address', status: 'active' },
       ],
     },
   }),
@@ -33,22 +34,28 @@ function renderPill({
   defaultOperator,
   operator,
   onOperatorChange = () => {},
+  fieldKey = 'custom_fields.birthday',
+  label = 'Birthday',
+  values = ['', ''],
 }: {
   operators: FilterFieldConfig['operators'];
   defaultOperator?: string;
   operator: string;
   onOperatorChange?: (operator: string) => void;
+  fieldKey?: string;
+  label?: string;
+  values?: string[];
 }) {
   return render(
     <CustomFieldFilterRenderer
       field={{
-        key: 'custom_fields.birthday',
-        label: 'Birthday',
+        key: fieldKey,
+        label,
         operators,
         defaultOperator,
       }}
       operator={operator}
-      values={['', '']}
+      values={values}
       onChange={() => {}}
       onOperatorChange={onOperatorChange}
     />,
@@ -101,6 +108,35 @@ describe('CustomFieldFilterRenderer operators', () => {
 
     expect(onOperatorChange).not.toHaveBeenCalled();
     fireEvent.pointerDown(screen.getByLabelText('Birthday operator'));
+    await screen.findByRole('menu');
+    expect(screen.getByRole('menuitem', { name: 'contains' })).toBeInTheDocument();
+  });
+
+  it('narrows a whole composite to presence, and opens up once a part is chosen', async () => {
+    const whole = renderPill({
+      operators: TEXT_OPERATORS,
+      defaultOperator: 'is-set',
+      operator: 'is-set',
+      fieldKey: 'custom_fields.shipping',
+      label: 'Shipping',
+    });
+
+    fireEvent.pointerDown(screen.getByLabelText('Shipping operator'));
+    await screen.findByRole('menu');
+    expect(screen.getByRole('menuitem', { name: 'is set' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'contains' })).not.toBeInTheDocument();
+    whole.unmount();
+
+    renderPill({
+      operators: TEXT_OPERATORS,
+      defaultOperator: 'is-set',
+      operator: 'contains',
+      fieldKey: 'custom_fields.shipping',
+      label: 'Shipping',
+      values: ['city', 'London'],
+    });
+
+    fireEvent.pointerDown(screen.getByLabelText('Shipping operator'));
     await screen.findByRole('menu');
     expect(screen.getByRole('menuitem', { name: 'contains' })).toBeInTheDocument();
   });
