@@ -158,10 +158,22 @@ module.exports = class MentionSendingService {
   }
 
   /**
+   * Send the webmentions for a delivered job.
+   * @param {import('./send-webmentions-job').default} job
+   */
+  async sendWebmentions(job) {
+    await this.sendForHTMLResource({
+      url: new URL(job.sourceUrl),
+      html: job.html,
+      previousHtml: job.previousHtml,
+    });
+  }
+
+  /**
    * Send a webmention call for the links in a resource.
    * @param {object} resource
    * @param {URL} resource.url
-   * @param {string} resource.html
+   * @param {string|null} resource.html
    * @param {string|null} [resource.previousHtml]
    */
   async sendForHTMLResource(resource) {
