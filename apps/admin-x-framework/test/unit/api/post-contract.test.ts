@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { AddPagePayload, EditPagePayload, PageResponseType } from '../../../src/api/pages';
+import type {
+  AddPagePayload,
+  EditPagePayload,
+  Page,
+  PageEditableData,
+  PageResponseType,
+} from '../../../src/api/pages';
 import type {
   AddPostPayload,
   EditPostPayload,
+  Post,
   PostEditableData,
   PostResponseType,
   PostRevision,
@@ -16,6 +23,62 @@ import {
   buildPostWriteParams,
   serializePostPayload,
 } from '../../../src/api/post-contract';
+
+type Equal<Left, Right> =
+  (<Value>() => Value extends Left ? 1 : 2) extends <Value>() => Value extends Right ? 1 : 2
+    ? true
+    : false;
+
+type Assert<Condition extends true> = Condition;
+
+type ExpectedContentEditableKey =
+  | 'title'
+  | 'slug'
+  | 'mobiledoc'
+  | 'lexical'
+  | 'html'
+  | 'locale'
+  | 'feature_image'
+  | 'feature_image_alt'
+  | 'feature_image_caption'
+  | 'featured'
+  | 'meta_title'
+  | 'meta_description'
+  | 'updated_at'
+  | 'published_at'
+  | 'custom_excerpt'
+  | 'codeinjection_head'
+  | 'codeinjection_foot'
+  | 'og_image'
+  | 'og_title'
+  | 'og_description'
+  | 'twitter_image'
+  | 'twitter_title'
+  | 'twitter_description'
+  | 'custom_template'
+  | 'canonical_url'
+  | 'visibility'
+  | 'visibility_filter'
+  | 'authors'
+  | 'tags'
+  | 'tiers';
+
+const sharedTypeAssertions: [
+  Assert<Equal<PostEditableData['canonical_url'], PageEditableData['canonical_url']>>,
+  Assert<Equal<Post['title'], Page['title']>>,
+  Assert<
+    Equal<
+      keyof PostEditableData,
+      ExpectedContentEditableKey | 'status' | 'email_subject' | 'email_only'
+    >
+  >,
+  Assert<
+    Equal<
+      keyof PageEditableData,
+      ExpectedContentEditableKey | 'status' | 'show_title_and_feature_image'
+    >
+  >,
+] = [true, true, true, true];
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error`
 // fails the build if the request and response types drift from the Admin API schema.
@@ -73,6 +136,71 @@ const pageReadResponse: PageResponseType = {
   ],
 };
 
+const nullablePostReadResponse: PostResponseType = {
+  posts: [
+    {
+      id: 'post-2',
+      uuid: 'uuid-2',
+      url: '/empty/',
+      slug: 'empty',
+      title: 'Empty',
+      updated_at: null,
+      published_at: null,
+      feature_image: null,
+      excerpt: null,
+      custom_excerpt: null,
+      email: null,
+      newsletter: null,
+      email_segment: null,
+    },
+  ],
+};
+
+const postWithAllCounts: Post = {
+  id: 'post-3',
+  uuid: 'uuid-3',
+  url: '/counts/',
+  slug: 'counts',
+  title: 'Counts',
+  count: {
+    clicks: 1,
+    conversions: 2,
+    signups: 3,
+    paid_conversions: 4,
+    positive_feedback: 5,
+    negative_feedback: 6,
+  },
+};
+
+const pageWithPageCounts: Page = {
+  id: 'page-2',
+  url: '/page-counts/',
+  slug: 'page-counts',
+  title: 'Page counts',
+  count: { signups: 1, paid_conversions: 2 },
+};
+
+const pageWithPostCount: Page = {
+  id: 'page-3',
+  url: '/invalid-count/',
+  slug: 'invalid-count',
+  title: 'Invalid count',
+  count: {
+    // @ts-expect-error click counts are not exposed by the pages endpoint
+    clicks: 1,
+  },
+};
+
+const postWithInputOnlyResponseField: Post = {
+  id: 'post-4',
+  uuid: 'uuid-4',
+  url: '/input-only/',
+  slug: 'input-only',
+  title: 'Input only',
+  // @ts-expect-error visibility_filter is accepted on writes but not emitted in responses
+  visibility_filter: 'status:paid',
+};
+
 // Single-resource reads can flow directly into their edit mutations.
 const postEditFromRead: EditPostPayload = { post: postReadResponse.posts[0] };
 const pageEditFromRead: EditPagePayload = { page: pageReadResponse.pages[0] };
@@ -106,6 +234,54 @@ const schemaAlignedRelations: PostEditableData = {
   tiers: [{ id: 'tier-1' }],
 };
 
+const postWithPageOnlyField: AddPostPayload = {
+  post: {
+    title: 'Hello',
+    // @ts-expect-error page presentation settings are never writable on posts
+    show_title_and_feature_image: false,
+  },
+};
+
+const pageWithPostOnlyFields: AddPagePayload = {
+  page: {
+    title: 'About',
+    // @ts-expect-error pages are never sent as email-only posts
+    email_only: true,
+  },
+};
+
+const pageWithEmailSubject: AddPagePayload = {
+  page: {
+    title: 'About',
+    // @ts-expect-error pages have no email subject
+    email_subject: 'About us',
+  },
+};
+
+const sentPage: AddPagePayload = {
+  page: {
+    title: 'About',
+    // @ts-expect-error sent is a post-only status
+    status: 'sent',
+  },
+};
+
+const postWithReadOnlyFields: AddPostPayload = {
+  post: {
+    title: 'Hello',
+    // @ts-expect-error response URLs are not writable
+    url: '/hello/',
+  },
+};
+
+const postWithRevisions: AddPostPayload = {
+  post: {
+    title: 'Hello',
+    // @ts-expect-error revision history is not writable through the post payload
+    post_revisions: [],
+  },
+};
+
 const invalidRelations: PostEditableData = {
   authors: [
     // @ts-expect-error author objects require id, slug, or email
@@ -134,11 +310,23 @@ describe('post request contract', () => {
       pageCreateWithUpdatedAt,
       postEditFromRead,
       pageEditFromRead,
+      nullablePostReadResponse,
+      postWithAllCounts,
+      pageWithPageCounts,
+      pageWithPostCount,
+      postWithInputOnlyResponseField,
       revisionWithImageMetadata,
       schemaAlignedPostEdits,
       schemaAlignedPageEdits,
       schemaAlignedRelations,
       invalidRelations,
+      postWithPageOnlyField,
+      pageWithPostOnlyFields,
+      pageWithEmailSubject,
+      sentPage,
+      postWithReadOnlyFields,
+      postWithRevisions,
+      sharedTypeAssertions,
     ]) {
       expect(value).toBeTruthy();
     }

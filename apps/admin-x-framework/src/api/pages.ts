@@ -15,63 +15,20 @@ import {
   serializePostPayload,
 } from './post-contract';
 import type {
-  Email,
+  CreateContentData,
+  EditContentData,
+  Page,
+  PageEditableData,
+  PageEditorRecord,
   PostBulkAction,
-  PostEditableData,
-  PostEditorFields,
-  PostListFields,
-  PostStatus,
-  PostAuthor,
-  PostTag,
-  PostTier,
-} from './posts';
+} from './content-types';
 
-// A page is a post with `displayName: 'page'` server-side, so the list screens
-// read the same fields off both.
-export type Page = {
-  id: string;
-  title: string;
-  slug: string;
-  url: string;
-  status?: Exclude<PostStatus, 'sent'>;
-  published_at?: string;
-  visibility?: string;
-  uuid?: string;
-  feature_image?: string;
-  email?: Email;
-  count?: {
-    clicks?: number;
-  };
-  // Pages are never emailed, but the list reads these off both resources
-  // through one type, so they have to be addressable here too.
-  email_only?: boolean;
-  email_segment?: string;
-  newsletter?: object;
-} & PostListFields &
-  PostEditorFields;
-
-/**
- * Fields a client may set on a page. Email fields are excluded — pages are
- * never emailed — and the request contract strips them, along with read-only
- * relations, at request time.
- */
-export type PageEditableData = Omit<PostEditableData, 'email_only' | 'email_subject' | 'status'> & {
-  status?: Exclude<PostStatus, 'sent'>;
-  show_title_and_feature_image?: boolean;
-};
+export type { Page, PageEditableData, PageEditorRecord, PageStatus } from './content-types';
 
 export interface PagesResponseType {
   meta?: Meta;
   pages: Page[];
 }
-
-/** Single-resource reads and writes contain relations safe to send back on edit. */
-export type PageEditorRecord = Omit<Page, 'authors' | 'tags' | 'tiers' | 'updated_at'> & {
-  updated_at: string | null;
-  authors?: Array<PostAuthor & { id: string }>;
-  tags?: Array<PostTag & { id: string }>;
-  tiers?: PostTier[];
-};
 
 export interface PageResponseType {
   meta?: Meta;
@@ -143,12 +100,12 @@ export const useEditorPage = (
 // The create endpoint only accepts include/formats/source - revision and
 // email delivery options are update-only
 export interface AddPagePayload {
-  page: PageEditableData & { title: string };
+  page: CreateContentData<PageEditableData>;
   options?: PostCreateOptions;
 }
 
 export interface EditPagePayload {
-  page: PageEditableData & { id: string; updated_at: string | null };
+  page: EditContentData<PageEditableData>;
   options?: PageWriteOptions;
 }
 
