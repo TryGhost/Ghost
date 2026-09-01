@@ -38,6 +38,9 @@ Put tests as close as possible to the code and behavior under test:
 - **Browser E2E tests** use Playwright to cover complete journeys across Ghost
   Admin and the public site. They live in `e2e/`. See
   [Writing Browser E2E Tests](e2e-testing.md) for conventions and examples.
+- **Smoke tests** walk a whole feature through the running product with no mocks
+  and no implementation knowledge. They live in `e2e/smoke/`, are run by hand
+  rather than in CI, and are covered under [Run Smoke Tests](#run-smoke-tests).
 - **Ember Admin tests** cover the legacy Ember application in
   `apps/ember-admin/` and run through Ember Exam via Nx.
 
@@ -132,6 +135,34 @@ Use `pnpm test:e2e:debug` for Ghost E2E debug logs. See the
 isolation, fixtures, and debugging, and
 [Writing Browser E2E Tests](e2e-testing.md) for test conventions, selectors,
 and Page Objects.
+
+## Run Smoke Tests
+
+A smoke test walks a whole feature through the real product the way a person
+uses it. It uses zero mocks and zero implementation knowledge: everything is
+located by role, label, text, or placeholder, never by a test id, a CSS class,
+or a `data-` attribute. The Admin API may set the scene (sign in, seed a member,
+flip a labs flag, fetch a member sign-in URL), but every outcome is read off the
+screen. A downloaded file the product hands the user, such as a members export,
+counts as the screen.
+
+Smoke tests are never a CI gate. Run one by hand at the moments where you want
+evidence that the whole feature works together: before flipping a feature flag
+on, and before a release. When part of the environment is missing, such as
+Stripe or a webhook tunnel, the affected steps skip with a message saying what
+was not covered and the run stays green.
+
+They live in `e2e/smoke/` and drive the long-lived development stack:
+
+```bash
+# From the repository root
+pnpm smoke
+```
+
+The command reuses a stack that is already running. If nothing is listening it
+starts `pnpm dev:stripe` in the background, waits for Ghost and the Admin dev
+server, and names the log file if they never arrive. The stack is left running
+afterwards.
 
 ## Run Ember Admin Tests
 
