@@ -16,7 +16,9 @@ import {
   useMemberActivityFeed,
   useMemberCount,
   useMemberLogout,
+  useMembersCount,
   useRemoveMemberEmailSuppression,
+  membersCountString,
 } from '../../../src/api/members';
 import type {
   MemberActivityEvent,
@@ -308,6 +310,177 @@ describe('members api', () => {
 
       expect(result.current).toBeUndefined();
       expect(mockFetch.calls).toHaveLength(0);
+    });
+  });
+
+  describe('useMembersCount', () => {
+    it('fetches the count for a filter via a limit=1 browse request', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch(
+        {
+          json: membersResponse(4289),
+        },
+        async (mockFetch) => {
+          const { result } = renderHookWithProviders(
+            () => useMembersCount('status:free,label:vip'),
+            { queryClient },
+          );
+
+          await waitFor(() => {
+            expect(result.current.count).toBe(4289);
+          });
+
+          expect(result.current.isLoading).toBe(false);
+
+          const url = new URL(mockFetch.calls[0][0].toString());
+          expect(url.pathname).toBe('/ghost/api/admin/members/');
+          expect(url.searchParams.get('filter')).toBe('status:free,label:vip');
+          expect(url.searchParams.get('order')).toBe('id');
+          expect(url.searchParams.get('limit')).toBe('1');
+          expect(url.searchParams.get('page')).toBe('1');
+        },
+      );
+    });
+
+    it('returns a null count without fetching for roles that cannot manage members', async () => {
+      const queryClient = createQueryClientWithCurrentUser([{ id: 'role-1', name: 'Editor' }]);
+
+      await withMockFetch({}, async (mockFetch) => {
+        const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+          queryClient,
+        });
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        expect(result.current).toEqual({ count: null, isLoading: false });
+        expect(mockFetch.calls).toHaveLength(0);
+      });
+    });
+
+    it('counts a nullish filter as 0 without fetching', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch({}, async (mockFetch) => {
+        const { result } = renderHookWithProviders(() => useMembersCount(null), { queryClient });
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        expect(result.current).toEqual({ count: 0, isLoading: false });
+        expect(mockFetch.calls).toHaveLength(0);
+      });
+    });
+
+    it('resolves request errors to a count of 0', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch(
+        { json: { errors: [{ message: 'Nope' }] }, status: 500, ok: false },
+        async () => {
+          const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+            queryClient,
+          });
+
+          await waitFor(() => {
+            expect(result.current).toEqual({ count: 0, isLoading: false });
+          });
+        },
+      );
+    });
+  });
+
+  describe('membersCountString', () => {
+    const admin = { roles: [{ name: 'Administrator' }] } as const;
+    const editor = { roles: [{ name: 'Editor' }] } as const;
+    const superEditor = { roles: [{ name: 'Super Editor' }] } as const;
+
+    it('pluralizes counts per recipient type', () => {
+      expect(membersCountString('status:free', { user: admin, count: 1 })).toBe('1 free member');
+      expect(membersCountString('status:free', { user: admin, count: 0 })).toBe('0 free members');
+      expect(membersCountString('status:-free', { user: admin, count: 5 })).toBe('5 paid members');
+      expect(membersCountString('status:free,status:-free', { user: admin, count: 2 })).toBe(
+        '2 members',
+      );
+      expect(membersCountString('label:vip', { user: admin, count: 3 })).toBe('3 members');
+      expect(membersCountString('status:free,label:vip', { user: admin, count: 3 })).toBe(
+        '3 members',
+      );
+    });
+
+    it('formats large counts with the locale separator', () => {
+      expect(membersCountString('status:free,status:-free', { user: admin, count: 12345 })).toBe(
+        `${(12345).toLocaleString()} members`,
+      );
+    });
+
+    it('falls back to descriptive copy for editors without a known count', () => {
+      expect(membersCountString('status:free', { user: editor })).toBe('all free members');
+      expect(membersCountString('status:-free', { user: editor })).toBe('all paid members');
+      expect(membersCountString('status:free,status:-free', { user: editor })).toBe('all members');
+      expect(membersCountString('', { user: editor })).toBe('all members');
+      expect(membersCountString('label:vip', { user: editor })).toBe('a custom members segment');
+    });
+
+    it('uses a known count for editors instead of the fallback copy', () => {
+      expect(membersCountString('status:free', { user: editor, count: 7 })).toBe('7 free members');
+    });
+
+    it('does not apply the editor fallback to super editors', () => {
+      // Super Editors can manage members, so they get real counts (an absent
+      // count reads as 0, matching the Ember fetch-error fallback).
+      expect(membersCountString('status:free', { user: superEditor })).toBe('0 free members');
+    });
+
+    it('switches to subscriber copy and strips the newsletter scope when there are multiple newsletters', () => {
+      const newsletter = {
+        name: 'Weekly',
+        recipientFilter: 'newsletters.slug:weekly+email_disabled:0',
+      };
+      const fullFilter = `${newsletter.recipientFilter}+(status:free)`;
+
+      expect(
+        membersCountString(fullFilter, {
+          user: editor,
+          newsletter,
+          hasMultipleNewsletters: true,
+        }),
+      ).toBe('all free subscribers of Weekly');
+
+      expect(
+        membersCountString(fullFilter, {
+          user: admin,
+          count: 9,
+          newsletter,
+          hasMultipleNewsletters: true,
+        }),
+      ).toBe('9 free subscribers of Weekly');
+    });
+
+    it('keeps member copy for a single newsletter', () => {
+      const newsletter = {
+        name: 'Weekly',
+        recipientFilter: 'newsletters.slug:weekly+email_disabled:0',
+      };
+      const fullFilter = `${newsletter.recipientFilter}+(status:free)`;
+
+      expect(
+        membersCountString(fullFilter, {
+          user: admin,
+          count: 9,
+          newsletter,
+          hasMultipleNewsletters: false,
+        }),
+      ).toBe('9 free members');
     });
   });
 

@@ -10,7 +10,8 @@ import {
 import { apiUrl } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/custom-field-types';
 import { useCurrentUser } from './current-user';
-import { canManageMembers } from './users';
+import { canManageMembers, isEditorUser, isSuperEditorUser } from './users';
+import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
 
 export type MemberLabel = {
   id: string;
@@ -185,6 +186,128 @@ export function useMemberCount() {
   });
 
   return data?.meta?.pagination.total;
+}
+
+// -----------------------------------------------------------------------------
+// Filtered member counts (email recipients)
+// -----------------------------------------------------------------------------
+
+// The Ember members-count-cache's TTL; the framework default staleTime (5min)
+// is too stale for publish-flow recipient counts.
+const MEMBERS_COUNT_STALE_TIME = 60 * 1000;
+
+const useBrowseMembersCountQuery = createQuery<MembersResponseType>({
+  dataType,
+  path: membersPath,
+});
+
+export interface MembersCountResult {
+  /** `null` while loading and for roles that cannot browse members. */
+  count: number | null;
+  isLoading: boolean;
+}
+
+/**
+ * Number of members matching a filter, consolidated from the Ember
+ * `members-count-cache` service + `members-count-fetcher` resource: a browse
+ * request with `limit=1` reading `meta.pagination.total`, cached per-filter
+ * for 60 seconds. As in Ember, roles that cannot manage members get
+ * `count: null` without a request, a nullish filter counts as 0 without a
+ * request, and request errors resolve to 0 with no error toast.
+ */
+export function useMembersCount(filter: string | null | undefined): MembersCountResult {
+  const { data: currentUser } = useCurrentUser();
+  const canFetch = Boolean(currentUser && canManageMembers(currentUser));
+  const enabled = canFetch && filter !== null && filter !== undefined;
+
+  const result = useBrowseMembersCountQuery({
+    // order/page pin the same cheap, stable request shape the Ember cache used
+    searchParams: { filter: filter ?? '', order: 'id', limit: '1', page: '1' },
+    staleTime: MEMBERS_COUNT_STALE_TIME,
+    enabled,
+    defaultErrorHandler: false,
+  });
+
+  if (!enabled || result.isError) {
+    return { count: canFetch ? 0 : null, isLoading: false };
+  }
+
+  return {
+    count: result.data?.meta?.pagination.total ?? null,
+    isLoading: result.isLoading,
+  };
+}
+
+// gh-pluralize combined toLocaleString with ember-inflector; every noun used
+// below pluralizes regularly so a trailing "s" matches its output.
+function pluralizedCount(count: number, noun: string): string {
+  return `${count.toLocaleString()} ${count === 1 ? noun : `${noun}s`}`;
+}
+
+export interface MembersCountStringOptions {
+  /** The signed-in user; drives the can't-browse-members fallback copy. */
+  user: Parameters<typeof isEditorUser>[0];
+  /** The fetched (or already-known) recipient count. */
+  count?: number;
+  /** With `hasMultipleNewsletters`, switches copy to "subscribers of <name>". */
+  newsletter?: { name: string; recipientFilter: string };
+  hasMultipleNewsletters?: boolean;
+}
+
+/**
+ * Human-readable copy for a recipient count, ported from the Ember
+ * `members-count-cache#countString` (which fetched the count itself; this
+ * pure port takes it from `useMembersCount`, which matches its semantics).
+ */
+export function membersCountString(
+  filter: string = '',
+  { user, count, newsletter, hasMultipleNewsletters = false }: MembersCountStringOptions,
+): string {
+  const nounSingular = newsletter && hasMultipleNewsletters ? 'subscriber' : 'member';
+  const nounPlural = `${nounSingular}s`;
+  const suffix = newsletter && hasMultipleNewsletters ? ` of ${newsletter.name}` : '';
+
+  // Strips the newsletter scope composed by getFullRecipientFilter to get back
+  // the user-selected segment; a plain comma split like the Ember original.
+  const basicFilter = newsletter
+    ? filter.replace(newsletter.recipientFilter, '').replace(/^\+\((.*)\)$/, '$1')
+    : filter;
+  const filterParts = basicFilter.split(',');
+  const isFree = filterParts.length === 1 && filterParts[0] === FREE_SEGMENT;
+  const isPaid = filterParts.length === 1 && filterParts[0] === PAID_SEGMENT;
+  const isAll =
+    !filter || (filterParts.includes(FREE_SEGMENT) && filterParts.includes(PAID_SEGMENT));
+
+  // Ember gated on `user.isEditor`, which is plain Editors only — Super
+  // Editors can manage members, so they must fall through to real counts.
+  const isPlainEditor = isEditorUser(user) && !isSuperEditorUser(user);
+
+  if (isPlainEditor && count === undefined) {
+    if (isFree) {
+      return `all free ${nounPlural}${suffix}`;
+    }
+    if (isPaid) {
+      return `all paid ${nounPlural}${suffix}`;
+    }
+    if (isAll) {
+      return `all ${nounPlural}${suffix}`;
+    }
+
+    return 'a custom members segment';
+  }
+
+  // Ember's count fetch resolved errors to 0, so an absent count reads as 0.
+  const recipientCount = count ?? 0;
+
+  if (isFree) {
+    return pluralizedCount(recipientCount, `free ${nounSingular}`) + suffix;
+  }
+
+  if (isPaid) {
+    return pluralizedCount(recipientCount, `paid ${nounSingular}`) + suffix;
+  }
+
+  return pluralizedCount(recipientCount, nounSingular) + suffix;
 }
 
 export type NewMember = {
