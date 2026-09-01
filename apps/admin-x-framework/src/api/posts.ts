@@ -51,7 +51,9 @@ export interface PostResponseType {
   posts: PostEditorRecord[];
 }
 
-const dataType = 'PostsResponseType';
+export const postsDataType = 'PostsResponseType';
+
+const dataType = postsDataType;
 
 export const useBrowsePosts = createQuery<PostsResponseType>({
   dataType,
