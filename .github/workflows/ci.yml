@@ -1066,16 +1066,29 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_ghost-cli:
-    name: Ghost-CLI tests
+    name: Ghost-CLI tests (${{ matrix.scenario }})
     needs: [job_setup, job_pack]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # This build, installed from the tarball this run produced.
+          - scenario: clean-install
+            node: ${{ needs.job_setup.outputs.node_version }}
+          # Upgrade from the newest Ghost on npm, which is pinned to the Node
+          # version whose `engines` that release declared — it can't be raised
+          # until a release ships supporting the newer line. Move this to
+          # node_version once the published release supports it.
+          - scenario: latest-release
+            node: '22.23.1'
     steps:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node }}
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
@@ -1097,10 +1110,11 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ghost-cli-debug-logs
+          name: ghost-cli-debug-logs-${{ matrix.scenario }}
           path: /home/runner/.ghost/logs/
 
       - name: Clean Install
+        if: matrix.scenario == 'clean-install'
         run: |
           DIR=$(mktemp -d)
           ghost install local -d "$DIR" --archive "$(pwd)/ghost.tgz"
@@ -1109,6 +1123,7 @@ jobs:
           ghost stop -d "$DIR"
 
       - name: Latest Release
+        if: matrix.scenario == 'latest-release'
         # --force skips Ghost-CLI's version comparison between the archive and
         # the installed release. Without it this step is coupled to how far the
         # branch has drifted from main: a PR branched before the last release
