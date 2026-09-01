@@ -38,6 +38,7 @@ allowBuilds:
   'protobufjs@7.6.4': true
   're2@1.26.1': true
   'sharp@0.35.3': true
+  sqlite3: false
   ssh2: false
 
 catalog:

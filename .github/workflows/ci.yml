@@ -253,17 +253,17 @@ jobs:
             AFFECTED_ARG=""
           fi
 
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json)
+          AFFECTED_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} --json)
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
           # string list for use in run-many commands
-          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
+          AFFECTED_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
           echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
           if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
             UNIT_TEST_AFFECTED_ARG=""
           fi
-          UNIT_TEST_PROJECTS_STR=$(pnpm -s nx show projects ${UNIT_TEST_AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
+          UNIT_TEST_PROJECTS_STR=$(pnpm nx show projects ${UNIT_TEST_AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
           if [[ "${{ steps.changed.outputs.core-unit-test-globals }}" == 'true' ]]; then
             UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
           fi
@@ -271,13 +271,13 @@ jobs:
 
           # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
           # translate:* scripts (not packages that merely import @tryghost/i18n).
-          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
+          I18N_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
           echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
           # "playwright" tag = projects whose test:acceptance suite runs in
           # job_apps_acceptance-tests. Tag-based rather than directory-based so
           # the matrix isn't coupled to the workspace layout (apps/*, koenig/*, ...).
-          PLAYWRIGHT_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} \
+          PLAYWRIGHT_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} \
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
             --json)
@@ -996,7 +996,7 @@ jobs:
         # resolve the project root since apps live in apps/* and koenig/*
         run: |
           APP_NAME="${{ matrix.app }}"
-          APP_ROOT=$(pnpm -s nx show project ${{ matrix.app }} --json | jq -r .root)
+          APP_ROOT=$(pnpm nx show project ${{ matrix.app }} --json | jq -r .root)
           {
             echo "name=${APP_NAME#@tryghost/}"
             echo "root=$APP_ROOT"
