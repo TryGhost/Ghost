@@ -129,6 +129,10 @@ const compSubscription = (overrides: Record<string, unknown> = {}) => ({
 
 type MemberStatus = 'paid' | 'comped' | 'gift';
 
+// Playwright's wording once the page, context or a fetched response is gone.
+const isTeardownError = (err: unknown) =>
+  err instanceof Error && /has been (disposed|closed)/.test(err.message);
+
 /**
  * Rewrites this member on every read, letting a test serve a shape the fixture
  * database can't produce (Stripe subscriptions, engagement counters).
@@ -153,11 +157,12 @@ const interceptMemberRead = async (
       }
       return route.fulfill({ response, body: JSON.stringify(body) });
     } catch (err) {
-      // A post-mutation refetch can land after the test has finished, once
-      // the context is gone; there's nothing left to serve. Anything else
-      // is a real failure, and swallowing it would leave the request
-      // hanging until the test times out with no clue why.
-      if (!page.isClosed()) {
+      // A post-mutation refetch can still be in flight when the test ends;
+      // teardown then disposes the response before `page.isClosed()` flips,
+      // so the error itself is the only reliable signal. Anything else is a
+      // real failure, and swallowing it would leave the request hanging
+      // until the test times out with no clue why.
+      if (!page.isClosed() && !isTeardownError(err)) {
         throw err;
       }
     }
