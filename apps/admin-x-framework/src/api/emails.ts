@@ -2,8 +2,6 @@ import { createMutation } from '../utils/api/hooks';
 import { postsDataType } from './posts';
 import type { Email } from './content-types';
 
-export type { Email } from './content-types';
-
 export interface EmailsResponseType {
   emails: Email[];
 }
