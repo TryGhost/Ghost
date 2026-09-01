@@ -31,7 +31,12 @@ export const POST_FORMATS = 'mobiledoc,lexical';
 // The publish flow's "everyone" segment; the API expects it spelled `all`
 const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
 
-export interface PageWriteOptions {
+export interface PostCreateOptions {
+  /** Convert an HTML payload to lexical content. */
+  source?: 'html';
+}
+
+export interface PageWriteOptions extends PostCreateOptions {
   /** Force the server to store a post revision (explicit save, leaving the editor). */
   saveRevision?: boolean;
   /** Ask the server to convert the record's mobiledoc content to lexical. */
@@ -53,9 +58,18 @@ export function buildPostReadParams(): Record<string, string> {
   return { formats: POST_FORMATS };
 }
 
+/** Editor reads additionally need revision history and its author relation. */
+export function buildPostEditorReadParams(): Record<string, string> {
+  return { formats: POST_FORMATS, include: ALL_POST_INCLUDES };
+}
+
 /** Query params for post create/update requests. */
 export function buildPostWriteParams(options: PostWriteOptions = {}): Record<string, string> {
   const params: Record<string, string> = { formats: POST_FORMATS };
+
+  if (options.source) {
+    params.source = options.source;
+  }
 
   if (options.newsletter) {
     params.newsletter = options.newsletter;
@@ -82,6 +96,10 @@ export function buildPostWriteParams(options: PostWriteOptions = {}): Record<str
 /** Query params for page create/update requests — as posts, minus email delivery. */
 export function buildPageWriteParams(options: PageWriteOptions = {}): Record<string, string> {
   const params: Record<string, string> = { formats: POST_FORMATS };
+
+  if (options.source) {
+    params.source = options.source;
+  }
 
   if (options.saveRevision) {
     params.save_revision = 'true';

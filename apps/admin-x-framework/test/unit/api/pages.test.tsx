@@ -1,7 +1,7 @@
 import { act, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderHookWithProviders } from '../../../src/test/test-utils';
-import { useAddPage, useEditPage, usePage } from '../../../src/api/pages';
+import { useAddPage, useEditPage, useEditorPage, usePage } from '../../../src/api/pages';
 import { withMockFetch } from '../../utils/mock-fetch';
 
 // The Ember editor's exact include list — page writes re-request it too
@@ -37,6 +37,35 @@ describe('pages api', () => {
         expect(pagesUrl.pathname).toBe('/ghost/api/admin/pages/page-1/');
         expect(Object.fromEntries(pagesUrl.searchParams.entries())).toEqual({
           formats: 'mobiledoc,lexical',
+        });
+      },
+    );
+  });
+
+  it('reads an editor page with revision history', async () => {
+    await withMockFetch(
+      {
+        json: {
+          pages: [{ id: 'page-1', title: 'About', slug: 'about', url: '/about/' }],
+          users: [{ id: 'user-1', roles: [] }],
+        },
+        headers: { 'content-type': 'application/json' },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() =>
+          useEditorPage('page-1', {
+            searchParams: { formats: 'html', include: 'tags' },
+          }),
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        const pagesCall = mock.calls.find(([input]: [unknown]) =>
+          String(input).includes('/pages/page-1/'),
+        );
+        expect(Object.fromEntries(new URL(pagesCall[0] as string).searchParams.entries())).toEqual({
+          formats: 'mobiledoc,lexical',
+          include: ALL_INCLUDES,
         });
       },
     );

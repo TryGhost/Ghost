@@ -8,11 +8,23 @@ import {
 } from '../utils/api/hooks';
 import {
   PageWriteOptions,
+  PostCreateOptions,
+  buildPostEditorReadParams,
   buildPageWriteParams,
   buildPostReadParams,
   serializePostPayload,
 } from './post-contract';
-import type { Email, PostBulkAction, PostEditorFields, PostListFields } from './posts';
+import type {
+  Email,
+  PostBulkAction,
+  PostEditableData,
+  PostEditorFields,
+  PostListFields,
+  PostStatus,
+  PostAuthor,
+  PostTag,
+  PostTier,
+} from './posts';
 
 // A page is a post with `displayName: 'page'` server-side, so the list screens
 // read the same fields off both.
@@ -21,7 +33,7 @@ export type Page = {
   title: string;
   slug: string;
   url: string;
-  status?: string;
+  status?: Exclude<PostStatus, 'sent'>;
   published_at?: string;
   visibility?: string;
   uuid?: string;
@@ -43,28 +55,27 @@ export type Page = {
  * never emailed — and the request contract strips them, along with read-only
  * relations, at request time.
  */
-export type PageEditableData = Partial<
-  Omit<
-    Page,
-    | 'id'
-    | 'uuid'
-    | 'url'
-    | 'count'
-    | 'email'
-    | 'newsletter'
-    | 'post_revisions'
-    | 'email_subject'
-    | 'email_only'
-    | 'primary_author'
-    | 'primary_tag'
-    | 'created_at'
-    | 'excerpt'
-  >
->;
+export type PageEditableData = Omit<PostEditableData, 'email_only' | 'email_subject' | 'status'> & {
+  status?: Exclude<PostStatus, 'sent'>;
+  show_title_and_feature_image?: boolean;
+};
 
 export interface PagesResponseType {
   meta?: Meta;
   pages: Page[];
+}
+
+/** Single-resource reads and writes contain relations safe to send back on edit. */
+export type PageEditorRecord = Omit<Page, 'authors' | 'tags' | 'tiers' | 'updated_at'> & {
+  updated_at: string | null;
+  authors?: Array<PostAuthor & { id: string }>;
+  tags?: Array<PostTag & { id: string }>;
+  tiers?: PostTier[];
+};
+
+export interface PageResponseType {
+  meta?: Meta;
+  pages: PageEditorRecord[];
 }
 
 const dataType = 'PagesResponseType';
@@ -100,33 +111,58 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
   },
 });
 
-export const usePage = createQueryWithId<PagesResponseType>({
+const usePageQuery = createQueryWithId<PageResponseType>({
   dataType,
   path: (id) => `/pages/${id}/`,
-  // without explicit formats the API returns html-only content
   defaultSearchParams: buildPostReadParams(),
 });
+
+export const usePage = (id: string, options: Parameters<typeof usePageQuery>[1] = {}) => {
+  const { searchParams, ...queryOptions } = options;
+  return usePageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...buildPostReadParams(), ...searchParams },
+  });
+};
+
+const useEditorPageQuery = createQueryWithId<PageResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+  defaultSearchParams: buildPostEditorReadParams(),
+});
+
+export const useEditorPage = (
+  id: string,
+  options: Parameters<typeof useEditorPageQuery>[1] = {},
+) => {
+  const { searchParams, ...queryOptions } = options;
+  return useEditorPageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...searchParams, ...buildPostEditorReadParams() },
+  });
+};
 
 // The create endpoint only accepts include/formats/source - revision and
 // email delivery options are update-only
 export interface AddPagePayload {
-  page: PageEditableData;
+  page: PageEditableData & { title: string };
+  options?: PostCreateOptions;
 }
 
 export interface EditPagePayload {
-  page: PageEditableData & { id: string };
+  page: PageEditableData & { id: string; updated_at: string | null };
   options?: PageWriteOptions;
 }
 
-export const useAddPage = createMutation<PagesResponseType, AddPagePayload>({
+export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   method: 'POST',
   path: () => '/pages/',
-  searchParams: () => buildPageWriteParams(),
+  searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   invalidateQueries: { dataType },
 });
 
-export const useEditPage = createMutation<PagesResponseType, EditPagePayload>({
+export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   method: 'PUT',
   path: ({ page }) => `/pages/${page.id}/`,
   searchParams: ({ options }) => buildPageWriteParams(options),

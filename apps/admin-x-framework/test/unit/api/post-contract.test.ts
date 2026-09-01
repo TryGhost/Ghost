@@ -1,19 +1,160 @@
 import { describe, expect, it } from 'vitest';
+import type { AddPagePayload, EditPagePayload, PageResponseType } from '../../../src/api/pages';
+import type {
+  AddPostPayload,
+  EditPostPayload,
+  PostEditableData,
+  PostResponseType,
+  PostRevision,
+} from '../../../src/api/posts';
 import {
   ALL_POST_INCLUDES,
   POST_FORMATS,
   buildPageWriteParams,
   buildPostBrowseParams,
+  buildPostEditorReadParams,
   buildPostReadParams,
   buildPostWriteParams,
   serializePostPayload,
 } from '../../../src/api/post-contract';
 
+// Compile-time cases: the build failing is the assertion. Each `@ts-expect-error`
+// fails the build if the request and response types drift from the Admin API schema.
+const postEditWithoutUpdatedAt: EditPostPayload = {
+  // @ts-expect-error post edits require the collision token
+  post: { id: 'post-1' },
+};
+
+const pageEditWithoutUpdatedAt: EditPagePayload = {
+  // @ts-expect-error page edits require the collision token
+  page: { id: 'page-1' },
+};
+
+const postCreateWithoutTitle: AddPostPayload = {
+  // @ts-expect-error post creates require a title
+  post: { status: 'draft' },
+};
+
+const pageCreateWithoutTitle: AddPagePayload = {
+  // @ts-expect-error page creates require a title
+  page: { status: 'draft' },
+};
+
+// The API accepts updated_at on creates, even though clients normally omit it.
+const postCreateWithUpdatedAt: AddPostPayload = {
+  post: { title: 'Hello', updated_at: '2026-01-01T00:00:00.000Z' },
+};
+
+const pageCreateWithUpdatedAt: AddPagePayload = {
+  page: { title: 'About', updated_at: '2026-01-01T00:00:00.000Z' },
+};
+
+const postReadResponse: PostResponseType = {
+  posts: [
+    {
+      id: 'post-1',
+      uuid: 'uuid-1',
+      url: '/hello/',
+      slug: 'hello',
+      title: 'Hello',
+      updated_at: null,
+    },
+  ],
+};
+
+const pageReadResponse: PageResponseType = {
+  pages: [
+    {
+      id: 'page-1',
+      url: '/about/',
+      slug: 'about',
+      title: 'About',
+      updated_at: null,
+    },
+  ],
+};
+
+// Single-resource reads can flow directly into their edit mutations.
+const postEditFromRead: EditPostPayload = { post: postReadResponse.posts[0] };
+const pageEditFromRead: EditPagePayload = { page: pageReadResponse.pages[0] };
+
+const revisionWithImageMetadata: PostRevision = {
+  feature_image_alt: 'A ghost sign',
+  feature_image_caption: 'Photo by Ghost',
+  author: { profile_image: '/content/images/author.png' },
+};
+
+const schemaAlignedPostEdits: PostEditableData = {
+  html: '<p>Hello</p>',
+  feature_image: null,
+  published_at: null,
+  visibility: null,
+  locale: null,
+};
+
+const schemaAlignedPageEdits: AddPagePayload['page'] = {
+  title: 'About',
+  html: '<p>About</p>',
+  feature_image: null,
+  published_at: null,
+  visibility: null,
+  locale: null,
+};
+
+const schemaAlignedRelations: PostEditableData = {
+  authors: [{ email: 'author@example.com' }],
+  tags: [{ name: 'News' }, { id: 'tag-1', slug: null }],
+  tiers: [{ id: 'tier-1' }],
+};
+
+const invalidRelations: PostEditableData = {
+  authors: [
+    // @ts-expect-error author objects require id, slug, or email
+    {},
+  ],
+  tags: [
+    // @ts-expect-error tag objects require id, name, or a non-null slug
+    { slug: null },
+  ],
+  tiers: [
+    // @ts-expect-error tier objects require an id
+    { name: 'Supporters' },
+    // @ts-expect-error tier strings are discarded by the model relation handler
+    'tier-slug',
+  ],
+};
+
 describe('post request contract', () => {
+  it('keeps the compile-time request and response contracts exercised', () => {
+    for (const value of [
+      postEditWithoutUpdatedAt,
+      pageEditWithoutUpdatedAt,
+      postCreateWithoutTitle,
+      pageCreateWithoutTitle,
+      postCreateWithUpdatedAt,
+      pageCreateWithUpdatedAt,
+      postEditFromRead,
+      pageEditFromRead,
+      revisionWithImageMetadata,
+      schemaAlignedPostEdits,
+      schemaAlignedPageEdits,
+      schemaAlignedRelations,
+      invalidRelations,
+    ]) {
+      expect(value).toBeTruthy();
+    }
+  });
+
   describe('query params', () => {
     it('requests both content formats on reads', () => {
       expect(buildPostBrowseParams()).toEqual({ formats: 'mobiledoc,lexical' });
-      expect(buildPostReadParams()).toEqual({ formats: 'mobiledoc,lexical' });
+      expect(buildPostReadParams()).toEqual({
+        formats: 'mobiledoc,lexical',
+      });
+      expect(buildPostEditorReadParams()).toEqual({
+        formats: 'mobiledoc,lexical',
+        include: ALL_POST_INCLUDES,
+      });
     });
 
     it('re-requests the full include list on writes', () => {
@@ -34,6 +175,20 @@ describe('post request contract', () => {
 
       expect(buildPostWriteParams({ saveRevision: false, convertToLexical: false })).toEqual({
         formats: POST_FORMATS,
+        include: ALL_POST_INCLUDES,
+      });
+    });
+
+    it('requests HTML-to-lexical conversion when sending an HTML source', () => {
+      expect(buildPostWriteParams({ source: 'html' })).toEqual({
+        formats: POST_FORMATS,
+        source: 'html',
+        include: ALL_POST_INCLUDES,
+      });
+
+      expect(buildPageWriteParams({ source: 'html' })).toEqual({
+        formats: POST_FORMATS,
+        source: 'html',
         include: ALL_POST_INCLUDES,
       });
     });

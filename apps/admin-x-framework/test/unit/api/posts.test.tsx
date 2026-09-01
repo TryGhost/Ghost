@@ -1,7 +1,13 @@
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
-import { useAddPost, useEditPost, useImportContentCSV } from '../../../src/api/posts';
+import {
+  useAddPost,
+  useEditPost,
+  useEditorPost,
+  useImportContentCSV,
+  usePost,
+} from '../../../src/api/posts';
 import { withMockFetch } from '../../utils/mock-fetch';
 
 // The Ember editor's exact include list — writes must re-request everything
@@ -15,6 +21,91 @@ const requestParams = (mock: any) => Object.fromEntries(requestUrl(mock).searchP
 const requestBody = (mock: any) => JSON.parse(mock.calls[0][1].body as string);
 
 describe('posts api', () => {
+  it('reads a single post with both content formats', async () => {
+    await withMockFetch(
+      {
+        json: {
+          posts: [{ id: 'post-1', title: 'Hello', slug: 'hello', url: '/hello/' }],
+          // the permissions gate fetches the current user through the same mock
+          users: [{ id: 'user-1', roles: [] }],
+        },
+        headers: { 'content-type': 'application/json' },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() => usePost('post-1'));
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        const postsCall = mock.calls.find(([input]: [unknown]) =>
+          String(input).includes('/posts/post-1/'),
+        );
+        const postsUrl = new URL(postsCall[0] as string);
+        expect(postsUrl.pathname).toBe('/ghost/api/admin/posts/post-1/');
+        expect(Object.fromEntries(postsUrl.searchParams.entries())).toEqual({
+          formats: 'mobiledoc,lexical',
+        });
+      },
+    );
+  });
+
+  it('reads an editor post with revision history', async () => {
+    await withMockFetch(
+      {
+        json: {
+          posts: [{ id: 'post-1', title: 'Hello', slug: 'hello', url: '/hello/' }],
+          users: [{ id: 'user-1', roles: [] }],
+        },
+        headers: { 'content-type': 'application/json' },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() =>
+          useEditorPost('post-1', {
+            searchParams: { formats: 'html', include: 'tags' },
+          }),
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        const postsCall = mock.calls.find(([input]: [unknown]) =>
+          String(input).includes('/posts/post-1/'),
+        );
+        expect(Object.fromEntries(new URL(postsCall[0] as string).searchParams.entries())).toEqual({
+          formats: 'mobiledoc,lexical',
+          include: ALL_INCLUDES,
+        });
+      },
+    );
+  });
+
+  it('preserves explicit params on generic post reads', async () => {
+    await withMockFetch(
+      {
+        json: {
+          posts: [{ id: 'post-1', title: 'Hello', slug: 'hello', url: '/hello/' }],
+          users: [{ id: 'user-1', roles: [] }],
+        },
+        headers: { 'content-type': 'application/json' },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() =>
+          usePost('post-1', {
+            searchParams: { formats: 'html', include: 'count.positive_feedback' },
+          }),
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        const postsCall = mock.calls.find(([input]: [unknown]) =>
+          String(input).includes('/posts/post-1/'),
+        );
+        expect(Object.fromEntries(new URL(postsCall[0] as string).searchParams.entries())).toEqual({
+          formats: 'html',
+          include: 'count.positive_feedback',
+        });
+      },
+    );
+  });
+
   it('imports CSV content via the posts upload endpoint', async () => {
     const file = new File(['title\nHello'], 'posts.csv', { type: 'text/csv' });
 
@@ -130,7 +221,12 @@ describe('posts api', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          post: { id: 'post-1', title: 'Saved', status: 'draft' },
+          post: {
+            id: 'post-1',
+            title: 'Saved',
+            status: 'draft',
+            updated_at: '2026-01-01T00:00:00.000Z',
+          },
           options: { saveRevision: true },
         });
       });
@@ -151,8 +247,9 @@ describe('posts api', () => {
       const fetchedPost = {
         id: 'post-1',
         title: 'Published',
-        status: 'published',
+        status: 'published' as const,
         published_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z',
         email: { email_count: 0, opened_count: 0 },
         newsletter: { id: 'newsletter-1' },
         post_revisions: [{ id: 'revision-1' }],
@@ -178,6 +275,7 @@ describe('posts api', () => {
             title: 'Published',
             status: 'published',
             published_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-01T00:00:00.000Z',
           },
         ],
       });
@@ -190,7 +288,11 @@ describe('posts api', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          post: { id: 'post-1', status: 'published' },
+          post: {
+            id: 'post-1',
+            status: 'published',
+            updated_at: '2026-01-01T00:00:00.000Z',
+          },
           options: { newsletter: 'weekly', emailSegment: 'status:free,status:-free' },
         });
       });
@@ -210,7 +312,11 @@ describe('posts api', () => {
 
       await act(async () => {
         await result.current.mutateAsync({
-          post: { id: 'post-1', status: 'draft' },
+          post: {
+            id: 'post-1',
+            status: 'draft',
+            updated_at: '2026-01-01T00:00:00.000Z',
+          },
           options: { convertToLexical: true },
         });
       });
