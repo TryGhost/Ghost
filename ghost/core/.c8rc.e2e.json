@@ -1,7 +1,7 @@
 {
   "all": true,
   "check-coverage": true,
-  "reporter": ["html-spa", "text-summary", "cobertura"],
+  "reporter": ["text-summary", "cobertura"],
   "reportsDir": "./coverage-e2e",
   "statements": 54,
   "branches": 75,
