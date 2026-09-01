@@ -341,7 +341,7 @@ jobs:
         # shell parses the command.
         env:
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: git fetch --no-tags origin "refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -386,7 +386,7 @@ jobs:
         # shell parses the command.
         env:
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: git fetch --no-tags origin "refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - name: Check migration integrity
         env:

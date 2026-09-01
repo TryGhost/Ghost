@@ -12,7 +12,12 @@ const PACKAGE_JSON_PATH = 'ghost/core/package.json';
  */
 function runGit(args) {
   try {
-    return execFileSync('git', args, { encoding: 'utf8' }).trim();
+    // stderr piped, not inherited: the fallback below probes a ref that may
+    // not exist, and git's complaint should reach the thrown error, not the log.
+    return execFileSync('git', args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
   } catch (error) {
     const stderr = error.stderr ? error.stderr.toString().trim() : '';
     const stdout = error.stdout ? error.stdout.toString().trim() : '';
@@ -229,7 +234,7 @@ function main() {
   let baseSha = process.env.PR_BASE_SHA;
   if (baseRef) {
     try {
-      baseSha = runGit(['rev-parse', `origin/${baseRef}`]);
+      baseSha = runGit(['rev-parse', '--verify', `origin/${baseRef}^{commit}`]);
     } catch {
       // The ref was not fetched in this checkout; the payload SHA still works.
     }
