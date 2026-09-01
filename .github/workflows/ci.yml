@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 24.20.0
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -225,10 +225,12 @@ jobs:
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
-        # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
+        # First entry is NODE_VERSION, the line Ghost ships and instruments
+        # coverage on. test:unit's Nx cache is keyed on `node -v` (nx.json) so
+        # each leg really runs.
         id: node_matrix
         run: |
-          echo 'matrix=["22.23.1", "24.20.0"]' >> $GITHUB_OUTPUT
+          echo "matrix=[\"$NODE_VERSION\", \"22.23.1\"]" >> "$GITHUB_OUTPUT"
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run

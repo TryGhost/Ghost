@@ -9,7 +9,7 @@ run on the host.
 Install:
 
 - [Git](https://git-scm.com/)
-- Node.js `22.23.1` (the version in [`.nvmrc`](../../.nvmrc) and
+- Node.js `24.20.0` (the version in [`.nvmrc`](../../.nvmrc) and
   [`.node-version`](../../.node-version))
 - [Docker](https://docs.docker.com/get-docker/) with Docker Compose v2
 - [Corepack](https://nodejs.org/api/corepack.html), included with supported

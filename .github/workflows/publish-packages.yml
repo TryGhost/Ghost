@@ -40,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 24.20.0
 
 jobs:
   publish:

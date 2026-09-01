@@ -22,7 +22,7 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.23.1
+ARG NODE_VERSION=24.20.0
 
 # ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
 FROM node:$NODE_VERSION-bookworm-slim AS deploy

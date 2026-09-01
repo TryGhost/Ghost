@@ -25,7 +25,7 @@ on:
       - 'package.json'
 
 env:
-  NODE_VERSION: 22.23.1
+  NODE_VERSION: 24.20.0
 
 permissions:
   contents: read
