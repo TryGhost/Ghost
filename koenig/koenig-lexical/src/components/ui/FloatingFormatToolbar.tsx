@@ -43,6 +43,11 @@ export function FloatingFormatToolbar({
         }
     }, [toolbarItemType]);
 
+    const showToolbarIfHiddenRef = React.useRef(showToolbarIfHidden);
+    React.useLayoutEffect(() => {
+        showToolbarIfHiddenRef.current = showToolbarIfHidden;
+    }, [showToolbarIfHidden]);
+
     const isMouseDown = React.useRef(false);
 
     React.useEffect(() => {
@@ -59,7 +64,7 @@ export function FloatingFormatToolbar({
                     });
 
                     if (selectedNodeMatchesTarget) {
-                        showToolbarIfHidden();
+                        showToolbarIfHiddenRef.current();
                     }
                 }
             });
@@ -72,7 +77,7 @@ export function FloatingFormatToolbar({
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
                 if ($isRangeSelection(selection) && !selection.isCollapsed()) {
-                    showToolbarIfHidden();
+                    showToolbarIfHiddenRef.current();
                 }
             });
         }, 10);
@@ -91,7 +96,7 @@ export function FloatingFormatToolbar({
             document.removeEventListener('mouseup', toggle); // desktop
             document.removeEventListener('touchend', toggle); // mobile
         };
-    }, [editor, showToolbarIfHidden]);
+    }, [editor]);
 
     // clear out toolbar when use removes selected content
     React.useEffect(() => {
