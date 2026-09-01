@@ -10,13 +10,15 @@ import {
   type Member,
 } from '@test-utils/acceptance';
 import { memberDetailScreen } from './member-detail.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-const FIELDS = [
+const FIELDS: MemberCustomField[] = [
   {
     namespace: 'custom',
     key: 'job_title',
     name: 'Job title',
     type: 'short_text',
+    status: 'active',
     created_at: '2026-07-14T00:00:00.000Z',
     updated_at: null,
   },
@@ -25,6 +27,7 @@ const FIELDS = [
     key: 'company',
     name: 'Company',
     type: 'long_text',
+    status: 'active',
     created_at: '2026-07-14T00:00:00.000Z',
     updated_at: null,
   },
@@ -33,6 +36,7 @@ const FIELDS = [
     key: 'home_address',
     name: 'Home address',
     type: 'address',
+    status: 'active',
     created_at: '2026-07-14T00:00:00.000Z',
     updated_at: null,
   },

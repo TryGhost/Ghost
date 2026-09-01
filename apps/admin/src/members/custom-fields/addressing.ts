@@ -25,7 +25,9 @@ export interface MetafieldIdentity {
 }
 
 /** The filter/column id for one field: the qualifier, then its identity. */
-export function metafieldFieldId(field: MetafieldIdentity): string {
+export function metafieldFieldId(
+  field: MetafieldIdentity,
+): `${typeof METAFIELDS_FIELD_PREFIX}${string}` {
   return `${METAFIELDS_FIELD_PREFIX}${field.namespace}.${field.key}`;
 }
 

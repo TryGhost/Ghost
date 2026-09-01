@@ -1,6 +1,7 @@
 import { HttpResponse } from 'msw';
 import type { Action } from '@tryghost/admin-x-framework/api/actions';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   activeThemeResponse,
   browseResponse,
@@ -255,7 +256,7 @@ const membersResource = defineResource<Member>({
  * with `fakeAdminEndpoint`. A spec observing the list grow across a create
  * declares that growth itself via the function form (`() => fields`).
  */
-const memberCustomFieldsResource = defineResource({
+const memberCustomFieldsResource = defineResource<MemberCustomField>({
   resource: 'members/metafields/custom',
   envelopeKey: 'members_metafields',
   semantics: { kind: 'passthrough' },

@@ -8,18 +8,19 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-const companyField = {
+const companyField: MemberCustomField = {
   namespace: 'custom',
   key: 'company',
   name: 'Company',
   type: 'short_text',
   status: 'active',
   created_at: '2026-07-13T00:00:00.000Z',
-  updated_at: null as string | null,
+  updated_at: null,
 };
 
-const archivedField = {
+const archivedField: MemberCustomField = {
   namespace: 'custom',
   key: 'old_hobby',
   name: 'Old hobby',
