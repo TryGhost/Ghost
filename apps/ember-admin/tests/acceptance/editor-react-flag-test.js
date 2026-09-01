@@ -114,14 +114,16 @@ describe('Acceptance: editor React flag', function () {
 
         // Aborting alone leaves the router still reporting the route it came
         // from, so returning to that same URL later would be a no-op
-        // transition that renders nothing. Parking on the catch-all keeps the
-        // router's own state truthful.
-        it('parks the router on the React fallback route', async function () {
+        // transition that renders nothing. Parking on the catch-all at the
+        // actual editor path keeps both routers truthful. Using the Ember
+        // route name here sent React to its 404 until a reload.
+        it('parks the router on the React fallback at the editor path', async function () {
             const router = this.owner.lookup('service:router');
 
             await visitExpectingAbort('/editor/post/1');
 
             expect(router.currentRouteName, 'currentRouteName after aborting').to.equal('react-fallback');
+            expect(router.currentRoute?.params?.path, 'fallback path after aborting').to.equal('editor/post/1');
         });
     });
 });

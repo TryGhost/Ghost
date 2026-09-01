@@ -82,6 +82,7 @@ export default AuthenticatedRoute.extend({
         }
 
         transition.abort();
+        const reactRouteUrl = this._reactRouteUrl(transition);
 
         // Ember and React share window.location.hash, and an aborted
         // transition never reaches updateURL. A URL intent (cold load, hash
@@ -91,10 +92,10 @@ export default AuthenticatedRoute.extend({
         // post-success modal's revert-to-draft) has no URL yet — without
         // writing one the click is a silent no-op.
         if (!transition.intent?.url) {
-            this._navigateToReactRoute(this._reactRouteUrl(transition));
+            this._navigateToReactRoute(reactRouteUrl);
         }
 
-        this._parkOnReactFallback();
+        this._parkOnReactFallback(reactRouteUrl);
     },
 
     activate() {
@@ -178,22 +179,26 @@ export default AuthenticatedRoute.extend({
     // compares it against the route it thinks it is on, finds no difference,
     // and runs no transition at all. Park on `react-fallback` — the empty
     // catch-all Ember already uses for URLs React owns — to keep the
-    // router's state honest. See PostsRoute#_parkOnReactFallback for the
-    // full rationale (replace semantics, the parked-path guard, and URL
-    // restoration).
-    _parkOnReactFallback() {
+    // router's state honest. The fallback must use the real editor path:
+    // parking on `lexical-editor` briefly sends React to an unknown URL, and
+    // restoring the hash with replaceState does not notify React Router. That
+    // leaves the browser showing React's 404 until the next reload.
+    // See PostsRoute#_parkOnReactFallback for the full rationale (replace
+    // semantics, the parked-path guard, and URL restoration).
+    _parkOnReactFallback(reactRouteUrl) {
+        const fallbackPath = reactRouteUrl.replace(/^\//, '');
         const parkedPath = this.router.currentRouteName === 'react-fallback'
             ? this.router.currentRoute?.params?.path
             : null;
 
-        if (parkedPath === this.routeName) {
+        if (parkedPath === fallbackPath) {
             return;
         }
 
         const url = window.location.hash;
         const state = window.history.state;
 
-        this.router.replaceWith('react-fallback', this.routeName)
+        this.router.replaceWith('react-fallback', fallbackPath)
             .finally(() => this._restoreUrl(url, state));
     },
 

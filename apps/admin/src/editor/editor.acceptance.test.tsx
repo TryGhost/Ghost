@@ -24,12 +24,24 @@ describe('Editor flag', () => {
     await renderAdminApp('/editor/post/abc123', FLAG_ON);
 
     await expect.element(placeholder()).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Back to posts' }))
+      .toHaveAttribute('href', '#/posts');
   });
 
   it('serves a new-post URL too', async () => {
     await renderAdminApp('/editor/post', FLAG_ON);
 
     await expect.element(placeholder()).toBeVisible();
+  });
+
+  it('returns page editors to the pages list', async () => {
+    await renderAdminApp('/editor/page/abc123', FLAG_ON);
+
+    await expect.element(placeholder()).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Back to pages' }))
+      .toHaveAttribute('href', '#/pages');
   });
 
   it('defers to Ember when the flag is off', async () => {
