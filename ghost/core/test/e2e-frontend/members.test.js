@@ -972,6 +972,65 @@ describe('Front-end members behavior', function () {
         );
       });
 
+      // @member is narrowed from the same member payload the members API
+      // narrows separately, through its own allowlist and its own code. Pinning
+      // it here is what makes a change to the assembly behind both of them
+      // visible when it reaches one surface and not the other. The theme's own
+      // narrowing is not under test: what a theme may see is a versioned part
+      // of Ghost's theme API and is asserted, not derived.
+      it('exposes a fixed set of member fields to a theme', async function () {
+        const res = await request.get('/free-to-see/').expect(200);
+
+        const keysOf = (className) => {
+          const match = res.text.match(new RegExp(`<p class="${className}">([^<]*)</p>`));
+          assertExists(match, `theme rendered ${className}`);
+          return new Set(match[1].trim().split(/\s+/).filter(Boolean));
+        };
+
+        assert.deepEqual(
+          keysOf('gh-test-member-keys'),
+          new Set([
+            'uuid',
+            'email',
+            'name',
+            'firstname',
+            'avatar_image',
+            'subscriptions',
+            'paid',
+            'status',
+          ]),
+        );
+
+        assert.deepEqual(
+          keysOf('gh-test-member-subscription-keys'),
+          new Set([
+            'id',
+            'customer',
+            'status',
+            'start_date',
+            'default_payment_card_last4',
+            'cancel_at_period_end',
+            'cancellation_reason',
+            'current_period_end',
+            'plan',
+            'price',
+            'tier',
+            'trial_start_at',
+            'trial_end_at',
+            'discount_start',
+            'discount_end',
+            'offer',
+            'offer_redemptions',
+            'next_payment',
+            'attribution',
+          ]),
+        );
+
+        // Injected by the theme's own narrowing when Stripe reports no card,
+        // so it is the one @member value that is not simply passed through.
+        assert.match(res.text, /<p class="gh-test-member-subscription-card">.+<\/p>/);
+      });
+
       it('can read public post content', async function () {
         await request.get('/free-to-see/').expect(200).expect(assertContentIsPresent);
       });

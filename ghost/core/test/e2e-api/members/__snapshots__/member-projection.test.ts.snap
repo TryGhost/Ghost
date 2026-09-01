@@ -1,0 +1,293 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Members API member projection read projects a comped member with a synthesized subscription 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "can_comment": true,
+  "commenting": Object {
+    "disabled": false,
+    "disabled_reason": null,
+    "disabled_until": null,
+  },
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "comped-projection@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "enable_updates_and_announcements": null,
+  "expertise": null,
+  "firstname": "Comped",
+  "name": "Comped Projection",
+  "newsletters": Array [],
+  "paid": true,
+  "status": "comped",
+  "subscribed": false,
+  "subscriptions": Array [
+    Object {
+      "cancel_at_period_end": false,
+      "cancellation_reason": null,
+      "current_period_end": null,
+      "customer": Object {
+        "email": "comped-projection@example.com",
+        "id": "",
+        "name": "Comped Projection",
+      },
+      "default_payment_card_last4": "****",
+      "id": "",
+      "next_payment": Object {
+        "amount": 0,
+        "currency": "USD",
+        "discount": null,
+        "interval": "year",
+        "original_amount": 0,
+      },
+      "offer": null,
+      "offer_redemptions": Array [],
+      "plan": Object {
+        "amount": 0,
+        "currency": "USD",
+        "id": "",
+        "interval": "year",
+        "nickname": "Complimentary",
+      },
+      "price": Object {
+        "amount": 0,
+        "currency": "USD",
+        "id": "",
+        "interval": "year",
+        "nickname": "Complimentary",
+        "price_id": "",
+        "product": Object {
+          "id": "",
+          "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        "type": "recurring",
+      },
+      "start_date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+      "status": "active",
+      "tier": Object {
+        "active": true,
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "currency": "usd",
+        "description": null,
+        "expiry_at": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "monthly_price": 500,
+        "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+        "slug": "default-product",
+        "trial_days": 0,
+        "type": "paid",
+        "updated_at": Nullable<StringMatching>,
+        "visibility": "public",
+        "welcome_page_url": "/welcome-paid",
+        "yearly_price": 5000,
+        "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+    },
+  ],
+  "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Members API member projection read projects a comped member with a synthesized subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1748",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API member projection read projects a free member 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "can_comment": true,
+  "commenting": Object {
+    "disabled": false,
+    "disabled_reason": null,
+    "disabled_until": null,
+  },
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "free-projection@example.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "enable_updates_and_announcements": null,
+  "expertise": null,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "paid": false,
+  "status": "free",
+  "subscribed": false,
+  "subscriptions": Array [],
+  "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Members API member projection read projects a free member 2: [headers] 1`] = `
+Object {
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "871",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API member projection read projects a paid member with their subscriptions 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "can_comment": true,
+  "commenting": Object {
+    "disabled": false,
+    "disabled_reason": null,
+    "disabled_until": null,
+  },
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "email": "paid@test.com",
+  "email_suppression": Object {
+    "info": null,
+    "suppressed": false,
+  },
+  "enable_comment_notifications": true,
+  "enable_updates_and_announcements": null,
+  "expertise": null,
+  "firstname": "Egon",
+  "name": "Egon Spengler",
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sort_order": 1,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "paid": true,
+  "status": "paid",
+  "subscribed": false,
+  "subscriptions": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrerMedium": "Social",
+        "referrerSource": "Twitter",
+        "referrerUrl": "https://twitter.com",
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
+      "cancel_at_period_end": false,
+      "cancellation_reason": null,
+      "current_period_end": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "customer": Object {
+        "email": "paid@test.com",
+        "id": Any<String>,
+        "name": "Egon Spengler",
+      },
+      "default_payment_card_last4": "4242",
+      "discount_end": null,
+      "discount_start": null,
+      "id": Any<String>,
+      "next_payment": Object {
+        "amount": 1000,
+        "currency": "USD",
+        "discount": null,
+        "interval": "month",
+        "original_amount": 1000,
+      },
+      "offer": null,
+      "offer_redemptions": Array [],
+      "plan": Object {
+        "amount": 1000,
+        "currency": "USD",
+        "id": Any<String>,
+        "interval": "month",
+        "nickname": "Monthly",
+      },
+      "price": Object {
+        "amount": 1200,
+        "currency": "GBP",
+        "id": Any<String>,
+        "interval": "month",
+        "nickname": "Monthly",
+        "price_id": Any<String>,
+        "product": Object {
+          "id": Any<String>,
+          "name": "Default Product",
+          "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        "type": "recurring",
+      },
+      "start_date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": "active",
+      "tier": Object {
+        "active": true,
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "currency": "usd",
+        "description": null,
+        "expiry_at": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "monthly_price": 500,
+        "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+        "slug": "default-product",
+        "trial_days": 0,
+        "type": "paid",
+        "updated_at": Nullable<StringMatching>,
+        "visibility": "public",
+        "welcome_page_url": "/welcome-paid",
+        "yearly_price": 5000,
+        "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "trial_end_at": null,
+      "trial_start_at": null,
+    },
+  ],
+  "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Members API member projection read projects a paid member with their subscriptions 2: [headers] 1`] = `
+Object {
+  "access-control-allow-credentials": "true",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2420",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
