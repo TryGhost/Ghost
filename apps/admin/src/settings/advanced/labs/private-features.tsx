@@ -113,6 +113,12 @@ const features: Feature[] = [
     flag: 'postsListReact',
   },
   {
+    title: 'React editor',
+    description:
+      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
+    flag: 'editorReact',
+  },
+  {
     title: 'Self-serve archives',
     description:
       'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',

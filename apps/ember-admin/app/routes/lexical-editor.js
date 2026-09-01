@@ -69,6 +69,19 @@ export default AuthenticatedRoute.extend({
 
     classNames: ['editor'],
 
+    // React owns /editor/* when the flag is on. Aborting keeps the Ember
+    // editor from loading and rendering behind the React screen, and skips
+    // `activate()` so Ember's full-screen state stays untouched. Strictly
+    // boolean, matching the tag route: a non-boolean labs value must not
+    // hand the route to React.
+    beforeModel(transition) {
+        this._super(...arguments);
+
+        if (this.feature.editorReact === true) {
+            transition.abort();
+        }
+    },
+
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);

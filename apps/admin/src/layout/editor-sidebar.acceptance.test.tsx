@@ -39,6 +39,15 @@ describe('Editor chrome', () => {
     await expect(sidebar()).toHaveCount(0);
   });
 
+  // The decision lives on the route handle, so it must hold on both sides of
+  // the `editorReact` gate — here the React placeholder serves the route.
+  it('hides it with editorReact on', async () => {
+    await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
+
+    await expect.element(page.getByTestId('editor-react-placeholder')).toBeVisible();
+    await expect(sidebar()).toHaveCount(0);
+  });
+
   // ...and still shows it everywhere else, or this would be a worse bug than
   // the one it fixes.
   it('leaves the sidebar alone on the posts list', async () => {
