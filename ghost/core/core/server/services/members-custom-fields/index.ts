@@ -1,26 +1,31 @@
 import { CustomFieldDefinitionsService } from './definitions-service';
 import { CustomFieldValuesService } from './values-service';
+import { CustomFieldBindingsService } from './bindings-service';
 import { recordCustomFieldAction, type RecordCustomFieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 
 export type { CustomField } from './models';
 export type { RequestContext } from './actions';
+export { actingContext } from './actions';
+export type { BoundField } from './bindings-service';
+export type { WrittenBy } from './schema';
 
-// Two services from one module, split along an aggregate boundary rather than a
-// technical layer: `definitions` owns the field definitions, which belong to the
-// site's settings, and `values` owns the per-member values, which belong to the
-// member. The values service reads the definitions table directly for the
-// reference data it needs — a value referencing its definition, not a boundary
-// crossing.
+// Three services from one module, split along aggregate boundaries rather than
+// technical layers: `definitions` owns the field definitions, which belong to the
+// site's settings, `values` owns the per-member values, which belong to the
+// member, and `bindings` owns which of a source's ports writes into which field.
+// The values service reads the definitions table directly for the reference data
+// it needs — a value referencing its definition, not a boundary crossing.
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export let definitions: CustomFieldDefinitionsService | undefined;
 export let values: CustomFieldValuesService | undefined;
+export let bindings: CustomFieldBindingsService | undefined;
 
 export function init(): void {
-  // The two are constructed together below, so checking both keeps the "both or
-  // neither" invariant explicit rather than trusting one to stand in for the pair.
-  if (definitions && values) {
+  // The three are constructed together below, so checking all of them keeps the "all or
+  // none" invariant explicit rather than trusting one to stand in for the rest.
+  if (definitions && values && bindings) {
     return;
   }
 
@@ -49,4 +54,9 @@ export function init(): void {
     getMaxDefinitions: () =>
       resolveMaxDefinitions(config.get('members:customFields:maxDefinitions')),
   });
+
+  // Built after the values, which is what a binding routes into. It has no handle on the
+  // definitions: making a field is not part of binding to one, so a caller that needs both
+  // asks for both.
+  bindings = new CustomFieldBindingsService({ knex, values });
 }

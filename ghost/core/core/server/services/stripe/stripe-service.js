@@ -10,6 +10,7 @@ const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
+const customFields = require('../members-custom-fields');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -132,6 +133,12 @@ module.exports = class StripeService {
       async isPaidWelcomeEmailActive() {
         memberWelcomeEmailService.init();
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
+      },
+      labsService: labs,
+      // A getter because the custom field services are built during boot: reading the
+      // binding at construction would capture the empty value it had beforehand.
+      get customFieldBindings() {
+        return customFields.bindings;
       },
     });
 

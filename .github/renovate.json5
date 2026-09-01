@@ -370,7 +370,6 @@
         '@tryghost/mw-vhost',
         '@tryghost/pretty-cli',
         '@tryghost/prometheus-metrics',
-        '@tryghost/promise',
         '@tryghost/referrer-parser',
         '@tryghost/root-utils',
         '@tryghost/security',

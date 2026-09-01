@@ -17,6 +17,7 @@ import {
 } from '@tryghost/shade/components';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { SettingsModal } from '@tryghost/shade/patterns';
+import { memberAvatarProps } from '@/members/api';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -227,8 +228,7 @@ const TestimonialsModal = () => {
                 <div className="flex items-center gap-2">
                   <Avatar
                     className="size-10"
-                    email={staffUserEmail}
-                    name={staffUserName}
+                    {...memberAvatarProps({ name: staffUserName, email: staffUserEmail })}
                     src={staffUserProfileImage}
                   />
                   <div className="flex flex-col">

@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/custom-field-types/csv';
+import type { WrittenBy } from '../../members-custom-fields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -49,7 +50,11 @@ interface ImporterServices {
     definitions: { browse(): Promise<CsvField[]> };
     values: {
       planWrite(values: Record<string, unknown>): Promise<unknown[]>;
-      applyWrite(memberId: string, plan: unknown[], options?: { executor?: Knex }): Promise<void>;
+      applyWrite(
+        memberId: string,
+        plan: unknown[],
+        options: { writtenBy: WrittenBy; executor?: Knex },
+      ): Promise<void>;
     };
   };
 }
@@ -118,8 +123,13 @@ export function makeImporter(deps: ImporterServices) {
     activeFields: async () =>
       labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : [],
     planWrite: (values) => deps.customFields.values.planWrite(values),
+    // Every value the import writes came out of the file, whichever column carried it.
+    // An import has no id to give until runs are tracked, so it names its kind only.
     applyWrite: (memberId, plan, executor) =>
-      deps.customFields.values.applyWrite(memberId, plan, { executor }),
+      deps.customFields.values.applyWrite(memberId, plan, {
+        writtenBy: { type: 'import', id: null },
+        executor,
+      }),
   };
 
   // Inline jobs never reach the job manager's Sentry handler, which is wired to the

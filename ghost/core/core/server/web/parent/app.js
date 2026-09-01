@@ -12,6 +12,11 @@ module.exports = function setupParentApp() {
   const parentApp = express('parent');
 
   parentApp.use(mw.requestId);
+
+  if (config.get('queryParameterFiltering:enabled')) {
+    parentApp.use(mw.filterQueryParameters);
+  }
+
   parentApp.use(mw.logRequest);
 
   // Register event emitter on req/res to trigger cache invalidation webhook event

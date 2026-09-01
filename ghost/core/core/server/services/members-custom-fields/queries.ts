@@ -13,6 +13,20 @@ export function activeFields(db: Knex) {
 }
 
 /**
+ * A narrowed query against the definitions table, whatever it has narrowed by.
+ *
+ * Named rather than inferred from `activeFields`, so a caller that narrows some other way —
+ * one key, a publisher's filter — states the same type instead of asserting its way back to
+ * it.
+ */
+export type DefinitionQuery = ReturnType<typeof activeFields>;
+
+/** One field by key, as the same kind of query the rest of this reads through. */
+export function fieldByKey(db: Knex, key: string): DefinitionQuery {
+  return db(FIELDS_TABLE).where(`${FIELDS_TABLE}.key`, key);
+}
+
+/**
  * The publisher's order, applied to every read of the list. Here for the same reason the
  * status filter is: a read that forgets it comes back in whatever order the engine chose.
  *

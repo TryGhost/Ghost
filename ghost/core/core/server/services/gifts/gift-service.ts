@@ -9,6 +9,7 @@ import type {
   GiftEventBrowseOptions,
   GiftEventPage,
   GiftRepository,
+  RepositoryTransactionOptions,
 } from './gift-bookshelf-repository';
 import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
 import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
@@ -175,7 +176,11 @@ interface GiftServiceDeps {
   giftRepository: GiftRepository;
   giftDeliveryService: Pick<
     GiftDeliveryService,
-    'createForCheckout' | 'dispatchForGift' | 'cancelPendingForGift' | 'recoverPending'
+    | 'createForCheckout'
+    | 'getRecipientEmailForGift'
+    | 'dispatchForGift'
+    | 'cancelPendingForGift'
+    | 'recoverPending'
   >;
   memberRepository: MemberRepository;
   tiersService: TiersService;
@@ -286,6 +291,7 @@ export interface GiftRedemption {
   amount: number;
   buyer_name: string | null;
   recipient_name: string | null;
+  recipient_email: string | null;
   message: string | null;
   expires_at: Date;
   consumes_at: Date | null;
@@ -893,7 +899,7 @@ export class GiftService {
         transacting,
         newMember: input.newMember,
       });
-      const redemption = await this.serializeRedemption(redeemed);
+      const redemption = await this.serializeRedemption(redeemed, { transacting });
 
       return { redeemed, member, redemption };
     };
@@ -1567,7 +1573,14 @@ export class GiftService {
     return true;
   }
 
-  private async serializeRedemption(gift: Gift): Promise<GiftRedemption> {
+  private async serializeRedemption(
+    gift: Gift,
+    options: RepositoryTransactionOptions = {},
+  ): Promise<GiftRedemption> {
+    const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForGift(
+      gift.token,
+      options,
+    );
     const tier = await this.deps.tiersService.api.read(gift.tierId);
 
     if (!tier) {
@@ -1586,6 +1599,7 @@ export class GiftService {
       amount: gift.amount,
       buyer_name: gift.buyerName,
       recipient_name: gift.recipientName,
+      recipient_email: recipientEmail,
       message: gift.personalMessage,
       expires_at: gift.expiresAt!,
       consumes_at: gift.consumesAt,

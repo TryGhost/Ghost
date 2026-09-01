@@ -87,6 +87,7 @@ describe('GiftService', function () {
   let giftRepository: GiftRepositoryStub;
   let giftDeliveryService: {
     createForCheckout: sinon.SinonStub;
+    getRecipientEmailForGift: sinon.SinonStub;
     dispatchForGift: sinon.SinonStub;
     cancelPendingForGift: sinon.SinonStub;
     recoverPending: sinon.SinonStub;
@@ -177,6 +178,7 @@ describe('GiftService', function () {
     };
     giftDeliveryService = {
       createForCheckout: sinon.stub().resolves(undefined),
+      getRecipientEmailForGift: sinon.stub().resolves(null),
       dispatchForGift: sinon.stub().resolves(null),
       cancelPendingForGift: sinon.stub().resolves(false),
       recoverPending: sinon.stub().resolves({ sentCount: 0, skippedCount: 0, failedCount: 0 }),
@@ -838,11 +840,18 @@ describe('GiftService', function () {
       const service = createService();
 
       giftRepository.getByToken.resolves(gift);
+      giftDeliveryService.getRecipientEmailForGift.resolves('recipient@example.com');
 
       const result = await service.getRedeemable({ token: 'gift-token', memberStatus: 'free' });
 
       sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token');
+      sinon.assert.calledOnceWithExactly(
+        giftDeliveryService.getRecipientEmailForGift,
+        'gift-token',
+        {},
+      );
       assert.equal(result.token, gift.token);
+      assert.equal(result.recipient_email, 'recipient@example.com');
       assert.equal('buyerEmail' in result, false);
     });
 
@@ -1668,6 +1677,7 @@ describe('GiftService', function () {
       memberGet.withArgs('email').returns('member@example.com');
 
       giftRepository.getByToken.resolves(gift);
+      giftDeliveryService.getRecipientEmailForGift.resolves('recipient@example.com');
       memberRepository.get.resolves({
         id: 'member_1',
         get: memberGet,
@@ -1707,6 +1717,11 @@ describe('GiftService', function () {
       sinon.assert.calledOnceWithExactly(giftDeliveryService.cancelPendingForGift, redeemed.token, {
         transacting,
       });
+      sinon.assert.calledOnceWithExactly(
+        giftDeliveryService.getRecipientEmailForGift,
+        redeemed.token,
+        { transacting },
+      );
       sinon.assert.calledTwice(tiersService.api.read);
       sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
       sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1722,6 +1737,7 @@ describe('GiftService', function () {
       assert.equal(redeemed.redeemerMemberId, 'member_1');
       assert.notEqual(redeemed.consumesAt, null);
       assert.equal(redemption.token, 'gift-token');
+      assert.equal(redemption.recipient_email, 'recipient@example.com');
       assert.deepEqual(redemption.consumes_at, redeemed.consumesAt);
     });
 

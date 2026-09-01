@@ -1,4 +1,4 @@
-import { definitions, type RequestContext } from '../../services/members-custom-fields';
+import { actingContext, definitions } from '../../services/members-custom-fields';
 
 const permissionsService = require('../../services/permissions');
 
@@ -15,17 +15,6 @@ interface Frame {
 // `permissions: true` handler would try to load a model that doesn't exist).
 function canThis(frame: Frame) {
   return permissionsService.canThis(frame.options.context);
-}
-
-function requestContextFromFrame(frame: Frame): RequestContext {
-  const context = (frame.options.context ?? {}) as { user?: string; integration?: { id: string } };
-  if (context.integration) {
-    return { actor: { id: context.integration.id, type: 'integration' } };
-  }
-  if (context.user) {
-    return { actor: { id: context.user, type: 'user' } };
-  }
-  return { actor: null };
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };
@@ -71,7 +60,10 @@ const controller = {
     // all-or-nothing. A client sending a single definition (as Admin does)
     // is just the one-item case and sees no change.
     query(frame: Frame) {
-      return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields);
+      return definitions!.add(
+        actingContext(frame.options.context),
+        frame.data.members_custom_fields,
+      );
     },
   },
 
@@ -83,7 +75,10 @@ const controller = {
       return canThis(frame).edit.member_custom_field();
     },
     query(frame: Frame) {
-      return definitions!.reorder(requestContextFromFrame(frame), frame.data.members_custom_fields);
+      return definitions!.reorder(
+        actingContext(frame.options.context),
+        frame.data.members_custom_fields,
+      );
     },
   },
 
@@ -96,7 +91,7 @@ const controller = {
     },
     query(frame: Frame) {
       return definitions!.edit(
-        requestContextFromFrame(frame),
+        actingContext(frame.options.context),
         frame.options.key,
         frame.data.members_custom_fields[0],
       );
@@ -112,7 +107,7 @@ const controller = {
       return canThis(frame).destroy.member_custom_field(frame.options.key);
     },
     async query(frame: Frame) {
-      await definitions!.destroy(requestContextFromFrame(frame), frame.options.key);
+      await definitions!.destroy(actingContext(frame.options.context), frame.options.key);
       return null;
     },
   },

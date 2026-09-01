@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { centsToDollars } from '@tryghost/shade/app';
+import { centsToDollars } from '@/shared/analytics/chart-helpers';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
   useMembersTrackSources,

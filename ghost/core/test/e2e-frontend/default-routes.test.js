@@ -324,8 +324,8 @@ describe('Default Frontend routing', function () {
     describe('AMP Disabled', function () {
       it('/amp/ should redirect to regular post, including any query params', async function () {
         await request
-          .get('/welcome/amp/?q=a')
-          .expect('Location', '/welcome/?q=a')
+          .get('/welcome/amp/?ref=a')
+          .expect('Location', '/welcome/?ref=a')
           .expect(301)
           .expect(assertCorrectFrontendHeaders);
       });

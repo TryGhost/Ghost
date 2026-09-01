@@ -24,6 +24,7 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
+export { useDocsBot } from './hooks/use-docsbot';
 
 // Analytics utilities
 export { trackEvent, trackFilterApplications } from './utils/analytics';
