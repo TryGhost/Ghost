@@ -6,8 +6,9 @@ const configUtils = require('../../../utils/config-utils');
 const ObjectId = require('bson-objectid').default;
 const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
+const jobManager = require('../../../../core/server/services/jobs/job-service');
 const { mockSystemTime } = require('../../../utils/clock-utils');
-const { waitForEmailJob, allEmailJobsSettled } = require('../../../utils/batch-email-utils');
+const { waitForEmailStatus } = require('../../../utils/batch-email-utils');
 
 describe('Domain Warming Integration Tests', function () {
   let agent;
@@ -73,7 +74,7 @@ describe('Domain Warming Integration Tests', function () {
       .expectStatus(200);
 
     const email = await models.Email.findOne({ post_id: postId });
-    await waitForEmailJob(email.id);
+    await waitForEmailStatus(email.id);
     await email.refresh();
     return email;
   }
@@ -145,7 +146,7 @@ describe('Domain Warming Integration Tests', function () {
     mockManager.restore();
     await configUtils.restore();
 
-    await allEmailJobsSettled();
+    await jobManager.allSettled();
 
     // Clean up test data using bulk deletes for performance
     const patterns = ['warmup', 'day2', 'sameday', 'multi', 'limit', 'nowarmup', 'maxlimit', 'gap'];

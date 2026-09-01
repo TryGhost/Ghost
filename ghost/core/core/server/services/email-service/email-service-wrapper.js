@@ -145,7 +145,6 @@ class EmailServiceWrapper {
     }
 
     this.renderer = emailRenderer;
-    this.batchSendingService = batchSendingService;
 
     this.service = new EmailService({
       batchSendingService,

@@ -3,13 +3,10 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
+const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
-const {
-  sendEmail,
-  waitForEmailJob,
-  allEmailJobsSettled,
-} = require('../../../utils/batch-email-utils');
+const { sendEmail, waitForEmailStatus } = require('../../../utils/batch-email-utils');
 
 describe('Resume interrupted sends', function () {
   let agent;
@@ -40,7 +37,7 @@ describe('Resume interrupted sends', function () {
   afterEach(async function () {
     await configUtils.restore();
     mockManager.restore();
-    await allEmailJobsSettled();
+    await jobManager.allSettled();
   });
 
   afterAll(async function () {
@@ -76,7 +73,7 @@ describe('Resume interrupted sends', function () {
     // 4. Run the scanner. It will flip email -> pending and call scheduleEmail; the job
     //    that fires re-enters the normal emailJob -> sendBatches path.
     await emailService.service.resumeInterruptedSends();
-    await waitForEmailJob(emailModel.id);
+    await waitForEmailStatus(emailModel.id);
 
     // 5. Final state.
     await emailModel.refresh();
@@ -131,7 +128,7 @@ describe('Resume interrupted sends', function () {
     const errorLog = sinon.stub(logging, 'error');
 
     await emailService.service.resumeInterruptedSends();
-    await waitForEmailJob(emailModel.id);
+    await waitForEmailStatus(emailModel.id);
 
     // The orphan batch causes sendBatches' partial-failure throw; emailJob catches and
     // marks the email failed. The orphan batch row is intentionally left in `submitting`
