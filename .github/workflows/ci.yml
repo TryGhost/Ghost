@@ -554,8 +554,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
-          # --force for the same reason as job_unit-tests: better-sqlite3 is an
-          # optionalDependency and boot uses it for the development database.
+          # better-sqlite3 is an optionalDependency that pnpm may skip when
+          # restoring from a cached store, and boot needs it for the
+          # development database.
           install-args: --force
 
       - name: Install hyperfine
@@ -693,11 +694,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
-          # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-          # installing/linking it when restoring from a cached store. --force
-          # ensures all optional deps are installed regardless.
-          # (ghost core's test:unit job requires better-sqlite3)
-          install-args: --force
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -796,6 +795,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -900,6 +902,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set env vars (MySQL)
         run: |
