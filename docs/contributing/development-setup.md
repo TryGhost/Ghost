@@ -113,8 +113,7 @@ environment and adds the listed tooling:
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
 | `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
-| `pnpm dev:stripe`          | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file       |
-| `pnpm dev:stripe:remote`   | Stripe webhooks exactly as production receives them; requires Tailscale, see below            |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; requires Tailscale, see below            |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
@@ -126,14 +125,7 @@ subdirectory, and separate-Admin URL behaviour, see
 
 ### Stripe webhooks
 
-`pnpm dev:stripe` forwards events with `stripe listen`. The CLI renders every
-event at your Stripe account's default API version, which cannot be pinned, so
-an event can carry a different shape from the one Ghost's production endpoint
-receives. Ghost pins that endpoint to its own API version when it creates it.
-Production keeps a persistent endpoint; a normal development environment never
-creates one.
-
-`pnpm dev:stripe:remote` runs the production path instead. It publishes Ghost's
+`pnpm dev:stripe` runs the webhook path production runs. It publishes Ghost's
 webhook route, and nothing else, through
 [Tailscale Funnel](https://tailscale.com/kb/1223/funnel), and Ghost registers a
 pinned webhook endpoint at that address once Stripe is connected in Admin, then
@@ -154,6 +146,14 @@ Funnel needs Tailscale 1.52 or newer with MagicDNS, HTTPS certificates and
 Funnel enabled for your tailnet and node. The command reports when Tailscale is
 missing, not signed in, or has no MagicDNS name; for the other requirements it
 shows Tailscale's own error.
+
+`pnpm dev:stripe --listen` forwards events with `stripe listen` instead, which
+needs `STRIPE_SECRET_KEY` in the environment or a local `.env` file but no
+Tailscale. The CLI renders every event at your Stripe account's default API
+version, which cannot be pinned, so an event can carry a different shape from
+the one production receives; the command warns about this at startup and Ghost
+logs an error when a mismatched event arrives. Use it only when the payload
+shape does not matter.
 
 ## Data and email
 
