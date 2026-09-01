@@ -99,6 +99,15 @@ export type Config = {
         logoDark?: string; // Logo shown in dark mode, falls back to logo
         logoAlt?: string; // Alt text for the logo
       };
+      // Payment-failure (dunning) state for the site's hosting subscription.
+      // Managed hosting providers set this while a payment is outstanding;
+      // Admin escalates from a warning banner to a locked overlay based on
+      // the position within the paymentFailedAt -> suspendsAt window.
+      dunning?: {
+        active?: boolean; // Only true while the payment is outstanding
+        paymentFailedAt?: string; // ISO date the payment first failed (window start)
+        suspendsAt?: string; // ISO date the host will suspend the site (window end)
+      };
       // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
       search?: {
         groupName?: string;
