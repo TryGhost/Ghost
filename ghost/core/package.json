@@ -384,7 +384,7 @@
           "^build"
         ],
         "outputs": [
-          "{projectRoot}/coverage-e2e"
+          "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
         ]
       },
       "test:ci:integration": {
@@ -393,7 +393,7 @@
           "^build"
         ],
         "outputs": [
-          "{projectRoot}/coverage-integration"
+          "{projectRoot}/coverage-integration/cobertura-coverage.xml"
         ]
       }
     }
