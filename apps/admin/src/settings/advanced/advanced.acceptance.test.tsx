@@ -90,6 +90,32 @@ describe('Advanced settings', () => {
     ]);
   });
 
+  it('treats an absent React editor flag as off and allows enabling it', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = true;
+    await renderAdminApp('/settings/labs', { labs: {}, boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+    const toggle = section.getByRole('switch', { name: 'React editor' });
+    await expect.element(toggle).not.toBeChecked();
+    await toggle.click();
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'labs',
+        value: String(
+          settingsResponse({ labs: { editorReact: true } }).settings.find((setting) => {
+            return setting.key === 'labs';
+          })!.value,
+        ),
+      },
+    ]);
+    await expect.element(toggle).toBeChecked();
+  });
+
   it('saves header and footer code injection', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
