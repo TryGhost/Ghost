@@ -11,7 +11,9 @@ const { knex } = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 const lexicalLib = require('../../lib/lexical');
+const TinybirdServiceWrapper = require('../tinybird');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
@@ -73,7 +75,58 @@ const repository = createDatabaseAutomationsRepository({
 });
 
 export async function browse() {
-  return await repository.browse();
+  console.time('@@@@ full browse')
+  const result = await repository.browse();
+  const tinybirdConfig = config.get('tinybird:stats');
+  const endpoint = tinybirdConfig.local?.enabled
+    ? tinybirdConfig.local.endpoint
+    : tinybirdConfig.endpoint;
+  const siteUuid = tinybirdConfig.id || settingsCache.get('site_uuid');
+
+  TinybirdServiceWrapper.init();
+  const token = TinybirdServiceWrapper.instance.getToken().token;
+
+  console.time('@@@@ tinybird req')
+  const response = await fetch(
+    `${endpoint}/v0/pipes/api_automation_browse_stats.json?site_uuid=${siteUuid}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  console.timeEnd('@@@@ tinybird req')
+
+  if (!response.ok) {
+    throw new errors.InternalServerError({
+      message: `Tinybird API error: ${response.status} - ${await response.text()}`,
+    });
+  }
+
+  const { data } = (await response.json()) as {
+    data: Array<{
+      automation_id: string;
+      last_run_created_at: string;
+      total_run_count: number | string;
+      in_progress_run_count: number | string;
+    }>;
+  };
+  const statsByAutomationId = new Map(data.map((stats) => [stats.automation_id, stats]));
+
+  result.data = result.data.map((automation) => {
+    const stats = statsByAutomationId.get(automation.id);
+    return {
+      ...automation,
+      stats: {
+        last_run_created_at: stats ? new Date(stats.last_run_created_at) : null,
+        total_run_count: Number(stats?.total_run_count ?? 0),
+        in_progress_run_count: Number(stats?.in_progress_run_count ?? 0),
+      },
+    };
+  });
+
+  console.timeEnd('@@@@ full browse')
+  return result;
 }
 
 export async function read(automationId: string) {
