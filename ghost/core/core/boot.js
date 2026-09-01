@@ -473,6 +473,67 @@ async function initBackgroundServices({ config }) {
     return;
   }
 
+  const tinybirdConfig = config.get('tinybird:stats');
+  const tinybirdEndpoint = tinybirdConfig?.local?.enabled
+    ? tinybirdConfig.local.endpoint
+    : tinybirdConfig?.endpoint;
+
+  if (tinybirdEndpoint) {
+    const db = require('./server/data/db');
+    const logging = require('@tryghost/logging');
+    const settingsCache = require('./shared/settings-cache');
+    const token = config.get('tinybird:adminToken');
+
+    setInterval(async () => {
+      try {
+        const runs = await db.knex('automation_runs').select('*');
+
+        if (!runs.length) {
+          logging.info('Skipping automation run sync to Tinybird: no automation runs found');
+          return;
+        }
+
+        if (!token) {
+          logging.info('Skipping automation run sync to Tinybird: no admin token configured');
+          return;
+        }
+
+        const siteUuid = tinybirdConfig.id || settingsCache.get('site_uuid');
+        const events = runs.map((run) => ({
+          site_uuid: siteUuid,
+          id: run.id,
+          updated_at: run.updated_at,
+          payload: {
+            ...run,
+            site_uuid: siteUuid,
+          },
+        }));
+
+        logging.info(`Sending ${events.length} automation run events to Tinybird`);
+
+        const response = await fetch(
+          `${tinybirdEndpoint}/v0/events?name=automation_run_events`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/x-ndjson',
+            },
+            body: events.map((event) => JSON.stringify(event)).join('\n'),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Tinybird API error: ${response.status} - ${await response.text()}`);
+        }
+
+        logging.info(`Sent ${events.length} automation run events to Tinybird`);
+      } catch (err) {
+        logging.error(err);
+      }
+    }, 10_000);
+  }
+
   // Resume any newsletter sends interrupted by a prior container shutdown.
   // Runs before activitypub.init so an activitypub failure can't disable recovery.
   try {
