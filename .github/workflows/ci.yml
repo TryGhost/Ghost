@@ -335,8 +335,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Fetch main branch
-        run: git fetch --no-tags origin main
+      - name: Fetch PR base branch
+        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -349,6 +349,7 @@ jobs:
       - name: Check app version bump
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-app-version-bump.js
 
@@ -358,6 +359,7 @@ jobs:
       - name: Check for missing changesets
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/change-check.js
 
@@ -379,6 +381,7 @@ jobs:
       - name: Check migration integrity
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-migration-integrity.cjs
 

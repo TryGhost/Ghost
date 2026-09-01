@@ -221,8 +221,19 @@ function main() {
     errors.push(orphanedError);
   }
 
-  // Check 2: Stale placements (needs git context, only on PRs)
-  const baseSha = process.env.PR_BASE_SHA;
+  // Check 2: Stale placements (needs git context, only on PRs).
+  // `pull_request.base.sha` (PR_BASE_SHA) freezes when the event fires and goes
+  // stale as the base branch moves on; prefer the live tip of the base ref,
+  // which this job's workflow fetches right before running.
+  const baseRef = process.env.PR_BASE_REF;
+  let baseSha = process.env.PR_BASE_SHA;
+  if (baseRef) {
+    try {
+      baseSha = runGit(['rev-parse', `origin/${baseRef}`]);
+    } catch {
+      // The ref was not fetched in this checkout; the payload SHA still works.
+    }
+  }
   const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
 
   if (baseSha && compareSha) {
