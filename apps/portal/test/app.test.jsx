@@ -189,6 +189,23 @@ describe('App', function () {
     expect(app.fetchGiftRedemptionData).not.toHaveBeenCalled();
   });
 
+  test('maps customized gift routes to explicit form steps', () => {
+    const app = new App({ siteUrl: 'http://example.com' });
+    const site = {
+      ...FixtureSite.singleTier.basic,
+      labs: { giftSubCustomization: true },
+    };
+
+    expect(app.getPageFromLinkPath('gift', site)).toEqual({
+      page: 'gift',
+      pageData: { giftStep: 'plan' },
+    });
+    expect(app.getPageFromLinkPath('gift/delivery', site)).toEqual({
+      page: 'gift',
+      pageData: { giftStep: 'delivery' },
+    });
+  });
+
   test('ignores malformed gift redemption tokens in trigger links', async () => {
     const app = new App({ siteUrl: 'http://example.com' });
     app.dispatchAction = vi.fn();
