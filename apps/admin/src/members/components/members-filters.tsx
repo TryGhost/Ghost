@@ -31,6 +31,7 @@ import {
   useTierValueSource,
 } from '@/shared/filter-sources';
 import type { MemberView } from '@/members/hooks/use-member-views';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface MembersFiltersProps {
   filters: Filter[];
@@ -186,6 +187,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
+  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const showIconOnlyTrigger = iconOnly && !hasFilters;
   const addFilterButtonClassName = cn(
     'bg-white dark:bg-background',
@@ -196,9 +198,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const clearAndSaveButtons = hasFilters ? (
     <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
       <Button
-        className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
+        className={cn(
+          'hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex',
+          !useConsolidatedFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
+        )}
         type="button"
-        variant="ghost"
+        variant={useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
         <LucideIcon.X className="size-4" />
@@ -218,10 +223,25 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   return (
     <Filters
       addButtonClassName={addFilterButtonClassName}
-      addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
+      addButtonIcon={
+        useConsolidatedFilterUI ? (
+          hasFilters ? (
+            <LucideIcon.ListFilterPlus className="size-4" />
+          ) : (
+            <LucideIcon.ListFilter className="size-4" />
+          )
+        ) : hasFilters ? (
+          <LucideIcon.FunnelPlus />
+        ) : (
+          <LucideIcon.Funnel />
+        )
+      }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
       allowMultiple={true}
-      className={`[&>button]:order-last ${hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto'}`}
+      className={cn(
+        '[&>button]:order-last',
+        hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto',
+      )}
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}
