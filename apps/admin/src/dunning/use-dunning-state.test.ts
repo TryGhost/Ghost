@@ -19,9 +19,10 @@ vi.mock('@/ember-bridge', () => ({
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-09-10T12:00:00Z');
 
-const withDunning = (dunning?: Record<string, unknown>) => ({
+const withDunning = (dunning?: Record<string, unknown>, labs = { dunningWarnings: true }) => ({
   data: {
     config: {
+      labs,
       hostSettings: {
         billing: { enabled: true, url: 'https://billing.example.com', dunning },
       },
@@ -51,6 +52,14 @@ describe('useDunningState', () => {
 
   test('returns null without a dunning block', () => {
     mockUseBrowseConfig.mockReturnValue(withDunning(undefined));
+
+    const { result } = renderHook(() => useDunningState());
+
+    expect(result.current).toBeNull();
+  });
+
+  test('returns null while the dunningWarnings flag is off', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2), {}));
 
     const { result } = renderHook(() => useDunningState());
 
