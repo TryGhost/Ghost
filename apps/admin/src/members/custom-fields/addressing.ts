@@ -1,4 +1,5 @@
 import { escapeNqlString } from '@tryghost/nql-string';
+import { formatIdentity, parseIdentity } from '@tryghost/custom-field-types/identity';
 import {
   PRESENCE_OPERATORS,
   getCompoundChildren,
@@ -11,12 +12,6 @@ const RELATION = 'metafields';
 const KEY_ATTRIBUTE = `${RELATION}.key`;
 const VALUE_ATTRIBUTE = `${RELATION}.value`;
 
-/**
- * The qualifier every metafield filter id and column key starts with. The rest of an
- * id is the field's identity — namespace.key — taken from the field itself, so ids
- * follow whatever namespaces the definitions API returns and nothing here assumes
- * which ones exist.
- */
 export const METAFIELDS_FIELD_PREFIX = 'metafields.';
 
 export interface MetafieldIdentity {
@@ -24,14 +19,12 @@ export interface MetafieldIdentity {
   key: string;
 }
 
-/** The filter/column id for one field: the qualifier, then its identity. */
 export function metafieldFieldId(
   field: MetafieldIdentity,
 ): `${typeof METAFIELDS_FIELD_PREFIX}${string}` {
   return `${METAFIELDS_FIELD_PREFIX}${field.namespace}.${field.key}`;
 }
 
-/** Read a field id back into its identity, or null for an id that is not one. */
 export function parseMetafieldFieldId(id: string): MetafieldIdentity | null {
   if (!id.startsWith(METAFIELDS_FIELD_PREFIX)) {
     return null;
@@ -43,24 +36,18 @@ export function parseMetafieldFieldId(id: string): MetafieldIdentity | null {
   return { namespace, key };
 }
 
-// The identity the key clause carries: the field's namespace and key, extended with a
-// part path to name one leaf of a composite value.
 function identityOf(field: MetafieldIdentity, subfield: string): string {
-  const base = `${field.namespace}.${field.key}`;
-  return subfield ? `${base}.${subfield}` : base;
+  return formatIdentity({ namespace: field.namespace, key: field.key, partPath: subfield || null });
 }
 
 function parseIdentityValue(
   raw: unknown,
 ): { namespace: string; key: string; subfield: string } | null {
-  if (typeof raw !== 'string') {
+  const identity = typeof raw === 'string' ? parseIdentity(raw) : null;
+  if (!identity) {
     return null;
   }
-  const [namespace, key, ...parts] = raw.split('.');
-  if (!namespace || !key) {
-    return null;
-  }
-  return { namespace, key, subfield: parts.join('.') };
+  return { namespace: identity.namespace, key: identity.key, subfield: identity.partPath ?? '' };
 }
 
 export const CUSTOM_FIELD_SET_OPERATORS = PRESENCE_OPERATORS;
@@ -110,13 +97,12 @@ export function customFieldAddressing(bound?: MetafieldIdentity): PresenceAddres
       };
     },
 
-    // The shape of these clauses is not ours to choose. The members API rewrites them into a
-    // single lookup over the rows holding custom field values, and it only accepts two forms:
-    // a lone key clause carrying a leaf identity, or a key clause grouped with one value
-    // clause. See ghost/core/core/server/services/members-custom-fields/filter.ts.
-    //
-    // The identity names the leaf, so a part's presence is the bare key clause with the
-    // part path in the identity; its negation asks for members with no such leaf at all.
+    // The shape of these clauses is not ours to choose. Ghost's members endpoint rewrites them
+    // into a single lookup over the table holding custom-field values, and accepts only two
+    // forms: a key clause alone, or a key clause grouped with exactly one value clause. The
+    // key names the exact leaf — namespace, key, and for a multi-part value the part — so a
+    // part's presence is the bare key clause for that leaf, and its negation asks for members
+    // with no such leaf stored.
     addressPresence(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
       const { subfield } = readValues(predicate.values);

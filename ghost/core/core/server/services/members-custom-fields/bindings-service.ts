@@ -7,8 +7,6 @@ import type { CustomFieldValuesService, PlannedWrite } from './values-service';
 
 const FIELDS_TABLE = 'members_custom_fields';
 
-// The bindings store references publisher fields by bare key (its FK), so the
-// identity handed to the values service is stated here, at that store's boundary.
 const { CUSTOM_NAMESPACE } = require('@tryghost/custom-field-types/identity');
 const BINDINGS_TABLE = 'members_custom_field_bindings';
 

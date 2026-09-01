@@ -299,10 +299,10 @@ const CUSTOM_FIELD: FieldDescriptor = {
       label && params.namespace && params.key
         ? { key: metafieldFieldId({ namespace: params.namespace, key: params.key }), label }
         : null,
-    // Asked for as soon as a custom field is filtered on, without waiting for the
-    // names: the values are what the column will hold, and they travel on the same
-    // request the filter already sends. The API returns values only on a site with
-    // fields defined; elsewhere the include is inert.
+    // Asked for as soon as a custom field is filtered on: the values are what the column will
+    // hold, and they travel on the request the filter already sends. The API accepts the
+    // include on every site and returns values only where fields are defined, so it needs no
+    // feature detection.
     columnInclude: 'metafields',
   },
 };

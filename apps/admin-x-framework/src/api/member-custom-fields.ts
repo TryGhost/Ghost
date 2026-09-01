@@ -14,6 +14,7 @@ import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
 export { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
+export type { FieldIdentity, FieldIdentityString } from '@tryghost/custom-field-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
@@ -24,11 +25,10 @@ export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/custom-field
 export type { FieldKind as MemberCustomFieldKind } from '@tryghost/custom-field-types';
 
 export type MemberCustomField = {
-  // The namespace that declared the field — data from the API, never assumed.
-  // Every field a publisher defines arrives in `custom`; ids, columns and value
-  // lookups all derive from this so other namespaces flow through untouched.
   namespace: string;
-  // Fields are addressed by their namespace and immutable key; the DB id is never exposed.
+  // The Admin API never serializes a database id for these records, so there is no `id` to
+  // key off. A field is addressed by its namespace and key, and neither is reissued once
+  // minted.
   key: string;
   name: string;
   // The same field-type enum the backend validates against, so admin and
@@ -299,8 +299,6 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
 
 export const memberCustomFieldKind = (type: FieldType): FieldKind => FIELD_TYPES[type].kind;
 
-// The wire envelope. It stays inside this file: hooks unwrap it, so no consumer ever
-// reads a response key — the wire shape has exactly one owner.
 export interface MemberCustomFieldsResponseType {
   meta?: Meta;
   members_metafields: MemberCustomField[];

@@ -3,14 +3,10 @@ import assert from 'node:assert/strict';
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
-// Filtering members by their custom field values. Values live in a separate table as
-// one leaf row per field (a composite address stores one row per part), reached
-// through the model's `metafields` relation. A filter names the field by its identity
-// — namespace.key, extended with a part path to name one leaf — and matches on value;
-// both halves of a `(key + value)` pair must match the same leaf:
-//   (metafields.key:'custom.company'+metafields.value:'Ghost')
-//   (metafields.key:'custom.shipping_address.country'+metafields.value:'GB')
-// These tests pin the behaviour end to end over the real browse endpoint.
+// Filtering members by their custom field values over the real browse endpoint. Values are
+// stored one row per leaf — a composite like an address stores one row per part — and a
+// filter names the field by namespace and key (plus part), pairing it with a value in one
+// group: (metafields.key:'custom.company'+metafields.value:'Ghost').
 describe('Members filtering by custom fields', function () {
   let agent: {
     get: (_url: string) => any;
@@ -305,8 +301,6 @@ describe('Members filtering by custom fields', function () {
 
   describe('identity validation', function () {
     it('matches nobody for a namespace holding no fields', async function () {
-      // Namespaces are data: an identity in a namespace with no fields matches
-      // no leaf, exactly like a key nobody minted — not an error, an absence.
       await createField({ name: 'Company' });
       await createMember({ company: 'Ghost' });
 
@@ -315,8 +309,6 @@ describe('Members filtering by custom fields', function () {
     });
 
     it('rejects a bare key with no namespace segment', async function () {
-      // A field is named by its identity, never its key alone — the old
-      // one-segment spelling fails closed rather than matching nothing.
       await agent
         .get(`members/?filter=${encodeURIComponent("metafields.key:'company'")}`)
         .expectStatus(400);
@@ -379,9 +371,6 @@ describe('Members filtering by custom fields', function () {
     });
   });
 
-  // A saved segment is only useful if it works everywhere the members list feeds a
-  // filter, not just the list view. Export and bulk actions run the same NQL, so the
-  // metafields relation has to be served on those paths too.
   describe('in export and bulk actions', function () {
     it('exports only members a custom-field filter matches', async function () {
       await createField({ name: 'Company' });

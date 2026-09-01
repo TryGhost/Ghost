@@ -10,8 +10,6 @@ const moment = require('moment');
 // assume rather than on the behaviour it is checking.
 const createCustomFieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
-  // The wire nests values by namespace; the service under test only pipes the
-  // unwrapped record onward, so the stub hands back whatever it is given.
   unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),

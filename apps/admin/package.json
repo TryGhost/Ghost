@@ -33,6 +33,7 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
+    "@tryghost/custom-field-types": "workspace:*",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
@@ -166,6 +167,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/checkout",
+              "@tryghost/custom-field-types",
               "@tryghost/shade"
             ],
             "target": "build"

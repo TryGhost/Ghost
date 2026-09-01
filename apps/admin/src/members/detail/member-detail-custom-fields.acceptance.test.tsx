@@ -45,11 +45,10 @@ const FIELDS: MemberCustomField[] = [
 const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
 /**
- * The world the member detail screen reads at mount, plus the custom-fields
- * definitions. Values ride the member read payload (`metafields.custom`), exactly
- * as the API returns them when the site defines fields. The world is stateful: a
- * PUT's merge patch is applied (null deletes), so the refetch a save triggers
- * returns the saved state.
+ * The world the member detail screen reads at mount. Stateful on purpose: the real
+ * endpoint treats a PUT as a merge patch, writing only the keys present and deleting a key
+ * sent as null, so the refetch a save triggers must return the merged result, not the
+ * original.
  */
 function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>) {
   let current: Record<string, unknown> = { ...m };

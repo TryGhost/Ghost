@@ -3,16 +3,16 @@ import { actingContext, definitions } from '../../services/members-custom-fields
 const permissionsService = require('../../services/permissions');
 
 interface Frame {
-  // The framework rejects a missing or empty root key with a 400, so on add/edit
-  // members_metafields is a non-empty array by the time a query runs. The item's
-  // contents stay unknown until the service validates them.
+  // Ghost's API framework rejects a request whose body lacks a non-empty
+  // `members_metafields` array before any handler runs, so `edit` can take element 0 without
+  // checking.
   data: { members_metafields: unknown[] };
   options: { namespace: string; key: string; context: unknown; [key: string]: unknown };
 }
 
-// There is no Bookshelf model for this resource, so permissions are checked
-// explicitly against the member_custom_field object type (the default
-// `permissions: true` handler would try to load a model that doesn't exist).
+// With `permissions: true` the framework checks against the Bookshelf model named after
+// the resource. These fields have no Bookshelf model, so each handler asks the permissions
+// service directly.
 function canThis(frame: Frame) {
   return permissionsService.canThis(frame.options.context);
 }
@@ -24,11 +24,6 @@ const controller = {
 
   browse: {
     headers: noCacheInvalidation,
-    // `filter` narrows by status (the definition list is otherwise small and
-    // per-namespace, returned whole). Archived fields are hidden by default; Settings
-    // passes `filter=status:[active,archived]` to see both. No pagination or order
-    // options: the list comes back in the publisher's own order, which is changed
-    // by reordering it rather than by asking for it differently.
     options: ['namespace', 'filter'],
     validation: { options: { namespace: { required: true } } },
     permissions(frame: Frame) {
@@ -62,9 +57,6 @@ const controller = {
     permissions(frame: Frame) {
       return canThis(frame).add.member_custom_field();
     },
-    // The whole array is passed through: create is a batch, applied
-    // all-or-nothing. A client sending a single definition (as Admin does)
-    // is just the one-item case and sees no change.
     query(frame: Frame) {
       return definitions!.add(
         actingContext(frame.options.context),
@@ -74,7 +66,6 @@ const controller = {
     },
   },
 
-  // Order belongs to the list, so it is set by PUTting the list.
   reorder: {
     headers: noCacheInvalidation,
     options: ['namespace'],
@@ -127,5 +118,6 @@ const controller = {
   },
 };
 
-// module.exports (not export): the API framework loads controllers via require().
+// The API framework loads this file with `require()`, so it exports CommonJS-style;
+// `export default` would not be picked up.
 module.exports = controller;
