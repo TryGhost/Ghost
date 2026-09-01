@@ -5,9 +5,11 @@ import KpiCard, {
   KpiCardMoreButton,
   KpiCardValue,
 } from '@/posts/analytics/components/kpi-card';
+import PendingSendEmpty from '@/posts/analytics/prototype-analytics-status/pending-send-empty';
 import PostAnalyticsContent from '@/posts/analytics/components/post-analytics-content';
 import PostAnalyticsHeader from '@/posts/analytics/components/post-analytics-header';
 import {
+  Badge,
   BarChartLoadingIndicator,
   Button,
   Card,
@@ -52,6 +54,12 @@ import { toast } from 'sonner';
 import { useBulkEditLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-framework/api/settings';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCountedThrough,
+  useEmailDataHidden,
+  useSendingOnlyVariant,
+} from '@/posts/analytics/prototype-analytics-status/use-status-copy';
+import { useStubbedNewsletterStats } from '@/posts/analytics/prototype-analytics-status/use-stubbed-newsletter-stats';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 
@@ -121,12 +129,15 @@ const Newsletter: React.FC = () => {
   }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
   const {
-    stats,
+    stats: realStats,
     averageStats,
     topLinks,
     isLoading: isNewsletterStatsLoading,
     refetchTopLinks,
   } = usePostNewsletterStats(postId);
+  // PROTOTYPE: the funnel runs on the switcher's fixture, so the numbers here
+  // describe the same send the status line above them does.
+  const stats = useStubbedNewsletterStats(realStats);
   const { mutate: editLinks } = useBulkEditLinks();
 
   // Calculate feedback stats from the post data
@@ -156,6 +167,21 @@ const Newsletter: React.FC = () => {
   }, [typedPost]);
 
   // Determine if feedback component should be shown
+  // PROTOTYPE: the footer is pagination for a list that is not being shown.
+  const isEmailDataHidden = useEmailDataHidden();
+  // PROTOTYPE: a rate carries no timestamp of its own.
+  const countedThrough = useCountedThrough();
+  // PROTOTYPE: variant D — the card above reports sending, so this tile reports
+  // what came back of it.
+  const isSendingOnly = useSendingOnlyVariant();
+  // An absent value, at display size. An em dash at 2.6rem semibold is a slab —
+  // heavier than the figures it stands in for, so the eye lands on the three
+  // things that are missing before anything that is there. Narrower character,
+  // not bold, and back to the tile's own muted colour that KpiCardValue
+  // overrides to foreground: a placeholder belongs with the label above it,
+  // not with the figures it is standing in for.
+  const noValue = <span className="font-normal text-muted-foreground">&ndash;</span>;
+
   const shouldShowFeedback = useMemo(() => {
     // Show feedback if there's any feedback data, regardless of feedback_enabled setting
     if (feedbackStats.totalFeedback > 0) {
@@ -244,8 +270,27 @@ const Newsletter: React.FC = () => {
   const isLoading = isNewsletterStatsLoading || isPostLoading;
 
   // "Sent" Chart
+  // PROTOTYPE: the ring was handed a hardcoded 1, so a send a third of the way
+  // through drew a full circle reading 100% directly above a figure reading
+  // 31,500 of 87,420. It now tracks what has actually gone out — which on a
+  // completed send is still 1, so nothing changes once a send is done.
+  //
+  // PROTOTYPE: under D the tile is Delivered, so the numerator is deliveries
+  // and bounces are excluded — the ring then falls a hair short of full on a
+  // finished send, which is correct and is the reason the tile was relabelled.
+  // The denominator stays the addressed list in both, so the ring answers the
+  // same question its label asks: what share of everyone got there.
+  const sentLabel = isSendingOnly ? 'Delivered' : 'Sent';
+  const sentValue = isSendingOnly ? stats.delivered : stats.sent;
+  const sentRate = stats.addressed > 0 ? sentValue / stats.addressed : 0;
+
   const sentChartData: NewsletterRadialChartData[] = [
-    { datatype: 'Sent', value: 1, fill: 'url(#gradientPurple)', color: 'var(--chart-purple)' },
+    {
+      datatype: sentLabel,
+      value: sentRate,
+      fill: 'url(#gradientPurple)',
+      color: 'var(--chart-purple)',
+    },
   ];
 
   const sentChartConfig = {
@@ -349,7 +394,16 @@ const Newsletter: React.FC = () => {
               </CardContent>
             ) : (
               <CardContent className="p-0">
-                <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
+                {/* PROTOTYPE: the caveat belongs inside the card, in the same
+                    light as the figures it is about. */}
+                {/* PROTOTYPE: the tiles stay so the card keeps its shape, but
+                    dimmed and inert — nothing here is a link worth following
+                    while the numbers behind it are not there yet. */}
+                <div
+                  className={`grid ${chartHeaderClass} items-stretch border-b ${
+                    isEmailDataHidden ? 'pointer-events-none opacity-40' : ''
+                  }`}
+                >
                   <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                     <KpiCardMoreButton
                       onClick={() => {
@@ -364,11 +418,27 @@ const Newsletter: React.FC = () => {
                       }}
                     >
                       <div className="ml-0.5 size-[9px] rounded-full bg-chart-purple opacity-50"></div>
-                      Sent
+                      {/* PROTOTYPE: the status line reads "31,500 of 87,420"; a
+                          bare "Sent 31,500" beside it looks like a second,
+                          slightly different claim about the same send. Same
+                          denominator, same phrasing, one fact stated twice.
+
+                          Under D the denominator is stated permanently rather
+                          than only while the two diverge. The card above
+                          retires when sending finishes, and it is the thing
+                          that had been carrying the size of the send — drop
+                          the "of 87,420" at the same moment and a reader
+                          arriving an hour later has a delivery count with
+                          nothing to read it against. */}
+                      {isSendingOnly
+                        ? `Delivered of ${formatNumber(stats.addressed)}`
+                        : !isEmailDataHidden && stats.addressed > stats.sent
+                          ? `Sent of ${formatNumber(stats.addressed)}`
+                          : 'Sent'}
                     </KpiCardLabel>
                     <KpiCardContent>
                       <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                        {formatNumber(stats.sent)}
+                        {isEmailDataHidden ? noValue : formatNumber(sentValue)}
                       </KpiCardValue>
                     </KpiCardContent>
                   </KpiCard>
@@ -389,10 +459,13 @@ const Newsletter: React.FC = () => {
                       >
                         <div className="ml-0.5 size-[9px] rounded-full bg-chart-blue opacity-50"></div>
                         Opened
+                        {!isEmailDataHidden && countedThrough && (
+                          <Badge variant="secondary">{countedThrough}</Badge>
+                        )}
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.opened)}
+                          {isEmailDataHidden ? noValue : formatNumber(stats.opened)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
@@ -417,71 +490,76 @@ const Newsletter: React.FC = () => {
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.clicked)}
+                          {isEmailDataHidden ? noValue : formatNumber(stats.clicked)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
                   )}
                 </div>
-                <div
-                  className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
+                <PendingSendEmpty
+                  description="Once the first opens and clicks are recorded, they'll show here"
+                  title="No newsletter data available"
                 >
                   <div
-                    className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
+                    className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
                   >
-                    <NewsletterRadialChart
-                      className={chartClass}
-                      config={sentChartConfig}
-                      data={sentChartData}
-                      percentageLabel="Sent"
-                      percentageValue={formatPercentage(1)}
-                      size={chartSize}
-                      tooltip={false}
-                    />
-                    {(emailTrackOpensEnabled || emailTrackClicksEnabled) && <FunnelArrow />}
-                  </div>
-
-                  {emailTrackOpensEnabled && (
                     <div
-                      className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}
+                      className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
                     >
-                      <BlockTooltip
-                        avgValue={formatPercentage(averageStats.openedRate)}
-                        dataColor="var(--chart-blue)"
-                        value={formatPercentage(stats.openedRate)}
-                      />
                       <NewsletterRadialChart
                         className={chartClass}
-                        config={openedChartConfig}
-                        data={openedChartData}
-                        percentageLabel="Open rate"
-                        percentageValue={formatPercentage(stats.openedRate)}
+                        config={sentChartConfig}
+                        data={sentChartData}
+                        percentageLabel={sentLabel}
+                        percentageValue={formatPercentage(sentRate)}
                         size={chartSize}
                         tooltip={false}
                       />
-                      {emailTrackClicksEnabled && <FunnelArrow />}
+                      {(emailTrackOpensEnabled || emailTrackClicksEnabled) && <FunnelArrow />}
                     </div>
-                  )}
 
-                  {emailTrackClicksEnabled && (
-                    <div className="group/block relative px-6 transition-all hover:bg-muted/25">
-                      <BlockTooltip
-                        avgValue={formatPercentage(averageStats.clickedRate)}
-                        dataColor="var(--chart-teal)"
-                        value={formatPercentage(stats.clickedRate)}
-                      />
-                      <NewsletterRadialChart
-                        className={chartClass}
-                        config={clickedChartConfig}
-                        data={clickedChartData}
-                        percentageLabel="Click rate"
-                        percentageValue={formatPercentage(stats.clickedRate)}
-                        size={chartSize}
-                        tooltip={false}
-                      />
-                    </div>
-                  )}
-                </div>
+                    {emailTrackOpensEnabled && (
+                      <div
+                        className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}
+                      >
+                        <BlockTooltip
+                          avgValue={formatPercentage(averageStats.openedRate)}
+                          dataColor="var(--chart-blue)"
+                          value={formatPercentage(stats.openedRate)}
+                        />
+                        <NewsletterRadialChart
+                          className={chartClass}
+                          config={openedChartConfig}
+                          data={openedChartData}
+                          percentageLabel="Open rate"
+                          percentageValue={formatPercentage(stats.openedRate)}
+                          size={chartSize}
+                          tooltip={false}
+                        />
+                        {emailTrackClicksEnabled && <FunnelArrow />}
+                      </div>
+                    )}
+
+                    {emailTrackClicksEnabled && (
+                      <div className="group/block relative px-6 transition-all hover:bg-muted/25">
+                        <BlockTooltip
+                          avgValue={formatPercentage(averageStats.clickedRate)}
+                          dataColor="var(--chart-teal)"
+                          value={formatPercentage(stats.clickedRate)}
+                        />
+                        <NewsletterRadialChart
+                          className={chartClass}
+                          config={clickedChartConfig}
+                          data={clickedChartData}
+                          percentageLabel="Click rate"
+                          percentageValue={formatPercentage(stats.clickedRate)}
+                          size={chartSize}
+                          tooltip={false}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </PendingSendEmpty>
               </CardContent>
             )}
           </Card>
@@ -504,87 +582,94 @@ const Newsletter: React.FC = () => {
                 </CardContent>
               ) : (
                 <CardContent className="pb-0">
-                  <Separator />
-                  {topLinks.length > 0 ? (
-                    <DataList className="">
-                      <DataListBody>
-                        {paginatedTopLinks?.map((link) => {
-                          const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
-                          const linkId = link.link.link_id;
-                          const title = link.link.title;
-                          const url = link.link.to;
-                          const edited = link.link.edited;
+                  <PendingSendEmpty
+                    description="Once the first clicks are recorded, they'll show here"
+                    title="No click data available"
+                  >
+                    <Separator />
+                    {topLinks.length > 0 ? (
+                      <DataList className="">
+                        <DataListBody>
+                          {paginatedTopLinks?.map((link) => {
+                            const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                            const linkId = link.link.link_id;
+                            const title = link.link.title;
+                            const url = link.link.to;
+                            const edited = link.link.edited;
 
-                          return (
-                            <DataListRow key={linkId}>
-                              {editingLinkId !== linkId && (
-                                <DataListBar
-                                  style={{
-                                    width: `${percentage ? Math.round(percentage * 100) : 0}%`,
-                                  }}
-                                />
-                              )}
-                              <DataListItemContent className="w-full">
-                                {editingLinkId === linkId ? (
-                                  <div
-                                    ref={containerRef}
-                                    className="flex w-full items-center gap-2"
-                                  >
-                                    <Input
-                                      ref={inputRef}
-                                      className="z-50 h-7 w-full border-border bg-background text-sm"
-                                      value={editedUrl}
-                                      onChange={(e) => setEditedUrl(e.target.value)}
-                                    />
-                                    <Button size="sm" onClick={handleUpdate}>
-                                      Update
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <Button
-                                      className="mr-2 shrink-0 bg-background"
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEdit(linkId)}
-                                    >
-                                      <LucideIcon.Pen />
-                                    </Button>
-                                    <a
-                                      className="block truncate font-medium hover:underline"
-                                      href={url}
-                                      rel="noreferrer"
-                                      target="_blank"
-                                      title={title}
-                                    >
-                                      {title}
-                                    </a>
-                                    {edited && <span className="ml-1 text-gray-500">(edited)</span>}
-                                  </>
+                            return (
+                              <DataListRow key={linkId}>
+                                {editingLinkId !== linkId && (
+                                  <DataListBar
+                                    style={{
+                                      width: `${percentage ? Math.round(percentage * 100) : 0}%`,
+                                    }}
+                                  />
                                 )}
-                              </DataListItemContent>
-                              <DataListItemValue>
-                                <DataListItemValueAbs>
-                                  {formatNumber(link.count || 0)}
-                                </DataListItemValueAbs>
-                                <DataListItemValuePerc>
-                                  {formatPercentage(percentage)}
-                                </DataListItemValuePerc>
-                              </DataListItemValue>
-                            </DataListRow>
-                          );
-                        })}
-                      </DataListBody>
-                    </DataList>
-                  ) : (
-                    <div className="py-20 text-center text-sm text-gray-700">
-                      You have no links in your post.
-                    </div>
-                  )}
+                                <DataListItemContent className="w-full">
+                                  {editingLinkId === linkId ? (
+                                    <div
+                                      ref={containerRef}
+                                      className="flex w-full items-center gap-2"
+                                    >
+                                      <Input
+                                        ref={inputRef}
+                                        className="z-50 h-7 w-full border-border bg-background text-sm"
+                                        value={editedUrl}
+                                        onChange={(e) => setEditedUrl(e.target.value)}
+                                      />
+                                      <Button size="sm" onClick={handleUpdate}>
+                                        Update
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        className="mr-2 shrink-0 bg-background"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEdit(linkId)}
+                                      >
+                                        <LucideIcon.Pen />
+                                      </Button>
+                                      <a
+                                        className="block truncate font-medium hover:underline"
+                                        href={url}
+                                        rel="noreferrer"
+                                        target="_blank"
+                                        title={title}
+                                      >
+                                        {title}
+                                      </a>
+                                      {edited && (
+                                        <span className="ml-1 text-gray-500">(edited)</span>
+                                      )}
+                                    </>
+                                  )}
+                                </DataListItemContent>
+                                <DataListItemValue>
+                                  <DataListItemValueAbs>
+                                    {formatNumber(link.count || 0)}
+                                  </DataListItemValueAbs>
+                                  <DataListItemValuePerc>
+                                    {formatPercentage(percentage)}
+                                  </DataListItemValuePerc>
+                                </DataListItemValue>
+                              </DataListRow>
+                            );
+                          })}
+                        </DataListBody>
+                      </DataList>
+                    ) : (
+                      <div className="py-20 text-center text-sm text-gray-700">
+                        You have no links in your post.
+                      </div>
+                    )}
+                  </PendingSendEmpty>
                 </CardContent>
               )}
 
-              {!isLoading && topLinks.length > 1 && (
+              {!isLoading && !isEmailDataHidden && topLinks.length > 1 && (
                 <CardFooter>
                   <div className="flex w-full items-start justify-between gap-3">
                     <div className="mt-2 flex items-start gap-2 pl-4 text-sm text-green">

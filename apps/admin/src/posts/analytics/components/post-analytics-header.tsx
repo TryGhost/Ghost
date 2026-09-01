@@ -1,3 +1,5 @@
+import SendActivityLog from '@/posts/analytics/prototype-analytics-status/send-activity-log';
+import { useSentToMembers } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -24,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Navbar,
+  NavbarActions,
   PageMenu,
   PageMenuItem,
 } from '@tryghost/shade/components';
@@ -74,6 +77,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const canManageGiftLink = useCanManageGiftLink(post);
 
   const siteTimezone = getSiteTimezone(settings);
+
+  // PROTOTYPE: "reading now" yields the slot while the send status holds it.
+
+  // PROTOTYPE: variant D's card retires when the send finishes and the fact
+  // lands here instead, permanently. Null in every other variant and until the
+  // last batch is away.
+  const sentToMembers = useSentToMembers();
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -281,17 +291,26 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   </H1>
                   {post?.published_at && (
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
+                      {/* PROTOTYPE: the recipients go inside the verb they
+                          belong to — "sent to 87,420 members on 12 Aug" —
+                          rather than trailing the timestamp. Appended, the
+                          line reads as a date with an afterthought; folded in,
+                          it is one sentence about one event, and it is the
+                          same sentence whether or not D is on. */}
                       {isEmailOnly(post) &&
-                        `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                        `Sent${sentToMembers ? ` to ${sentToMembers}` : ''} on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                       {isPublishedOnly(post) &&
                         `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                       {isPublishedAndEmailed(post) &&
-                        `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                        `Published and sent${sentToMembers ? ` to ${sentToMembers}` : ''} on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}
                 </div>
               </div>
             )}
+            {/* PROTOTYPE: variant C above the tabs. The send belongs to the
+                post, not to whichever tab happens to be open. */}
+            <SendActivityLog />
           </div>
         </div>
       </header>
@@ -340,7 +359,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             )}
           </PageMenu>
         )}
-        {children}
+        <NavbarActions>{children}</NavbarActions>
       </Navbar>
 
       {canManageGiftLink && postId && (
