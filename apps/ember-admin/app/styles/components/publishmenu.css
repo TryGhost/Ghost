@@ -1047,7 +1047,8 @@
 
 .modal-post-success .modal-footer .share-buttons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     align-items: center;
     gap: 16px;
 }
@@ -1084,17 +1085,18 @@
     flex-grow: 1;
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .bluesky) {
     width: 56px;
+    min-width: 0;
     background: var(--whitegrey-l1);
     border-color: transparent;
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .bluesky, .copy-link, .copy-preview-link):hover {
     background: var(--whitegrey);
 }
 
-.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .bluesky) span {
     font-size: 0;
 }
 
@@ -1122,10 +1124,6 @@
         flex-direction: column;
     }
 
-    .modal-post-success .modal-footer .share-buttons {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
     .modal-post-success .modal-footer .copy-link,
     .modal-post-success .modal-footer .copy-preview-link {
         width: 100%!important;
@@ -1137,7 +1135,7 @@
         flex-direction: column;
     }
 
-    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .bluesky) {
         width: auto;
     }
 }
