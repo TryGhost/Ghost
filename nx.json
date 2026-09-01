@@ -39,7 +39,8 @@
     },
     "test:unit": {
       "cache": true,
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "inputs": ["default", "^default", { "runtime": "node -v" }]
     },
     "test:ci:*": {
       "cache": true,

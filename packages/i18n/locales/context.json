@@ -391,6 +391,7 @@
     "This site is not accepting donations at the moment.": "Error message in Portal when a user visits the donations page but donations are disabled",
     "This site is not accepting payments at the moment.": "An error message shown when a tips or donations link is opened but the site has donations disabled",
     "This site only accepts paid members.": "error message for sign-up",
+    "This unsubscribe link belongs to a different email address than the one you are signed in with.": "Error shown in Portal when an email unsubscribe link is opened in a browser that is signed in as a different member; the request is rejected and nobody is unsubscribed",
     "Threads": "Share option in Portal share modal overflow menu",
     "Tier": "Label for a membership tier",
     "To": "Label for the intended recipient on a gift card or gift email preview",

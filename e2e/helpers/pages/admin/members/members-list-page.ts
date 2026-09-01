@@ -8,6 +8,9 @@ export interface ExportedFile {
   content: string;
 }
 
+const OPEN_MEMBER_ATTEMPTS = 3;
+const OPEN_MEMBER_TIMEOUT_MS = 5_000;
+
 export class MembersListPage extends AdminPage {
   readonly memberRows: Locator;
   readonly searchInput: Locator;
@@ -20,6 +23,9 @@ export class MembersListPage extends AdminPage {
   readonly importCsvLink: Locator;
   readonly noResults: Locator;
   readonly showAllButton: Locator;
+  // Not part of this screen: openMemberByName reads it to tell a row click that landed
+  // on the detail route from one the list navigated back out of.
+  readonly memberDetailScreen: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -38,6 +44,7 @@ export class MembersListPage extends AdminPage {
     this.importCsvLink = page.getByRole('link', { name: membersSel.importCsvLink });
     this.noResults = page.getByText(membersSel.noResultsText);
     this.showAllButton = page.getByRole('button', { name: membersSel.showAllButton });
+    this.memberDetailScreen = page.getByTestId(membersSel.memberDetail);
   }
 
   getMemberByName(name: string): Locator {
@@ -50,8 +57,33 @@ export class MembersListPage extends AdminPage {
     return this.getMemberByName(name).getByRole('link', { name, exact: true });
   }
 
+  /**
+   * Open a member's detail screen from the list.
+   *
+   * The list writes its own query string back after something changes it — an import
+   * applies its label filter on close — and a write that lands right after the row
+   * click replaces the detail route with the list again, leaving the click with
+   * nothing to show for it. Re-click when that happens instead of waiting out a
+   * timeout on a screen the app navigated away from.
+   */
   async openMemberByName(name: string): Promise<void> {
-    await this.getMemberLinkByName(name).click();
+    const link = this.getMemberLinkByName(name);
+
+    for (let attempt = 1; attempt <= OPEN_MEMBER_ATTEMPTS; attempt++) {
+      await link.click();
+
+      try {
+        await this.memberDetailScreen.waitFor({
+          state: 'visible',
+          timeout: OPEN_MEMBER_TIMEOUT_MS,
+        });
+        return;
+      } catch (error) {
+        if (attempt === OPEN_MEMBER_ATTEMPTS) {
+          throw error;
+        }
+      }
+    }
   }
 
   async openActionsMenu(): Promise<void> {

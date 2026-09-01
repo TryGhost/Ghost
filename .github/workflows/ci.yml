@@ -224,9 +224,11 @@ jobs:
               - 'docker/tb-cli/**'
 
       - name: Define Node test matrix
+        # Node lines the unit / legacy / acceptance suites must keep passing on.
+        # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo 'matrix=["22.23.1"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.23.1", "24.20.0"]' >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
@@ -335,8 +337,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Fetch main branch
-        run: git fetch --no-tags origin main
+      - name: Fetch PR base branch
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
@@ -349,6 +356,7 @@ jobs:
       - name: Check app version bump
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-app-version-bump.js
 
@@ -358,6 +366,7 @@ jobs:
       - name: Check for missing changesets
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/change-check.js
 
@@ -374,11 +383,17 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch PR base branch
-        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
 
       - name: Check migration integrity
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-migration-integrity.cjs
 
@@ -666,6 +681,7 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.unit_test_projects_str != ''
     strategy:
+      fail-fast: false
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
@@ -765,14 +781,20 @@ jobs:
           --health-interval=2s
           --health-timeout=5s
           --health-retries=60
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     env:
-      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled }}
-    name: Acceptance tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
+      # Only the primary Node leg is instrumented — the others cover the same
+      # code, and a second leg would collide on the e2e-coverage artifact name.
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
+    name: Acceptance tests (Node ${{ matrix.node }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: ${{ needs.job_setup.outputs.node_version }}
+          node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
 
       - name: Set timezone (non-UTC)
@@ -865,14 +887,18 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
-    name: Legacy tests (Node ${{ needs.job_setup.outputs.node_version }}, mysql8)
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+    name: Legacy tests (Node ${{ matrix.node }}, mysql8)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           submodules: true
       - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: ${{ needs.job_setup.outputs.node_version }}
+          node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
 
       - name: Set env vars (MySQL)
