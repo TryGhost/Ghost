@@ -15,12 +15,24 @@ describe('ContentFieldMapping', () => {
     expect(mapping.toJSON()).toEqual({ 'First title': '', 'Second title': 'title' });
   });
 
+  it('reads and clears individual mappings', () => {
+    const mapping = ContentFieldMapping.detect(['title', 'Other']);
+
+    expect(mapping.get('title')).toBe('title');
+    expect(mapping.get('Other')).toBeNull();
+    expect(mapping.update('title', null).get('title')).toBeNull();
+  });
+
   it('detects exact field-name headers', () => {
     const mapping = ContentFieldMapping.detect([
       'title',
       'html',
       'markdown',
       'published_at',
+      'comment_id',
+      'authors',
+      'author_emails',
+      'tags',
       'Something else',
     ]);
 
@@ -29,6 +41,10 @@ describe('ContentFieldMapping', () => {
       html: 'html',
       markdown: 'markdown',
       published_at: 'published_at',
+      comment_id: 'comment_id',
+      authors: 'authors',
+      author_emails: 'author_emails',
+      tags: 'tags',
       'Something else': '',
     });
   });
@@ -51,6 +67,7 @@ describe('ContentFieldMapping', () => {
     expect(CONTENT_FIELD_GROUPS.map((group) => group.label)).toEqual([
       'Content',
       'Publishing',
+      'Authors & tags',
       'Images',
       'SEO',
       'Social',
@@ -69,6 +86,9 @@ describe('ContentFieldMapping', () => {
       'created_at',
       'updated_at',
       'published_at',
+      'authors',
+      'author_emails',
+      'tags',
       'feature_image',
       'feature_image_alt',
       'feature_image_caption',
@@ -82,22 +102,14 @@ describe('ContentFieldMapping', () => {
       'twitter_image',
       'twitter_title',
       'twitter_description',
+      'comment_id',
       'custom_template',
       'codeinjection_head',
       'codeinjection_foot',
       'frontmatter',
     ]);
     expect(CONTENT_FIELD_MAPPINGS.map((field) => field.value)).not.toEqual(
-      expect.arrayContaining([
-        'authors',
-        'tags',
-        'comment_id',
-        'newsletter_id',
-        'email',
-        'tiers',
-        'id',
-        'lexical',
-      ]),
+      expect.arrayContaining(['newsletter_id', 'email', 'tiers', 'id', 'lexical']),
     );
   });
 });

@@ -2,6 +2,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const { canWelcomeEmailReplaceSignupPaidEmail } = require('../../../lib/member-signup-contexts');
+const { collectedByPort } = require('../checkout/completed-session');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -422,6 +423,11 @@ module.exports = class CheckoutSessionEventService {
       }
     }
 
+    // After the subscription work, and deliberately not part of it: a value the member
+    // gave us for free must never be able to fail the webhook. A throw here would make
+    // Stripe retry the event and risk doing the payment work twice.
+    await this.writeCollectedFields(member.id, session);
+
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
         session.metadata?.ghostSignupContext
@@ -438,6 +444,49 @@ module.exports = class CheckoutSessionEventService {
         // Direct checkout flows do not have a pre-checkout sign-in path.
         this.deps.sendSignupEmail(customer.email);
       }
+    }
+  }
+
+  /**
+   * This service knows how to read a completed Stripe session. It does not know, and must
+   * not know, which custom field any of those values belongs in — that is what a binding
+   * decides, so no field key appears anywhere in this code.
+   *
+   * Nothing here may be fatal: a throw fails the webhook, which makes Stripe retry it and
+   * risks doing the payment work twice.
+   *
+   * @param {string} memberId
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async writeCollectedFields(memberId, session) {
+    // Stamped at create time. A session predating this feature carries none. Read
+    // outside the try so a failure below can name the tier whose answers were lost.
+    const tierId = session.metadata?.ghostTierId;
+
+    try {
+      if (!this.deps.labsService.isSet('membersCustomFields')) {
+        return;
+      }
+
+      if (!tierId) {
+        return;
+      }
+
+      await this.deps.customFieldBindings.writeCollected(
+        memberId,
+        tierId,
+        collectedByPort.parse(session),
+      );
+    } catch (err) {
+      logging.error(
+        {
+          event: { name: 'stripe_checkout.collected_fields.write_failed' },
+          err,
+          memberId,
+          tierId,
+        },
+        'Failed to store the fields a checkout collected',
+      );
     }
   }
 };

@@ -34,12 +34,16 @@ const mockUseNewsletterClickStats = vi.mocked(useNewsletterClickStats);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
 // Mock external date functions
-vi.mock('@tryghost/shade/app', () => ({
-  formatQueryDate: vi.fn(),
-  getRangeDates: vi.fn(),
-}));
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
+  return {
+    ...actual,
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn(),
+  };
+});
 
-const { formatQueryDate, getRangeDates } = await import('@tryghost/shade/app');
+const { formatQueryDate, getRangeDates } = await import('@/shared/analytics/chart-helpers');
 const mockFormatQueryDate = vi.mocked(formatQueryDate);
 const mockGetRangeDates = vi.mocked(getRangeDates);
 

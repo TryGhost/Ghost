@@ -50,6 +50,26 @@ function run(cmd, opts = {}) {
   return result.trim();
 }
 
+// Single-quote a path for the shell.
+function quoteArg(path) {
+  return `'${path.replace(/'/g, `'\\''`)}'`;
+}
+
+// Parse `git status --porcelain=v1 -z`. R/C entries append a source path field
+// (destination first), so skip it.
+function parsePorcelainPaths(porcelain) {
+  const fields = porcelain.split('\0').filter(Boolean);
+  const entries = [];
+  for (let i = 0; i < fields.length; i++) {
+    const status = fields[i].slice(0, 2);
+    entries.push({ path: fields[i].slice(3), deleted: status.includes('D') });
+    if (status[0] === 'R' || status[0] === 'C') {
+      i += 1;
+    }
+  }
+  return entries;
+}
+
 function readPkgVersion(pkgPath) {
   return readJsonSync(pkgPath).version;
 }
@@ -297,17 +317,33 @@ async function runPackagesOnlyRelease(opts) {
   log(`Branch: ${opts.branch}`);
   log(`Dry run: ${opts.dryRun}`);
 
+  // Release runs on a fresh CI checkout. Bail on a dirty tree so unrelated
+  // changes can't ride along in the format + commit below.
+  if (run('git status --porcelain=v1 -z')) {
+    throw new Error('Working tree is not clean; refusing to release');
+  }
+
   logStep('Applying changeset versions to publishable packages');
   applyChangesetVersions();
 
   // version -r writes package.json bumps, rewrites workspace ranges, removes
   // consumed changesets, and may touch the lockfile. Nothing staged means
   // there were no pending changesets to release.
-  const changes = run('git status --porcelain');
+  const changes = run('git status --porcelain=v1 -z');
   if (!changes) {
     log('No pending package changes to release');
     console.log('\n✓ Nothing to publish');
     return;
+  }
+
+  // Format only touched files so oxfmt doesn't reformat the whole repo.
+  const filesToFormat = parsePorcelainPaths(changes)
+    .filter((f) => !f.deleted)
+    .map((f) => f.path);
+
+  logStep('Formatting changed files');
+  if (filesToFormat.length) {
+    run(`pnpm format ${filesToFormat.map(quoteArg).join(' ')}`);
   }
 
   logStep('Committing package versions');

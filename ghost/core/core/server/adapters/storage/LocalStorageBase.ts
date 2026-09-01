@@ -95,9 +95,10 @@ class LocalStorageBase extends StorageBase {
    *
    * @param targetDir absolute or relative directory
    * @param fileName file name to normalize and append
-   * @returns resolved absolute path inside storagePath
+   * @param allowRoot whether storagePath itself is a valid result
+   * @returns resolved absolute path inside storagePath, or storagePath when explicitly allowed
    */
-  _resolveAndValidateStoragePath(targetDir?: string, fileName?: string): string {
+  _resolveAndValidateStoragePath(targetDir?: string, fileName?: string, allowRoot = false): string {
     const resolvedRoot = path.resolve(this.storagePath);
 
     // Resolve targetDir: if already inside storage root use as-is, otherwise treat as relative
@@ -123,10 +124,12 @@ class LocalStorageBase extends StorageBase {
       resolvedPath = resolvedBase;
     }
 
-    // Validate the resolved path is strictly inside the storage root (not equal to it)
+    // Validate the resolved path is inside the storage root. Callers which operate on files
+    // keep the stricter default; save() may target the root because the generated filename is
+    // validated separately before anything is written.
     const relative = path.relative(resolvedRoot, resolvedPath);
     if (
-      relative === '' ||
+      (!allowRoot && relative === '') ||
       relative === '..' ||
       relative.startsWith('..' + path.sep) ||
       path.isAbsolute(relative)
@@ -145,7 +148,7 @@ class LocalStorageBase extends StorageBase {
    */
   async save(file: StorageFile, targetDir?: string): Promise<string> {
     targetDir = targetDir
-      ? this._resolveAndValidateStoragePath(targetDir)
+      ? this._resolveAndValidateStoragePath(targetDir, undefined, true)
       : this.getTargetDir(this.storagePath);
 
     const targetFilename = await this.getUniqueFileName(file, targetDir);

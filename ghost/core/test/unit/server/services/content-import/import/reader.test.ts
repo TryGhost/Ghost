@@ -41,7 +41,10 @@ describe('content import reader', function () {
 
   it('keeps full editorial identity headers for direct API clients', async function () {
     const file = path.join(directory, 'full-post.csv');
-    await fs.writeFile(file, 'title,slug,featured,meta_title\nHello,custom,1,Search title\n');
+    await fs.writeFile(
+      file,
+      'title,slug,featured,meta_title,comment_id,authors,author_emails,tags\nHello,custom,1,Search title,source-123,"Alice, Bob","alice@example.com, bob@example.com","News, Features"\n',
+    );
 
     const rows = await readPostRows(file);
 
@@ -51,6 +54,10 @@ describe('content import reader', function () {
         slug: 'custom',
         featured: '1',
         meta_title: 'Search title',
+        comment_id: 'source-123',
+        authors: 'Alice, Bob',
+        author_emails: 'alice@example.com, bob@example.com',
+        tags: 'News, Features',
         html: '',
         markdown: '',
       },

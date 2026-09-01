@@ -14,6 +14,9 @@ export const EDITORIAL_POST_FIELDS = [
   'created_at',
   'updated_at',
   'published_at',
+  'authors',
+  'author_emails',
+  'tags',
   'feature_image',
   'feature_image_alt',
   'feature_image_caption',
@@ -27,6 +30,7 @@ export const EDITORIAL_POST_FIELDS = [
   'twitter_image',
   'twitter_title',
   'twitter_description',
+  'comment_id',
   'custom_template',
   'codeinjection_head',
   'codeinjection_foot',
@@ -58,6 +62,9 @@ export const postImportRowSchema = z
     created_at: optionalCell,
     updated_at: optionalCell,
     published_at: optionalCell,
+    authors: optionalCell,
+    author_emails: optionalCell,
+    tags: optionalCell,
     feature_image: optionalCell,
     feature_image_alt: optionalCell,
     feature_image_caption: optionalCell,
@@ -71,6 +78,7 @@ export const postImportRowSchema = z
     twitter_image: optionalCell,
     twitter_title: optionalCell,
     twitter_description: optionalCell,
+    comment_id: optionalCell,
     custom_template: optionalCell,
     codeinjection_head: optionalCell,
     codeinjection_foot: optionalCell,
@@ -97,6 +105,10 @@ export const importableRowSchema = postImportRowSchema.superRefine((row, ctx) =>
     ctx.addIssue({ code: 'custom', message: 'title is required' });
   } else if (row.title.length > 255) {
     ctx.addIssue({ code: 'custom', message: 'title must be 255 characters or fewer' });
+  }
+
+  if (row.comment_id && row.comment_id.length > 50) {
+    ctx.addIssue({ code: 'custom', message: 'comment_id must be 50 characters or fewer' });
   }
 
   for (const field of DATE_FIELDS) {

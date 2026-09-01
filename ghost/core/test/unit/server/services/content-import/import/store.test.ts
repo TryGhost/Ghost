@@ -36,6 +36,20 @@ describe('ImportRunStore', function () {
     assert.ok(finished?.finishedAt instanceof Date);
   });
 
+  it('records updated rows as successful outcomes', function () {
+    const store = new ImportRunStore();
+    store.create('run_updated', 1);
+
+    store.record('run_updated', {
+      line: 2,
+      title: 'Updated post',
+      status: 'updated',
+      postId: 'post_updated',
+    });
+
+    assert.equal(store.get('run_updated')?.rows[0].status, 'updated');
+  });
+
   it('ignores writes against an unknown run rather than throwing', function () {
     const store = new ImportRunStore();
 

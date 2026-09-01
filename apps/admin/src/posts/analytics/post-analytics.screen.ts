@@ -13,8 +13,12 @@ export const postAnalyticsScreen = {
 
   // Overview
   webPerformanceCard: () => page.getByTestId(sel.webPerformance),
+  webPerformanceViewMoreButton: () =>
+    page.getByTestId(sel.webPerformance).getByRole('button', { name: 'View more' }),
   uniqueVisitors: () => page.getByTestId(sel.uniqueVisitors),
   growthCard: () => page.getByTestId(sel.growth),
+  growthViewMoreButton: () =>
+    page.getByTestId(sel.growth).getByRole('button', { name: 'View more' }),
 
   // Web — the post view's row testids carry the lowercased country code and
   // the source with non-alphanumerics dashed ("google.com" → "google-com").
@@ -26,6 +30,12 @@ export const postAnalyticsScreen = {
     page.getByTestId(`${sel.sourceRowPrefix}${source.toLowerCase().replace(/[^a-z0-9]/g, '-')}`),
   filterContainer: () => page.getByTestId(sel.statsFilterContainer),
 
-  // Growth
+  // Growth — every KPI in the members card carries its own "View members"
+  // button; the free-members KPI renders first.
   membersCard: () => page.getByTestId(sel.membersCard),
+  freeMembersViewMembersButton: () =>
+    page
+      .getByTestId(sel.membersCard)
+      .getByRole('button', { name: /View members/ })
+      .first(),
 };

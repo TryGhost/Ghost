@@ -19,7 +19,7 @@ import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
 import { type ThemeMode } from '@/hooks/use-theme';
 import { useThemeContext } from '@/providers/theme-context';
-import { useWhatsNew } from '@/whats-new/hooks/use-whats-new';
+import { useWhatsNew } from '@/whats-new/api';
 import { useUpgradeStatus } from './hooks/use-upgrade-status';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { UserMenuItem } from './user-menu-item';

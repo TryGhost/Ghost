@@ -24,6 +24,11 @@ type FetchDataScheduled = FetchData & { schedule?: { begin: Date; end: Date } };
 
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed' | 'unsubscribed' | 'complained';
 
+type FetchEventsResult = {
+  /** Earliest processed timestamp for a sending domain that stopped at its event limit. */
+  safeCursor?: Date;
+};
+
 /**
  * Names of the jobs this service runs. Each pipeline needs its own set so their
  * cursors don't overwrite each other in the jobs table.
@@ -75,7 +80,7 @@ export type EmailAnalyticsProvider = {
       maxEvents: number;
       events?: EmailAnalyticsEvent[];
     },
-  ) => Promise<void>;
+  ) => Promise<FetchEventsResult | void>;
 };
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
@@ -549,11 +554,30 @@ export class EmailAnalyticsService {
 
     try {
       // Fetch from every configured provider, feeding the same batch
-      // handler so all events flow through one processing pipeline.
+      // handler so all events flow through one processing pipeline. Track
+      // the earliest safeCursor across providers so a domain that hit its
+      // event limit doesn't let the cursor advance past events another
+      // provider hasn't fetched yet.
       for (const provider of this.providers) {
-        await provider.fetchLatest(processBatch, { begin, end, maxEvents, events: eventTypes });
+        const fetchResult = await provider.fetchLatest(processBatch, {
+          begin,
+          end,
+          maxEvents,
+          events: eventTypes,
+        });
+
+        if (
+          fetchResult?.safeCursor &&
+          (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
+        ) {
+          fetchData.lastEventTimestamp = fetchResult.safeCursor;
+        }
       }
     } catch (err) {
+      // A fetch can process events from one domain before another domain fails. Keep the
+      // in-memory cursor at the start of this run so the next attempt retries every domain.
+      fetchData.lastEventTimestamp = begin;
+
       if (!(err instanceof Error) || err.message !== 'Fetching canceled') {
         logging.error('[EmailAnalytics] Error while fetching');
         logging.error(err);
