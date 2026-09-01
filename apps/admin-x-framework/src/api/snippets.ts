@@ -10,7 +10,9 @@ export type Snippet = {
   updated_at: string | null;
 };
 
-export type SnippetEditableData = Partial<Omit<Snippet, 'id' | 'created_at' | 'updated_at'>>;
+// The add and edit schemas require name and mobiledoc on every item
+export type SnippetEditableData = Pick<Snippet, 'name' | 'mobiledoc'> &
+  Partial<Pick<Snippet, 'lexical'>>;
 
 export interface SnippetsResponseType {
   meta?: Meta;
@@ -22,11 +24,21 @@ const dataType = 'SnippetsResponseType';
 // Without `formats` the API strips `lexical` from responses (mobiledoc is the default format)
 const formats = 'mobiledoc,lexical';
 
-export const useBrowseSnippets = createQuery<SnippetsResponseType>({
+const useBrowseSnippetsQuery = createQuery<SnippetsResponseType>({
   dataType,
   path: '/snippets/',
   defaultSearchParams: { limit: 'all', formats },
 });
+
+export const useBrowseSnippets = ({
+  searchParams,
+  ...args
+}: Parameters<typeof useBrowseSnippetsQuery>[0] = {}) =>
+  useBrowseSnippetsQuery({
+    ...args,
+    // caller searchParams replace the defaults wholesale, so re-merge formats
+    searchParams: { limit: 'all', ...searchParams, formats },
+  });
 
 export const useAddSnippet = createMutation<SnippetsResponseType, SnippetEditableData>({
   method: 'POST',
