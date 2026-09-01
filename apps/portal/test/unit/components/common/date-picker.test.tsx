@@ -53,17 +53,6 @@ const dayButton = ({ getByText }: RenderPickerUtils, day: number) =>
   getByText(String(day), { selector: 'button.gh-portal-datepicker-day-button' });
 
 describe('DatePicker', () => {
-  // The calendar opens on the current month, so these specs depend on the clock as
-  // well as their fixtures. Pin it inside the fixture month or they only pass while
-  // the real month happens to agree.
-  beforeAll(() => {
-    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-08-15T12:00:00Z') });
-  });
-
-  afterAll(() => {
-    vi.useRealTimers();
-  });
-
   it('shows the minLabel while the field sits on the minimum', () => {
     const utils = renderPicker({ minLabel: 'Now' });
 
