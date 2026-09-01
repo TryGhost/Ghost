@@ -1,7 +1,21 @@
 import ActionHandler from '../src/actions';
 import { vi, type MockInstance } from 'vitest';
+import {
+  GIFT_FORM_STATE_KEY,
+  createGiftFormState,
+} from '../src/components/pages/beta-gift/form-state';
+import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/beta-gift/navigation';
 
 describe('closePopup action', () => {
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/');
+    window.sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   test('clears a one-shot redirect from pageData so it cannot leak into a later sign-in', async () => {
     const result = await ActionHandler({
       action: 'closePopup',
@@ -31,6 +45,28 @@ describe('closePopup action', () => {
       state: { page: 'signin' },
     });
     expect(result.pageData).toEqual({});
+  });
+
+  test('clears a gift draft and returns past its gift history entries', async () => {
+    window.history.replaceState(null, '', '/post#comments');
+    window.sessionStorage.setItem(
+      GIFT_FORM_STATE_KEY,
+      JSON.stringify(createGiftFormState({ buyerName: 'Jamie' })),
+    );
+    ensureGiftPlanRoute();
+    setGiftRoute({ step: 'delivery' });
+    const historyGoSpy = vi.spyOn(window.history, 'go').mockImplementation(() => undefined);
+
+    const result = await ActionHandler({
+      action: 'closePopup',
+      data: {},
+      api: {},
+      state: { page: 'gift' },
+    });
+
+    expect(historyGoSpy).toHaveBeenCalledWith(-2);
+    expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
+    expect(result.showPopup).toBe(false);
   });
 });
 

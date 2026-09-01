@@ -150,7 +150,7 @@ function UserMenu(props: UserMenuProps) {
             </span>
           </div>
           <LucideIcon.ChevronsUpDown
-            className="ml-auto size-4 text-grey-700"
+            className="ml-auto size-4 text-gray-700"
             data-test-nav="arrow-down"
           />
         </SidebarMenuButton>

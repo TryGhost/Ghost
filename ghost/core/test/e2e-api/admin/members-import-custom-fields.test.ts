@@ -408,14 +408,10 @@ describe('Members import — custom fields', function () {
     assert.notEqual(await findMember(email), undefined);
   });
 
-  // Off, no field is active, so even a column for a defined field is dropped like any
-  // unknown one -- the value is never written.
-  it('ignores custom field columns when the feature is disabled', async function () {
-    const key = await createField('Nickname', 'short_text');
-    mockManager.mockLabsDisabled('membersCustomFields');
-    const email = 'cf-flag-off@example.com';
+  it('ignores custom field columns on a site that defines none', async function () {
+    const email = 'cf-no-fields@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
+    const res = await importCSV(`email,custom_fields.nickname\n${email},Bex\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
     assert.equal(res.body.meta.stats.invalid.length, 0);
@@ -425,11 +421,7 @@ describe('Members import — custom fields', function () {
       'member_id',
       member.id,
     );
-    assert.equal(
-      values.length,
-      0,
-      'no value written for a defined field while the feature was off',
-    );
+    assert.equal(values.length, 0, 'no value written for a column naming no defined field');
   });
 
   // The export guards a leading =/+/-/@ with an apostrophe; the import strips it, so the

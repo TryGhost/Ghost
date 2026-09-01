@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
+const { escapeExpression } = require('handlebars');
 
 /**
  * @typedef {object} Config
@@ -46,21 +47,30 @@ class MailgunEmailProvider {
     this.#config = config;
   }
 
-  #createRecipientData(replacements) {
+  #createRecipientData(replacements, htmlEscapedIds) {
     let recipientData = {};
 
     recipientData = replacements.reduce((acc, replacement) => {
       const { id, value } = replacement;
       acc[id] = value;
+      // Mailgun's recipient-variables substitution is a simple string replace with
+      // no HTML awareness, and the same value is used for both the html and plaintext
+      // bodies. Member-controlled values get an extra, escaped variant that only the
+      // html body points at. Trusted server-generated values (urls, uuids, hmacs) are
+      // skipped so their URLs don't end up entity-encoded inside hrefs.
+      if (htmlEscapedIds.has(id)) {
+        acc[`${id}_html`] = typeof value === 'string' ? escapeExpression(value) : value;
+      }
       return acc;
     }, {});
 
     return recipientData;
   }
 
-  #updateRecipientVariables(data, replacementDefinitions) {
+  #updateRecipientVariables(data, replacementDefinitions, isHtml) {
     for (const def of replacementDefinitions) {
-      data = data.replace(def.token, `%recipient.${def.id}%`);
+      const useHtmlVariant = isHtml && !def.trusted;
+      data = data.replace(def.token, `%recipient.${def.id}${useHtmlVariant ? '_html' : ''}%`);
     }
     return data;
   }
@@ -125,8 +135,11 @@ class MailgunEmailProvider {
       }
 
       // create recipient data for Mailgun using replacement definitions
+      const htmlEscapedIds = new Set(
+        replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id),
+      );
       const recipientData = recipients.reduce((acc, recipient) => {
-        acc[recipient.email] = this.#createRecipientData(recipient.replacements);
+        acc[recipient.email] = this.#createRecipientData(recipient.replacements, htmlEscapedIds);
         return acc;
       }, {});
 
@@ -136,6 +149,7 @@ class MailgunEmailProvider {
           messageData[key] = this.#updateRecipientVariables(
             messageData[key],
             replacementDefinitions,
+            key === 'html',
           );
         }
       });

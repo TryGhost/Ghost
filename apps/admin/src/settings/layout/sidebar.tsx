@@ -261,7 +261,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className="ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]" data-testid="sidebar">
-      <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]">
+      <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
         <InputGroup className="mr-8 rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0">
           <InputGroupAddon align="inline-start">
             <Search aria-hidden="true" className="size-4" />
@@ -295,7 +295,7 @@ const Sidebar: React.FC = () => {
       </div>
       <nav className={navClasses} id="settings-sidebar">
         {noResult && (
-          <div className="ml-2 text-base text-grey-700">
+          <div className="ml-2 text-base text-gray-700">
             <h2 className="mb-2 text-base font-semibold tracking-normal text-black dark:text-white">
               No result
             </h2>
@@ -571,7 +571,7 @@ const Sidebar: React.FC = () => {
 
         {!filter && (
           <a
-            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-900"
+            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
             onClick={() => {
               updateRoute('about');
             }}

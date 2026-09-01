@@ -45,6 +45,11 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 page chrome',
+    description: 'Enable the new Admin page chrome on desktop in light mode.',
+    flag: 'admin7PageChrome',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -73,15 +78,16 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'React tag details',
+    title: 'Member custom fields',
     description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
+      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
+    flag: 'membersCustomFields',
   },
   {
-    title: 'Member custom fields',
-    description: 'Let admins create and manage custom field definitions for members',
-    flag: 'membersCustomFields',
+    title: 'Stripe checkout collection',
+    description:
+      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+    flag: 'stripeCheckoutCollection',
   },
   {
     title: 'Members import redesign',

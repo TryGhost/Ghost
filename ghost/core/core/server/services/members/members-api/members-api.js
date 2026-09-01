@@ -71,6 +71,7 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   customFieldValues,
+  customFieldDefinitions,
 }) {
   const tokenService = new TokenService({
     privateKey,
@@ -145,7 +146,6 @@ module.exports = function MembersAPI({
         });
       },
     },
-    labsService,
     stripeService: stripeAPIService,
     memberAttributionService,
     emailSuppressionList,
@@ -154,6 +154,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     customFieldValues,
+    customFieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();
@@ -355,11 +356,11 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email });
+    return memberBREADService.read({ email }, { withCustomFields: false });
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId });
+    return memberBREADService.read({ transient_id: transientId }, { withCustomFields: false });
   }
 
   async function cycleTransientId(memberId) {

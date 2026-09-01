@@ -137,6 +137,28 @@ describe('DatePicker', () => {
     expect(dayButton(utils, 12).closest('td')).toHaveClass('gh-portal-datepicker-selected');
   });
 
+  it('opens on the selected month when the value sits in a later month', () => {
+    const toDateValue = (date: Date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+        date.getDate(),
+      ).padStart(2, '0')}`;
+    const today = new Date();
+    const futureDay = new Date(today.getFullYear(), today.getMonth() + 2, 12);
+    const utils = renderPicker({
+      min: toDateValue(today),
+      max: toDateValue(new Date(today.getFullYear(), today.getMonth() + 6, 12)),
+      value: toDateValue(futureDay),
+    });
+    openPicker(utils);
+
+    const caption = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+    expect(utils.getByText(caption.format(futureDay))).toBeInTheDocument();
+    const selectedCell = utils
+      .getByTestId('datepicker-popover')
+      .querySelector('td.gh-portal-datepicker-selected');
+    expect(selectedCell).toHaveTextContent('12');
+  });
+
   it('refuses days before the minimum', () => {
     const utils = renderPicker();
     openPicker(utils);

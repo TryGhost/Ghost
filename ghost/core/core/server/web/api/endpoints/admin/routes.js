@@ -161,7 +161,7 @@ module.exports = function apiRoutes() {
   router.put(
     '/tiers/:id/checkout_config',
     mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
+    labs.enabledMiddleware('stripeCheckoutCollection'),
     http(api.tiersCheckoutConfig.edit),
   );
 

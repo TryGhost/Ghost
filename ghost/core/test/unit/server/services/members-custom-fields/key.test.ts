@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { PORT_FIELD } from '@tryghost/checkout';
 import {
   KEY_CHARACTERS,
   mintableKey,
@@ -75,6 +76,12 @@ describe('Custom field key minting', function () {
         KEY_CHARACTERS,
         `minted ${JSON.stringify(key)} from ${JSON.stringify(name)}`,
       );
+    }
+  });
+
+  it('mints each checkout port default key from that port default name', function () {
+    for (const [port, field] of Object.entries(PORT_FIELD)) {
+      assert.equal(mintableKey(field.name), field.key, `port ${port}`);
     }
   });
 });

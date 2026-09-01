@@ -1,13 +1,17 @@
 import {
+  FIELD_TYPES,
   FIELD_TYPE_IDS,
+  partTypesOf,
   subFieldsOf,
+  type FieldKind,
   type FieldType,
+  type PartType,
   type PartsOf,
 } from '@tryghost/custom-field-types';
 import { csvColumnsForField } from '@tryghost/custom-field-types/csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 
-// Re-exported so the import mapping can recognise a custom_fields.* column (same reason
+// Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
 export { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
 
@@ -16,6 +20,8 @@ export { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
 // catalog package — the framework is their surface for everything custom-fields.
 export type { Address as MemberCustomFieldAddress } from '@tryghost/custom-field-types';
 export { FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/custom-field-types';
+export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/custom-field-types';
+export type { FieldKind as MemberCustomFieldKind } from '@tryghost/custom-field-types';
 
 export type MemberCustomField = {
   // Fields are addressed by their immutable key; the DB id is never exposed.
@@ -135,7 +141,7 @@ export type MemberCustomFieldCsvColumn = {
 
 /**
  * The CSV import mapping targets for a set of custom fields: one per column the export
- * writes, labelled for the field (and sub-field, for a composite). Column names come from
+ * writes, labeled for the field (and sub-field, for a composite). Column names come from
  * the shared codec the exporter writes and the importer reads, so a target is exactly a
  * round-tripping column rather than one hand-kept in sync.
  */
@@ -157,10 +163,13 @@ export const memberCustomFieldCsvColumns = (
   });
 };
 
-/** One part of a composite field type: the key the value schema declares, and its label. */
+export type { PartType as MemberCustomFieldPartType } from '@tryghost/custom-field-types';
+
+/** One part of a composite field type: the key the value schema declares, its label, and its declared type. */
 export type MemberCustomFieldPart<T extends FieldType = FieldType> = {
   key: PartsOf<T>;
   label: string;
+  type: PartType;
 };
 
 /**
@@ -173,11 +182,12 @@ export const memberCustomFieldParts = <T extends FieldType>(
   type: T,
 ): MemberCustomFieldPart<T>[] | null => {
   const partKeys = subFieldsOf(type);
-  if (!partKeys) {
+  const partTypes = partTypesOf(type);
+  if (!partKeys || !partTypes) {
     return null;
   }
   const labels = partLabelsFor(type);
-  return partKeys.map((key) => ({ key, label: labels[key] }));
+  return partKeys.map((key) => ({ key, label: labels[key], type: partTypes[key] }));
 };
 
 /**
@@ -280,6 +290,8 @@ export const formatMemberCustomFieldValue = (type: FieldType, value: unknown): s
     .filter(Boolean)
     .join(', ');
 };
+
+export const memberCustomFieldKind = (type: FieldType): FieldKind => FIELD_TYPES[type].kind;
 
 export interface MemberCustomFieldsResponseType {
   meta?: Meta;

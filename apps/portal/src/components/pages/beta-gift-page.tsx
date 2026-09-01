@@ -19,10 +19,20 @@ import { getGiftDurationAttributiveLabel } from '../../utils/gift-redemption-not
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
+import useSessionStorageState from '../../utils/use-session-storage-state';
 import { formatGiftValue } from './gift-page';
 import GiftDeliveryStep from './beta-gift/delivery-step';
+import {
+  GIFT_EMAIL_MAX_LENGTH,
+  GIFT_FORM_STATE_KEY,
+  GIFT_MESSAGE_MAX_LENGTH,
+  GIFT_NAME_MAX_LENGTH,
+  createGiftFormState,
+  parseGiftFormState,
+} from './beta-gift/form-state';
 import GiftPlanStep from './beta-gift/plan-step';
 import GiftPreviewPanel from './beta-gift/preview-panel';
+import { ensureGiftPlanRoute, restoreGiftEntryRoute, setGiftRoute } from './beta-gift/navigation';
 import type {
   GiftDeliveryMethod,
   GiftCadenceDuration,
@@ -35,9 +45,6 @@ const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];
 }) => GiftFormErrors;
 
-const GIFT_EMAIL_MAX_LENGTH = 191;
-const GIFT_NAME_MAX_LENGTH = 191;
-const GIFT_MESSAGE_MAX_LENGTH = 250;
 // Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants — change them together.
 const GIFT_MAX_SCHEDULE_DAYS = 365;
 
@@ -51,6 +58,9 @@ interface GiftPageContext {
   doAction: (action: string, data?: Record<string, unknown>) => void;
   lastPage: string | null;
   member: GiftPageMember | null;
+  pageData?: {
+    giftStep?: GiftStep;
+  };
   site: Site | null;
 }
 
@@ -58,30 +68,74 @@ function getTierPriceLabel(product: GiftProduct, months: GiftDuration) {
   return formatGiftValue(getGiftPrice(product, months));
 }
 
+function getPortalHash(page: string | null) {
+  if (page === 'signup') {
+    return '#/portal/signup';
+  }
+  if (page === 'accountHome') {
+    return '#/portal/account';
+  }
+  if (page === 'accountPlan') {
+    return '#/portal/account/plans';
+  }
+  return null;
+}
+
 const BetaGiftPage = () => {
-  const { site, member, brandColor, action, doAction, lastPage } = useContext(
+  const { site, member, brandColor, action, doAction, lastPage, pageData } = useContext(
     AppContext,
   ) as GiftPageContext;
-  const [step, setStep] = useState<GiftStep>('plan');
-  const [selectedDuration, setSelectedDuration] = useState<GiftDuration | null>(null);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
-  const [recipientEmail, setRecipientEmail] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [buyerName, setBuyerName] = useState(member?.name || '');
-  const [giftMessage, setGiftMessage] = useState('');
-  const [deliveryMethod, setDeliveryMethod] = useState<GiftDeliveryMethod>('email');
-  // null means untouched: the effective date then tracks "today" in the site's timezone on every
-  // render, so an untouched form still means "send now" after the page sits open across midnight.
-  const [deliveryDate, setDeliveryDate] = useState<string | null>(null);
+  const routeStep: GiftStep = pageData?.giftStep === 'delivery' ? 'delivery' : 'plan';
+  const [step, setStep] = useState<GiftStep>(routeStep);
+  const [formState, setFormState] = useSessionStorageState({
+    key: GIFT_FORM_STATE_KEY,
+    initialState: () => createGiftFormState({ buyerName: member?.name || '' }),
+    parse: parseGiftFormState,
+  });
   const [errors, setErrors] = useState<GiftFormErrors>({});
   const { cardRef, containerProps: cardTiltProps } = useCardTilt();
+  const handledRouteStepRef = useRef<GiftStep | null>(null);
+  const enteredDeliveryFromPlanRef = useRef(false);
+
+  const { plan, delivery } = formState;
+  const { selectedDuration, selectedProductId, buyerEmail: email, buyerName } = plan;
+  const { method: deliveryMethod, emailDraft } = delivery;
+  const {
+    recipientEmail,
+    recipientName,
+    message: giftMessage,
+    timing: deliveryTiming,
+  } = emailDraft;
 
   // Prefill the "from" name once the logged-in member loads, without clobbering anything the buyer
   // has already typed.
   useEffect(() => {
-    setBuyerName((current) => current || member?.name || '');
+    setFormState((current) => {
+      if (current.plan.buyerName || !member?.name) {
+        return current;
+      }
+
+      return {
+        ...current,
+        plan: { ...current.plan, buyerName: member.name },
+      };
+    });
   }, [member?.name]);
+
+  useEffect(() => {
+    if (routeStep === 'delivery' && !plan.completed) {
+      setStep('plan');
+      setGiftRoute({ step: 'plan', replace: true });
+      return;
+    }
+
+    if (handledRouteStepRef.current === routeStep) {
+      return;
+    }
+    handledRouteStepRef.current = routeStep;
+
+    setStep(routeStep);
+  }, [plan.completed, routeStep]);
 
   // Anchors us to the popup's real (iframe) document for scroll control.
   const contentRef = useRef<HTMLDivElement>(null);
@@ -116,25 +170,55 @@ const BetaGiftPage = () => {
     return () => cancelAnimationFrame(raf);
   }, [step]);
 
-  if (!site) {
-    return <LoadingPage />;
-  }
+  const handleExit = () => {
+    const lastPageHash = getPortalHash(lastPage);
+    if (!restoreGiftEntryRoute() && lastPageHash) {
+      window.history.replaceState(window.history.state, '', lastPageHash);
+    }
+    doAction('back');
+  };
 
-  const { portal_default_plan: portalDefaultPlan } = site;
+  const handleClose = () => {
+    doAction('closePopup');
+  };
+
+  const portalDefaultPlan = site?.portal_default_plan ?? null;
   const offeredDurations = getAvailableGiftDurations({ site });
   const activeDuration = getActiveGiftDuration({
     availableDurations: offeredDurations,
-    portalDefaultPlan: portalDefaultPlan ?? null,
+    portalDefaultPlan,
     selectedDuration,
   });
   const products = activeDuration ? getGiftProducts({ site, duration: activeDuration }) : [];
+  const restoredSelectionAvailable =
+    selectedDuration !== null &&
+    offeredDurations.includes(selectedDuration) &&
+    selectedProductId !== null &&
+    products.some((product) => product.id === selectedProductId);
+
+  useEffect(() => {
+    if (!site || !plan.completed || restoredSelectionAvailable) {
+      return;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      plan: { ...current.plan, completed: false },
+    }));
+    setStep('plan');
+    setGiftRoute({ step: 'plan', replace: true });
+  }, [plan.completed, restoredSelectionAvailable, site]);
+
+  if (!site) {
+    return <LoadingPage />;
+  }
 
   const siteIcon = site.icon;
   const siteTitle = site.title || '';
   if (!activeDuration || products.length === 0) {
     return (
       <div className="gh-portal-content gift">
-        <CloseButton />
+        <CloseButton onClick={handleClose} />
         <div className="gh-portal-gift-checkout">
           <div className="gh-portal-gift-checkout-left">
             <div aria-hidden="true" className="gh-portal-gift-checkout-bg" />
@@ -180,7 +264,8 @@ const BetaGiftPage = () => {
   const showEmailPreview = step === 'delivery' && deliveryMethod === 'email';
   const minDeliveryDate = getDateInputValue(new Date(), site.timezone);
   const maxDeliveryDate = addCalendarDays(minDeliveryDate, GIFT_MAX_SCHEDULE_DAYS);
-  const effectiveDeliveryDate = deliveryDate ?? minDeliveryDate;
+  const effectiveDeliveryDate =
+    deliveryTiming.type === 'scheduled' ? deliveryTiming.date : minDeliveryDate;
 
   const emailField: GiftInputField = {
     type: 'email',
@@ -228,12 +313,18 @@ const BetaGiftPage = () => {
 
   const handleEmailChange = (value: string) => {
     setErrors((currentErrors) => ({ ...currentErrors, email: '' }));
-    setEmail(value);
+    setFormState((current) => ({
+      ...current,
+      plan: { ...current.plan, buyerEmail: value, completed: false },
+    }));
   };
 
   const handleBuyerNameChange = (value: string) => {
     setErrors((currentErrors) => ({ ...currentErrors, buyerName: '' }));
-    setBuyerName(value);
+    setFormState((current) => ({
+      ...current,
+      plan: { ...current.plan, buyerName: value, completed: false },
+    }));
   };
 
   const handleRecipientEmailChange = (value: string) => {
@@ -242,7 +333,13 @@ const BetaGiftPage = () => {
       recipientEmail: '',
       deliveryDate: '',
     }));
-    setRecipientEmail(value);
+    setFormState((current) => ({
+      ...current,
+      delivery: {
+        ...current.delivery,
+        emailDraft: { ...current.delivery.emailDraft, recipientEmail: value },
+      },
+    }));
   };
 
   const handleDeliveryMethodChange = (method: GiftDeliveryMethod) => {
@@ -251,14 +348,61 @@ const BetaGiftPage = () => {
       recipientEmail: '',
       deliveryDate: '',
     }));
-    setDeliveryMethod(method);
+    setFormState((current) => ({
+      ...current,
+      delivery: { ...current.delivery, method },
+    }));
   };
 
   const handleDeliveryDateChange = (nextDate: string) => {
     setErrors((currentErrors) => ({ ...currentErrors, deliveryDate: '' }));
-    // Store today as null so "send now" keeps tracking the site day across midnight; a typed past
-    // date stays put for validation to call out.
-    setDeliveryDate(nextDate === minDeliveryDate ? null : nextDate);
+    setFormState((current) => ({
+      ...current,
+      delivery: {
+        ...current.delivery,
+        emailDraft: {
+          ...current.delivery.emailDraft,
+          timing:
+            nextDate === minDeliveryDate
+              ? { type: 'immediate' }
+              : { type: 'scheduled', date: nextDate },
+        },
+      },
+    }));
+  };
+
+  const handleSelectDuration = (duration: GiftDuration) => {
+    setFormState((current) => ({
+      ...current,
+      plan: { ...current.plan, selectedDuration: duration, completed: false },
+    }));
+  };
+
+  const handleSelectProduct = (productId: string) => {
+    setFormState((current) => ({
+      ...current,
+      plan: { ...current.plan, selectedProductId: productId, completed: false },
+    }));
+  };
+
+  const handleRecipientNameChange = (value: string) => {
+    setFormState((current) => ({
+      ...current,
+      delivery: {
+        ...current.delivery,
+        emailDraft: { ...current.delivery.emailDraft, recipientName: value },
+      },
+    }));
+  };
+
+  const handleGiftMessageChange = (value: string) => {
+    setFormState((current) => ({
+      ...current,
+      delivery: {
+        ...current.delivery,
+        emailDraft: { ...current.delivery.emailDraft, message: value },
+      },
+    }));
   };
 
   const handleContinueToDelivery = () => {
@@ -277,12 +421,30 @@ const BetaGiftPage = () => {
     if (formHasErrors) {
       return;
     }
+    setFormState((current) => ({
+      ...current,
+      plan: {
+        ...current.plan,
+        selectedDuration: activeDuration,
+        selectedProductId: activeProduct.id,
+        completed: true,
+      },
+    }));
+    ensureGiftPlanRoute();
+    enteredDeliveryFromPlanRef.current = true;
     setStep('delivery');
+    setGiftRoute({ step: 'delivery' });
   };
 
   const handleBackToPlan = () => {
     setErrors({});
     setStep('plan');
+    if (enteredDeliveryFromPlanRef.current) {
+      enteredDeliveryFromPlanRef.current = false;
+      window.history.back();
+    } else {
+      setGiftRoute({ step: 'plan', replace: true });
+    }
   };
 
   const handlePurchase = () => {
@@ -299,6 +461,10 @@ const BetaGiftPage = () => {
     const isScheduled = isEmailDelivery && effectiveDeliveryDate > minDeliveryDate;
 
     const fieldsToValidate: GiftInputField[] = [];
+    // A persisted draft can outlive the member session that originally hid this field.
+    if (!isLoggedIn) {
+      fieldsToValidate.push({ ...emailField, value: customerEmail });
+    }
     if (isEmailDelivery && trimmedRecipientEmail) {
       fieldsToValidate.push({ ...recipientEmailField, value: trimmedRecipientEmail });
     }
@@ -326,6 +492,14 @@ const BetaGiftPage = () => {
     setErrors(formErrors);
 
     if (formHasErrors) {
+      if (formErrors.email) {
+        setStep('plan');
+        setFormState((current) => ({
+          ...current,
+          plan: { ...current.plan, completed: false },
+        }));
+        setGiftRoute({ step: 'plan', replace: true });
+      }
       return;
     }
 
@@ -344,14 +518,14 @@ const BetaGiftPage = () => {
 
   return (
     <div ref={contentRef} className="gh-portal-content gift">
-      <CloseButton />
+      <CloseButton onClick={handleClose} />
       <div className="gh-portal-gift-checkout">
         <div className="gh-portal-gift-checkout-left" data-step={step}>
           <div aria-hidden="true" className="gh-portal-gift-checkout-bg" />
           {/* One back button in the corner for both jobs, as the other Portal modals do it. */}
           {(step === 'delivery' || lastPage) && (
             <SiteTitleBackButton
-              onBack={() => (step === 'delivery' ? handleBackToPlan() : doAction('back'))}
+              onBack={() => (step === 'delivery' ? handleBackToPlan() : handleExit())}
             />
           )}
           <div className="gh-portal-gift-checkout-inner">
@@ -371,8 +545,8 @@ const BetaGiftPage = () => {
                 tierPriceLabel={getTierPriceLabel}
                 onBuyerEmailChange={handleEmailChange}
                 onBuyerNameChange={handleBuyerNameChange}
-                onSelectDuration={setSelectedDuration}
-                onSelectProduct={setSelectedProductId}
+                onSelectDuration={handleSelectDuration}
+                onSelectProduct={handleSelectProduct}
               />
             ) : (
               <GiftDeliveryStep
@@ -387,9 +561,9 @@ const BetaGiftPage = () => {
                 recipientNameField={recipientNameField}
                 onChangeDeliveryDate={handleDeliveryDateChange}
                 onChangeDeliveryMethod={handleDeliveryMethodChange}
-                onChangeGiftMessage={setGiftMessage}
+                onChangeGiftMessage={handleGiftMessageChange}
                 onChangeRecipientEmail={handleRecipientEmailChange}
-                onChangeRecipientName={setRecipientName}
+                onChangeRecipientName={handleRecipientNameChange}
               />
             )}
             <div className="gh-portal-gift-checkout-cta-wrapper">

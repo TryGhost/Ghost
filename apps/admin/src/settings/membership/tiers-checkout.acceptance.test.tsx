@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
-  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -36,24 +35,23 @@ const nameField = {
   type: 'short_text',
 };
 
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+function stripeSettings() {
   return settingsResponse({
-    ...overrides,
     settings: {
       stripe_connect_display_name: 'Dummy',
       stripe_connect_livemode: false,
       stripe_connect_account_id: 'acct_123',
       stripe_connect_publishable_key: 'pk_test_123',
       stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
     },
   });
 }
 
-// The flag lives in settings and config in lockstep, and Stripe rides along in settings.
-const flagOnBoot = {
-  browseConfig: { response: configResponse({ labs: { membersCustomFields: true } }) },
-  browseSettings: { response: stripeSettings({ labs: { membersCustomFields: true } }) },
+// The harness composes the flags into settings and config; Stripe rides along in settings.
+// Collection puts the card on the tier; field management adds the destination pickers.
+const flagOn = {
+  labs: { stripeCheckoutCollection: true, membersCustomFields: true },
+  boot: { browseSettings: { response: stripeSettings() } },
 };
 
 const supporterConfig = {
@@ -114,7 +112,7 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
       { status: 404 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect(modal.getByText('Checkout', { exact: true })).toHaveCount(0);
@@ -131,7 +129,7 @@ describe('Tier checkout collection', () => {
       { errors: [{ type: 'InternalServerError', message: 'Something went wrong.' }] },
       { status: 500 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByText(/could not be loaded/)).toBeVisible();
@@ -140,7 +138,7 @@ describe('Tier checkout collection', () => {
 
   it('shows no checkout section on the free tier', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.tiers().getByText(freeTier.name, { exact: true }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -150,7 +148,7 @@ describe('Tier checkout collection', () => {
 
   it('reflects the saved configuration and writes nothing when untouched', async () => {
     const putApi = checkoutWorld([supporterConfig]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -182,7 +180,7 @@ describe('Tier checkout collection', () => {
     const everywhere = { ...supporterConfig.shipping };
     delete (everywhere as { allowed_countries?: string[] }).allowed_countries;
     checkoutWorld([{ ...supporterConfig, shipping: everywhere }]);
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
@@ -192,7 +190,7 @@ describe('Tier checkout collection', () => {
 
   it('validates destinations inline before anything is written', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -204,7 +202,7 @@ describe('Tier checkout collection', () => {
 
   it('saves the chosen collections, stating every block explicitly', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -216,11 +214,8 @@ describe('Tier checkout collection', () => {
     await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
     await expect.poll(() => putApi.requests.length).toBe(1);
 
-    const sent = (
-      putApi.lastRequest?.body as {
-        tiers_checkout_config: [{ shipping: { collect: boolean; allowed_countries?: string[] } }];
-      }
-    ).tiers_checkout_config[0];
+    const sent = (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+      .tiers_checkout_config[0];
     expect(sent).toMatchObject({
       shipping: {
         collect: true,
@@ -259,7 +254,7 @@ describe('Tier checkout collection', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -290,7 +285,7 @@ describe('Tier checkout collection', () => {
       fields = [...fields, created];
       return { members_custom_fields: [created] };
     });
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect shipping address').click();
@@ -335,7 +330,7 @@ describe('Tier checkout collection', () => {
         ],
       }),
     );
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.tiers().getByRole('button', { name: 'Add tier' }).click();
     const modal = settingsScreen.tierDetailModal();
@@ -377,7 +372,7 @@ describe('Tier checkout collection', () => {
 
   it('closes without confirmation after saving checkout edits', async () => {
     const putApi = checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect business tax ID').click();
@@ -392,7 +387,7 @@ describe('Tier checkout collection', () => {
 
   it('asks before discarding unsaved checkout edits', async () => {
     checkoutWorld();
-    await renderAdminApp('/settings', { boot: flagOnBoot });
+    await renderAdminApp('/settings', flagOn);
 
     const modal = await openSupporterModal();
     await modal.getByLabelText('Collect phone number').click();
@@ -402,5 +397,73 @@ describe('Tier checkout collection', () => {
     await expect.element(confirmation).toBeVisible();
     await page.getByRole('button', { name: 'Leave' }).click();
     await expect(settingsScreen.tierDetailModal()).toHaveCount(0);
+  });
+
+  describe('without field management', () => {
+    const collectionOnly = {
+      labs: { stripeCheckoutCollection: true, membersCustomFields: false },
+      boot: { browseSettings: { response: stripeSettings() } },
+    };
+
+    it('shows the toggles and no destination pickers', async () => {
+      checkoutWorld();
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).toBeVisible();
+      await modal.getByLabelText('Collect shipping address').click();
+      await expect(modal.getByLabelText('Save address as')).toHaveCount(0);
+      await expect(modal.getByLabelText('Save recipient name as')).toHaveCount(0);
+    });
+
+    it('saves the port default keys, with nothing to validate', async () => {
+      const putApi = checkoutWorld();
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).not.toBeChecked();
+
+      await modal.getByLabelText('Collect shipping address').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+
+      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await expect.poll(() => putApi.requests.length).toBe(1);
+      expect(
+        (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+          .tiers_checkout_config[0],
+      ).toMatchObject({
+        shipping: {
+          collect: true,
+          name: { custom_field_key: 'shipping_name' },
+          address: { custom_field_key: 'shipping_address' },
+        },
+      });
+    });
+
+    it('keeps a binding that was already chosen', async () => {
+      const putApi = checkoutWorld([supporterConfig]);
+      await renderAdminApp('/settings', collectionOnly);
+
+      const modal = await openSupporterModal();
+      await expect.element(modal.getByLabelText('Collect shipping address')).toBeChecked();
+
+      await modal.getByLabelText('Collect phone number').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+
+      // "Saved" is the tier save's signal; the checkout write is chained after it.
+      await expect.poll(() => putApi.requests.length).toBe(1);
+      expect(
+        (putApi.lastRequest?.body as { tiers_checkout_config: [Record<string, unknown>] })
+          .tiers_checkout_config[0],
+      ).toMatchObject({
+        shipping: {
+          collect: true,
+          name: { custom_field_key: nameField.key },
+          address: { custom_field_key: addressField.key },
+        },
+      });
+    });
   });
 });

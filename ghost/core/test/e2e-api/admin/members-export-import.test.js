@@ -13,10 +13,8 @@ const { mockManager } = require('../../utils/e2e-framework');
 // A member exported to CSV should re-import cleanly: the export's CSV is a valid
 // import, and re-feeding it must not lose or corrupt the members. The fixture spans
 // every discrete concern the export carries so the loop exercises the whole column
-// set. Two suites run the loop in each state of the membersCustomFields flag: the
-// base state (off, what production runs) and the custom-fields state (on) -- the
-// flag changes the exported column set, so both need covering. Each test isolates
-// its own members with a per-test label so the export/re-import touches only its set.
+// set. Each test isolates its own members with a per-test label so the export/re-import
+// touches only its set.
 describe('Members export -> import round-trip', function () {
   let request;
   let tier;
@@ -198,14 +196,13 @@ describe('Members export -> import round-trip', function () {
     mockManager.mockMail();
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     mockManager.restore();
+    await models.Base.knex('members_custom_field_values').del();
+    await models.Base.knex('members_custom_fields').del();
   });
 
-  // The state production runs in: custom fields off, so no custom_fields columns.
-  it('round-trips the base member set with custom fields off', async function () {
-    mockManager.mockLabsDisabled('membersCustomFields');
-
+  it('round-trips the base member set with no custom fields defined', async function () {
     const emails = await seedMembers('rtbase', baseLabel.get('name'));
     const csv = await exportSet(baseLabel.get('slug'));
 
@@ -216,7 +213,7 @@ describe('Members export -> import round-trip', function () {
     assert.equal(
       csv.includes('custom_fields.'),
       false,
-      'no custom field columns when the flag is off',
+      'no custom field columns when the site defines none',
     );
     const exported = Papa.parse(csv, { header: true }).data;
     assert.equal(exported.find((r) => r.email === emails.core).subscribed_to_emails, 'true');

@@ -4,6 +4,53 @@
 @source "../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
 
 @import '@tryghost/shade/styles.css';
+@import './assets/fonts/inter-admin-7/fonts.css';
+
+@custom-variant admin7 (&:where(.admin7, .admin7 *));
+
+/* The shell owns rollout eligibility. Admin overlays mount beside #root, so
+   mirror typography into Shade portals and the three legacy overlay hosts.
+   Do not set body fonts or change component weights, sizes, or line heights. */
+.admin7,
+:where(body.react-admin:has(> #root .admin7))
+  > :is(
+    .shade.shade-admin,
+    #ember-basic-dropdown-wormhole,
+    #ember-modal-wormhole,
+    #ember-liquid-wormhole,
+    #ember-alerts-wormhole,
+    #ember-notifications-wormhole
+  ) {
+  --font-sans:
+    'Inter Admin 7', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
+    helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  --font-family: var(--font-sans);
+  --font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
+  font-family: var(--font-sans);
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 14;
+  font-feature-settings: var(--font-feature-settings);
+}
+
+/* Browser form-control defaults can reset these inherited font properties.
+   Keep the rule weaker than any explicit component typography choice. */
+:where(
+    .admin7,
+    body.react-admin:has(> #root .admin7)
+      > :is(
+        .shade.shade-admin,
+        #ember-basic-dropdown-wormhole,
+        #ember-modal-wormhole,
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
+      )
+  )
+  :where(button, input, optgroup, select, textarea) {
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+}
 
 /* Site custom-font families for the settings font pickers. The font-* utilities
    must be generated in this Tailwind lane; the font files themselves load with
@@ -166,6 +213,13 @@ body.react-admin #root .shade.shade-admin {
   grid-column: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Keep the server-rendered loader visible while the React bundle boots. Once
+   React commits its mount marker, hide a still-detached Ember root until the
+   bridge relocates it into the shell. */
+body.react-admin:has(> #root [data-react-admin-mounted]) > #ember-app {
+  visibility: hidden;
 }
 
 /* iOS safe area handling for mobile navbar */

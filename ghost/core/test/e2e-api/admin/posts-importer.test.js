@@ -207,7 +207,7 @@ describe('Posts Importer API', function () {
     assert.match(email.html, /Created:<\/strong> 2/);
     assert.match(email.html, /Updated:<\/strong> 0/);
     assert.match(email.html, /Skipped:<\/strong> 2/);
-    assert.match(email.html, /Failed:<\/strong> 2/);
+    assert.match(email.html, /Failed:<\/strong> 2 \(see attached errors\.csv\)/);
     assert.equal(email.attachments.length, 2);
     const report = email.attachments.find(({ filename }) => filename === 'report.csv');
     assert.ok(report);
@@ -235,8 +235,10 @@ describe('Posts Importer API', function () {
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const { data: errorRows, meta } = papaparse.parse(errorsFile.content.trim(), { header: true });
-    assert.deepEqual(meta.fields.slice(0, 7), [
+    assert.deepEqual(meta.fields.slice(0, 9), [
       'import_status',
+      'import_reason',
+      'import_media_failures',
       'title',
       'slug',
       'status',
@@ -281,18 +283,18 @@ describe('Posts Importer API', function () {
       subject: 'Your content import was unsuccessful',
     });
     assert.match(email.html, /Skipped:<\/strong> 0/);
-    assert.match(email.html, /Failed:<\/strong> 1/);
+    assert.match(email.html, /Failed:<\/strong> 1 \(see attached errors\.csv\)/);
     const errorsFile = email.attachments.find(({ filename }) => filename === 'errors.csv');
     assert.ok(errorsFile);
     const parsed = papaparse.parse(errorsFile.content.trim(), { header: true });
     assert.deepEqual(parsed.meta.fields, [
       'import_status_2',
+      'import_reason',
+      'import_media_failures',
       'Body',
       'Headline',
       'State',
       'import_status',
-      'import_reason',
-      'import_media_failures',
     ]);
     assert.equal(parsed.data[0].Body, '<p>Keep source cells</p>');
     assert.equal(parsed.data[0].Headline, 'ZIP invalid');
@@ -1024,6 +1026,10 @@ describe('Posts Importer API', function () {
         reason: /Unknown post field mapping: "newsletter_id"/,
       },
       {
+        mapping: { First: 'title', Second: 'frontmatter' },
+        reason: /Unknown post field mapping: "frontmatter"/,
+      },
+      {
         mapping: { First: 'title', Second: 'title' },
         reason: /Post field is mapped more than once: "title"/,
       },
@@ -1042,6 +1048,25 @@ describe('Posts Importer API', function () {
       const { body } = await agent.post('posts/upload/').body(form).expectStatus(422);
       assert.match(body.errors[0].message, reason);
     }
+  });
+
+  it('Ignores an unmapped frontmatter identity header', async function () {
+    await agent.loginAsOwner();
+
+    const frontmatterCsvPath = await csvFile(
+      'posts-import-frontmatter.csv',
+      'title,frontmatter\nFrontmatter source column,key: value\n',
+    );
+
+    await agent.post('posts/upload/').attach('postsfile', frontmatterCsvPath).expectStatus(202);
+    await contentImportService.allSettled();
+
+    const post = await models.Post.findOne(
+      { title: 'Frontmatter source column' },
+      { withRelated: ['posts_meta'] },
+    );
+    assert.ok(post);
+    assert.equal(post.related('posts_meta').get('frontmatter'), undefined);
   });
 
   it('Imports each CSV row as a post with its content and publish date', async function () {

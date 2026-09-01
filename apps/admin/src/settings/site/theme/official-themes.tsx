@@ -77,7 +77,7 @@ const OfficialThemes: React.FC<{
               }}
             >
               <div
-                className="relative w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]"
+                className="relative w-full bg-gray-100 shadow-md transition-all duration-500 hover:scale-[1.05]"
                 onMouseEnter={() => setupVariantLoop(theme)}
                 onMouseLeave={() => setupVariantLoop(null)}
               >
@@ -119,7 +119,7 @@ const OfficialThemes: React.FC<{
                   variants.map((variant, idx) => (
                     <span
                       key={variant.category}
-                      className={clsx('absolute left-0 translate-y-px text-grey-700 opacity-0', {
+                      className={clsx('absolute left-0 translate-y-px text-gray-700 opacity-0', {
                         'opacity-100':
                           (idx === visibleVariantIdx && isVariantLooping) ||
                           (!isVariantLooping && idx === 0),
@@ -129,7 +129,7 @@ const OfficialThemes: React.FC<{
                     </span>
                   ))
                 ) : (
-                  <span className="text-grey-700">{theme.category}</span>
+                  <span className="text-gray-700">{theme.category}</span>
                 )}
               </div>
             </button>

@@ -36,6 +36,32 @@ async function openMappingStep(labs: Record<string, boolean>) {
 }
 
 describe('Import members gate', () => {
+  it.each([false, true])(
+    'inherits portal typography in the import flow (redesigned: %s)',
+    async (membersImportRedesign) => {
+      await openMappingStep({ admin7PageChrome: true, membersImportRedesign });
+      const modal = membersScreen.dialog();
+      await expect.element(modal).toBeVisible();
+      expect(modal.element().closest('#root')).toBeNull();
+      const select = page.getByRole('combobox').first();
+      await expect.element(select).toBeVisible();
+      const hasFont = () => getComputedStyle(modal.element()).fontFamily.includes('Inter Admin 7');
+      await expect.poll(hasFont).toBe(true);
+
+      const originalModal = modal.element();
+      try {
+        await page.viewport(800, 800);
+        await expect.element(modal).toBeVisible();
+        expect(modal.element()).toBe(originalModal);
+        await expect.poll(hasFont).toBe(false);
+        await page.viewport(801, 800);
+        await expect.poll(hasFont).toBe(true);
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    },
+  );
+
   it('serves the redesigned import when the flag is on', async () => {
     await openMappingStep({ membersImportRedesign: true });
 

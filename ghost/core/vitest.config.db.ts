@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
@@ -45,6 +46,15 @@ const sharedSsrConfig = {
   resolve: { conditions: ['source', 'node'] },
 };
 
+/*
+ * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
+ * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
+ * 4-core runner measured 2.08x (e2e) and 1.79x (integration) against a 2-core
+ * one purely on worker count. `legacy` runs on the threads pool, so the
+ * "forks 2 hangs" wedge below is not in play here.
+ */
+const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
 const sharedDbConfig = {
@@ -57,16 +67,16 @@ const sharedDbConfig = {
   // here except `legacy`, which sets pool: 'threads' (see its note below).
   pool: 'forks' as const,
   isolate: false,
+  maxWorkers: getWorkerCount(),
   sequence: { shuffle: { files: !!process.env.CI } },
   setupFiles: ['./test/utils/vitest-setup-db.ts'],
   resolveSnapshotPath,
-  // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
-  // sqlite `testing` locally). Must reject vitest's own `NODE_ENV='test'`
-  // default — Ghost has no config.test.json, so `test` yields no DB config and
-  // bookshelf throws "Invalid knex instance". Resolved here in the main
-  // process, where CI sets the leg's NODE_ENV.
+  // DB-backed suites run against MySQL in CI and locally. Set the environment
+  // explicitly to reject vitest's own `NODE_ENV='test'` default — Ghost has no
+  // config.test.json, so `test` yields no DB config and bookshelf throws
+  // "Invalid knex instance".
   env: {
-    NODE_ENV: process.env.NODE_ENV?.startsWith('testing') ? process.env.NODE_ENV : 'testing',
+    NODE_ENV: 'testing-mysql',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
     // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
     // them require() Ghost's .ts sources (job files pull in e.g.
@@ -132,8 +142,7 @@ export default defineConfig({
           // exposes — e.g. migration.test.js can leave a rolled-back
           // schema that a co-located file then inherits. Per-file
           // isolation removes it by construction. The e2e project keeps
-          // isolate:false (it has no such pollution and is fastest that
-          // way); sqlite per-file init is cheap so the cost here is small.
+          // isolate:false (it has no such pollution and is fastest that way).
           isolate: true,
           include: ['test/integration/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],

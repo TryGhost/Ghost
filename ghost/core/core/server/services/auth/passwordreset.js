@@ -11,6 +11,7 @@ const mail = require('../mail');
 
 const messages = {
   userNotFound: 'User not found.',
+  userSuspended: 'This account has been suspended.',
   resetPassword: 'Reset Password',
   expired: {
     message: 'Cannot reset password.',
@@ -44,6 +45,14 @@ function generateToken(email, settingsAPI, transaction) {
     .then((user) => {
       if (!user) {
         throw new errors.NotFoundError({ message: tpl(messages.userNotFound) });
+      }
+
+      // Prevent suspended users from generating a reset token. This same check must appear
+      // below in doReset() to account for password reset tokens that were generated prior
+      // to suspension since they have a 24-hour lifetime.
+      // Locked users must still be able to recover access by resetting their password.
+      if (user.isInactive()) {
+        throw new errors.NoPermissionError({ message: tpl(messages.userSuspended) });
       }
 
       token = security.tokens.resetToken.generateHash({
@@ -126,6 +135,10 @@ function doReset(options, tokenParts, settingsAPI) {
             help: tpl(messages.invalidToken.help),
           });
         }
+      }
+
+      if (user.isInactive()) {
+        throw new errors.NoPermissionError({ message: tpl(messages.userSuspended) });
       }
 
       const updatedUser = await models.User.changePassword(

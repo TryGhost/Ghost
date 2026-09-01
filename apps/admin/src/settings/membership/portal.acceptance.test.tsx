@@ -108,7 +108,7 @@ describe('Portal settings', () => {
   it('hides gift promotion settings when the backend does not provide them', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
-    const settings = settingsResponse({ labs: { giftSubCustomization: true } });
+    const settings = settingsResponse();
     settings.settings = settings.settings.filter(
       ({ key }) => !['portal_signup_gift_promotion', 'portal_account_gift_promotion'].includes(key),
     );

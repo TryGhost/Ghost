@@ -391,7 +391,9 @@ describe('GiftEmailService', function () {
       );
       sinon.assert.match(
         message.html,
-        sinon.match(/on behalf of Buyer \(<a[^>]+href="mailto:buyer@example\.com"/),
+        sinon.match(
+          'This message was sent from example.com to recipient@example.com on behalf of Buyer (buyer@example.com).',
+        ),
       );
       sinon.assert.match(message.html, sinon.match('background:#fff3ed'));
       sinon.assert.match(message.html, sinon.match('color:#bd460c'));
@@ -424,7 +426,7 @@ describe('GiftEmailService', function () {
       });
 
       const html = bulkMailer.send.firstCall.firstArg.html;
-      assert.match(html, /<a href="https:\/\/example\.com\/"[^>]*>Test Site<\/a>/);
+      assert.match(html, /<span[^>]*>Test Site<\/span>/);
       assert.doesNotMatch(html, /<img /);
     });
 

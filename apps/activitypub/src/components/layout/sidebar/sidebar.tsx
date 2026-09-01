@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSidebarOpen }) => {
 
   return (
     <div
-      className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-6 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
+      className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-[var(--network-gutter,1.5rem)] transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
         isMobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:translate-x-full'
       }`}
     >

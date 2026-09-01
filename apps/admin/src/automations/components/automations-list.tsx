@@ -11,8 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { cn, formatNumber } from '@tryghost/shade/utils';
-import moment from 'moment';
+import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
   'member-welcome-email-free': 'Welcome new free members after they sign up.',
@@ -145,7 +144,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
           const statCells = {
             lastEntry: {
               content: lastEntry ? (
-                <time dateTime={lastEntry}>{moment(lastEntry).fromNow()}</time>
+                <time dateTime={lastEntry}>{formatTimestamp(lastEntry)}</time>
               ) : (
                 'Never'
               ),
