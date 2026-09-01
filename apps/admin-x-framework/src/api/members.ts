@@ -10,7 +10,7 @@ import {
 import { apiUrl } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/custom-field-types';
 import { useCurrentUser } from './current-user';
-import { canManageMembers, isEditorUser, isSuperEditorUser } from './users';
+import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
 
 export type MemberLabel = {
@@ -213,7 +213,9 @@ export interface MembersCountResult {
  * request with `limit=1` reading `meta.pagination.total`, cached per-filter
  * for 60 seconds. As in Ember, roles that cannot manage members get
  * `count: null` without a request, a nullish filter counts as 0 without a
- * request, and request errors resolve to 0 with no error toast.
+ * request, and request errors resolve to 0 with no error toast. While the
+ * current user is still loading the result is `{count: null, isLoading: true}`
+ * so callers can tell it apart from a role that cannot browse members.
  */
 export function useMembersCount(filter: string | null | undefined): MembersCountResult {
   const { data: currentUser } = useCurrentUser();
@@ -227,6 +229,10 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
     enabled,
     defaultErrorHandler: false,
   });
+
+  if (currentUser === undefined) {
+    return { count: null, isLoading: true };
+  }
 
   if (!enabled || result.isError) {
     return { count: canFetch ? 0 : null, isLoading: false };
@@ -245,10 +251,12 @@ function pluralizedCount(count: number, noun: string): string {
 }
 
 export interface MembersCountStringOptions {
-  /** The signed-in user; drives the can't-browse-members fallback copy. */
-  user: Parameters<typeof isEditorUser>[0];
-  /** The fetched (or already-known) recipient count. */
-  count?: number;
+  /**
+   * The recipient count, usually from `useMembersCount`: a number renders
+   * numeric copy; `null` (role cannot browse members) and `undefined` (not
+   * fetched) render the descriptive fallback copy instead.
+   */
+  count?: number | null;
   /** With `hasMultipleNewsletters`, switches copy to "subscribers of <name>". */
   newsletter?: { name: string; recipientFilter: string };
   hasMultipleNewsletters?: boolean;
@@ -261,7 +269,7 @@ export interface MembersCountStringOptions {
  */
 export function membersCountString(
   filter: string = '',
-  { user, count, newsletter, hasMultipleNewsletters = false }: MembersCountStringOptions,
+  { count, newsletter, hasMultipleNewsletters = false }: MembersCountStringOptions = {},
 ): string {
   const nounSingular = newsletter && hasMultipleNewsletters ? 'subscriber' : 'member';
   const nounPlural = `${nounSingular}s`;
@@ -278,11 +286,10 @@ export function membersCountString(
   const isAll =
     !filter || (filterParts.includes(FREE_SEGMENT) && filterParts.includes(PAID_SEGMENT));
 
-  // Ember gated on `user.isEditor`, which is plain Editors only — Super
-  // Editors can manage members, so they must fall through to real counts.
-  const isPlainEditor = isEditorUser(user) && !isSuperEditorUser(user);
-
-  if (isPlainEditor && count === undefined) {
+  // Ember reserved this copy for plain Editors and fetched a count for every
+  // other role on the spot; a pure function can't fetch, so an absent count —
+  // whatever the role — gets the descriptive copy rather than a bogus "0".
+  if (count === undefined || count === null) {
     if (isFree) {
       return `all free ${nounPlural}${suffix}`;
     }
@@ -296,18 +303,15 @@ export function membersCountString(
     return 'a custom members segment';
   }
 
-  // Ember's count fetch resolved errors to 0, so an absent count reads as 0.
-  const recipientCount = count ?? 0;
-
   if (isFree) {
-    return pluralizedCount(recipientCount, `free ${nounSingular}`) + suffix;
+    return pluralizedCount(count, `free ${nounSingular}`) + suffix;
   }
 
   if (isPaid) {
-    return pluralizedCount(recipientCount, `paid ${nounSingular}`) + suffix;
+    return pluralizedCount(count, `paid ${nounSingular}`) + suffix;
   }
 
-  return pluralizedCount(recipientCount, nounSingular) + suffix;
+  return pluralizedCount(count, nounSingular) + suffix;
 }
 
 export type NewMember = {

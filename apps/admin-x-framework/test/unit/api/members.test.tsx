@@ -345,6 +345,22 @@ describe('members api', () => {
       );
     });
 
+    it('reports loading while the current user is unresolved', () => {
+      const queryClient = createTestQueryClient();
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn(() => new Promise<Response>(() => {})) as typeof globalThis.fetch;
+
+      try {
+        const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+          queryClient,
+        });
+
+        expect(result.current).toEqual({ count: null, isLoading: true });
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
     it('returns a null count without fetching for roles that cannot manage members', async () => {
       const queryClient = createQueryClientWithCurrentUser([{ id: 'role-1', name: 'Editor' }]);
 
@@ -400,45 +416,34 @@ describe('members api', () => {
   });
 
   describe('membersCountString', () => {
-    const admin = { roles: [{ name: 'Administrator' }] } as const;
-    const editor = { roles: [{ name: 'Editor' }] } as const;
-    const superEditor = { roles: [{ name: 'Super Editor' }] } as const;
-
     it('pluralizes counts per recipient type', () => {
-      expect(membersCountString('status:free', { user: admin, count: 1 })).toBe('1 free member');
-      expect(membersCountString('status:free', { user: admin, count: 0 })).toBe('0 free members');
-      expect(membersCountString('status:-free', { user: admin, count: 5 })).toBe('5 paid members');
-      expect(membersCountString('status:free,status:-free', { user: admin, count: 2 })).toBe(
-        '2 members',
-      );
-      expect(membersCountString('label:vip', { user: admin, count: 3 })).toBe('3 members');
-      expect(membersCountString('status:free,label:vip', { user: admin, count: 3 })).toBe(
-        '3 members',
-      );
+      expect(membersCountString('status:free', { count: 1 })).toBe('1 free member');
+      expect(membersCountString('status:free', { count: 0 })).toBe('0 free members');
+      expect(membersCountString('status:-free', { count: 5 })).toBe('5 paid members');
+      expect(membersCountString('status:free,status:-free', { count: 2 })).toBe('2 members');
+      expect(membersCountString('label:vip', { count: 3 })).toBe('3 members');
+      expect(membersCountString('status:free,label:vip', { count: 3 })).toBe('3 members');
     });
 
     it('formats large counts with the locale separator', () => {
-      expect(membersCountString('status:free,status:-free', { user: admin, count: 12345 })).toBe(
+      expect(membersCountString('status:free,status:-free', { count: 12345 })).toBe(
         `${(12345).toLocaleString()} members`,
       );
     });
 
-    it('falls back to descriptive copy for editors without a known count', () => {
-      expect(membersCountString('status:free', { user: editor })).toBe('all free members');
-      expect(membersCountString('status:-free', { user: editor })).toBe('all paid members');
-      expect(membersCountString('status:free,status:-free', { user: editor })).toBe('all members');
-      expect(membersCountString('', { user: editor })).toBe('all members');
-      expect(membersCountString('label:vip', { user: editor })).toBe('a custom members segment');
+    it('falls back to descriptive copy when no count was fetched', () => {
+      expect(membersCountString('status:free')).toBe('all free members');
+      expect(membersCountString('status:-free')).toBe('all paid members');
+      expect(membersCountString('status:free,status:-free')).toBe('all members');
+      expect(membersCountString('')).toBe('all members');
+      expect(membersCountString('label:vip')).toBe('a custom members segment');
     });
 
-    it('uses a known count for editors instead of the fallback copy', () => {
-      expect(membersCountString('status:free', { user: editor, count: 7 })).toBe('7 free members');
-    });
-
-    it('does not apply the editor fallback to super editors', () => {
-      // Super Editors can manage members, so they get real counts (an absent
-      // count reads as 0, matching the Ember fetch-error fallback).
-      expect(membersCountString('status:free', { user: superEditor })).toBe('0 free members');
+    it('falls back to descriptive copy for a null count from useMembersCount', () => {
+      // null is useMembersCount's "role cannot browse members" value; it must
+      // never render as a zero count.
+      expect(membersCountString('status:free', { count: null })).toBe('all free members');
+      expect(membersCountString('label:vip', { count: null })).toBe('a custom members segment');
     });
 
     it('switches to subscriber copy and strips the newsletter scope when there are multiple newsletters', () => {
@@ -450,7 +455,6 @@ describe('members api', () => {
 
       expect(
         membersCountString(fullFilter, {
-          user: editor,
           newsletter,
           hasMultipleNewsletters: true,
         }),
@@ -458,7 +462,6 @@ describe('members api', () => {
 
       expect(
         membersCountString(fullFilter, {
-          user: admin,
           count: 9,
           newsletter,
           hasMultipleNewsletters: true,
@@ -475,7 +478,6 @@ describe('members api', () => {
 
       expect(
         membersCountString(fullFilter, {
-          user: admin,
           count: 9,
           newsletter,
           hasMultipleNewsletters: false,
