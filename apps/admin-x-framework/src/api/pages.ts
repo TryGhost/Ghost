@@ -1,33 +1,38 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { Meta, createInfiniteQuery, createMutation, createQuery } from '../utils/api/hooks';
-import type { Email, PostBulkAction, PostListFields } from './posts';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
+import {
+  PageWriteOptions,
+  PostCreateOptions,
+  buildPostEditorReadParams,
+  buildPageWriteParams,
+  buildPostReadParams,
+  serializePostPayload,
+} from './post-contract';
+import type {
+  CreateContentData,
+  EditContentData,
+  Page,
+  PageEditableData,
+  PageEditorRecord,
+  PostBulkAction,
+} from './content-types';
 
-// A page is a post with `displayName: 'page'` server-side, so the list screens
-// read the same fields off both.
-export type Page = {
-  id: string;
-  title: string;
-  slug: string;
-  url: string;
-  status?: string;
-  published_at?: string;
-  visibility?: string;
-  uuid?: string;
-  feature_image?: string;
-  email?: Email;
-  count?: {
-    clicks?: number;
-  };
-  // Pages are never emailed, but the list reads these off both resources
-  // through one type, so they have to be addressable here too.
-  email_only?: boolean;
-  email_segment?: string;
-  newsletter?: object;
-} & PostListFields;
+export type { Page, PageEditableData, PageEditorRecord, PageStatus } from './content-types';
 
 export interface PagesResponseType {
   meta?: Meta;
   pages: Page[];
+}
+
+export interface PageResponseType {
+  meta?: Meta;
+  pages: PageEditorRecord[];
 }
 
 const dataType = 'PagesResponseType';
@@ -61,6 +66,63 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
       isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
     };
   },
+});
+
+const usePageQuery = createQueryWithId<PageResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+});
+
+export const usePage = (id: string, options: Parameters<typeof usePageQuery>[1] = {}) => {
+  const { searchParams, ...queryOptions } = options;
+  return usePageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...buildPostReadParams(), ...searchParams },
+  });
+};
+
+const useEditorPageQuery = createQueryWithId<PageResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+});
+
+export const useEditorPage = (
+  id: string,
+  options: Parameters<typeof useEditorPageQuery>[1] = {},
+) => {
+  const { searchParams, ...queryOptions } = options;
+  return useEditorPageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...searchParams, ...buildPostEditorReadParams() },
+  });
+};
+
+// The create endpoint only accepts include/formats/source - revision and
+// email delivery options are update-only
+export interface AddPagePayload {
+  page: CreateContentData<PageEditableData>;
+  options?: PostCreateOptions;
+}
+
+export interface EditPagePayload {
+  page: EditContentData<PageEditableData>;
+  options?: PageWriteOptions;
+}
+
+export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
+  method: 'POST',
+  path: () => '/pages/',
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  invalidateQueries: { dataType },
+});
+
+export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
+  method: 'PUT',
+  path: ({ page }) => `/pages/${page.id}/`,
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  invalidateQueries: { dataType },
 });
 
 /** Duplicate a page. As with posts, the copy is always a draft. */

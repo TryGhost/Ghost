@@ -6,78 +6,49 @@ import {
   createQueryWithId,
   createMutation,
 } from '../utils/api/hooks';
+import {
+  PostWriteOptions,
+  PostCreateOptions,
+  buildPostEditorReadParams,
+  buildPostReadParams,
+  buildPostWriteParams,
+  serializePostPayload,
+} from './post-contract';
+import type {
+  CreateContentData,
+  EditContentData,
+  Post,
+  PostBulkAction,
+  PostEditableData,
+  PostEditorRecord,
+} from './content-types';
 
-export type Email = {
-  opened_count: number;
-  email_count: number;
-  status?: string;
-  track_opens?: boolean;
-  track_clicks?: boolean;
-};
-
-// Every field optional: these are supertypes of the narrower author/tag shapes
-// already declared around the analytics screens, so widening `Post` doesn't
-// invalidate them. The list only reads names and slugs.
-export type PostAuthor = {
-  id?: string;
-  name?: string;
-  email?: string;
-  slug?: string;
-};
-
-export type PostTag = {
-  id?: string;
-  name?: string;
-  slug?: string;
-  visibility?: string;
-};
-
-/**
- * Fields the list screens need on top of the analytics-shaped core. All
- * optional: the analytics endpoints don't return them, and the list gets them
- * from the server's default relations rather than an explicit `include`.
- */
-export type PostListFields = {
-  featured?: boolean;
-  updated_at?: string;
-  created_at?: string;
-  excerpt?: string;
-  custom_excerpt?: string;
-  authors?: PostAuthor[];
-  primary_author?: PostAuthor | null;
-  tags?: PostTag[];
-  primary_tag?: PostTag | null;
-  tiers?: object[];
-};
-
-export type Post = {
-  id: string;
-  url: string;
-  slug: string;
-  title: string;
-  visibility?: string;
-  uuid: string;
-  feature_image?: string;
-  count?: {
-    clicks?: number;
-    positive_feedback?: number;
-    negative_feedback?: number;
-  };
-  email?: Email;
-  status?: string;
-  published_at?: string;
-  newsletter_id?: string;
-  newsletter?: object;
-  email_only?: boolean;
-  email_segment?: string;
-  email_recipient_filter?: string;
-  send_email_when_published?: boolean;
-  email_stats?: object;
-} & PostListFields;
+export type {
+  Email,
+  Post,
+  PostAuthor,
+  PostAuthorInput,
+  PostBulkAction,
+  PostEditableData,
+  PostEditorFields,
+  PostEditorRecord,
+  PostListFields,
+  PostRevision,
+  PostStatus,
+  PostTag,
+  PostTagInput,
+  PostTier,
+  PostTierInput,
+} from './content-types';
 
 export interface PostsResponseType {
   meta?: Meta;
   posts: Post[];
+}
+
+export interface PostResponseType {
+  meta?: Meta;
+  posts: PostEditorRecord[];
 }
 
 const dataType = 'PostsResponseType';
@@ -113,23 +84,67 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & { 
   },
 });
 
-export const usePost = createQueryWithId<PostsResponseType>({
+const usePostQuery = createQueryWithId<PostResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
+});
+
+export const usePost = (id: string, options: Parameters<typeof usePostQuery>[1] = {}) => {
+  const { searchParams, ...queryOptions } = options;
+  return usePostQuery(id, {
+    ...queryOptions,
+    searchParams: { ...buildPostReadParams(), ...searchParams },
+  });
+};
+
+const useEditorPostQuery = createQueryWithId<PostResponseType>({
+  dataType,
+  path: (id) => `/posts/${id}/`,
+});
+
+export const useEditorPost = (
+  id: string,
+  options: Parameters<typeof useEditorPostQuery>[1] = {},
+) => {
+  const { searchParams, ...queryOptions } = options;
+  return useEditorPostQuery(id, {
+    ...queryOptions,
+    searchParams: { ...searchParams, ...buildPostEditorReadParams() },
+  });
+};
+
+// The create endpoint only accepts include/formats/source - revision and
+// email delivery options are update-only
+export interface AddPostPayload {
+  post: CreateContentData<PostEditableData>;
+  options?: PostCreateOptions;
+}
+
+export interface EditPostPayload {
+  post: EditContentData<PostEditableData>;
+  options?: PostWriteOptions;
+}
+
+export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
+  method: 'POST',
+  path: () => '/posts/',
+  searchParams: ({ options }) => buildPostWriteParams(options),
+  body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  invalidateQueries: { dataType },
+});
+
+export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
+  method: 'PUT',
+  path: ({ post }) => `/posts/${post.id}/`,
+  searchParams: ({ options }) => buildPostWriteParams(options),
+  body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  invalidateQueries: { dataType },
 });
 
 export const useDeletePost = createMutation<unknown, string>({
   method: 'DELETE',
   path: (id) => `/posts/${id}/`,
 });
-
-export type PostBulkAction =
-  | { type: 'feature' }
-  | { type: 'unfeature' }
-  | { type: 'unpublish' }
-  | { type: 'unschedule' }
-  | { type: 'addTag'; meta: { tags: { id?: string; name: string; slug?: string }[] } }
-  | { type: 'access'; meta: { visibility: string; tiers?: { id: string }[] } };
 
 /**
  * Bulk-edit posts matching an NQL filter.

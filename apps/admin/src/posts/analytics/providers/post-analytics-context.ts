@@ -3,8 +3,8 @@ import { createContext, useContext } from 'react';
 
 // Comprehensive Post type with all the includes we fetch in PostAnalytics
 export interface Post extends PostBase {
-  published_at?: string;
-  excerpt?: string;
+  published_at?: string | null;
+  excerpt?: string | null;
   // `name` optional, matching the framework's PostAuthor: invited staff have
   // an email but no name yet.
   authors?: {
@@ -14,10 +14,10 @@ export interface Post extends PostBase {
     opened_count: number;
     email_count: number;
     status?: string;
-  };
+  } | null;
   newsletter?: {
     feedback_enabled?: boolean;
-  };
+  } | null;
   count?: {
     positive_feedback?: number;
     negative_feedback?: number;
