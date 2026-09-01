@@ -200,7 +200,7 @@ module.exports = {
         type: 'boolean',
         group: 'members',
         fn: settingsHelpers.allowSelfSignup.bind(settingsHelpers),
-        dependents: ['members_signup_access'],
+        dependents: ['members_signup_access', 'portal_plans'],
       }),
     );
     fields.push(
