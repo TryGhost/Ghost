@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
 import {
+  currentRoute,
+  fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeMembers,
   label,
@@ -123,6 +125,42 @@ describe('Members list', () => {
     expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
       fieldsApi.requests.map(() => 'status:[active,archived]'),
     );
+  });
+
+  // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
+  // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
+  // the filter bar between its two placements, and each one asks for the definitions; the
+  // failed answer has to hold across that, or every swap asks again, the answer flips the
+  // page's field catalog, and the URL is rewritten in a loop that never settles.
+  it('adds a filter against a Core without the definitions endpoint', async () => {
+    const membersApi = fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Alice Alpha' })]
+        : [member({ name: 'Alice Alpha' }), member({ name: 'Bob Beta' })],
+    );
+    // After fakeMembers, which serves an empty definitions list on behalf of specs that never
+    // mention custom fields: a handler registered later wins.
+    const definitionsApi = fakeAdminEndpoint(
+      'GET',
+      /^\/members\/metafields\/custom\/(\?|$)/,
+      { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+    const requestsBeforeFilter = definitionsApi.requests.length;
+
+    await membersScreen.addFilter('Name', 'Alice');
+
+    await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    // The loop asks again roughly every round trip, so a short pause is enough to catch it.
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 500);
+    });
+    expect(definitionsApi.requests.length).toBe(requestsBeforeFilter);
+    expect(currentRoute()).toMatch(/^\/members\?filter=/);
   });
 
   it('builds a name filter through the filters UI', async () => {
