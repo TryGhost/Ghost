@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { agentProvider, mockManager, fixtureManager, matchers } = require('../utils/e2e-framework');
-const { allEmailJobsSettled } = require('../utils/batch-email-utils');
+const { waitForEmailStatus } = require('../utils/batch-email-utils');
+const models = require('../../core/server/models');
 const urlUtils = require('../../core/shared/url-utils').default;
 const { anyGhostAgent, anyContentVersion, anyContentLength, anyISODateTime, anyObjectId } =
   matchers;
@@ -67,7 +68,8 @@ describe('Click Tracking', function () {
     });
 
     // Wait for the newsletter to be sent
-    await allEmailJobsSettled();
+    const sentEmail = await models.Email.findOne({ post_id: post.id });
+    await waitForEmailStatus(sentEmail.id);
 
     // Setup a webhook listener for member.edited events
     const webhookURL = 'https://test-webhook-receiver.com/member-edited/';
