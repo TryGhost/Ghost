@@ -12,9 +12,9 @@ const { mockManager } = require('../../utils/e2e-framework');
 // the run reports as a completion), then rows failing for the distinct reasons a manager
 // sees. The header row carries a formula-shaped name (to hold the line on escaping), an
 // import-only column that is not echoed (import_tier), and a custom field column that is
-// echoed so a manager can fix and re-upload the values they mapped (custom_fields.color).
+// echoed so a manager can fix and re-upload the values they mapped (metafields.custom.color).
 const CSV = [
-  'email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,labels,import_tier,gift_id,custom_fields.color',
+  'email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,labels,import_tier,gift_id,metafields.custom.color',
   'valid+ok@example.com,Good Member,,false,,,,,,,',
   'not-a-valid-email,=1+2,A note,true,false,,,"Label A,Label B",Gold,,blue',
   ',No Email,,false,,,,,,,',
@@ -37,7 +37,7 @@ const EXPECTED_COLUMNS = [
   'labels',
   'tiers',
   'gift_id',
-  'custom_fields.color',
+  'metafields.custom.color',
   'error',
 ];
 
@@ -98,11 +98,11 @@ describe('Members import error report', function () {
     // import_tier is an input the report resolves rather than echoes, so it is not.
     assert.ok(!columns.includes('import_tier'), 'no import_tier column');
     assert.ok(
-      columns.includes('custom_fields.color'),
+      columns.includes('metafields.custom.color'),
       'the submitted custom field column is echoed',
     );
     assert.equal(
-      rowFor('not-a-valid-email')['custom_fields.color'],
+      rowFor('not-a-valid-email')['metafields.custom.color'],
       'blue',
       'its value is echoed on the failed row',
     );
