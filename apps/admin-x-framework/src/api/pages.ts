@@ -1,6 +1,13 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { Meta, createInfiniteQuery, createMutation, createQuery } from '../utils/api/hooks';
-import type { Email, PostBulkAction, PostListFields } from './posts';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
+import { PageWriteOptions, buildPageWriteParams, serializePostPayload } from './post-contract';
+import type { Email, PostBulkAction, PostEditorFields, PostListFields } from './posts';
 
 // A page is a post with `displayName: 'page'` server-side, so the list screens
 // read the same fields off both.
@@ -23,7 +30,32 @@ export type Page = {
   email_only?: boolean;
   email_segment?: string;
   newsletter?: object;
-} & PostListFields;
+} & PostListFields &
+  PostEditorFields;
+
+/**
+ * Fields a client may set on a page. Email fields are excluded — pages are
+ * never emailed — and the request contract strips them, along with read-only
+ * relations, at request time.
+ */
+export type PageEditableData = Partial<
+  Omit<
+    Page,
+    | 'id'
+    | 'uuid'
+    | 'url'
+    | 'count'
+    | 'email'
+    | 'newsletter'
+    | 'post_revisions'
+    | 'email_subject'
+    | 'email_only'
+    | 'primary_author'
+    | 'primary_tag'
+    | 'created_at'
+    | 'excerpt'
+  >
+>;
 
 export interface PagesResponseType {
   meta?: Meta;
@@ -61,6 +93,37 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
       isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
     };
   },
+});
+
+export const usePage = createQueryWithId<PagesResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+});
+
+export interface AddPagePayload {
+  page: PageEditableData;
+  options?: PageWriteOptions;
+}
+
+export interface EditPagePayload {
+  page: PageEditableData & { id: string };
+  options?: PageWriteOptions;
+}
+
+export const useAddPage = createMutation<PagesResponseType, AddPagePayload>({
+  method: 'POST',
+  path: () => '/pages/',
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  invalidateQueries: { dataType },
+});
+
+export const useEditPage = createMutation<PagesResponseType, EditPagePayload>({
+  method: 'PUT',
+  path: ({ page }) => `/pages/${page.id}/`,
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  invalidateQueries: { dataType },
 });
 
 /** Duplicate a page. As with posts, the copy is always a draft. */

@@ -6,6 +6,7 @@ import {
   createQueryWithId,
   createMutation,
 } from '../utils/api/hooks';
+import { PostWriteOptions, buildPostWriteParams, serializePostPayload } from './post-contract';
 
 export type Email = {
   opened_count: number;
@@ -50,6 +51,47 @@ export type PostListFields = {
   tiers?: object[];
 };
 
+export type PostRevision = {
+  id?: string;
+  post_id?: string;
+  lexical?: string | null;
+  title?: string | null;
+  feature_image?: string | null;
+  custom_excerpt?: string | null;
+  post_status?: string | null;
+  reason?: string | null;
+  created_at?: string;
+  author?: PostAuthor | null;
+};
+
+/**
+ * Fields the editor reads and writes on top of the list/analytics shape. All
+ * optional: the analytics and list endpoints don't return most of them.
+ */
+export type PostEditorFields = {
+  lexical?: string | null;
+  mobiledoc?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  canonical_url?: string | null;
+  custom_template?: string | null;
+  codeinjection_head?: string | null;
+  codeinjection_foot?: string | null;
+  og_image?: string | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  twitter_image?: string | null;
+  twitter_title?: string | null;
+  twitter_description?: string | null;
+  email_subject?: string | null;
+  feature_image_alt?: string | null;
+  feature_image_caption?: string | null;
+  // Read/written on pages only; the post payload never includes it
+  show_title_and_feature_image?: boolean;
+  visibility_filter?: string | null;
+  post_revisions?: PostRevision[];
+};
+
 export type Post = {
   id: string;
   url: string;
@@ -73,7 +115,35 @@ export type Post = {
   email_recipient_filter?: string;
   send_email_when_published?: boolean;
   email_stats?: object;
-} & PostListFields;
+} & PostListFields &
+  PostEditorFields;
+
+/**
+ * Fields a client may set on a post. Server-owned fields are omitted; the
+ * request contract additionally strips read-only relations (`email`,
+ * `newsletter`, `post_revisions`, ...) at request time, so spreading a fetched
+ * `Post` into an edit payload is safe.
+ */
+export type PostEditableData = Partial<
+  Omit<
+    Post,
+    | 'id'
+    | 'uuid'
+    | 'url'
+    | 'count'
+    | 'email'
+    | 'email_stats'
+    | 'newsletter'
+    | 'newsletter_id'
+    | 'post_revisions'
+    | 'send_email_when_published'
+    | 'email_recipient_filter'
+    | 'primary_author'
+    | 'primary_tag'
+    | 'created_at'
+    | 'excerpt'
+  >
+>;
 
 export interface PostsResponseType {
   meta?: Meta;
@@ -116,6 +186,32 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & { 
 export const usePost = createQueryWithId<PostsResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
+});
+
+export interface AddPostPayload {
+  post: PostEditableData;
+  options?: PostWriteOptions;
+}
+
+export interface EditPostPayload {
+  post: PostEditableData & { id: string };
+  options?: PostWriteOptions;
+}
+
+export const useAddPost = createMutation<PostsResponseType, AddPostPayload>({
+  method: 'POST',
+  path: () => '/posts/',
+  searchParams: ({ options }) => buildPostWriteParams(options),
+  body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  invalidateQueries: { dataType },
+});
+
+export const useEditPost = createMutation<PostsResponseType, EditPostPayload>({
+  method: 'PUT',
+  path: ({ post }) => `/posts/${post.id}/`,
+  searchParams: ({ options }) => buildPostWriteParams(options),
+  body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  invalidateQueries: { dataType },
 });
 
 export const useDeletePost = createMutation<unknown, string>({
