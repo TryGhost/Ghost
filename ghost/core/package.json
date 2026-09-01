@@ -68,12 +68,13 @@
     "test:int:slow": "pnpm test:integration",
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
+    "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.js' 'core/*.js' '*.js' --cache",
     "lint:shared": "eslint 'core/shared/**/*.js' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
+    "lint:types": "eslint '**/*.ts' --cache",
     "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "dependencies": {
