@@ -4,6 +4,7 @@ import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { type Filter, Filters } from '@tryghost/shade/patterns';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
@@ -197,7 +198,14 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   );
 
   const clearAndSaveButtons = hasFilters ? (
-    <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+    <Inline
+      className={cn(
+        'shrink-0 sm:absolute sm:top-0 sm:right-0',
+        !useConsolidatedFilterUI && 'gap-4',
+      )}
+      data-testid="members-filter-actions"
+      gap={useConsolidatedFilterUI ? 'sm' : undefined}
+    >
       <Button
         className={cn(
           'hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex',
@@ -218,7 +226,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
           onDeleted={() => onFiltersChange([])}
         />
       )}
-    </div>
+    </Inline>
   ) : undefined;
 
   return (

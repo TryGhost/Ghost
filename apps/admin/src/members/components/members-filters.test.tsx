@@ -112,14 +112,19 @@ describe('MembersFilters', () => {
         expect(screen.getByRole('button', { name: 'Add filter' })).not.toHaveClass('text-[0px]');
       }
       const clearButton = screen.getByRole('button', { name: 'Clear' });
+      const filterActions = screen.getByTestId('members-filter-actions');
       if (outlined) {
         expect(clearButton).toHaveClass('border');
         expect(clearButton).not.toHaveClass('!px-0');
         expect(clearButton.querySelector('svg')).not.toBeInTheDocument();
+        expect(filterActions).toHaveClass('gap-2');
+        expect(filterActions).not.toHaveClass('gap-4');
       } else {
         expect(clearButton).not.toHaveClass('border');
         expect(clearButton).toHaveClass('!px-0');
         expect(clearButton.querySelector('svg')).toBeInTheDocument();
+        expect(filterActions).toHaveClass('gap-4');
+        expect(filterActions).not.toHaveClass('gap-2');
       }
     },
   );
