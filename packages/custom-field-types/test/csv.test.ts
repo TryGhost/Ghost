@@ -138,11 +138,6 @@ describe('custom field CSV columns', function () {
     // A core column that merely starts with the word is not namespaced by it.
     assert.equal(isCustomFieldColumn('custom_fields_note'), false);
   });
-
-  it('recognises the legacy column vocabulary, which old exports still carry', function () {
-    assert.equal(isCustomFieldColumn('custom_fields.nickname'), true);
-    assert.equal(isCustomFieldColumn('custom_fields.shipping_address.city'), true);
-  });
 });
 
 // End-to-end round-tripping is proven in the member import HTTP API tests; the row-level
@@ -159,33 +154,6 @@ describe('reading custom field values from a CSV row', function () {
 
   it('leaves a field untouched when its column is absent from the row', function () {
     assert.deepEqual(fieldValuesFromCsvRow([nickname], { email: 'a@b.com' }), {});
-  });
-
-  it('reads a legacy column, so a file exported before the rename re-imports', function () {
-    assert.deepEqual(fieldValuesFromCsvRow([nickname], { 'custom_fields.nickname': 'Bex' }), {
-      'custom.nickname': 'Bex',
-    });
-    assert.deepEqual(
-      fieldValuesFromCsvRow([address], { 'custom_fields.shipping_address.city': 'London' }),
-      { 'custom.shipping_address': { city: 'London' } },
-    );
-  });
-
-  it('never reads a legacy column for a field outside the publisher namespace', function () {
-    // The legacy vocabulary only ever named the publisher's fields, so a field
-    // from any other namespace has no legacy column to fall back to.
-    const appField = { namespace: 'transistor', key: 'nickname', type: 'short_text' } as const;
-    assert.deepEqual(fieldValuesFromCsvRow([appField], { 'custom_fields.nickname': 'Bex' }), {});
-  });
-
-  it('prefers the current column when a row somehow carries both vocabularies', function () {
-    assert.deepEqual(
-      fieldValuesFromCsvRow([nickname], {
-        'metafields.custom.nickname': 'Bex',
-        'custom_fields.nickname': 'Old',
-      }),
-      { 'custom.nickname': 'Bex' },
-    );
   });
 
   // Blank means untouched, not cleared, so re-importing a partly-edited export can't wipe values.

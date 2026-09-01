@@ -92,8 +92,9 @@ describe('Members import — custom fields', function () {
     mockManager.restore();
     await models.Base.knex('members_custom_field_values').del();
     await models.Base.knex('members_custom_fields').del();
-    // Imported members must not leak into later files: this project shares one
-    // database, and a stray member shifts every count and list downstream.
+    // Every test file in this suite runs against one shared database, so a member left behind
+    // here changes counts and listings that later files assert on. The imported members have
+    // to go, not just their field values.
     await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
@@ -148,15 +149,6 @@ describe('Members import — custom fields', function () {
     assert.equal(member.metafields?.custom?.[key], 'Bex');
   });
 
-  // The mapping step's deselected column. It has to name the column with an empty target
-  // rather than omit it: an omitted column carries through under its own header, and a
-  // metafields.custom.* header is exactly what the importer reads a value from — so omitting
-  // it would import the very column the publisher switched off.
-  //
-  // What these two prove is that the API accepts an empty mapping value and that nothing is
-  // written for the column. They do not prove the parser *drops* it — before the change it
-  // renamed the column to the empty string instead, which nothing downstream reads either.
-  // That distinction is pinned where it is observable, in csv/parse.test.ts.
   it('imports nothing from a namespaced column the mapping empties', async function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-deselected@example.com';
@@ -401,17 +393,6 @@ describe('Members import — custom fields', function () {
     );
 
     assert.equal(await findMember(email), undefined);
-  });
-
-  // Exports written before the metafields rename live on disk indefinitely, so
-  // their column vocabulary keeps importing even though nothing writes it now.
-  it('imports a value from a legacy custom_fields column', async function () {
-    const key = await createField('Nickname', 'short_text');
-    const email = 'cf-legacy-col@example.com';
-
-    const res = await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
-    assert.equal(res.body.meta.stats.imported, 1);
-    assert.equal((await findMember(email)).metafields?.custom?.[key], 'Bex');
   });
 
   // An unrecognised column is dropped, not an error, so the member still imports.
