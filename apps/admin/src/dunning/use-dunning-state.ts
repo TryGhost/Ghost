@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useSubscriptionStatus } from '@/ember-bridge';
 
 export type DunningPhase = 'warning' | 'locked';
@@ -81,6 +82,9 @@ function parseDate(value: string | undefined): Date | null {
 export function useDunningState(): DunningState | null {
   const { data: config } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
+  // Labs-gated while in development: hosts can ship and test the config
+  // pipeline without end users seeing any dunning UI.
+  const dunningWarningsEnabled = useFeatureFlag('dunningWarnings');
 
   // Re-derive the phase and countdown periodically; transitions land on date
   // boundaries, so a coarse tick keeps them fresh without churn.
@@ -89,6 +93,10 @@ export function useDunningState(): DunningState | null {
     const interval = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(interval);
   }, []);
+
+  if (!dunningWarningsEnabled) {
+    return null;
+  }
 
   const dunning = config?.config.hostSettings?.billing?.dunning;
 
