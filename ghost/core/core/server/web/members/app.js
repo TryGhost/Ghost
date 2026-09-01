@@ -57,7 +57,8 @@ module.exports = function setupMembersApp() {
     middleware.updateMemberNewsletters,
   );
 
-  // Get and update member data
+  // Get and update member data. The session is resolved first so the endpoint is
+  // told who is asking rather than working it out itself.
   // Caching members content is an experimental feature
   const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
   if (shouldCacheMembersContent) {
@@ -65,13 +66,18 @@ module.exports = function setupMembersApp() {
       '/api/member',
       middleware.loadMemberSession,
       middleware.accessInfoSession,
-      middleware.getMemberData,
+      http(api.membersAccount.read),
     );
   } else {
-    membersApp.get('/api/member', middleware.getMemberData);
+    membersApp.get('/api/member', middleware.loadMemberSession, http(api.membersAccount.read));
   }
 
-  membersApp.put('/api/member', bodyParser.json({ limit: '50mb' }), middleware.updateMemberData);
+  membersApp.put(
+    '/api/member',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.loadMemberSession,
+    http(api.membersAccount.update),
+  );
   membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
     membersService.api.middleware.updateEmailAddress(req, res, next),
   );

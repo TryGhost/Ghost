@@ -1,4 +1,5 @@
 import MemberRepository from './members-api/repositories/member-repository';
+import { MemberAccountService } from './account';
 
 interface MemberBREADService {
   disableCommenting(
@@ -21,6 +22,8 @@ interface MemberBREADService {
 
 interface MembersApi {
   memberBREADService: MemberBREADService;
+  /** The member's own view of their own record. See ./account/CONTEXT.md. */
+  account: MemberAccountService;
   members: MemberRepository;
 }
 

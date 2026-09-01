@@ -7,6 +7,7 @@ const PaymentsService = require('./services/payments-service');
 const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
+const { MemberAccountService } = require('../account');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
 
@@ -155,6 +156,18 @@ module.exports = function MembersAPI({
     giftService,
     customFieldValues,
     customFieldDefinitions,
+  });
+
+  // The member's own view of themselves, beside the staff one rather than derived
+  // from it: the two carry different fields and load different relations. See
+  // ../account/CONTEXT.md.
+  const memberAccountService = new MemberAccountService({
+    knex: require('../../../data/db').knex,
+    memberRepository,
+    offersAPI,
+    memberAttributionService,
+    settingsHelpers,
+    nextPaymentCalculator,
   });
 
   const geolocationService = new GeolocationService();
@@ -355,6 +368,10 @@ module.exports = function MembersAPI({
     return getMemberIdentityData(email);
   }
 
+  // Identifying a signed-in member is not the same question as projecting one for
+  // Portal, and these answer the first. A session carries `transient_id` and
+  // `last_seen_at`, which the account projection deliberately does not expose, so
+  // this path stays on the staff read until it gets a read of its own.
   async function getMemberIdentityData(email) {
     return memberBREADService.read({ email }, { withCustomFields: false });
   }
@@ -509,6 +526,7 @@ module.exports = function MembersAPI({
     getMagicLink,
     members: users,
     memberBREADService,
+    account: memberAccountService,
     events: eventRepository,
     productRepository,
 

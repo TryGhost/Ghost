@@ -6,7 +6,7 @@ const emailSuppressionList = require('../email-suppression-list');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
-const { formattedMemberResponse, formatNewsletterResponse } = require('./utils');
+const { formatNewsletterResponse } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const onHeaders = require('on-headers');
@@ -243,20 +243,6 @@ const deleteSession = async function deleteSession(req, res) {
   }
 };
 
-const getMemberData = async function getMemberData(req, res) {
-  try {
-    const member = await membersService.ssr.getMemberDataFromSession(req, res);
-    if (member) {
-      res.json(formattedMemberResponse(member));
-    } else {
-      res.json(null);
-    }
-  } catch (err) {
-    res.writeHead(204);
-    res.end();
-  }
-};
-
 const deleteSuppression = async function deleteSuppression(req, res) {
   try {
     const member = await membersService.ssr.getMemberDataFromSession(req, res);
@@ -348,46 +334,6 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
   } catch (err) {
     res.writeHead(400);
     res.end('Failed to update newsletters');
-  }
-};
-
-const updateMemberData = async function updateMemberData(req, res) {
-  try {
-    const data = _.pick(
-      req.body,
-      'name',
-      'expertise',
-      'subscribed',
-      'newsletters',
-      'enable_comment_notifications',
-      'enable_updates_and_announcements',
-    );
-    const member = await membersService.ssr.getMemberDataFromSession(req, res);
-    if (member) {
-      const options = {
-        id: member.id,
-        withRelated: [
-          'stripeSubscriptions',
-          'stripeSubscriptions.customer',
-          'stripeSubscriptions.stripePrice',
-          'newsletters',
-        ],
-      };
-      await membersService.api.members.update(data, options);
-      const updatedMember = await membersService.ssr.getMemberDataFromSession(req, res);
-
-      res.json(formattedMemberResponse(updatedMember));
-    } else {
-      res.json(null);
-    }
-  } catch (err) {
-    if (!err.statusCode) {
-      logging.error(err);
-    }
-    res.writeHead(err.statusCode ?? 500, {
-      'Content-Type': 'text/plain;charset=UTF-8',
-    });
-    res.end(err.message);
   }
 };
 
@@ -505,8 +451,6 @@ module.exports = {
   getIdentityToken,
   getEntitlementToken,
   getMemberNewsletters,
-  getMemberData,
-  updateMemberData,
   updateMemberNewsletters,
   deleteSession,
   accessInfoSession,
