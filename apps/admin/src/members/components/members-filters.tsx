@@ -193,6 +193,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     'bg-white dark:bg-background',
     showIconOnlyTrigger &&
       'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
+    hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
   );
 
   const clearAndSaveButtons = hasFilters ? (
@@ -238,10 +239,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
       allowMultiple={true}
-      className={cn(
-        '[&>button]:order-last',
-        hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto',
-      )}
+      className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}

@@ -42,7 +42,9 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   return (
     <Filters
-      addButtonClassName={hasFilters ? 'border-none' : undefined}
+      addButtonClassName={cn(
+        hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
+      )}
       addButtonIcon={
         useConsolidatedFilterUI ? (
           hasFilters ? (

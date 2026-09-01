@@ -99,6 +99,18 @@ describe('MembersFilters', () => {
       expect(screen.getByRole('button', { name: 'Add filter' }).querySelector('svg')).toHaveClass(
         iconClass,
       );
+      if (enabled) {
+        expect(screen.getByRole('button', { name: 'Add filter' })).toHaveClass(
+          'border',
+          'gap-0',
+          '!px-3',
+          'text-[0px]',
+        );
+        expect(screen.getByRole('button', { name: 'Add filter' })).not.toHaveClass('border-none');
+      } else {
+        expect(screen.getByRole('button', { name: 'Add filter' })).toHaveClass('border-none');
+        expect(screen.getByRole('button', { name: 'Add filter' })).not.toHaveClass('text-[0px]');
+      }
       if (outlined) {
         expect(screen.getByRole('button', { name: 'Clear' })).toHaveClass('border');
         expect(screen.getByRole('button', { name: 'Clear' })).not.toHaveClass('!px-0');
