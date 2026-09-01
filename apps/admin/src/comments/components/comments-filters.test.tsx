@@ -67,7 +67,13 @@ describe('CommentsFilters', () => {
         expect(screen.getByRole('button', { name: 'Add filter' })).toHaveClass('border-none');
         expect(screen.getByRole('button', { name: 'Add filter' })).not.toHaveClass('text-[0px]');
       }
-      expect(screen.getByRole('button', { name: 'Clear' })).toHaveClass(clearClass);
+      const clearButton = screen.getByRole('button', { name: 'Clear' });
+      expect(clearButton).toHaveClass(clearClass);
+      if (enabled) {
+        expect(clearButton.querySelector('svg')).not.toBeInTheDocument();
+      } else {
+        expect(clearButton.querySelector('svg')).toBeInTheDocument();
+      }
     },
   );
 });

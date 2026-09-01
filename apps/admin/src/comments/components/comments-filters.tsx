@@ -35,7 +35,6 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
       variant="outline"
       onClick={() => onFiltersChange([])}
     >
-      <LucideIcon.X />
       Clear
     </Button>
   ) : undefined;

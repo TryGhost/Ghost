@@ -207,7 +207,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         variant={useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
-        <LucideIcon.X className="size-4" />
+        {!useConsolidatedFilterUI && <LucideIcon.X className="size-4" />}
         Clear
       </Button>
       {nql && (
