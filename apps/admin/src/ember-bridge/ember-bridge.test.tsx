@@ -250,6 +250,34 @@ describe('useEmberDataSync', () => {
     });
   });
 
+  queryTest('invalidates snippets when Ember saves one', async ({ queryClient, wrapper }) => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const snippetsKey = ['SnippetsResponseType', '/snippets'];
+
+    queryClient.setQueryDefaults(snippetsKey, { gcTime: Infinity });
+    queryClient.setQueryData(snippetsKey, { snippets: [] });
+
+    renderHook(() => useEmberDataSync(), { wrapper });
+
+    await waitFor(() => {
+      expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+    });
+
+    act(() => {
+      mock.emit('emberDataChange', {
+        operation: 'update',
+        modelName: 'snippet',
+        id: 'snippet-1',
+        data: null,
+      });
+    });
+
+    await waitFor(() => {
+      expect(queryClient.getQueryState(snippetsKey)?.isInvalidated).toBe(true);
+    });
+  });
+
   queryTest(
     'invalidates the sidebar member count query for Ember member changes',
     async ({ queryClient, wrapper }) => {
