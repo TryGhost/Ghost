@@ -8,7 +8,7 @@ import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
-import { DunningBanner } from '@/dunning';
+import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 
 const networkPageChrome = {
   contentClassName: 'max-w-(--content-width)',
@@ -53,6 +53,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
 
   // Contributors get a floating profile menu instead of the full sidebar
@@ -66,6 +67,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
           <ContributorUserMenu />
         </div>
+        <DunningOverlay />
       </div>
     );
   }
@@ -79,9 +81,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       open={!!currentUser && sidebarVisible}
       style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
     >
-      {sidebarVisible && <AppSidebar variant="floating" />}
+      {sidebarVisible && (
+        <AppSidebar
+          aria-hidden={dunningLocked || undefined}
+          className={cn(dunningLocked && 'pointer-events-none opacity-40')}
+          variant="floating"
+        />
+      )}
       <SidebarInset
-        className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
+        className={`relative overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
       >
         <DunningBanner />
         <main className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
@@ -90,6 +98,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </ActivityPubHostLayoutProvider>
         </main>
         <MobileNavBar />
+        <DunningOverlay />
       </SidebarInset>
     </SidebarProvider>
   );

@@ -4,11 +4,10 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { useDunningState, markPaymentAttempt } from './use-dunning-state';
+import { useDunningLockTakeover } from './use-dunning-lock-takeover';
 import { useOwnerUser } from './use-owner-user';
 import { EXPORT_URL, PAY_URL, lockedHeadline, lockedMessage } from './dunning-copy';
-import { isBillingRoute, isDataExportRoute } from './is-billing-route';
 
 const EMAIL_COPIED_FEEDBACK_MS = 1500;
 
@@ -55,16 +54,10 @@ function CopyOwnerEmail({ email }: { email: string }) {
 export function DunningOverlay() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
-  const location = useLocation();
+  const takeover = useDunningLockTakeover();
   const owner = useOwnerUser();
 
-  if (
-    !state ||
-    state.phase !== 'locked' ||
-    !currentUser ||
-    isBillingRoute(location.pathname) ||
-    isDataExportRoute(location.pathname)
-  ) {
+  if (!state || !currentUser || !takeover) {
     return null;
   }
 
@@ -73,7 +66,7 @@ export function DunningOverlay() {
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-background px-10 py-16"
+      className="absolute inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-background px-10 py-16"
       data-testid="dunning-overlay"
       role="alertdialog"
     >
