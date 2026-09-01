@@ -65,8 +65,7 @@ function humaniseError(row: ImportErrorRow): string {
 // papaparse takes the fixed columns from these keys, so the report cannot drift from the
 // shaper -- a new member column must be added here or the shaper stops compiling. tiers
 // and deleted_at are export-vocabulary columns an import never fills; kept always-empty
-// so the report matches the members export CSV. Any metafields.custom.* columns a submitted
-// row carried are dynamic, so they are threaded in separately by buildErrorReport.
+// so the report matches the members export CSV.
 type ErrorReportRow = {
   id: MemberImportRow['id'];
   email: MemberImportRow['email'];
@@ -87,8 +86,6 @@ function stringifyLabels(labels: Array<string | Label>): string {
   return labels.map((label) => (typeof label === 'string' ? label : label.name)).join(',');
 }
 
-// The metafields.custom.* cells a submitted row carried, echoed untouched so a manager can
-// fix a failed row and re-upload the values they mapped.
 function customFieldCells(row: ImportErrorRow): Record<string, unknown> {
   return Object.fromEntries(Object.entries(row).filter(([column]) => isCustomFieldColumn(column)));
 }
@@ -116,9 +113,8 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
 
 // The error report attached to the completion email: the failed rows as CSV, called only
 // when there are rows to list. It shares the serialiser with the export but not the
-// shaping -- the export writes db members, this echoes submitted rows. Member columns come from the shaper's keys (so the type
-// stays the single source); the metafields.custom.* columns across the rows are threaded in
-// before the last error column, and each row's custom cells merged on.
+// shaping -- the export writes db members, this echoes submitted rows. Member columns
+// come from the shaper's keys, so the type stays the single source.
 function buildErrorReport(errors: ImportErrorRow[]): string {
   const memberColumns = Object.keys(toErrorReportRow(errors[0])).filter(
     (column) => column !== 'error',

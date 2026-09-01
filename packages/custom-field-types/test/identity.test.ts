@@ -7,7 +7,7 @@ describe('parseIdentity', () => {
     expect(parseIdentity('custom.company')).toEqual({
       namespace: 'custom',
       key: 'company',
-      path: null,
+      partPath: null,
     });
   });
 
@@ -15,16 +15,20 @@ describe('parseIdentity', () => {
     expect(parseIdentity('custom.shipping_address.country')).toEqual({
       namespace: 'custom',
       key: 'shipping_address',
-      path: 'country',
+      partPath: 'country',
     });
-    expect(parseIdentity('custom.a.b.c')).toEqual({ namespace: 'custom', key: 'a', path: 'b.c' });
+    expect(parseIdentity('custom.a.b.c')).toEqual({
+      namespace: 'custom',
+      key: 'a',
+      partPath: 'b.c',
+    });
   });
 
   it('parses any namespace: namespaces are data, not a registry', () => {
     expect(parseIdentity('transistor.private_url')).toEqual({
       namespace: 'transistor',
       key: 'private_url',
-      path: null,
+      partPath: null,
     });
   });
 
@@ -50,7 +54,7 @@ describe('formatIdentity', () => {
   });
 
   it('writes no trailing separator for a field with no part path', () => {
-    expect(formatIdentity({ namespace: 'custom', key: 'company', path: null })).toBe(
+    expect(formatIdentity({ namespace: 'custom', key: 'company', partPath: null })).toBe(
       'custom.company',
     );
   });

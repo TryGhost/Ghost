@@ -37,15 +37,9 @@ const UPSERT_CHUNK = 400;
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
 
-// Values are keyed by field identity (`namespace.key`) past the wire unwrap, and each
-// stays `unknown`: it is validated by its own field type, which is not known until the
-// identity is resolved to a definition. The key bound is a sanity limit so an absurd
-// identity is refused without being echoed back; a real identity is two bounded
-// segments plus part paths, comfortably under it.
 const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
-/** The wire property naming one field in a member payload error. */
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
 interface ActiveField {
@@ -77,15 +71,6 @@ export class CustomFieldValuesService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  /**
-   * The active fields the given identities resolve to, keyed by identity.
-   *
-   * The query boundary: the table predates namespace storage and holds the
-   * publisher's fields alone, so only `custom` identities can resolve and rows come
-   * back wearing that namespace. An identity in any other namespace resolves to
-   * nothing — a namespace with no fields yet, exactly like an unknown key — and the
-   * day the storage learns namespaces, this is where the lookup widens.
-   */
   private async activeFieldsByIdentity(identities: string[]): Promise<Map<string, ActiveField>> {
     const keys = identities
       .map((identity) => parseIdentity(identity))
@@ -99,26 +84,12 @@ export class CustomFieldValuesService {
       .select('id', 'key', 'name', 'type');
     return new Map(
       fields.map((field) => [
-        formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, path: null }),
+        formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
         { ...field, namespace: CUSTOM_NAMESPACE },
       ]),
     );
   }
 
-  /**
-   * Members' values in the wire shape — keyed by member id, then namespace, then
-   * field key; anything absent is unset. Every requested member gets an entry, with
-   * an empty object for each namespace that has active fields, so a member with no
-   * values still shows where values would go.
-   *
-   * Archived fields are excluded to match the definitions browse: their values stay in
-   * the database and stop being addressable. A row that will not parse is dropped and
-   * logged rather than failing the read, so one stale row cannot take down a member.
-   *
-   * Part of the query boundary: rows carry no namespace, so the one the storage
-   * implicitly is gets stated here, the same place the codec states it for
-   * definitions.
-   */
   async getValuesForMembers(
     memberIds: string[],
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
@@ -165,7 +136,6 @@ export class CustomFieldValuesService {
     );
   }
 
-  /** Shared by every caller so they cannot disagree on what a values record is. */
   private parseValues(input: unknown): Record<string, unknown> {
     const parsed = ValuesInput.safeParse(input);
     if (!parsed.success) {
@@ -178,19 +148,6 @@ export class CustomFieldValuesService {
     return parsed.data;
   }
 
-  /**
-   * Unwrap the wire shape of member metafields — values nested one level under their
-   * namespace — into one record keyed by field identity (`namespace.key`), which is
-   * how the rest of this service speaks of values.
-   *
-   * No namespace is checked against anything: namespaces are data, and a namespace
-   * with no fields fails later exactly the way an unknown key does, so a namespace
-   * arriving with an app needs no change here. What is judged is shape alone — the
-   * bag is an object of namespaces, and each namespace holds an object of values.
-   *
-   * `undefined` in, `undefined` out, so an absent bag stays distinguishable from an
-   * empty one.
-   */
   unwrapWire(input: unknown): unknown {
     if (input === undefined) {
       return undefined;
@@ -253,10 +210,6 @@ export class CustomFieldValuesService {
     for (const [identity, raw] of Object.entries(values)) {
       const field = byIdentity.get(identity);
       if (!field) {
-        // Unknown, archived, or in a namespace that holds no fields yet — one
-        // rule for all three. Refused rather than ignored: a typo that silently
-        // drops what somebody typed is worse than a save that fails. The catalog
-        // applies the same rule to the parts of a composite value.
         throw new errors.ValidationError({
           message: `Unknown custom field: ${identity}`,
           property: wireProperty(identity),

@@ -131,10 +131,6 @@ function serializeMember(member, options) {
     serialized.tiers = json.products;
   }
 
-  // Present on a read whenever the flag is on; absent otherwise, and absent on
-  // browse unless asked for. Already the wire shape — values nested by namespace,
-  // grouped where they are read — so it passes through untouched, whichever
-  // namespaces it carries.
   if (json.metafields) {
     serialized.metafields = json.metafields;
   }

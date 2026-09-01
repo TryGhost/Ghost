@@ -91,8 +91,6 @@ describe('Member Custom Fields Admin API', function () {
 
     it('creates a field, minting an underscored key from the name', async function () {
       const created = await createField({ name: 'Favourite topic' });
-      // Publisher-defined fields live in the reserved `custom` namespace; the
-      // resource says so even while it is the only namespace there is.
       assert.equal(created.namespace, 'custom');
       assert.equal(created.key, 'favourite_topic');
       assert.equal(created.name, 'Favourite topic');
@@ -352,10 +350,6 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('treats a namespace with no fields as an ordinary empty collection', async function () {
-      // Namespaces are data, not a registry: an app-shaped or misspelled segment
-      // is a namespace holding no fields yet, so a browse is empty, a read finds
-      // nothing, and only defining fields there is refused — that structure
-      // belongs to whoever declares the namespace, which is not this API.
       const { body } = await agent.get('members/metafields/transistor/').expectStatus(200);
       assert.deepEqual(body.members_metafields, []);
       await agent.get('members/metafields/transistor/some_key/').expectStatus(404);
@@ -367,14 +361,14 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('rejects a namespace filter, naming the route as the way to scope', async function () {
-      // The table has no namespace column, so a namespace clause would surface
-      // as a SQL error; it is refused up front until a cross-namespace browse
-      // exists for it to mean something on.
+      // The table storing these fields has no namespace column, so a filter clause naming one
+      // would reach the database as a query against a missing column. It is refused at the edge
+      // instead, pointing at the URL as the way to choose a namespace.
       const { body } = await agent
         .get('members/metafields/custom/?filter=namespace:custom')
         .expectStatus(400);
-      // The API error handler templates `message` per error type and carries the
-      // thrown sentence in `context`.
+      // Ghost's API error handler replaces `message` with a stock sentence for the error's type
+      // and moves the thrown wording into `context`, so that is where it has to be asserted.
       assert.match(body.errors[0].context, /namespace/i);
       assert.equal(body.errors[0].property, 'filter');
     });
@@ -1353,10 +1347,6 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('refuses a value in a namespace holding no fields, as an unknown field', async function () {
-      // Namespaces are data: a namespace nobody has declared fields in is not a
-      // different kind of error from a key nobody minted. The day an app
-      // declares this field, the same write starts succeeding with no change
-      // to any of this.
       const memberId = await createMember();
       const { body } = await agent
         .put(`members/${memberId}/`)
@@ -1420,10 +1410,9 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('refuses a __proto__ key as an unknown field rather than dropping it', async function () {
-      // A key nobody could mint is refused loudly, not silently dropped — the
-      // same rule as any unknown name — and it stays a plain map key on the way
-      // through, so the prototype is never touched. Create refuses it as
-      // value-setting; edit refuses it as an unknown field, by its address.
+      // `__proto__` is special to JavaScript objects: assigned rather than treated as a plain
+      // map key, it can poison every object in the process. It is refused like any unmintable
+      // key, and the final assertion checks nothing leaked into the prototype on the way.
       const payload = JSON.parse('{"__proto__": {"polluted": true}}');
       await createField({ name: 'Favourite topic' });
 

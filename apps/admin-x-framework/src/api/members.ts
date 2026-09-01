@@ -128,13 +128,10 @@ export type Member = {
   };
   last_seen_at: string | null;
   last_commented_at: string | null;
-  // Values of the custom fields a publisher has defined on member records, nested
-  // by namespace then field key. Namespaces are data — whatever the backend
-  // serializes flows through — and the publisher's fields arrive under `custom`.
-  // Optional because a site that has defined none gets no key at all, rather than
-  // an empty object. Values differ by field type, a string for text and an object
-  // for an address, so they arrive as unknown and each consumer narrows to what
-  // it expects.
+  // The custom-field values a site collects on its members, grouped by the namespace that
+  // declared each field. Optional because a site with no fields defined gets no key at all
+  // in the response, not an empty object. Values differ by field type — a string for text,
+  // an object for an address — so consumers narrow per field.
   metafields?: Record<string, Record<string, unknown> | undefined>;
   can_comment?: boolean;
   commenting?: {
@@ -546,20 +543,16 @@ export interface EditMemberData {
   labels?: Array<{ name: string; slug?: string }>;
   newsletters?: Array<{ id: string }>;
   tiers?: Array<{ id: string; expiry_at?: string | null }>;
-  // Merge semantics: only the keys present are written; `null` clears a
-  // value. The value union is derived from the shared schemas, so a field type
-  // added there is writable here without this line being edited. Every key is checked
-  // against the fields the site has defined, so naming one that does not exist is
-  // rejected rather than ignored.
+  // The server applies this as a merge: only the keys present are written, and `null` clears
+  // a value. Every key is checked against the fields the site has defined; naming one that
+  // does not exist rejects the edit rather than being ignored.
   metafields?: Record<string, Record<string, FieldValue | null>>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
   method: 'PUT',
   path: ({ id }) => `/members/${id}/`,
-  // `metafields` is asked back only when the payload writes it, so the
-  // request stays valid on sites where the flag (and the include) is off.
-  searchParams: (payload) => ({ include: payload.metafields ? 'tiers,metafields' : 'tiers' }),
+  searchParams: () => ({ include: 'tiers,metafields' }),
   body: ({ id, ...rest }) => ({ members: [{ id, ...rest }] }),
   invalidateQueries: { dataType },
 });

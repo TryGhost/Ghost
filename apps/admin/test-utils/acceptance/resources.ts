@@ -67,7 +67,11 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
-  /** Envelope key when it differs from the path segment (e.g. 'members/metafields/custom' → members_metafields). */
+  /**
+   * The key the response object is wrapped in, where it is not just the path segment.
+   * Ghost's Admin API usually matches the two ('tags' → `{ tags: [] }`), but not always:
+   * `members/metafields/custom/` returns `{ members_metafields: [] }`.
+   */
   envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */

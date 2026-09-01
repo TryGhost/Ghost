@@ -1,3 +1,4 @@
+import { IDENTITY_SEGMENT } from '@tryghost/custom-field-types/identity';
 // Neither package ships types.
 const { stripInvisibleChars } = require('@tryghost/string') as {
   stripInvisibleChars(input: string): string;
@@ -5,7 +6,7 @@ const { stripInvisibleChars } = require('@tryghost/string') as {
 const unidecode = require('unidecode') as (input: string) => string;
 
 /** Every character a key may contain. Nothing else survives minting. */
-export const KEY_CHARACTERS = /^[a-z0-9_]+$/;
+export const KEY_CHARACTERS = IDENTITY_SEGMENT;
 
 /**
  * Mint the key a field is addressed by, from the name a publisher chose.

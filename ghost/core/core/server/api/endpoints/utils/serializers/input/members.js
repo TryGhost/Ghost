@@ -34,9 +34,6 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
   });
 }
 
-// Values are not a member relation — they're stored per field type and read by
-// the custom fields service — so `include=metafields` must not reach the model
-// layer as something to eager-load. Lift it out and leave a flag browse can act on.
 function liftMetafieldsInclude(frame) {
   if (!frame.options.withRelated.includes('metafields')) {
     return;

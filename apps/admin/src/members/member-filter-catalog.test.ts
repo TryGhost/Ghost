@@ -81,9 +81,6 @@ describe('waiting protects precision, not the clauses', () => {
   });
 
   it('does not wait for sources a quoted value only happens to mention', () => {
-    // Someone searching their members for the literal text "metafields." or
-    // "newsletters.slug" is not asking about custom fields or newsletters, and waiting for
-    // those to load would leave the filter unreadable until something else resolved them.
     expect(canReadMemberFilter("name:~'metafields.'", { customFields: undefined })).toBe(true);
     expect(canReadMemberFilter("name:~'newsletters.slug'", { newsletters: undefined })).toBe(true);
   });

@@ -223,10 +223,6 @@ describe('Members export -> import round-trip', function () {
     await assertSurvivesWithCoreFields(emails);
   });
 
-  // With the flag on, the export gains a metafields.custom.* column and the import now
-  // consumes it. Re-importing under a fresh email creates the member from the CSV, so
-  // the core fields and the custom field value both reconstruct -- closing the round
-  // trip the base issue describes.
   it('exports a custom field and re-imports its value onto a fresh member', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 
@@ -329,9 +325,9 @@ describe('Members export -> import round-trip', function () {
     );
   });
 
-  // The Stripe column defers this import, so it also checks the JSON spool carries
-  // metafields.custom.* columns through. A value-less member exports all-blank address cells,
-  // which re-import as untouched rather than failing the row.
+  // A row with a Stripe customer id is not imported inline; the importer spools it to a
+  // background job as JSON first. This case proves the custom-field columns survive that
+  // spool, which the inline path never exercises.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 

@@ -438,10 +438,12 @@ describe('isPredicateEnabled', () => {
 });
 
 describe('member-filter-query - custom fields', () => {
-  // Serialize each operator to NQL, then parse it back, and confirm the predicate
-  // survives the round trip a saved segment relies on. Each field is its own
-  // predicate keyed `metafields.custom.<key>`; `values` is [subfield, value].
-  const cases: Array<{ field: string; operator: string; values: string[]; nql: string }> = [
+  const cases: Array<{
+    field: string;
+    operator: string;
+    values: [subfield: string, value: string];
+    nql: string;
+  }> = [
     {
       field: 'metafields.custom.company',
       operator: 'is',

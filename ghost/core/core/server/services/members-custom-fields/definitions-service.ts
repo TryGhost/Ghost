@@ -125,20 +125,13 @@ export class CustomFieldDefinitionsService {
   }
 
   /**
-   * The query boundary: the table predates namespace storage and holds the
-   * publisher's fields alone. A namespace holding no fields is an ordinary empty
-   * collection, not an error — namespaces are data, and one can exist before any
-   * field does — so reads scope to nothing and mutations refuse, and the day the
-   * storage learns namespaces this is where the scoping widens.
+   * The fields table has no namespace column: every row in it belongs to the publisher's
+   * `custom` namespace, so no other namespace can have a stored field.
    */
   private isStored(namespace: string): boolean {
     return namespace === CUSTOM_NAMESPACE;
   }
 
-  // Defining and ordering fields is the publisher managing their own collection;
-  // another namespace's structure belongs to whoever declares it, which is not this
-  // API. Refused as input rather than 404ed: the address is understood, the request
-  // is what cannot be honoured.
   private assertDefinable(namespace: string): void {
     if (!this.isStored(namespace)) {
       throw new errors.ValidationError({
@@ -717,10 +710,9 @@ function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
       err: err as Error,
     });
   }
-  // The route's namespace segment is the namespace filter. A `namespace` clause here
-  // would reach mongo-knex as a column the table does not have, so it is refused with
-  // the fix named rather than surfaced as a SQL error. Lifted when a cross-namespace
-  // browse exists to serve it.
+  // The table has no `namespace` column, so mongo-knex would compile this into SQL against a
+  // column that does not exist. Refuse it at the edge, naming the URL as the way to pick a
+  // namespace, rather than surface a database error.
   if (filterReferencesAttribute(mongoQuery, 'namespace')) {
     throw new errors.BadRequestError({
       message: 'Filtering on namespace is not supported. Scope by the namespace route instead.',

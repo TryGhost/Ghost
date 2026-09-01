@@ -34,9 +34,6 @@ import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-c
 
 interface MemberCustomFieldsFieldProps {
   memberId: string;
-  // The member's saved values (`member.metafields` from the read), nested by
-  // namespace then field key. Server truth — edits never live on the page
-  // draft; each field saves individually through its own editor.
   metafields: Record<string, Record<string, unknown> | undefined> | undefined;
   disabled?: boolean;
 }

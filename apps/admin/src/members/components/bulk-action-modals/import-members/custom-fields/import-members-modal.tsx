@@ -84,14 +84,6 @@ export function ImportMembersModal({
     () => memberCustomFieldCsvColumns(customFieldsData ?? []),
     [customFieldsData],
   );
-  // The file-reader effect waits for this before its first parse: the custom field
-  // definitions must be loaded or auto-detection would miss metafields.custom.* columns on a
-  // fast upload. It flips false -> true once and stays true (a refetch keeps data defined),
-  // so readiness never re-triggers the read.
-  // Ready, or never going to be. A failed query has no representation in `data`, so waiting
-  // on `data` alone leaves the file unparsed and the step on a spinner with nothing said —
-  // for a query whose only job is to add targets to a list.
-  // Failing it costs the custom fields; blocking on it costs the import.
   const customFieldsReady = customFieldsData !== undefined || customFieldsFailed;
   // Detection options are read inside the effect through this ref rather than as deps, so
   // a later refetch of the options can't re-run the read and overwrite a mapping the user

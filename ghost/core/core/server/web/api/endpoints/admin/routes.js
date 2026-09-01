@@ -195,12 +195,10 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Member metafield definitions, one namespace per route: the URL is the field's
-  // address with dots as slashes, and the controller resolves only namespaces that
-  // exist (`custom` alone today). Reading is open: a site that has never turned the
-  // flag on has none, so the answer is an empty list rather than a 404, and Admin can
-  // ask without first knowing whether it may. Changing them is gated.
-  // Registered before /members/:id so the literal path isn't captured by :id.
+  // Reading definitions is deliberately not behind the feature flag: Admin asks every site
+  // for them, and a site without the flag simply has none, so the answer is an empty list
+  // rather than a 404. Creating and changing them is flagged. Registered before /members/:id
+  // so the literal path is not captured as an id.
   router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
   router.post(
     '/members/metafields/:namespace',
@@ -208,7 +206,6 @@ module.exports = function apiRoutes() {
     labs.enabledMiddleware('membersCustomFields'),
     http(api.membersMetafields.add),
   );
-  // A PUT on the namespace collection sets the publisher's order for the whole list.
   router.put(
     '/members/metafields/:namespace',
     mw.authAdminApi,

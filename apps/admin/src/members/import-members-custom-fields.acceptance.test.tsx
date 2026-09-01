@@ -382,9 +382,9 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
-  // Leaving a column out of the mapping is how the importer is told to carry it through
-  // under its own header, which for a metafields.custom.* column means importing it. So a
-  // deselected column has to be named with an empty target, not omitted.
+  // The importer treats a column the mapping never mentions as "carry it through under its
+  // own header", which for a custom-field column means importing it. A column the publisher
+  // switched off has to be named with an empty target, not left out.
   it('names every column it is not importing rather than omitting it', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);

@@ -422,7 +422,7 @@ describe('members api', () => {
   describe('member detail operations', () => {
     const apiRoot = 'http://localhost:3000/ghost/api/admin';
 
-    it('edits a member with the members envelope and includes tiers', async () => {
+    it('edits a member with the members envelope and includes tiers and metafields', async () => {
       const queryClient = createTestQueryClient();
       seedMemberCount(queryClient);
 
@@ -439,7 +439,9 @@ describe('members api', () => {
           });
         });
 
-        expect(mock.calls[0][0].toString()).toBe(`${apiRoot}/members/member-1/?include=tiers`);
+        expect(mock.calls[0][0].toString()).toBe(
+          `${apiRoot}/members/member-1/?include=${encodeURIComponent('tiers,metafields')}`,
+        );
         expect(mock.calls[0][1].method).toBe('PUT');
         expect(JSON.parse(mock.calls[0][1].body)).toEqual({
           members: [
