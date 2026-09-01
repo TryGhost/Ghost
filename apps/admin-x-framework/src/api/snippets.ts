@@ -55,11 +55,11 @@ export const useEditSnippet = createMutation<
   method: 'PUT',
   path: ({ id }) => `/snippets/${id}/`,
   searchParams: () => ({ formats }),
-  body: ({ id, ...rest }) => ({ snippets: [{ id, ...rest }] }),
+  body: ({ id: _id, ...snippet }) => ({ snippets: [snippet] }),
   invalidateQueries: { dataType },
 });
 
-export const useDeleteSnippet = createMutation<unknown, string>({
+export const useDeleteSnippet = createMutation<void, string>({
   method: 'DELETE',
   path: (id) => `/snippets/${id}/`,
   invalidateQueries: { dataType },

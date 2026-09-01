@@ -96,6 +96,7 @@ describe('snippets api', () => {
 
       const url = new URL(String(findCall(mock, '/snippets/')![0]));
       expect(url.searchParams.get('filter')).toBe('name:foo');
+      expect(url.searchParams.get('limit')).toBe('all');
       expect(url.searchParams.get('formats')).toBe('mobiledoc,lexical');
     });
   });
@@ -161,15 +162,13 @@ describe('snippets api', () => {
       const options = call[1] as RequestInit;
       expect(options.method).toBe('PUT');
       expect(JSON.parse(options.body as string)).toEqual({
-        snippets: [
-          { id: 'snippet-1', name: 'Existing snippet', mobiledoc: '{}', lexical: '{"nodes":[]}' },
-        ],
+        snippets: [{ name: 'Existing snippet', mobiledoc: '{}', lexical: '{"nodes":[]}' }],
       });
     });
   });
 
   it('deletes a snippet by id', async () => {
-    await withMockFetch(okResponse({}), async (mock) => {
+    await withMockFetch({ ok: true, status: 204 }, async (mock) => {
       const { result } = renderHookWithProviders(() => useDeleteSnippet());
 
       await act(async () => {
