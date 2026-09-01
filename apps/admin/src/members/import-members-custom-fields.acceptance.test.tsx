@@ -10,6 +10,7 @@ import {
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
 // exercises it for. They are separate switches — the redesign ships without custom fields.
@@ -40,17 +41,18 @@ const EXPORTED_CSV = 'email,metafields.custom.nickname\nada@example.com,Countess
  * key from the name the way the service does, and a browse reflecting what has been
  * created, so the picker behaves as it would against a real site.
  */
-function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = []) {
-  const fields: Array<Record<string, unknown>> = [...definedFields];
+function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
+  const fields: MemberCustomField[] = [...definedFields];
   fakeMembers([member({ name: 'Ada Lovelace' })]);
   const browseApi = fakeMemberCustomFields(() => fields);
   const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
   const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', ({ body }) => {
-    const [input] = (body as { members_metafields: Array<{ name: string; type: string }> })
-      .members_metafields;
-    const field = {
+    const [input] = (
+      body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
+    ).members_metafields;
+    const field: MemberCustomField = {
       namespace: 'custom',
       key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
       name: input.name.trim(),
@@ -66,7 +68,7 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
 }
 
 /** A field the site has already defined, for proving what an import does and does not offer. */
-const NICKNAME_FIELD = {
+const NICKNAME_FIELD: MemberCustomField = {
   namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',

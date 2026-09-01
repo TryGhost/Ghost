@@ -9,6 +9,7 @@ import {
 } from '@/shared/filters';
 import type { FieldIcon } from '@/shared/filters';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
+import { metafieldFieldId } from './custom-fields/addressing';
 import { keyIsUnder } from '@/shared/filters';
 import type { StaticMemberFieldKey } from '@/members/member-fields';
 import {
@@ -411,7 +412,7 @@ export function useMemberFilterFields({
     // "Custom field" door. A simple field filters on its value; a composite field's
     // renderer opens its parts (plus "Any") in the pill.
     const customFieldFields = customFields.map((field) =>
-      createFieldConfig(`metafields.custom.${field.key}`, {
+      createFieldConfig(metafieldFieldId(field), {
         label: field.name,
         // The dropdown entry and the added filter show the field type's own icon
         // rather than a generic custom-field mark.
@@ -432,7 +433,7 @@ export function useMemberFilterFields({
     // so the picker's own de-dup keeps it out of the add-list — it only ever
     // renders as an existing pill.
     const archivedFieldFields = archivedCustomFields.map((field) =>
-      createFieldConfig(`metafields.custom.${field.key}`, {
+      createFieldConfig(metafieldFieldId(field), {
         label: field.name,
         icon: React.createElement(LucideIcon.Archive, { className: 'size-4' }),
         // Read-only: the operator and value stay visible so the segment reads

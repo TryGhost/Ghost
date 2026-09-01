@@ -86,6 +86,7 @@ describe('Members list', () => {
   it('builds a custom field filter without losing the page to the hydration gate', async () => {
     const fieldsApi = fakeMemberCustomFields([
       {
+        namespace: 'custom',
         key: 'employer',
         name: 'Employer',
         type: 'short_text',
