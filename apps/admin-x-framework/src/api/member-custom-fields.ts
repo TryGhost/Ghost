@@ -1,9 +1,11 @@
 import {
   FIELD_TYPES,
   FIELD_TYPE_IDS,
+  partTypesOf,
   subFieldsOf,
   type FieldKind,
   type FieldType,
+  type PartType,
   type PartsOf,
 } from '@tryghost/custom-field-types';
 import { csvColumnsForField } from '@tryghost/custom-field-types/csv';
@@ -161,10 +163,13 @@ export const memberCustomFieldCsvColumns = (
   });
 };
 
-/** One part of a composite field type: the key the value schema declares, and its label. */
+export type { PartType as MemberCustomFieldPartType } from '@tryghost/custom-field-types';
+
+/** One part of a composite field type: the key the value schema declares, its label, and its declared type. */
 export type MemberCustomFieldPart<T extends FieldType = FieldType> = {
   key: PartsOf<T>;
   label: string;
+  type: PartType;
 };
 
 /**
@@ -177,11 +182,12 @@ export const memberCustomFieldParts = <T extends FieldType>(
   type: T,
 ): MemberCustomFieldPart<T>[] | null => {
   const partKeys = subFieldsOf(type);
-  if (!partKeys) {
+  const partTypes = partTypesOf(type);
+  if (!partKeys || !partTypes) {
     return null;
   }
   const labels = partLabelsFor(type);
-  return partKeys.map((key) => ({ key, label: labels[key] }));
+  return partKeys.map((key) => ({ key, label: labels[key], type: partTypes[key] }));
 };
 
 /**
