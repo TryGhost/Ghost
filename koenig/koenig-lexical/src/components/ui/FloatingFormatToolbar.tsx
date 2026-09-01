@@ -43,10 +43,11 @@ export function FloatingFormatToolbar({
         }
     }, [toolbarItemType]);
 
+    const isMouseDown = React.useRef(false);
+
     React.useEffect(() => {
-        let isMouseDown = false;
-        const onMouseDown = () => { isMouseDown = true; };
-        const onMouseUp = () => { isMouseDown = false; };
+        const onMouseDown = () => { isMouseDown.current = true; };
+        const onMouseUp = () => { isMouseDown.current = false; };
 
         const toggle = (e) => {
             editor.getEditorState().read(() => {
@@ -65,7 +66,7 @@ export function FloatingFormatToolbar({
         };
 
         const onSelectionChange = debounce(() => {
-            if (isMouseDown) {
+            if (isMouseDown.current) {
                 return;
             }
             editor.getEditorState().read(() => {
@@ -83,6 +84,7 @@ export function FloatingFormatToolbar({
         document.addEventListener('touchend', toggle); // mobile
 
         return () => {
+            onSelectionChange.cancel();
             document.removeEventListener('mousedown', onMouseDown);
             document.removeEventListener('mouseup', onMouseUp);
             document.removeEventListener('selectionchange', onSelectionChange);
