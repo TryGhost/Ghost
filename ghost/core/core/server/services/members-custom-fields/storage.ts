@@ -1,4 +1,6 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { DbCustomFieldLeaf } from './schema';
 
 // A value is a tree; the database stores one row per leaf, under the path addressing it.
 // A value with no parts is a single leaf at the root, a part is a leaf under its key, and
@@ -124,4 +126,36 @@ export function valuesFromLeaves(
   }
 
   return byMember;
+}
+
+/**
+ * The rows a member's values can be rebuilt from, skipping any that cannot be read.
+ *
+ * A row stops being readable when its field's type has left the catalog. Failing the
+ * whole read would cost a member every other value they hold over one that can no
+ * longer be shown them, so the row is dropped instead. Never silently: a value that
+ * vanishes without a trace cannot be told apart from one that was never written, and
+ * whoever has to explain the gap needs the field and the path to find it.
+ */
+export function readableLeaves(rows: readonly unknown[]): StoredLeaf[] {
+  const leaves: StoredLeaf[] = [];
+  for (const row of rows) {
+    const parsed = DbCustomFieldLeaf.safeParse(row);
+    if (parsed.success) {
+      leaves.push(parsed.data);
+      continue;
+    }
+
+    const partial = row as { key?: unknown; path?: unknown } | null;
+    logging.warn(
+      {
+        event: { name: 'members.custom_fields.value_unreadable' },
+        err: parsed.error,
+        customFieldKey: partial?.key,
+        path: partial?.path,
+      },
+      'Skipping an unreadable custom field value',
+    );
+  }
+  return leaves;
 }

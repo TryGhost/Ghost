@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const { UpdateMetafields } = require('../../../members-custom-fields');
 
 const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
@@ -462,7 +463,7 @@ module.exports = class MemberBREADService {
   }
 
   async add(data, options) {
-    if (this.customFieldValues.namesValues(this.customFieldValues.unwrapWire(data.metafields))) {
+    if (this.customFieldValues.namesAny(data.metafields)) {
       throw new errors.ValidationError({
         message: tpl(messages.customFieldsOnAdd),
         property: 'metafields',
@@ -565,16 +566,39 @@ module.exports = class MemberBREADService {
   async edit(data, options) {
     delete data.last_seen_at;
 
-    const customFields = this.customFieldValues.unwrapWire(data.metafields);
-    const writeCustomFields = customFields !== undefined;
+    // Who is writing has to be known before anything is planned, because it is
+    // part of the command rather than something supplied when it is applied. The
+    // only route here is the authenticated Admin API, so a request that is neither
+    // a user nor an integration is a mistake upstream rather than a writer to
+    // invent a name for; refusing keeps every stored writer resolvable.
+    const metafieldValues = data.metafields;
     delete data.metafields;
 
-    // Plan (which validates) before the member is touched, so a bad value 422s
-    // here rather than after the member edit has been applied — and keep the
-    // plan to apply once below, so the values aren't resolved and validated
-    // twice.
-    const plannedCustomFields = writeCustomFields
-      ? await this.customFieldValues.planWrite(customFields)
+    let metafieldCommand = null;
+    if (metafieldValues !== undefined) {
+      const context = options.context || {};
+      if (!context.integration && !context.user) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.customFieldsWithoutWriter),
+        });
+      }
+
+      metafieldCommand = UpdateMetafields.parse({
+        memberId: options.id,
+        values: metafieldValues,
+        // The same pair the action log records, so the two agree about who did it
+        // rather than one saying only that it was "admin".
+        writtenBy: context.integration
+          ? { type: 'integration', id: context.integration.id }
+          : { type: 'user', id: context.user },
+      });
+    }
+
+    // Planned before the member is touched, so a bad value 422s here rather than
+    // after the edit has been applied, and planned once so the values are not
+    // resolved and validated twice.
+    const plannedCustomFields = metafieldCommand
+      ? await this.customFieldValues.planUpdate(metafieldCommand)
       : null;
 
     let model;
@@ -628,23 +652,7 @@ module.exports = class MemberBREADService {
     }
 
     if (plannedCustomFields) {
-      // Every value reaching here was typed into the Admin API, so the writer is
-      // whoever made the request — the same pair the action log records, so the two
-      // agree about who did it rather than one saying only that it was "admin".
-      //
-      // The only route to this branch is the authenticated Admin API, so an anonymous
-      // request is a mistake somewhere upstream rather than a writer to invent a name
-      // for. Refusing keeps every stored writer resolvable.
-      const context = options.context || {};
-      if (!context.integration && !context.user) {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.customFieldsWithoutWriter),
-        });
-      }
-      const writtenBy = context.integration
-        ? { type: 'integration', id: context.integration.id }
-        : { type: 'user', id: context.user };
-      await this.customFieldValues.applyWrite(model.id, plannedCustomFields, { writtenBy });
+      await this.customFieldValues.applyUpdate(metafieldCommand, plannedCustomFields);
 
       // Custom fields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.

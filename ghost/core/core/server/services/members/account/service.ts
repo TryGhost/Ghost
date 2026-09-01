@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import { UpdateAccount } from './commands';
+import { UpdateMetafields } from '../../members-custom-fields';
 import { MemberAccount, type DecodeDependencies } from './models';
 import * as queries from './queries';
 import type { ExternalSubscriptionFacts, MemberLookup } from './queries';
@@ -11,6 +12,17 @@ const config = require('../../../../shared/config');
 
 interface Dependencies {
   knex: Knex;
+  /**
+   * The metafields domain.
+   *
+   * Reading these is part of this projection's own query — a value is rows in a
+   * table like anything else here. Writing one is not: what a field accepts, and
+   * what clearing one means, are rules that domain enforces, so a write asks it
+   * rather than reaching for the tables itself.
+   */
+  metafields: {
+    values: Anything;
+  };
   memberRepository: Anything;
   offersAPI: Anything;
   memberAttributionService: Anything;
@@ -34,6 +46,7 @@ interface Dependencies {
  */
 export class MemberAccountService {
   private knex: Knex;
+  private metafields: { values: Anything };
   private memberRepository: Anything;
   private offersAPI: Anything;
   private memberAttributionService: Anything;
@@ -42,6 +55,7 @@ export class MemberAccountService {
 
   constructor({
     knex,
+    metafields,
     memberRepository,
     offersAPI,
     memberAttributionService,
@@ -49,6 +63,7 @@ export class MemberAccountService {
     nextPaymentCalculator,
   }: Dependencies) {
     this.knex = knex;
+    this.metafields = metafields;
     this.memberRepository = memberRepository;
     this.offersAPI = offersAPI;
     this.memberAttributionService = memberAttributionService;
@@ -125,8 +140,11 @@ export class MemberAccountService {
     };
 
     try {
-      for (const id of new Set(rows.map((row) => row.offer_id).filter(Boolean))) {
-        await loadOffer(id as string);
+      const offerIds = new Set(
+        rows.flatMap((row) => (row.offer_id === null ? [] : [row.offer_id])),
+      );
+      for (const id of offerIds) {
+        await loadOffer(id);
       }
 
       const stripeIdByRowId = new Map(
@@ -167,13 +185,45 @@ export class MemberAccountService {
    * The read is what the caller gets rather than the model the update returned: a
    * member who changes their newsletters expects the response to describe them as
    * they now are, and the update's own result carries only what it touched.
+   *
+   * Metafield values are planned before anything is written, so a value the
+   * catalog refuses fails the whole request before the member's record is touched
+   * rather than after. They are recorded as written by the member, which is the
+   * one writer whose edits leave no action behind: the action log records what
+   * staff did, and no member-initiated change has ever written to it.
    */
   async edit(data: Json, options: Json = {}): Promise<Json | null> {
-    const model = await this.memberRepository.update(UpdateAccount.parse(data), {
+    const { metafields, ...fields } = UpdateAccount.parse(data);
+
+    // A member is recorded as the writer of their own answers, and is the one
+    // writer whose changes leave no action behind: the action log records what
+    // staff did, and no member-initiated change has ever written to it.
+    const command: UpdateMetafields | null =
+      metafields === undefined
+        ? null
+        : UpdateMetafields.parse({
+            memberId: options.id,
+            values: metafields,
+            writtenBy: { type: 'member', id: options.id },
+          });
+
+    // Planned before anything is written, so a value the catalog refuses fails the
+    // whole request rather than half of it.
+    const plan = command === null ? null : await this.metafields.values.planUpdate(command);
+
+    const model = await this.memberRepository.update(fields, {
       ...options,
       withRelated: ['newsletters'],
     });
 
-    return model ? this.read({ id: model.id }) : null;
+    if (!model) {
+      return null;
+    }
+
+    if (command !== null && plan !== null) {
+      await this.metafields.values.applyUpdate(command, plan);
+    }
+
+    return this.read({ id: model.id });
   }
 }

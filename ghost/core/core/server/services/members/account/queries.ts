@@ -1,7 +1,17 @@
 import type { Knex } from 'knex';
+import { readableLeaves } from '../../members-custom-fields';
 
-/** Rows as the driver hands them over, before any schema has looked at them. */
+/**
+ * Rows as the driver hands them over, before any schema has looked at them.
+ *
+ * Values are unknown because only a schema should say what a column holds — except
+ * the member's own id, which every one of these queries selects by name and keys
+ * the rest of the read on.
+ */
 type RawRow = Record<string, unknown>;
+type RawMemberRow = RawRow & { id: string };
+/** The two identifiers a subscription is matched on, one Stripe's and one Ghost's. */
+type RawSubscriptionRow = RawRow & { subscription_id: string; ghost_subscription_row_id: string };
 export type RawAccount = RawRow;
 
 /** What another domain answered about one subscription. */
@@ -80,21 +90,24 @@ const LOOKUP_COLUMNS: Array<[keyof MemberLookup, string]> = [
  * switched it off, which a reader cannot tell apart and does not need to.
  */
 export function memberByLookup(knex: Knex, lookup: MemberLookup) {
-  const match = LOOKUP_COLUMNS.find(([key]) => lookup[key] !== undefined && lookup[key] !== null);
-  if (!match) {
-    return null;
-  }
-  const [key, column] = match;
+  for (const [key, column] of LOOKUP_COLUMNS) {
+    const value = lookup[key];
+    if (value === undefined || value === null) {
+      continue;
+    }
 
-  return knex('members')
-    .leftJoin('suppressions', 'suppressions.email', 'members.email')
-    .where(column, lookup[key] as string)
-    .select(
-      ...MEMBER_COLUMNS,
-      'suppressions.reason as suppression_reason',
-      'suppressions.created_at as suppression_at',
-    )
-    .limit(1);
+    return knex<RawRow, RawMemberRow[]>('members')
+      .leftJoin('suppressions', 'suppressions.email', 'members.email')
+      .where(column, value)
+      .select(
+        ...MEMBER_COLUMNS,
+        'suppressions.reason as suppression_reason',
+        'suppressions.created_at as suppression_at',
+      )
+      .limit(1);
+  }
+
+  return null;
 }
 
 /** Ordered here because the projection promises this order and SQL can state it. */
@@ -127,7 +140,7 @@ export function newslettersForMembers(knex: Knex, memberIds: string[]) {
  * same exclusion is what `members_resolved_subscription` applies.
  */
 export function stripeSubscriptionsForMembers(knex: Knex, memberIds: string[]) {
-  return knex('members_stripe_customers_subscriptions as mscs')
+  return knex<RawRow, RawSubscriptionRow[]>('members_stripe_customers_subscriptions as mscs')
     .join('members_stripe_customers as msc', 'msc.customer_id', 'mscs.customer_id')
     .join('stripe_prices as sp', 'sp.stripe_price_id', 'mscs.stripe_price_id')
     .join('stripe_products as spr', 'spr.stripe_product_id', 'sp.stripe_product_id')
@@ -253,6 +266,36 @@ export function grantedSubscriptionsForMembers(knex: Knex, memberIds: string[]) 
 }
 
 /**
+ * The fields a publisher has defined, with whatever this member holds in them.
+ *
+ * Driven from the definitions rather than from the values, so one query answers
+ * two questions that a value-first query cannot tell apart. No rows at all means
+ * this site has defined nothing, and says nothing about metafields. Rows whose
+ * value columns are null mean fields this member has not filled in.
+ *
+ * One row per leaf, because a value can be a tree: an address is stored as a row
+ * per part, addressed by a dotted path. Ordered by that path so the parts of a
+ * value assemble the same way every time.
+ *
+ * Archived fields are excluded here rather than filtered afterwards. Nothing in
+ * the database stops a value row referencing an archived field, so a read that
+ * forgets is a silent bug.
+ */
+export function metafieldLeavesForMember(knex: Knex, memberId: string) {
+  return knex('members_custom_fields as f')
+    .leftJoin('members_custom_field_values as v', function () {
+      this.on('v.custom_field_key', '=', 'f.key').andOn(
+        'v.member_id',
+        '=',
+        knex.raw('?', [memberId]),
+      );
+    })
+    .where('f.status', 'active')
+    .orderBy('v.path', 'asc')
+    .select('v.member_id', 'f.key', 'f.type', 'v.path', 'v.value_text');
+}
+
+/**
  * The gift behind each gifted member, one per member.
  *
  * Ranked rather than joined. A member can hold more than one redeemed gift, and
@@ -314,7 +357,7 @@ export async function read(
     return null;
   }
 
-  const ids = [member.id];
+  const ids: string[] = [member.id];
   const [newsletters, stripeRows, grantedRows, gifts] = await Promise.all([
     newslettersForMembers(knex, ids),
     stripeSubscriptionsForMembers(knex, ids),
@@ -322,19 +365,30 @@ export async function read(
     activeGiftsForMembers(knex, ids),
   ]);
 
-  const facts = await externals.forSubscriptions(stripeRows);
+  const [facts, metafieldRows] = await Promise.all([
+    externals.forSubscriptions(stripeRows),
+    metafieldLeavesForMember(knex, member.id),
+  ]);
   const now = new Date();
 
   return {
     ...member,
+    // Null rather than empty on a site that has defined nothing, so the response
+    // keeps the shape it had before the feature existed. A row carrying no member
+    // is a field nobody has answered, which is absence rather than a value that
+    // cannot be read, so it never reaches the reader that reports those.
+    metafieldLeaves:
+      metafieldRows.length === 0
+        ? null
+        : readableLeaves(metafieldRows.filter((row) => row.member_id !== null)),
     newsletters,
-    stripeSubscriptions: stripeRows.map((row: RawRow) => ({
+    stripeSubscriptions: stripeRows.map((row) => ({
       ...row,
-      ...(facts.get(row.subscription_id as string) ?? {}),
+      ...(facts.get(row.subscription_id) ?? {}),
     })),
     // The gift and the clock travel with each granted subscription, because what
     // a granted subscription costs and when it started are answered from them.
-    grantedSubscriptions: grantedRows.map((row: RawRow) => ({
+    grantedSubscriptions: grantedRows.map((row) => ({
       ...row,
       gift: gifts[0] ?? null,
       now,

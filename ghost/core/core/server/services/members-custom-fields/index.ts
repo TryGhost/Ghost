@@ -10,6 +10,19 @@ export { actingContext } from './actions';
 export type { BoundField } from './bindings-service';
 export type { WrittenBy } from './schema';
 
+// Shared with anything that reads these values as part of its own projection.
+// A value is stored as one row per leaf, so a reader that queries the rows needs
+// the same rule for turning them back into a value — and that rule is pure, so it
+// travels rather than being reimplemented. Reading the rows travels with it: which
+// rows are unusable, and what to say about one, is the same judgement wherever the
+// rows were fetched.
+export { readableLeaves, valuesFromLeaves, type StoredLeaf } from './storage';
+export { activeFields } from './queries';
+
+// What a member's values are being set to, as one command, so the surfaces that
+// write them name the same thing rather than each assembling their own arguments.
+export { UpdateMetafields } from './commands';
+
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the
 // site's settings, `values` owns the per-member values, which belong to the

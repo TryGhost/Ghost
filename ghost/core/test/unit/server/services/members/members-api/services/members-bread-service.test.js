@@ -10,10 +10,9 @@ const moment = require('moment');
 // assume rather than on the behaviour it is checking.
 const createCustomFieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
-  unwrapWire: sinon.stub().callsFake((input) => input),
-  namesValues: sinon.stub().returns(false),
-  planWrite: sinon.stub().resolves([]),
-  applyWrite: sinon.stub().resolves(),
+  namesAny: sinon.stub().returns(false),
+  planUpdate: sinon.stub().resolves([]),
+  applyUpdate: sinon.stub().resolves(),
 });
 
 const createCustomFieldDefinitionsStub = (hasAnyActive = false) => ({
@@ -110,7 +109,7 @@ describe('MemberBreadService', function () {
       // counts as naming them, so drive it directly rather than through a body
       // shape, which is the values service's own contract to test.
       const customFieldValues = createCustomFieldValuesStub();
-      customFieldValues.namesValues.returns(true);
+      customFieldValues.namesAny.returns(true);
       const { service, createStub } = createService({}, customFieldValues);
 
       await assert.rejects(
@@ -137,8 +136,8 @@ describe('MemberBreadService', function () {
       assert.equal(createStub.calledOnce, true);
       // Asked unconditionally: the member data is handed over whether or not it
       // carries the key, and an absent one is the values service's to judge.
-      assert.equal(customFieldValues.namesValues.calledOnce, true);
-      assert.equal(customFieldValues.namesValues.firstCall.args[0], undefined);
+      assert.equal(customFieldValues.namesAny.calledOnce, true);
+      assert.equal(customFieldValues.namesAny.firstCall.args[0], undefined);
     });
 
     it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {

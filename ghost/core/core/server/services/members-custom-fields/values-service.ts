@@ -1,6 +1,5 @@
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/custom-field-types';
@@ -10,9 +9,10 @@ import {
   formatIdentity,
   parseIdentity,
 } from '@tryghost/custom-field-types/identity';
-import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
+import { DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
-import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
+import type { UpdateMetafields } from './commands';
+import { leavesToWrite, readableLeaves, valuesFromLeaves } from './storage';
 
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
@@ -113,24 +113,7 @@ export class CustomFieldValuesService {
         `${VALUES_TABLE}.value_text`,
       );
 
-    const leaves: StoredLeaf[] = [];
-    for (const row of rows) {
-      try {
-        leaves.push(DbCustomFieldLeaf.parse(row));
-      } catch (err) {
-        logging.warn(
-          {
-            event: { name: 'members.custom_fields.value_unreadable' },
-            err,
-            customFieldKey: row.key,
-            path: row.path,
-          },
-          'Skipping an unreadable custom field value',
-        );
-      }
-    }
-
-    const flat = valuesFromLeaves(leaves);
+    const flat = valuesFromLeaves(readableLeaves(rows));
     return new Map(
       memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
     );
@@ -190,6 +173,39 @@ export class CustomFieldValuesService {
    * validate before opening a transaction it would otherwise have to unwind, then apply
    * the same plan without re-resolving it.
    */
+  /**
+   * What a command implies, worked out without writing anything.
+   *
+   * Separate from applying it so a caller can find out that a value is
+   * unacceptable while abandoning the whole request is still free. Throws naming
+   * the address it refused, which is what a client shows the person who typed it.
+   */
+  async planUpdate(command: UpdateMetafields): Promise<PlannedWrite[]> {
+    return this.planWrite(this.unwrapWire(command.values));
+  }
+
+  /**
+   * Apply a plan, recorded against the writer the command names.
+   *
+   * Takes an executor so the write can join a transaction it is part of rather
+   * than opening one of its own: an importer's failed row takes its values with it.
+   */
+  async applyUpdate(
+    command: UpdateMetafields,
+    plan: PlannedWrite[],
+    { executor }: { executor?: Knex } = {},
+  ): Promise<void> {
+    await this.applyWrite(command.memberId, plan, {
+      writtenBy: command.writtenBy,
+      ...(executor ? { executor } : {}),
+    });
+  }
+
+  /** Whether a wire-shaped body names any values at all, asked without the catalog. */
+  namesAny(wire: unknown): boolean {
+    return this.namesValues(this.unwrapWire(wire));
+  }
+
   async planWrite(input: unknown): Promise<PlannedWrite[]> {
     const values = this.parseValues(input);
     const identities = Object.keys(values);

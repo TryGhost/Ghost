@@ -30,13 +30,18 @@ type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
  * action, and Stripe is not a person. `type` is the namespace that makes `id` resolvable —
- * `users`, `integrations`, `members_custom_field_bindings` — so the one writer that
- * resolves in no table is the one with no id to give.
+ * `users`, `integrations`, `members`, `members_custom_field_bindings` — so the one writer
+ * that resolves in no table is the one with no id to give.
+ *
+ * A member is a writer because a member can maintain their own answers from their
+ * account. That is also the one writer whose edits leave no action behind: the action log
+ * records what staff did, and no member-initiated change has ever written to it.
  */
 export const WrittenBy = z.discriminatedUnion('type', [
   z.object({ type: z.literal('user'), id: z.string() }),
   z.object({ type: z.literal('integration'), id: z.string() }),
   z.object({ type: z.literal('binding'), id: z.string() }),
+  z.object({ type: z.literal('member'), id: z.string() }),
   z.object({ type: z.literal('import'), id: z.null() }),
 ]);
 export type WrittenBy = z.infer<typeof WrittenBy>;

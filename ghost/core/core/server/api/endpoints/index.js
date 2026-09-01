@@ -316,6 +316,10 @@ module.exports = {
     return apiFramework.pipeline(require('./members-account'), localUtils, 'members');
   },
 
+  get metafieldsMembers() {
+    return apiFramework.pipeline(require('./metafields-members'), localUtils, 'members');
+  },
+
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
   },

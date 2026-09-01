@@ -78,6 +78,25 @@ module.exports = function setupMembersApp() {
     middleware.loadMemberSession,
     http(api.membersAccount.update),
   );
+
+  // What extra fields this publisher has defined for members to fill in. Served by
+  // the metafields domain, from the same definitions service Admin reads — this is
+  // the same list, answered for a different audience. A route of its own because it
+  // describes the site rather than the member: the payload above says what someone
+  // has answered, and this says what there is to answer. Setting a value is part of
+  // the member update, the way staff already set the same values.
+  //
+  // Deliberately not behind the feature flag, matching the Admin API. Only defining
+  // a field is flagged, and nothing else can happen without one: a site with no
+  // definitions answers with an empty list and carries no values, so the flag would
+  // decide nothing here. It would also strand a publisher who defined fields and
+  // later turned the flag off, leaving their members holding data they could see and
+  // not correct.
+  membersApp.get(
+    '/api/member/metafields/:namespace',
+    middleware.loadMemberSession,
+    http(api.metafieldsMembers.browse),
+  );
   membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
     membersService.api.middleware.updateEmailAddress(req, res, next),
   );

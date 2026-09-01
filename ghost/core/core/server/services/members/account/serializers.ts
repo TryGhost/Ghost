@@ -114,7 +114,7 @@ export function toAccountResponse(account: MemberAccount | null): Wire | null {
     return null;
   }
 
-  return {
+  const wire: Wire = {
     uuid: account.uuid,
     email: account.email,
     name: account.name,
@@ -141,4 +141,12 @@ export function toAccountResponse(account: MemberAccount | null): Wire | null {
       info: account.emailSuppression.info,
     },
   };
+
+  // Absent, not empty, on a site that has defined no fields — which is most of them,
+  // and which is how those sites keep the response they had before this existed.
+  if (account.metafields !== null) {
+    wire.metafields = account.metafields;
+  }
+
+  return wire;
 }

@@ -34,6 +34,22 @@ export const UpdateAccount = z.object({
   newsletters: z.unknown().optional(),
   enable_comment_notifications: z.unknown().optional(),
   enable_updates_and_announcements: z.unknown().optional(),
+  /**
+   * The extra fields a publisher defined, keyed by namespace.
+   *
+   * Here rather than on a route of its own, which is how staff already set the
+   * same values: `PUT /members/:id` carries `metafields` beside `name`. A
+   * member's account panel is one form with one Save, and splitting the write
+   * would make it two requests with a half-succeeded state to explain.
+   *
+   * Unlike the fields above, a metafield naming something nobody defined is
+   * refused rather than ignored. An unrecognised key at the top level is a
+   * client sending more than this endpoint reads; a named field that does not
+   * exist is a client that believes something false, and saying so is more
+   * use than silence. What a field accepts is the business of the catalog that
+   * defines it, which validates the values and names the address it refused.
+   */
+  metafields: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type UpdateAccount = z.infer<typeof UpdateAccount>;

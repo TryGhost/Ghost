@@ -8,6 +8,9 @@ import {
   TierRow,
 } from './schema';
 
+import { CUSTOM_NAMESPACE } from '@tryghost/custom-field-types/identity';
+import { valuesFromLeaves, type StoredLeaf } from '../../members-custom-fields';
+
 const { MemberCommentingCodec } = require('../commenting');
 
 /**
@@ -230,6 +233,20 @@ export const Newsletter = NewsletterRow.transform((row) => ({
 }));
 export type Newsletter = z.infer<typeof Newsletter>;
 
+/**
+ * A member's values, rebuilt from the rows that store them by the same rule that
+ * wrote them — shared from the module that owns how they are stored, rather than
+ * restated here.
+ */
+function metafieldsFrom(
+  memberId: string,
+  leaves: StoredLeaf[] | null,
+): Record<string, Record<string, unknown>> | null {
+  return leaves === null
+    ? null
+    : { [CUSTOM_NAMESPACE]: valuesFromLeaves(leaves).get(memberId) ?? {} };
+}
+
 /** The whole account, as one schema over the rows that make one. */
 export const MemberAccount = (deps: DecodeDependencies) =>
   MemberRow.and(
@@ -237,6 +254,16 @@ export const MemberAccount = (deps: DecodeDependencies) =>
       newsletters: z.array(Newsletter),
       stripeSubscriptions: z.array(StripeSubscription(deps)),
       grantedSubscriptions: z.array(GrantedSubscription(deps)),
+      /**
+       * The rows behind the extra fields a publisher defined, already read.
+       *
+       * Null on a site that has defined none, which is not the same as a member who
+       * has answered none: the first has nothing to show and the second has nothing
+       * filled in. Which rows survived being read is settled by the query, where the
+       * one unreadable row can be reported; deciding it again here would either
+       * repeat that judgement or contradict it.
+       */
+      metafieldLeaves: z.array(z.custom<StoredLeaf>()).nullable().default(null),
     }),
   ).transform((row) => ({
     id: row.id,
@@ -267,6 +294,7 @@ export const MemberAccount = (deps: DecodeDependencies) =>
     },
     newsletters: row.newsletters,
     subscriptions: [...row.stripeSubscriptions, ...row.grantedSubscriptions],
+    metafields: metafieldsFrom(row.id, row.metafieldLeaves),
   }));
 
 export type MemberAccount = ReturnType<ReturnType<typeof MemberAccount>['parse']>;

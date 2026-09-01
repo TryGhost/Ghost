@@ -163,6 +163,8 @@ module.exports = function MembersAPI({
   // ../account/CONTEXT.md.
   const memberAccountService = new MemberAccountService({
     knex: require('../../../data/db').knex,
+    // Built by boot before the members service, so it is here by now.
+    metafields: { values: customFieldValues },
     memberRepository,
     offersAPI,
     memberAttributionService,

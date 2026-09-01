@@ -4,7 +4,8 @@
  *
  * A barrel rather than a composition root: this module owns no boot step, and its
  * collaborators are the ones `members-api.js` already builds, so the service is
- * constructed there beside `MemberBREADService`.
+ * constructed there beside `MemberBREADService`. Answering a request belongs to the
+ * endpoint, not here.
  */
 export { MemberAccountService } from './service';
 export { MemberAccount, type DecodeDependencies } from './models';
