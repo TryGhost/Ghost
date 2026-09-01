@@ -90,32 +90,12 @@ describe('Advanced settings', () => {
     ]);
   });
 
-  it('hides the React editor flag when the backend does not advertise support', async () => {
-    fakeSettingsScreens();
-    const response = configResponse();
-    response.config.enableDeveloperExperiments = true;
-    await renderAdminApp('/settings/labs', { boot: { browseConfig: { response } } });
-
-    const section = settingsScreen.section('labs');
-    await section.getByRole('button', { name: 'Open' }).click();
-    await section.getByRole('tab', { name: 'Private features' }).click();
-
-    await expect
-      .element(section.getByRole('switch', { name: 'Admin 7 page chrome' }))
-      .toBeInTheDocument();
-    await expect
-      .element(section.getByRole('switch', { name: 'React editor' }))
-      .not.toBeInTheDocument();
-  });
-
-  it('shows and saves the React editor flag when the backend advertises support', async () => {
+  it('treats an absent React editor flag as off and allows enabling it', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
-    const labs = { editorReact: false };
     const response = configResponse();
     response.config.enableDeveloperExperiments = true;
-    response.config.writableLabs = ['editorReact'];
-    await renderAdminApp('/settings/labs', { labs, boot: { browseConfig: { response } } });
+    await renderAdminApp('/settings/labs', { labs: {}, boot: { browseConfig: { response } } });
 
     const section = settingsScreen.section('labs');
     await section.getByRole('button', { name: 'Open' }).click();
@@ -127,9 +107,9 @@ describe('Advanced settings', () => {
       {
         key: 'labs',
         value: String(
-          settingsResponse({ labs: { editorReact: true } }).settings.find(
-            (setting) => setting.key === 'labs',
-          )!.value,
+          settingsResponse({ labs: { editorReact: true } }).settings.find((setting) => {
+            return setting.key === 'labs';
+          })!.value,
         ),
       },
     ]);

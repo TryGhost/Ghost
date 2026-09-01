@@ -23,8 +23,6 @@ export type Config = {
   database: string;
   blogUrl?: string;
   labs: Record<string, boolean>;
-  /** Labs flags the connected Core version accepts in settings updates. */
-  writableLabs?: string[];
   stripeDirect: boolean;
   mail: string;
   stats?: JSONObject & {

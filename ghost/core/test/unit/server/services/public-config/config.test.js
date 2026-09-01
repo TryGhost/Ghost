@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
-const labs = require('../../../../../core/shared/labs');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const getConfigProperties = require('../../../../../core/server/services/public-config/config');
 const sinon = require('sinon');
@@ -16,7 +15,6 @@ const allowedKeys = [
   'mail',
   'useGravatar',
   'labs',
-  'writableLabs',
   'clientExtensions',
   'enableDeveloperExperiments',
   'stripeDirect',
@@ -46,7 +44,6 @@ describe('Public-config Service', function () {
       const configProperties = getConfigProperties();
 
       assert.deepEqual(Object.keys(configProperties), allowedKeys);
-      assert.deepEqual(configProperties.writableLabs, labs.WRITABLE_KEYS_ALLOWLIST);
     });
 
     it('should return GHOST_BUILD_VERSION as version when set', function () {

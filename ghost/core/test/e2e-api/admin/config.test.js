@@ -5,8 +5,7 @@ const {
   matchers,
   configUtils,
 } = require('../../utils/e2e-framework');
-const { anyArray, anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching } =
-  matchers;
+const { anyContentVersion, anyEtag, anyContentLength, anyObject, stringMatching } = matchers;
 
 /**
  * This is a snapshot test for the happy path of the config API
@@ -48,11 +47,10 @@ describe('Config API', function () {
             // labs is matched dynamically so adding/removing feature
             // flags doesn't churn the snapshot
             labs: anyObject,
-            writableLabs: anyArray,
           },
         })
         .expect(({ body }) => {
-          const { labs, writableLabs } = body.config;
+          const { labs } = body.config;
           assert.ok(
             labs && typeof labs === 'object' && !Array.isArray(labs),
             'expected labs to be a plain object',
@@ -66,7 +64,6 @@ describe('Config API', function () {
           // Fixture setup enables every registered writable flag. Keep an
           // explicit assertion while this private rollout uses dynamic snapshots.
           assert.equal(labs.admin7PageChrome, true);
-          assert.ok(writableLabs.includes('editorReact'));
         })
         .matchHeaderSnapshot({
           'content-version': anyContentVersion,
