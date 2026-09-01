@@ -1048,6 +1048,11 @@ export default class App extends React.Component {
     }
 
     const { site: linkSite, ...restLinkData } = linkData;
+    const isLeavingGiftPage = this.state.page === 'gift' && restLinkData.page !== 'gift';
+    if (isLeavingGiftPage) {
+      clearGiftFormState();
+    }
+    const shouldCloseGiftPopup = isLeavingGiftPage && !restLinkData.page;
 
     const updatedState = {
       site: {
@@ -1062,6 +1067,7 @@ export default class App extends React.Component {
       },
       ...restLinkData,
       ...restPreviewData,
+      ...(shouldCloseGiftPopup ? { showPopup: false, lastPage: null } : {}),
     };
     this.handleSignupQuery({ site: updatedState.site, pageQuery: updatedState.pageQuery });
     this.setState(updatedState);

@@ -519,6 +519,42 @@ describe('Portal Data links:', () => {
       expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
     });
 
+    test('closes Portal when browser Back returns from Gift to a non-Portal fragment', async () => {
+      window.location.hash = '#/portal/gift';
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+      };
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      expect(popupFrame).toBeInTheDocument();
+
+      window.location.hash = '#comments';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+      await waitFor(() => expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument());
+    });
+
+    test('clears a personalized gift draft when browser Back returns to another Portal page', async () => {
+      window.location.hash = '#/portal/gift';
+      const site = {
+        ...FixtureSite.singleTier.basic,
+        labs: { giftSubCustomization: true },
+      };
+      let { popupFrame, ...utils } = await setup({ site, showPopup: false });
+      popupFrame = await utils.findByTitle(/portal-popup/i);
+      const popup = within(popupFrame.contentDocument);
+
+      fireEvent.change(popup.getByLabelText('Your name'), { target: { value: 'Jamie' } });
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).not.toBeNull();
+
+      window.location.hash = '#/portal/signup';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+
+      await waitFor(() => expect(popup.getByLabelText('Name')).toBeInTheDocument());
+      expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
+    });
+
     test('does not open when Stripe is disconnected', async () => {
       window.location.hash = '#/portal/gift';
 
