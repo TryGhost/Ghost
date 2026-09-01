@@ -483,54 +483,66 @@ async function initBackgroundServices({ config }) {
     const logging = require('@tryghost/logging');
     const settingsCache = require('./shared/settings-cache');
     const token = config.get('tinybird:adminToken');
+    const siteUuid = tinybirdConfig.id || settingsCache.get('site_uuid');
 
-    setInterval(async () => {
+    const syncAutomationEvents = async ({ table, datasource, name }) => {
       try {
-        const runs = await db.knex('automation_runs').select('*');
+        const rows = await db.knex(table).select('*');
 
-        if (!runs.length) {
-          logging.info('Skipping automation run sync to Tinybird: no automation runs found');
+        if (!rows.length) {
+          logging.info(`Skipping ${name} sync to Tinybird: no ${name}s found`);
           return;
         }
 
         if (!token) {
-          logging.info('Skipping automation run sync to Tinybird: no admin token configured');
+          logging.info(`Skipping ${name} sync to Tinybird: no admin token configured`);
           return;
         }
 
-        const siteUuid = tinybirdConfig.id || settingsCache.get('site_uuid');
-        const events = runs.map((run) => ({
+        const events = rows.map((row) => ({
           site_uuid: siteUuid,
-          id: run.id,
-          updated_at: run.updated_at,
+          id: row.id,
+          updated_at: row.updated_at,
           payload: {
-            ...run,
+            ...row,
             site_uuid: siteUuid,
           },
         }));
 
-        logging.info(`Sending ${events.length} automation run events to Tinybird`);
+        logging.info(`Sending ${events.length} ${name} events to Tinybird`);
 
-        const response = await fetch(
-          `${tinybirdEndpoint}/v0/events?name=automation_run_events`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/x-ndjson',
-            },
-            body: events.map((event) => JSON.stringify(event)).join('\n'),
+        const response = await fetch(`${tinybirdEndpoint}/v0/events?name=${datasource}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/x-ndjson',
           },
-        );
+          body: events.map((event) => JSON.stringify(event)).join('\n'),
+        });
 
         if (!response.ok) {
+          // I don't care
+          // eslint-disable-next-line
           throw new Error(`Tinybird API error: ${response.status} - ${await response.text()}`);
         }
 
-        logging.info(`Sent ${events.length} automation run events to Tinybird`);
+        logging.info(`Sent ${events.length} ${name} events to Tinybird`);
       } catch (err) {
         logging.error(err);
       }
+    };
+
+    setInterval(async () => {
+      await syncAutomationEvents({
+        table: 'automation_runs',
+        datasource: 'automation_run_events',
+        name: 'automation run',
+      });
+      await syncAutomationEvents({
+        table: 'automation_run_steps',
+        datasource: 'automation_run_step_events',
+        name: 'automation run step',
+      });
     }, 10_000);
   }
 
