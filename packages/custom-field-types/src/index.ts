@@ -93,37 +93,10 @@ const byteLength = (value: string): number => new TextEncoder().encode(value).le
  */
 const text = () => z.string({ error: 'Enter text.' }).trim();
 
-const shortText = () => text().max(255, { error: 'Use 255 characters or fewer.' });
-
 const longText = () =>
   text().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
     error: 'This text is too long to save. Shorten it a little.',
   });
-
-/**
- * A postal code, bounded well under a street address because no country's is long. The
- * bound is a sanity limit rather than a format: postal codes vary too much between
- * countries to check the shape of one without knowing which country it is for, and the
- * country is a sibling part rather than something this can see.
- */
-const postalCode = () => text().max(32, { error: 'Use 32 characters or fewer.' });
-
-/**
- * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of
- * them. Membership of that list is contested, and a closed list here would make Ghost the
- * arbiter of it for every member of every site. The collection form can offer countries to
- * pick from without this deciding which ones exist.
- *
- * Case is normalized so that `gb` and `GB` are not two values for one place, which a
- * filter for either would silently half-miss.
- *
- * Checked as two ASCII letters on the way in rather than by length on the way out, because
- * uppercasing does not preserve length: `ß` becomes `SS` and `aß` becomes `ASS`.
- */
-const countryCode = () =>
-  text()
-    .regex(/^[A-Za-z]{2}$/, { error: 'Enter a 2-letter country code, like US.' })
-    .toUpperCase();
 
 /**
  * Both ends are pinned to a string because storage keeps one string per leaf: a type
@@ -133,14 +106,54 @@ const countryCode = () =>
 type PartSchema = z.ZodType<string, string>;
 
 /**
+ * The types a composite's parts can declare, each defined once with its rule. A country
+ * code and a postal code both store short text, but they are different things — the
+ * part's type is what a control or a filter dispatches on, the way a field's own type
+ * is for a scalar.
+ */
+export const PART_TYPES = {
+  short_text: text().max(255, { error: 'Use 255 characters or fewer.' }),
+
+  // A postal code, bounded well under a street address because no country's is long. The
+  // bound is a sanity limit rather than a format: postal codes vary too much between
+  // countries to check the shape of one without knowing which country it is for, and the
+  // country is a sibling part rather than something this can see.
+  postal_code: text().max(32, { error: 'Use 32 characters or fewer.' }),
+
+  // The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of
+  // them. Membership of that list is contested, and a closed list here would make Ghost
+  // the arbiter of it for every member of every site. The collection form can offer
+  // countries to pick from without this deciding which ones exist.
+  //
+  // Case is normalized so that `gb` and `GB` are not two values for one place, which a
+  // filter for either would silently half-miss.
+  //
+  // Checked as two ASCII letters on the way in rather than by length on the way out,
+  // because uppercasing does not preserve length: `ß` becomes `SS` and `aß` becomes `ASS`.
+  country_code: text()
+    .regex(/^[A-Za-z]{2}$/, { error: 'Enter a 2-letter country code, like US.' })
+    .toUpperCase(),
+} satisfies Record<string, PartSchema>;
+
+export type PartType = keyof typeof PART_TYPES;
+export const PART_TYPE_IDS = Object.keys(PART_TYPES) as PartType[];
+
+interface TypedPart<T extends PartType = PartType> {
+  type: T;
+  schema: (typeof PART_TYPES)[T];
+}
+
+const part = <T extends PartType>(type: T): TypedPart<T> => ({ type, schema: PART_TYPES[type] });
+
+/**
  * A part as a write may name it: absent, empty, or a value of its own kind.
  *
  * A rule that is a bound would admit empty on its own; one that is a format would not,
  * and would leave its part the only one that could be set but never removed.
  */
-const clearable = <T extends PartSchema>(part: T) =>
+const clearable = <T extends PartSchema>(schema: T) =>
   text()
-    .pipe(z.union([z.literal(''), part]))
+    .pipe(z.union([z.literal(''), schema]))
     .optional();
 
 export interface FieldTypeDefinition {
@@ -151,7 +164,7 @@ export interface FieldTypeDefinition {
    * A record type's parts, in declaration order. Each part's own rule, and nothing
    * about how a write may name it: validate against `value`, never against these.
    */
-  fields?: Record<string, PartSchema>;
+  fields?: Record<string, TypedPart>;
 }
 
 /**
@@ -173,24 +186,24 @@ function defineFieldTypes<D extends Record<FieldType, FieldTypeDefinition>>(decl
  * explicitly undefined survives parsing as a key holding undefined, and a bare presence
  * check would let `{line1: undefined}` through as if it named something.
  */
-function record<F extends Record<string, PartSchema>>(fields: F, { error }: { error: string }) {
+function record<F extends Record<string, TypedPart>>(fields: F, { error }: { error: string }) {
   // Restated for the type system, which loses the key-to-schema mapping through
   // `Object.fromEntries`; without it every type built on a record infers as `unknown`.
   const shape = Object.fromEntries(
-    Object.entries(fields).map(([key, part]) => [key, clearable(part)]),
-  ) as { [K in keyof F]: ReturnType<typeof clearable<F[K]>> };
+    Object.entries(fields).map(([key, declared]) => [key, clearable(declared.schema)]),
+  ) as { [K in keyof F]: ReturnType<typeof clearable<F[K]['schema']>> };
 
   // Strict, so a part nobody declared is refused rather than dropped. That refusal keeps
   // zod's wording, which names the offending key.
   const value = z
     .strictObject(shape)
-    .refine((parts) => Object.values(parts).some((part) => typeof part === 'string'), { error });
+    .refine((parts) => Object.values(parts).some((entry) => typeof entry === 'string'), { error });
 
   return { kind: 'record' as const, value, fields };
 }
 
 export const FIELD_TYPES = defineFieldTypes({
-  short_text: { kind: 'text', value: shortText() },
+  short_text: { kind: 'text', value: PART_TYPES.short_text },
   long_text: { kind: 'text', value: longText() },
   // An address is a delivery address, so its bounds are what a courier will accept
   // rather than what the column could hold. Modeled on Stripe's Address object.
@@ -202,12 +215,12 @@ export const FIELD_TYPES = defineFieldTypes({
   // also how Stripe hands it back: beside the address rather than inside it.
   address: record(
     {
-      line1: shortText(),
-      line2: shortText(),
-      city: shortText(),
-      state: shortText(),
-      postal_code: postalCode(),
-      country: countryCode(),
+      line1: part('short_text'),
+      line2: part('short_text'),
+      city: part('short_text'),
+      state: part('short_text'),
+      postal_code: part('postal_code'),
+      country: part('country_code'),
     },
     { error: 'Enter at least one part of the address.' },
   ),
@@ -250,4 +263,17 @@ export function subFieldsOf<T extends FieldType>(type: T): PartsOf<T>[] | null {
   const definition: FieldTypeDefinition | undefined = FIELD_TYPES[type];
   // The keys are `PartsOf<T>` by construction: `fields` is the object it reads `keyof` from.
   return definition?.fields ? (Object.keys(definition.fields) as PartsOf<T>[]) : null;
+}
+
+/** Each part's declared type, keyed by part; null for a type with no parts, and for one this build has never heard of. */
+export function partTypesOf<T extends FieldType>(type: T): Record<PartsOf<T>, PartType> | null {
+  const definition: FieldTypeDefinition | undefined = FIELD_TYPES[type];
+
+  if (!definition?.fields) {
+    return null;
+  }
+
+  return Object.fromEntries(
+    Object.entries(definition.fields).map(([key, declared]) => [key, declared.type]),
+  ) as Record<PartsOf<T>, PartType>;
 }

@@ -186,14 +186,14 @@ describe('member custom fields api helpers', () => {
       expect(memberCustomFieldParts('long_text')).toBeNull();
     });
 
-    it("names a composite type's parts in the order its value schema declares them", () => {
+    it("carries each part's key, label and declared type, in schema order", () => {
       expect(memberCustomFieldParts('address')).toEqual([
-        { key: 'line1', label: 'Address line 1' },
-        { key: 'line2', label: 'Address line 2' },
-        { key: 'city', label: 'City' },
-        { key: 'state', label: 'State' },
-        { key: 'postal_code', label: 'Postal code' },
-        { key: 'country', label: 'Country' },
+        { key: 'line1', label: 'Address line 1', type: 'short_text' },
+        { key: 'line2', label: 'Address line 2', type: 'short_text' },
+        { key: 'city', label: 'City', type: 'short_text' },
+        { key: 'state', label: 'State', type: 'short_text' },
+        { key: 'postal_code', label: 'Postal code', type: 'postal_code' },
+        { key: 'country', label: 'Country', type: 'country_code' },
       ]);
     });
   });
