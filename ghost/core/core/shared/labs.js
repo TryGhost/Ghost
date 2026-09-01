@@ -61,6 +61,7 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'postsListReact',
   'editorReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

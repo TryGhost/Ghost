@@ -61,6 +61,7 @@ const editorUser = {
 const configWithDunning = (elapsedDays: number, windowDays = 28) => ({
   data: {
     config: {
+      labs: { dunningWarnings: true },
       hostSettings: {
         billing: {
           enabled: true,
