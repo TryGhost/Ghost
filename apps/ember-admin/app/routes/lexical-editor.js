@@ -70,16 +70,31 @@ export default AuthenticatedRoute.extend({
     classNames: ['editor'],
 
     // React owns /editor/* when the flag is on. Aborting keeps the Ember
-    // editor from loading and rendering behind the React screen, and skips
-    // `activate()` so Ember's full-screen state stays untouched. Strictly
-    // boolean, matching the tag route: a non-boolean labs value must not
-    // hand the route to React.
+    // editor subtree unrendered and skips `activate()`, so full-screen state
+    // is never set for a screen nobody sees.
     beforeModel(transition) {
         this._super(...arguments);
 
-        if (this.feature.editorReact === true) {
-            transition.abort();
+        // Strictly boolean: a non-boolean labs value must not hand the route
+        // to React.
+        if (this.feature.editorReact !== true) {
+            return;
         }
+
+        transition.abort();
+
+        // Ember and React share window.location.hash, and an aborted
+        // transition never reaches updateURL. A URL intent (cold load, hash
+        // change, React-driven navigation) already has the browser URL
+        // pointing here, so React renders and there is nothing to do. A
+        // named intent (post list title links, Cmd-K search results, the
+        // post-success modal's revert-to-draft) has no URL yet — without
+        // writing one the click is a silent no-op.
+        if (!transition.intent?.url) {
+            this._navigateToReactRoute(this._reactRouteUrl(transition));
+        }
+
+        this._parkOnReactFallback();
     },
 
     activate() {
@@ -135,6 +150,66 @@ export default AuthenticatedRoute.extend({
             bodyClasses: ['gh-body-fullscreen'],
             mainClasses: ['gh-main-white']
         };
+    },
+
+    // Built by hand rather than with `router.urlFor`, whose output depends
+    // on the configured location — it returns `/ghost/editor/...` under the
+    // `none` location used in tests but `#/editor/...` under `trailing-hash`
+    // in the app. Unlike the list routes the editor has dynamic segments, so
+    // the path comes from the target route's own params. Every Ember-initiated
+    // transition into the editor passes string params, so `transition.to` has
+    // them serialized already.
+    _reactRouteUrl(transition) {
+        const {name, params} = transition.to ?? {};
+
+        if (name === 'lexical-editor.edit' && params?.type && params?.post_id) {
+            return `/editor/${params.type}/${params.post_id}`;
+        }
+        if (name === 'lexical-editor.new' && params?.type) {
+            return `/editor/${params.type}`;
+        }
+
+        return '/editor';
+    },
+
+    // Aborting stops Ember rendering this screen, but it also leaves the
+    // router believing it is still on the route we came from. That desync is
+    // only invisible until you navigate back to the very same URL: Ember
+    // compares it against the route it thinks it is on, finds no difference,
+    // and runs no transition at all. Park on `react-fallback` — the empty
+    // catch-all Ember already uses for URLs React owns — to keep the
+    // router's state honest. See PostsRoute#_parkOnReactFallback for the
+    // full rationale (replace semantics, the parked-path guard, and URL
+    // restoration).
+    _parkOnReactFallback() {
+        const parkedPath = this.router.currentRouteName === 'react-fallback'
+            ? this.router.currentRoute?.params?.path
+            : null;
+
+        if (parkedPath === this.routeName) {
+            return;
+        }
+
+        const url = window.location.hash;
+        const state = window.history.state;
+
+        this.router.replaceWith('react-fallback', this.routeName)
+            .finally(() => this._restoreUrl(url, state));
+    },
+
+    // Parking writes the fallback route's own path, so the captured URL goes
+    // back afterwards. `replaceState`: no history entry, and no `hashchange`
+    // to re-enter routing. The captured history state goes back too —
+    // react-router keeps `{usr, key, idx}` there and a `null` state breaks
+    // its back/forward index and useBlocker.
+    _restoreUrl(url, state) {
+        window.history.replaceState(state, '', url);
+    },
+
+    // Seam so tests can assert the navigation without a real hash location —
+    // Ember acceptance tests run with `location: 'none'`.
+    _navigateToReactRoute(url) {
+        window.location.hash = url;
     },
 
     _blurAndScheduleAction(func) {

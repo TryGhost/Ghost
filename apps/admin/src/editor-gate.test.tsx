@@ -83,6 +83,39 @@ describe('EditorGate', () => {
     expect(screen.getByTestId('ember-fallback')).toBeInTheDocument();
   });
 
+  // Ember present but its Labs settings still loading: React must not claim
+  // the route yet, or the two implementations could briefly split-brain.
+  it('renders nothing while Ember reports the flag as still loading', () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ editorReact: true }));
+    window.EmberBridge = {
+      state: {
+        isFeatureEnabled: () => null,
+      },
+    } as unknown as typeof window.EmberBridge;
+
+    const { container } = render(<EditorGate />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  // Ember's synchronously exposed feature state is the ownership authority,
+  // even over a config query that disagrees.
+  it('renders the React editor when Ember reports the flag on', async () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ editorReact: false }));
+    window.EmberBridge = {
+      state: {
+        isFeatureEnabled: () => true,
+      },
+    } as unknown as typeof window.EmberBridge;
+
+    render(<EditorGate />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('react-editor')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+  });
+
   it('renders nothing while config is loading', () => {
     mockUseBrowseConfig.mockReturnValue(configResult({ isLoading: true }));
 

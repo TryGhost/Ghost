@@ -35,6 +35,7 @@ import {
   formatNumber,
 } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
@@ -72,6 +73,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
   const canManageGiftLink = useCanManageGiftLink(post);
+  const editorPath = `/editor/post/${postId}`;
+  // Whether the editor needs a hash navigation depends on the `editorReact` flag.
+  const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
 
@@ -238,7 +242,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              navigate(`/editor/post/${postId}`, { crossApp: true });
+                              navigate(editorPath, { crossApp: editorIsEmberOwned });
                             }}
                           >
                             <LucideIcon.Pen />
