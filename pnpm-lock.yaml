@@ -689,8 +689,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
-pnpmfileChecksum: sha256-qqNuypA2kX16OHjG3pLjbOVjA/Gsi92LRvE/r6+Nehs=
-
 importers:
 
   .:
@@ -2525,10 +2523,10 @@ importers:
         version: 2.12.0
       '@x402/evm':
         specifier: 'catalog:'
-        version: 2.12.0
+        version: 2.12.0(@typescript/typescript6@6.0.2)
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.12.0(hono@4.12.18)
+        version: 2.12.0(@typescript/typescript6@6.0.2)(hono@4.12.18)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2753,7 +2751,7 @@ importers:
         version: 0.5.45
       mppx:
         specifier: 'catalog:'
-        version: 0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11)
+        version: 0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11(@typescript/typescript6@6.0.2))
       multer:
         specifier: 2.2.0
         version: 2.2.0
@@ -2794,8 +2792,8 @@ importers:
         specifier: 1.2.2
         version: 1.2.2
       sanitize-html:
-        specifier: 2.17.5
-        version: 2.17.5
+        specifier: 2.17.7
+        version: 2.17.7
       semver:
         specifier: 'catalog:'
         version: 7.8.5
@@ -15629,6 +15627,10 @@ packages:
   htmlparser2@10.1.0:
     resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
 
+  htmlparser2@12.0.0:
+    resolution: {integrity: sha512-Tz7u1i95/g2x2jz81+x0FBVhBhY5aRTvD3tXXdFaljuNdzDLJ8UGNRrTcj2cgQvAg3iW/h77Fz15nLW0L0CrZw==}
+    engines: {node: '>=20.19.0'}
+
   htmlparser2@3.10.1:
     resolution: {integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==}
 
@@ -16843,6 +16845,7 @@ packages:
       mysql: ^2.18.1
       mysql2: ^2.1.0
       pg: ^8.3.0
+      sqlite3: ^5.0.0
     peerDependenciesMeta:
       mssql:
         optional: true
@@ -16851,6 +16854,8 @@ packages:
       mysql2:
         optional: true
       pg:
+        optional: true
+      sqlite3:
         optional: true
 
   knex@2.4.2:
@@ -20815,8 +20820,9 @@ packages:
     deprecated: some dependency vulnerabilities fixed, support for node < 10 dropped, and newer ECMAScript syntax/features added
     hasBin: true
 
-  sanitize-html@2.17.5:
-    resolution: {integrity: sha512-ZmU1joGRrvoyctKIiuwUxqR6moLoU2Wk+2bMccN6f7UwhAmwYDvWziqPxRDDN2Qip62NqnIrVrT9akbL6Wretg==}
+  sanitize-html@2.17.7:
+    resolution: {integrity: sha512-PGtEkc9cbnedU3s9TmzDbpsZ8w086g/0Q8k8/oIO1NLNU3i5k9yn835CrjJSajp1KMmkisbO1qPXxNKO3welAg==}
+    engines: {node: '>=22.12.0'}
 
   sax@1.2.4:
     resolution: {integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==}
@@ -22552,6 +22558,11 @@ packages:
 
   viem@2.55.11:
     resolution: {integrity: sha512-RR5MwtdUnFfqw6ZGoFptizywyLOkLuhTL7UafoP3Irf2upXpANakQkLgGqY4H7A7+8JBxjUs6lElGF5zuGjMEw==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   vinyl-contents@2.0.0:
     resolution: {integrity: sha512-cHq6NnGyi2pZ7xwdHSW1v4Jfnho4TEGtxZHw01cmnc8+i7jgR6bRnED/LbrKan/Q7CvVLbnvA5OepnhbpjBZ5Q==}
@@ -28180,11 +28191,11 @@ snapshots:
       '@noble/hashes': 1.8.0
       apg-js: 4.4.0
 
-  '@signinwithethereum/siwe@4.2.0(viem@2.55.11)':
+  '@signinwithethereum/siwe@4.2.0(viem@2.55.11(@typescript/typescript6@6.0.2))':
     dependencies:
       '@signinwithethereum/siwe-parser': 4.2.0
     optionalDependencies:
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)
 
   '@simple-dom/document@1.4.0':
     dependencies:
@@ -29637,6 +29648,7 @@ snapshots:
       - mysql
       - mysql2
       - pg
+      - sqlite3
       - supports-color
 
   '@types/broccoli-plugin@1.3.0': {}
@@ -30980,39 +30992,42 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@x402/evm@2.12.0':
+  '@x402/evm@2.12.0(@typescript/typescript6@6.0.2)':
     dependencies:
       '@x402/core': 2.12.0
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)
       zod: 3.25.76
     transitivePeerDependencies:
       - bufferutil
+      - typescript
       - utf-8-validate
 
-  '@x402/extensions@2.12.0':
+  '@x402/extensions@2.12.0(@typescript/typescript6@6.0.2)':
     dependencies:
       '@noble/curves': 1.9.7
       '@scure/base': 1.2.6
-      '@signinwithethereum/siwe': 4.2.0(viem@2.55.11)
+      '@signinwithethereum/siwe': 4.2.0(viem@2.55.11(@typescript/typescript6@6.0.2))
       '@x402/core': 2.12.0
       ajv: 8.20.0
       jose: 5.10.0
       tweetnacl: 1.0.3
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)
       zod: 3.25.76
     transitivePeerDependencies:
       - bufferutil
       - ethers
+      - typescript
       - utf-8-validate
 
-  '@x402/hono@2.12.0(hono@4.12.18)':
+  '@x402/hono@2.12.0(@typescript/typescript6@6.0.2)(hono@4.12.18)':
     dependencies:
       '@x402/core': 2.12.0
-      '@x402/extensions': 2.12.0
+      '@x402/extensions': 2.12.0(@typescript/typescript6@6.0.2)
       hono: 4.12.18
     transitivePeerDependencies:
       - bufferutil
       - ethers
+      - typescript
       - utf-8-validate
 
   '@xmldom/xmldom@0.9.10': {}
@@ -38633,6 +38648,13 @@ snapshots:
       domutils: 3.2.2
       entities: 7.0.1
 
+  htmlparser2@12.0.0:
+    dependencies:
+      domelementtype: 3.0.0
+      domhandler: 6.0.1
+      domutils: 4.0.2
+      entities: 8.0.0
+
   htmlparser2@3.10.1:
     dependencies:
       domelementtype: 1.3.1
@@ -41820,11 +41842,11 @@ snapshots:
       rimraf: 2.7.1
       run-queue: 1.0.3
 
-  mppx@0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11):
+  mppx@0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11(@typescript/typescript6@6.0.2)):
     dependencies:
       incur: 0.4.26
       ox: 0.14.20
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)
       zod: 4.4.3
     optionalDependencies:
       express: 4.22.2(supports-color@10.2.2)
@@ -45098,11 +45120,11 @@ snapshots:
       minimist: 1.2.8
       walker: 1.0.8
 
-  sanitize-html@2.17.5:
+  sanitize-html@2.17.7:
     dependencies:
       deepmerge: 4.3.1
       escape-string-regexp: 4.0.0
-      htmlparser2: 10.1.0
+      htmlparser2: 12.0.0
       is-plain-object: 5.0.0
       launder: 1.7.1
       parse-srcset: 1.0.2
@@ -47259,7 +47281,7 @@ snapshots:
 
   video-extensions@2.0.0: {}
 
-  viem@2.55.11:
+  viem@2.55.11(@typescript/typescript6@6.0.2):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
@@ -47269,6 +47291,8 @@ snapshots:
       isows: 1.0.7(ws@8.21.0)
       ox: 0.14.33
       ws: 8.21.0
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
