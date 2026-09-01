@@ -9,6 +9,7 @@ import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
+import { DunningBanner } from '@/dunning';
 
 const networkPageChrome = {
   contentClassName: 'admin7:max-w-(--content-width)',
@@ -68,6 +69,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <div className="relative h-full bg-background">
         <main className="flex h-full flex-col overflow-y-auto">
+          <DunningBanner />
           <div className="flex-1">{children}</div>
         </main>
         <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
@@ -94,6 +96,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <SidebarInset
         className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
       >
+        <DunningBanner />
         <main className={cn('flex-1', pageChromeEnabled && admin7PageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={pageChromeEnabled ? networkPageChrome : undefined}>
             {children}
