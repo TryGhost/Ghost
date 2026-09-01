@@ -27,6 +27,11 @@
       "types": "./build/csv.d.ts",
       "default": "./build/csv.js"
     },
+    "./structure": {
+      "source": "./src/structure.ts",
+      "types": "./build/structure.d.ts",
+      "default": "./build/structure.js"
+    },
     "./identity": {
       "source": "./src/identity.ts",
       "types": "./build/identity.d.ts",
