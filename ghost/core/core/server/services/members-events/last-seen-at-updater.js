@@ -89,6 +89,9 @@ class LastSeenAtUpdater {
 
     domainEvents.subscribe(EmailOpenedEvent, async (event) => {
       try {
+        if (this._config?.get('emailAnalytics:batchProcessing')) {
+          return;
+        }
         await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
       } catch (err) {
         logging.error(

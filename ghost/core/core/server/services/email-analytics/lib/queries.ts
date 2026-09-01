@@ -8,6 +8,7 @@ import type { JsonObject } from 'type-fest';
 const debug = debugFactory('services:email-analytics');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
+const MEMBER_RECONCILIATION_JOB_NAME = 'email-analytics-member-reconciliation';
 
 type EmailAnalyticsJobName = string;
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed';
@@ -282,54 +283,43 @@ export class Queries {
   }
 
   async aggregateEmailStats(emailId: string, updateOpenedCount: boolean): Promise<void> {
-    const [deliveredCount] = await this.#knex('email_recipients')
-      .count('id as count')
-      .whereRaw('email_id = ? AND delivered_at IS NOT NULL', [emailId]);
-    const [failedCount] = await this.#knex('email_recipients')
-      .count('id as count')
-      .whereRaw('email_id = ? AND failed_at IS NOT NULL', [emailId]);
+    const counts = await this.#knex('email_recipients')
+      .select(
+        this.#knex.raw(
+          'SUM(CASE WHEN delivered_at IS NOT NULL THEN 1 ELSE 0 END) as delivered_count',
+        ),
+        this.#knex.raw('SUM(CASE WHEN failed_at IS NOT NULL THEN 1 ELSE 0 END) as failed_count'),
+        this.#knex.raw('SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened_count'),
+      )
+      .where('email_id', emailId)
+      .first();
 
     const updateData: Record<string, string | number> = {
-      delivered_count: deliveredCount.count,
-      failed_count: failedCount.count,
+      delivered_count: Number(counts?.delivered_count || 0),
+      failed_count: Number(counts?.failed_count || 0),
     };
 
     if (updateOpenedCount) {
-      const [openedCount] = await this.#knex('email_recipients')
-        .count('id as count')
-        .whereRaw('email_id = ? AND opened_at IS NOT NULL', [emailId]);
-      updateData.opened_count = openedCount.count;
+      updateData.opened_count = Number(counts?.opened_count || 0);
     }
 
     await this.#knex('emails').update(updateData).where('id', emailId);
   }
 
   async aggregateMemberStats(memberId: string): Promise<void> {
-    const { trackedEmailCount } =
-      (await this.#knex('email_recipients')
-        .select(this.#knex.raw('COUNT(email_recipients.id) as trackedEmailCount'))
-        .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
-        .where('email_recipients.member_id', memberId)
-        .where('emails.track_opens', true)
-        .first()) || {};
-    const emailCountResult = await this.#knex('email_recipients')
-      .count('id as count')
-      .whereRaw('member_id = ?', [memberId])
-      .first();
-    const emailOpenedCountResult = await this.#knex('email_recipients')
-      .count('id as count')
-      .whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId])
-      .first();
-    const emailCount = Number(emailCountResult?.count || 0);
-    const emailOpenedCount = Number(emailOpenedCountResult?.count || 0);
+    const stats = await this.#memberStatsQuery([memberId]).first();
+    const emailCount = Number(stats?.email_count || 0);
+    const emailTrackedCount = Number(stats?.tracked_count || 0);
+    const emailOpenedCount = Number(stats?.email_opened_count || 0);
 
-    const updateQuery: Record<string, string | number> = {
+    const updateQuery: Record<string, string | number | null> = {
       email_count: emailCount,
+      email_tracked_count: emailTrackedCount,
       email_opened_count: emailOpenedCount,
     };
 
-    if (trackedEmailCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
-      updateQuery.email_open_rate = Math.round((emailOpenedCount / trackedEmailCount) * 100);
+    if (emailTrackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
+      updateQuery.email_open_rate = Math.round((emailOpenedCount / emailTrackedCount) * 100);
     }
 
     await this.#knex('members').update(updateQuery).where('id', memberId);
@@ -340,55 +330,57 @@ export class Queries {
       return;
     }
 
-    // Batch query to get stats for all members at once
-    const stats = await this.#knex('email_recipients')
-      .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
-      .select(
-        'email_recipients.member_id',
-        this.#knex.raw('COUNT(email_recipients.id) as email_count'),
-        this.#knex.raw(
-          'SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count',
-        ),
-        this.#knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count'),
-      )
-      .whereIn('email_recipients.member_id', memberIds)
-      .groupBy('email_recipients.member_id');
+    const stats = await this.#memberStatsQuery(memberIds);
 
     // Build update data for each member
     const memberStatsMap = new Map<
       string,
-      { email_count: number; email_opened_count: number; email_open_rate: number | null }
+      {
+        email_count: number;
+        email_tracked_count: number;
+        email_opened_count: number;
+        email_open_rate: number | null;
+      }
     >();
     for (const stat of stats) {
+      const trackedCount = Number(stat.tracked_count || 0);
+      const openedCount = Number(stat.email_opened_count || 0);
       const emailOpenRate =
-        stat.tracked_count >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
-          ? Math.round((stat.email_opened_count / stat.tracked_count) * 100)
+        trackedCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
+          ? Math.round((openedCount / trackedCount) * 100)
           : null;
 
       memberStatsMap.set(stat.member_id, {
-        email_count: stat.email_count,
-        email_opened_count: stat.email_opened_count,
+        email_count: Number(stat.email_count || 0),
+        email_tracked_count: trackedCount,
+        email_opened_count: openedCount,
         email_open_rate: emailOpenRate,
       });
     }
 
     // Build CASE statements for batch update
     const emailCountCases: string[] = [];
+    const emailTrackedCountCases: string[] = [];
     const emailOpenedCountCases: string[] = [];
     const emailOpenRateCases: string[] = [];
     const emailCountBindings: (string | number)[] = [];
+    const emailTrackedCountBindings: (string | number)[] = [];
     const emailOpenedCountBindings: (string | number)[] = [];
     const emailOpenRateBindings: (string | number)[] = [];
 
     for (const memberId of memberIds) {
       const memberStats = memberStatsMap.get(memberId) || {
         email_count: 0,
+        email_tracked_count: 0,
         email_opened_count: 0,
         email_open_rate: null,
       };
 
       emailCountCases.push(`WHEN ? THEN ?`);
       emailCountBindings.push(memberId, memberStats.email_count);
+
+      emailTrackedCountCases.push(`WHEN ? THEN ?`);
+      emailTrackedCountBindings.push(memberId, memberStats.email_tracked_count);
 
       emailOpenedCountCases.push(`WHEN ? THEN ?`);
       emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
@@ -409,6 +401,7 @@ export class Queries {
     // 4. Member IDs for the WHERE IN clause
     const bindings = [
       ...emailCountBindings,
+      ...emailTrackedCountBindings,
       ...emailOpenedCountBindings,
       ...emailOpenRateBindings,
       ...memberIds,
@@ -420,11 +413,77 @@ export class Queries {
             UPDATE members
             SET
                 email_count = CASE id ${emailCountCases.join(' ')} END,
+                email_tracked_count = CASE id ${emailTrackedCountCases.join(' ')} END,
                 email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
         `,
       bindings,
     );
+  }
+
+  async reconcileMemberStats(batchSize: number): Promise<number> {
+    const job = await this.#knex('jobs')
+      .select('metadata')
+      .where('name', MEMBER_RECONCILIATION_JOB_NAME)
+      .first();
+    const metadata = parseJsonObject(job?.metadata) || {};
+    const cursor = getStringValue(metadata, 'memberCursor');
+
+    const getMemberIds = async (afterId: string | null) => {
+      const query = this.#knex('members').select('id').orderBy('id').limit(batchSize);
+      if (afterId) {
+        query.where('id', '>', afterId);
+      }
+      return (await query).map(({ id }) => id as string);
+    };
+
+    let memberIds = await getMemberIds(cursor);
+    if (memberIds.length === 0 && cursor) {
+      memberIds = await getMemberIds(null);
+    }
+    if (memberIds.length === 0) {
+      return 0;
+    }
+
+    for (let index = 0; index < memberIds.length; index += 100) {
+      await this.aggregateMemberStatsBatch(memberIds.slice(index, index + 100));
+    }
+
+    const nextMetadata = JSON.stringify({ memberCursor: memberIds.at(-1) });
+    const now = new Date();
+    await this.#knex.transaction(async (transaction) => {
+      const updated = await transaction('jobs')
+        .where('name', MEMBER_RECONCILIATION_JOB_NAME)
+        .update({ metadata: nextMetadata, status: 'finished', finished_at: now, updated_at: now });
+      if (updated === 0) {
+        await transaction('jobs').insert({
+          id: new ObjectID().toHexString(),
+          name: MEMBER_RECONCILIATION_JOB_NAME,
+          metadata: nextMetadata,
+          status: 'finished',
+          finished_at: now,
+          created_at: now,
+        });
+      }
+    });
+
+    return memberIds.length;
+  }
+
+  #memberStatsQuery(memberIds: string[]) {
+    return this.#knex('email_recipients')
+      .select(
+        'email_recipients.member_id',
+        this.#knex.raw('COUNT(email_recipients.id) as email_count'),
+        this.#knex.raw(
+          'SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count',
+        ),
+        this.#knex.raw(
+          'SUM(CASE WHEN email_recipients.email_id IN (SELECT id FROM emails WHERE track_opens = 1) THEN 1 ELSE 0 END) as tracked_count',
+        ),
+      )
+      .whereIn('email_recipients.member_id', memberIds)
+      .groupBy('email_recipients.member_id');
   }
 }

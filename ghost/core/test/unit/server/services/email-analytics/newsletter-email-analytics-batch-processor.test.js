@@ -655,6 +655,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         aggregateEmailStats: sinon.stub().resolves(),
         aggregateMemberStats: sinon.stub().resolves(),
         aggregateMemberStatsBatch: sinon.stub().resolves(),
+        reconcileMemberStats: sinon.stub().resolves(100),
       };
     });
 
@@ -935,7 +936,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
     });
 
     describe('member stats batching', function () {
-      it('calls batched query for member stats when batching is enabled', async function () {
+      it('reconciles emails once and advances the bounded member sweep', async function () {
         configUtils.set('emailAnalytics:batchProcessing', true);
         const processor = createProcessor();
         const processingResult = new EventProcessingResult({
@@ -953,19 +954,17 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         sinon.assert.calledWith(queries.aggregateEmailStats, 'e-1');
         sinon.assert.calledWith(queries.aggregateEmailStats, 'e-2');
 
-        // In batched mode, aggregateMemberStatsBatch should be called
-        sinon.assert.calledOnce(queries.aggregateMemberStatsBatch);
-        sinon.assert.calledWith(queries.aggregateMemberStatsBatch, ['m-1', 'm-2']);
+        sinon.assert.calledOnceWithExactly(queries.reconcileMemberStats, 100);
 
-        // Sequential method should not be called
+        sinon.assert.notCalled(queries.aggregateMemberStatsBatch);
         sinon.assert.notCalled(queries.aggregateMemberStats);
       });
 
-      it('chunks member ids into batches of 100', async function () {
+      it('does not recompute every touched member at job completion', async function () {
         configUtils.set('emailAnalytics:batchProcessing', true);
         const processor = createProcessor();
         const memberIds = Array.from({ length: 250 }, (_, i) => `m-${i}`);
-        const processingResult = new EventProcessingResult({ memberIds });
+        const processingResult = new EventProcessingResult({ emailIds: ['e-1'], memberIds });
 
         await processor.aggregate({
           includeOpenedEvents: true,
@@ -973,10 +972,8 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
           isFinal: true,
         });
 
-        assert.equal(queries.aggregateMemberStatsBatch.callCount, 3);
-        assert.equal(queries.aggregateMemberStatsBatch.getCall(0).args[0].length, 100);
-        assert.equal(queries.aggregateMemberStatsBatch.getCall(1).args[0].length, 100);
-        assert.equal(queries.aggregateMemberStatsBatch.getCall(2).args[0].length, 50);
+        sinon.assert.calledOnceWithExactly(queries.reconcileMemberStats, 100);
+        sinon.assert.notCalled(queries.aggregateMemberStatsBatch);
       });
 
       it('calls sequential query for member stats when batching is disabled', async function () {

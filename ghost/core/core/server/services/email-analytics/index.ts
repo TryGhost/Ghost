@@ -91,6 +91,7 @@ export const init = ({
       },
       emailSuppressionList,
       prometheusClient,
+      settingsCache,
     }),
     prometheusClient,
   });

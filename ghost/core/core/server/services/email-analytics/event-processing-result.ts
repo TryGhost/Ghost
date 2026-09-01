@@ -1,6 +1,9 @@
 type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge'>>;
 
 export class EventProcessingResult {
+  #emailIdSet = new Set<string>();
+  #memberIdSet = new Set<string>();
+
   // counts
   delivered: number = 0;
   opened: number = 0;
@@ -34,6 +37,8 @@ export class EventProcessingResult {
     this.processingFailures = 0;
     this.emailIds = [];
     this.memberIds = [];
+    this.#emailIdSet.clear();
+    this.#memberIdSet.clear();
   }
 
   merge(other: EventProcessingResultInput = {}): void {
@@ -48,12 +53,17 @@ export class EventProcessingResult {
 
     this.processingFailures += other.processingFailures || 0;
 
-    // TODO: come up with a cleaner way to merge these without churning through Array and Set
-    this.emailIds = Array.from(new Set([...this.emailIds, ...(other.emailIds || [])])).filter(
-      Boolean,
-    );
-    this.memberIds = Array.from(new Set([...this.memberIds, ...(other.memberIds || [])])).filter(
-      Boolean,
-    );
+    for (const emailId of other.emailIds || []) {
+      if (emailId && !this.#emailIdSet.has(emailId)) {
+        this.#emailIdSet.add(emailId);
+        this.emailIds.push(emailId);
+      }
+    }
+    for (const memberId of other.memberIds || []) {
+      if (memberId && !this.#memberIdSet.has(memberId)) {
+        this.#memberIdSet.add(memberId);
+        this.memberIds.push(memberId);
+      }
+    }
   }
 }

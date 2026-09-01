@@ -157,6 +157,9 @@ const createDb = ({ first, all }: DbOptions = {}) => {
     whereNull: function () {
       return this;
     },
+    whereIn: function () {
+      return this;
+    },
     join: function () {
       return this;
     },
@@ -177,6 +180,9 @@ const createDb = ({ first, all }: DbOptions = {}) => {
       return this;
     },
     update: sinon.stub().resolves(),
+    increment: sinon.spy(function (this: any) {
+      return this;
+    }),
     orderByRaw: function () {
       return this;
     },
@@ -189,9 +195,9 @@ const createDb = ({ first, all }: DbOptions = {}) => {
     then: function (resolve: (value: any) => void) {
       resolve(a);
     },
-    transacting: function () {
+    transacting: sinon.spy(function (this: any) {
       return this;
-    },
+    }),
   };
   db.knex.raw = function () {
     return this;
