@@ -181,6 +181,9 @@ export class PopupContent extends React.Component {
       case 'accountProfile':
         pageClass = 'account-profile';
         break;
+      case 'accountPasskeys':
+        pageClass = 'account-passkeys';
+        break;
       case 'accountPlan':
         pageClass = 'account-plan';
         break;

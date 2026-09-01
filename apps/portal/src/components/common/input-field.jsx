@@ -99,6 +99,7 @@ function InputField({
   tabIndex,
   maxLength,
   autoFocus,
+  autoComplete: requestedAutoComplete,
   errorMessage,
 }) {
   const fieldNode = useRef(null);
@@ -115,14 +116,14 @@ function InputField({
     disabled = true;
   }
 
-  let autoComplete = '';
+  let autoComplete = requestedAutoComplete || '';
   let autoCorrect = '';
   let autoCapitalize = '';
   let inputMode;
   let pattern;
   switch (id) {
     case 'input-email':
-      autoComplete = 'off';
+      autoComplete ||= 'off';
       autoCorrect = 'off';
       autoCapitalize = 'off';
       break;

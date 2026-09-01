@@ -59,6 +59,7 @@ export interface FakeStaffWorldOptions {
   users?: StaffUser[];
   invites?: StaffInvite[];
   roles?: StaffRole[];
+  passkeysSupported?: boolean;
 }
 
 export function fakeStaffWorld({
@@ -66,12 +67,19 @@ export function fakeStaffWorld({
   users = [currentUser],
   invites = [],
   roles = allRoles(),
+  passkeysSupported = true,
 }: FakeStaffWorldOptions = {}) {
   fakeSettingsScreens();
   fakeUsers(users);
   fakeInvites(invites);
   fakeRoles(roles);
   fakeAdminEndpoint('GET', '/users/me/token/', { apiKey: null });
+  fakeAdminEndpoint(
+    'GET',
+    '/session/passkeys',
+    passkeysSupported ? { passkeys: [] } : { errors: [{ message: 'Not found' }] },
+    passkeysSupported ? {} : { status: 404 },
+  );
 
   for (const staffUser of users) {
     fakeAdminEndpoint('GET', `/users/slug/${staffUser.slug}/?include=roles`, {

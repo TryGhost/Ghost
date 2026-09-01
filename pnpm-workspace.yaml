@@ -70,6 +70,8 @@ catalog:
   '@radix-ui/react-tabs': 1.1.16
   '@radix-ui/react-tooltip': 1.2.11
   '@sentry/react': 7.120.4
+  '@simplewebauthn/browser': 13.3.0
+  '@simplewebauthn/server': 13.3.2
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
   '@storybook/react-vite': 10.4.6

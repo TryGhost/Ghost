@@ -423,6 +423,28 @@ module.exports = function apiRoutes() {
     http(api.session.sendVerification),
   );
   router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
+  router.get('/session/passkeys', mw.authAdminApi, http(api.session.passkeys));
+  router.post(
+    '/session/passkeys/registration',
+    mw.authAdminApi,
+    http(api.session.beginPasskeyRegistration),
+  );
+  router.put(
+    '/session/passkeys/registration',
+    mw.authAdminApi,
+    http(api.session.finishPasskeyRegistration),
+  );
+  router.delete('/session/passkeys/:id', mw.authAdminApi, http(api.session.removePasskey));
+  router.post(
+    '/session/passkeys/authentication',
+    auth.session.initSession,
+    http(api.session.beginPasskeyAuthentication),
+  );
+  router.put(
+    '/session/passkeys/authentication',
+    auth.session.initSession,
+    http(api.session.finishPasskeyAuthentication),
+  );
 
   // ## Identity
   router.get('/identities', mw.authAdminApi, http(api.identities.read));

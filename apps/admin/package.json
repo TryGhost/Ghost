@@ -26,6 +26,7 @@
     "@codemirror/theme-one-dark": "catalog:",
     "@dnd-kit/sortable": "catalog:",
     "@sentry/react": "catalog:",
+    "@simplewebauthn/browser": "catalog:",
     "@svg-maps/world": "2.0.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-virtual": "catalog:",

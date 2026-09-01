@@ -103,6 +103,8 @@ describe('Acceptance: Signin', function () {
                 .to.equal(1);
             expect(findAll('input[name="password"]').length, 'password input field')
                 .to.equal(1);
+            expect(find('input[name="identification"]').autocomplete, 'passkey autofill hint')
+                .to.equal('username webauthn');
 
             await click('[data-test-button="sign-in"]');
 

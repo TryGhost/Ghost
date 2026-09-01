@@ -5,6 +5,7 @@ import MagicLinkPage from './components/pages/magic-link-page';
 import LoadingPage from './components/pages/loading-page';
 import AccountPlanPage from './components/pages/account-plan-page';
 import AccountProfilePage from './components/pages/account-profile-page';
+import AccountPasskeysPage from './components/pages/account-passkeys-page';
 import AccountEmailPage from './components/pages/account-email-page';
 import OfferPage from './components/pages/offer-page';
 import NewsletterSelectionPage from './components/pages/newsletter-selection-page';
@@ -35,6 +36,7 @@ const Pages = {
   accountHome: AccountHomePage,
   accountPlan: AccountPlanPage,
   accountProfile: AccountProfilePage,
+  accountPasskeys: AccountPasskeysPage,
   accountEmail: AccountEmailPage,
   signupNewsletter: NewsletterSelectionPage,
   unsubscribe: UnsubscribePage,

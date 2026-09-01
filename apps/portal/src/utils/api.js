@@ -247,7 +247,92 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
   };
 
+  const throwPasskeyApiError = async (res) => {
+    throw (await HumanReadableError.fromApiResponse(res)) ?? new Error('Passkey request failed');
+  };
+
   api.member = {
+    async beginPasskeyAuthentication({ integrityToken }) {
+      const url = endpointFor({ type: 'members', resource: 'passkeys/authentication' });
+      const res = await makeRequest({
+        url,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integrityToken }),
+      });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+      return res.json();
+    },
+
+    async finishPasskeyAuthentication({ response, ceremony, integrityToken }) {
+      const url = endpointFor({ type: 'members', resource: 'passkeys/authentication' });
+      const res = await makeRequest({
+        url,
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ response, ceremony, integrityToken }),
+      });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+    },
+
+    async passkeys() {
+      const url = endpointFor({ type: 'members', resource: 'passkeys' });
+      const res = await makeRequest({ url, credentials: 'same-origin' });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+      return res.json();
+    },
+
+    async beginPasskeyRegistration({ integrityToken }) {
+      const url = endpointFor({ type: 'members', resource: 'passkeys/registration' });
+      const res = await makeRequest({
+        url,
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integrityToken }),
+      });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+      return res.json();
+    },
+
+    async finishPasskeyRegistration({ response, ceremony, integrityToken, name }) {
+      const url = endpointFor({ type: 'members', resource: 'passkeys/registration' });
+      const res = await makeRequest({
+        url,
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ response, ceremony, integrityToken, name }),
+      });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+      return res.json();
+    },
+
+    async removePasskey(id, integrityToken) {
+      const url = endpointFor({ type: 'members', resource: `passkeys/${id}` });
+      const res = await makeRequest({
+        url,
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integrityToken }),
+      });
+      if (!res.ok) {
+        await throwPasskeyApiError(res);
+      }
+    },
+
     identity() {
       const url = endpointFor({ type: 'members', resource: 'session' });
       return makeRequest({

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   currentRoute,
@@ -8,6 +8,11 @@ import {
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import { fakeStaffWorld, user } from './staff.test-helpers';
+import { signalStaffPasskeyUserDetails } from '@/utils/passkeys';
+
+vi.mock('@/utils/passkeys', () => ({
+  signalStaffPasskeyUserDetails: vi.fn(() => Promise.resolve(true)),
+}));
 
 function stripeSettings() {
   return settingsResponse({
@@ -21,6 +26,10 @@ function stripeSettings() {
 }
 
 describe('Staff profiles', () => {
+  beforeEach(() => {
+    vi.mocked(signalStaffPasskeyUserDetails).mockClear();
+  });
+
   it('validates required and bounded profile fields without saving', async () => {
     const owner = user('Owner');
     const administrator = user('Administrator');
@@ -130,6 +139,34 @@ describe('Staff profiles', () => {
     await expect
       .element(settingsScreen.users().getByText(saved.email, { exact: true }))
       .toBeVisible();
+  });
+
+  it('updates passkey account details after saving the current staff profile', async () => {
+    const owner = user('Owner');
+    const saved = { ...owner, email: 'new-owner@test.com', name: 'New Owner' };
+    const { boot } = fakeStaffWorld({ currentUser: owner });
+    fakeAdminEndpoint('PUT', `/users/${owner.id}/?include=roles`, { users: [saved] });
+    await renderAdminApp(`/settings/staff/${owner.slug}`, { boot });
+
+    const modal = settingsScreen.userDetailModal();
+    await modal.getByLabelText('Email', { exact: true }).fill(saved.email);
+    await modal.getByLabelText('Full name').fill(saved.name);
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    expect(signalStaffPasskeyUserDetails).toHaveBeenCalledWith(
+      expect.objectContaining({ id: owner.id, email: saved.email, name: saved.name }),
+    );
+  });
+
+  it('hides passkey controls when the backend does not support them', async () => {
+    const owner = user('Owner');
+    const { boot } = fakeStaffWorld({ currentUser: owner, passkeysSupported: false });
+    await renderAdminApp(`/settings/staff/${owner.slug}`, { boot });
+
+    const modal = settingsScreen.userDetailModal();
+    await expect.element(modal.getByLabelText('Email', { exact: true })).toBeVisible();
+    await expect(modal.getByText('Passkeys', { exact: true })).toHaveCount(0);
   });
 
   it('uploads profile picture and cover image and saves their URLs', async () => {

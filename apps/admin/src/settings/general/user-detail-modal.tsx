@@ -62,6 +62,7 @@ import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/ima
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { signalStaffPasskeyUserDetails } from '@/utils/passkeys';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
   name: ({ name }) => {
@@ -181,6 +182,13 @@ const UserDetailModalContent: React.FC<{
       // Sync the form with the saved user — the server may have
       // modified submitted values, e.g. sanitizing the slug
       setFormState(() => savedUser);
+
+      if (
+        savedUser.id === currentUser.id &&
+        (savedUser.email !== user.email || savedUser.name !== user.name)
+      ) {
+        await signalStaffPasskeyUserDetails(savedUser);
+      }
 
       if (savedUser.slug !== user.slug) {
         // Keep the URL in sync with the new slug, replacing the

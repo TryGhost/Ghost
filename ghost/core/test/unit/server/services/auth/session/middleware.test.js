@@ -166,6 +166,33 @@ describe('Session Service', function () {
       assert.equal(next.args[0][0].statusCode, 403);
       assert.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
     });
+
+    it('requires a passkey instead of sending an email when one is registered', async function () {
+      const req = fakeReq();
+      const res = fakeRes();
+      const next = sinon.stub();
+      req.user = models.User.forge({ id: 23 });
+
+      const sendAuthCodeToUser = sinon.stub().resolves();
+      const middleware = SessionMiddlware({
+        sessionService: {
+          createSessionForUser: sinon.stub().resolves(),
+          isVerifiedSession: sinon.stub().resolves(false),
+          sendAuthCodeToUser,
+        },
+        passkeys: {
+          hasCredentials: sinon.stub().resolves(true),
+        },
+        getAdminOrigin: () => 'https://cms.example.com',
+      });
+
+      await middleware.createSession(req, res, next);
+
+      sinon.assert.notCalled(sendAuthCodeToUser);
+      sinon.assert.calledOnce(next);
+      assert.equal(next.args[0][0].statusCode, 403);
+      assert.equal(next.args[0][0].code, 'PASSKEY_REQUIRED');
+    });
   });
 
   describe('logout', function () {

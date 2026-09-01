@@ -1,6 +1,10 @@
 const errors = require('@tryghost/errors');
 
-function SessionMiddleware({ sessionService }) {
+function SessionMiddleware({
+  sessionService,
+  passkeys = { hasCredentials: async () => false },
+  getAdminOrigin = () => 'http://localhost',
+}) {
   async function createSession(req, res, next) {
     try {
       if (req.skipVerification) {
@@ -13,6 +17,17 @@ function SessionMiddleware({ sessionService }) {
       if (isVerified) {
         res.sendStatus(201);
       } else {
+        const rpID = new URL(getAdminOrigin()).hostname;
+        const hasPasskeys = await passkeys.hasCredentials({ userId: req.user.id, rpID });
+        if (hasPasskeys) {
+          throw new errors.NoPermissionError({
+            code: 'PASSKEY_REQUIRED',
+            context: 'Use a registered passkey to finish signing in.',
+            errorType: 'Needs2FAError',
+            message: 'User must verify session with a passkey to login.',
+          });
+        }
+
         await sessionService.sendAuthCodeToUser(req, res);
         throw new errors.NoPermissionError({
           code: sessionService.isVerificationRequired()

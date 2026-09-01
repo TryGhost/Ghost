@@ -276,6 +276,13 @@ class MembersSSR {
     return member;
   }
 
+  async createSessionForMember(req, res, member) {
+    if (!member || !member.transient_id) {
+      throw new BadRequestError({ message: 'Cannot create a session for an unknown member' });
+    }
+    this._setSessionCookie(req, res, member.transient_id);
+  }
+
   async _cycleTransientId(memberId) {
     const api = await this._getMembersApi();
     return api.cycleTransientId(memberId);

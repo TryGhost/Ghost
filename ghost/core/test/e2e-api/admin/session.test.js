@@ -1,3 +1,4 @@
+const nodeAssert = require('node:assert/strict');
 const {
   agentProvider,
   fixtureManager,
@@ -5,7 +6,23 @@ const {
   configUtils,
 } = require('../../utils/e2e-framework');
 const { mockMail, assert, restore } = require('../../utils/e2e-framework-mock-manager');
+const models = require('../../../core/server/models');
+const passkeys = require('../../../core/server/services/passkeys');
+const urlUtils = require('../../../core/shared/url-utils').default;
+const sinon = require('sinon');
 const { anyContentVersion, anyEtag, stringMatching, anyUuid } = matchers;
+
+const authenticationResponse = {
+  id: 'staff-passkey',
+  rawId: 'staff-passkey',
+  response: {
+    clientDataJSON: 'client-data',
+    authenticatorData: 'authenticator-data',
+    signature: 'signature',
+  },
+  clientExtensionResults: {},
+  type: 'public-key',
+};
 
 describe('Sessions API', function () {
   let agent;
@@ -13,6 +30,10 @@ describe('Sessions API', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init();
+  });
+
+  afterEach(function () {
+    sinon.restore();
   });
 
   it('can create session (log in) and access user data', async function () {
@@ -47,6 +68,122 @@ describe('Sessions API', function () {
       });
 
     await agent.get('/users/me/').expectStatus(403);
+  });
+
+  it('can list and remove passkeys owned by the signed-in user', async function () {
+    const owner = await fixtureManager.get('users', 0);
+    await agent
+      .post('session/')
+      .body({
+        grant_type: 'password',
+        username: owner.email,
+        password: owner.password,
+      })
+      .expectStatus(201);
+
+    const credential = await models.PasskeyCredential.add({
+      user_id: owner.id,
+      member_id: null,
+      credential_id: 'test-credential',
+      credential_id_hash: 'a'.repeat(64),
+      rp_id: new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).hostname,
+      public_key: 'test-public-key',
+      counter: 0,
+      backed_up: false,
+      name: 'Test passkey',
+    });
+
+    const { body } = await agent.get('session/passkeys').expectStatus(200);
+    nodeAssert.equal(body.passkeys.length, 1);
+    nodeAssert.equal(body.passkeys[0].id, credential.id);
+    nodeAssert.equal(body.passkeys[0].name, 'Test passkey');
+
+    await agent.delete(`session/passkeys/${credential.id}`).expectStatus(204).expectEmptyBody();
+    const { body: emptyBody } = await agent.get('session/passkeys').expectStatus(200);
+    nodeAssert.deepEqual(emptyBody.passkeys, []);
+  });
+
+  it('cannot remove a passkey owned by another user', async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init();
+    const owner = await fixtureManager.get('users', 0);
+    await agent
+      .post('session/')
+      .body({
+        grant_type: 'password',
+        username: owner.email,
+        password: owner.password,
+      })
+      .expectStatus(201);
+
+    const otherUser = await models.User.add({
+      name: 'Other passkey owner',
+      slug: 'other-passkey-owner',
+      email: 'other-passkey-owner@example.com',
+      password: 'Sl1m3rson99',
+      status: 'active',
+    });
+
+    const credential = await models.PasskeyCredential.add({
+      user_id: otherUser.id,
+      member_id: null,
+      credential_id: 'other-user-credential',
+      credential_id_hash: 'b'.repeat(64),
+      rp_id: new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).hostname,
+      public_key: 'test-public-key',
+      counter: 0,
+      backed_up: false,
+      name: 'Other user passkey',
+    });
+
+    await agent.delete(`session/passkeys/${credential.id}`).expectStatus(404);
+    const persisted = await models.PasskeyCredential.findOne({
+      id: credential.id,
+    });
+    nodeAssert.ok(persisted);
+    await models.PasskeyCredential.destroy({ id: credential.id });
+  });
+
+  it('can create a verified staff session with a passkey only', async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    agent.clearCookies();
+    const owner = await fixtureManager.get('users', 0);
+    await models.User.edit({ status: 'active' }, { id: owner.id });
+    const activeUser = await models.User.findOne({
+      id: owner.id,
+      status: 'all',
+    });
+    nodeAssert.equal(activeUser.isActive(), true);
+    const activeUserId = activeUser.get('id');
+    sinon.stub(passkeys, 'authenticationOptions').resolves({
+      options: { challenge: 'passwordless-staff-challenge' },
+    });
+    sinon.stub(passkeys, 'createCeremonyToken').returns('signed-staff-ceremony');
+    sinon.stub(passkeys, 'verifyCeremonyToken').returns({
+      id: 'staff-ceremony-id',
+      challenge: 'passwordless-staff-challenge',
+      issued: Date.now(),
+      subjectId: null,
+    });
+    const authenticate = sinon.stub(passkeys, 'authenticate').resolves({ userId: activeUserId });
+
+    const { body } = await agent.post('session/passkeys/authentication').expectStatus(200);
+    nodeAssert.equal(body.challenge, 'passwordless-staff-challenge');
+    nodeAssert.equal(body.ceremony, 'signed-staff-ceremony');
+
+    await agent
+      .put('session/passkeys/authentication')
+      .body({ response: authenticationResponse, ceremony: body.ceremony })
+      .expectStatus(201)
+      .expectEmptyBody();
+
+    nodeAssert.equal(authenticate.firstCall.args[0].audience, 'staff');
+    nodeAssert.equal(
+      authenticate.firstCall.args[0].expectedChallenge,
+      'passwordless-staff-challenge',
+    );
+    nodeAssert.equal(authenticate.firstCall.args[0].ceremonyId, 'staff-ceremony-id');
+    await agent.get('/users/me/').expectStatus(200);
   });
 
   describe('Staff 2FA', function () {

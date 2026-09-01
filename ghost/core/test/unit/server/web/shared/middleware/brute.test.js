@@ -33,6 +33,47 @@ describe('brute middleware', function () {
     });
   });
 
+  describe('memberPasskeyAuth', function () {
+    it('resets the enumeration limiter after a successful response', function () {
+      const spamPrevention = require('../../../../../../core/server/web/shared/middleware/api/spam-prevention');
+      const reset = sinon.spy();
+      const on = sinon.stub().callsFake((event, callback) => {
+        assert.equal(event, 'finish');
+        callback();
+      });
+      const prevent = sinon.stub().callsFake((req, res, next) => {
+        req.brute = { reset };
+        next();
+      });
+      sinon.stub(spamPrevention, 'membersAuthEnumeration').returns({ prevent });
+
+      const next = sinon.spy();
+      brute.memberPasskeyAuth({}, { on, statusCode: 200 }, next);
+
+      sinon.assert.calledOnce(prevent);
+      sinon.assert.calledOnce(reset);
+      sinon.assert.calledOnce(next);
+    });
+
+    it('keeps failed passkey attempts in the enumeration limiter', function () {
+      const spamPrevention = require('../../../../../../core/server/web/shared/middleware/api/spam-prevention');
+      const reset = sinon.spy();
+      const on = sinon.stub().callsFake((event, callback) => {
+        assert.equal(event, 'finish');
+        callback();
+      });
+      const prevent = sinon.stub().callsFake((req, res, next) => {
+        req.brute = { reset };
+        next();
+      });
+      sinon.stub(spamPrevention, 'membersAuthEnumeration').returns({ prevent });
+
+      brute.memberPasskeyAuth({}, { on, statusCode: 401 }, sinon.spy());
+
+      sinon.assert.notCalled(reset);
+    });
+  });
+
   describe('checkoutSessionGlobal', function () {
     it('calls the checkoutSessionGlobal method of spam prevention', function () {
       const spamPrevention = require('../../../../../../core/server/web/shared/middleware/api/spam-prevention');

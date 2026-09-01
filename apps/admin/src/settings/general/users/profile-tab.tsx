@@ -1,4 +1,5 @@
 import ChangePasswordForm from './change-password-form';
+import PasskeysForm from './passkeys-form';
 import RoleSelector from './role-selector';
 import StaffToken from './staff-token';
 import {
@@ -39,6 +40,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({ errors, clearError, user, setU
         )}
       </Field>
       <ChangePasswordForm user={user} />
+      {user.id === currentUser.id && <PasskeysForm />}
       {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
       <Field data-invalid={Boolean(errors?.name) || undefined}>
         <FieldLabel htmlFor="staff-name">Full name</FieldLabel>

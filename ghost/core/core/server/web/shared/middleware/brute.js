@@ -128,6 +128,25 @@ module.exports = {
     return spamPrevention.membersAuthEnumeration().prevent(req, res, next);
   },
 
+  /**
+   * Blocks passkey user enumeration while ensuring valid passkey sign-ins do
+   * not count towards the limit. A successful authentication proves control
+   * of an existing credential, so resetting the IP counter does not provide
+   * an enumeration bypass.
+   */
+  memberPasskeyAuth(req, res, next) {
+    return spamPrevention.membersAuthEnumeration().prevent(req, res, function (err, ...rest) {
+      if (!err) {
+        res.on('finish', function () {
+          if (res.statusCode < 400) {
+            req.brute.reset();
+          }
+        });
+      }
+      return next(err, ...rest);
+    });
+  },
+
   checkoutSessionGlobal(req, res, next) {
     return spamPrevention.checkoutSessionGlobal().prevent(req, res, next);
   },

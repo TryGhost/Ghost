@@ -30,7 +30,9 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/debug": "catalog:"
+    "@simplewebauthn/browser": "catalog:",
+    "@tryghost/debug": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@doist/react-interpolate": "2.2.4",
