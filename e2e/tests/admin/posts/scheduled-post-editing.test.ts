@@ -79,6 +79,7 @@ test.describe('Ghost Admin - Scheduled post editing', () => {
     const updated = await getPost(page, postId);
     expect(updated.status).toBe('scheduled');
     expect(updated.published_at).toBe(scheduled.published_at);
+    expect(updated.lexical).toContain('Scheduled post body.');
     expect(updated.lexical).toContain('Edited while scheduled.');
   });
 

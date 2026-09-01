@@ -24,6 +24,23 @@ test.describe('Ghost Admin - Editor session expiry', () => {
     // The draft autosave assigns the post an id and moves the URL onto it
     const postId = await editor.getPostId();
 
+    // Typing the draft can leave content unsaved with no autosave pending
+    // (performs during the in-flight create are dropped) or with a debounced
+    // autosave still to come. Flush deterministically before expiring the
+    // session - type a marker and wait for the save that carries it - so the
+    // 401 comes from the post-expiry typing below, not a stale autosave
+    const flushMarker = 'Flushed before expiry.';
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === 'PUT' &&
+          response.url().includes(`/ghost/api/admin/posts/${postId}/`) &&
+          response.status() === 200 &&
+          (response.request().postData() ?? '').includes(flushMarker),
+      ),
+      editor.appendToBody(` ${flushMarker}`),
+    ]);
+
     // Expire the session server-side while the editor stays open
     const logoutResponse = await page.request.delete('/ghost/api/admin/session/');
     expect(logoutResponse.ok()).toBeTruthy();
@@ -62,6 +79,7 @@ test.describe('Ghost Admin - Editor session expiry', () => {
       posts: [post],
     } = await postResponse.json();
     expect(post.status).toBe('draft');
+    expect(post.lexical).toContain('Written before the session expired.');
     expect(post.lexical).toContain('Written after the session expired.');
     expect(post.lexical).toContain('Written after re-authenticating.');
   });

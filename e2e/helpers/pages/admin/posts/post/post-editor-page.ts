@@ -37,7 +37,7 @@ class ReAuthenticateModal extends BasePage {
     super(page);
 
     this.modal = page.locator('[data-test-modal="re-authenticate"]');
-    this.passwordInput = this.modal.locator('input[name="password"]');
+    this.passwordInput = this.modal.getByLabel('Your password');
     this.signInButton = this.modal.getByRole('button', { name: /Sign in/ });
   }
 
