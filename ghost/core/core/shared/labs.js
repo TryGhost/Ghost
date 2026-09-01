@@ -59,6 +59,7 @@ const PRIVATE_FEATURES = [
   'selfServeArchives',
   'machinePayments',
   'postsListReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -124,6 +124,12 @@ const features: Feature[] = [
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
   },
+  {
+    title: 'Dunning warnings',
+    description:
+      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
+    flag: 'dunningWarnings',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
