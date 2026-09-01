@@ -56,6 +56,7 @@ module.exports = function getConfigProperties() {
     mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
     useGravatar: !config.isPrivacyDisabled('useGravatar'),
     labs: labs.getAll(),
+    writableLabs: [...labs.WRITABLE_KEYS_ALLOWLIST],
     clientExtensions: config.get('clientExtensions') || {},
     enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
     stripeDirect: config.get('stripeDirect'),

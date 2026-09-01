@@ -90,6 +90,52 @@ describe('Advanced settings', () => {
     ]);
   });
 
+  it('hides the React editor flag when the backend does not advertise support', async () => {
+    fakeSettingsScreens();
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = true;
+    await renderAdminApp('/settings/labs', { boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+
+    await expect
+      .element(section.getByRole('switch', { name: 'Admin 7 page chrome' }))
+      .toBeInTheDocument();
+    await expect
+      .element(section.getByRole('switch', { name: 'React editor' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('shows and saves the React editor flag when the backend advertises support', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    const labs = { editorReact: false };
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = true;
+    response.config.writableLabs = ['editorReact'];
+    await renderAdminApp('/settings/labs', { labs, boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+    const toggle = section.getByRole('switch', { name: 'React editor' });
+    await expect.element(toggle).not.toBeChecked();
+    await toggle.click();
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'labs',
+        value: String(
+          settingsResponse({ labs: { editorReact: true } }).settings.find(
+            (setting) => setting.key === 'labs',
+          )!.value,
+        ),
+      },
+    ]);
+    await expect.element(toggle).toBeChecked();
+  });
+
   it('saves header and footer code injection', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();

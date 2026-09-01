@@ -4,12 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useGlobalData } from '@/settings/providers/global-data-context';
 
 type Feature = {
   title: string;
   description: string;
   flag: string;
   limitName?: string;
+  requiresWritableLab?: boolean;
 };
 
 const features: Feature[] = [
@@ -117,6 +119,7 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
+    requiresWritableLab: true,
   },
   {
     title: 'Self-serve archives',
@@ -133,6 +136,7 @@ const features: Feature[] = [
 ];
 
 const AlphaFeatures: React.FC = () => {
+  const { config } = useGlobalData();
   const limiter = useLimiter();
   const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
 
@@ -141,6 +145,9 @@ const AlphaFeatures: React.FC = () => {
       const filtered = [];
       // Remove all features that are limited according to the subscribed plan (given these are beta, is optional to use)
       for (const feature of features) {
+        if (feature.requiresWritableLab && !config.writableLabs?.includes(feature.flag)) {
+          continue;
+        }
         if (feature.limitName && limiter?.isLimited(feature.limitName)) {
           try {
             await limiter.errorIfWouldGoOverLimit(feature.limitName);
@@ -157,7 +164,7 @@ const AlphaFeatures: React.FC = () => {
       setAllowedFeatures(filtered);
     };
     void filterFeatures();
-  }, [limiter]);
+  }, [config.writableLabs, limiter]);
 
   return (
     <ActionList>

@@ -26,6 +26,7 @@ Object {
     "stripeDirect": false,
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
+    "writableLabs": Any<Array>,
   },
 }
 `;

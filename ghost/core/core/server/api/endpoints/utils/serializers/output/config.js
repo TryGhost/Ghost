@@ -12,6 +12,7 @@ module.exports = {
       'mail',
       'useGravatar',
       'labs',
+      'writableLabs',
       'clientExtensions',
       'enableDeveloperExperiments',
       'stripeDirect',
