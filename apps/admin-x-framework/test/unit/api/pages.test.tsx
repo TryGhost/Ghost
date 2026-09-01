@@ -33,7 +33,11 @@ describe('pages api', () => {
         const pagesCall = mock.calls.find(([input]: [unknown]) =>
           String(input).includes('/pages/'),
         );
-        expect(new URL(pagesCall[0] as string).pathname).toBe('/ghost/api/admin/pages/page-1/');
+        const pagesUrl = new URL(pagesCall[0] as string);
+        expect(pagesUrl.pathname).toBe('/ghost/api/admin/pages/page-1/');
+        expect(Object.fromEntries(pagesUrl.searchParams.entries())).toEqual({
+          formats: 'mobiledoc,lexical',
+        });
       },
     );
   });

@@ -6,7 +6,12 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
-import { PageWriteOptions, buildPageWriteParams, serializePostPayload } from './post-contract';
+import {
+  PageWriteOptions,
+  buildPageWriteParams,
+  buildPostReadParams,
+  serializePostPayload,
+} from './post-contract';
 import type { Email, PostBulkAction, PostEditorFields, PostListFields } from './posts';
 
 // A page is a post with `displayName: 'page'` server-side, so the list screens
@@ -98,11 +103,14 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
 export const usePage = createQueryWithId<PagesResponseType>({
   dataType,
   path: (id) => `/pages/${id}/`,
+  // without explicit formats the API returns html-only content
+  defaultSearchParams: buildPostReadParams(),
 });
 
+// The create endpoint only accepts include/formats/source - revision and
+// email delivery options are update-only
 export interface AddPagePayload {
   page: PageEditableData;
-  options?: PageWriteOptions;
 }
 
 export interface EditPagePayload {
@@ -113,7 +121,7 @@ export interface EditPagePayload {
 export const useAddPage = createMutation<PagesResponseType, AddPagePayload>({
   method: 'POST',
   path: () => '/pages/',
-  searchParams: ({ options }) => buildPageWriteParams(options),
+  searchParams: () => buildPageWriteParams(),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   invalidateQueries: { dataType },
 });

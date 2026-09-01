@@ -120,9 +120,9 @@ export type Post = {
 
 /**
  * Fields a client may set on a post. Server-owned fields are omitted; the
- * request contract additionally strips read-only relations (`email`,
- * `newsletter`, `post_revisions`, ...) at request time, so spreading a fetched
- * `Post` into an edit payload is safe.
+ * request contract strips read-only relations at request time and the server
+ * drops any remaining unknown attributes, so spreading a fetched `Post` into
+ * an edit payload is safe.
  */
 export type PostEditableData = Partial<
   Omit<
@@ -188,9 +188,10 @@ export const usePost = createQueryWithId<PostsResponseType>({
   path: (id) => `/posts/${id}/`,
 });
 
+// The create endpoint only accepts include/formats/source - revision and
+// email delivery options are update-only
 export interface AddPostPayload {
   post: PostEditableData;
-  options?: PostWriteOptions;
 }
 
 export interface EditPostPayload {
@@ -201,7 +202,7 @@ export interface EditPostPayload {
 export const useAddPost = createMutation<PostsResponseType, AddPostPayload>({
   method: 'POST',
   path: () => '/posts/',
-  searchParams: ({ options }) => buildPostWriteParams(options),
+  searchParams: () => buildPostWriteParams(),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
   invalidateQueries: { dataType },
 });
