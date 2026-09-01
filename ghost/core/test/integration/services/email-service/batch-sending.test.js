@@ -243,8 +243,9 @@ describe('Batch sending tests', function () {
     // Retry sending a couple of times concurrently
     await Promise.all(emailModels.map((model) => emailService.service.retryEmail(model)));
 
-    // Await sending job
-    await jobManager.allSettled();
+    // Wait for the winning job to land. `allSettled` releases while up to three
+    // inline jobs are still running, which can leave the email short of `submitted`.
+    await waitForEmailStatus(emailModel.id, { from: 'failed' });
 
     // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
     // (pending/failed -> submitting) ensures only one job actually sends. The already
