@@ -299,7 +299,7 @@ const TierCheckoutCollection = forwardRef<
 
   const canManageFields = useFeatureFlag('membersCustomFields');
   const { data: fieldsData } = useBrowseMemberCustomFields({ enabled: canManageFields });
-  const allFields = fieldsData?.members_custom_fields ?? [];
+  const allFields = fieldsData ?? [];
   // What each collected value may be kept in is the server's rule, so it is read from the
   // shared port table rather than restated here: anything wider would invite a pick the
   // save then refuses, anything narrower would hide a field that would have been accepted.

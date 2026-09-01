@@ -10,6 +10,7 @@ const moment = require('moment');
 // assume rather than on the behaviour it is checking.
 const createCustomFieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
+  unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),
@@ -115,12 +116,12 @@ describe('MemberBreadService', function () {
       await assert.rejects(
         () =>
           service.add(
-            { email: 'test@example.com', custom_fields: { favourite_topic: 'Ghosts' } },
+            { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
             {},
           ),
         (error) => {
           assert.equal(error.errorType, 'ValidationError');
-          assert.equal(error.property, 'custom_fields');
+          assert.equal(error.property, 'metafields');
           return true;
         },
       );
@@ -584,7 +585,7 @@ describe('MemberBreadService', function () {
 
       const member = await memberBreadService.read({ id: MEMBER_ID }, { withCustomFields: false });
 
-      assert.equal(Object.hasOwn(member, 'custom_fields'), false);
+      assert.equal(Object.hasOwn(member, 'metafields'), false);
       assert.equal(customFieldDefinitions.hasAnyActive.called, false);
       assert.equal(customFieldValues.getValuesForMembers.called, false);
     });
@@ -595,7 +596,7 @@ describe('MemberBreadService', function () {
 
       const member = await memberBreadService.read({ id: MEMBER_ID });
 
-      assert.deepEqual(member.custom_fields, {});
+      assert.deepEqual(member.metafields, {});
     });
 
     it('returns a member with subscriptions', async function () {

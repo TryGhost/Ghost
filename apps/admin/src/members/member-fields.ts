@@ -1,4 +1,8 @@
-import { CUSTOM_FIELD_SET_OPERATORS, customFieldAddressing } from './custom-fields/addressing';
+import {
+  CUSTOM_FIELD_SET_OPERATORS,
+  customFieldAddressing,
+  metafieldFieldId,
+} from './custom-fields/addressing';
 import {
   FUTURE_TIMESTAMP_OPERATORS,
   PAST_TIMESTAMP_OPERATORS,
@@ -274,18 +278,10 @@ export const CUSTOM_FIELD_OPERATORS = [
   ...CUSTOM_FIELD_SET_OPERATORS,
 ];
 
-/**
- * The namespace custom fields are addressed under, in filter field keys and list column
- * keys alike, so one field reads the same wherever it is named.
- *
- * Named rather than spelled out at each use because the namespace describes a bag of
- * fields, and there is one bag today. An extension bringing its own bag would bring its
- * own namespace, which is a change to what this resolves to rather than to its callers.
- */
-export const CUSTOM_FIELDS_PREFIX = 'custom_fields.';
+export { METAFIELDS_FIELD_PREFIX, parseMetafieldFieldId } from './custom-fields/addressing';
 
 const CUSTOM_FIELD: FieldDescriptor = {
-  key: 'custom_fields.:key',
+  key: 'metafields.:namespace.:key',
   icon: 'text',
   type: 'text',
   addressing: customFieldAddressing(),
@@ -300,12 +296,14 @@ const CUSTOM_FIELD: FieldDescriptor = {
     // it is shown whatever the operator, the way Label is. No name resolved means
     // no such field for this site (or the flag is off), so no column either.
     activeColumn: ({ params, label }) =>
-      label ? { key: `${CUSTOM_FIELDS_PREFIX}${params.key}`, label } : null,
-    // Asked for as soon as a custom field is filtered on, without waiting for the
-    // names: the values are what the column will hold, and they travel on the same
-    // request the filter already sends. The API takes this include whether or not
-    // the flag is on, and returns values only when it is.
-    columnInclude: 'custom_fields',
+      label && params.namespace && params.key
+        ? { key: metafieldFieldId({ namespace: params.namespace, key: params.key }), label }
+        : null,
+    // Asked for as soon as a custom field is filtered on: the values are what the column will
+    // hold, and they travel on the request the filter already sends. The API accepts the
+    // include on every site and returns values only where fields are defined, so it needs no
+    // feature detection.
+    columnInclude: 'metafields',
   },
 };
 

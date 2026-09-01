@@ -11,6 +11,7 @@ import {
   tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'free', type: 'free' });
 const supporterTier = tier({
@@ -19,16 +20,17 @@ const supporterTier = tier({
   slug: 'basic-supporter',
 });
 
-const addressField = {
+const addressField: MemberCustomField = {
+  namespace: 'custom',
   key: 'shipping_address',
   name: 'Shipping Address',
   type: 'address',
   status: 'active',
   created_at: '2026-07-13T00:00:00.000Z',
-  updated_at: null as string | null,
+  updated_at: null,
 };
 
-const nameField = {
+const nameField: MemberCustomField = {
   ...addressField,
   key: 'recipient_name',
   name: 'Recipient Name',
@@ -281,9 +283,9 @@ describe('Tier checkout collection', () => {
     fakeTiers([freeTier, supporterTier]);
     fakeMemberCustomFields(() => fields);
     fakeAdminEndpoint('GET', '/tiers/checkout_config/', { tiers_checkout_config: [] });
-    const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
       fields = [...fields, created];
-      return { members_custom_fields: [created] };
+      return { members_metafields: [created] };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -300,7 +302,7 @@ describe('Tier checkout collection', () => {
       .element(modal.getByLabelText('Save recipient name as'))
       .toHaveTextContent(created.name);
     expect(createApi.lastRequest?.body).toEqual({
-      members_custom_fields: [{ name: created.name, type: 'short_text' }],
+      members_metafields: [{ name: created.name, type: 'short_text' }],
     });
   });
 

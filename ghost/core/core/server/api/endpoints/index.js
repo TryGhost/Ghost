@@ -112,8 +112,8 @@ module.exports = {
     return apiFramework.pipeline(require('./members'), localUtils);
   },
 
-  get membersCustomFields() {
-    return apiFramework.pipeline(require('./member-custom-fields'), localUtils);
+  get membersMetafields() {
+    return apiFramework.pipeline(require('./member-metafields'), localUtils);
   },
 
   get tiersCheckoutConfig() {

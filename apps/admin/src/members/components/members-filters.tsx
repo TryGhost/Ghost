@@ -1,4 +1,4 @@
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
@@ -142,22 +142,26 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   // fields ride along so a saved segment on a since-archived field still renders its
   // read-only pill.
   const { data: customFieldsData } = useCustomFieldDefinitionsIncludingArchived();
-  const catalogCustomFields = customFieldsData?.members_custom_fields ?? EMPTY_CUSTOM_FIELDS;
+  const catalogCustomFields = customFieldsData ?? EMPTY_CUSTOM_FIELDS;
   // The picker offers active fields only.
   const customFields = useMemo(
     () => catalogCustomFields.filter((field) => field.status === 'active'),
     [catalogCustomFields],
   );
-  const referencedCustomFieldNames = useReferencedKeys(filters, CUSTOM_FIELDS_PREFIX);
+  const referencedCustomFieldIdentities = useReferencedKeys(filters, METAFIELDS_FIELD_PREFIX);
   const referencedCustomFieldKeys = useMemo(
-    () => new Set(referencedCustomFieldNames),
-    [referencedCustomFieldNames],
+    () => new Set(referencedCustomFieldIdentities),
+    [referencedCustomFieldIdentities],
   );
   const archivedCustomFields = useMemo(
     () =>
       catalogCustomFields
-        .filter((field) => field.status === 'archived' && referencedCustomFieldKeys.has(field.key))
-        .map((field) => ({ key: field.key, name: field.name })),
+        .filter(
+          (field) =>
+            field.status === 'archived' &&
+            referencedCustomFieldKeys.has(`${field.namespace}.${field.key}`),
+        )
+        .map((field) => ({ namespace: field.namespace, key: field.key, name: field.name })),
     [catalogCustomFields, referencedCustomFieldKeys],
   );
 

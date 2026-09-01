@@ -8,17 +8,20 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-const companyField = {
+const companyField: MemberCustomField = {
+  namespace: 'custom',
   key: 'company',
   name: 'Company',
   type: 'short_text',
   status: 'active',
   created_at: '2026-07-13T00:00:00.000Z',
-  updated_at: null as string | null,
+  updated_at: null,
 };
 
-const archivedField = {
+const archivedField: MemberCustomField = {
+  namespace: 'custom',
   key: 'old_hobby',
   name: 'Old hobby',
   type: 'short_text',
@@ -46,9 +49,9 @@ function fakeCustomFields(fields: CustomField[] = [companyField]) {
 function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField) {
   let fields = initial;
   fakeMemberCustomFields(() => fields);
-  return fakeAdminEndpoint('POST', '/members/custom_fields/', () => {
+  return fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
     fields = [...fields, created];
-    return { members_custom_fields: [created] };
+    return { members_metafields: [created] };
   });
 }
 
@@ -81,8 +84,8 @@ describe('Custom fields', () => {
   it('validates and creates a short-text field without sending a key', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
-    const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
-      members_custom_fields: [{ ...companyField, key: 'job_title', name: 'Job Title' }],
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+      members_metafields: [{ ...companyField, key: 'job_title', name: 'Job Title' }],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -96,15 +99,15 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_custom_fields: [{ name: 'Job Title', type: 'short_text' }],
+      members_metafields: [{ name: 'Job Title', type: 'short_text' }],
     });
   });
 
   it('creates the selected long-text field type', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
-    const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', {
-      members_custom_fields: [{ ...companyField, key: 'bio', name: 'Bio', type: 'long_text' }],
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+      members_metafields: [{ ...companyField, key: 'bio', name: 'Bio', type: 'long_text' }],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -117,7 +120,7 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_custom_fields: [{ name: 'Bio', type: 'long_text' }],
+      members_metafields: [{ name: 'Bio', type: 'long_text' }],
     });
   });
 
@@ -126,7 +129,7 @@ describe('Custom fields', () => {
     fakeCustomFields();
     const createApi = fakeAdminEndpoint(
       'POST',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -156,8 +159,8 @@ describe('Custom fields', () => {
   it('renames a field without allowing its type to change', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
-    const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
-      members_custom_fields: [{ ...companyField, name: 'Employer' }],
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, name: 'Employer' }],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -169,14 +172,14 @@ describe('Custom fields', () => {
     await modal.getByRole('button', { name: 'Save' }).click();
 
     await expect(modal).toHaveCount(0);
-    expect(editApi.lastRequest?.body).toEqual({ members_custom_fields: [{ name: 'Employer' }] });
+    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Employer' }] });
   });
 
   it('archives a field only after destructive confirmation', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
-    const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/company/', {
-      members_custom_fields: [{ ...companyField, status: 'archived' }],
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, status: 'archived' }],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -195,7 +198,7 @@ describe('Custom fields', () => {
 
     await expect.element(settingsScreen.successToast()).toHaveTextContent('Custom field archived');
     // Archiving is a status edit, not a DELETE — DELETE is permanent removal.
-    expect(editApi.lastRequest?.body).toEqual({ members_custom_fields: [{ status: 'archived' }] });
+    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ status: 'archived' }] });
   });
 
   it('splits fields into Active and Archived tabs', async () => {
@@ -273,11 +276,10 @@ describe('Custom fields', () => {
     const nicknameField = { ...companyField, key: 'nickname', name: 'Nickname' };
     let currentFields = [companyField, shirtField, nicknameField];
     const browseApi = fakeMemberCustomFields(() => currentFields);
-    const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
-      const order = (request.body as { members_custom_fields: { key: string }[] })
-        .members_custom_fields;
+    const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
+      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
-      return { members_custom_fields: currentFields };
+      return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -299,7 +301,7 @@ describe('Custom fields', () => {
     await expect
       .poll(() => reorderApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ key: 'nickname' }, { key: 'company' }, { key: 'shirt_size' }],
+        members_metafields: [{ key: 'nickname' }, { key: 'company' }, { key: 'shirt_size' }],
       });
 
     // The row stays where it was dropped rather than snapping back and jumping when
@@ -325,12 +327,11 @@ describe('Custom fields', () => {
     const putHeld = new Promise<void>((resolve) => {
       releasePut = resolve;
     });
-    fakeAdminEndpoint('PUT', '/members/custom_fields/', async (request) => {
+    fakeAdminEndpoint('PUT', '/members/metafields/custom/', async (request) => {
       await putHeld;
-      const order = (request.body as { members_custom_fields: { key: string }[] })
-        .members_custom_fields;
+      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
-      return { members_custom_fields: currentFields };
+      return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -368,7 +369,7 @@ describe('Custom fields', () => {
     });
     fakeAdminEndpoint(
       'PUT',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -404,11 +405,10 @@ describe('Custom fields', () => {
     // move applied to the visible tab instead of the whole list.
     let currentFields = [companyField, archivedField, shirtField];
     fakeMemberCustomFields(() => currentFields);
-    const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
-      const order = (request.body as { members_custom_fields: { key: string }[] })
-        .members_custom_fields;
+    const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
+      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
-      return { members_custom_fields: currentFields };
+      return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -425,7 +425,7 @@ describe('Custom fields', () => {
     await expect
       .poll(() => reorderApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ key: 'shirt_size' }, { key: 'company' }, { key: 'old_hobby' }],
+        members_metafields: [{ key: 'shirt_size' }, { key: 'company' }, { key: 'old_hobby' }],
       });
   });
 
@@ -437,11 +437,10 @@ describe('Custom fields', () => {
       name: `Field ${index}`,
     }));
     fakeMemberCustomFields(() => currentFields);
-    const reorderApi = fakeAdminEndpoint('PUT', '/members/custom_fields/', (request) => {
-      const order = (request.body as { members_custom_fields: { key: string }[] })
-        .members_custom_fields;
+    const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
+      const order = (request.body as { members_metafields: { key: string }[] }).members_metafields;
       currentFields = order.map(({ key }) => currentFields.find((field) => field.key === key)!);
-      return { members_custom_fields: currentFields };
+      return { members_metafields: currentFields };
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -457,7 +456,7 @@ describe('Custom fields', () => {
     await expect
       .poll(() => reorderApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [
+        members_metafields: [
           { key: 'field_2' },
           { key: 'field_0' },
           { key: 'field_1' },
@@ -487,7 +486,7 @@ describe('Custom fields', () => {
   it('permanently deletes an archived field from the header menu, after a heavy warning', async () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
-    const deleteApi = fakeAdminEndpoint('DELETE', '/members/custom_fields/old_hobby/', {});
+    const deleteApi = fakeAdminEndpoint('DELETE', '/members/metafields/custom/old_hobby/', {});
     await renderAdminApp('/settings', flagOn);
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
@@ -539,8 +538,8 @@ describe('Custom fields', () => {
   it('reactivates an archived field after confirmation, as a status edit', async () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
-    const editApi = fakeAdminEndpoint('PUT', '/members/custom_fields/old_hobby/', {
-      members_custom_fields: [{ ...archivedField, status: 'active' }],
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/old_hobby/', {
+      members_metafields: [{ ...archivedField, status: 'active' }],
     });
     await renderAdminApp('/settings', flagOn);
 
@@ -557,7 +556,7 @@ describe('Custom fields', () => {
     await expect
       .element(settingsScreen.successToast())
       .toHaveTextContent('Custom field reactivated');
-    expect(editApi.lastRequest?.body).toEqual({ members_custom_fields: [{ status: 'active' }] });
+    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ status: 'active' }] });
 
     // The list refetches after the edit; the refreshed outcome (the field
     // moving back under Active) is server behavior, owned by the API suite.

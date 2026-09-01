@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CUSTOM_FIELDS_PREFIX } from '@/members/member-fields';
+import { parseMetafieldFieldId } from './addressing';
 import { CUSTOM_FIELD_SET_OPERATORS } from './addressing';
 import { FilterSegmentInput, FilterSegmentSelect } from '@tryghost/shade/patterns';
 import { createOperatorOptions, listsOperator } from '@/shared/filters';
@@ -33,9 +33,9 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
   readOnly,
 }) => {
   const { data } = useCustomFieldDefinitionsIncludingArchived();
-  const definitions = data?.members_custom_fields ?? [];
+  const definitions = data ?? [];
 
-  const fieldKey = (field.key ?? '').slice(CUSTOM_FIELDS_PREFIX.length);
+  const fieldKey = parseMetafieldFieldId(field.key ?? '')?.key ?? '';
   const definition = definitions.find((candidate) => candidate.key === fieldKey);
   const parts = definition
     ? (memberCustomFieldParts(definition.type) ?? []).map(({ key, label }) => ({

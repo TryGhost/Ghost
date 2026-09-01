@@ -868,18 +868,18 @@ describe('Create Stripe Checkout Session', function () {
     it('asks Stripe for the questions and the collection a tier configured', async function () {
       const {
         body: {
-          members_custom_fields: [question],
+          members_metafields: [question],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'T-shirt size', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -915,11 +915,11 @@ describe('Create Stripe Checkout Session', function () {
     it('asks Stripe for every country when a tier delivers everywhere', async function () {
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -968,11 +968,11 @@ describe('Create Stripe Checkout Session', function () {
     it('asks Stripe for a tax number and a phone number when a tier collects them', async function () {
       const {
         body: {
-          members_custom_fields: [phone],
+          members_metafields: [phone],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Phone', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Phone', type: 'short_text' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -996,18 +996,18 @@ describe('Create Stripe Checkout Session', function () {
     it('drops a question renamed longer than a checkout will render, and still sells', async function () {
       const {
         body: {
-          members_custom_fields: [asked],
+          members_metafields: [asked],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'T-shirt size', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
       const {
         body: {
-          members_custom_fields: [kept],
+          members_metafields: [kept],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Nickname', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Nickname', type: 'short_text' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [{ custom_fields: [{ key: asked.key }, { key: kept.key }] }],
@@ -1016,9 +1016,9 @@ describe('Create Stripe Checkout Session', function () {
       // Renaming a field does not revisit the checkouts that ask for it, which is how
       // an unaskable question comes to exist without anyone writing one.
       await adminAgent
-        .put(`/members/custom_fields/${asked.key}/`)
+        .put(`/members/metafields/custom/${asked.key}/`)
         .body({
-          members_custom_fields: [
+          members_metafields: [
             {
               name: `A question far longer than a payment page will ever render ${'x'.repeat(20)}`,
             },
@@ -1038,26 +1038,26 @@ describe('Create Stripe Checkout Session', function () {
     it('stops asking a question whose field was archived, and keeps the rest', async function () {
       const {
         body: {
-          members_custom_fields: [archived],
+          members_metafields: [archived],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'T-shirt size', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
       const {
         body: {
-          members_custom_fields: [kept],
+          members_metafields: [kept],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Nickname', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Nickname', type: 'short_text' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [{ custom_fields: [{ key: archived.key }, { key: kept.key }] }],
       });
 
       await adminAgent
-        .put(`/members/custom_fields/${archived.key}/`)
-        .body({ members_custom_fields: [{ status: 'archived' }] })
+        .put(`/members/metafields/custom/${archived.key}/`)
+        .body({ members_metafields: [{ status: 'archived' }] })
         .expectStatus(200);
 
       const sessionBody = await startCheckout();
@@ -1072,18 +1072,18 @@ describe('Create Stripe Checkout Session', function () {
     it('keeps asking for shipping while either destination is still active', async function () {
       const {
         body: {
-          members_custom_fields: [recipient],
+          members_metafields: [recipient],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Recipient name', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Recipient name', type: 'short_text' }] });
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -1101,8 +1101,8 @@ describe('Create Stripe Checkout Session', function () {
       // The address is the obvious half, so archiving it is the case that would break
       // if the rule keyed off it rather than off anything landing.
       await adminAgent
-        .put(`/members/custom_fields/${address.key}/`)
-        .body({ members_custom_fields: [{ status: 'archived' }] })
+        .put(`/members/metafields/custom/${address.key}/`)
+        .body({ members_metafields: [{ status: 'archived' }] })
         .expectStatus(200);
 
       const sessionBody = await startCheckout();
@@ -1114,11 +1114,11 @@ describe('Create Stripe Checkout Session', function () {
     async function collectShippingThenArchive(archived) {
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -1135,8 +1135,8 @@ describe('Create Stripe Checkout Session', function () {
 
       for (const key of archived) {
         await adminAgent
-          .put(`/members/custom_fields/${key === 'address' ? address.key : key}/`)
-          .body({ members_custom_fields: [{ status: 'archived' }] })
+          .put(`/members/metafields/custom/${key === 'address' ? address.key : key}/`)
+          .body({ members_metafields: [{ status: 'archived' }] })
           .expectStatus(200);
       }
     }
@@ -1173,11 +1173,11 @@ describe('Create Stripe Checkout Session', function () {
     it('collects for a member who already has a Stripe customer', async function () {
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent.put(`/tiers/${paidTier.id}/checkout_config/`).body({
         tiers_checkout_config: [
@@ -1285,11 +1285,11 @@ describe('Create Stripe Checkout Session', function () {
     it('never sends customer_update for a checkout without a customer', async function () {
       const {
         body: {
-          members_custom_fields: [address],
+          members_metafields: [address],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'Delivery address', type: 'address' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Delivery address', type: 'address' }] });
 
       await adminAgent
         .put(`/tiers/${paidTier.id}/checkout_config/`)
@@ -1320,11 +1320,11 @@ describe('Create Stripe Checkout Session', function () {
     it('asks for nothing with the flag off, however the tier is configured', async function () {
       const {
         body: {
-          members_custom_fields: [question],
+          members_metafields: [question],
         },
       } = await adminAgent
-        .post('/members/custom_fields/')
-        .body({ members_custom_fields: [{ name: 'T-shirt size', type: 'short_text' }] });
+        .post('/members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'T-shirt size', type: 'short_text' }] });
       await adminAgent
         .put(`/tiers/${paidTier.id}/checkout_config/`)
         .body({ tiers_checkout_config: [{ custom_fields: [{ key: question.key }] }] });

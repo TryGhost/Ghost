@@ -438,90 +438,92 @@ describe('isPredicateEnabled', () => {
 });
 
 describe('member-filter-query - custom fields', () => {
-  // Serialize each operator to NQL, then parse it back, and confirm the predicate
-  // survives the round trip a saved segment relies on. Each field is its own
-  // predicate keyed `custom_fields.<key>`; `values` is [subfield, value].
-  const cases: Array<{ field: string; operator: string; values: string[]; nql: string }> = [
+  const cases: Array<{
+    field: string;
+    operator: string;
+    values: [subfield: string, value: string];
+    nql: string;
+  }> = [
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'is',
       values: ['', 'Ghost'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:'Ghost')",
+      nql: "(metafields.key:'custom.company'+metafields.value:'Ghost')",
     },
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'is-not',
       values: ['', 'Ghost'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:-'Ghost')",
+      nql: "(metafields.key:'custom.company'+metafields.value:-'Ghost')",
     },
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', 'host'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:~'host')",
+      nql: "(metafields.key:'custom.company'+metafields.value:~'host')",
     },
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'does-not-contain',
       values: ['', 'host'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:-~'host')",
+      nql: "(metafields.key:'custom.company'+metafields.value:-~'host')",
     },
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'starts-with',
       values: ['', 'Gh'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:~^'Gh')",
+      nql: "(metafields.key:'custom.company'+metafields.value:~^'Gh')",
     },
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'ends-with',
       values: ['', 'st'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:~$'st')",
+      nql: "(metafields.key:'custom.company'+metafields.value:~$'st')",
     },
     // A value that ends with a literal `$` must survive as contains, not be
     // misread as ends-with when the regex source (`5\$`) is parsed back.
     {
-      field: 'custom_fields.company',
+      field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', '5$'],
-      nql: "(custom_fields.key:'company'+custom_fields.value:~'5$')",
+      nql: "(metafields.key:'custom.company'+metafields.value:~'5$')",
     },
     {
-      field: 'custom_fields.shipping-address',
+      field: 'metafields.custom.shipping_address',
       operator: 'is',
       values: ['country', 'GB'],
-      nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:'GB')",
+      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:'GB')",
     },
     {
-      field: 'custom_fields.shipping-address',
+      field: 'metafields.custom.shipping_address',
       operator: 'is-not',
       values: ['country', 'GB'],
-      nql: "(custom_fields.key:'shipping-address'+custom_fields.value.country:-'GB')",
+      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-'GB')",
     },
     {
-      field: 'custom_fields.phone',
+      field: 'metafields.custom.phone',
       operator: 'is-set',
       values: ['', ''],
-      nql: "custom_fields.key:'phone'",
+      nql: "metafields.key:'custom.phone'",
     },
     {
-      field: 'custom_fields.phone',
+      field: 'metafields.custom.phone',
       operator: 'is-not-set',
       values: ['', ''],
-      nql: "custom_fields.key:-'phone'",
+      nql: "metafields.key:-'custom.phone'",
     },
     // A part's set / not-set targets its presence via `path`, not the whole field.
     {
-      field: 'custom_fields.shipping-address',
+      field: 'metafields.custom.shipping_address',
       operator: 'is-set',
       values: ['country', ''],
-      nql: "(custom_fields.key:'shipping-address'+custom_fields.path:'country')",
+      nql: "metafields.key:'custom.shipping_address.country'",
     },
     {
-      field: 'custom_fields.shipping-address',
+      field: 'metafields.custom.shipping_address',
       operator: 'is-not-set',
       values: ['country', ''],
-      nql: "(custom_fields.key:'shipping-address'+custom_fields.path:-'country')",
+      nql: "metafields.key:-'custom.shipping_address.country'",
     },
   ];
 

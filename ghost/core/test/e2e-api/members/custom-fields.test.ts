@@ -27,7 +27,7 @@ describe('Member Custom Fields Members API', function () {
 
   async function readValuesAsStaff() {
     const { body } = await adminAgent.get(`members/${memberId}/`).expectStatus(200);
-    return body.members[0].custom_fields;
+    return body.members[0].metafields?.custom ?? {};
   }
 
   beforeAll(async function () {
@@ -45,14 +45,14 @@ describe('Member Custom Fields Members API', function () {
 
     fieldCounter += 1;
     const { body } = await adminAgent
-      .post('members/custom_fields/')
-      .body({ members_custom_fields: [{ name: `Shoe size ${fieldCounter}`, type: 'short_text' }] })
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name: `Shoe size ${fieldCounter}`, type: 'short_text' }] })
       .expectStatus(201);
-    fieldKey = body.members_custom_fields[0].key;
+    fieldKey = body.members_metafields[0].key;
 
     await adminAgent
       .put(`members/${memberId}/`)
-      .body({ members: [{ custom_fields: { [fieldKey]: '9' } }] })
+      .body({ members: [{ metafields: { custom: { [fieldKey]: '9' } } }] })
       .expectStatus(200);
   });
 
@@ -68,19 +68,19 @@ describe('Member Custom Fields Members API', function () {
   it('does not return custom fields to the member who holds them', async function () {
     const { body } = await membersAgent.get('/api/member/').expectStatus(200);
 
-    assert.equal(Object.hasOwn(body, 'custom_fields'), false);
+    assert.equal(Object.hasOwn(body, 'metafields'), false);
   });
 
   it('does not write custom fields a member sends', async function () {
     const { body } = await membersAgent
       .put('/api/member/')
-      .body({ name: 'Renamed', custom_fields: { [fieldKey]: '12' } })
+      .body({ name: 'Renamed', metafields: { custom: { [fieldKey]: '12' } } })
       .expectStatus(200);
 
     // The rest of the body still applies, so the value is dropped rather than
     // the request being rejected — the same way `email` behaves here.
     assert.equal(body.name, 'Renamed');
-    assert.equal(Object.hasOwn(body, 'custom_fields'), false);
+    assert.equal(Object.hasOwn(body, 'metafields'), false);
     assert.equal((await readValuesAsStaff())[fieldKey], '9');
   });
 });

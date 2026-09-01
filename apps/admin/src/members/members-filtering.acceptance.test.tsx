@@ -86,6 +86,7 @@ describe('Members list', () => {
   it('builds a custom field filter without losing the page to the hydration gate', async () => {
     const fieldsApi = fakeMemberCustomFields([
       {
+        namespace: 'custom',
         key: 'employer',
         name: 'Employer',
         type: 'short_text',
@@ -114,7 +115,7 @@ describe('Members list', () => {
     // Still here: typing the value must not unmount the filter UI.
     await expect.element(valueInput).toBeVisible();
     await expect(membersApi).toHaveSentFilter(
-      "(custom_fields.key:'employer'+custom_fields.value:~'Acme')",
+      "(metafields.key:'custom.employer'+metafields.value:~'Acme')",
     );
     await expect(membersScreen.memberRows()).toHaveCount(1);
 

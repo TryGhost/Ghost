@@ -55,7 +55,7 @@ describe('shouldDelayMembersFilterHydration', () => {
   it('waits for the definitions a filter names, and only those', () => {
     // A custom field can only be read for what it holds once the site says what it holds, so
     // the page waits rather than reading it as text and answering a wider question.
-    const customFieldFilter = "(custom_fields.key:'joined'+custom_fields.value:<'2024-01-01')";
+    const customFieldFilter = "(metafields.key:'custom.joined'+metafields.value:<'2024-01-01')";
 
     expect(
       shouldDelayMembersFilterHydration(customFieldFilter, {
@@ -82,7 +82,7 @@ describe('shouldDelayMembersFilterHydration', () => {
 
   it('does not wait for a source only a quoted value mentions', () => {
     expect(
-      shouldDelayMembersFilterHydration("name:~'custom_fields.'", {
+      shouldDelayMembersFilterHydration("name:~'metafields.'", {
         ...resolved,
         customFields: undefined,
       }),
@@ -91,7 +91,7 @@ describe('shouldDelayMembersFilterHydration', () => {
 
   it('does not wait for definitions that are never coming', () => {
     // An empty list means nothing is on its way, so waiting would never end.
-    const customFieldFilter = "(custom_fields.key:'company'+custom_fields.value:'Ghost')";
+    const customFieldFilter = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
 
     expect(
       shouldDelayMembersFilterHydration(customFieldFilter, { ...resolved, customFields: [] }),
@@ -442,11 +442,11 @@ describe('useMembersFilterState', () => {
 });
 
 describe('useMembersFilterState — once its sources have arrived', () => {
-  const CUSTOM_FIELD_FILTER = "(custom_fields.key:'company'+custom_fields.value:'Ghost')";
+  const CUSTOM_FIELD_FILTER = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
 
   function renderWithSources(sources: {
     newsletters?: { slug: string; name: string }[];
-    customFields?: { key: string; name: string; type: 'short_text' }[];
+    customFields?: { namespace: string; key: string; name: string; type: 'short_text' }[];
   }) {
     return renderHook(
       () => {
@@ -463,15 +463,15 @@ describe('useMembersFilterState — once its sources have arrived', () => {
 
   it('reads and writes normally once they have', async () => {
     const { result } = renderWithSources({
-      customFields: [{ key: 'company', name: 'Company', type: 'short_text' }],
+      customFields: [{ namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' }],
     });
 
     await waitFor(() => {
       expect(result.current.filters).toHaveLength(1);
     });
 
-    expect(result.current.filters[0].field).toBe('custom_fields.company');
+    expect(result.current.filters[0].field).toBe('metafields.custom.company');
     expect(result.current.nql).toBe(CUSTOM_FIELD_FILTER);
-    expect(decodeURIComponent(result.current.query)).toContain("custom_fields.key:'company'");
+    expect(decodeURIComponent(result.current.query)).toContain("metafields.key:'custom.company'");
   });
 });

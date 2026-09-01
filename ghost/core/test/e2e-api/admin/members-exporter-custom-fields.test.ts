@@ -23,7 +23,7 @@ const ADDRESS_SUB_FIELDS = ['line1', 'line2', 'city', 'state', 'postal_code', 'c
 
 /** Custom field columns are namespaced so a minted key can never take a core column. */
 function columnFor(key: string, subField?: string) {
-  return subField ? `custom_fields.${key}.${subField}` : `custom_fields.${key}`;
+  return subField ? `metafields.custom.${key}.${subField}` : `metafields.custom.${key}`;
 }
 
 function addressColumnsFor(key: string) {
@@ -59,16 +59,16 @@ describe('Members API — exportCSV with custom fields', function () {
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string) {
     const { body } = await agent
-      .post('members/custom_fields/')
-      .body({ members_custom_fields: [{ name, type }] })
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name, type }] })
       .expectStatus(201);
-    return body.members_custom_fields[0];
+    return body.members_metafields[0];
   }
 
   async function archiveField(key: string) {
     await agent
-      .put(`members/custom_fields/${key}/`)
-      .body({ members_custom_fields: [{ status: 'archived' }] })
+      .put(`members/metafields/custom/${key}/`)
+      .body({ members_metafields: [{ status: 'archived' }] })
       .expectStatus(200);
   }
 
@@ -85,7 +85,7 @@ describe('Members API — exportCSV with custom fields', function () {
     if (customFields) {
       await agent
         .put(`members/${id}/`)
-        .body({ members: [{ custom_fields: customFields }] })
+        .body({ members: [{ metafields: { custom: customFields } }] })
         .expectStatus(200);
     }
 
@@ -235,9 +235,9 @@ describe('Members API — exportCSV with custom fields', function () {
     const bio = await createField('Bio', 'long_text');
 
     await agent
-      .put('members/custom_fields/')
+      .put('members/metafields/custom/')
       .body({
-        members_custom_fields: [{ key: address.key }, { key: bio.key }, { key: nickname.key }],
+        members_metafields: [{ key: address.key }, { key: bio.key }, { key: nickname.key }],
       })
       .expectStatus(200);
 

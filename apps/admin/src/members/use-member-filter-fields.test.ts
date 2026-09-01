@@ -262,8 +262,13 @@ describe('useMemberFilterFields', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
         customFields: [
-          { key: 'shipping_address', name: 'Shipping address', type: 'address' },
-          { key: 'job_title', name: 'Job title', type: 'short_text' },
+          {
+            namespace: 'custom',
+            key: 'shipping_address',
+            name: 'Shipping address',
+            type: 'address',
+          },
+          { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' },
         ],
         siteTimezone: 'UTC',
       }),
@@ -273,8 +278,8 @@ describe('useMemberFilterFields', () => {
       result.current.find((group) => group.group === 'Custom fields')?.fields ?? [];
 
     expect(customFields.map((field) => ({ key: field.key, label: field.label }))).toEqual([
-      { key: 'custom_fields.shipping_address', label: 'Shipping address' },
-      { key: 'custom_fields.job_title', label: 'Job title' },
+      { key: 'metafields.custom.shipping_address', label: 'Shipping address' },
+      { key: 'metafields.custom.job_title', label: 'Job title' },
     ]);
   });
 

@@ -190,11 +190,10 @@ const Member = ghostBookshelf.Model.extend(
       ];
     },
 
-    // Chain the custom-field filter transformer at this single choke point — the method
-    // every members query routes its filter through (list, CSV export, bulk edit/destroy,
-    // count, email send all reach it via findPage or getFilteredCollectionQuery) — so a
-    // saved `custom_fields.*` segment works the same everywhere without each call site
-    // wiring it.
+    // Every members query routes its filter through this one method: list, CSV export, bulk
+    // edit and delete, counts and email sends all reach it via findPage or
+    // getFilteredCollectionQuery. Chaining the metafield filter transformer here covers them
+    // all without any call site wiring it.
     applyDefaultAndCustomFilters(options) {
       if (options.filter && options.filter.includes(`${CUSTOM_FIELDS_RELATION.tableNameAs}.`)) {
         const transformer = createCustomFieldsFilterTransformer();
@@ -207,7 +206,7 @@ const Member = ghostBookshelf.Model.extend(
 
     filterRelations() {
       return {
-        custom_fields: CUSTOM_FIELDS_RELATION,
+        metafields: CUSTOM_FIELDS_RELATION,
         labels: {
           tableName: 'labels',
           type: 'manyToMany',

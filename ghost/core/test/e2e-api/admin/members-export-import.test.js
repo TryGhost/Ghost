@@ -211,7 +211,7 @@ describe('Members export -> import round-trip', function () {
       /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
     );
     assert.equal(
-      csv.includes('custom_fields.'),
+      csv.includes('metafields.custom.'),
       false,
       'no custom field columns when the site defines none',
     );
@@ -223,19 +223,15 @@ describe('Members export -> import round-trip', function () {
     await assertSurvivesWithCoreFields(emails);
   });
 
-  // With the flag on, the export gains a custom_fields.* column and the import now
-  // consumes it. Re-importing under a fresh email creates the member from the CSV, so
-  // the core fields and the custom field value both reconstruct -- closing the round
-  // trip the base issue describes.
   it('exports a custom field and re-imports its value onto a fresh member', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 
     const fieldRes = await request
-      .post(localUtils.API.getApiQuery('members/custom_fields/'))
+      .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name: 'Round Trip Field', type: 'short_text' }] })
+      .send({ members_metafields: [{ name: 'Round Trip Field', type: 'short_text' }] })
       .expect(201);
-    const customFieldKey = fieldRes.body.members_custom_fields[0].key;
+    const customFieldKey = fieldRes.body.members_metafields[0].key;
 
     const srcEmail = 'rtcf-src@example.com';
     await models.Member.add({
@@ -253,7 +249,7 @@ describe('Members export -> import round-trip', function () {
     await request
       .put(localUtils.API.getApiQuery(`members/${src.id}/`))
       .set('Origin', config.get('url'))
-      .send({ members: [{ custom_fields: { [customFieldKey]: formulaValue } }] })
+      .send({ members: [{ metafields: { custom: { [customFieldKey]: formulaValue } } }] })
       .expect(200);
 
     const csv = await exportSet(customLabel.get('slug'));
@@ -261,12 +257,12 @@ describe('Members export -> import round-trip', function () {
     // The export produces the custom field column, guarding the leading = with an
     // apostrophe so a spreadsheet won't read it as a formula.
     assert.ok(
-      csv.includes(`custom_fields.${customFieldKey}`),
+      csv.includes(`metafields.custom.${customFieldKey}`),
       'export includes the custom field column',
     );
     assert.equal(
       Papa.parse(csv, { header: true }).data.find((r) => r.email === srcEmail)[
-        `custom_fields.${customFieldKey}`
+        `metafields.custom.${customFieldKey}`
       ],
       `'${formulaValue}`,
     );
@@ -276,13 +272,13 @@ describe('Members export -> import round-trip', function () {
     const srcRead = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(srcEmail)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(srcEmail)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
       .expect(200);
     assert.equal(
-      srcRead.body.members.find((m) => m.email === srcEmail).custom_fields?.[customFieldKey],
+      srcRead.body.members.find((m) => m.email === srcEmail).metafields?.custom?.[customFieldKey],
       formulaValue,
     );
 
@@ -306,7 +302,7 @@ describe('Members export -> import round-trip', function () {
     const freshRes = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshEmail)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshEmail)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -323,15 +319,15 @@ describe('Members export -> import round-trip', function () {
     // ...and so does the custom field value, with the formula guard stripped back off
     // so it does not accrete an apostrophe on the round trip.
     assert.equal(
-      fresh.custom_fields?.[customFieldKey],
+      fresh.metafields?.custom?.[customFieldKey],
       formulaValue,
       'custom field value round-trips',
     );
   });
 
-  // The Stripe column defers this import, so it also checks the JSON spool carries
-  // custom_fields.* columns through. A value-less member exports all-blank address cells,
-  // which re-import as untouched rather than failing the row.
+  // A row with a Stripe customer id is not imported inline; the importer spools it to a
+  // background job as JSON first. This case proves the custom-field columns survive that
+  // spool, which the inline path never exercises.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 
@@ -341,11 +337,11 @@ describe('Members export -> import round-trip', function () {
     );
 
     const fieldRes = await request
-      .post(localUtils.API.getApiQuery('members/custom_fields/'))
+      .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name: 'Shipping Address', type: 'address' }] })
+      .send({ members_metafields: [{ name: 'Shipping Address', type: 'address' }] })
       .expect(201);
-    const addressKey = fieldRes.body.members_custom_fields[0].key;
+    const addressKey = fieldRes.body.members_metafields[0].key;
 
     const emails = await seedMembers('rtaddr', addressLabel.get('name'));
     // A plain member with no address, so a fresh re-import proves an all-blank address
@@ -368,12 +364,14 @@ describe('Members export -> import round-trip', function () {
       .send({
         members: [
           {
-            custom_fields: {
-              [addressKey]: {
-                line1: '1 High Street',
-                city: 'London',
-                postal_code: 'E1 6AN',
-                country: 'GB',
+            metafields: {
+              custom: {
+                [addressKey]: {
+                  line1: '1 High Street',
+                  city: 'London',
+                  postal_code: 'E1 6AN',
+                  country: 'GB',
+                },
               },
             },
           },
@@ -383,7 +381,7 @@ describe('Members export -> import round-trip', function () {
 
     const csv = await exportSet(addressLabel.get('slug'));
     assert.ok(
-      csv.includes(`custom_fields.${addressKey}.line1`),
+      csv.includes(`metafields.custom.${addressKey}.line1`),
       'export expands the address into sub-columns',
     );
 
@@ -398,7 +396,7 @@ describe('Members export -> import round-trip', function () {
     const reCore = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshCore)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshCore)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -406,7 +404,7 @@ describe('Members export -> import round-trip', function () {
     const core = reCore.body.members.find((m) => m.email === freshCore);
     assertExists(core, 'addressed member created from the CSV');
     assert.deepEqual(
-      core.custom_fields?.[addressKey],
+      core.metafields?.custom?.[addressKey],
       {
         line1: '1 High Street',
         city: 'London',
@@ -420,7 +418,7 @@ describe('Members export -> import round-trip', function () {
     const rePlain = await request
       .get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(freshPlain)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(freshPlain)}&include=metafields`,
         ),
       )
       .set('Origin', config.get('url'))
@@ -428,7 +426,7 @@ describe('Members export -> import round-trip', function () {
     const plain = rePlain.body.members.find((m) => m.email === freshPlain);
     assertExists(plain, 'value-less member created from the CSV');
     assert.equal(
-      plain.custom_fields?.[addressKey],
+      plain.metafields?.custom?.[addressKey],
       undefined,
       'no address written for a value-less member',
     );

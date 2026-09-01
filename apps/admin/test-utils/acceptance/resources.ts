@@ -1,6 +1,7 @@
 import { HttpResponse } from 'msw';
 import type { Action } from '@tryghost/admin-x-framework/api/actions';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   activeThemeResponse,
   browseResponse,
@@ -66,7 +67,11 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
-  /** Envelope key when it differs from the path segment (e.g. 'members/custom_fields' → members_custom_fields). */
+  /**
+   * The key the response object is wrapped in, where it is not just the path segment.
+   * Ghost's Admin API usually matches the two ('tags' → `{ tags: [] }`), but not always:
+   * `members/metafields/custom/` returns `{ members_metafields: [] }`.
+   */
   envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
@@ -255,9 +260,9 @@ const membersResource = defineResource<Member>({
  * with `fakeAdminEndpoint`. A spec observing the list grow across a create
  * declares that growth itself via the function form (`() => fields`).
  */
-const memberCustomFieldsResource = defineResource({
-  resource: 'members/custom_fields',
-  envelopeKey: 'members_custom_fields',
+const memberCustomFieldsResource = defineResource<MemberCustomField>({
+  resource: 'members/metafields/custom',
+  envelopeKey: 'members_metafields',
   semantics: { kind: 'passthrough' },
 });
 

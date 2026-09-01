@@ -34,6 +34,7 @@ describe('SCALAR_KIND_FILTER_TYPE', () => {
 describe('a composite field descriptor', () => {
   it('filters parts as text and starts the whole field at presence', () => {
     const descriptor = customFieldDescriptor({
+      namespace: 'custom',
       key: 'shipping',
       name: 'Shipping',
       type: 'address',
