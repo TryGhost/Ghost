@@ -1,7 +1,0 @@
-services:
-  ghost-dev:
-    environment:
-      # Ghost registers its own Stripe webhook endpoint, as it does in production, at the
-      # tunnel URL started by with-remote-webhooks.sh. The site itself stays on localhost.
-      stripeWebhookUrl: ${GHOST_STRIPE_WEBHOOK_URL:?set by docker/stripe/with-remote-webhooks.sh; run pnpm dev:stripe:remote}
-      stripeRemoteWebhooks: 'true'
