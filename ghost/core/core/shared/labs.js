@@ -64,6 +64,7 @@ const PRIVATE_FEATURES = [
   'postsListReact',
   'membersActivityReact',
   'editorReact',
+  'dunningWarnings',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
