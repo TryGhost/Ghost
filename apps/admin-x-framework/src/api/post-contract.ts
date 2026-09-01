@@ -50,10 +50,6 @@ export interface PostWriteOptions extends PageWriteOptions {
   emailSegment?: string;
 }
 
-export function buildPostBrowseParams(): Record<string, string> {
-  return { formats: POST_FORMATS };
-}
-
 export function buildPostReadParams(): Record<string, string> {
   return { formats: POST_FORMATS };
 }

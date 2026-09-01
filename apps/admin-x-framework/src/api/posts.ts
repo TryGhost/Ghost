@@ -150,7 +150,10 @@ export type Post = {
 } & PostListFields &
   PostEditorFields;
 
-/** Fields accepted by the Admin API's post add/edit schema. */
+/**
+ * Fields accepted by the Admin API's post add/edit schema. `collections` is
+ * deliberately omitted — the feature is defunct.
+ */
 export type PostEditableData = Partial<{
   title: string;
   slug: string;
@@ -241,7 +244,6 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & { 
 const usePostQuery = createQueryWithId<PostResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
-  defaultSearchParams: buildPostReadParams(),
 });
 
 export const usePost = (id: string, options: Parameters<typeof usePostQuery>[1] = {}) => {
@@ -255,7 +257,6 @@ export const usePost = (id: string, options: Parameters<typeof usePostQuery>[1] 
 const useEditorPostQuery = createQueryWithId<PostResponseType>({
   dataType,
   path: (id) => `/posts/${id}/`,
-  defaultSearchParams: buildPostEditorReadParams(),
 });
 
 export const useEditorPost = (

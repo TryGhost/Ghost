@@ -11,7 +11,6 @@ import {
   ALL_POST_INCLUDES,
   POST_FORMATS,
   buildPageWriteParams,
-  buildPostBrowseParams,
   buildPostEditorReadParams,
   buildPostReadParams,
   buildPostWriteParams,
@@ -147,7 +146,6 @@ describe('post request contract', () => {
 
   describe('query params', () => {
     it('requests both content formats on reads', () => {
-      expect(buildPostBrowseParams()).toEqual({ formats: 'mobiledoc,lexical' });
       expect(buildPostReadParams()).toEqual({
         formats: 'mobiledoc,lexical',
       });

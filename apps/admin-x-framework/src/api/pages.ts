@@ -114,7 +114,6 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
 const usePageQuery = createQueryWithId<PageResponseType>({
   dataType,
   path: (id) => `/pages/${id}/`,
-  defaultSearchParams: buildPostReadParams(),
 });
 
 export const usePage = (id: string, options: Parameters<typeof usePageQuery>[1] = {}) => {
@@ -128,7 +127,6 @@ export const usePage = (id: string, options: Parameters<typeof usePageQuery>[1] 
 const useEditorPageQuery = createQueryWithId<PageResponseType>({
   dataType,
   path: (id) => `/pages/${id}/`,
-  defaultSearchParams: buildPostEditorReadParams(),
 });
 
 export const useEditorPage = (
