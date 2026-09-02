@@ -837,9 +837,49 @@ describe('createSaveEngine', () => {
         await flush();
         await expect(completion).resolves.toEqual({ kind: 'needs-retry' });
         expect(h.execute).toHaveBeenCalledTimes(1);
-        expect(h.engine.getState()).toEqual({ kind: 'idle' });
+
+        // A dirty draft resumes autosaving on its own; a published post has nothing to resume.
+        if (intent === 'publish') {
+          expect(h.engine.getState()).toEqual({ kind: 'debouncing' });
+          await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+          expect(h.execute).toHaveBeenCalledTimes(2);
+          expect(h.requests[1]).toMatchObject({ intent: 'autosave', status: 'draft' });
+        } else {
+          expect(h.engine.getState()).toEqual({ kind: 'idle' });
+          await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+          expect(h.execute).toHaveBeenCalledTimes(1);
+        }
       },
     );
+
+    it('re-saves rider content folded into a publish that needs retry', async () => {
+      const h = setup();
+      void h.engine.dispatch('explicit');
+      h.edit();
+      const autosave = h.engine.dispatch('autosave');
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+      h.patch({ willPublish: true });
+      const publish = h.engine.dispatch('publish');
+
+      await h.succeed();
+      expect(h.requests[1]).toMatchObject({ intent: 'publish' });
+      await h.fail(sessionInvalid);
+      expect(h.engine.getState()).toEqual({ kind: 'reauth-pending', intent: 'publish' });
+
+      h.engine.reauthSucceeded();
+      await flush();
+      await expect(publish).resolves.toEqual({ kind: 'needs-retry' });
+      await expect(autosave).resolves.toEqual({ kind: 'needs-retry' });
+      expect(h.engine.getState()).toEqual({ kind: 'debouncing' });
+
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+      expect(h.execute).toHaveBeenCalledTimes(3);
+      expect(h.requests[2]).toMatchObject({
+        intent: 'autosave',
+        status: 'draft',
+        snapshot: { version: 2 },
+      });
+    });
 
     it('settles every waiter with the session error when re-auth is abandoned', async () => {
       const h = setup();
@@ -929,6 +969,42 @@ describe('createSaveEngine', () => {
       });
       expect(h.execute).not.toHaveBeenCalled();
       expect(h.engine.getState()).toMatchObject({ kind: 'error', intent: 'explicit' });
+    });
+
+    it('resolves a background dispatch as failed when the snapshot port throws', async () => {
+      const h = setup();
+      const cause = new Error('snapshot exploded');
+      h.throwNextSnapshot(cause);
+
+      await expect(h.engine.dispatch('autosave')).resolves.toEqual({
+        kind: 'failed',
+        error: { kind: 'unknown', message: 'snapshot exploded', cause },
+      });
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).not.toHaveBeenCalled();
+    });
+
+    it('asks for confirmation when the snapshot port throws during a leave decision', async () => {
+      const h = setup();
+      h.throwNextSnapshot(new Error('snapshot exploded'));
+      await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
+
+      const decision = h.engine.leaveRequested();
+      await flush();
+      expect(h.requests[0]).toMatchObject({ intent: 'leave' });
+      h.throwNextSnapshot(new Error('snapshot exploded'));
+      await h.succeed();
+      await expect(decision).resolves.toBe('confirm');
+    });
+
+    it('lets a leave decision through once the engine is disposed mid-wait', async () => {
+      const h = setup();
+      const decision = h.engine.leaveRequested();
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      h.engine.dispose();
+      await expect(decision).resolves.toBe('proceed');
     });
 
     it('tolerates listeners that dispatch or unsubscribe during notification', () => {

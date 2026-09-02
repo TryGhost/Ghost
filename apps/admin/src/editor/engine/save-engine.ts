@@ -294,12 +294,14 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     timedCycle = null;
   }
 
-  function restartDebounce(waiter: Waiter): void {
+  function restartDebounce(waiter?: Waiter): void {
     const waiters = debounce ? debounce.waiters : [];
     if (debounce) {
       cancel(debounce.handle);
     }
-    waiters.push(waiter);
+    if (waiter) {
+      waiters.push(waiter);
+    }
     const handle = schedule(() => {
       debounce = null;
       enqueue('autosave', waiters);
@@ -477,7 +479,13 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
         return;
       }
 
-      const snapshot = ports.getSnapshot();
+      let snapshot: S;
+      try {
+        snapshot = ports.getSnapshot();
+      } catch (cause) {
+        resolve({ kind: 'failed', error: toSaveError(cause) });
+        return;
+      }
       if (snapshot.status !== 'draft') {
         resolve(dropped('not-draft'));
         return;
@@ -508,10 +516,33 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     frozen = null;
     if (isStatusChangingIntent(slot.intent)) {
       settle(slot.waiters, { kind: 'needs-retry' });
+      resumeAutosave();
     } else {
       coalesce(slot.intent, slot.waiters);
     }
     drain();
+  }
+
+  // Riders folded into a publish/revert slot got needs-retry too; keep their content saving.
+  function resumeAutosave(): void {
+    const snapshot = readSnapshot();
+    if (!snapshot || snapshot.status !== 'draft' || !snapshot.isDirty || isSuppressed(snapshot)) {
+      return;
+    }
+    armTimedCycle();
+    if (snapshot.isNew) {
+      enqueue('autosave', []);
+      return;
+    }
+    restartDebounce();
+  }
+
+  function readSnapshot(): S | null {
+    try {
+      return ports.getSnapshot();
+    } catch {
+      return null;
+    }
   }
 
   function reauthAbandoned(): void {
@@ -553,11 +584,23 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     return leaveInProgress;
   }
 
+  // Fails closed: an unreadable snapshot asks for confirmation; a disposed engine lets the caller go.
+  function dirtyDecision(): LeaveDecision {
+    if (disposed) {
+      return 'proceed';
+    }
+    const snapshot = readSnapshot();
+    return !snapshot || snapshot.isDirty ? 'confirm' : 'proceed';
+  }
+
   async function decideLeave(): Promise<LeaveDecision> {
     if (disposed) {
       return 'proceed';
     }
-    let snapshot = ports.getSnapshot();
+    let snapshot = readSnapshot();
+    if (!snapshot) {
+      return 'confirm';
+    }
     if (isTerminal() || frozen) {
       return snapshot.isDirty ? 'confirm' : 'proceed';
     }
@@ -565,8 +608,14 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     let saveOnLeavePerformed = false;
     if (shouldSaveOnLeave(snapshot)) {
       await dispatch('leave');
+      if (disposed) {
+        return 'proceed';
+      }
       saveOnLeavePerformed = true;
-      snapshot = ports.getSnapshot();
+      snapshot = readSnapshot();
+      if (!snapshot) {
+        return 'confirm';
+      }
     }
 
     if (!snapshot.isDirty) {
@@ -577,14 +626,14 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     }
     if (inFlight || pending) {
       await queueSettled();
-      return ports.getSnapshot().isDirty ? 'confirm' : 'proceed';
+      return dirtyDecision();
     }
     if (debounce || timedCycle) {
       if (saveOnLeavePerformed) {
         return 'confirm';
       }
       await dispatch('leave');
-      return ports.getSnapshot().isDirty ? 'confirm' : 'proceed';
+      return dirtyDecision();
     }
     return 'confirm';
   }
