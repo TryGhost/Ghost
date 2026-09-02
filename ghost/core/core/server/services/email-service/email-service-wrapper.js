@@ -14,7 +14,7 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, jobsService } = {}) {
     if (this.service) {
       return;
     }
@@ -35,7 +35,6 @@ class EmailServiceWrapper {
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const jobsService = require('../jobs');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
@@ -143,6 +142,8 @@ class EmailServiceWrapper {
     }
 
     this.renderer = emailRenderer;
+    // Boot reads this to wire the send-email job handler to the constructed service.
+    this.batchSendingService = batchSendingService;
 
     this.service = new EmailService({
       batchSendingService,

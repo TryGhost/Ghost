@@ -37,17 +37,21 @@ describe('Batch Sending Service', function () {
   });
 
   describe('scheduleEmail', function () {
-    it('schedules email', async function () {
+    it('dispatches a SendEmailJob and returns the dispatch promise', async function () {
+      const dispatchPromise = Promise.resolve();
       const jobsService = {
-        addJob: sinon.stub().resolves(),
+        dispatch: sinon.stub().returns(dispatchPromise),
       };
       const service = new BatchSendingService({
         jobsService,
       });
-      service.scheduleEmail(createModel({}));
-      sinon.assert.calledOnce(jobsService.addJob);
-      const job = jobsService.addJob.firstCall.args[0].job;
-      assert.equal(typeof job, 'function');
+      const result = service.scheduleEmail(createModel({ id: 'email-id' }));
+
+      assert.equal(result, dispatchPromise);
+      sinon.assert.calledOnce(jobsService.dispatch);
+      const job = jobsService.dispatch.firstCall.args[0];
+      assert.deepEqual({ ...job }, { emailId: 'email-id' });
+      assert.equal(job.constructor.type, 'send-email');
     });
   });
 
