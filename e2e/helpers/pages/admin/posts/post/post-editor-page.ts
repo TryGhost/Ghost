@@ -174,12 +174,9 @@ export class PostEditorPage extends AdminPage {
    * really "arrow-left Posts".
    */
   readonly backButton: Locator;
-  /**
-   * The "your session expired" prompt. Ember interrupts with a modal that
-   * takes the password; React keeps the editor and offers a retry in place.
-   */
+  /** The session-expired prompt: Ember's modal, React's banner. */
   readonly reauthPrompt: Locator;
-  /** React surfaces a collision as a banner; Ember alerts and reloads. */
+  /** React's update-collision banner. */
   readonly conflictBanner: Locator;
 
   readonly settingsMenu: SettingsMenu;
