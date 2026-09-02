@@ -500,6 +500,39 @@ const Newsletter: React.FC = () => {
                 {/* PROTOTYPE: the tiles stay so the card keeps its shape, but
                     dimmed and inert — nothing here is a link worth following
                     while the numbers behind it are not there yet. */}
+                {/* PROTOTYPE: variant G — Sent as the denominator, given a row of
+                    its own above the three rates it divides. Same KPI anatomy
+                    as the tiles below so it reads as the top of the same
+                    hierarchy, not as metadata; a neutral dot because it is the
+                    size of the thing being measured, not a metric. */}
+                {isSentDenominator && (
+                  <div
+                    className={`border-b ${isEmailDataHidden ? 'pointer-events-none opacity-40' : ''}`}
+                  >
+                    <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
+                      <KpiCardMoreButton
+                        onClick={() => {
+                          navigateToMembers(`emails.post_id:${postId}`);
+                        }}
+                      >
+                        View members &rarr;
+                      </KpiCardMoreButton>
+                      <KpiCardLabel
+                        onClick={() => {
+                          navigateToMembers(`emails.post_id:${postId}`);
+                        }}
+                      >
+                        <div className="ml-0.5 size-[9px] rounded-full bg-muted-foreground opacity-50"></div>
+                        Sent
+                      </KpiCardLabel>
+                      <KpiCardContent>
+                        <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
+                          {isEmailDataHidden ? noValue : formatNumber(stats.dispatched)}
+                        </KpiCardValue>
+                      </KpiCardContent>
+                    </KpiCard>
+                  </div>
+                )}
                 <div
                   className={`grid ${chartHeaderClass} items-stretch border-b ${
                     isEmailDataHidden ? 'pointer-events-none opacity-40' : ''
