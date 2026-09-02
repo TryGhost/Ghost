@@ -10,19 +10,36 @@ export interface HumanizedDiffEntry {
   oldValue?: unknown;
 }
 
+export class LexicalParseError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'LexicalParseError';
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+// null, undefined and '' are a known-empty document; anything else must carry
+// an object root with a children array or it is invalid, never empty.
 export function parseLexical(input: LexicalInput): LexicalDocument | null {
   if (input === null || input === undefined || input === '') {
     return null;
   }
+  let parsed: unknown = input;
   if (typeof input === 'string') {
-    const parsed: unknown = JSON.parse(input);
-    return isRecord(parsed) ? parsed : null;
+    try {
+      parsed = JSON.parse(input);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'invalid JSON';
+      throw new LexicalParseError(message, { cause });
+    }
   }
-  return input;
+  if (!isRecord(parsed) || !isRecord(parsed.root) || !Array.isArray(parsed.root.children)) {
+    throw new LexicalParseError('lexical root must be an object with a children array');
+  }
+  return parsed;
 }
 
 // Lexical's reconciler infers element `direction` from rendered text at mount
@@ -44,6 +61,111 @@ export function stripDirection(value: unknown): unknown {
   return value;
 }
 
+type UrlField = 'url' | Record<string, 'url'>;
+
+// Mirrors kg-default-nodes' urlTransformMap (the properties the server rewrites
+// on save), url-typed entries only; html/markdown/caption fields stay opaque.
+const CARD_URL_FIELDS: Record<string, Record<string, UrlField>> = {
+  audio: { src: 'url' },
+  bookmark: { url: 'url', 'metadata.icon': 'url', 'metadata.thumbnail': 'url' },
+  button: { buttonUrl: 'url' },
+  'email-cta': { buttonUrl: 'url' },
+  embed: { url: 'url' },
+  file: { src: 'url' },
+  gallery: { images: { src: 'url' } },
+  header: { buttonUrl: 'url', backgroundImageSrc: 'url' },
+  image: { src: 'url', href: 'url' },
+  product: { productImageSrc: 'url' },
+  video: { src: 'url', thumbnailSrc: 'url', customThumbnailSrc: 'url' },
+};
+
+function parseSiteUrl(siteUrl: string): URL | null {
+  if (!siteUrl) {
+    return null;
+  }
+  try {
+    return new URL(siteUrl);
+  } catch {
+    return null;
+  }
+}
+
+// Same rule as url-utils' absoluteToRelative: host match (protocol ignored) and
+// a path under the site's subdirectory; the subdirectory is kept in the result.
+function toSiteRelative(value: string, site: URL): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return value;
+  }
+  if (parsed.host !== site.host || !parsed.pathname.startsWith(site.pathname)) {
+    return value;
+  }
+  return parsed.href.slice(parsed.origin.length);
+}
+
+function updateAt(
+  record: Record<string, unknown>,
+  [head, ...rest]: string[],
+  update: (value: unknown) => unknown,
+): Record<string, unknown> {
+  if (head === undefined || !(head in record)) {
+    return record;
+  }
+  const current = record[head];
+  if (rest.length === 0) {
+    return { ...record, [head]: update(current) };
+  }
+  return isRecord(current) ? { ...record, [head]: updateAt(current, rest, update) } : record;
+}
+
+function normalizeUrlField(value: unknown, field: UrlField, site: URL): unknown {
+  if (field === 'url') {
+    return typeof value === 'string' ? toSiteRelative(value, site) : value;
+  }
+  if (!Array.isArray(value)) {
+    return value;
+  }
+  const items: unknown[] = value;
+  return items.map((item) => (isRecord(item) ? normalizeUrlFields(item, field, site) : item));
+}
+
+function normalizeUrlFields(
+  node: Record<string, unknown>,
+  fields: Record<string, UrlField>,
+  site: URL,
+): Record<string, unknown> {
+  let out = node;
+  for (const [path, field] of Object.entries(fields)) {
+    out = updateAt(out, path.split('.'), (value) => normalizeUrlField(value, field, site));
+  }
+  return out;
+}
+
+function normalizeNodeUrls(value: unknown, site: URL): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeNodeUrls(item, site));
+  }
+  if (!isRecord(value)) {
+    return value;
+  }
+  const fields = typeof value.type === 'string' ? CARD_URL_FIELDS[value.type] : undefined;
+  let out = fields ? normalizeUrlFields(value, fields, site) : value;
+  if (!fields && typeof value.url === 'string') {
+    out = { ...out, url: toSiteRelative(value.url, site) };
+  }
+  if (Array.isArray(value.children)) {
+    out = { ...out, children: normalizeNodeUrls(value.children, site) };
+  }
+  return out;
+}
+
+export function normalizeSiteUrls(children: unknown[], siteUrl: string): unknown[] {
+  const site = parseSiteUrl(siteUrl);
+  return site ? (normalizeNodeUrls(children, site) as unknown[]) : children;
+}
+
 function stableStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map(stableStringify).join(',')}]`;
@@ -60,22 +182,19 @@ function stableStringify(value: unknown): string {
 
 function rootChildren(document: LexicalDocument | null): unknown[] {
   const root = document?.root;
-  if (!isRecord(root) || !Array.isArray(root.children)) {
-    return [];
-  }
-  return root.children;
+  return isRecord(root) && Array.isArray(root.children) ? root.children : [];
 }
 
-export function normalizeLexicalForCompare(input: LexicalInput): string {
-  return stableStringify(stripDirection(rootChildren(parseLexical(input))));
+function comparableChildren(input: LexicalInput, siteUrl: string): unknown {
+  return stripDirection(normalizeSiteUrls(rootChildren(parseLexical(input)), siteUrl));
 }
 
-export function lexicalEquals(a: LexicalInput, b: LexicalInput): boolean {
-  return normalizeLexicalForCompare(a) === normalizeLexicalForCompare(b);
+export function normalizeLexicalForCompare(input: LexicalInput, siteUrl = ''): string {
+  return stableStringify(comparableChildren(input, siteUrl));
 }
 
-export function stripSiteUrl(lexical: string, siteUrl: string): string {
-  return siteUrl ? lexical.replaceAll(siteUrl, '') : lexical;
+export function lexicalEquals(a: LexicalInput, b: LexicalInput, siteUrl = ''): boolean {
+  return normalizeLexicalForCompare(a, siteUrl) === normalizeLexicalForCompare(b, siteUrl);
 }
 
 function nodeAt(document: unknown, path: ReadonlyArray<string | number>): unknown {
@@ -105,19 +224,28 @@ function humanizePath(path: ReadonlyArray<string | number>, document: unknown): 
     .join('.');
 }
 
-function stripDocumentDirection(input: LexicalInput): LexicalDocument {
+function comparableDocument(input: LexicalInput, siteUrl: string): LexicalDocument {
   const document = parseLexical(input);
   if (!document) {
     return {};
   }
+  const root = document.root as Record<string, unknown>;
+  const normalized = {
+    ...document,
+    root: { ...root, children: normalizeSiteUrls(rootChildren(document), siteUrl) },
+  };
   return Object.fromEntries(
-    Object.entries(document).map(([key, value]) => [key, stripDirection(value)]),
+    Object.entries(normalized).map(([key, value]) => [key, stripDirection(value)]),
   );
 }
 
-export function humanizeLexicalDiff(from: LexicalInput, to: LexicalInput): HumanizedDiffEntry[] {
-  const fromDocument = stripDocumentDirection(from);
-  const toDocument = stripDocumentDirection(to);
+export function humanizeLexicalDiff(
+  from: LexicalInput,
+  to: LexicalInput,
+  siteUrl = '',
+): HumanizedDiffEntry[] {
+  const fromDocument = comparableDocument(from, siteUrl);
+  const toDocument = comparableDocument(to, siteUrl);
 
   return microdiff(fromDocument, toDocument, { cyclesFix: false }).map((change) => {
     const entry: HumanizedDiffEntry = {
