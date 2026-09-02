@@ -301,7 +301,11 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
       {showNewMember && (
         <Button asChild>
-          <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
+          <a
+            aria-label="New member"
+            className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto sm:data-[control-shape=pill]:px-2.5"
+            href={newMemberHref}
+          >
             <span className="hidden sm:inline">New member</span>
             <span className="sm:hidden">
               <LucideIcon.Plus />

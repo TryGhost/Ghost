@@ -4,9 +4,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-provider';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-1.5 rounded-md text-control whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+  'inline-flex items-center justify-center gap-1.5 text-control whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
   {
     variants: {
       variant: {
@@ -23,14 +24,26 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-(--control-height) px-2.5 py-2',
-        sm: 'h-7 rounded-md px-3 text-sm! [&_svg]:size-3',
-        lg: 'h-11 rounded-md px-8 text-md font-semibold',
+        sm: 'h-7 px-3 text-sm! [&_svg]:size-3',
+        lg: 'h-11 px-8 text-md font-semibold',
         icon: 'size-9',
       },
+      shape: {
+        rounded: 'rounded-md',
+        pill: 'rounded-full has-[>svg:only-child]:aspect-square has-[>svg:only-child]:size-(--control-height) has-[>svg:only-child]:p-0',
+      },
     },
+    compoundVariants: [
+      {
+        shape: 'pill',
+        size: 'icon',
+        className: 'size-(--control-height) aspect-square p-0',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',
+      shape: 'rounded',
     },
   },
 );
@@ -41,8 +54,10 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+  ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
+    const { controlShape } = useShade();
     const Comp = asChild ? Slot : 'button';
+    const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
       variant === 'dropdown' ? (
         <>
@@ -57,7 +72,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
 
     return (
-      <Comp ref={ref} className={cn(buttonVariants({ variant, size, className }))} {...props}>
+      <Comp
+        ref={ref}
+        className={cn(buttonVariants({ variant, size, shape: resolvedShape, className }))}
+        {...props}
+        data-control-shape={resolvedShape}
+      >
         {content}
       </Comp>
     );

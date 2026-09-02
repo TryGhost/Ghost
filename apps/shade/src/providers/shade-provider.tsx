@@ -10,12 +10,16 @@ interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
+  controlShape: ControlShape;
 }
+
+export type ControlShape = 'rounded' | 'pill';
 
 const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
+  controlShape: 'rounded',
 });
 
 export const useShade = () => useContext(ShadeContext);
@@ -68,10 +72,15 @@ const ToasterPortal = () => {
 
 interface ShadeProviderProps {
   darkMode: boolean;
+  controlShape?: ControlShape;
   children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, children }) => {
+const ShadeProvider: React.FC<ShadeProviderProps> = ({
+  darkMode,
+  controlShape = 'rounded',
+  children,
+}) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
   const setFocusState = (value: boolean) => {
@@ -79,7 +88,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, children }) => 
   };
 
   return (
-    <ShadeContext.Provider value={{ isAnyTextFieldFocused, setFocusState, darkMode }}>
+    <ShadeContext.Provider value={{ isAnyTextFieldFocused, setFocusState, darkMode, controlShape }}>
       <GlobalDirtyStateProvider>
         {/* Default Radix tooltip timing for any Tooltip without a nearer
             provider; inner providers still win via nearest-provider scoping. */}

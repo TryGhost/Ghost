@@ -20,6 +20,7 @@ function ThemedAdminApp() {
   return (
     <ShadeApp
       className={cn('shade-admin', admin7PillEnabled && 'admin7-pill')}
+      controlShape={admin7PillEnabled ? 'pill' : 'rounded'}
       darkMode={resolvedTheme === 'dark'}
       data-react-admin-mounted
     >

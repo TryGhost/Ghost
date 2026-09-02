@@ -1,6 +1,7 @@
 import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
+import { ShadeApp } from '../../../../src/app';
 import { Button } from '../../../../src/components/ui/button';
 import { render } from '../../utils/test-utils';
 
@@ -11,6 +12,45 @@ describe('Button Component', () => {
 
     assert.ok(button, 'Button should be rendered');
     assert.ok(button.className.includes('bg-primary'), 'Should have default variant class');
+    assert.ok(button.className.includes('rounded-md'), 'Should use the rounded shape by default');
+  });
+
+  it('supports app-level pills, local overrides, link buttons, and square icon-only pills', () => {
+    render(
+      <ShadeApp controlShape="pill" darkMode={false}>
+        <Button>Inherited pill</Button>
+        <Button shape="rounded">Local rounded</Button>
+        <Button shape="pill" variant="link">
+          Link button
+        </Button>
+        <Button aria-label="Icon pill" size="icon">
+          <svg />
+        </Button>
+      </ShadeApp>,
+    );
+
+    assert.ok(
+      screen.getByRole('button', { name: 'Inherited pill' }).className.includes('rounded-full'),
+      'Should inherit the app-level pill shape',
+    );
+    assert.ok(
+      screen.getByRole('button', { name: 'Local rounded' }).className.includes('rounded-md'),
+      'Should let an explicit Button shape override the app setting',
+    );
+    assert.ok(
+      screen.getByRole('button', { name: 'Link button' }).className.includes('rounded-md'),
+      'Should keep link buttons visually unchanged',
+    );
+
+    const iconButton = screen.getByRole('button', { name: 'Icon pill' });
+    assert.ok(
+      iconButton.className.includes('rounded-full'),
+      'Should make icon-only pills circular',
+    );
+    assert.ok(
+      iconButton.className.includes('size-(--control-height)'),
+      'Should strongly enforce a square control size for icon-only pills',
+    );
   });
 
   it('applies different variants correctly', () => {

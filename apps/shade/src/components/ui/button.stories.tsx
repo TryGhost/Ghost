@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './button';
+import ShadeApp from '@/shade-app';
 import { ArrowUp, Smile } from 'lucide-react';
 
 const meta = {
@@ -29,6 +30,57 @@ export const Primary: Story = {
     docs: {
       description: {
         story: 'Main use case: call-to-action button with default styling.',
+      },
+    },
+  },
+};
+
+export const Pill: Story = {
+  args: {
+    shape: 'pill',
+    children: 'Pill button',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the pill shape when a surface opts into fully rounded controls.',
+      },
+    },
+  },
+};
+
+export const AppLevelPill: Story = {
+  args: {
+    children: 'Inherited pill button',
+  },
+  render: (args) => (
+    <ShadeApp controlShape="pill" darkMode={false}>
+      <Button {...args} />
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the Shade app setting to apply the pill shape across an opted-in surface.',
+      },
+    },
+  },
+};
+
+export const LocalRoundedOverride: Story = {
+  args: {
+    shape: 'rounded',
+    children: 'Rounded override',
+  },
+  render: (args) => (
+    <ShadeApp controlShape="pill" darkMode={false}>
+      <Button {...args} />
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use a local shape override for a control that must stay rounded on a pill surface.',
       },
     },
   },
@@ -162,6 +214,23 @@ export const IconOnly: Story = {
       description: {
         story:
           'Use when an icon sufficiently conveys meaning and space is constrained. Always provide an accessible `aria-label`.',
+      },
+    },
+  },
+};
+
+export const PillIconOnly: Story = {
+  args: {
+    shape: 'pill',
+    size: 'icon',
+    'aria-label': 'Move up',
+    children: <ArrowUp />,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for icon-only actions on a pill surface; the control is constrained to a square so it renders as a true circle.',
       },
     },
   },
