@@ -81,6 +81,13 @@ export const useStubbedNewsletterStats = (
 
   const { send, counting } = prototype.status;
   const delivered = counting.deliveredCount;
+  // Variant G is named for what production actually does: open and click
+  // rates are opened_count / email_count — everything over the addressed
+  // list. The other variants keep this file's delivered-based rates (the
+  // Mailchimp definition argued for above), so G is the one that matches the
+  // product as it ships today, and the comparison between them is honest.
+  const rateDenominator =
+    prototype.variant === 'sentAsDenominator' ? send.recipientCount : delivered;
 
   // How much of the send has reported back, standing in for how long it has
   // been running. Opens are scaled by it so that a third of the way through the
@@ -100,7 +107,7 @@ export const useStubbedNewsletterStats = (
     dispatched: send.reachedCount,
     opened,
     clicked,
-    openedRate: delivered > 0 ? opened / delivered : 0,
-    clickedRate: delivered > 0 ? clicked / delivered : 0,
+    openedRate: rateDenominator > 0 ? opened / rateDenominator : 0,
+    clickedRate: rateDenominator > 0 ? clicked / rateDenominator : 0,
   };
 };

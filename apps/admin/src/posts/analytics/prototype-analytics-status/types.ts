@@ -144,8 +144,9 @@ export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
  * E, F and G share everything — the sending line, the gate, the demo hooks —
  * and differ only in the funnel's first position. E counts dispatches there.
  * F keeps the Sent figure but fills the ring with deliveries. G takes Sent out
- * of the funnel altogether (the subtitle states it once, as the denominator)
- * and makes Delivered a metric like the two beside it: count, rate, average.
+ * of the funnel altogether (the subtitle states it once, as the denominator
+ * of every rate — which is how production computes them today) and makes
+ * Delivered a metric like the two beside it: count, rate, average.
  */
 export const isGatedVariant = (variant: StatusVariant): boolean =>
   variant === 'gatedUntilSent' || variant === 'deliveryRing' || variant === 'sentAsDenominator';

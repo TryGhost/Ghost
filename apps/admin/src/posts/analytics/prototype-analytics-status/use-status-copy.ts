@@ -267,9 +267,9 @@ export const useDeliveryRingVariant = (): boolean => {
  *
  * G's funnel is Delivered → Opened → Clicked, three metrics with the same
  * anatomy — a count, a rate, an average to compare against — and Sent is the
- * denominator they all sit over, stated once in the post's subtitle rather
- * than competing for a tile. Each ring's denominator is the previous ring's
- * numerator, which is what the arrows between them were always implying.
+ * denominator every one of them sits over, exactly as production computes
+ * open and click rates today, stated once in the post's subtitle rather than
+ * competing for a tile.
  */
 export const useSentAsDenominatorVariant = (): boolean => {
   const prototype = usePrototypeAnalyticsStatus();
