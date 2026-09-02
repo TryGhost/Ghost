@@ -2,12 +2,13 @@ const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const ObjectId = require('bson-objectid').default;
 const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
+const jobManager = require('../../../../core/server/services/jobs/job-service');
 const { mockSystemTime } = require('../../../utils/clock-utils');
+const { waitForEmailStatus } = require('../../../utils/batch-email-utils');
 
 describe('Domain Warming Integration Tests', function () {
   let agent;
@@ -67,15 +68,15 @@ describe('Domain Warming Integration Tests', function () {
 
     const postId = res.body.posts[0].id;
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-
     await agent
       .put(`posts/${postId}/?newsletter=${newsletterSlug}`)
       .body({ posts: [{ status: 'published', updated_at: res.body.posts[0].updated_at }] })
       .expectStatus(200);
 
-    await completedPromise;
-    return await models.Email.findOne({ post_id: postId });
+    const email = await models.Email.findOne({ post_id: postId });
+    await waitForEmailStatus(email.id);
+    await email.refresh();
+    return email;
   }
 
   // Helper: Set fake time to specific day
