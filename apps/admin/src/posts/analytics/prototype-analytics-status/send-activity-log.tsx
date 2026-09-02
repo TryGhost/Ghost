@@ -530,12 +530,13 @@ const SendActivityLog: React.FC = () => {
   // disappearance was read as "done" while the figures beneath it were a tenth
   // counted — so it stays for the counting phase, saying so, and retires only
   // once every sent email has a result against it.
+  //
+  // And they do not retire even then. Testing was unanimous that silence is a
+  // poor completion signal — "it just goes quiet" — so the line settles into a
+  // record: delivery complete, with the delivered and bounced totals that
+  // nothing else on the page carries.
   const isGated = isGatedVariant(resolved.variant);
-  if (
-    isSendingOnly &&
-    isSendComplete(resolved.status) &&
-    (!isGated || isSendFullyAccountedFor(resolved.status))
-  ) {
+  if (isSendingOnly && !isGated && isSendComplete(resolved.status)) {
     return null;
   }
 
@@ -583,18 +584,29 @@ const SendActivityLog: React.FC = () => {
       );
     }
 
-    // The counting phase: sending is done and says so, and the same line now
-    // owns the one fact the figures below cannot carry for themselves — that
-    // they are still being counted, how current they are, and that a refresh
-    // is how they move.
+    // After sending: the same line owns the facts the figures below cannot
+    // carry for themselves. In plain words, because "counting" was jargon to
+    // testers: delivery is still being confirmed, that is normal, here is how
+    // much has, here is how long is left. Then, once every email has a result,
+    // it settles into the record — delivery complete, delivered and bounced —
+    // rather than disappearing, which read as nothing at all.
     if (send.state === 'submitted') {
-      const through = at(resolved.status.counting.countedThrough);
-      status.label = `All ${formatNumber(send.recipientCount)} emails sent`;
-      detail = (
+      const { counting } = resolved.status;
+      const total = formatNumber(send.recipientCount);
+      const delivered = formatNumber(counting.deliveredCount);
+      const bounced = formatNumber(counting.bouncedCount);
+      const countingEta = prototype?.countingEtaSeconds ?? null;
+      status.label = `All ${total} emails sent`;
+      detail = isSendFullyAccountedFor(resolved.status) ? (
         <>
-          {'Still counting deliveries and opens'}
-          {through && ` · Processed through ${through}`}
-          {' · Refresh for the latest'}
+          {`Delivery complete · ${delivered} delivered · ${bounced} bounced`}
+          {send.recipientCount > 0 &&
+            ` (${formatPercentage(counting.bouncedCount / send.recipientCount)})`}
+        </>
+      ) : (
+        <>
+          {`Delivery still being confirmed — normal for a few minutes · ${delivered} delivered · ${bounced} bounced`}
+          {countingEta !== null && ` · ${formatEta(countingEta)}`}
         </>
       );
     }

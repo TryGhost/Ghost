@@ -100,7 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <div className="size-2 rounded-full bg-chart-gray opacity-80"></div>
-          Average
+          Your average
         </div>
         <div className="text-right font-mono">{avgValue}</div>
       </div>
@@ -522,8 +522,8 @@ const Newsletter: React.FC = () => {
                 {isProvisional && (
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b bg-muted/30 px-6 py-2.5 text-sm text-muted-foreground">
                     <span>
-                      Still counting — these figures will keep rising until every email has been
-                      counted.
+                      Delivery and opens are still being confirmed — these figures will keep rising
+                      for a few minutes.
                     </span>
                     {countedThrough && <Badge variant="secondary">{countedThrough}</Badge>}
                     <span>Refresh for the latest.</span>
@@ -621,7 +621,9 @@ const Newsletter: React.FC = () => {
                       {isSendingOnly
                         ? `Delivered of ${formatNumber(stats.addressed)}`
                         : isSentDenominator
-                          ? 'Delivered'
+                          ? isProvisional
+                            ? `Delivered of ${formatNumber(stats.addressed)}`
+                            : 'Delivered'
                           : !isEmailDataHidden && stats.addressed > sentValue
                             ? `Sent of ${formatNumber(stats.addressed)}`
                             : 'Sent'}

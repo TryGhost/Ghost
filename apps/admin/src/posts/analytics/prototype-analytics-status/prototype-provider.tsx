@@ -6,6 +6,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  COUNTING_ETA_SECONDS,
   PLAYBACK_ANCHOR_KEY,
   PLAYBACK_MS,
   PREPARING_END_POSITION,
@@ -180,6 +181,10 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       // Recomputed on every tick because `position` is a dependency of this
       // memo, which is what makes the line's estimate count down live.
       sendEtaSeconds: isPlaying && position !== null ? etaSecondsAt(position) : null,
+      countingEtaSeconds:
+        position !== null && position >= SEND_COMPLETE_POSITION && position < 1
+          ? Math.ceil(((1 - position) / (1 - SEND_COMPLETE_POSITION)) * COUNTING_ETA_SECONDS)
+          : null,
       isPlaying,
       isPaused: !isPlaying && position !== null && position < 1,
       hasPlayback: position !== null,

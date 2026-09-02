@@ -85,6 +85,8 @@ export const PREPARING_END_POSITION = 0.12;
  */
 export const PREPARING_ETA_SECONDS = 2 * 60;
 export const SENDING_ETA_SECONDS = 4 * 60;
+/** Counting's budget on the same clock: deliveries and opens confirmed within ten. */
+export const COUNTING_ETA_SECONDS = 10 * 60;
 
 export const playbackProgress = (position: number): PlaybackProgress => ({
   // Three seconds of preparation: published, nothing out yet. Long enough to
@@ -120,6 +122,13 @@ export interface PrototypeContextValue extends PrototypeState {
    * and once the last batch is away.
    */
   sendEtaSeconds: number | null;
+  /**
+   * Time left until every sent email has a result, on the same fictional
+   * clock. Read off the position rather than the live clock, so a frozen page
+   * shows the estimate as of its snapshot and a refresh shows a smaller one.
+   * Null before the send completes and once counting settles.
+   */
+  countingEtaSeconds: number | null;
   isPlaying: boolean;
   /** Halted partway through a run, holding a position play() will resume from. */
   isPaused: boolean;

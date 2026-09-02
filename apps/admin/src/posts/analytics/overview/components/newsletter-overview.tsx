@@ -173,8 +173,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
             {isProvisional && (
               <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
                 <span>
-                  Still counting — these figures will keep rising until every email has been
-                  counted.
+                  Delivery and opens are still being confirmed — these figures will keep rising for
+                  a few minutes.
                 </span>
                 {countedThrough && <Badge variant="secondary">{countedThrough}</Badge>}
                 <span>Refresh for the latest.</span>
