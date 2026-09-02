@@ -175,6 +175,57 @@ describe('createSlugMachine', () => {
       expect(generateSlug).not.toHaveBeenCalled();
     });
 
+    it('discards an in-flight generation when the title returns to the generated title', async () => {
+      const pending = deferred<string>();
+      const { machine, events, proposals } = createHarness(
+        vi.fn().mockReturnValueOnce(pending.promise),
+      );
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+      events.length = 0;
+
+      const commit = machine.titleCommitted('Changed');
+      await expect(machine.titleCommitted('Hello')).resolves.toMatchObject({
+        source: 'unchanged',
+        reason: 'same-title',
+      });
+      pending.resolve('changed');
+
+      await expect(commit).resolves.toEqual({
+        slug: 'hello',
+        source: 'unchanged',
+        reason: 'stale',
+      });
+      expect(machine.getState()).toMatchObject({
+        slug: 'hello',
+        title: 'Hello',
+        lastCommittedTitle: 'Hello',
+        pending: false,
+      });
+      expect(proposals.filter((proposal) => proposal.source === 'generated')).toEqual([]);
+      expect(events.at(-1)).toMatchObject({ state: { pending: false }, proposal: null });
+    });
+
+    it('discards an in-flight generation when a later title is frozen', async () => {
+      const pending = deferred<string>();
+      const { machine } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const commit = machine.titleCommitted('Changed');
+      await expect(machine.titleCommitted('')).resolves.toMatchObject({
+        source: 'unchanged',
+        reason: 'frozen',
+      });
+      pending.resolve('changed');
+
+      await expect(commit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+      expect(machine.getState()).toMatchObject({
+        slug: 'hello',
+        title: 'Hello',
+        lastCommittedTitle: '',
+        pending: false,
+      });
+    });
+
     it('generates for an unchanged title when the slug is missing', async () => {
       const { machine } = createHarness();
       machine.loaded({ slug: '', title: 'Hello' });
@@ -343,11 +394,12 @@ describe('createSlugMachine', () => {
 
     it('discards in-flight responses when a post is loaded', async () => {
       const pending = deferred<string>();
-      const { machine } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
+      const { machine, events } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
       machine.loaded({ slug: '', title: '' });
 
       const commit = machine.titleCommitted('Old post');
       machine.loaded({ slug: 'other', title: 'Other' });
+      events.length = 0;
       pending.resolve('old-post');
 
       await expect(commit).resolves.toEqual({
@@ -356,6 +408,7 @@ describe('createSlugMachine', () => {
         reason: 'stale',
       });
       expect(machine.getState().slug).toBe('other');
+      expect(events).toEqual([]);
     });
 
     it('reports generator failures without changing the slug', async () => {
@@ -417,6 +470,34 @@ describe('createSlugMachine', () => {
       });
       expect(generateSlug).not.toHaveBeenCalled();
       expect(machine.getState().mode).toBe('derived');
+    });
+
+    it.each([
+      ['', 'blank'],
+      ['hello', 'current slug'],
+    ])('discards an in-flight manual edit when a later edit reverts to %j (%s)', async (input) => {
+      const pending = deferred<string>();
+      const { machine, proposals } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const edit = machine.slugEdited('mine');
+      await expect(machine.slugEdited(input)).resolves.toMatchObject({
+        source: 'unchanged',
+        reason: 'reverted',
+      });
+      pending.resolve('mine');
+
+      await expect(edit).resolves.toEqual({
+        slug: 'hello',
+        source: 'unchanged',
+        reason: 'stale',
+      });
+      expect(machine.getState()).toMatchObject({
+        slug: 'hello',
+        mode: 'derived',
+        pending: false,
+      });
+      expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
     });
 
     it('applies the server result and switches to custom', async () => {

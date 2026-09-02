@@ -163,10 +163,17 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   const unchanged = (reason: UnchangedReason, error?: unknown): SlugProposal =>
     emit({ slug, source: 'unchanged', reason, ...(error !== undefined && { error }) });
 
+  const stale = (): SlugProposal => ({ slug, source: 'unchanged', reason: 'stale' });
+
   const request = async (
     text: string,
     manual: boolean,
-  ): Promise<{ ticket: number; result?: string; error?: unknown }> => {
+  ): Promise<{
+    ticket: number;
+    result?: string;
+    error?: unknown;
+    cleanupChangedState: boolean;
+  }> => {
     latestTicket += 1;
     const ticket = latestTicket;
     inFlightTickets.add(ticket);
@@ -174,14 +181,22 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
       pendingManual.add(ticket);
     }
     notify(null);
+    let result: string | undefined;
+    let error: unknown;
     try {
-      return { ticket, result: await generateSlug(text) };
-    } catch (error) {
-      return { ticket, error };
-    } finally {
-      inFlightTickets.delete(ticket);
-      pendingManual.delete(ticket);
+      result = await generateSlug(text);
+    } catch (requestError) {
+      error = requestError;
     }
+    const stateBeforeCleanup = getState();
+    inFlightTickets.delete(ticket);
+    pendingManual.delete(ticket);
+    const stateAfterCleanup = getState();
+    const cleanupChangedState =
+      stateBeforeCleanup.pending !== stateAfterCleanup.pending ||
+      stateBeforeCleanup.mode !== stateAfterCleanup.mode ||
+      stateBeforeCleanup.status !== stateAfterCleanup.status;
+    return { ticket, result, error, cleanupChangedState };
   };
 
   return {
@@ -203,15 +218,20 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
         return unchanged('custom');
       }
       if (nextTitle === title && slug) {
+        latestTicket += 1;
         return unchanged('same-title');
       }
       if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
+        latestTicket += 1;
         return unchanged('frozen');
       }
 
-      const { ticket, result, error } = await request(nextTitle, false);
+      const { ticket, result, error, cleanupChangedState } = await request(nextTitle, false);
       if (ticket !== latestTicket) {
-        return unchanged('stale');
+        if (cleanupChangedState) {
+          notify(null);
+        }
+        return stale();
       }
       if (error !== undefined) {
         return unchanged('error', error);
@@ -227,12 +247,16 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     async slugEdited(input) {
       const candidate = normalizeManualSlug(input, slug);
       if (candidate === null) {
+        latestTicket += 1;
         return unchanged('reverted');
       }
 
-      const { ticket, result, error } = await request(candidate, true);
+      const { ticket, result, error, cleanupChangedState } = await request(candidate, true);
       if (ticket !== latestTicket) {
-        return unchanged('stale');
+        if (cleanupChangedState) {
+          notify(null);
+        }
+        return stale();
       }
       if (error !== undefined) {
         return unchanged('error', error);
