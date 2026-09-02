@@ -908,10 +908,10 @@ describe('createSaveEngine', () => {
 
       h.patch({ status: 'published', publishedAt: PAST, updatedAt: FUTURE });
       await h.resolveSlug('hello', 'unchanged');
-      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'not-draft' });
       expect(h.prepare).not.toHaveBeenCalled();
       expect(h.execute).not.toHaveBeenCalled();
       expect(h.engine.getState()).toEqual({ kind: 'idle' });
+      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'not-draft' });
     });
 
     it('drops a background save whose post went clean during the slug request', async () => {
@@ -922,9 +922,9 @@ describe('createSaveEngine', () => {
 
       h.patch({ isDirty: false });
       await h.resolveSlug('hello', 'unchanged');
-      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
       expect(h.prepare).not.toHaveBeenCalled();
       expect(h.execute).not.toHaveBeenCalled();
+      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
     });
 
     it('never prepares a save disposed while slug work was settling', async () => {
