@@ -12,8 +12,11 @@ import {
   type SlugProposal,
 } from './slug-machine';
 
-function createHarness(generateSlug = vi.fn((text: string) => Promise.resolve(slugify(text)))) {
-  const machine = createSlugMachine({ generateSlug });
+function createHarness(
+  generateSlug = vi.fn((text: string) => Promise.resolve(slugify(text))),
+  onListenerError = vi.fn(),
+) {
+  const machine = createSlugMachine({ generateSlug, onListenerError });
   const proposals: SlugProposal[] = [];
   const events: Array<{ state: SlugMachineState; proposal: SlugProposal | null }> = [];
   machine.subscribe((state, proposal) => {
@@ -22,7 +25,7 @@ function createHarness(generateSlug = vi.fn((text: string) => Promise.resolve(sl
       proposals.push(proposal);
     }
   });
-  return { machine, generateSlug, proposals, events };
+  return { machine, generateSlug, onListenerError, proposals, events };
 }
 
 describe('isCustomSlug', () => {
@@ -88,8 +91,8 @@ describe('resolveDedupedSlug', () => {
     ['zero is not an increment', 'whatever-0', 'whatever 0', 'whatever', 'whatever-0'],
     ['trailing number that is a different base', 'other-2', 'other', 'whatever', 'other-2'],
     ['distinct slug', 'changed', 'changed', 'whatever', 'changed'],
-    ['typed number word on current base', 'top-10', 'top 10', 'top', 'top'],
-    ['Ember parity: numeric result on an empty current slug reverts to empty', '2', '2!', '', ''],
+    ['typed number word on current base', 'top-10', 'top 10', 'top', 'top-10'],
+    ['numeric result on an empty current slug', '2', '2!', '', '2'],
   ])('%s', (_label, serverSlug, candidate, current, expected) => {
     expect(resolveDedupedSlug(serverSlug, candidate, current)).toBe(expected);
   });
@@ -188,6 +191,7 @@ describe('createSlugMachine', () => {
         source: 'unchanged',
         reason: 'same-title',
       });
+      const eventCount = events.length;
       pending.resolve('changed');
 
       await expect(commit).resolves.toEqual({
@@ -202,7 +206,11 @@ describe('createSlugMachine', () => {
         pending: false,
       });
       expect(proposals.filter((proposal) => proposal.source === 'generated')).toEqual([]);
-      expect(events.at(-1)).toMatchObject({ state: { pending: false }, proposal: null });
+      expect(events).toHaveLength(eventCount);
+      expect(events.at(-1)).toMatchObject({
+        state: { pending: false },
+        proposal: { reason: 'same-title' },
+      });
     });
 
     it('discards an in-flight generation when a later title is frozen', async () => {
@@ -357,10 +365,11 @@ describe('createSlugMachine', () => {
 
       second.resolve('second');
       await expect(secondCommit).resolves.toEqual({ slug: 'second', source: 'generated' });
+      expect(machine.getState().pending).toBe(false);
 
       first.resolve('first');
       await expect(firstCommit).resolves.toEqual({
-        slug: 'second',
+        slug: '',
         source: 'unchanged',
         reason: 'stale',
       });
@@ -403,7 +412,7 @@ describe('createSlugMachine', () => {
       pending.resolve('old-post');
 
       await expect(commit).resolves.toEqual({
-        slug: 'other',
+        slug: '',
         source: 'unchanged',
         reason: 'stale',
       });
@@ -451,6 +460,37 @@ describe('createSlugMachine', () => {
         reason: 'empty-result',
       });
     });
+
+    it('ignores a whitespace-only generator result like Ember does', async () => {
+      const { machine } = createHarness(vi.fn().mockResolvedValueOnce('   '));
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+        slug: 'hello',
+        source: 'unchanged',
+        reason: 'empty-result',
+      });
+      expect(machine.getState()).toMatchObject({ slug: 'hello', title: 'Hello', mode: 'derived' });
+    });
+
+    it.each(['', 'hello'])(
+      'does not let a no-op manual %j cancel title generation',
+      async (input) => {
+        const pending = deferred<string>();
+        const { machine } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
+        machine.loaded({ slug: 'hello', title: 'Hello' });
+
+        const commit = machine.titleCommitted('Changed');
+        await expect(machine.slugEdited(input)).resolves.toMatchObject({
+          source: 'unchanged',
+          reason: 'reverted',
+        });
+        expect(machine.getState()).toMatchObject({ mode: 'derived', pending: true });
+
+        pending.resolve('changed');
+        await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+      },
+    );
   });
 
   describe('slugEdited', () => {
@@ -485,7 +525,7 @@ describe('createSlugMachine', () => {
         source: 'unchanged',
         reason: 'reverted',
       });
-      expect(machine.getState()).toMatchObject({ mode: 'derived', pending: true });
+      expect(machine.getState()).toMatchObject({ mode: 'derived', pending: false });
       pending.resolve('mine');
 
       await expect(edit).resolves.toEqual({
@@ -520,7 +560,7 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({
         slug: 'changed',
         mode: 'derived',
-        pending: true,
+        pending: false,
       });
 
       pending.resolve('mine');
@@ -580,6 +620,18 @@ describe('createSlugMachine', () => {
         reason: 'reverted',
       });
       expect(machine.getState().mode).toBe('derived');
+    });
+
+    it('ignores a whitespace-only manual result like Ember does for generated slugs', async () => {
+      const { machine } = createHarness(vi.fn().mockResolvedValueOnce('   '));
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      await expect(machine.slugEdited('changed')).resolves.toEqual({
+        slug: 'hello',
+        source: 'unchanged',
+        reason: 'empty-result',
+      });
+      expect(machine.getState()).toMatchObject({ slug: 'hello', mode: 'derived' });
     });
 
     it('returns to derived when the generator fails', async () => {
@@ -680,7 +732,7 @@ describe('createSlugMachine', () => {
 
       await expect(secondEdit).resolves.toEqual({ slug: 'two', source: 'manual' });
       await expect(firstEdit).resolves.toEqual({
-        slug: 'two',
+        slug: 'hello',
         source: 'unchanged',
         reason: 'stale',
       });
@@ -721,7 +773,7 @@ describe('createSlugMachine', () => {
         const { first, second, firstEdit, secondEdit, machine } = overlap();
         second.reject(new Error('boom'));
         await expect(secondEdit).resolves.toMatchObject({ reason: 'error' });
-        expect(machine.getState()).toMatchObject({ mode: 'derived', pending: true });
+        expect(machine.getState()).toMatchObject({ mode: 'derived', pending: false });
         first.resolve('one');
         await expect(firstEdit).resolves.toMatchObject({ reason: 'stale' });
         await expectDerivedAndRegenerating(machine);
@@ -763,5 +815,45 @@ describe('createSlugMachine', () => {
       expect.objectContaining({ slug: 'one', status: 'derived', pending: false }),
       { slug: 'one', source: 'generated' },
     );
+  });
+
+  it('isolates subscriber failures from transitions and other subscribers', async () => {
+    const generateSlug = vi.fn().mockResolvedValue('changed');
+    const onListenerError = vi.fn();
+    const { machine, events } = createHarness(generateSlug, onListenerError);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+    machine.subscribe(() => {
+      throw new Error('listener failed');
+    });
+    const laterListener = vi.fn();
+    machine.subscribe(laterListener);
+
+    await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      slug: 'changed',
+      source: 'generated',
+    });
+    expect(onListenerError).toHaveBeenCalledTimes(2);
+    expect(laterListener).toHaveBeenCalledTimes(2);
+    expect(events.at(-1)).toMatchObject({ state: { pending: false, slug: 'changed' } });
+    expect(machine.getState()).toMatchObject({ pending: false, mode: 'derived', slug: 'changed' });
+  });
+
+  it('keeps a manual response atomic with its pending custom mode', async () => {
+    const pending = deferred<string>();
+    const generateSlug = vi.fn().mockReturnValueOnce(pending.promise);
+    const { machine } = createHarness(generateSlug);
+    machine.loaded({ slug: 'hello', title: 'Hello' });
+
+    const edit = machine.slugEdited('mine');
+    const interleavedCommit = pending.promise.then(() => machine.titleCommitted('Changed'));
+    pending.resolve('mine');
+
+    await expect(edit).resolves.toEqual({ slug: 'mine', source: 'manual' });
+    await expect(interleavedCommit).resolves.toMatchObject({
+      source: 'unchanged',
+      reason: 'custom',
+    });
+    expect(generateSlug).toHaveBeenCalledTimes(1);
+    expect(machine.getState()).toMatchObject({ slug: 'mine', mode: 'custom', pending: false });
   });
 });

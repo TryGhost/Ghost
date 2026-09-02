@@ -14,7 +14,7 @@ export interface SlugMachineState {
   readonly title: string;
   /** The title from the latest titleCommitted call regardless of outcome; drives `status`. */
   readonly lastCommittedTitle: string;
-  /** True while a request issued since the last `loaded()` is in flight. */
+  /** True while an applicable title or manual request is in flight. */
   readonly pending: boolean;
 }
 
@@ -45,6 +45,8 @@ export interface LoadedPost {
 export interface SlugMachineOptions {
   /** Port for GET /slugs/post/:name/:id — receives the raw text, returns the deduplicated slug. */
   generateSlug: (text: string) => Promise<string>;
+  /** Listener failures are isolated from machine transitions and reported here. Must not throw. */
+  onListenerError: (error: unknown) => void;
 }
 
 /** Called on every state change; `proposal` is null when only `pending` changed or a post loaded. */
@@ -108,13 +110,16 @@ export function resolveDedupedSlug(
   }
   const tokens = serverSlug.split('-');
   const increment = Number(tokens.pop());
-  if (increment > 0 && tokens.join('-') === currentSlug && serverSlug !== candidate) {
+  if (increment > 0 && tokens.join('-') === currentSlug && serverSlug !== slugify(candidate)) {
     return currentSlug;
   }
   return serverSlug;
 }
 
-export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMachine {
+export function createSlugMachine({
+  generateSlug,
+  onListenerError,
+}: SlugMachineOptions): SlugMachine {
   // Only load and an applied manual edit move settledMode; the latest request reads as custom
   // while it is a manual edit so a title commit cannot race it. Older pending edits are stale.
   let settledMode: SlugMode = 'derived';
@@ -122,13 +127,15 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   let slug = '';
   let title = '';
   let lastCommittedTitle = '';
-  // Every request takes a ticket; a response applies only while its ticket is still the latest.
-  // loaded() clears the in-flight sets so requests from the previous post stop reading as pending.
-  let latestTicket = 0;
+  // Requests have separate applicability per intent. A manual request supersedes title generation,
+  // but a no-op manual blur only supersedes older manual work and must not cancel a title request.
+  let nextTicket = 0;
+  let latestTitleTicket = 0;
+  let latestManualTicket = 0;
   const inFlightTickets = new Set<number>();
   const listeners = new Set<SlugListener>();
 
-  const mode = (): SlugMode => (pendingManual.has(latestTicket) ? 'custom' : settledMode);
+  const mode = (): SlugMode => (pendingManual.has(latestManualTicket) ? 'custom' : settledMode);
 
   const getState = (): SlugMachineState => {
     const currentMode = mode();
@@ -144,14 +151,22 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
       slug,
       title,
       lastCommittedTitle,
-      pending: inFlightTickets.size > 0,
+      pending: inFlightTickets.has(latestTitleTicket) || inFlightTickets.has(latestManualTicket),
     };
   };
 
   const notify = (proposal: SlugProposal | null): void => {
     const state = getState();
     for (const listener of listeners) {
-      listener(state, proposal);
+      try {
+        listener(state, proposal);
+      } catch (error) {
+        try {
+          onListenerError(error);
+        } catch {
+          // Error reporting must not corrupt the state transition or prevent other listeners.
+        }
+      }
     }
   };
 
@@ -163,7 +178,34 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   const unchanged = (reason: UnchangedReason, error?: unknown): SlugProposal =>
     emit({ slug, source: 'unchanged', reason, ...(error !== undefined && { error }) });
 
-  const stale = (): SlugProposal => ({ slug, source: 'unchanged', reason: 'stale' });
+  const stale = (slugAtRequest: string): SlugProposal => ({
+    slug: slugAtRequest,
+    source: 'unchanged',
+    reason: 'stale',
+  });
+
+  const invalidateTitleRequest = (): void => {
+    inFlightTickets.delete(latestTitleTicket);
+    latestTitleTicket = 0;
+  };
+
+  const invalidateManualRequest = (): void => {
+    inFlightTickets.delete(latestManualTicket);
+    pendingManual.delete(latestManualTicket);
+    latestManualTicket = 0;
+  };
+
+  const cleanupRequest = (ticket: number): boolean => {
+    const stateBeforeCleanup = getState();
+    inFlightTickets.delete(ticket);
+    pendingManual.delete(ticket);
+    const stateAfterCleanup = getState();
+    return (
+      stateBeforeCleanup.pending !== stateAfterCleanup.pending ||
+      stateBeforeCleanup.mode !== stateAfterCleanup.mode ||
+      stateBeforeCleanup.status !== stateAfterCleanup.status
+    );
+  };
 
   const request = async (
     text: string,
@@ -172,10 +214,19 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     ticket: number;
     result?: string;
     error?: unknown;
-    cleanupChangedState: boolean;
+    slugAtRequest: string;
   }> => {
-    latestTicket += 1;
-    const ticket = latestTicket;
+    nextTicket += 1;
+    const ticket = nextTicket;
+    const slugAtRequest = slug;
+    if (manual) {
+      invalidateTitleRequest();
+      invalidateManualRequest();
+      latestManualTicket = ticket;
+    } else {
+      invalidateTitleRequest();
+      latestTitleTicket = ticket;
+    }
     inFlightTickets.add(ticket);
     if (manual) {
       pendingManual.add(ticket);
@@ -188,20 +239,13 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     } catch (requestError) {
       error = requestError;
     }
-    const stateBeforeCleanup = getState();
-    inFlightTickets.delete(ticket);
-    pendingManual.delete(ticket);
-    const stateAfterCleanup = getState();
-    const cleanupChangedState =
-      stateBeforeCleanup.pending !== stateAfterCleanup.pending ||
-      stateBeforeCleanup.mode !== stateAfterCleanup.mode ||
-      stateBeforeCleanup.status !== stateAfterCleanup.status;
-    return { ticket, result, error, cleanupChangedState };
+    return { ticket, result, error, slugAtRequest };
   };
 
   return {
     loaded(post) {
-      latestTicket += 1;
+      latestTitleTicket = 0;
+      latestManualTicket = 0;
       inFlightTickets.clear();
       pendingManual.clear();
       slug = post.slug;
@@ -218,25 +262,26 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
         return unchanged('custom');
       }
       if (nextTitle === title && slug) {
-        latestTicket += 1;
+        invalidateTitleRequest();
         return unchanged('same-title');
       }
       if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
-        latestTicket += 1;
+        invalidateTitleRequest();
         return unchanged('frozen');
       }
 
-      const { ticket, result, error, cleanupChangedState } = await request(nextTitle, false);
-      if (ticket !== latestTicket) {
+      const { ticket, result, error, slugAtRequest } = await request(nextTitle, false);
+      const cleanupChangedState = cleanupRequest(ticket);
+      if (ticket !== latestTitleTicket) {
         if (cleanupChangedState) {
           notify(null);
         }
-        return stale();
+        return stale(slugAtRequest);
       }
       if (error !== undefined) {
         return unchanged('error', error);
       }
-      if (!result) {
+      if (!result?.trim()) {
         return unchanged('empty-result');
       }
       slug = result;
@@ -247,21 +292,22 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     async slugEdited(input) {
       const candidate = normalizeManualSlug(input, slug);
       if (candidate === null) {
-        latestTicket += 1;
+        invalidateManualRequest();
         return unchanged('reverted');
       }
 
-      const { ticket, result, error, cleanupChangedState } = await request(candidate, true);
-      if (ticket !== latestTicket) {
+      const { ticket, result, error, slugAtRequest } = await request(candidate, true);
+      const cleanupChangedState = cleanupRequest(ticket);
+      if (ticket !== latestManualTicket) {
         if (cleanupChangedState) {
           notify(null);
         }
-        return stale();
+        return stale(slugAtRequest);
       }
       if (error !== undefined) {
         return unchanged('error', error);
       }
-      if (!result) {
+      if (!result?.trim()) {
         return unchanged('empty-result');
       }
       const resolved = resolveDedupedSlug(result, candidate, slug);
