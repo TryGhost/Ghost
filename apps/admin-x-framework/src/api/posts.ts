@@ -53,6 +53,8 @@ export interface PostResponseType {
 
 const dataType = 'PostsResponseType';
 
+export const postsDataType = dataType;
+
 export const useBrowsePosts = createQuery<PostsResponseType>({
   dataType,
   path: '/posts/',
