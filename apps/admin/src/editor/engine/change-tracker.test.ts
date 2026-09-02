@@ -257,9 +257,17 @@ describe('createChangeTracker', () => {
     it('is cleared by an acknowledged save', () => {
       const tracker = loadedTracker();
       tracker.markSaveError();
-      tracker.setSaved(savedPost());
+      tracker.saveAcknowledged(savedPost());
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    it('survives a refetch of the saved post', () => {
+      const tracker = loadedTracker();
+      tracker.markSaveError();
+      tracker.setSaved(savedPost());
+
+      expect(tracker.verdict().reasons.map((r) => r.code)).toEqual(['POST_HAS_ERROR']);
     });
 
     it('is listed first when other reasons apply', () => {
@@ -325,7 +333,7 @@ describe('createChangeTracker', () => {
       tracker.setLive({ lexical: edited, title: 'Edited' });
       expect(tracker.verdict().dirty).toBe(true);
 
-      tracker.setSaved(savedPost({ lexical: edited, title: 'Edited' }));
+      tracker.saveAcknowledged(savedPost({ lexical: edited, title: 'Edited' }));
       expect(tracker.verdict().dirty).toBe(false);
     });
 
@@ -338,7 +346,7 @@ describe('createChangeTracker', () => {
 
       const edited = serialize(appendParagraph(fixture.after, 'Edit'));
       tracker.setLive({ lexical: edited });
-      tracker.setSaved(savedPost({ lexical: edited }));
+      tracker.saveAcknowledged(savedPost({ lexical: edited }));
       expect(tracker.verdict().dirty).toBe(false);
 
       tracker.setLive({ lexical: serialize(fixture.after) });
@@ -346,6 +354,19 @@ describe('createChangeTracker', () => {
         'SCRATCH_DIVERGED_FROM_SECONDARY',
       ]);
     });
+
+    it.each(OLD_SCHEMA_CORPUS)(
+      '$name: a refetch of the saved post after load stays clean',
+      ({ before, after }) => {
+        const tracker = createChangeTracker();
+        tracker.setSaved(savedPost({ lexical: serialize(before) }));
+        tracker.setBaseline(serialize(after));
+        tracker.setLive({ lexical: serialize(after) });
+
+        tracker.setSaved(savedPost({ lexical: serialize(before) }));
+        expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+      },
+    );
 
     it('does not touch the baseline on the initial load', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;
@@ -375,7 +396,7 @@ describe('createChangeTracker', () => {
       tracker.revisionRestored(restored);
       expect(tracker.verdict().dirty).toBe(false);
 
-      tracker.setSaved(savedPost({ lexical: serialize(restored) }));
+      tracker.saveAcknowledged(savedPost({ lexical: serialize(restored) }));
       expect(tracker.verdict().dirty).toBe(false);
 
       tracker.setLive({ lexical: serialize(appendParagraph(restored, 'After restore')) });
@@ -442,6 +463,69 @@ describe('createChangeTracker', () => {
       const tracker = loadedTracker(savedPost({ lexical: absolute }));
 
       expect(tracker.hasChangedSinceRevision(serialize(SAVED_DOC), siteUrl)).toBe(true);
+    });
+  });
+
+  describe('site URL normalization', () => {
+    const siteUrl = 'https://site.example';
+    const link = (href: string) => ({
+      children: [textNode('link')],
+      direction: null,
+      format: '',
+      indent: 0,
+      type: 'link',
+      version: 1,
+      rel: null,
+      target: null,
+      title: null,
+      url: href,
+    });
+    const withLink = (href: string) =>
+      serialize(doc([{ ...paragraph('See the '), children: [textNode('See the '), link(href)] }]));
+
+    it('treats a relative live link and its absolute saved form as the same content', () => {
+      const tracker = createChangeTracker({ siteUrl });
+      tracker.setSaved(savedPost({ lexical: withLink(`${siteUrl}/about/`) }));
+      tracker.setBaseline(withLink(`${siteUrl}/about/`));
+      tracker.setLive({ lexical: withLink('/about/') });
+
+      expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+    });
+
+    it('still detects a changed link', () => {
+      const tracker = createChangeTracker({ siteUrl });
+      tracker.setSaved(savedPost({ lexical: withLink(`${siteUrl}/about/`) }));
+      tracker.setBaseline(withLink(`${siteUrl}/about/`));
+      tracker.setLive({ lexical: withLink('/contact/') });
+
+      expect(tracker.verdict({ includeDiff: true })).toEqual({
+        dirty: true,
+        reasons: [expect.objectContaining({ code: 'SCRATCH_DIVERGED_FROM_SECONDARY' })],
+        diff: [
+          {
+            type: 'CHANGE',
+            path: 'root.children.0[paragraph].children.1[link].url',
+            value: '/contact/',
+            oldValue: '/about/',
+          },
+        ],
+      });
+    });
+
+    it('compares verbatim when no site URL is configured', () => {
+      const tracker = createChangeTracker();
+      tracker.setSaved(savedPost({ lexical: withLink(`${siteUrl}/about/`) }));
+      tracker.setBaseline(withLink(`${siteUrl}/about/`));
+      tracker.setLive({ lexical: withLink('/about/') });
+
+      expect(tracker.verdict().dirty).toBe(true);
+    });
+
+    it('is the default for hasChangedSinceRevision', () => {
+      const tracker = createChangeTracker({ siteUrl });
+      tracker.setSaved(savedPost({ lexical: withLink(`${siteUrl}/about/`) }));
+
+      expect(tracker.hasChangedSinceRevision(withLink('/about/'))).toBe(false);
     });
   });
 

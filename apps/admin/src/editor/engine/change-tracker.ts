@@ -54,8 +54,13 @@ export interface VerdictOptions {
   includeDiff?: boolean;
 }
 
+export interface ChangeTrackerOptions {
+  siteUrl?: string;
+}
+
 export interface ChangeTracker {
   setSaved(saved: SavedPostState): void;
+  saveAcknowledged(saved: SavedPostState): void;
   setBaseline(lexical: LexicalInput): void;
   setLive(live: LivePostState): void;
   markSaveError(messages?: unknown): void;
@@ -64,7 +69,7 @@ export interface ChangeTracker {
   verdict(options?: VerdictOptions): ChangeVerdict;
   hasChangedSinceRevision(
     latestRevisionLexical: string | null | undefined,
-    siteUrl: string,
+    siteUrl?: string,
   ): boolean;
   reset(): void;
 }
@@ -97,11 +102,28 @@ function changedAttributes(
   return changed;
 }
 
-export function createChangeTracker(): ChangeTracker {
+export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeTracker {
+  const siteUrl = options.siteUrl ?? '';
   let saved: SavedPostState | null = null;
   let baseline: string | null = null;
   let live: LivePostState = {};
   let saveError: SaveError | null = null;
+
+  // The server rewrites relative URLs to absolute on save, so both sides are
+  // compared with the site URL removed.
+  function sameLexical(a: string | null, b: string): boolean {
+    return lexicalEquals(stripSiteUrl(a ?? '', siteUrl), stripSiteUrl(b, siteUrl));
+  }
+
+  function adoptSaved(next: SavedPostState) {
+    saved = next;
+    live = {
+      title: live.title ?? next.title,
+      lexical: live.lexical === undefined ? next.lexical : live.lexical,
+      tags: live.tags ?? next.tags,
+      attributes: live.attributes ?? next.attributes,
+    };
+  }
 
   function collectReasons(): ChangeReason[] {
     if (!saved) {
@@ -140,8 +162,8 @@ export function createChangeTracker(): ChangeTracker {
     const scratch = live.lexical ?? null;
     if (baseline && scratch) {
       try {
-        const divergedFromBaseline = !lexicalEquals(baseline, scratch);
-        const divergedFromSaved = !lexicalEquals(saved.lexical, scratch);
+        const divergedFromBaseline = !sameLexical(baseline, scratch);
+        const divergedFromSaved = !sameLexical(saved.lexical, scratch);
         if (divergedFromBaseline && divergedFromSaved) {
           reasons.push({
             code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
@@ -179,18 +201,16 @@ export function createChangeTracker(): ChangeTracker {
   }
 
   return {
+    // Query data (load, refetch) goes through setSaved and never moves the
+    // baseline; mutation responses go through saveAcknowledged, which does.
     setSaved(next) {
-      if (saved) {
-        baseline = next.lexical;
-      }
-      saved = next;
+      adoptSaved(next);
+    },
+
+    saveAcknowledged(next) {
+      adoptSaved(next);
+      baseline = next.lexical;
       saveError = null;
-      live = {
-        title: live.title ?? next.title,
-        lexical: live.lexical === undefined ? next.lexical : live.lexical,
-        tags: live.tags ?? next.tags,
-        attributes: live.attributes ?? next.attributes,
-      };
     },
 
     setBaseline(lexical) {
@@ -220,21 +240,21 @@ export function createChangeTracker(): ChangeTracker {
       live = { ...live, lexical: restored };
     },
 
-    verdict(options = {}) {
+    verdict({ includeDiff = false } = {}) {
       const reasons = collectReasons();
       const result: ChangeVerdict = { dirty: reasons.length > 0, reasons };
 
-      if (
-        options.includeDiff &&
-        reasons.some((r) => r.code === 'SCRATCH_DIVERGED_FROM_SECONDARY')
-      ) {
-        result.diff = humanizeLexicalDiff(baseline, live.lexical);
+      if (includeDiff && reasons.some((r) => r.code === 'SCRATCH_DIVERGED_FROM_SECONDARY')) {
+        result.diff = humanizeLexicalDiff(
+          stripSiteUrl(baseline ?? '', siteUrl),
+          stripSiteUrl(live.lexical ?? '', siteUrl),
+        );
       }
 
       return result;
     },
 
-    hasChangedSinceRevision(latestRevisionLexical, siteUrl) {
+    hasChangedSinceRevision(latestRevisionLexical, revisionSiteUrl = siteUrl) {
       if (!saved) {
         return false;
       }
@@ -245,7 +265,8 @@ export function createChangeTracker(): ChangeTracker {
         return false;
       }
       return (
-        stripSiteUrl(saved.lexical ?? '', siteUrl) !== stripSiteUrl(latestRevisionLexical, siteUrl)
+        stripSiteUrl(saved.lexical ?? '', revisionSiteUrl) !==
+        stripSiteUrl(latestRevisionLexical, revisionSiteUrl)
       );
     },
 
