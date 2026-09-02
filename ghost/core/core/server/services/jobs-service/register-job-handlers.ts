@@ -10,6 +10,8 @@ import * as contentImport from '../content-import';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
+import TinybirdSyncJob from '../tinybird-sync/tinybird-sync-job';
+import * as tinybirdSync from '../tinybird-sync';
 
 const updateCheck = require('../update-check');
 
@@ -57,5 +59,9 @@ export default function registerJobHandlers({
 
   jobsService.handle(ProcessWebmentionJob, async (job) => {
     await mentionsController.processWebmention(job);
+  });
+
+  jobsService.handle(TinybirdSyncJob, async () => {
+    await tinybirdSync.run();
   });
 }

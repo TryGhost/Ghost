@@ -7,6 +7,7 @@ import ExternalMediaInlinerJob from '../../../../../core/server/services/media-i
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
 import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
+import TinybirdSyncJob from '../../../../../core/server/services/tinybird-sync/tinybird-sync-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -121,6 +122,14 @@ describe('register-job-handlers', function () {
     const updateCheckHandler = handlerFor('update-check');
 
     await updateCheckHandler(new UpdateCheckJob());
+  });
+
+  // Tinybird is not configured under the test env, so the sync exits before
+  // touching the database or the network.
+  it('registers the tinybird-sync handler', async function () {
+    const tinybirdSyncHandler = handlerFor('tinybird-sync');
+
+    await tinybirdSyncHandler(new TinybirdSyncJob());
   });
 
   it('runs process-webmention with the injected mentions controller', async function () {
