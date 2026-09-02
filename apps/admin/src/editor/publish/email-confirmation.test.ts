@@ -44,7 +44,7 @@ describe('createEmailConfirmation', () => {
     vi.useRealTimers();
   });
 
-  it('polls once a second for at most fifteen seconds', () => {
+  it('pins the poll interval to a second and the poll window to fifteen seconds', () => {
     expect(CONFIRM_EMAIL_POLL_LENGTH).toBe(1000);
     expect(CONFIRM_EMAIL_MAX_POLL_LENGTH).toBe(15000);
   });
@@ -67,13 +67,36 @@ describe('createEmailConfirmation', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it('does not poll when the supplied post has no email', async () => {
+  it('reports the supplied post having no email as nothing to confirm', async () => {
     const { reload, confirmation } = setup([submitted]);
 
     await expect(confirmation.confirm('post-1', { status: 'published' })).resolves.toEqual({
-      kind: 'submitted',
+      kind: 'not-needed',
     });
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('reports a reloaded post having no email as nothing to confirm', async () => {
+    const { reload, confirmation } = setup([{ status: 'published' }]);
+
+    const result = confirmation.confirm('post-1');
+    await advance(1);
+
+    await expect(result).resolves.toEqual({ kind: 'not-needed' });
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps polling while the email is still submitting', async () => {
+    const { reload, confirmation } = setup([
+      published({ status: 'submitting', opened_count: 0, email_count: 1 }),
+      submitted,
+    ]);
+
+    const result = confirmation.confirm('post-1');
+    await advance(2);
+
+    await expect(result).resolves.toEqual({ kind: 'submitted' });
+    expect(reload).toHaveBeenCalledTimes(2);
   });
 
   it('reports a full failure with the email error', async () => {
@@ -137,7 +160,7 @@ describe('createEmailConfirmation', () => {
     const result = confirmation.confirm('post-1');
     await advance(2);
 
-    await expect(result).resolves.toEqual({ kind: 'timeout' });
+    await expect(result).resolves.toEqual({ kind: 'unpublished' });
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
@@ -230,6 +253,7 @@ describe('createEmailConfirmation', () => {
 
     await expect(result).resolves.toEqual({ kind: 'cancelled' });
     expect(clearedHandles).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
 
     await advance(MAX_ATTEMPTS);
     expect(reload).toHaveBeenCalledTimes(2);
@@ -253,7 +277,54 @@ describe('createEmailConfirmation', () => {
     await expect(result).resolves.toEqual({ kind: 'cancelled' });
   });
 
-  it('runs a single confirmation at a time', async () => {
+  it('settles as cancelled when cancelled during the retry request', async () => {
+    let releaseRetry: () => void = () => {};
+    const { reload } = setup([submitted]);
+    const retry = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseRetry = resolve;
+        }),
+    );
+    const confirmation = createEmailConfirmation({ reload, retry });
+
+    const result = confirmation.retryAndConfirm('post-1', 'email-1');
+    confirmation.cancel();
+    releaseRetry();
+
+    await expect(result).resolves.toEqual({ kind: 'cancelled' });
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('accepts a new confirmation immediately after cancelling a stuck one', async () => {
+    let releaseStuckReload: (post: EmailConfirmationPost) => void = () => {};
+    const reload = vi.fn(() => {
+      if (reload.mock.calls.length > 1) {
+        return Promise.resolve(submitted);
+      }
+
+      return new Promise<EmailConfirmationPost>((resolve) => {
+        releaseStuckReload = resolve;
+      });
+    });
+    const confirmation = createEmailConfirmation({ reload, retry: () => Promise.resolve() });
+
+    const abandoned = confirmation.confirm('post-1');
+    await advance(1);
+    confirmation.cancel();
+
+    const restarted = confirmation.confirm('post-1');
+    expect(restarted).not.toBe(abandoned);
+
+    releaseStuckReload(submitted);
+    await advance(1);
+
+    await expect(restarted).resolves.toEqual({ kind: 'submitted' });
+    await expect(abandoned).resolves.toEqual({ kind: 'cancelled' });
+    expect(reload).toHaveBeenCalledTimes(2);
+  });
+
+  it('coalesces a repeat confirmation of the same post', async () => {
     const { reload, confirmation } = setup([pending, submitted]);
 
     const first = confirmation.confirm('post-1');
@@ -264,6 +335,55 @@ describe('createEmailConfirmation', () => {
 
     await expect(first).resolves.toEqual({ kind: 'submitted' });
     expect(reload).toHaveBeenCalledTimes(2);
+  });
+
+  it('abandons the run in progress when a different post is confirmed', async () => {
+    const posts: Record<string, EmailConfirmationPost> = {
+      'post-1': pending,
+      'post-2': submitted,
+    };
+    const reload = vi.fn((postId: string) => Promise.resolve(posts[postId]));
+    const confirmation = createEmailConfirmation({ reload, retry: () => Promise.resolve() });
+
+    const abandoned = confirmation.confirm('post-1');
+    await advance(1);
+
+    const started = confirmation.confirm('post-2');
+    expect(started).not.toBe(abandoned);
+    await advance(1);
+
+    await expect(abandoned).resolves.toEqual({ kind: 'cancelled' });
+    await expect(started).resolves.toEqual({ kind: 'submitted' });
+    expect(reload).toHaveBeenCalledWith('post-2');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('abandons a confirmation in progress when the same post is retried', async () => {
+    const { retry, confirmation } = setup([pending, submitted]);
+
+    const abandoned = confirmation.confirm('post-1');
+    await advance(1);
+
+    const started = confirmation.retryAndConfirm('post-1', 'email-1');
+    expect(started).not.toBe(abandoned);
+    await advance(1);
+
+    await expect(abandoned).resolves.toEqual({ kind: 'cancelled' });
+    await expect(started).resolves.toEqual({ kind: 'submitted' });
+    expect(retry).toHaveBeenCalledWith('email-1');
+  });
+
+  it('coalesces a repeat retry of the same post', async () => {
+    const { retry, confirmation } = setup([submitted]);
+
+    const first = confirmation.retryAndConfirm('post-1', 'email-1');
+    const second = confirmation.retryAndConfirm('post-1', 'email-1');
+    expect(second).toBe(first);
+
+    await advance(1);
+
+    await expect(first).resolves.toEqual({ kind: 'submitted' });
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 
   it('allows a new run once the previous one has settled', async () => {

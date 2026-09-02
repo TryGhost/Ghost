@@ -11,7 +11,9 @@ export interface EmailConfirmationPost {
 export type EmailConfirmationOutcome =
   | { kind: 'submitted' }
   | { kind: 'failed'; error: string | null; partial: boolean }
+  | { kind: 'unpublished' }
   | { kind: 'timeout' }
+  | { kind: 'not-needed' }
   | { kind: 'cancelled' };
 
 export type TimerHandle = unknown;
@@ -27,6 +29,16 @@ export interface EmailConfirmation {
   confirm(postId: string, currentPost?: EmailConfirmationPost): Promise<EmailConfirmationOutcome>;
   retryAndConfirm(postId: string, emailId: string): Promise<EmailConfirmationOutcome>;
   cancel(): void;
+}
+
+type RunOperation = 'confirm' | 'retry';
+
+interface RunState {
+  operation: RunOperation;
+  postId: string;
+  cancelled: boolean;
+  timer: TimerHandle;
+  release: (() => void) | null;
 }
 
 // A partially delivered send is only distinguishable by the word "partially"
@@ -48,66 +60,91 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
     options.clearTimeout ??
     ((handle: TimerHandle) => clearTimeout(handle as Parameters<typeof clearTimeout>[0]));
 
-  let inFlight: Promise<EmailConfirmationOutcome> | null = null;
-  let cancelled = false;
-  let pendingTimer: TimerHandle = null;
-  let releasePendingWait: (() => void) | null = null;
+  let current: { state: RunState; promise: Promise<EmailConfirmationOutcome> } | null = null;
 
-  function wait(delay: number): Promise<void> {
+  function wait(state: RunState, delay: number): Promise<void> {
     return new Promise<void>((resolve) => {
-      releasePendingWait = resolve;
-      pendingTimer = schedule(() => {
-        pendingTimer = null;
-        releasePendingWait = null;
+      let fired = false;
+      const release = () => {
+        if (fired) {
+          return;
+        }
+
+        fired = true;
+        state.timer = null;
+        state.release = null;
         resolve();
-      }, delay);
+      };
+
+      state.release = release;
+
+      const handle = schedule(release, delay);
+
+      // Only keep a handle that is still pending: a scheduler that runs its
+      // callback synchronously has already finished with this one.
+      if (!fired) {
+        state.timer = handle;
+      }
     });
   }
 
-  function cancel(): void {
-    cancelled = true;
+  function stop(state: RunState): void {
+    state.cancelled = true;
 
-    if (pendingTimer !== null) {
-      unschedule(pendingTimer);
-      pendingTimer = null;
+    if (state.timer !== null) {
+      unschedule(state.timer);
+      state.timer = null;
     }
 
-    releasePendingWait?.();
-    releasePendingWait = null;
+    state.release?.();
+    state.release = null;
+  }
+
+  function cancel(): void {
+    if (!current) {
+      return;
+    }
+
+    stop(current.state);
+    current = null;
   }
 
   async function poll(
-    postId: string,
+    state: RunState,
     { stopWhenUnpublished }: { stopWhenUnpublished: boolean },
   ): Promise<EmailConfirmationOutcome> {
     let pollTimeout = 0;
 
     while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
-      await wait(CONFIRM_EMAIL_POLL_LENGTH);
+      await wait(state, CONFIRM_EMAIL_POLL_LENGTH);
 
-      if (cancelled) {
+      if (state.cancelled) {
         return { kind: 'cancelled' };
       }
 
       pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
 
-      const post = await reload(postId);
+      const post = await reload(state.postId);
 
-      if (cancelled) {
+      if (state.cancelled) {
         return { kind: 'cancelled' };
       }
 
       // A post that is no longer published or sent never sends or retries an
-      // email, so give up the same way as running out of attempts.
+      // email, so there is nothing left to wait for.
       if (stopWhenUnpublished && post.status !== 'sent' && post.status !== 'published') {
-        return { kind: 'timeout' };
+        return { kind: 'unpublished' };
       }
 
-      if (post.email?.status === 'submitted') {
+      if (!post.email) {
+        return { kind: 'not-needed' };
+      }
+
+      if (post.email.status === 'submitted') {
         return { kind: 'submitted' };
       }
 
-      if (post.email?.status === 'failed') {
+      if (post.email.status === 'failed') {
         return failureOutcome(post.email);
       }
     }
@@ -115,46 +152,60 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
     return { kind: 'timeout' };
   }
 
-  function run(work: () => Promise<EmailConfirmationOutcome>): Promise<EmailConfirmationOutcome> {
-    if (inFlight) {
-      return inFlight;
+  function run(
+    operation: RunOperation,
+    postId: string,
+    work: (state: RunState) => Promise<EmailConfirmationOutcome>,
+  ): Promise<EmailConfirmationOutcome> {
+    if (current) {
+      if (current.state.operation === operation && current.state.postId === postId) {
+        return current.promise;
+      }
+
+      // A run belongs to one operation on one post, so only an identical
+      // repeat coalesces; anything else abandons the run in progress.
+      stop(current.state);
+      current = null;
     }
 
-    cancelled = false;
-
-    const started = work();
+    const state: RunState = { operation, postId, cancelled: false, timer: null, release: null };
+    const promise = work(state);
     const settle = () => {
-      if (inFlight === started) {
-        inFlight = null;
+      if (current?.state === state) {
+        current = null;
       }
     };
 
-    inFlight = started;
-    started.then(settle, settle);
+    current = { state, promise };
+    promise.then(settle, settle);
 
-    return started;
+    return promise;
   }
 
   return {
     confirm(postId, currentPost) {
-      return run(async () => {
-        if (currentPost && (!currentPost.email || currentPost.email.status === 'submitted')) {
-          return { kind: 'submitted' };
+      return run('confirm', postId, (state) => {
+        if (currentPost && !currentPost.email) {
+          return Promise.resolve({ kind: 'not-needed' });
         }
 
-        return poll(postId, { stopWhenUnpublished: true });
+        if (currentPost?.email?.status === 'submitted') {
+          return Promise.resolve({ kind: 'submitted' });
+        }
+
+        return poll(state, { stopWhenUnpublished: true });
       });
     },
 
     retryAndConfirm(postId, emailId) {
-      return run(async () => {
+      return run('retry', postId, async (state) => {
         await retry(emailId);
 
-        if (cancelled) {
+        if (state.cancelled) {
           return { kind: 'cancelled' };
         }
 
-        return poll(postId, { stopWhenUnpublished: false });
+        return poll(state, { stopWhenUnpublished: false });
       });
     },
 
