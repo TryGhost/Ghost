@@ -1,5 +1,4 @@
-// Ported from the Ember lexical-editor controller; matches Koenig's TK node
-// detection for plain-text fields (title, excerpt).
+// Matches Koenig's TK node detection for plain-text fields such as titles and excerpts.
 const TK_REGEX = /(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u;
 const WORD_CHAR_REGEX = /\p{L}|\p{N}/u;
 

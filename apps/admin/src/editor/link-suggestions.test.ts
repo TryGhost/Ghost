@@ -21,7 +21,7 @@ describe('buildAutocompleteLinks', () => {
     recommendationsEnabled: true,
   };
 
-  it('lists every portal link in the Ember order', () => {
+  it('lists every portal link in display order', () => {
     const offerLinks = buildOfferLinks(
       [{ name: 'Spring sale', code: 'spring' }],
       settings.homepageUrl,

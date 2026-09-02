@@ -121,7 +121,7 @@ export function buildAutocompleteLinks(
   ];
 }
 
-// Ember renders `D MMM YYYY` in the site timezone
+// Published dates use `D MMM YYYY` in the site's timezone.
 export function formatPublishedDate(publishedAt: string, timezone: string): string {
   const parts = new Intl.DateTimeFormat('en-US', {
     day: 'numeric',

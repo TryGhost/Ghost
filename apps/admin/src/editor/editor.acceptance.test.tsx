@@ -13,15 +13,8 @@ const FLAG_ON = { labs: { editorReact: true } };
 const FLAG_OFF = { labs: { editorReact: false } };
 
 /**
- * Proves the `editorReact` flag swap end-to-end in the real admin app: the
- * React editor appears only when the flag is on, and the Ember side of the
- * URL is delegated to otherwise.
- *
- * There is no Ember app in this harness, so "Ember serves it" shows up as the
- * React editor being absent rather than as an Ember editor being present —
- * the Ember half of the handshake (the lexical-editor route aborting its
- * transition) is covered in
- * apps/ember-admin/tests/acceptance/editor-react-flag-test.js.
+ * The editor route mounts only when its feature flag is enabled. Disabled and
+ * missing flags leave it unmounted.
  */
 describe('Editor flag', () => {
   function fakeEditorWorld() {
@@ -54,13 +47,13 @@ describe('Editor flag', () => {
     await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
   });
 
-  it('defers to Ember when the flag is off', async () => {
+  it('does not mount the editor when the flag is off', async () => {
     await renderAdminApp('/editor/post/abc123', FLAG_OFF);
 
     await expect(editorScreen.root()).toHaveCount(0);
   });
 
-  it('defers to Ember when the flag is absent entirely', async () => {
+  it('does not mount the editor when the flag is absent', async () => {
     await renderAdminApp('/editor/post/abc123');
 
     await expect(editorScreen.root()).toHaveCount(0);

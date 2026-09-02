@@ -3,14 +3,13 @@
  * ----------------------
  *
  * This machine owns slug intent and request ordering; callers own the input UI and persistence of
- * emitted proposals. Its behavior follows Ember Admin unless an intentional rule below says
- * otherwise.
+ * emitted proposals. The rules below define its complete behavior contract.
  *
  * Ownership
  * - A derived slug follows eligible title commits. A custom slug stops following the title.
  * - Loading infers ownership structurally because posts do not persist slug provenance: a slug
  *   matching `slugify(title)` is derived; a different slug is custom. `(Untitled)` and titles ending
- *   in `(Copy)` remain derived to preserve Ember's first-real-title and duplicated-post behavior.
+ *   in `(Copy)` remain derived so a first meaningful title or duplicated-post rename regenerates it.
  * - A successful manual edit makes the slug custom. Blank, unchanged, failed, or rejected manual
  *   edits leave ownership unchanged.
  *
@@ -96,8 +95,8 @@ export interface SlugMachine {
   subscribe(listener: SlugListener): () => void;
 }
 
-// Mirrors Ember generateSlugTask: a slug that differs from slugify(saved title) is treated as
-// custom unless the saved title is (Untitled) or ends with (Copy).
+// A slug that differs from slugify(saved title) is custom unless the saved title is
+// (Untitled) or ends with (Copy), whose next meaningful title should regenerate it.
 export function isCustomSlug(slug: string, title: string): boolean {
   if (!slug) {
     return false;
@@ -134,8 +133,8 @@ export function normalizeManualSlug(input: string, currentSlug: string): string 
   return candidate;
 }
 
-// Mirrors Ember updateSlugTask: keep the current slug when the server only appended an
-// incrementor to it and the user did not type that exact value.
+// Keep the current slug when the server only appended an incrementor to it and the user did not
+// type that exact value.
 export function resolveDedupedSlug(
   serverSlug: string,
   candidate: string,

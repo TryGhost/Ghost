@@ -90,7 +90,7 @@ describe('getCardVisibilitySettings', () => {
 });
 
 describe('buildPostCardConfig', () => {
-  it('assembles the Ember editor card config', () => {
+  it('assembles the post editor card config', () => {
     const cardConfig = buildPostCardConfig(sources(), ports);
 
     expect(cardConfig).toMatchObject({

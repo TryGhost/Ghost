@@ -1,10 +1,17 @@
 # Editor engine
 
-The pure-TypeScript core of the React post editor: the save engine (`save-engine.ts`, this PR), the change tracker and the slug machine (each lands with its own PR). None of them import React or the network; every side effect goes through an injected port, and the editor's wiring hook composes the three. This file states the intended behavior; the modules' tests pin it.
+The pure-TypeScript state-management core of the post editor consists of the
+save engine, change tracker, and slug machine. None of them import React or the
+network; every side effect goes through an injected port, and the editor's
+wiring hook composes the three. This file documents their behavior and shared
+contracts; the modules' tests enforce them.
 
 ## Save engine
 
-Replaces the Ember editor's three ember-concurrency modifiers (an `enqueue` group, a `drop` autosave, a `restartable` debounce) and the ad-hoc branches of the `lexical-editor` controller with one single-flight queue over typed save commands.
+Coordinates all persistence through one single-flight queue over typed save
+commands. The queue combines restartable and timed autosaves, field saves,
+explicit saves, leave saves, and status transitions without allowing requests
+to overlap.
 
 ### Intents
 
@@ -83,11 +90,13 @@ Reconcile-before-drain is a hard ordering contract because Core enforces optimis
 
 ## Change tracker
 
-Lands with the change tracker PR. Answers one question for the editor: does the live post differ from what is persisted, and why. Pure, React-free; the hidden second Koenig instance stays — the tracker consumes its serialization as the baseline.
+Answers one question for the editor: does the live post differ from what is
+persisted, and why? It is pure and React-free. The tracker consumes the hidden
+Koenig instance's post-load serialization as its normalization baseline.
 
 ### State model
 
-Three documents: **saved** (last persisted state, from load/refetch/ack), **baseline** (the hidden instance's post-load serialization — the document after Lexical's load-time transforms), **live** (the visible editor). Body verdict: dirty ⇔ live differs from saved **and** from baseline. Baseline readiness is separate from its value: `pending` (not reported yet), `ready` (a known document; `null`, `''`, and an empty root are all known-empty), `failed`. A live edit while pending is dirty (`BASELINE_PENDING`, fail closed); a failed baseline falls back to live-vs-saved (`BASELINE_FAILED`) and never disables body protection. Title, ordered tag names, and the editable attributes contribute their own dirty bits. Reason codes mirror Ember's (`POST_HAS_ERROR`, `POST_TAGS_DIVERGED`, `POST_TITLE_DIVERGED`, `SCRATCH_DIVERGED_FROM_SECONDARY`, `NEW_POST_HAS_CHANGED_ATTRIBUTES`, `POST_HAS_DIRTY_ATTRIBUTES`) plus `BASELINE_PENDING`, `BASELINE_FAILED`, `LEXICAL_PARSE_FAILED` (malformed or structurally invalid Lexical is dirty, never a thrown route blocker).
+Three documents: **saved** (last persisted state, from load/refetch/ack), **baseline** (the hidden instance's post-load serialization — the document after Lexical's load-time transforms), **live** (the visible editor). Body verdict: dirty ⇔ live differs from saved **and** from baseline. Baseline readiness is separate from its value: `pending` (not reported yet), `ready` (a known document; `null`, `''`, and an empty root are all known-empty), `failed`. A live edit while pending is dirty (`BASELINE_PENDING`, fail closed); a failed baseline falls back to live-vs-saved (`BASELINE_FAILED`) and never disables body protection. Title, ordered tag names, and the editable attributes contribute their own dirty bits. Stable reason codes identify each cause: `POST_HAS_ERROR`, `POST_TAGS_DIVERGED`, `POST_TITLE_DIVERGED`, `SCRATCH_DIVERGED_FROM_SECONDARY`, `NEW_POST_HAS_CHANGED_ATTRIBUTES`, `POST_HAS_DIRTY_ATTRIBUTES`, `BASELINE_PENDING`, `BASELINE_FAILED`, and `LEXICAL_PARSE_FAILED`. Malformed or structurally invalid Lexical is dirty rather than becoming a thrown route blocker.
 
 ### API (id-first; events for another post are dropped)
 
@@ -277,34 +286,34 @@ Ordering and staleness
 
 ## Invariants
 
-| Invariant                                                                                                                     | Pinned in                                                  |
-| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email                             | `save-engine.test.ts` "invariant 1"                        |
-| No two saves are in flight; payloads are built at execution; coalescing never loses the newest content                        | "invariant 2", "lifecycle"                                 |
-| Session expiry during a save loses nothing: re-auth completes, the save lands, content is present                             | "invariant 3", "re-auth outcomes"                          |
-| Save-on-leave fires at most once per attempt and only for dirty drafts                                                        | "invariant 4", "leave outcomes"                            |
-| Loading any post, including old-schema fixtures, is a clean verdict until the user edits                                      | the change tracker PR (fixture corpus)                     |
-| A failed save leaves the post dirty and recoverable; no error path discards the payload                                       | "invariant 6", "collisions"                                |
-| Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs)            | "invariant 7"                                              |
-| A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore | "invariant 1", "commands"                                  |
-| Slug generation never overwrites a custom slug and never applies a stale proposal                                             | the slug machine PR; "prepare stage" for the port contract |
-| Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it                   | "invariant 10", `deriveTarget`                             |
+| Invariant                                                                                                                     | Pinned in                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email                             | `save-engine.test.ts` "background saves"                      |
+| No two saves are in flight; payloads are built at execution; coalescing never loses the newest content                        | "single flight", "lifecycle"                                  |
+| Session expiry during a save loses nothing: re-auth completes, the save lands, content is present                             | "session expiry", "re-auth outcomes"                          |
+| Save-on-leave fires at most once per attempt and only for dirty drafts                                                        | "save-on-leave", "leave outcomes"                             |
+| Loading any post, including old-schema fixtures, is a clean verdict until the user edits                                      | `change-tracker.test.ts` fixture corpus                       |
+| A failed save leaves the post dirty and recoverable; no error path discards the payload                                       | "failed save", "collisions"                                   |
+| Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs)            | "only explicit and leave saves set save_revision"             |
+| A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore | "background saves", "commands"                                |
+| Slug generation never overwrites a custom slug and never applies a stale proposal                                             | `slug-machine.test.ts`; "prepare stage" for the port contract |
+| Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it                   | "scheduled saves", `deriveTarget`                             |
 
-## Deliberate Ember deltas
+## Design decisions
 
-- Pending-slot coalescing instead of `drop`-task starvation: autosaves during an in-flight create are carried, not lost.
-- Leaving a post that is still dirty after the leave save asks for confirmation instead of proceeding.
+- Pending-slot coalescing carries autosaves that arrive during an in-flight create.
+- Leaving a post that is still dirty after the leave save asks for confirmation.
 - Sidebar edits on published/scheduled/sent posts are staged until Update; nothing persists immediately.
-- An explicit save on a past-scheduled post preserves `scheduled` and lets the server own the transition (Ember guessed `published`/`draft`).
-- `UPDATE_COLLISION` is a typed `conflict` state with a retry affordance, not a generic error.
-- After re-auth, publish/schedule/revert resolve `needs-retry` and safe saves re-run; Ember's retry was a no-op.
+- An explicit save on a past-scheduled post preserves `scheduled` and lets the server own the transition.
+- `UPDATE_COLLISION` enters a typed `conflict` state with a retry affordance.
+- After re-auth, publish/schedule/revert resolve `needs-retry`; safe saves re-enter the queue.
 - A manually edited slug stays custom for the session; a server-deduplicated slug keeps following the title.
-- Recursive `direction` strip before compare (Ember: top level only).
+- `direction` is stripped recursively before Lexical documents are compared.
 - A query refetch never re-baselines; only an acknowledged save does.
-- Structural site-URL normalization on known URL-bearing node props (Ember: none on the dirty check).
-- Fail closed on malformed Lexical (Ember threw and the route blocker failed open).
+- Site URLs are normalized structurally only on known URL-bearing node properties.
+- Malformed Lexical fails closed and remains dirty.
 - Explicitly clearing a non-empty body is dirty.
-- The leave-modal diff humanizer actually runs (Ember's read a nonexistent field and threw).
+- `verdict({includeDiff: true})` produces the human-readable diff used by the leave modal.
 
 ## What the caller owns
 
@@ -312,7 +321,7 @@ Ordering and staleness
 
 - A no-redirect request mode: the framework transport redirects on 401 (`apps/admin-x-framework/src/utils/api/fetch-api.ts`); the editor adapter must instead throw `SessionExpiredError` so the engine can enter `reauth-pending`.
 - Mapping API failures to `SaveError` kinds in `execute` (401 → `session-invalid`, 404 → `not-found`, `UPDATE_COLLISION` → `conflict`, 422 → `validation`, host-limit errors → `host-limit`, unreachable → `transport`).
-- Past-scheduled detection for the UI (Ember's `pastScheduledTime`); the engine only preserves the status.
+- Detecting a past-scheduled post for the UI; the engine preserves the status but does not interpret its publish time.
 - Replacing the URL from new → edit as a state-driven effect after the create ack, with the editor screen keyed on the editing-session instance so the switch does not remount the editor.
 - The `SlugPort` adapter over the slug machine (`settled` = latest submission chain, `fromTitle` = `titleCommitted` → settled proposal), including pre-slugifying the raw title before the generator request.
 - `(Untitled)` substitution is the engine's prepare duty; the title input never shows it.
