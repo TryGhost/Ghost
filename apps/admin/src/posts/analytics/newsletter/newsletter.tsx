@@ -552,8 +552,8 @@ const Newsletter: React.FC = () => {
                         className={chartClass}
                         config={sentChartConfig}
                         data={sentChartData}
-                        percentageLabel={sentLabel}
-                        percentageValue={formatPercentage(sentRate)}
+                        percentageLabel={ringLabel}
+                        percentageValue={formatPercentage(ringRate)}
                         size={chartSize}
                         tooltip={false}
                       />
