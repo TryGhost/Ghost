@@ -105,6 +105,48 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
   );
 };
 
+interface DeliveryTooltipProps {
+  delivered: number;
+  bounced: number;
+  inProgress: number;
+  total: number;
+}
+
+// PROTOTYPE: variant F's hover for the delivery ring. The ring shows one
+// share; this is where the other two go — what bounced, and what has not
+// reported back yet — so the three always add up to the list the tile counts.
+const DeliveryTooltip: React.FC<DeliveryTooltipProps> = ({
+  delivered,
+  bounced,
+  inProgress,
+  total,
+}) => {
+  const rows = [
+    { label: 'Delivered', value: delivered, dot: 'bg-chart-purple opacity-50' },
+    { label: 'Bounced', value: bounced, dot: 'bg-state-danger' },
+    { label: 'Still in progress', value: inProgress, dot: 'bg-chart-gray opacity-80' },
+  ];
+
+  return (
+    <div className="absolute top-6 left-1/2 z-50 flex w-[240px] -translate-x-1/2 flex-col items-stretch gap-1.5 rounded-md bg-background px-4 py-2 text-sm opacity-0 shadow-md transition-all group-hover/block:top-3 group-hover/block:opacity-100">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className={`size-2 rounded-full ${row.dot}`}></div>
+            {row.label}
+          </div>
+          <div className="text-right font-mono tabular-nums">
+            {formatNumber(row.value)}
+            <span className="ml-1.5 text-muted-foreground">
+              {formatPercentage(total > 0 ? row.value / total : 0)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const Newsletter: React.FC = () => {
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
@@ -546,8 +588,16 @@ const Newsletter: React.FC = () => {
                     className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
                   >
                     <div
-                      className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
+                      className={`relative border-r-0 px-6 ${isDeliveryRing ? 'group/block transition-all hover:bg-muted/25' : ''} ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
                     >
+                      {isDeliveryRing && !isEmailDataHidden && (
+                        <DeliveryTooltip
+                          bounced={stats.sent - stats.delivered}
+                          delivered={stats.delivered}
+                          inProgress={stats.dispatched - stats.sent}
+                          total={stats.addressed}
+                        />
+                      )}
                       <NewsletterRadialChart
                         className={chartClass}
                         config={sentChartConfig}
