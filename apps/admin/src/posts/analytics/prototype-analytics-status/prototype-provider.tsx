@@ -6,6 +6,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  PLAYBACK_ANCHOR_KEY,
   PLAYBACK_MS,
   PREPARING_END_POSITION,
   PREPARING_ETA_SECONDS,
@@ -20,6 +21,25 @@ import {
   playbackStates,
   readStoredState,
 } from './prototype-context';
+
+const writeAnchor = (positionNow: number) => {
+  try {
+    window.localStorage.setItem(
+      PLAYBACK_ANCHOR_KEY,
+      String(Date.now() - positionNow * PLAYBACK_MS),
+    );
+  } catch {
+    // Prototype convenience only.
+  }
+};
+
+const clearAnchor = () => {
+  try {
+    window.localStorage.removeItem(PLAYBACK_ANCHOR_KEY);
+  } catch {
+    // Prototype convenience only.
+  }
+};
 
 /**
  * The current phase's remaining budget on the send's fictional clock:
@@ -66,29 +86,57 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
     const startedAt = Date.now() - (positionRef.current ?? 0) * PLAYBACK_MS;
     const timer = setInterval(() => {
       const elapsed = Date.now() - startedAt;
+      const pos = elapsed / PLAYBACK_MS;
 
-      if (elapsed >= PLAYBACK_MS) {
+      // E freezes the screen the moment the last batch is away: production
+      // numbers do not move on their own, so the figures that appear at
+      // gate-open hold still. Fictional time keeps passing via the anchor —
+      // a hard refresh re-reads the clock and shows how far counting has got.
+      if (state.variant === 'gatedUntilSent' && pos >= SEND_COMPLETE_POSITION) {
+        setPosition(Math.min(pos, 1));
+        setIsPlaying(false);
+        return;
+      }
+
+      if (pos >= 1) {
         setPosition(1);
         setIsPlaying(false);
         return;
       }
 
-      setPosition(elapsed / PLAYBACK_MS);
+      setPosition(pos);
     }, 120);
 
     return () => clearInterval(timer);
-  }, [isPlaying]);
+  }, [isPlaying, state.variant]);
 
   // DEMO ONLY: publishing writes 'ghost-last-published-post' for the share
   // modal, and this provider's effect runs before the parent hook that
   // consumes and clears it (child effects fire first), so a fresh publish
   // auto-starts playback — Publish in the editor rolls straight into a live
   // send behind the share modal, repeatably: every publish rewrites the key.
+  //
+  // Otherwise a stored anchor revives the run the wall clock says is in
+  // flight: a refresh mid-send resumes it live, and a refresh after the send
+  // (under E) lands on the frozen figures as of now — reload again later and
+  // they have moved, exactly the cadence production trains readers into.
   useEffect(() => {
     try {
       if (window.localStorage.getItem('ghost-last-published-post')) {
+        writeAnchor(0);
         setPosition(0);
         setIsPlaying(true);
+        return;
+      }
+
+      const anchor = Number(window.localStorage.getItem(PLAYBACK_ANCHOR_KEY));
+      if (Number.isFinite(anchor) && anchor > 0) {
+        const pos = Math.min(1, (Date.now() - anchor) / PLAYBACK_MS);
+        const frozen =
+          pos >= 1 ||
+          (readStoredState().variant === 'gatedUntilSent' && pos >= SEND_COMPLETE_POSITION);
+        setPosition(pos);
+        setIsPlaying(!frozen);
       }
     } catch {
       // Prototype convenience only.
@@ -134,22 +182,30 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       play: () => {
         // Resume a paused run from where it stopped; a finished (or never
         // started) one begins again.
-        if (position === null || position >= 1) {
-          setPosition(0);
-        }
+        const base = position === null || position >= 1 ? 0 : position;
+        writeAnchor(base);
+        setPosition(base);
         setIsPlaying(true);
       },
-      pause: () => setIsPlaying(false),
+      pause: () => {
+        // A paused run belongs to this page load alone: without dropping the
+        // anchor, a refresh would revive it as if it never stopped.
+        clearAnchor();
+        setIsPlaying(false);
+      },
       stop: () => {
+        clearAnchor();
         setIsPlaying(false);
         setPosition(null);
       },
       setVariant: (variant: StatusVariant) => persist({ ...state, variant }),
       setSend: (send: SendState) => {
+        clearAnchor();
         setPosition(null);
         persist({ ...state, send });
       },
       setCounting: (counting: CountingState) => {
+        clearAnchor();
         setPosition(null);
         persist({ ...state, counting });
       },

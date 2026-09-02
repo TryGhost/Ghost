@@ -15,6 +15,15 @@ import type {
 
 export const STORAGE_KEY = 'ghost-prototype-analytics-status';
 
+/**
+ * Wall-clock anchor of the running (or finished) playback, so the send exists
+ * independently of any one page load. A refresh mid-send resumes the run
+ * where the clock says it is; under variant E a refresh after the send shows
+ * how far counting has got by now — which is the production behaviour being
+ * rehearsed: numbers that only move when the reader asks again.
+ */
+export const PLAYBACK_ANCHOR_KEY = 'ghost-prototype-playback-anchor';
+
 export interface PrototypeState {
   variant: StatusVariant;
   send: SendState;
