@@ -115,8 +115,8 @@ export function resolveDedupedSlug(
 }
 
 export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMachine {
-  // Only load and an applied manual edit move settledMode; an in-flight manual edit reads as
-  // custom so a title commit cannot race it.
+  // Only load and an applied manual edit move settledMode; the latest request reads as custom
+  // while it is a manual edit so a title commit cannot race it. Older pending edits are stale.
   let settledMode: SlugMode = 'derived';
   const pendingManual = new Set<number>();
   let slug = '';
@@ -128,7 +128,7 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   const inFlightTickets = new Set<number>();
   const listeners = new Set<SlugListener>();
 
-  const mode = (): SlugMode => (pendingManual.size > 0 ? 'custom' : settledMode);
+  const mode = (): SlugMode => (pendingManual.has(latestTicket) ? 'custom' : settledMode);
 
   const getState = (): SlugMachineState => {
     const currentMode = mode();

@@ -485,6 +485,7 @@ describe('createSlugMachine', () => {
         source: 'unchanged',
         reason: 'reverted',
       });
+      expect(machine.getState()).toMatchObject({ mode: 'derived', pending: true });
       pending.resolve('mine');
 
       await expect(edit).resolves.toEqual({
@@ -498,6 +499,33 @@ describe('createSlugMachine', () => {
         pending: false,
       });
       expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
+    });
+
+    it('generates from the title while an invalidated manual edit is still pending', async () => {
+      const pending = deferred<string>();
+      const generateSlug = vi
+        .fn()
+        .mockReturnValueOnce(pending.promise)
+        .mockResolvedValueOnce('changed');
+      const { machine } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const edit = machine.slugEdited('mine');
+      await machine.slugEdited('hello');
+
+      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+        slug: 'changed',
+        source: 'generated',
+      });
+      expect(machine.getState()).toMatchObject({
+        slug: 'changed',
+        mode: 'derived',
+        pending: true,
+      });
+
+      pending.resolve('mine');
+      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+      expect(machine.getState()).toMatchObject({ slug: 'changed', pending: false });
     });
 
     it('applies the server result and switches to custom', async () => {
@@ -693,6 +721,7 @@ describe('createSlugMachine', () => {
         const { first, second, firstEdit, secondEdit, machine } = overlap();
         second.reject(new Error('boom'));
         await expect(secondEdit).resolves.toMatchObject({ reason: 'error' });
+        expect(machine.getState()).toMatchObject({ mode: 'derived', pending: true });
         first.resolve('one');
         await expect(firstEdit).resolves.toMatchObject({ reason: 'stale' });
         await expectDerivedAndRegenerating(machine);
