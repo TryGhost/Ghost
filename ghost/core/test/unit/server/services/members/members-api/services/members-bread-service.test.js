@@ -583,7 +583,7 @@ describe('MemberBreadService', function () {
       const customFieldValues = createCustomFieldValuesStub();
       const memberBreadService = getService({ customFieldDefinitions, customFieldValues });
 
-      const member = await memberBreadService.read({ id: MEMBER_ID }, { withCustomFields: false });
+      const member = await memberBreadService.read({ id: MEMBER_ID }, { customFieldsFor: null });
 
       assert.equal(Object.hasOwn(member, 'metafields'), false);
       assert.equal(customFieldDefinitions.hasAnyActive.called, false);

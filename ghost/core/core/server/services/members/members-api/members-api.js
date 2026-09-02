@@ -357,7 +357,7 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email }, { withCustomFields: false });
+    return memberBREADService.read({ email }, { customFieldsFor: null });
   }
 
   const account = new MemberAccountService({
@@ -376,7 +376,7 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId }, { withCustomFields: false });
+    return memberBREADService.read({ transient_id: transientId }, { customFieldsFor: null });
   }
 
   async function cycleTransientId(memberId) {
