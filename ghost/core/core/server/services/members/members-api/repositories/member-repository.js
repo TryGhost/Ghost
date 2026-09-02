@@ -878,10 +878,10 @@ module.exports = class MemberRepository {
         (n) => n.attributes.status === 'archived',
       );
 
-      if (archivedNewsletters.length > 0) {
-        // if (!memberData.newsletters) {
-        //     memberData.newsletters = [];
-        // }
+      // bookshelf-relations only touches the join table when the key is present,
+      // so an update that does not set newsletters leaves them all attached and
+      // has nothing to preserve.
+      if (memberData.newsletters && archivedNewsletters.length > 0) {
         archivedNewsletters.forEach((n) => memberData.newsletters.push(n));
       }
     }
