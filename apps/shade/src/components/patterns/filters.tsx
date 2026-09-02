@@ -29,6 +29,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useShade } from '@/providers/shade-provider';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { AlertCircle, Calendar as CalendarIcon, Check, Loader2, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -313,8 +314,7 @@ const filterAddButtonVariants = cva(
     variants: {
       variant: {
         solid: 'border border-input hover:bg-secondary/60',
-        outline:
-          'border border-control-border hover:bg-interactive-hover dark:hover:bg-interactive-hover',
+        outline: 'border border-control-border hover:bg-interactive-hover',
       },
       size: {
         lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -2703,7 +2703,7 @@ export function Filters<T = unknown>({
   onClear,
   variant = 'outline',
   size = 'md',
-  radius = 'md',
+  radius,
   i18n,
   showSearchInput = true,
   cursorPointer = true,
@@ -2714,6 +2714,7 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
+  const { controlShape } = useShade();
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2722,6 +2723,8 @@ export function Filters<T = unknown>({
   // clicked. Both reset when the picker closes.
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const filterRadius = radius ?? 'md';
+  const controlRadius = radius ?? (controlShape === 'pill' ? 'full' : 'md');
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -2991,7 +2994,7 @@ export function Filters<T = unknown>({
       value={{
         variant,
         size,
-        radius,
+        radius: filterRadius,
         i18n: mergedI18n,
         cursorPointer,
         className,
@@ -3030,7 +3033,7 @@ export function Filters<T = unknown>({
                 className={filterFieldLabelVariants({
                   variant: variant,
                   size: size,
-                  radius: radius,
+                  radius: filterRadius,
                 })}
               >
                 {field.icon}
@@ -3089,10 +3092,11 @@ export function Filters<T = unknown>({
                       variant: variant,
                       size: size,
                       cursorPointer: cursorPointer,
-                      radius: radius,
+                      radius: controlRadius,
                     }),
                     addButtonClassName,
                   )}
+                  data-control-shape={controlShape}
                   title={mergedI18n.addFilterTitle}
                   type="button"
                 >
@@ -3222,12 +3226,13 @@ export function Filters<T = unknown>({
                   variant: variant,
                   size: size,
                   cursorPointer: cursorPointer,
-                  radius: radius,
+                  radius: controlRadius,
                 }),
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
                 'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
+              data-control-shape={controlShape}
               type="button"
               onClick={() => {
                 if (onClear) {

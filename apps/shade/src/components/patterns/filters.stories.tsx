@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Inline } from '@/components/primitives';
+import ShadeApp from '@/shade-app';
 import {
   Filters,
   FilterSegmentSelect,
@@ -441,6 +443,29 @@ export const FullRadius: Story = {
     docs: {
       description: {
         story: 'Filters with fully rounded corners.',
+      },
+    },
+  },
+};
+
+export const PillControls: Story = {
+  render: () => (
+    <ShadeApp controlShape="pill" darkMode={false}>
+      <Inline align="start" gap="lg">
+        <FilterDemo addButtonText="Filter" fields={basicFields} />
+        <FilterDemo
+          addButtonClassName="aspect-square gap-0 !px-0 text-[0px]"
+          addButtonText="Add filter"
+          fields={basicFields}
+        />
+      </Inline>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use inherited pill controls for filter actions while keeping joined filter segments unchanged.',
       },
     },
   },
