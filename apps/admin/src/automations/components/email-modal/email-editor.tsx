@@ -11,6 +11,7 @@ import {
   usePinturaConfig,
 } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { fetchKoenigLexical } from '@/utils/fetch-koenig-lexical';
 import { useEmailLinkSuggestions } from './use-link-suggestions';
 import { useFocusContext } from '@tryghost/shade/app';
 
@@ -43,9 +44,10 @@ interface KoenigEmailEditorProps {
   onChange?: (state: unknown) => void;
 }
 
-// Lazy-load the editor as its own chunk; the ESM import lets Vite dedupe React.
+// Lazy-load the editor as its own chunk; the shared loader dedupes React and
+// brings Koenig's stylesheet with it.
 const EmailEditorComponent = React.lazy(async () => {
-  const module = (await import('@tryghost/koenig-lexical')) as {
+  const module = (await fetchKoenigLexical()) as {
     EmailEditor: ComponentType<KoenigEmailEditorProps>;
   };
   return { default: module.EmailEditor };
