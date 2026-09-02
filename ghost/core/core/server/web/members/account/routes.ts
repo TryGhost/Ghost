@@ -48,6 +48,16 @@ module.exports = function accountRoutes() {
     http(api.membersAccount.update),
   );
 
+  // The fields a publisher has defined, which a member's client renders inputs
+  // from. Under the account because a member reads them to fill in their own, and
+  // refused to an unknown caller because what a publisher collects is their
+  // configuration rather than something the site announces.
+  router.get(
+    '/metafields/:namespace',
+    middleware.rejectWhenAnonymous,
+    http(api.memberMetafieldsMembers.browse),
+  );
+
   // Letting Ghost email this member again after it stopped.
   router.delete(
     '/suppression',
