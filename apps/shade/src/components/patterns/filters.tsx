@@ -3094,13 +3094,18 @@ export function Filters<T = unknown>({
                       cursorPointer: cursorPointer,
                       radius: controlRadius,
                     }),
+                    controlShape === 'pill' && filters.length > 0 && 'border-0',
                     addButtonClassName,
                   )}
                   data-control-shape={controlShape}
                   title={mergedI18n.addFilterTitle}
                   type="button"
                 >
-                  {addButtonIcon || <Plus />}
+                  {controlShape === 'pill' && filters.length > 0 ? (
+                    <Plus />
+                  ) : (
+                    addButtonIcon || <Plus />
+                  )}
                   {addButtonText || mergedI18n.addFilter}
                 </button>
               )}

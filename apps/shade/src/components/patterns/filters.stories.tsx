@@ -456,7 +456,8 @@ export const PillControls: Story = {
         <FilterDemo
           addButtonClassName="aspect-square gap-0 !px-0 text-[0px]"
           addButtonText="Add filter"
-          fields={basicFields}
+          fields={prePopulatedFields}
+          initialFilters={initialFilters}
         />
       </Inline>
     </ShadeApp>
