@@ -11,6 +11,8 @@ export const editorBody = 'editor-body';
 export const editorSecondaryInstance = 'editor-secondary-instance';
 export const editorWordCount = 'editor-word-count';
 export const editorLoadError = 'editor-load-error';
+export const editorReauthBanner = 'editor-reauth-banner';
+export const editorConflictBanner = 'editor-conflict-banner';
 export const tkIndicator = 'tk-indicator';
 
 // accessible names

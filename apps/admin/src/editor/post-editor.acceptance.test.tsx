@@ -61,7 +61,8 @@ function pasteText(content: string) {
 /**
  * Covers post loading, Koenig mounting, and in-memory editing. Write requests
  * remain unfaked unless a test expects a mobiledoc conversion, so any
- * unexpected write returns 418 and fails the test.
+ * unexpected write returns 418 and fails the test. Saving is covered in
+ * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
   it('loads the post into the title and body', async () => {

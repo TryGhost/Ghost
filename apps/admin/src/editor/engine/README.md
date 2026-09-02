@@ -293,6 +293,28 @@ Ordering and staleness
 
 ## What the caller owns
 
+### Editing session
+
+The wiring hook owns everything the three modules deliberately do not:
+
+- One session per opened post, built and disposed together. A new post always
+  gets its own; nothing is carried from one new post to the next.
+- A live projection held beside the tracker and patched on every title, excerpt
+  and body change, so a snapshot can be read synchronously at any moment. The
+  version counter moves with it.
+- The persisted identity (id and collision token), replaced from every
+  acknowledgement, so the next request carries the token the server just issued.
+- A blank title held in the live projection as the default title while the input
+  stays empty, so a post persisted under that title does not read as permanently
+  diverged from what the writer sees.
+- Routing query responses to `setSaved` and mutation responses to
+  `saveAcknowledged`, passing the projection the request submitted and the full
+  record the server acknowledged.
+- Replacing the URL once a create acquires an id, with the screen keyed on the
+  session so the swap does not remount the editor.
+- Deciding what a halted queue looks like: `reauth-pending` and `conflict` are
+  states, not UI. The writer gets a way back in and the content stays untouched.
+
 ### Save engine
 
 - `getSnapshot()` returns the complete post as the caller holds it: id with its `updatedAt` (both `null` until the create is acknowledged), status, publish time, title, slug, dirty bits, `changedSinceLastRevision`, and a monotonic edit `version`.

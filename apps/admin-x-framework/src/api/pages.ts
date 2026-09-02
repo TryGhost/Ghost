@@ -102,11 +102,15 @@ export const useEditorPage = (
 export interface AddPagePayload {
   page: CreateContentData<PageEditableData>;
   options?: PostCreateOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
 }
 
 export interface EditPagePayload {
   page: EditContentData<PageEditableData>;
   options?: PageWriteOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
 }
 
 export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
@@ -114,6 +118,7 @@ export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   path: () => '/pages/',
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType },
 });
 
@@ -122,6 +127,7 @@ export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   path: ({ page }) => `/pages/${page.id}/`,
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType },
 });
 
