@@ -8,6 +8,7 @@ import {
   getEmailDisabledReason,
   getEmailUnavailableReason,
   getInitialPublishType,
+  normalizeRecipientFilter,
   selectableNewsletters,
   splitUpgradeMessage,
   tiersSegment,
@@ -101,6 +102,17 @@ describe('tiersSegment', () => {
   });
 });
 
+describe('normalizeRecipientFilter', () => {
+  it.each([
+    ['all', EVERYONE],
+    ['none', null],
+    [null, null],
+    ['label:vip', 'label:vip'],
+  ])('normalizes %j to %j', (filter, expected) => {
+    expect(normalizeRecipientFilter(filter)).toBe(expected);
+  });
+});
+
 describe('getEmailUnavailableReason', () => {
   it.each([
     ['post with members and email settings on', {}, {}, null],
@@ -174,6 +186,16 @@ describe('getInitialPublishType', () => {
       'usually nobody',
       {},
       { editorDefaultEmailRecipients: 'filter' as const, editorDefaultEmailRecipientsFilter: null },
+      { emailUnavailable: false, emailDisabled: false },
+      'publish',
+    ],
+    [
+      'usually nobody from the API sentinel',
+      {},
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: 'none',
+      },
       { emailUnavailable: false, emailDisabled: false },
       'publish',
     ],
@@ -273,6 +295,15 @@ describe('publish type availability', () => {
     expect(many.onlyDefaultNewsletter).toBe(false);
   });
 
+  it('starts with the active newsletter persisted on the post', () => {
+    const state = create({
+      post: createPost({ newsletter: 'paid-only' }),
+      site: createSite({ newsletters: [WEEKLY, PAID_NEWSLETTER] }),
+    }).getState();
+
+    expect(state.newsletter?.slug).toBe('paid-only');
+  });
+
   it('trusts a member count of zero only from an admin', () => {
     const site = createSite({ memberCount: 0 });
 
@@ -297,15 +328,23 @@ describe('without a newsletter to send', () => {
     expect(state.fullRecipientFilter).toBeNull();
   });
 
-  it.each([
-    ['a chosen send type', createPost(), 'send' as const],
-    ['a failed email retry', createPost({ email: { status: 'failed' } }), 'publish' as const],
-  ])('emits no email options for %s', (_name, post, publishType) => {
-    const machine = create({ post, site });
+  it('does not dispatch a chosen send type', () => {
+    const machine = create({ site });
 
-    machine.setPublishType(publishType);
+    machine.setPublishType('send');
 
     expect(machine.getState().willEmail).toBe(false);
+    expect(machine.getState().canPublish).toBe(false);
+    expect(machine.toDispatch()).toBeNull();
+  });
+
+  it('emits no email options for a failed email retry', () => {
+    const machine = create({ post: createPost({ email: { status: 'failed' } }), site });
+
+    machine.setPublishType('publish');
+
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.getState().canPublish).toBe(true);
     expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
   });
 
@@ -551,6 +590,24 @@ describe('getDefaultRecipientFilter', () => {
       },
       'status:-free',
     ],
+    [
+      'raw all sentinel expands to everyone',
+      { visibility: 'paid' },
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: 'all',
+      },
+      EVERYONE,
+    ],
+    [
+      'raw none sentinel follows visibility',
+      { visibility: 'paid' },
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: 'none',
+      },
+      'status:-free',
+    ],
   ])('%s', (_name, post, site, expected) => {
     expect(getDefaultRecipientFilter(createPost(post), createSite(site))).toBe(expected);
   });
@@ -568,6 +625,7 @@ describe('recipient filter', () => {
   it.each([
     ['no newsletter on the post', { newsletter: null, emailSegment: 'label:vip' }],
     ['no segment on the post', { newsletter: 'weekly', emailSegment: null }],
+    ['raw none segment on the post', { newsletter: 'weekly', emailSegment: 'none' }],
   ])('falls back to the site default with %s', (_name, post) => {
     expect(create({ post: createPost(post) }).getState().recipientFilter).toBe(EVERYONE);
   });
@@ -579,6 +637,17 @@ describe('recipient filter', () => {
     expect(machine.getState().recipientFilter).toBe('label:vip');
 
     machine.setRecipientFilter(null);
+    expect(machine.getState().recipientFilter).toBeNull();
+  });
+
+  it('normalizes raw sentinels from the post and explicit selections', () => {
+    const machine = create({
+      post: createPost({ newsletter: 'weekly', emailSegment: 'all' }),
+    });
+
+    expect(machine.getState().recipientFilter).toBe(EVERYONE);
+
+    machine.setRecipientFilter('none');
     expect(machine.getState().recipientFilter).toBeNull();
   });
 
@@ -702,15 +771,53 @@ describe('toDispatch', () => {
     });
   });
 
-  it('sends the newsletter without a segment when the filter is empty', () => {
-    const machine = create({ post: createPost({ email: { status: 'failed' } }) });
+  it('uses the persisted newsletter and segment when retrying a failed email', () => {
+    const machine = create({
+      post: createPost({
+        newsletter: 'paid-only',
+        emailSegment: 'label:vip',
+        email: { status: 'failed' },
+      }),
+      site: createSite({ newsletters: [WEEKLY, PAID_NEWSLETTER] }),
+    });
 
     machine.setRecipientFilter(null);
 
+    expect(machine.getState().newsletter?.slug).toBe('paid-only');
     expect(machine.toDispatch()).toEqual({
       kind: 'publish',
-      options: { emailOnly: false, newsletter: 'weekly' },
+      options: { emailOnly: false },
     });
+  });
+
+  it.each([
+    ['archived', [{ ...WEEKLY }, { ...PAID_NEWSLETTER, status: 'archived' }]],
+    ['missing', [WEEKLY]],
+  ])(
+    'does not override the durable newsletter for a %s failed-email retry',
+    (_name, newsletters) => {
+      const machine = create({
+        post: createPost({ newsletter: 'paid-only', email: { status: 'failed' } }),
+        site: createSite({ newsletters }),
+      });
+
+      expect(machine.getState().newsletter?.slug).toBe('paid-only');
+      expect(machine.toDispatch()).toEqual({
+        kind: 'publish',
+        options: { emailOnly: false },
+      });
+    },
+  );
+
+  it('does not dispatch email-only when there are no recipients', () => {
+    const machine = create();
+
+    machine.setPublishType('send');
+    machine.setRecipientFilter(null);
+
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.getState().canPublish).toBe(false);
+    expect(machine.toDispatch()).toBeNull();
   });
 
   it('omits email options when the post will not email', () => {
@@ -957,7 +1064,8 @@ describe('checkLimits', () => {
     machine.setPublishType('send');
 
     expect(machine.getState().willEmail).toBe(false);
-    expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
+    expect(machine.getState().canPublish).toBe(false);
+    expect(machine.toDispatch()).toBeNull();
   });
 
   it('keeps send for a sent post', async () => {

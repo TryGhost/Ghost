@@ -146,7 +146,7 @@ export interface PublishOptionsState {
   readonly emailDisabledReason: EmailDisabledReason | null;
   readonly emailBlock: EmailBlock | null;
   readonly publishBlock: PublishBlock | null;
-  /** Publishing and scheduling are draft-only transitions. */
+  /** Draft-only, and false when email-only has no executable email. */
   readonly canPublish: boolean;
   readonly isDirty: boolean;
 }
@@ -166,7 +166,7 @@ export interface PublishOptionsMachine {
   setRecipientFilter(filter: string | null): void;
   reset(): void;
   checkLimits(): Promise<PublishLimits>;
-  /** Null when the post is not a draft: no status transition is on offer. */
+  /** Null when no safe status transition is on offer. */
   toDispatch(): PublishDispatch | null;
   toRevertDispatch(): PublishDispatch;
 }
@@ -200,6 +200,17 @@ export function tiersSegment(tiers: ReadonlyArray<{ slug: string }>): string | n
   return tiers.map((tier) => `tier:${tier.slug}`).join(',') || null;
 }
 
+/** Expands the API's legacy segment sentinels into the filters used by the editor. */
+export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
+  if (filter === 'all') {
+    return EVERYONE_RECIPIENT_FILTER;
+  }
+  if (!filter || filter === 'none') {
+    return null;
+  }
+  return filter;
+}
+
 export function getDefaultRecipientFilter(
   post: PublishPostInput,
   site: Pick<
@@ -208,7 +219,7 @@ export function getDefaultRecipientFilter(
   >,
 ): string | null {
   const recipients = site.editorDefaultEmailRecipients;
-  const filter = site.editorDefaultEmailRecipientsFilter;
+  const filter = normalizeRecipientFilter(site.editorDefaultEmailRecipientsFilter);
   const usuallyNobody = recipients === 'filter' && filter === null;
 
   if (recipients === 'disabled') {
@@ -283,7 +294,7 @@ export function getInitialPublishType(
   // so turning email on is a single click.
   if (
     site.editorDefaultEmailRecipients === 'filter' &&
-    site.editorDefaultEmailRecipientsFilter === null
+    normalizeRecipientFilter(site.editorDefaultEmailRecipientsFilter) === null
   ) {
     publishType = 'publish';
   }
@@ -332,6 +343,15 @@ export function createPublishOptions({
   const newsletters = selectableNewsletters(site.newsletters);
   const defaultNewsletter = newsletters[0] ?? null;
   const isDraft = post.status === 'draft';
+  const retryingFailedEmail = isDraft && post.email?.status === 'failed';
+  const persistedNewsletter = post.newsletter
+    ? (site.newsletters.find((option) => option.slug === post.newsletter) ??
+      (retryingFailedEmail ? { slug: post.newsletter } : null))
+    : null;
+  const initialNewsletter =
+    persistedNewsletter && (persistedNewsletter.status === 'active' || retryingFailedEmail)
+      ? persistedNewsletter
+      : defaultNewsletter;
   // Only admins can browse members, so nobody else's count is trusted as a zero.
   const memberCount = user.isAdmin ? site.memberCount : null;
 
@@ -340,7 +360,7 @@ export function createPublishOptions({
 
   let emailBlock: EmailBlock | null = null;
   let publishBlock: PublishBlock | null = null;
-  let newsletter: NewsletterInput | null = defaultNewsletter;
+  let newsletter: NewsletterInput | null = initialNewsletter;
 
   const emailDisabledReason = () =>
     getEmailDisabledReason({ ...site, memberCount }, emailBlock, newsletter !== null);
@@ -364,7 +384,9 @@ export function createPublishOptions({
   const recipientFilter = (): string | null => {
     if (selectedRecipientFilter === undefined) {
       return (
-        (post.newsletter && post.emailSegment) || getDefaultRecipientFilter(post, site) || null
+        (post.newsletter && normalizeRecipientFilter(post.emailSegment)) ||
+        getDefaultRecipientFilter(post, site) ||
+        null
       );
     }
     return selectedRecipientFilter;
@@ -448,7 +470,7 @@ export function createPublishOptions({
       emailDisabledReason: emailDisabledReason(),
       emailBlock,
       publishBlock,
-      canPublish: isDraft,
+      canPublish: isDraft && (publishType !== 'send' || emails),
       isDirty: isDirty(),
     };
   };
@@ -531,7 +553,7 @@ export function createPublishOptions({
     },
 
     setRecipientFilter(filter) {
-      selectedRecipientFilter = filter;
+      selectedRecipientFilter = normalizeRecipientFilter(filter);
     },
 
     reset() {
@@ -541,8 +563,7 @@ export function createPublishOptions({
       // The construction-time floor may itself be in the past by now.
       scheduledAt = minScheduledAt();
       scheduledAtTouched = false;
-      newsletter =
-        newsletters.find((option) => option.slug === initial.newsletterSlug) ?? defaultNewsletter;
+      newsletter = initialNewsletter;
       selectedRecipientFilter = undefined;
     },
 
@@ -569,18 +590,29 @@ export function createPublishOptions({
         return null;
       }
 
+      const emails = willEmail();
+
+      // Never turn an invalid email-only choice into a public publish.
+      if (publishType === 'send' && !emails) {
+        return null;
+      }
+
       const options: PublishCommandOptions = {};
 
-      if (willEmail()) {
+      if (emails) {
         options.emailOnly = publishType === 'send';
 
-        const filter = recipientFilter();
+        // A retry must be validated against the newsletter and segment persisted with the
+        // failed email, not mutable picker state or the site's current default.
+        if (!retryingFailedEmail) {
+          const filter = recipientFilter();
 
-        if (newsletter) {
-          options.newsletter = newsletter.slug;
-        }
-        if (filter) {
-          options.emailSegment = filter;
+          if (newsletter) {
+            options.newsletter = newsletter.slug;
+          }
+          if (filter) {
+            options.emailSegment = filter;
+          }
         }
       }
 

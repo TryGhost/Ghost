@@ -18,7 +18,7 @@ Inputs are read once, at creation: the machine is built after the data it needs 
 
 `memberCount` is read for admins only, because nobody else can browse members. A count of `null` — not read, or not readable — counts as "has members" so email is never disabled for the wrong reason.
 
-Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`, and the first is selected by default. `onlyDefaultNewsletter` reports whether there is exactly one, which is what decides whether the flow offers a newsletter picker at all.
+Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`. The post's persisted active newsletter is selected initially when it is present, otherwise the first active newsletter is the default. A failed-email retry also retains its persisted newsletter even when it is no longer selectable. `onlyDefaultNewsletter` reports whether there is exactly one active newsletter, which is what decides whether the flow offers a newsletter picker at all.
 
 ## Publish types
 
@@ -87,6 +87,8 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 `setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen.
 
+Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`, matching the legacy Admin transform.
+
 `fullRecipientFilter` is what the email service receives: the newsletter's own audience filter (subscribed to that newsletter, email not disabled, plus paid-only for a paid newsletter), AND-ed with the recipient filter when there is one. It is `null` while no newsletter is selected.
 
 ## Whether the post emails
@@ -112,13 +114,14 @@ Times are ISO 8601 strings with milliseconds zeroed, because the API stores seco
 
 `toDispatch()` returns the status command for the current options, shaped exactly as the save engine accepts it:
 
-| Options     | Command                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
-| Unscheduled | `{kind: 'publish', options}` — no publish time, so the post keeps the one it has                       |
-| Scheduled   | `{kind: 'schedule', options}` with `publishedAt` set to the scheduled time                             |
-| Not a draft | `null` — publishing and scheduling are draft-only transitions, and `canPublish` reports the same thing |
+| Options                                | Command                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Unscheduled                            | `{kind: 'publish', options}` — no publish time, so the post keeps the one it has                       |
+| Scheduled                              | `{kind: 'schedule', options}` with `publishedAt` set to the scheduled time                             |
+| Not a draft                            | `null` — publishing and scheduling are draft-only transitions, and `canPublish` reports the same thing |
+| Email-only without an executable email | `null` — an invalid email choice must never fall through to a public publish                           |
 
-Email extras ride on the command only when `willEmail` is true: `emailOnly` (true only for `send`), the selected newsletter's slug, and the recipient filter as `emailSegment`. An empty filter sends the newsletter with no segment. `toRevertDispatch()` returns `{kind: 'revert'}` for any status; the engine derives the rest of that transition (clearing the publish time only when unscheduling, and always clearing `emailOnly`).
+Email extras ride on the command only when `willEmail` is true: `emailOnly` (true only for `send`), the selected newsletter's slug, and the recipient filter as `emailSegment`. Failed-email retries omit the newsletter and segment overrides so Core validates and retries the durable email against the values it was created with. `toRevertDispatch()` returns `{kind: 'revert'}` for any status; the engine derives the rest of that transition (clearing the publish time only when unscheduling, and always clearing `emailOnly`).
 
 The machine never mutates a post, so it needs no snapshot-and-rollback around a failed save: the save engine builds each request from its own snapshot and adopts the acknowledged status only once the server confirms it. A failed publish leaves both the post and these options exactly as they were, ready to dispatch again.
 
