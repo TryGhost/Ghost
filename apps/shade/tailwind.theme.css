@@ -239,6 +239,8 @@
   --shadow-md-heavy:
     0 0 1px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.15), 0 8px 10px -8px rgba(0, 0, 0, 0.16),
     0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+  --shadow-control-outline: var(--control-outline-shadow);
+  --shadow-control-outline-pressed: var(--control-outline-pressed-shadow);
   --shadow-lg:
     0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
     0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02),

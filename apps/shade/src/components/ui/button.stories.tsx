@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './button';
+import { Inline } from '@/components/primitives/inline';
 import ShadeApp from '@/shade-app';
 import { ArrowUp, Smile } from 'lucide-react';
 
@@ -38,12 +39,23 @@ export const Primary: Story = {
 export const Pill: Story = {
   args: {
     shape: 'pill',
-    children: 'Pill button',
   },
+  render: (args) => (
+    <Inline gap="sm">
+      <Button {...args}>Primary pill</Button>
+      <Button {...args} variant="secondary">
+        Secondary pill
+      </Button>
+      <Button {...args} variant="outline">
+        Outline pill
+      </Button>
+    </Inline>
+  ),
   parameters: {
     docs: {
       description: {
-        story: 'Use the pill shape when a surface opts into fully rounded controls.',
+        story:
+          'Compare the primary spacing with non-primary spacing and the borderless outline treatment on a pill surface.',
       },
     },
   },

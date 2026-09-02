@@ -303,7 +303,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         <Button asChild>
           <a
             aria-label="New member"
-            className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto sm:data-[control-shape=pill]:px-2.5"
+            className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
             href={newMemberHref}
           >
             <span className="hidden sm:inline">New member</span>

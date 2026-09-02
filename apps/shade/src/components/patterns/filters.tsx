@@ -3094,7 +3094,10 @@ export function Filters<T = unknown>({
                       cursorPointer: cursorPointer,
                       radius: controlRadius,
                     }),
-                    controlShape === 'pill' && filters.length > 0 && 'border-0',
+                    controlShape === 'pill' &&
+                      (filters.length > 0
+                        ? 'border-0 shadow-none'
+                        : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
                     addButtonClassName,
                   )}
                   data-control-shape={controlShape}
@@ -3234,6 +3237,8 @@ export function Filters<T = unknown>({
                   radius: controlRadius,
                 }),
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
+                controlShape === 'pill' &&
+                  'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}

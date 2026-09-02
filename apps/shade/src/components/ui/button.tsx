@@ -36,6 +36,23 @@ const buttonVariants = cva(
     compoundVariants: [
       {
         shape: 'pill',
+        variant: 'default',
+        size: ['default', 'sm', 'lg'],
+        className: 'px-4',
+      },
+      {
+        shape: 'pill',
+        variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown'],
+        size: ['default', 'sm', 'lg'],
+        className: 'px-3',
+      },
+      {
+        shape: 'pill',
+        variant: 'outline',
+        className: 'border-0 shadow-control-outline active:shadow-control-outline-pressed',
+      },
+      {
+        shape: 'pill',
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },

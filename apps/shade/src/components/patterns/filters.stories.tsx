@@ -458,6 +458,7 @@ export const PillControls: Story = {
           addButtonText="Add filter"
           fields={prePopulatedFields}
           initialFilters={initialFilters}
+          showClearButton={true}
         />
       </Inline>
     </ShadeApp>
