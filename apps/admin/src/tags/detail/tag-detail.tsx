@@ -24,7 +24,7 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { NotFound } from '@/not-found';
+import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
   generateSlugFromName,

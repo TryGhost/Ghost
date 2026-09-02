@@ -1,5 +1,12 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  coverImagePreview,
+  coverImageUpload,
+  profileImagePreview,
+  profileImageUpload,
+  userDetailModal,
+} from '@tryghost/test-data/selectors/settings';
 
 type FilePayload = {
   name: string;
@@ -20,13 +27,13 @@ export class AdminStaffDetailsPage extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings/staff');
 
-    this.userDetailModal = page.getByTestId('user-detail-modal');
+    this.userDetailModal = page.getByTestId(userDetailModal);
     this.emailInput = this.userDetailModal.getByRole('textbox', { name: /Email/i });
     this.slugInput = this.userDetailModal.getByRole('textbox', { name: 'Slug' });
-    this.profileImageInput = this.userDetailModal.getByTestId('profile-image-upload');
-    this.coverImageInput = this.userDetailModal.getByTestId('cover-image-upload');
-    this.profileImagePreview = this.userDetailModal.getByTestId('profile-image-preview');
-    this.coverImagePreview = this.userDetailModal.getByTestId('cover-image-preview');
+    this.profileImageInput = this.userDetailModal.getByTestId(profileImageUpload);
+    this.coverImageInput = this.userDetailModal.getByTestId(coverImageUpload);
+    this.profileImagePreview = this.userDetailModal.getByTestId(profileImagePreview);
+    this.coverImagePreview = this.userDetailModal.getByTestId(coverImagePreview);
     this.savedButton = this.userDetailModal.getByRole('button', { name: 'Saved' });
   }
 

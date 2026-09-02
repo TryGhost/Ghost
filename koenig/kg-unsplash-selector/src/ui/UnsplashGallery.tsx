@@ -34,7 +34,7 @@ const UnsplashGalleryLoading: React.FC = () => {
       className="absolute inset-y-0 left-0 flex w-full items-center justify-center overflow-hidden pb-[8vh]"
       data-kg-loader
     >
-      <div className="animate-spin before:bg-grey-800 relative inline-block size-[50px] rounded-full border border-black/10 before:z-10 before:mt-[7px] before:block before:size-[7px] before:rounded-full"></div>
+      <div className="animate-spin relative inline-block size-[50px] rounded-full border border-black/10 before:z-10 before:mt-[7px] before:block before:size-[7px] before:rounded-full before:bg-gray-800 dark:border-white/10 dark:before:bg-gray-400"></div>
     </div>
   );
 };
@@ -123,9 +123,9 @@ const UnsplashGallery: React.FC<UnsplashGalleryProps> = ({
   if (error) {
     return (
       <GalleryLayout galleryRef={galleryRef} zoomed={zoomed}>
-        <div className="flex h-full flex-col items-center justify-center">
-          <h1 className="mb-4 text-2xl font-bold">Error</h1>
-          <p className="text-lg font-medium">{error}</p>
+        <div className="text-foreground flex h-full flex-col items-center justify-center">
+          <h1 className="mb-4 text-[2.2rem] font-bold">Error</h1>
+          <p className="text-[1.5rem] font-medium">{error}</p>
         </div>
       </GalleryLayout>
     );

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
   currentRoute,
+  fakeAdminEndpoint,
   fakeAdminStats,
   fakeAnalyticsOverview,
   fakeNewsletters,
@@ -88,6 +90,40 @@ function seedTopPostsViews() {
   ]);
 }
 
+/**
+ * The stats views' world with web analytics on but nothing recorded yet: a
+ * site with no members, no MRR, no posts and no visits — the empty states.
+ */
+function seedEmptyAnalyticsWorld() {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+  fakeAdminStats.subscriptions();
+  fakeAdminStats.topPostViews();
+  fakePosts([]);
+  fakeTinybirdToken();
+  fakeTinybirdPipe('api_active_visitors', []);
+  fakeTinybirdPipe('api_kpis', []);
+}
+
+/** The web traffic view's own cards, all empty. */
+function seedEmptyWebTraffic() {
+  fakeAdminStats.topContent([]);
+  fakeTinybirdPipe('api_top_sources', []);
+  fakeTinybirdPipe('api_top_locations', []);
+}
+
+/**
+ * A member-count history of zero rows, the shape the server serves for a
+ * site with no members — a fully empty history would collapse the growth
+ * view into its no-stats state instead of rendering the empty cards.
+ */
+function seedZeroMemberHistory() {
+  fakeAdminStats.memberCount({
+    stats: [{ date: daysAgo(1), free: 0, paid: 0, comped: 0 }],
+    totals: { free: 0, paid: 0, comped: 0, gift: 0 },
+  });
+}
+
 describe('Analytics overview', () => {
   it('renders zero KPIs when growth history is empty', async () => {
     fakeAnalyticsOverview();
@@ -122,6 +158,24 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
   });
 
+  it('uses Admin 7 typography in the portalled trend tooltip', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', {
+      labs: { admin7PageChrome: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
+    await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
+    const tooltip = page.getByRole('tooltip');
+    await expect.element(tooltip).toHaveTextContent(/trending/);
+    expect(tooltip.element().closest('#root')).toBeNull();
+    await expect
+      .poll(() => getComputedStyle(tooltip.element()).fontFamily)
+      .toContain('Inter Admin 7');
+  });
+
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
     seedTopPostsViews();
@@ -137,6 +191,66 @@ describe('Analytics overview', () => {
 
     await expect.element(analyticsScreen.dateRangeSelect()).toHaveTextContent('Last 7 days');
     await expect.poll(() => kpisApi.lastRequest?.params.get('date_from')).not.toBe(initialDateFrom);
+  });
+
+  it('renders the latest and top posts with zeroed stats when nothing is recorded', async () => {
+    seedEmptyAnalyticsWorld();
+    fakePosts([
+      post({
+        id: LATEST_POST_ID,
+        title: 'Attack of the Clones',
+        status: 'published',
+        published_at: `${daysAgo(3)}T10:00:00.000Z`,
+        url: 'https://example.com/attack-of-the-clones/',
+      }),
+    ]);
+    fakeAdminStats.post(LATEST_POST_ID);
+    // The server lists recently published posts in top posts even before
+    // they record any views; the row must render its zeros as zeros.
+    fakeAdminStats.topPostViews([
+      {
+        post_id: LATEST_POST_ID,
+        title: 'Attack of the Clones',
+        published_at: `${daysAgo(3)}T10:00:00.000Z`,
+      },
+    ]);
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
+    await expect.element(analyticsScreen.latestPostVisitors()).toHaveTextContent('0');
+    await expect.element(analyticsScreen.latestPostMembers()).toHaveTextContent('0');
+
+    await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('Attack of the Clones');
+    const visitorsStatistics = analyticsScreen.topPostsVisitorsStatistics();
+    await expect.element(visitorsStatistics).toHaveTextContent('Unique visitors');
+    await expect.element(visitorsStatistics).toHaveTextContent('0');
+    const membersStatistics = analyticsScreen.topPostsMembersStatistics();
+    await expect.element(membersStatistics).toHaveTextContent('New members');
+    await expect.element(membersStatistics).toHaveTextContent('Free');
+    await expect.element(membersStatistics).toHaveTextContent('0');
+  });
+
+  it('navigates to the web traffic view from the visitors KPI', async () => {
+    seedEmptyAnalyticsWorld();
+    seedEmptyWebTraffic();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.uniqueVisitorsViewMoreButton().click();
+
+    await expect.poll(currentRoute).toMatch(/^\/analytics\/web\/?$/);
+    await expect.element(analyticsScreen.uniqueVisitorsTab()).toBeVisible();
+  });
+
+  it('navigates to the growth view from the members KPI', async () => {
+    seedEmptyAnalyticsWorld();
+    seedZeroMemberHistory();
+    fakeAdminStats.topPosts();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.membersViewMoreButton().click();
+
+    await expect.poll(currentRoute).toMatch(/^\/analytics\/growth\//);
+    await expect.element(analyticsScreen.totalMembersCard()).toBeVisible();
   });
 });
 
@@ -184,6 +298,30 @@ describe('Analytics web traffic', () => {
     await expect.element(analyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
     await expect.element(analyticsScreen.locationRow('US')).toHaveTextContent('United States');
   });
+
+  it('renders zeroed KPIs and empty cards when there are no visits', async () => {
+    seedEmptyAnalyticsWorld();
+    seedEmptyWebTraffic();
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.uniqueVisitorsTab()).toHaveTextContent('0');
+    await expect.element(analyticsScreen.totalViewsTab()).toHaveTextContent('0');
+    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
+    await expect.element(analyticsScreen.topSourcesCard()).toHaveTextContent('No visitors');
+    await expect.element(analyticsScreen.locationsCard()).toHaveTextContent('No visitors');
+  });
+
+  it('keeps the empty state across the top content tabs', async () => {
+    seedEmptyAnalyticsWorld();
+    seedEmptyWebTraffic();
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.topContentTab('Posts').click();
+    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
+
+    await analyticsScreen.topContentTab('Pages').click();
+    await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
+  });
 });
 
 describe('Analytics growth', () => {
@@ -211,6 +349,38 @@ describe('Analytics growth', () => {
       .element(analyticsScreen.topContentCard())
       .toHaveTextContent('Attack of the Clones');
     await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('+30');
+  });
+
+  it('shows No conversions across the top content tabs when nothing converted', async () => {
+    seedEmptyAnalyticsWorld();
+    seedZeroMemberHistory();
+    fakeAdminStats.topPosts();
+    fakeAdminEndpoint('GET', /^\/stats\/top-sources-growth/, { stats: [], meta: {} });
+    await renderAdminApp('/analytics/growth', { boot: webAnalyticsBootOverrides() });
+
+    const contentCard = analyticsScreen.topContentCard();
+    await expect
+      .element(contentCard)
+      .toHaveTextContent('Which posts or pages drove the most growth in the last 30 days');
+    await expect.element(contentCard).toHaveTextContent('No conversions');
+
+    await analyticsScreen.topContentTab('Posts').click();
+    await expect
+      .element(contentCard)
+      .toHaveTextContent('Which posts drove the most growth in the last 30 days');
+    await expect.element(contentCard).toHaveTextContent('No conversions');
+
+    await analyticsScreen.topContentTab('Pages').click();
+    await expect
+      .element(contentCard)
+      .toHaveTextContent('Which pages drove the most growth in the last 30 days');
+    await expect.element(contentCard).toHaveTextContent('No conversions');
+
+    await analyticsScreen.topContentTab('Sources').click();
+    await expect
+      .element(contentCard)
+      .toHaveTextContent('Which sources drove the most growth in the last 30 days');
+    await expect.element(contentCard).toHaveTextContent('No conversions');
   });
 });
 
@@ -254,5 +424,29 @@ describe('Analytics newsletters', () => {
     await expect
       .element(analyticsScreen.topNewslettersCard())
       .toHaveTextContent('Weekly Digest Issue #1');
+  });
+
+  it('shows the empty state on every newsletter card when none were sent', async () => {
+    seedEmptyAnalyticsWorld();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    fakeAdminStats.newsletterBasic();
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.newslettersCard()).toBeVisible();
+    await expect
+      .element(analyticsScreen.topNewslettersCard())
+      .toHaveTextContent('newsletters in the last 30 days');
+
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    await expect
+      .element(analyticsScreen.newslettersCard())
+      .toHaveTextContent('No newsletters in the last 30 days');
+
+    await analyticsScreen.newslettersCardTab('Avg. click rate').click();
+    await expect
+      .element(analyticsScreen.newslettersCard())
+      .toHaveTextContent('No newsletters in the last 30 days');
   });
 });

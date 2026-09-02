@@ -5,6 +5,10 @@
 /* The parent container + layout
 /* ---------------------------------------------------------- */
 
+.gh-unsplash-modal {
+    background: var(--white);
+}
+
 .gh-unsplash-window {
     padding: 25px;
     background: #fff;
@@ -45,21 +49,34 @@
     margin: 50px auto;
 }
 
-.gh-unsplash-search {
+.gh-unsplash-modal .gh-unsplash-search {
     width: 100%;
     height: 40px;
     margin: 0;
-    padding: 0 30px 1px 50px;
+    padding: 0 32px 1px 40px;
     outline: none;
     border: 1px solid color-mod(var(--lightgrey) l(-2%));
     color: var(--darkgrey);
+    font-family: var(--font-family);
     font-size: 14px;
-    background-color: #fff;
+    background-color: var(--white);
     border-radius: 20px;
     appearance: none;
 }
 
-.gh-unsplash-search:focus {
+.gh-unsplash-modal .gh-input-icon svg {
+    left: 16px;
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+    transform: translateY(-8px);
+}
+
+.dark .gh-unsplash-modal .gh-input-icon svg {
+    fill: #9DA0A3;
+}
+
+.gh-unsplash-modal .gh-unsplash-search:focus {
     border-color: color-mod(var(--lightgrey) l(-10%) s(+6%));
 }
 
@@ -170,14 +187,14 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    margin-left: 10px;
+    margin-left: 12px;
     padding: 8px 12px;
-    color: #777;
-    font-size: 1.4rem;
+    color: #7C8B9A;
+    font-size: 1.2rem;
     line-height: 1.1em;
     font-weight: 500;
     background: #fff;
-    border-radius: 5px;
+    border-radius: 6px;
     opacity: 0.9;
     transition: all 0.15s ease-in-out;
 }
@@ -201,7 +218,7 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     letter-spacing: 0;
     line-height: 1.15em;
 }
@@ -209,10 +226,10 @@
 .gh-unsplash-photo-author-img {
     flex-shrink: 0;
     display: block;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     overflow: hidden;
-    margin-right: 10px;
+    margin-right: 8px;
     border-radius: 100%;
 }
 

@@ -619,6 +619,38 @@ describe('Tag detail (tagDetailsReact on)', () => {
       .toBeVisible();
   });
 
+  it('shows the not-found page when the tag does not exist', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp('^/tags/slug/unknown/'),
+      { errors: [{ type: 'NotFoundError', message: 'Tag not found.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/tags/unknown', FLAGS);
+
+    await expect.element(tagDetailScreen.notFound()).toBeVisible();
+  });
+
+  it('keeps the Tags nav item active on the new tag route', async () => {
+    fakeTags([]);
+    await renderAdminApp('/tags/new', FLAGS);
+
+    await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
+    await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('keeps the Tags nav item active while editing a tag from the list', async () => {
+    const t = tag({ name: 'News', slug: 'news' });
+    fakeTags([t]);
+    fakeTagWorld(t);
+    await renderAdminApp('/tags', FLAGS);
+
+    await tagsScreen.tagRows().getByRole('link', { name: 'News' }).click();
+
+    await expect.poll(currentRoute).toBe('/tags/news');
+    await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
+  });
+
   it('guards leaving with unsaved edits via the breadcrumb', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTags([t]);

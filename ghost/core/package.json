@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.61.0-rc.0",
+  "version": "6.62.1-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -49,6 +49,7 @@
     "build:assets:js": "node scripts/minify-assets.mjs",
     "build:assets:cards": "node scripts/build-card-assets.mjs",
     "generate-golden-email": "node bin/generate-golden-email.js",
+    "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
@@ -62,8 +63,8 @@
     "test:integration": "vitest run -c vitest.config.db.ts --project integration",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
-    "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e",
-    "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 pnpm test:integration",
+    "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
+    "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
     "test:int:slow": "pnpm test:integration",
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
@@ -93,6 +94,7 @@
     "@tryghost/api-framework": "catalog:",
     "@tryghost/bookshelf-plugins": "2.3.8",
     "@tryghost/brute-knex": "catalog:",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.27",
     "@tryghost/custom-field-types": "workspace:*",
@@ -137,7 +139,7 @@
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "5.2.6",
-    "@tryghost/validator": "0.2.22",
+    "@tryghost/validator": "catalog:",
     "@tryghost/version": "2.3.2",
     "@tryghost/zip": "3.5.1",
     "@x402/core": "catalog:",
@@ -277,7 +279,6 @@
     "@types/supertest": "6.0.3",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "c8": "catalog:",
     "chai": "catalog:",
     "cli-progress": "3.12.0",
     "cssnano": "7.1.9",
@@ -382,13 +383,7 @@
           "^build"
         ],
         "outputs": [
-          "{projectRoot}/coverage-e2e"
-        ]
-      },
-      "test:ci:legacy": {
-        "dependsOn": [
-          "build:assets",
-          "^build"
+          "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
         ]
       },
       "test:ci:integration": {
@@ -397,7 +392,7 @@
           "^build"
         ],
         "outputs": [
-          "{projectRoot}/coverage-integration"
+          "{projectRoot}/coverage-integration/cobertura-coverage.xml"
         ]
       }
     }

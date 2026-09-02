@@ -20,11 +20,7 @@ describe('GiftService interface', function () {
     sinon.restore();
   });
 
-  function createService({
-    customizationEnabled = false,
-    portalPlans = ['monthly', 'yearly'],
-    timezone = 'Etc/UTC',
-  } = {}) {
+  function createService({ portalPlans = ['monthly', 'yearly'], timezone = 'Etc/UTC' } = {}) {
     const tier = {
       id: {
         toHexString: () => 'tier_1',
@@ -65,6 +61,7 @@ describe('GiftService interface', function () {
     };
     const giftDeliveryService = {
       createForCheckout: sinon.stub().resolves(),
+      getRecipientEmailForGift: sinon.stub().resolves(null),
       dispatchForGift: sinon.stub().resolves(null),
       cancelPendingForGift: sinon.stub().resolves(false),
     };
@@ -84,9 +81,6 @@ describe('GiftService interface', function () {
       staffServiceEmails: {},
       giftReminderScheduler: {},
       checkoutAdapter,
-      labsService: {
-        isSet: sinon.stub().withArgs('giftSubCustomization').returns(customizationEnabled),
-      },
       settingsCache: {
         get: settingsGet,
       },
@@ -107,7 +101,6 @@ describe('GiftService interface', function () {
     const result = await service.startCheckout({
       tierId: 'tier_1',
       cadence: 'year',
-      duration: 1,
       successUrl: 'https://example.com/',
       cancelUrl: 'https://example.com/cancel/',
       buyer: {
@@ -141,14 +134,12 @@ describe('GiftService interface', function () {
     assert.equal(successUrl.searchParams.get('gift_token'), createdGift.token);
     assert.equal(successUrl.searchParams.get('gift_tier'), 'tier_1');
     assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
-    assert.equal(successUrl.searchParams.get('gift_duration'), null);
+    assert.equal(successUrl.searchParams.get('gift_duration'), '12');
     assert.equal(successUrl.searchParams.get('gift_delivery'), 'link');
   });
 
   it('validates email delivery and keeps recipient PII out of Stripe metadata', async function () {
-    const { service, checkoutAdapter, giftRepository, giftDeliveryService } = createService({
-      customizationEnabled: true,
-    });
+    const { service, checkoutAdapter, giftRepository, giftDeliveryService } = createService();
 
     await service.startCheckout({
       tierId: 'tier_1',
@@ -189,7 +180,6 @@ describe('GiftService interface', function () {
   it('stores a scheduled email delivery as 09:00 in the publication timezone', async function () {
     const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
     const { service, checkoutAdapter, giftRepository, giftDeliveryService } = createService({
-      customizationEnabled: true,
       timezone: 'America/Los_Angeles',
     });
 
@@ -229,7 +219,7 @@ describe('GiftService interface', function () {
 
   it('rejects delivery dates beyond the next publication-calendar year', async function () {
     const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
-    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+    const { service, checkoutAdapter } = createService();
 
     await assert.rejects(
       () =>
@@ -257,7 +247,7 @@ describe('GiftService interface', function () {
 
   it('accepts delivery exactly 365 publication-calendar days ahead', async function () {
     const clock = sinon.useFakeTimers(new Date('2026-08-18T12:00:00.000Z'));
-    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+    const { service, checkoutAdapter } = createService();
 
     await service.startCheckout({
       tierId: 'tier_1',
@@ -280,7 +270,7 @@ describe('GiftService interface', function () {
   });
 
   it('prefers the checkout buyer name over the authenticated member name', async function () {
-    const { service, giftRepository } = createService({ customizationEnabled: true });
+    const { service, giftRepository } = createService();
 
     await service.startCheckout({
       tierId: 'tier_1',
@@ -338,7 +328,7 @@ describe('GiftService interface', function () {
 
   for (const { name, overrides, expected } of invalidCheckouts) {
     it(`rejects ${name}`, async function () {
-      const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+      const { service, checkoutAdapter } = createService();
 
       await assert.rejects(
         () =>
@@ -362,7 +352,7 @@ describe('GiftService interface', function () {
   }
 
   it('keeps link gifts anonymous when buyer name is omitted', async function () {
-    const { service, giftRepository } = createService({ customizationEnabled: true });
+    const { service, giftRepository } = createService();
 
     await service.startCheckout({
       tierId: 'tier_1',
@@ -386,45 +376,9 @@ describe('GiftService interface', function () {
     assert.equal(gift.personalMessage, null);
   });
 
-  it('keeps omitted and explicit link delivery compatible while the flag is disabled', async function () {
-    const { service, checkoutAdapter } = createService();
-    const base = {
-      tierId: 'tier_1',
-      cadence: 'year',
-      successUrl: 'https://example.com/',
-      buyer: {
-        memberId: null,
-        email: 'buyer@example.com',
-        name: null,
-        isAuthenticated: false,
-      },
-    };
-
-    await service.startCheckout(base);
-    await service.startCheckout({ ...base, deliveryMethod: 'link' });
-    await assert.rejects(
-      () =>
-        service.startCheckout({
-          ...base,
-          deliveryMethod: 'email',
-          recipientEmail: 'recipient@example.com',
-        }),
-      { context: 'Gift email delivery is not available' },
-    );
-    await assert.rejects(
-      () =>
-        service.startCheckout({
-          ...base,
-          buyerName: 'Buyer',
-        }),
-      { context: 'Gift email delivery is not available' },
-    );
-    assert.equal(checkoutAdapter.createSession.callCount, 2);
-  });
-
   for (const duration of [3, 6]) {
     it(`owns the customized ${duration}-month checkout decision`, async function () {
-      const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+      const { service, checkoutAdapter } = createService();
 
       await service.startCheckout({
         tierId: 'tier_1',
@@ -449,33 +403,8 @@ describe('GiftService interface', function () {
     });
   }
 
-  it('ignores customized duration input while the flag is disabled', async function () {
+  it('keeps cadence-only clients compatible', async function () {
     const { service, checkoutAdapter } = createService();
-
-    await service.startCheckout({
-      tierId: 'tier_1',
-      cadence: 'year',
-      duration: 3,
-      successUrl: 'https://example.com/',
-      buyer: {
-        memberId: null,
-        email: 'buyer@example.com',
-        name: null,
-        isAuthenticated: false,
-      },
-    });
-
-    const plan = checkoutAdapter.createSession.firstCall.firstArg;
-    const successUrl = new URL(plan.successUrl);
-
-    assert.equal(plan.cadence, 'year');
-    assert.equal(plan.duration, 1);
-    assert.equal(plan.amount, 12000);
-    assert.equal(successUrl.searchParams.get('gift_duration'), null);
-  });
-
-  it('keeps cadence-only clients compatible while customization is enabled', async function () {
-    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
 
     await service.startCheckout({
       tierId: 'tier_1',
@@ -500,7 +429,6 @@ describe('GiftService interface', function () {
 
   it('enforces the Portal plan gate for explicit customized durations', async function () {
     const { service, checkoutAdapter } = createService({
-      customizationEnabled: true,
       portalPlans: ['yearly'],
     });
 
@@ -524,7 +452,7 @@ describe('GiftService interface', function () {
   });
 
   it('rejects unsupported or conflicting customized durations', async function () {
-    const { service, checkoutAdapter } = createService({ customizationEnabled: true });
+    const { service, checkoutAdapter } = createService();
     const buyer = {
       memberId: null,
       email: 'buyer@example.com',
@@ -652,6 +580,7 @@ describe('GiftService interface', function () {
       amount: 5000,
       buyer_name: 'Jamie',
       recipient_name: 'Taylor',
+      recipient_email: null,
       message: 'Enjoy!',
       expires_at: new Date('2030-01-01T00:00:00.000Z'),
       consumes_at: null,

@@ -10,9 +10,14 @@ const moment = require('moment');
 // assume rather than on the behaviour it is checking.
 const createCustomFieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
+  unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
   planWrite: sinon.stub().resolves([]),
   applyWrite: sinon.stub().resolves(),
+});
+
+const createCustomFieldDefinitionsStub = (hasAnyActive = false) => ({
+  hasAnyActive: sinon.stub().resolves(hasAnyActive),
 });
 
 describe('MemberBreadService', function () {
@@ -72,7 +77,6 @@ describe('MemberBreadService', function () {
         stripeService: { configured: true },
         memberAttributionService: { getAttributionFromContext: sinon.stub().resolves(null) },
         emailService: {},
-        labsService: { isSet: sinon.stub().returns(false) },
         newslettersService: { browse: sinon.stub().resolves([]) },
         settingsCache: { get: sinon.stub() },
         emailSuppressionList: { getSuppressionData: getSuppressionDataStub },
@@ -80,6 +84,7 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         customFieldValues,
+        customFieldDefinitions: createCustomFieldDefinitionsStub(),
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -111,12 +116,12 @@ describe('MemberBreadService', function () {
       await assert.rejects(
         () =>
           service.add(
-            { email: 'test@example.com', custom_fields: { favourite_topic: 'Ghosts' } },
+            { email: 'test@example.com', metafields: { custom: { favourite_topic: 'Ghosts' } } },
             {},
           ),
         (error) => {
           assert.equal(error.errorType, 'ValidationError');
-          assert.equal(error.property, 'custom_fields');
+          assert.equal(error.property, 'metafields');
           return true;
         },
       );
@@ -332,7 +337,6 @@ describe('MemberBreadService', function () {
         stripeService: { configured: stripeConfigured },
         memberAttributionService: { getAttributionFromContext: sinon.stub().resolves(null) },
         emailService: {},
-        labsService: { isSet: sinon.stub().returns(false) },
         newslettersService: { browse: sinon.stub().resolves([]) },
         settingsCache: { get: sinon.stub() },
         emailSuppressionList: { getSuppressionData: getSuppressionDataStub },
@@ -340,6 +344,7 @@ describe('MemberBreadService', function () {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
         customFieldValues: createCustomFieldValuesStub(),
+        customFieldDefinitions: createCustomFieldDefinitionsStub(),
       });
 
       sinon.stub(service, 'read').resolves({ id: 'member_123' });
@@ -524,9 +529,10 @@ describe('MemberBreadService', function () {
         emailSuppressionList: emailSuppressionListStub,
         nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
         offersAPI: options.offersAPI || defaultOffersAPI,
-        labsService: options.labsService || { isSet: sinon.stub().returns(false) },
         giftService: options.giftService || defaultGiftService,
         customFieldValues: options.customFieldValues || defaultCustomFieldValues,
+        customFieldDefinitions:
+          options.customFieldDefinitions || createCustomFieldDefinitionsStub(),
       });
     };
 
@@ -570,6 +576,27 @@ describe('MemberBreadService', function () {
 
       assert.equal(member.id, memberModelJSON.id);
       assert.equal(member.email, memberModelJSON.email);
+    });
+
+    it('asks nothing about custom fields when the caller does not want them', async function () {
+      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
+      const customFieldValues = createCustomFieldValuesStub();
+      const memberBreadService = getService({ customFieldDefinitions, customFieldValues });
+
+      const member = await memberBreadService.read({ id: MEMBER_ID }, { withCustomFields: false });
+
+      assert.equal(Object.hasOwn(member, 'metafields'), false);
+      assert.equal(customFieldDefinitions.hasAnyActive.called, false);
+      assert.equal(customFieldValues.getValuesForMembers.called, false);
+    });
+
+    it('carries custom fields on a site that defines them', async function () {
+      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
+      const memberBreadService = getService({ customFieldDefinitions });
+
+      const member = await memberBreadService.read({ id: MEMBER_ID });
+
+      assert.deepEqual(member.metafields, {});
     });
 
     it('returns a member with subscriptions', async function () {

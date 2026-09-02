@@ -48,7 +48,7 @@ export default class SignupController extends Controller {
 
     @task({drop: true})
     *signupTask() {
-        const setupProperties = ['name', 'email', 'password', 'token'];
+        const setupProperties = ['name', 'password', 'token'];
 
         this.flowErrors = '';
         this.signupDetails.hasValidated.addObjects(setupProperties);
@@ -97,6 +97,7 @@ export default class SignupController extends Controller {
             data: {
                 invitation: [{
                     name: signupDetails.name,
+                    // Older Core versions require email; newer versions use the invitation record.
                     email: signupDetails.email,
                     password: signupDetails.password,
                     token: signupDetails.token

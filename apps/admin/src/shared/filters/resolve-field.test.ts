@@ -1,6 +1,8 @@
-import { defineFields } from './filter-types';
 import { describe, expect, it } from 'vitest';
 import { resolveField } from './resolve-field';
+import type { FilterField } from './filter-types';
+
+const defineFields = <T extends Record<string, FilterField>>(fields: T): T => fields;
 
 const fields = defineFields({
   status: {
@@ -73,8 +75,8 @@ describe('resolveField', () => {
   it('supports serialize-direction lookups for concrete keys', () => {
     const resolved = resolveField(fields, 'newsletters.weekly', 'UTC');
 
-    expect(resolved?.context.pattern).toBe('newsletters.:slug');
     expect(resolved?.context.key).toBe('newsletters.weekly');
+    expect(resolved?.context.params).toEqual({ slug: 'weekly' });
   });
 
   it('resolves parse aliases back to their field definitions', () => {

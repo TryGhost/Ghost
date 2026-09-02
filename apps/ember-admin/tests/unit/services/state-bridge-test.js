@@ -306,6 +306,14 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.unloadAll.calledWith('integration')).to.be.true;
         });
 
+        it('unloads snippets when React snippet queries are invalidated', function () {
+            run(() => {
+                service.onInvalidate('SnippetsResponseType');
+            });
+
+            expect(store.unloadAll.calledOnceWith('snippet')).to.be.true;
+        });
+
         it('unloads all tags when tag queries are invalidated', function () {
             run(() => {
                 service.onInvalidate('TagsResponseType');

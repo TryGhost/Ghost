@@ -35,6 +35,7 @@ import {
   formatNumber,
 } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
@@ -72,6 +73,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
   const canManageGiftLink = useCanManageGiftLink(post);
+  const editorPath = `/editor/post/${postId}`;
+  // Whether the editor needs a hash navigation depends on the `editorReact` flag.
+  const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
 
@@ -151,13 +155,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
 
   return (
     <>
-      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background">
+      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background admin7:-mx-(--page-gutter)">
         <div
-          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0"
+          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0 admin7:px-(--page-gutter) admin7:pt-[28px]!"
           data-header="header"
         >
           <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col justify-between md:flex-row md:items-center">
+            <div className="flex w-full flex-col justify-between md:flex-row md:items-center admin7:flex-wrap">
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
@@ -203,7 +207,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         canShareAsGift={canManageGiftLink}
                         description=""
                         faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image}
+                        featureImageURL={post?.feature_image ?? undefined}
                         giftAccessLabel={giftAccessLabel(post?.visibility)}
                         open={isShareOpen}
                         postExcerpt={post?.excerpt || ''}
@@ -238,7 +242,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              navigate(`/editor/post/${postId}`, { crossApp: true });
+                              navigate(editorPath, { crossApp: editorIsEmberOwned });
                             }}
                           >
                             <LucideIcon.Pen />

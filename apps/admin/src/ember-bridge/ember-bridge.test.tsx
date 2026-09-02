@@ -171,6 +171,113 @@ describe('useEmberDataSync', () => {
     unmount();
   });
 
+  /**
+   * Saving a post in the editor can *create* tags: a tag typed into the post
+   * is written as part of the post's own save, as an embedded relation. Ember
+   * therefore reports a `post` change and never a `tag` one — so the posts
+   * list's tag filter kept serving a cached list, and a tag you had just
+   * made was missing from it until a full browser reload.
+   */
+  queryTest(
+    'invalidates tags when Ember saves a post, which can create them',
+    async ({ queryClient, wrapper }) => {
+      const mock = createMockStateBridge();
+      window.EmberBridge = { state: mock.stateBridge };
+
+      // Without a gcTime these are collected before the assertion runs, and
+      // `every` on an empty array passes vacuously.
+      queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+      queryClient.setQueryDefaults(['MembersResponseType', '/members'], { gcTime: Infinity });
+      queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+      queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+
+      renderHook(() => useEmberDataSync(), { wrapper });
+
+      await waitFor(() => {
+        expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+      });
+
+      act(() => {
+        mock.emit('emberDataChange', {
+          operation: 'update',
+          modelName: 'post',
+          id: '1',
+          data: null,
+        });
+      });
+
+      await waitFor(() => {
+        const queries = queryClient.getQueryCache().getAll();
+        const tagQueries = queries.filter((q) => q.queryKey[0] === 'TagsResponseType');
+        const memberQueries = queries.filter((q) => q.queryKey[0] === 'MembersResponseType');
+
+        expect(tagQueries.length).toBeGreaterThan(0);
+        expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+        // ...and nothing unrelated is dragged along with it.
+        expect(memberQueries.every((q) => !q.state.isInvalidated)).toBe(true);
+      });
+    },
+  );
+
+  queryTest('invalidates tags when Ember saves a page too', async ({ queryClient, wrapper }) => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    queryClient.setQueryDefaults(['TagsResponseType', '/tags'], { gcTime: Infinity });
+    queryClient.setQueryDefaults(['PagesResponseType', '/pages'], { gcTime: Infinity });
+    queryClient.setQueryData(['TagsResponseType', '/tags'], { tags: [] });
+    queryClient.setQueryData(['PagesResponseType', '/pages'], { pages: [] });
+
+    renderHook(() => useEmberDataSync(), { wrapper });
+
+    await waitFor(() => {
+      expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+    });
+
+    act(() => {
+      mock.emit('emberDataChange', { operation: 'update', modelName: 'page', id: '1', data: null });
+    });
+
+    await waitFor(() => {
+      const queries = queryClient.getQueryCache().getAll();
+      const tagQueries = queries.filter((q) => q.queryKey[0] === 'TagsResponseType');
+      const pageQueries = queries.filter((q) => q.queryKey[0] === 'PagesResponseType');
+
+      expect(tagQueries.length).toBeGreaterThan(0);
+      expect(tagQueries.every((q) => q.state.isInvalidated)).toBe(true);
+      expect(pageQueries.length).toBeGreaterThan(0);
+      expect(pageQueries.every((q) => q.state.isInvalidated)).toBe(true);
+    });
+  });
+
+  queryTest('invalidates snippets when Ember saves one', async ({ queryClient, wrapper }) => {
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+    const snippetsKey = ['SnippetsResponseType', '/snippets'];
+
+    queryClient.setQueryDefaults(snippetsKey, { gcTime: Infinity });
+    queryClient.setQueryData(snippetsKey, { snippets: [] });
+
+    renderHook(() => useEmberDataSync(), { wrapper });
+
+    await waitFor(() => {
+      expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+    });
+
+    act(() => {
+      mock.emit('emberDataChange', {
+        operation: 'update',
+        modelName: 'snippet',
+        id: 'snippet-1',
+        data: null,
+      });
+    });
+
+    await waitFor(() => {
+      expect(queryClient.getQueryState(snippetsKey)?.isInvalidated).toBe(true);
+    });
+  });
+
   queryTest(
     'invalidates the sidebar member count query for Ember member changes',
     async ({ queryClient, wrapper }) => {
@@ -416,6 +523,7 @@ describe('useEmberRouting', () => {
 
   baseTest('returns bridge routing methods when bridge is available', () => {
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     const { result } = renderHook(() => useEmberRouting());
@@ -423,9 +531,11 @@ describe('useEmberRouting', () => {
     expect(result.current).toHaveProperty('getRouteUrl');
     expect(result.current).toHaveProperty('isRouteActive');
 
-    // Should be using bridge methods, not defaults
+    // Should be using bridge methods, not defaults. The active-state method is
+    // wrapped so the app can ignore stale Ember state on React-owned routes.
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('switches to bridge methods when bridge becomes available', async () => {
@@ -439,6 +549,7 @@ describe('useEmberRouting', () => {
 
     // Bridge becomes available
     const mock = createMockStateBridge();
+    mock.stateBridge.isRouteActive = vi.fn(() => true);
     window.EmberBridge = { state: mock.stateBridge };
 
     // Wait for the subscription interval to fire
@@ -448,7 +559,8 @@ describe('useEmberRouting', () => {
 
     // Now should be using bridge methods
     expect(result.current.getRouteUrl).toBe(mock.stateBridge.getRouteUrl);
-    expect(result.current.isRouteActive).toBe(mock.stateBridge.isRouteActive);
+    expect(result.current.isRouteActive('posts')).toBe(true);
+    expect(mock.stateBridge.isRouteActive).toHaveBeenCalledWith('posts');
   });
 
   baseTest('re-renders when route changes', async () => {

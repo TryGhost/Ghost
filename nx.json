@@ -39,20 +39,12 @@
     },
     "test:unit": {
       "cache": true,
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "inputs": ["default", "^default", { "runtime": "node -v" }]
     },
     "test:ci:*": {
       "cache": true,
-      "inputs": [
-        "default",
-        "^default",
-        {
-          "env": "DB"
-        },
-        {
-          "env": "NODE_ENV"
-        }
-      ]
+      "inputs": ["default", "^default"]
     },
     "dev": {
       "dependsOn": ["^dev"],

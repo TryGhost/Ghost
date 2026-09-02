@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.js';
+import { resolveBaseCommit } from './lib/pr-base.js';
 
 const MONITORED_APP_PATHS = PUBLIC_APPS.map((app) => app.path);
 
@@ -129,7 +130,7 @@ export function checkAppConsistency(app, prVersion, prDefaultsVersion) {
 }
 
 function main() {
-  const baseSha = process.env.PR_BASE_SHA;
+  const baseSha = resolveBaseCommit();
   const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
 
   if (!baseSha) {

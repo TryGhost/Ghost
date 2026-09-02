@@ -4,6 +4,7 @@ import {
   FIELD_TYPES,
   FIELD_TYPE_IDS,
   MAX_LONG_TEXT_BYTES,
+  partTypesOf,
   subFieldsOf,
   type FieldType,
 } from '../src/index.ts';
@@ -23,6 +24,18 @@ describe('custom-field-types catalog', function () {
       long_text: null,
       address: ['line1', 'line2', 'city', 'state', 'postal_code', 'country'],
     });
+  });
+
+  it("declares each part's own type", function () {
+    assert.deepEqual(partTypesOf('address'), {
+      line1: 'short_text',
+      line2: 'short_text',
+      city: 'short_text',
+      state: 'short_text',
+      postal_code: 'postal_code',
+      country: 'country_code',
+    });
+    assert.equal(partTypesOf('short_text'), null);
   });
 
   it('reads a type it has never heard of as having no parts', function () {

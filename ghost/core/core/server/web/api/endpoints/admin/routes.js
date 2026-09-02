@@ -146,6 +146,25 @@ module.exports = function apiRoutes() {
   // Tiers
   router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
   router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+  // What a tier's checkout asks for, read when a Stripe checkout session is built.
+  // Registered before /tiers/:id so the literal path isn't captured by :id.
+  //
+  // A sub-resource rather than a key on the tier, because the tier payload is a public
+  // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
+  // rendered by themes. This is admin-only configuration that no client renders, since
+  // the questions are drawn by Stripe's own checkout page rather than by Portal.
+  //
+  // Named for the configuration rather than the checkout, so it cannot be mistaken for
+  // the session that `create-stripe-checkout-session` creates from it.
+  router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
+  router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
+  router.put(
+    '/tiers/:id/checkout_config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    http(api.tiersCheckoutConfig.edit),
+  );
+
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
@@ -176,44 +195,39 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Member custom field definitions — gated by the members_custom_fields flag.
-  // Registered before /members/:id so the literal path isn't captured by :id.
-  router.get(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.browse),
-  );
+  // Reading definitions is deliberately not behind the feature flag: Admin asks every site
+  // for them, and a site without the flag simply has none, so the answer is an empty list
+  // rather than a 404. Creating and changing them is flagged. Registered before /members/:id
+  // so the literal path is not captured as an id.
+  router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
   router.post(
-    '/members/custom_fields',
+    '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.add),
+    http(api.membersMetafields.add),
   );
-  // A PUT on the collection sets the publisher's order for the whole list.
   router.put(
-    '/members/custom_fields',
+    '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.reorder),
+    http(api.membersMetafields.reorder),
   );
   router.get(
-    '/members/custom_fields/:key',
+    '/members/metafields/:namespace/:key',
     mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.read),
+    http(api.membersMetafields.read),
   );
   router.put(
-    '/members/custom_fields/:key',
+    '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.edit),
+    http(api.membersMetafields.edit),
   );
   router.delete(
-    '/members/custom_fields/:key',
+    '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.destroy),
+    http(api.membersMetafields.destroy),
   );
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

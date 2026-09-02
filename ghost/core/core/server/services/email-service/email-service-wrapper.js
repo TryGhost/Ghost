@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('i18n');
-const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
@@ -55,12 +54,6 @@ class EmailServiceWrapper {
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
 
-    // capture errors from mailgun client and log them in sentry
-    const errorHandler = (error) => {
-      logging.info(`Capturing error for mailgun email provider service`);
-      sentry.captureException(error);
-    };
-
     // Mailgun client instance for email provider
     const mailgunClient = new MailgunClient({
       config: configService,
@@ -78,7 +71,6 @@ class EmailServiceWrapper {
     const mailgunEmailProvider = new MailgunEmailProvider({
       mailgunClient,
       config: configService,
-      errorHandler,
     });
 
     const emailRenderer = new EmailRenderer({
@@ -134,7 +126,6 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
-      debugStorageFilePath: configService.getContentPath('data'),
     });
 
     if (ghostServer) {

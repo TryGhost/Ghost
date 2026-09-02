@@ -327,7 +327,7 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient }) {
+async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
   debug('Begin: initServices');
 
   debug('Begin: Services');
@@ -368,6 +368,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
+  const assert = require('node:assert/strict');
   const metrics = require('@tryghost/metrics');
   const db = require('./server/data/db');
   const models = require('./server/models');
@@ -381,11 +382,23 @@ async function initServices({ ghostServer, config, prometheusClient }) {
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
   await stripe.init();
+  giftService.init({
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+  });
+  const giftDeliveryService = giftService.deliveryService;
+  assert(giftDeliveryService, 'Gift delivery service should be initialized');
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(async () => {
+      await stripe.shutdown();
+    }, 'Stripe');
+  }
 
   await Promise.all([
     identityTokens.init(),
     memberAttribution.init(),
-    mentionsService.init(),
+    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -403,6 +416,7 @@ async function initServices({ ghostServer, config, prometheusClient }) {
       db,
       domainEvents,
       emailSuppressionList,
+      giftDeliveryService,
       membersRepository: members.api.members,
       models,
       metrics,
@@ -420,11 +434,6 @@ async function initServices({ ghostServer, config, prometheusClient }) {
     recommendationsService.init(),
     statsService.init(),
     explorePingService.init(),
-    giftService.init({
-      apiUrl,
-      schedulerAdapter,
-      internalKeys,
-    }),
     machinePaymentsService.init(),
     automationsService.init({
       domainEvents,
@@ -479,12 +488,34 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  const jobsService = require('./server/services/jobs-service').getInstance();
+
   // Runs before activitypub.init for the same reason as the send recovery
   // above: gifts would otherwise go uncleaned for the life of the process
   // if an unrelated background service fails.
   try {
     const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftCleanupJob(require('./server/services/jobs-service').getInstance());
+    await giftJobs.scheduleGiftCleanupJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  // Runs before activitypub.init for the same reason as the gift cleanup
+  // above: tokens and expired comped subscriptions would otherwise go
+  // uncleaned for the life of the process if an unrelated background
+  // service fails.
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleTokenCleanupJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const memberJobs = require('./server/services/members/jobs');
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -503,17 +534,11 @@ async function initBackgroundServices({ config }) {
   }
 
   try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob();
+    const updateCheck = require('./server/services/update-check');
+    await updateCheck.scheduleJobs(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
-  }
-
-  const updateCheck = require('./server/services/update-check');
-  updateCheck.scheduleRecurringJobs();
-  if (config.get('updateCheck:forceUpdate')) {
-    updateCheck.scheduleBootJob();
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
@@ -650,13 +675,29 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    await initServices({ ghostServer, config, prometheusClient });
+    const jobsService = require('./server/services/jobs-service').init();
+
+    await initServices({ ghostServer, config, prometheusClient, jobsService });
 
     debug('Begin: Register job handlers');
-    const jobsService = require('./server/services/jobs-service');
-    const service = jobsService.init();
-    require('./server/services/jobs-service/register-job-handlers').default();
-    await service.start();
+    const assert = require('node:assert/strict');
+    const registerJobHandlers =
+      require('./server/services/jobs-service/register-job-handlers').default;
+    const mediaInliner = require('./server/services/media-inliner');
+    const gifts = require('./server/services/gifts');
+    const memberJobs = require('./server/services/members/jobs');
+    const mentionsService = require('./server/services/mentions');
+    memberJobs.init();
+    assert(gifts.service, 'Gift service should be initialized');
+    assert(mentionsService.controller, 'Mentions controller should be initialized');
+    registerJobHandlers({
+      jobsService,
+      memberJobs,
+      giftService: gifts.service,
+      mediaInliner: mediaInliner.getInstance(),
+      mentionsController: mentionsService.controller,
+    });
+    await jobsService.start();
     debug('End: Register job handlers');
     debug('End: Load Ghost Services & Apps');
 

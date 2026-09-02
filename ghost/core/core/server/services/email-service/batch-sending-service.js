@@ -33,7 +33,6 @@ class BatchSendingService {
   #models;
   #db;
   #sentry;
-  #debugStorageFilePath;
   #getRequiredUrlRelations;
   #shuttingDown = false;
   #inFlight = new Set();
@@ -68,7 +67,6 @@ class BatchSendingService {
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
-   * @param {string} [dependencies.debugStorageFilePath]
    */
   constructor({
     emailRenderer,
@@ -83,7 +81,6 @@ class BatchSendingService {
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
-    debugStorageFilePath,
   }) {
     this.#emailRenderer = emailRenderer;
     this.#sendingService = sendingService;
@@ -93,7 +90,6 @@ class BatchSendingService {
     this.#models = models;
     this.#db = db;
     this.#sentry = sentry;
-    this.#debugStorageFilePath = debugStorageFilePath;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
 
     if (BEFORE_RETRY_CONFIG) {

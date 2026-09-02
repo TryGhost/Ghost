@@ -83,7 +83,7 @@ const NavigationVisibilityDropdown: React.FC<NavigationVisibilityDropdownProps> 
             aria-describedby={item.errors.visibility ? visibilityErrorId : undefined}
             aria-invalid={!!item.errors.visibility}
             aria-labelledby={visibilityLabelId}
-            className="flex h-[38px] w-full items-center justify-between rounded-lg border-transparent bg-grey-100 px-3 text-md text-black hover:bg-grey-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden dark:bg-grey-900 dark:text-white dark:hover:bg-grey-900"
+            className="flex h-[38px] w-full items-center justify-between rounded-lg border-transparent bg-gray-100 px-3 text-md text-black hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden dark:bg-gray-900 dark:text-white dark:hover:bg-gray-900"
             data-testid="navigation-item-visibility"
             type="button"
           >
@@ -105,7 +105,7 @@ const NavigationVisibilityDropdown: React.FC<NavigationVisibilityDropdownProps> 
                 return (
                   <DropdownMenuItem
                     key={option.key}
-                    className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm text-grey-900 dark:text-grey-100"
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
                     onSelect={(event) => {
                       event.preventDefault();
                       updateAudienceVisibility(option.key, !checked);

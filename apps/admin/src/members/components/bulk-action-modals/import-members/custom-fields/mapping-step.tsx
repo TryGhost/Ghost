@@ -32,7 +32,7 @@ import {
   columnsOf,
 } from '@/members/components/bulk-action-modals/import-members/custom-fields/mapping';
 import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type FieldTarget } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
+import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
 
@@ -56,7 +56,10 @@ interface MappingStepProps {
   mappingError: string | null;
   showMappingErrors: boolean;
   dataPreviewIndex: number;
-  targets: FieldTarget[];
+  targetGroups: FieldTargetGroup[];
+  // Whether custom fields exist for this site at all. Off, no row offers to make one and the
+  // create form is unreachable, so the table is a plain mapping of columns onto member fields.
+  canCreateCustomFields: boolean;
   labelPicker: UseLabelPickerResult;
   onUpdateMapping: (from: string, to: string | null) => void;
   onFieldCreated: (columnKey: string, column: string | null) => void;
@@ -106,7 +109,8 @@ export function MappingStep({
   mappingError,
   showMappingErrors,
   dataPreviewIndex,
-  targets,
+  targetGroups,
+  canCreateCustomFields,
   labelPicker,
   onUpdateMapping,
   onFieldCreated,
@@ -218,7 +222,7 @@ export function MappingStep({
     let field;
     try {
       const response = await createField({ name, type });
-      field = response.members_custom_fields?.[0];
+      field = response.members_metafields?.[0];
     } catch (error) {
       reportCreateFailure(error);
       return;
@@ -347,15 +351,10 @@ export function MappingStep({
       }))
     : [];
 
-  // What this import writes: one entry per column in the file — the field it fills, empty for
-  // a column left out, or null for a column in the import with no field chosen yet.
-  // Everything asking what is being imported reads this one value, so the checks below and
-  // the request itself cannot disagree.
-  //
-  // Empty rather than omitted, because the importer carries a column the mapping does not
-  // name through under its own header — which is how an unnamed custom_fields.* column
-  // survives to be read. Leaving a column out of the mapping is the opposite of leaving it
-  // out of the import.
+  // Every column gets an entry, including the ones this import skips. The importer treats a
+  // column the mapping does not mention as "pass it through under its own header" — which
+  // for a custom-field column means importing it. Skipping a column therefore means naming
+  // it with an empty target, never leaving it out.
   const importMapping: Record<string, string | null> = Object.fromEntries(
     currentlyDisplayedData.map((row) => [row.key, isImported(row) ? row.mapTo : '']),
   );
@@ -525,13 +524,14 @@ export function MappingStep({
                                                         second mechanism. The mapping is not lost either way —
                                                         it comes back with the row when it is selected again. */}
                               <FieldPicker
+                                canCreateField={canCreateCustomFields}
                                 className={cn(!isImported(row) && 'invisible')}
                                 columnKey={row.key}
                                 disabled={isRowLocked(row)}
                                 invalid={incomplete?.columns.has(row.key)}
                                 open={openPicker?.columnKey === row.key}
                                 search={openPicker?.columnKey === row.key ? openPicker.search : ''}
-                                targets={targets}
+                                targetGroups={targetGroups}
                                 triggerRef={(node) => {
                                   if (node) {
                                     fieldTriggers.current.set(row.key, node);

@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const ProcessWebmentionJob = require('./process-webmention-job').default;
 
 /**
  * @typedef {import('./mentions-api')} MentionsAPI
@@ -23,11 +24,6 @@ const logging = require('@tryghost/logging');
  */
 
 /**
- * @typedef {object} IJobService
- * @prop {(name: string, fn: Function) => void} addJob
- */
-
-/**
  * @typedef {object} IMentionResourceService
  * @prop {(id: import('bson-objectid').default)  => Promise<MentionResource>} getByID
  */
@@ -36,8 +32,8 @@ module.exports = class MentionController {
   /** @type {import('./mentions-api')} */
   #api;
 
-  /** @type {IJobService} */
-  #jobService;
+  /** @type {import('../jobs-service/jobs-service').JobsService} */
+  #jobsService;
 
   /** @type {IMentionResourceService} */
   #mentionResourceService;
@@ -45,12 +41,12 @@ module.exports = class MentionController {
   /**
    * @param {object} deps
    * @param {import('./mentions-api')} deps.api
-   * @param {IJobService} deps.jobService
+   * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
    * @param {IMentionResourceService} deps.mentionResourceService
    */
   async init(deps) {
     this.#api = deps.api;
-    this.#jobService = deps.jobService;
+    this.#jobsService = deps.jobsService;
     this.#mentionResourceService = deps.mentionResourceService;
   }
 
@@ -127,17 +123,23 @@ module.exports = class MentionController {
    */
   async receive(frame) {
     logging.info('[Webmention] ' + JSON.stringify(frame.data));
-    this.#jobService.addJob('processWebmention', async () => {
-      const { source, target, ...payload } = frame.data;
-      try {
-        await this.#api.processWebmention({
-          source: new URL(source),
-          target: new URL(target),
-          payload,
-        });
-      } catch (err) {
-        logging.error(err, '[Webmention] Failed processing webmention');
-      }
-    });
+    const { source, target, ...payload } = frame.data;
+    await this.#jobsService.dispatch(new ProcessWebmentionJob({ source, target, payload }));
+  }
+
+  /**
+   * @param {import('./process-webmention-job').default} job
+   * @returns {Promise<void>}
+   */
+  async processWebmention({ source, target, payload }) {
+    try {
+      await this.#api.processWebmention({
+        source: new URL(source),
+        target: new URL(target),
+        payload,
+      });
+    } catch (err) {
+      logging.error(err, '[Webmention] Failed processing webmention');
+    }
   }
 };

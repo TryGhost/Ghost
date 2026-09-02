@@ -75,6 +75,24 @@ export const DbCustomFieldLeaf = z.object({
   value_text: z.string(),
 });
 
+export const DbCustomFieldBinding = z.object({
+  id: z.string(),
+  product_id: z.string(),
+  port: z.string(),
+  custom_field_key: z.string(),
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+type CustomFieldBindingRow = z.infer<typeof DbCustomFieldBinding>;
+
+/** A binding joined to the field it points at, which is how a collected value is routed. */
+export const DbBoundField = z.object({
+  binding_id: z.string(),
+  key: z.string(),
+  type: FieldTypeSchema,
+});
+
 declare module 'knex/types/tables' {
   interface Tables {
     members_custom_fields: Knex.CompositeTableType<
@@ -88,6 +106,13 @@ declare module 'knex/types/tables' {
       CustomFieldValueRow,
       Omit<z.input<typeof DbCustomFieldValue>, 'updated_at'>,
       Partial<CustomFieldValueRow>
+    >;
+    members_custom_field_bindings: Knex.CompositeTableType<
+      CustomFieldBindingRow,
+      // `updated_at` is set on insert as well as update: a binding is a setting, and
+      // "when was this last stated" is the same question whichever way it got there.
+      z.input<typeof DbCustomFieldBinding>,
+      Partial<CustomFieldBindingRow>
     >;
   }
 }

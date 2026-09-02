@@ -1,0 +1,13 @@
+# Swaps the Tinybird service to the distilled slim image (~0.7GB pulled / ~2.4GB
+# on disk, vs ~2.1GB / ~6.9GB upstream) so the analytics E2E jobs fit inside the
+# runner disk budget. Layered on top of compose.dev.analytics.yaml by infra-up.sh
+# when GHOST_E2E_TINYBIRD_SLIM=true. Local dev is unaffected —
+# compose.dev.analytics.yaml keeps the upstream image.
+#
+# See docker/tinybird-local-slim/ for how the image is built and published.
+#
+# infra-up.sh owns the default and exports it, so that there is one source of
+# truth for which image this resolves to.
+services:
+  tinybird-local:
+    image: ${GHOST_E2E_TINYBIRD_SLIM_IMAGE:?set by e2e/scripts/infra-up.sh}

@@ -9,7 +9,6 @@ interface GiftRedemptionResponse {
 
 test.describe('Ghost Public - Portal Gifts', () => {
   test.use({
-    labs: { giftSubCustomization: true },
     stripeEnabled: true,
   });
 

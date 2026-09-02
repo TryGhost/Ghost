@@ -76,12 +76,16 @@ module.exports = {
     return require('./members');
   },
 
-  get members_custom_fields() {
-    return require('./member-custom-fields');
+  get members_metafields() {
+    return require('./member-metafields');
   },
 
   get tiers() {
     return require('./tiers');
+  },
+
+  get tiers_checkout_config() {
+    return require('./tiers-checkout-config');
   },
 
   get images() {

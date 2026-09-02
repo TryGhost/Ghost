@@ -41,7 +41,6 @@ module.exports = function MembersAPI({
     MemberProductEvent,
     MemberEmailChangeEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     EmailSpamComplaintEvent,
     Offer,
@@ -72,6 +71,7 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   customFieldValues,
+  customFieldDefinitions,
 }) {
   const tokenService = new TokenService({
     privateKey,
@@ -119,7 +119,6 @@ module.exports = function MembersAPI({
     MemberStatusEvent,
     MemberLoginEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     MemberFeedback,
     EmailSpamComplaintEvent,
@@ -147,7 +146,6 @@ module.exports = function MembersAPI({
         });
       },
     },
-    labsService,
     stripeService: stripeAPIService,
     memberAttributionService,
     emailSuppressionList,
@@ -156,6 +154,7 @@ module.exports = function MembersAPI({
     commentsService,
     giftService,
     customFieldValues,
+    customFieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();
@@ -179,6 +178,11 @@ module.exports = function MembersAPI({
     offersAPI,
     stripeAPIService,
     settingsCache,
+    // The service wrapper, not the checkout config it builds: tiers and members are
+    // initialised in the same Promise.all, so reading the property here would capture
+    // whatever it was before tiers finished — usually undefined.
+    tiersService,
+    labsService,
   });
 
   const memberController = new MemberController({
@@ -197,7 +201,6 @@ module.exports = function MembersAPI({
     paymentsService,
     tiersService,
     memberRepository,
-    StripePrice,
     allowSelfSignup,
     magicLinkService,
     stripeAPIService,
@@ -353,11 +356,11 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email });
+    return memberBREADService.read({ email }, { withCustomFields: false });
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId });
+    return memberBREADService.read({ transient_id: transientId }, { withCustomFields: false });
   }
 
   async function cycleTransientId(memberId) {

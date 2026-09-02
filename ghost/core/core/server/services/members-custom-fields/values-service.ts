@@ -4,6 +4,12 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/custom-field-types';
+import {
+  CUSTOM_NAMESPACE,
+  QUALIFIER,
+  formatIdentity,
+  parseIdentity,
+} from '@tryghost/custom-field-types/identity';
 import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
@@ -31,12 +37,14 @@ const UPSERT_CHUNK = 400;
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
 
-// Values stay `unknown`: each is validated by its own field type, which is not known
-// until the key is resolved to a definition.
-const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
+const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
+const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
+
+const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
 interface ActiveField {
   id: string;
+  namespace: string;
   key: string;
   name: string;
   type: FieldType;
@@ -63,24 +71,28 @@ export class CustomFieldValuesService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  private async activeFieldsByKey(keys: string[]): Promise<Map<string, ActiveField>> {
+  private async activeFieldsByIdentity(identities: string[]): Promise<Map<string, ActiveField>> {
+    const keys = identities
+      .map((identity) => parseIdentity(identity))
+      .filter((parsed) => parsed !== null && parsed.namespace === CUSTOM_NAMESPACE)
+      .map((parsed) => (parsed as { key: string }).key);
     if (keys.length === 0) {
       return new Map();
     }
     const fields = await activeFields(this.knex)
       .whereIn('key', keys)
       .select('id', 'key', 'name', 'type');
-    return new Map(fields.map((field) => [field.key, field]));
+    return new Map(
+      fields.map((field) => [
+        formatIdentity({ namespace: CUSTOM_NAMESPACE, key: field.key, partPath: null }),
+        { ...field, namespace: CUSTOM_NAMESPACE },
+      ]),
+    );
   }
 
-  /**
-   * Members' values, keyed by member id then field key; anything absent is unset.
-   *
-   * Archived fields are excluded to match the definitions browse: their values stay in
-   * the database and stop being addressable. A row that will not parse is dropped and
-   * logged rather than failing the read, so one stale row cannot take down a member.
-   */
-  async getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>> {
+  async getValuesForMembers(
+    memberIds: string[],
+  ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (memberIds.length === 0) {
       return new Map();
     }
@@ -107,25 +119,58 @@ export class CustomFieldValuesService {
         leaves.push(DbCustomFieldLeaf.parse(row));
       } catch (err) {
         logging.warn(
-          `Skipping unreadable custom field value (field '${row.key}', path '${row.path}'): ${err instanceof Error ? err.message : String(err)}`,
+          {
+            event: { name: 'members.custom_fields.value_unreadable' },
+            err,
+            customFieldKey: row.key,
+            path: row.path,
+          },
+          'Skipping an unreadable custom field value',
         );
       }
     }
 
-    return valuesFromLeaves(leaves);
+    const flat = valuesFromLeaves(leaves);
+    return new Map(
+      memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
+    );
   }
 
-  /** Shared by every caller so they cannot disagree on what a values object is. */
   private parseValues(input: unknown): Record<string, unknown> {
     const parsed = ValuesInput.safeParse(input);
     if (!parsed.success) {
       throw new errors.ValidationError({
-        message: 'Custom field values must be an object keyed by field key.',
-        property: 'custom_fields',
+        message: 'Custom field values must be an object keyed by field identity.',
+        property: QUALIFIER,
       });
     }
 
     return parsed.data;
+  }
+
+  unwrapWire(input: unknown): unknown {
+    if (input === undefined) {
+      return undefined;
+    }
+    if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+      throw new errors.ValidationError({
+        message: 'Metafields must be an object keyed by namespace.',
+        property: QUALIFIER,
+      });
+    }
+    const identified: Record<string, unknown> = {};
+    for (const [namespace, values] of Object.entries(input as Record<string, unknown>)) {
+      if (typeof values !== 'object' || values === null || Array.isArray(values)) {
+        throw new errors.ValidationError({
+          message: 'Metafield values must be an object keyed by field key.',
+          property: [QUALIFIER, namespace].join('.'),
+        });
+      }
+      for (const [key, raw] of Object.entries(values as Record<string, unknown>)) {
+        identified[`${namespace}.${key}`] = raw;
+      }
+    }
+    return identified;
   }
 
   /**
@@ -147,30 +192,27 @@ export class CustomFieldValuesService {
    */
   async planWrite(input: unknown): Promise<PlannedWrite[]> {
     const values = this.parseValues(input);
-    const keys = Object.keys(values);
+    const identities = Object.keys(values);
 
     // Bounded by the definitions ceiling, which also holds the lookup below inside
     // the driver's bound-parameter limit.
     const maxKeys = this.getMaxDefinitions();
-    if (keys.length > maxKeys) {
+    if (identities.length > maxKeys) {
       throw new errors.ValidationError({
         message: `Custom field values are limited to ${maxKeys} fields per request.`,
-        property: 'custom_fields',
+        property: QUALIFIER,
       });
     }
 
-    const byKey = await this.activeFieldsByKey(keys);
+    const byIdentity = await this.activeFieldsByIdentity(identities);
     const writes: PlannedWrite[] = [];
 
-    for (const [key, raw] of Object.entries(values)) {
-      const field = byKey.get(key);
+    for (const [identity, raw] of Object.entries(values)) {
+      const field = byIdentity.get(identity);
       if (!field) {
-        // Unknown or archived. Refused rather than ignored: a typo that silently
-        // drops what somebody typed is worse than a save that fails. The catalog
-        // applies the same rule to the parts of a composite value.
         throw new errors.ValidationError({
-          message: `Unknown custom field: ${key}`,
-          property: `custom_fields.${key}`,
+          message: `Unknown custom field: ${identity}`,
+          property: wireProperty(identity),
         });
       }
 
@@ -191,7 +233,7 @@ export class CustomFieldValuesService {
         const issue = value.error.issues[0];
         throw new errors.ValidationError({
           message: issue.message,
-          property: [`custom_fields.${key}`, ...issue.path].join('.'),
+          property: [wireProperty(identity), ...issue.path].join('.'),
         });
       }
       writes.push({ field, value: value.data });

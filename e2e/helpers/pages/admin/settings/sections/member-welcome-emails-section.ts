@@ -1,5 +1,17 @@
 import { BasePage } from '@/helpers/pages';
 import { FrameLocator, Locator, Page } from '@playwright/test';
+import {
+  freeWelcomeEmailRow,
+  headerImageField,
+  memberEmails,
+  welcomeEmailCustomizeModal,
+  welcomeEmailEditor,
+  welcomeEmailModal,
+  welcomeEmailModeEdit,
+  welcomeEmailModePreview,
+  welcomeEmailPreviewIframe,
+  welcomeEmailPreviewSubject,
+} from '@tryghost/test-data/selectors/settings';
 
 export class MemberWelcomeEmailsSection extends BasePage {
   readonly section: Locator;
@@ -47,17 +59,15 @@ export class MemberWelcomeEmailsSection extends BasePage {
 
   constructor(page: Page) {
     super(page, '/ghost/#/settings/memberemails');
-    this.section = page.getByTestId('memberemails');
-    this.freeWelcomeEmailToggle = this.section
-      .getByTestId('free-welcome-email-row')
-      .getByRole('switch');
+    this.section = page.getByTestId(memberEmails);
+    this.freeWelcomeEmailToggle = this.section.getByTestId(freeWelcomeEmailRow).getByRole('switch');
     this.freeWelcomeEmailEditButton = this.section
-      .getByTestId('free-welcome-email-row')
+      .getByTestId(freeWelcomeEmailRow)
       .getByRole('button', { name: 'Edit' });
 
     // Customize button and modal
     this.customizeButton = this.section.getByRole('button', { name: 'Customize' });
-    this.customizeModal = page.getByTestId('welcome-email-customize-modal');
+    this.customizeModal = page.getByTestId(welcomeEmailCustomizeModal);
     this.customizeModalSaveButton = this.customizeModal.getByRole('button', { name: 'Save' });
     this.customizeModalCloseButton = this.customizeModal.getByRole('button', { name: 'Close' });
     this.customizeModalUnsavedChangesDialog = page.getByRole('alertdialog', {
@@ -72,7 +82,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
       .locator('..')
       .getByRole('switch');
     this.customizeModalFooterTextarea = this.customizeModal.getByLabel('Email footer');
-    this.customizeModalHeaderImageUpload = this.customizeModal.getByTestId('header-image-field');
+    this.customizeModalHeaderImageUpload = this.customizeModal.getByTestId(headerImageField);
     this.customizeModalBadgeToggle = this.customizeModal
       .getByText('Promote independent publishing')
       .locator('../..')
@@ -105,18 +115,16 @@ export class MemberWelcomeEmailsSection extends BasePage {
     this.customizeModalColorPickerPopover = page.locator('[data-radix-popper-content-wrapper]');
 
     // Modal locators
-    this.welcomeEmailModal = page.getByTestId('welcome-email-modal');
-    this.modalEditor = this.welcomeEmailModal.getByTestId('welcome-email-editor');
-    this.modalEditTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-edit');
-    this.modalPreviewTab = this.welcomeEmailModal.getByTestId('welcome-email-mode-preview');
-    this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId(
-      'welcome-email-preview-subject',
-    );
+    this.welcomeEmailModal = page.getByTestId(welcomeEmailModal);
+    this.modalEditor = this.welcomeEmailModal.getByTestId(welcomeEmailEditor);
+    this.modalEditTab = this.welcomeEmailModal.getByTestId(welcomeEmailModeEdit);
+    this.modalPreviewTab = this.welcomeEmailModal.getByTestId(welcomeEmailModePreview);
+    this.modalPreviewSubjectInput = this.welcomeEmailModal.getByTestId(welcomeEmailPreviewSubject);
     this.modalSubjectInput = this.modalPreviewSubjectInput;
     this.modalSaveButton = this.welcomeEmailModal.getByRole('button', { name: 'Save' });
     this.modalSavedButton = this.welcomeEmailModal.getByRole('button', { name: 'Saved' });
     this.modalLexicalEditor = this.modalEditor.getByRole('textbox').first();
-    this.modalPreviewIframe = this.welcomeEmailModal.getByTestId('welcome-email-preview-iframe');
+    this.modalPreviewIframe = this.welcomeEmailModal.getByTestId(welcomeEmailPreviewIframe);
     this.modalPreviewFrame = page.frameLocator('iframe[title="Welcome email preview"]');
   }
 
@@ -140,9 +148,7 @@ export class MemberWelcomeEmailsSection extends BasePage {
   }
 
   private async waitForFreeToggle(checked: boolean): Promise<void> {
-    const toggle = this.section
-      .getByTestId('free-welcome-email-row')
-      .getByRole('switch', { checked });
+    const toggle = this.section.getByTestId(freeWelcomeEmailRow).getByRole('switch', { checked });
     await toggle.waitFor({ state: 'visible' });
   }
 

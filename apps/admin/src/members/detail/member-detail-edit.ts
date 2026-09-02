@@ -10,6 +10,7 @@ import type {
   MemberCustomField,
   MemberCustomFieldAddress,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { FieldIdentityString } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // The parts of the address composite, in the order its value schema declares them, each
 // with the label every other surface shows it under.
@@ -71,18 +72,17 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
   };
 }
 
-/**
- * The custom field values from a member's `custom_fields` payload, normalized:
- * strings trimmed, address sub-fields trimmed with empty ones dropped, and
- * empty values ('' / {} / null) collapsing to an absent key — so "no value"
- * reads identically however it's represented. Feeds the read-only value rows
- * and seeds the per-field editor.
- */
 export function getEditableCustomFieldValues(
-  customFields: Record<string, unknown> | null | undefined,
-): Record<string, EditableCustomFieldValue> {
-  const values: Record<string, EditableCustomFieldValue> = {};
-  for (const [key, value] of Object.entries(customFields ?? {})) {
+  metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
+): Record<FieldIdentityString, EditableCustomFieldValue> {
+  const flattened: Record<FieldIdentityString, unknown> = {};
+  for (const [namespace, records] of Object.entries(metafields ?? {})) {
+    for (const [fieldKey, fieldValue] of Object.entries(records ?? {})) {
+      flattened[`${namespace}.${fieldKey}`] = fieldValue;
+    }
+  }
+  const values: Record<FieldIdentityString, EditableCustomFieldValue> = {};
+  for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -299,10 +299,13 @@ function customFieldValueToSave(
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  fieldKey: string,
+  field: { namespace: string; key: string },
   value: EditableCustomFieldValue,
 ): EditMemberData {
-  return { id: memberId, custom_fields: { [fieldKey]: customFieldValueToSave(value) ?? null } };
+  return {
+    id: memberId,
+    metafields: { [field.namespace]: { [field.key]: customFieldValueToSave(value) ?? null } },
+  };
 }
 
 /**
@@ -346,12 +349,11 @@ export function getCustomFieldValidationErrors(
 }
 
 /**
- * Field-level errors from a failed member save. The values service names the
- * offending field in `property` as `custom_fields.<key>[.<subfield>]` with the
- * reason in `context` (see members-custom-fields/values-service.ts), so the
- * message can be rendered under the exact input it belongs to. Returns
- * undefined when the failure isn't custom-fields shaped, letting callers fall
- * back to the generic toast.
+ * Field-level errors from a failed member save. The server reports one error per offending
+ * field: `property` holds the field's address — container, namespace, key, and for a
+ * multi-part value the part — and `context` holds the reason. Splitting the address is
+ * what lets the message render under the input it belongs to. Returns undefined for any
+ * other failure shape so callers can fall back to a generic toast.
  */
 export function parseCustomFieldServerErrors(error: unknown): Record<string, string> | undefined {
   const data = (
@@ -367,8 +369,8 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
   )?.data;
   const errors: Record<string, string> = {};
   for (const apiError of data?.errors ?? []) {
-    if (apiError.property?.startsWith('custom_fields.')) {
-      errors[apiError.property.slice('custom_fields.'.length)] =
+    if (apiError.property?.startsWith('metafields.')) {
+      errors[apiError.property.slice('metafields.'.length)] =
         apiError.context || apiError.message || 'Invalid value.';
     }
   }
