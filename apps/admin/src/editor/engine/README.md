@@ -115,11 +115,8 @@ Element-node `direction` is stripped recursively before compare (Lexical's recon
 [`slug-machine.ts`](./slug-machine.ts) owns slug intent for one post: it derives
 a slug from the title, accepts manual slug edits, sends both through the
 server's slug endpoint for sanitizing and deduplication, and reports the outcome
-as proposals. It ports the Ember editor controller's `generateSlugTask`,
-`updateSlugTask`, and slug-generator service contract (see
-[`lexical-editor.js`](../../../../ember-admin/app/controllers/lexical-editor.js))
-without the controller coupling. It never persists anything; the caller owns the
-input UI and the save.
+as proposals. It never persists anything; the caller owns the input UI and the
+save.
 
 ### State model
 
@@ -133,7 +130,9 @@ Two modes and three statuses.
 Mode is `custom` while a manual edit that can still apply is in flight.
 Otherwise it is the settled mode, which changes only when a post loads or a
 manual edit applies. A manual edit that fails, returns nothing, or resolves back
-to the current slug leaves the settled mode as it was.
+to the current slug leaves the settled mode as it was. Mode is never re-derived
+from the title while a post is open; only loading a post runs the custom
+detection described under Rules.
 
 | Status    | Meaning                                                                                                          |
 | --------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -196,7 +195,9 @@ Proposals are `{slug, source}`:
 
 Every proposal except `stale` is delivered to subscribers with the state it
 produced. Subscribers are also notified with a `null` proposal when a request
-starts (`pending` becomes true) and when a post loads.
+starts (`pending` becomes true) and when a post loads. A rejected manual edit is
+always reported (`reverted`, `empty-result`, or `error`) so the input can be
+reset to the kept slug instead of showing the rejected text.
 
 ### Rules
 
@@ -221,10 +222,10 @@ Custom detection at load
 - `(Copy)`: a duplicated post's slug is derived regardless of its value, so the
   first rename regenerates it. This is the one case where a slug that differs
   from `slugify(title)` is not custom.
-- Inherited flaw: posts do not store slug provenance, so any server-transformed
-  slug (a deduplicated `hello-2`, a truncated or protected-slug-suffixed result)
-  reads as custom after reload and stops following the title. Ember does the
-  same.
+- Known limitation: posts do not store slug provenance, so any
+  server-transformed slug (a deduplicated `hello-2`, a truncated or
+  protected-slug-suffixed result) reads as custom after reload and stops
+  following the title.
 
 Manual edits
 
@@ -237,10 +238,10 @@ Manual edits
   uniqueness counter to a candidate that sanitized back to the current slug, and
   the edit reverts. Typing `top 10` on slug `top` still applies `top-10`. Known
   false positive: the guard decides by shape, so a candidate the server
-  canonicalizes differently from the client-side `slugify` (protected slugs,
-  the 185-character cap) is reverted when its result happens to take that
-  shape.
-- An applied manual edit switches mode to `custom` for the rest of the session.
+  canonicalizes differently from `slugify` (protected slugs, the 185-character
+  cap) is reverted when its result happens to take that shape.
+- An applied manual edit switches mode to `custom` for the rest of the session;
+  no later title commit regenerates the slug until the post is reloaded.
   Reverted, empty, and failed edits leave the mode where it was.
 
 Ordering and staleness
@@ -266,28 +267,6 @@ Ordering and staleness
   new post reads not pending.
 - A failed or reverted manual edit never leaves the machine in custom mode and
   never discards a title commit queued behind it.
-
-### Deliberate Ember deltas
-
-- Sticky mode within a session. Ember re-runs the custom heuristic against the
-  last saved title on every blur, so a server-deduplicated slug (`hello-2` for
-  "Hello") silently becomes custom and stops following the title. The machine
-  holds an explicit mode until the post is reloaded, where the load heuristic
-  still mirrors Ember.
-- Serialized requests. Ember lets overlapping generator responses land in
-  arrival order (the source of the "draft has title set with untitled slug"
-  reports). The machine runs one request at a time; superseded work resolves
-  `stale` and never reaches subscribers.
-- Reverted manual edits are reported. Ember returns silently when the server
-  resolves a manual edit back to the current slug, leaving the input showing
-  the rejected text; the machine emits `reverted` so the input is reset.
-- Dedup guard comparison. Ember compares the server result with the raw typed
-  text; the machine compares it with `slugify(candidate)`, so `top 10` on slug
-  `top` applies instead of reverting.
-
-Kept on purpose for parity: the load heuristic and its reload flaw, the
-`(Untitled)`-once and `(Copy)` rules, ignored whitespace-only server results,
-and the dedup guard's remaining false positive.
 
 ## Contracts between modules
 
@@ -347,18 +326,16 @@ and the dedup guard's remaining false positive.
 
 ### Slug machine
 
-- Persistence. Proposals are intents; the save engine persists `generated` and
-  `manual` slugs (autosave for drafts, staged for published and scheduled
-  posts).
+- Persistence. The machine does not save proposals; the caller persists
+  `generated` and `manual` slugs.
 - The generator port. The machine passes trimmed text as typed, whether a title
   or a manual candidate. The port must send `encodeURIComponent(slugify(text))`
-  to `GET /slugs/post/:name/:id` (raw text such as a newline 404s on Pro) and
-  pass the post id so the server does not count the post's own slug as a
-  collision.
+  to `GET /slugs/post/:name/:id` (raw text containing a character such as a
+  newline is not a valid path segment) and pass the post id so the server does
+  not count the post's own slug as a collision.
 - Draft-only title commits. Title blur drives generation for drafts only; do
   not call `titleCommitted` on blur for published or scheduled posts.
-- Regenerate when there is no slug, for any status, before save (Ember's
-  `beforeSaveTask`), including after `(Untitled)` substitution.
+- Regenerate when there is no slug, for any status, before save, including
+  after `(Untitled)` substitution.
 - `(Untitled)` substitution for a blank title before save.
-- No save for a new post on a manual edit; Ember defers it to the first
-  explicit save.
+- No save for a new post on a manual edit; the first explicit save persists it.
