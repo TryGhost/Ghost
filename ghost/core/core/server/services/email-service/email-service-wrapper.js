@@ -1,4 +1,5 @@
 const debug = require('@tryghost/debug')('i18n');
+const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
@@ -25,13 +26,11 @@ class EmailServiceWrapper {
     const SendingService = require('./sending-service');
     const BatchSendingService = require('./batch-sending-service');
     const EmailSegmenter = require('./email-segmenter');
-    const MailgunEmailProvider = require('./mailgun-email-provider');
     const { DomainWarmingService } = require('./domain-warming-service');
 
     const { Post, Newsletter, Email, EmailBatch, EmailRecipient, Member } = require('../../models');
     const urlService = require('../url');
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
-    const MailgunClient = require('../lib/mailgun-client');
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
@@ -54,12 +53,15 @@ class EmailServiceWrapper {
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
 
-    // Mailgun client instance for email provider
-    const mailgunClient = new MailgunClient({
-      config: configService,
-      settings: settingsCache,
-      labs,
-    });
+    // Determine which email provider to use based on adapter configuration
+    const emailAdapterConfig = configService.get('adapters:email');
+    const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
+
+    // capture errors from email provider and log them in sentry
+    const errorHandler = (error) => {
+      logging.info(`Capturing error for ${emailProvider} email provider service`);
+      sentry.captureException(error);
+    };
     const i18nLanguage = settingsCache.get('locale') || 'en';
     const i18n = i18nLib(i18nLanguage, 'ghost');
 
@@ -68,10 +70,31 @@ class EmailServiceWrapper {
       i18n.changeLanguage(model.get('value'));
     });
 
-    const mailgunEmailProvider = new MailgunEmailProvider({
-      mailgunClient,
-      config: configService,
-    });
+    let emailProviderInstance;
+
+    // Use adapter pattern for all email providers
+    logging.info(`Initializing ${emailProvider} email provider via adapter`);
+
+    const emailAdapter = require('../../adapters/email');
+
+    // Get adapter instance with injected dependencies
+    emailProviderInstance = emailAdapter.getEmailAdapter();
+
+    // Inject dependencies needed by the adapter
+    const AdapterClass = emailProviderInstance.constructor;
+    const adapterConfig = {
+      configService,
+      settingsCache,
+      errorHandler,
+      labs,
+    };
+
+    // Merge with provider-specific config from adapters.email[provider]
+    if (emailAdapterConfig?.[emailProvider]) {
+      Object.assign(adapterConfig, emailAdapterConfig[emailProvider]);
+    }
+
+    emailProviderInstance = new AdapterClass(adapterConfig);
 
     const emailRenderer = new EmailRenderer({
       settingsCache,
@@ -97,7 +120,7 @@ class EmailServiceWrapper {
     });
 
     const sendingService = new SendingService({
-      emailProvider: mailgunEmailProvider,
+      emailProvider: emailProviderInstance,
       emailRenderer,
       emailAddressService: emailAddressService.service,
     });
