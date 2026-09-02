@@ -40,8 +40,13 @@ export const useBrowseSnippets = ({
     searchParams: { limit: 'all', ...searchParams, formats },
   });
 
+// Snippet writes happen from inside the editor, which surfaces an expired
+// session in place rather than navigating away from unsaved content.
+const sessionExpiryRedirect = false;
+
 export const useAddSnippet = createMutation<SnippetsResponseType, SnippetEditableData>({
   method: 'POST',
+  sessionExpiryRedirect,
   path: () => '/snippets/',
   searchParams: () => ({ formats }),
   body: (snippet) => ({ snippets: [snippet] }),
@@ -53,6 +58,7 @@ export const useEditSnippet = createMutation<
   SnippetEditableData & { id: string }
 >({
   method: 'PUT',
+  sessionExpiryRedirect,
   path: ({ id }) => `/snippets/${id}/`,
   searchParams: () => ({ formats }),
   body: ({ id: _id, ...snippet }) => ({ snippets: [snippet] }),
@@ -61,6 +67,7 @@ export const useEditSnippet = createMutation<
 
 export const useDeleteSnippet = createMutation<void, string>({
   method: 'DELETE',
+  sessionExpiryRedirect,
   path: (id) => `/snippets/${id}/`,
   invalidateQueries: { dataType },
 });

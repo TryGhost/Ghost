@@ -18,6 +18,7 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
 } from './card-config';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { usePostLinkSuggestions } from './use-post-link-suggestions';
 
 export interface PostCardConfigOptions {
@@ -43,7 +44,7 @@ export function usePostCardConfig({
   const { data: currentUser } = useCurrentUser();
   const { unsplashConfig } = useFramework();
   const pinturaConfig = usePinturaConfig();
-  const fetchEmbed = useKoenigFetchEmbed();
+  const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
   const fetchApi = useFetchApi();
 
   const settings = settingsData?.settings ?? null;
@@ -54,6 +55,7 @@ export function usePostCardConfig({
   const fetchLabels = useCallback(() => {
     labelsRequest.current ??= fetchApi<{ labels: { name: string }[] }>(
       apiUrl('/labels/', { limit: 'all', fields: 'id,name' }),
+      EDITOR_REQUEST_OPTIONS,
     )
       .then((response) => response.labels.map((label) => label.name))
       .catch((error: unknown) => {

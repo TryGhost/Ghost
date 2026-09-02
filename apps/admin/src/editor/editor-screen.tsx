@@ -26,12 +26,13 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import type { CardConfigPostSource, PostType } from './card-config';
+import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { useFeatureImageBinding } from './session/feature-image-binding';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
@@ -101,6 +102,60 @@ function statusRecordOf(
   };
 }
 
+interface EditorContentProps {
+  postType: PostType;
+  record?: EditorRecord;
+  createdId?: string;
+  cardConfig: PostCardConfig;
+  showExcerpt: boolean;
+  snippetDialog: ReactNode;
+}
+
+// Mounted only once the boot data has resolved: the session reads the site URL
+// when it is built, and normalization cannot be switched on afterwards.
+function EditorContent({
+  postType,
+  record,
+  createdId,
+  cardConfig,
+  showExcerpt,
+  snippetDialog,
+}: EditorContentProps) {
+  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
+  const featureImage = useFeatureImageBinding(session, record);
+
+  useSaveShortcut(session.dispatchExplicit);
+
+  return (
+    <Stack className="h-full" gap="none">
+      <EditorHeader postType={postType}>
+        <EditorStatus
+          isDirty={session.isDirty()}
+          record={statusRecordOf(record, createdId)}
+          state={session.state}
+        />
+      </EditorHeader>
+      <SessionBanners
+        state={session.state}
+        onDismissReauth={session.reauthAbandoned}
+        onRetryReauth={session.reauthSucceeded}
+        onRetrySave={session.dispatchExplicit}
+      />
+      <div className="min-h-0 flex-1">
+        <PostEditor
+          {...session.bind}
+          autofocusTitle={!record}
+          cardConfig={cardConfig}
+          featureImage={featureImage}
+          postType={postType}
+          showExcerpt={showExcerpt}
+        />
+      </div>
+      {snippetDialog}
+    </Stack>
+  );
+}
+
 function EditorSurface({
   postType,
   record,
@@ -112,10 +167,6 @@ function EditorSurface({
 }) {
   const { data: currentUser } = useCurrentUser();
   const showExcerpt = useFeatureFlag('editorExcerpt');
-  const session = useEditorSession({ postType, record });
-  const featureImage = useFeatureImageBinding(session, record);
-
-  useSaveShortcut(session.dispatchExplicit);
 
   const canManageSnippets =
     !!currentUser &&
@@ -144,31 +195,14 @@ function EditorSurface({
   }
 
   return (
-    <Stack className="h-full" gap="none">
-      <EditorHeader postType={postType}>
-        <EditorStatus
-          isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
-          state={session.state}
-        />
-      </EditorHeader>
-      <SessionBanners
-        state={session.state}
-        onDismissReauth={session.reauthAbandoned}
-        onRetryReauth={session.reauthSucceeded}
-      />
-      <div className="min-h-0 flex-1">
-        <PostEditor
-          {...session.bind}
-          autofocusTitle={!record}
-          cardConfig={cardConfig}
-          featureImage={featureImage}
-          postType={postType}
-          showExcerpt={showExcerpt}
-        />
-      </div>
-      {snippetDialog}
-    </Stack>
+    <EditorContent
+      cardConfig={cardConfig}
+      createdId={createdId}
+      postType={postType}
+      record={record}
+      showExcerpt={showExcerpt}
+      snippetDialog={snippetDialog}
+    />
   );
 }
 
@@ -225,10 +259,12 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
   const loaded: EditorRecord | undefined =

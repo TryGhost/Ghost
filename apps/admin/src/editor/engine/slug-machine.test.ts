@@ -116,6 +116,60 @@ describe('createSlugMachine', () => {
     });
   });
 
+  describe('saveAcknowledged', () => {
+    it('adopts a normalized custom slug after the title changed', async () => {
+      const { machine } = createHarness();
+      machine.loaded({ slug: 'my-slug', title: 'Hello' });
+      await machine.titleCommitted('Renamed');
+
+      machine.saveAcknowledged(
+        { slug: 'my-slug', title: 'Renamed' },
+        { slug: 'my-slug-2', title: 'Renamed' },
+      );
+
+      expect(machine.getState()).toMatchObject({
+        slug: 'my-slug-2',
+        mode: 'custom',
+        lastCommittedTitle: 'Renamed',
+      });
+    });
+
+    it('preserves newer title intent while adopting the submitted source', async () => {
+      const later = deferred<string>();
+      const generateSlug = vi
+        .fn()
+        .mockResolvedValueOnce('brand-new-name')
+        .mockReturnValueOnce(later.promise);
+      const { machine } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+      await machine.titleCommitted('Brand New Name');
+      const pending = machine.titleCommitted('Typed Later');
+
+      machine.saveAcknowledged(
+        { slug: 'brand-new-name', title: 'Brand New Name' },
+        { slug: 'brand-new-name-2', title: 'Brand New Name' },
+      );
+
+      expect(machine.getState()).toMatchObject({
+        slug: 'brand-new-name-2',
+        title: 'Brand New Name',
+        lastCommittedTitle: 'Typed Later',
+        pending: true,
+      });
+      later.resolve('typed-later');
+      await expect(pending).resolves.toEqual({ slug: 'typed-later', source: 'generated' });
+
+      machine.saveAcknowledged(
+        { slug: 'brand-new-name', title: 'Brand New Name' },
+        { slug: 'brand-new-name-3', title: 'Brand New Name' },
+      );
+      expect(machine.getState()).toMatchObject({
+        slug: 'typed-later',
+        title: 'Typed Later',
+      });
+    });
+  });
+
   describe('titleCommitted', () => {
     it('generates a slug from the committed title and emits it', async () => {
       const { machine, generateSlug, proposals } = createHarness();
