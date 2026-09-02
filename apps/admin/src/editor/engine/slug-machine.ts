@@ -1,3 +1,39 @@
+/**
+ * Slug behavior contract
+ * ----------------------
+ *
+ * This machine owns slug intent and request ordering; callers own the input UI and persistence of
+ * emitted proposals. Its behavior follows Ember Admin unless an intentional rule below says
+ * otherwise.
+ *
+ * Ownership
+ * - A derived slug follows eligible title commits. A custom slug stops following the title.
+ * - Loading infers ownership structurally because posts do not persist slug provenance: a slug
+ *   matching `slugify(title)` is derived; a different slug is custom. `(Untitled)` and titles ending
+ *   in `(Copy)` remain derived to preserve Ember's first-real-title and duplicated-post behavior.
+ * - A successful manual edit makes the slug custom. Blank, unchanged, failed, or rejected manual
+ *   edits leave ownership unchanged.
+ *
+ * Generation
+ * - Derived slugs regenerate for non-blank committed titles. An existing slug is frozen for a blank
+ *   title or `(Untitled)` so transient editor titles cannot erase it.
+ * - The server remains authoritative for sanitization and uniqueness. Whitespace-only responses are
+ *   ignored, and an apparent uniqueness increment is ignored when it only increments the current
+ *   slug rather than representing the user's canonicalized input.
+ *
+ * Ordering
+ * - At most one slug request is sent at a time. While it is active, only the latest additional
+ *   request-requiring submission is retained and run after it settles; replaced submissions
+ *   resolve as stale.
+ * - Withdrawing a deferred manual edit does not cancel active title generation. Withdrawing an
+ *   active manual edit invalidates its result without starting another request.
+ * - `loaded()` is a document boundary: it invalidates active and deferred work from the old post.
+ *
+ * Observation
+ * - Applied, rejected, and no-op decisions emit proposals. Stale completions return a proposal to
+ *   their caller but never notify subscribers, so old work cannot look like a current state change.
+ * - Listener failures are reported and isolated from transitions and from other listeners.
+ */
 import { slugify } from '@tryghost/string';
 import { DEFAULT_TITLE } from './save-engine';
 
