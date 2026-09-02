@@ -174,7 +174,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
                 <span>
                   Delivery and opens are still being confirmed — these figures will keep rising for
-                  a few minutes.
+                  a few minutes. Nothing you need to do.
                 </span>
                 {countedThrough && <Badge variant="secondary">{countedThrough}</Badge>}
                 <span>Refresh for the latest.</span>
