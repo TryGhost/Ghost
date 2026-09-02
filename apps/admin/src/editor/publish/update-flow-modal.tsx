@@ -1,11 +1,13 @@
 import { Banner, Button, Dialog, DialogContent, DialogTitle } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { formatNumber } from '@tryghost/shade/utils';
 import { useMemo, useRef, useState } from 'react';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
   publishRevertToDraft,
   updateFlowConfirmation,
   updateFlowModal,
+  updateFlowPreviousEmail,
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
 import { createPublishOptions } from './publish-options';
@@ -33,7 +35,7 @@ function pluralSubscribers(count: number | null | undefined): string {
   if (count === null || count === undefined) {
     return 'subscribers';
   }
-  return `${count.toLocaleString()} ${count === 1 ? 'subscriber' : 'subscribers'}`;
+  return `${formatNumber(count)} ${count === 1 ? 'subscriber' : 'subscribers'}`;
 }
 
 export function UpdateFlowModal({
@@ -64,13 +66,11 @@ export function UpdateFlowModal({
   const [running, setRunning] = useState(false);
 
   const isScheduled = post.status === 'scheduled';
-  const isSent = post.status === 'sent';
-  const isPublished = post.status === 'published';
-  const emailOnly = isSent && !isPublished;
+  const emailOnly = post.status === 'sent';
   const hasBeenEmailed = Boolean(post.email);
-  // Historic sends may name a since-archived newsletter, so its name is forced.
-  const showNewsletterName =
-    !state.onlyDefaultNewsletter || state.newsletter?.status === 'archived';
+  // The post's own newsletter, not the picker's: a send to a since-archived
+  // newsletter must still be named, or it reads as a send to the default one.
+  const showNewsletterName = !state.onlyDefaultNewsletter || post.newsletterStatus === 'archived';
 
   const revert = async () => {
     setFailure(null);
@@ -139,6 +139,24 @@ export function UpdateFlowModal({
             )}
             {publishedAt ? <> on {formatSiteDateTime(publishedAt, timezone)}.</> : '.'}
           </Text>
+
+          {isScheduled && post.email ? (
+            <Text data-testid={updateFlowPreviousEmail}>
+              This post was previously emailed to{' '}
+              <strong>{pluralSubscribers(post.email.email_count ?? null)}</strong>
+              {showNewsletterName && post.newsletterName ? (
+                <>
+                  {' '}
+                  of <strong>{post.newsletterName}</strong>
+                </>
+              ) : null}
+              {post.emailCreatedAt ? (
+                <> on {formatSiteDateTime(post.emailCreatedAt, timezone)}.</>
+              ) : (
+                '.'
+              )}
+            </Text>
+          ) : null}
 
           {failure ? (
             <Banner role="alert" variant="destructive">

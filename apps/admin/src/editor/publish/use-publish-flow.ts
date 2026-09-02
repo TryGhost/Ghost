@@ -5,6 +5,7 @@ import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { createEmailConfirmation } from './email-confirmation';
 import { createPublishOptions } from './publish-options';
 import { describeCompletionFailure, type CompletionFailure } from './completion-message';
+import { EDITOR_FETCH_OPTIONS } from './request-options';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -42,6 +43,10 @@ export interface PublishFlow {
   emailErrorMessage: string | null;
   /** The site's published count including this post, for the complete step's copy. */
   postCount: number | null;
+  /** When the publish landed, standing in for the publish time the server stamped. */
+  completedAt: string | null;
+  /** False until `checkLimits()` settles; the options step cannot be left before then. */
+  limitsChecked: boolean;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
   captured: {
     willPublish: boolean;
@@ -104,6 +109,7 @@ export function usePublishFlow({
         reload: async (postId) => {
           const data = await fetchApi<{ posts: PublishFlowPost[] }>(
             apiUrl(`/posts/${postId}/`, { include: 'email' }),
+            EDITOR_FETCH_OPTIONS,
           );
           const reloaded = data.posts?.[0];
           emailIdRef.current = reloaded?.email?.id ?? emailIdRef.current;
@@ -125,6 +131,8 @@ export function usePublishFlow({
     initialEmailError(post),
   );
   const [postCount, setPostCount] = useState<number | null>(null);
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [limitsChecked, setLimitsChecked] = useState(false);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
   const [captured, setCaptured] = useState({
@@ -141,6 +149,7 @@ export function usePublishFlow({
 
     void machine.checkLimits().then(() => {
       if (!cancelled) {
+        setLimitsChecked(true);
         refresh();
       }
     });
@@ -168,6 +177,7 @@ export function usePublishFlow({
     try {
       const data = await fetchApi<{ meta?: { pagination?: { total?: number } } }>(
         apiUrl('/posts/', { filter: 'status:published', limit: '1' }),
+        EDITOR_FETCH_OPTIONS,
       );
       setPostCount((data.meta?.pagination?.total ?? 0) + 1);
     } catch {
@@ -196,29 +206,33 @@ export function usePublishFlow({
   const complete = useCallback(
     (isScheduled: boolean, hasEmail: boolean) => {
       setEmailErrorMessage(null);
+      setConfirmStatus('success');
       setStep('complete');
-      writePublishCelebration({
-        postId: post.id,
-        displayName: post.displayName,
-        isScheduled,
-        hasEmail,
-      });
+      // The server stamps the publish time; this is the closest the client has.
+      setCompletedAt(new Date().toISOString());
+      writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
       onCompleted?.({ postId: post.id, isScheduled, hasEmail });
     },
     [onCompleted, post.displayName, post.id],
   );
 
   const applyEmailOutcome = useCallback(
-    (outcome: EmailConfirmationOutcome, isScheduled: boolean): boolean => {
+    (outcome: EmailConfirmationOutcome, isScheduled: boolean): void => {
       if (outcome.kind === 'failed') {
         setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
         setStep('email-error');
         setConfirmStatus('idle');
-        return false;
+        return;
       }
 
-      complete(isScheduled, true);
-      return true;
+      // Cancellation means the flow is being torn down, so nothing is completed
+      // and the caller is never told to navigate.
+      if (outcome.kind === 'cancelled') {
+        setConfirmStatus('idle');
+        return;
+      }
+
+      complete(isScheduled, outcome.kind !== 'not-needed');
     },
     [complete],
   );
@@ -260,9 +274,11 @@ export function usePublishFlow({
       return;
     }
 
-    setConfirmStatus('success');
-
+    // Stays 'running' across the email poll: the publish is not finished until
+    // the email is submitted, and the button must not invite a second dispatch.
     if (willEmailImmediately) {
+      // No `currentPost`: the acknowledged result carries no email, and the
+      // pre-save one would short-circuit the poll to "not needed".
       const outcome = await confirmation.confirm(post.id);
       applyEmailOutcome(outcome, isScheduled);
       return;
@@ -294,14 +310,16 @@ export function usePublishFlow({
     try {
       const outcome = await confirmation.retryAndConfirm(post.id, emailId);
 
-      if (outcome.kind === 'failed') {
-        setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+      if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
+        if (outcome.kind === 'failed') {
+          setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
+        }
         setRetryStatus('idle');
         return;
       }
 
       setRetryStatus('success');
-      complete(false, true);
+      complete(false, outcome.kind !== 'not-needed');
     } catch (error) {
       setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
       setRetryStatus('failure');
@@ -316,6 +334,8 @@ export function usePublishFlow({
     failure,
     emailErrorMessage,
     postCount,
+    completedAt,
+    limitsChecked,
     captured,
     refresh,
     toConfirm,

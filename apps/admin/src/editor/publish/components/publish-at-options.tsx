@@ -13,6 +13,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useState } from 'react';
 import { publishScheduleDate, publishScheduleTime } from '@tryghost/test-data/selectors/editor';
+import { siteCalendarDay } from '@/editor/publish/publish-copy';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 const DATE_FORMAT = 'YYYY-MM-DD';
@@ -41,13 +42,13 @@ export function PublishAtOptions({
   const [timeDraft, setTimeDraft] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const minimum = inSiteTimezone(state.minScheduledAt, timezone);
-
   const commitDate = (selected: Date | undefined) => {
     if (!selected) {
       return;
     }
 
+    // Read back the same way `siteCalendarDay` writes: local fields carry the
+    // site-timezone day.
     const next = scheduled.clone().set({
       year: selected.getFullYear(),
       month: selected.getMonth(),
@@ -104,10 +105,10 @@ export function PublishAtOptions({
                 <Calendar
                   captionLayout="dropdown-months"
                   // Opening on the selected date's month, never today's.
-                  defaultMonth={scheduled.toDate()}
-                  disabled={{ before: minimum.clone().startOf('day').toDate() }}
+                  defaultMonth={siteCalendarDay(state.scheduledAt, timezone)}
+                  disabled={{ before: siteCalendarDay(state.minScheduledAt, timezone) }}
                   mode="single"
-                  selected={scheduled.toDate()}
+                  selected={siteCalendarDay(state.scheduledAt, timezone)}
                   onSelect={commitDate}
                 />
               </PopoverContent>

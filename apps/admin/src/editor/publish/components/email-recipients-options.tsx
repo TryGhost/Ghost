@@ -13,6 +13,7 @@ import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import { EDITOR_QUERY_OPTIONS } from '@/editor/publish/request-options';
 import { useMemo } from 'react';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
 import type { NewsletterInput, PublishOptionsState } from '@/editor/publish/publish-options';
@@ -28,12 +29,13 @@ export function EmailRecipientsOptions({
   onSetNewsletter,
   onSetRecipientFilter,
 }: EmailRecipientsOptionsProps) {
-  const { data: settingsData } = useBrowseSettings();
-  const { data: configData } = useBrowseConfig();
+  const { data: settingsData } = useBrowseSettings(EDITOR_QUERY_OPTIONS);
+  const { data: configData } = useBrowseConfig(EDITOR_QUERY_OPTIONS);
   const { data: tiersData } = useBrowseTiers({
+    ...EDITOR_QUERY_OPTIONS,
     searchParams: { filter: 'type:paid', limit: 'all' },
   });
-  const { data: labelsData } = useBrowseLabelsInfinite();
+  const { data: labelsData } = useBrowseLabelsInfinite(EDITOR_QUERY_OPTIONS);
 
   const paidAvailable = Boolean(
     settingsData?.settings &&

@@ -136,6 +136,16 @@ export function confirmPublishType({
   return 'publish';
 }
 
+/**
+ * The site-timezone calendar day, carried in a Date's LOCAL fields. Date pickers
+ * read a Date through its local getters, so handing them the instant itself
+ * lands on the wrong day whenever the site and browser zones disagree.
+ */
+export function siteCalendarDay(iso: string, timezone: string): Date {
+  const time = moment.tz(iso, timezone);
+  return new Date(time.year(), time.month(), time.date());
+}
+
 /** `gh-format-post-time` with `relative=true`: plain `moment().from(now)`. */
 export function relativeTime(iso: string, now?: Date): string {
   return moment(iso).from(now ? moment(now) : moment.utc());

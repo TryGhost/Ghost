@@ -178,6 +178,7 @@ function PublishFlowDialog({
           ) : step === 'complete' ? (
             <CompleteStep
               captured={flow.captured}
+              completedAt={flow.completedAt}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}
@@ -199,6 +200,7 @@ function PublishFlowDialog({
           ) : (
             <OptionsStep
               emailDisabledInSettings={site.editorDefaultEmailRecipients === 'disabled'}
+              limitsChecked={flow.limitsChecked}
               post={post}
               state={state}
               timezone={timezone}

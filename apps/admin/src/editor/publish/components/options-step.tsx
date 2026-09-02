@@ -15,6 +15,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import { EmailRecipientsOptions } from './email-recipients-options';
 import { PublishAtOptions } from './publish-at-options';
+import { LimitMessage } from './limit-message';
 import { PublishSetting, PublishSettingNote } from './publish-setting';
 import { PublishTypeOptions } from './publish-type-options';
 import { recipientsRowLabel, relativeTime } from '@/editor/publish/publish-copy';
@@ -33,6 +34,8 @@ export interface OptionsStepProps {
   timezone: string;
   /** True when the site turned newsletters off; hides the historic send row. */
   emailDisabledInSettings: boolean;
+  /** The limit checks can demote the publish type, so review waits for them. */
+  limitsChecked: boolean;
   onSetPublishType: (publishType: PublishType) => void;
   onSetNewsletter: (newsletter: NewsletterInput | null) => void;
   onSetRecipientFilter: (filter: string | null) => void;
@@ -68,6 +71,7 @@ export function OptionsStep({
   state,
   timezone,
   emailDisabledInSettings,
+  limitsChecked,
   onSetPublishType,
   onSetNewsletter,
   onSetRecipientFilter,
@@ -84,6 +88,7 @@ export function OptionsStep({
     (option) => option.value === state.publishType,
   );
   const historicEmail = post.email;
+  const historicRecipientType = getRecipientType(state.recipientFilter);
 
   return (
     <Stack data-testid={publishFlowOptions} gap="xl">
@@ -119,8 +124,10 @@ export function OptionsStep({
           <PublishTypeOptions state={state} onChange={onSetPublishType} />
         </PublishSetting>
 
-        {publishBlocked ? (
-          <PublishSettingNote>{state.publishBlock?.message}</PublishSettingNote>
+        {state.publishBlock ? (
+          <PublishSettingNote>
+            <LimitMessage parts={state.publishBlock.parts} />
+          </PublishSettingNote>
         ) : null}
 
         {state.emailUnavailable ? null : (
@@ -153,6 +160,8 @@ export function OptionsStep({
             title={[
               historicEmail.status === 'failed' ? 'Retry sending to' : 'Already sent to',
               formatNumber(historicEmail.email_count ?? 0),
+              // The segment word is dropped for "all", as in the row above it.
+              historicRecipientType === 'all' ? null : historicRecipientType,
               historicEmail.email_count === 1 ? 'subscriber' : 'subscribers',
               state.onlyDefaultNewsletter || !post.newsletterName
                 ? null
@@ -183,7 +192,12 @@ export function OptionsStep({
 
       {publishBlocked ? null : (
         <div>
-          <Button data-testid={publishContinueButton} size="lg" onClick={onContinue}>
+          <Button
+            data-testid={publishContinueButton}
+            disabled={!limitsChecked}
+            size="lg"
+            onClick={onContinue}
+          >
             Continue, final review &rarr;
           </Button>
         </div>

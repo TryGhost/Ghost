@@ -9,6 +9,7 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useMemo } from 'react';
+import { EDITOR_QUERY_OPTIONS } from './request-options';
 import type { DefaultEmailRecipients, PublishSiteInput, PublishUserInput } from './publish-options';
 
 /** Both sources count: self-hosters configure Mailgun in settings, hosts inject it via config. */
@@ -43,9 +44,10 @@ export interface PublishInputs {
  * `isReady`.
  */
 export function usePublishInputs(): PublishInputs {
-  const { data: settingsData } = useBrowseSettings();
-  const { data: configData } = useBrowseConfig();
-  const { data: newslettersData } = useBrowseNewsletters();
+  const { data: settingsData } = useBrowseSettings(EDITOR_QUERY_OPTIONS);
+  const { data: configData } = useBrowseConfig(EDITOR_QUERY_OPTIONS);
+  const { data: newslettersData } = useBrowseNewsletters(EDITOR_QUERY_OPTIONS);
+  // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
   const { data: currentUser } = useCurrentUser();
   // Site-wide total, the way Ember's publish options read it.
   const { count: memberCount, isLoading: memberCountLoading } = useMembersCount('');

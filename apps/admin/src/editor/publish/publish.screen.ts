@@ -11,11 +11,13 @@ import {
   publishFlowOptions,
   publishRetryEmailButton,
   publishRevertToDraft,
+  publishScheduleDate,
   publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
   tkReminderDialog,
   updateFlowModal,
+  updateFlowPreviousEmail,
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
 
@@ -34,6 +36,7 @@ export const publishScreen = {
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
+  scheduleDate: () => page.getByTestId(publishScheduleDate),
   continueButton: () => page.getByTestId(publishContinueButton),
   confirmButton: () => page.getByTestId(publishConfirmButton),
   confirmError: () => page.getByTestId(publishConfirmError),
@@ -42,5 +45,6 @@ export const publishScreen = {
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),
   updateFlow: () => page.getByTestId(updateFlowModal),
+  updateFlowPreviousEmail: () => page.getByTestId(updateFlowPreviousEmail),
   updateFlowTitle: () => page.getByTestId(updateFlowTitle),
 };

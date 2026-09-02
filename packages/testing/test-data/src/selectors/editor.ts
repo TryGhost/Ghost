@@ -49,6 +49,7 @@ export const publicPreviewWarningDialog = 'public-preview-warning-dialog';
 export const updateFlowModal = 'update-flow-modal';
 export const updateFlowTitle = 'update-flow-title';
 export const updateFlowConfirmation = 'update-flow-confirmation';
+export const updateFlowPreviousEmail = 'update-flow-previous-email';
 
 // accessible names
 export const postsBackLink = 'Posts';

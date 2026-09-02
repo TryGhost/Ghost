@@ -109,8 +109,9 @@ async function renderPublishFlow(
   props: Partial<React.ComponentProps<typeof PublishFlowModal>> = {},
 ) {
   const dispatch = completesWith(saved());
+  const onCompleted = vi.fn();
 
-  await render(
+  const rendered = await render(
     <TestWrapper>
       <PublishFlowModal
         dispatch={dispatch}
@@ -119,12 +120,13 @@ async function renderPublishFlow(
         timezone="Etc/UTC"
         user={USER}
         onClose={() => {}}
+        onCompleted={onCompleted}
         {...props}
       />
     </TestWrapper>,
   );
 
-  return { dispatch };
+  return { dispatch, onCompleted, unmount: () => rendered.unmount() };
 }
 
 describe('Publish flow', () => {
@@ -169,6 +171,71 @@ describe('Publish flow', () => {
     SLOW,
   );
 
+  it(
+    'holds the confirm button through the email poll so the publish cannot be dispatched twice',
+    async () => {
+      // Two polls, so the flow is still waiting when the assertions run.
+      fakeEmailPolling({ status: 'pending' }, { status: 'submitted' });
+      const { dispatch } = await renderPublishFlow();
+
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect
+        .poll(() => publishScreen.confirmButton().element().textContent, { timeout: 2000 })
+        .toContain('Publishing & sending');
+      await expect
+        .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'), {
+          timeout: 2000,
+        })
+        .toBe(true);
+      expect(dispatch).toHaveBeenCalledTimes(1);
+
+      await expect.element(publishScreen.complete()).toBeInTheDocument();
+      expect(dispatch).toHaveBeenCalledTimes(1);
+    },
+    SLOW,
+  );
+
+  it(
+    'completes nothing when the flow is torn down mid-poll',
+    async () => {
+      fakeEmailPolling({ status: 'pending' });
+      const { dispatch, onCompleted, unmount } = await renderPublishFlow();
+
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+      // The save has landed and the poll is running.
+      await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+
+      await unmount();
+
+      // Long enough for two poll ticks to have landed had the run continued.
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 2500);
+      });
+      expect(onCompleted).not.toHaveBeenCalled();
+      expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+    },
+    SLOW,
+  );
+
+  it('publishes without emailing when the publish-only type is chosen', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+    await publishScreen.continueButton().click();
+
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish post, right now');
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
+  });
+
   it('schedules a draft and hands over the scheduled celebration key', async () => {
     const { dispatch } = await renderPublishFlow();
 
@@ -184,12 +251,37 @@ describe('Publish flow', () => {
     expect(command).toMatchObject({
       options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
     });
-    expect(
-      Date.parse(command.kind === 'schedule' ? command.options.publishedAt : ''),
-    ).toBeGreaterThan(Date.now());
+    const publishedAt = command.kind === 'schedule' ? command.options.publishedAt : '';
+    expect(Date.parse(publishedAt)).toBeGreaterThan(Date.now());
+    // The server rejects a sub-second publish time.
+    expect(publishedAt).toMatch(/T\d\d:\d\d:\d\d\.000Z$/);
     expect(localStorage.getItem('ghost-last-scheduled-post')).not.toBeNull();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
+
+  // Two zones a day apart, so one of them disagrees with the runner's whatever
+  // it is set to; `siteCalendarDay` covers the mapping itself deterministically.
+  it.each(['Pacific/Auckland', 'Pacific/Honolulu'])(
+    'keeps the calendar on the site timezone day the field shows (%s)',
+    async (timezone) => {
+      await renderPublishFlow({ timezone });
+
+      await publishScreen.setting('publish-at').click();
+      await page.getByLabelText('Schedule for later').click();
+
+      const shown = (publishScreen.scheduleDate().element() as HTMLInputElement).value;
+      const day = Number(shown.slice(-2));
+
+      await publishScreen.scheduleDate().click();
+
+      const selected = page.getByRole('gridcell', { selected: true });
+      await expect.element(selected).toHaveTextContent(String(day));
+
+      // Committing the day the calendar highlights must not move the date.
+      await selected.click();
+      await expect.element(publishScreen.scheduleDate()).toHaveValue(shown);
+    },
+  );
 
   it(
     'sends without publishing when the email-only type is chosen',
@@ -269,6 +361,59 @@ describe('Publish flow', () => {
       .toHaveTextContent('Someone else has edited this post');
   });
 
+  it('links the upgrade phrase in a host limit without completing', async () => {
+    const dispatch = completesWith(
+      failed('host-limit', 'Your plan is full, please upgrade to publish more.'),
+    );
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your plan is full');
+    await expect
+      .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('shows a validation failure in place', async () => {
+    const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Validation failed: Title cannot be longer than 255');
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+  });
+
+  it('says a dropped command is no longer publishable', async () => {
+    const dispatch = completesWith({ kind: 'dropped', reason: 'not-draft' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('can no longer be published from here');
+  });
+
+  it('says a superseded command is no longer publishable', async () => {
+    const dispatch = completesWith({ kind: 'superseded', by: 'publish' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('can no longer be published from here');
+  });
+
   it(
     'offers a retry when the email fails after a successful publish',
     async () => {
@@ -316,5 +461,35 @@ describe('Update flow', () => {
 
     expect(dispatch).toHaveBeenCalledWith({ kind: 'revert' });
     await expect.poll(() => onClose.mock.calls.length).toBe(1);
+  });
+
+  it('names a since-archived newsletter a scheduled post was already sent to', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'retired',
+            newsletterName: 'Retired Weekly',
+            newsletterStatus: 'archived',
+            email: { id: EMAIL_ID, email_count: 12, opened_count: 0 },
+            emailCreatedAt: '2026-09-01T09:00:00.000Z',
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowPreviousEmail())
+      .toHaveTextContent('previously emailed to 12 subscribers of Retired Weekly');
+    await expect
+      .element(publishScreen.updateFlowPreviousEmail())
+      .toHaveTextContent('on 1 Sep 2026 at 09:00');
   });
 });

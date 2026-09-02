@@ -30,6 +30,8 @@ export interface CompleteStepProps {
   siteTitle?: string;
   /** Published-post total including this one; null for pages, schedules and email-only. */
   postCount: number | null;
+  /** When the publish landed, standing in for the publish time the server stamped. */
+  completedAt: string | null;
   onRevertToDraft?: () => void;
 }
 
@@ -60,13 +62,15 @@ export function CompleteStep({
   timezone,
   siteTitle,
   postCount,
+  completedAt,
   onRevertToDraft,
 }: CompleteStepProps) {
   const { count } = useMembersCount(state.fullRecipientFilter);
   const emailOnly = captured.willOnlyEmail;
+  // A schedule publishes at the chosen time; anything else just published.
   const publishedAt = captured.isScheduled
     ? state.scheduledAt
-    : (post.publishedAt ?? state.scheduledAt);
+    : (completedAt ?? post.publishedAt ?? state.scheduledAt);
 
   const deliveryVerb = emailOnly ? 'sent' : captured.willEmail ? 'published and sent' : 'published';
 

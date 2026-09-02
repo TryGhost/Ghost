@@ -158,7 +158,7 @@ The flow is a four-way branch, in the same precedence as the Ember template it r
 | The user asked for the final review      | `ConfirmStep`                |
 | Otherwise                                | `OptionsStep`                |
 
-`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
 ## Gates
 
@@ -181,11 +181,21 @@ No completion closes the modal or navigates. Reaching the complete step writes t
 
 ## Email confirmation
 
-A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously. The flow hands the post to `createEmailConfirmation()` and waits. Every outcome but `failed` completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — while a failure moves to the email-error step with the message the API stored. The email's id is only knowable from a reload, so the poller's reload records it for the retry.
+A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously. The flow hands the post to `createEmailConfirmation()` and waits, and the confirm button stays in its running state throughout — the publish is not finished, and a button reading "Published & sent" would invite a second dispatch.
+
+A `failed` outcome moves to the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened.
+
+The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately.
+
+## Requests
+
+Every request the flow makes opts out of the session-expiry redirect and the global error handler (`EDITOR_REQUEST_OPTIONS`). The flow runs over an editor holding unsaved work and the poller fires once a second immediately after a save, so a single 401 would otherwise navigate the user to sign-in and lose it; and the modal shows its own failures, so a toast would double them. `useRetryEmail` is the exception — mutation hooks take no per-call fetch options — and `useCurrentUser` is a shared boot query rather than the flow's own.
 
 ## Update flow
 
-`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action Ember offers: reverting to a draft, dispatched as `toRevertDispatch()`. It forces the newsletter name into its copy when the post's newsletter has since been archived, so a historic send is never described against the wrong newsletter.
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action Ember offers: reverting to a draft, dispatched as `toRevertDispatch()`.
+
+It reads the newsletter from the post rather than from the options machine, and forces its name into the copy when that newsletter has since been archived. The machine cannot answer this: it only ever exposes a selectable newsletter, so a post sent to an archived one would be described against the site's default instead. A scheduled post that already carries an email gets the extra sentence naming that earlier send.
 
 ## Not yet ported
 

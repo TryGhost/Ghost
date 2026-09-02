@@ -6,6 +6,7 @@ import {
   confirmSuccessText,
   recipientsConfirmLabel,
   recipientsRowLabel,
+  siteCalendarDay,
 } from '@/editor/publish/publish-copy';
 
 const UTC = 'Etc/UTC';
@@ -75,6 +76,22 @@ describe('confirm button copy', () => {
     expect(confirmRunningText('send', true)).toBe('Scheduling');
     expect(confirmSuccessText('publish+send', true)).toBe('Scheduled');
     expect(confirmSuccessText('publish+send', false)).toBe('Published & sent');
+  });
+});
+
+describe('siteCalendarDay', () => {
+  // 20:00 UTC on the 3rd is already 08:00 on the 4th in Auckland, so an
+  // implementation handing the picker the instant lands a day early.
+  it('carries the site-timezone day in the local fields a date picker reads', () => {
+    const day = siteCalendarDay('2026-09-03T20:00:00.000Z', 'Pacific/Auckland');
+
+    expect([day.getFullYear(), day.getMonth(), day.getDate()]).toEqual([2026, 8, 4]);
+  });
+
+  it('keeps a day that both zones agree on', () => {
+    const day = siteCalendarDay('2026-09-03T12:00:00.000Z', 'Etc/UTC');
+
+    expect([day.getFullYear(), day.getMonth(), day.getDate()]).toEqual([2026, 8, 3]);
   });
 });
 

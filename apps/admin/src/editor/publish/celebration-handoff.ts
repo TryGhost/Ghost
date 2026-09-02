@@ -8,20 +8,18 @@ const KEYS = {
   scheduled: 'ghost-last-scheduled-post',
 } as const;
 
-export interface PublishCompletion {
+export interface PublishCelebrationHandoff {
   postId: string;
   /** 'post' or 'page' — Ember's `displayName`. */
   displayName: string;
   isScheduled: boolean;
-  /** Decides whether the caller lands on analytics rather than the list. */
-  hasEmail: boolean;
 }
 
 export function writePublishCelebration({
   postId,
   displayName,
   isScheduled,
-}: PublishCompletion): void {
+}: PublishCelebrationHandoff): void {
   try {
     localStorage.setItem(
       isScheduled ? KEYS.scheduled : KEYS.published,

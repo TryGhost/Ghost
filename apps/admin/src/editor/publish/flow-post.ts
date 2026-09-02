@@ -19,9 +19,13 @@ export interface PublishFlowPost {
   tiers?: ReadonlyArray<{ slug: string }>;
   /** Persisted newsletter slug and segment; the machine seeds its picker from them. */
   newsletter?: string | null;
+  /** The post's own newsletter, which may since have been archived. */
   newsletterName?: string | null;
+  newsletterStatus?: string | null;
   emailSegment?: string | null;
   email?: Email | null;
+  /** When the post's email was created, for the update flow's historic sentence. */
+  emailCreatedAt?: string | null;
   /** The unsaved body when the editor has one; read only by the public-preview predicate. */
   lexical?: string | null;
 }

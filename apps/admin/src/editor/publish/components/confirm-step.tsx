@@ -1,9 +1,8 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
-import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
   publishConfirmButton,
@@ -36,27 +35,11 @@ export interface ConfirmStepProps {
 }
 
 function FailureMessage({ failure }: { failure: CompletionFailure }) {
-  const { data: configData } = useBrowseConfig();
-
   if (!failure.parts) {
     return <>{failure.message}</>;
   }
 
-  const route = upgradeRoute(configData?.config);
-
-  return (
-    <>
-      {failure.parts.map((part) =>
-        part.kind === 'upgrade' ? (
-          <a key={`${part.kind}:${part.text}`} className="underline" href={`#${route}`}>
-            {part.text}
-          </a>
-        ) : (
-          <span key={`${part.kind}:${part.text}`}>{part.text}</span>
-        ),
-      )}
-    </>
-  );
+  return <LimitMessage parts={failure.parts} />;
 }
 
 export function ConfirmStep({
@@ -142,7 +125,8 @@ export function ConfirmStep({
       <Stack align="start" gap="sm">
         <Button
           data-testid={publishConfirmButton}
-          disabled={status === 'running'}
+          // A succeeded publish must not offer a second dispatch either.
+          disabled={status === 'running' || status === 'success'}
           size="lg"
           onClick={onConfirm}
         >
