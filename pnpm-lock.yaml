@@ -485,6 +485,9 @@ catalogs:
     markdownlint-cli2:
       specifier: 0.23.2
       version: 0.23.2
+    microdiff:
+      specifier: 1.5.0
+      version: 1.5.0
     mingo:
       specifier: 2.5.3
       version: 2.5.3
@@ -948,6 +951,9 @@ importers:
       lucide-react:
         specifier: 'catalog:'
         version: 1.23.0(react@18.3.1)
+      microdiff:
+        specifier: 'catalog:'
+        version: 1.5.0
       mingo:
         specifier: 'catalog:'
         version: 2.5.3

@@ -150,6 +150,7 @@ catalog:
   knex-migrator: 5.4.1
   lodash: 4.18.1
   lucide-react: 1.23.0
+  microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.30.1
   moment-timezone: 0.5.45
