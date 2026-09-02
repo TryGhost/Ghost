@@ -45,7 +45,8 @@ concurrency limit together alongside the handler
 which isolates slow or flood-prone job types from the shared workers; with no
 declaration the job type runs on the shared default lane. The queue only
 affects which workers run the job and how many run at once - delivery always
-routes by job type.
+routes by job type. Webmention processing runs on its own `webmentions` queue
+this way.
 
 ## Testing
 

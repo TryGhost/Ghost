@@ -20,12 +20,16 @@ describe('register-job-handlers', function () {
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
-  function handlerFor(type: string) {
+  function registrationFor(type: string) {
     const call = jobsService.handle
       .getCalls()
       .find((c) => (c.args[0] as { type?: string }).type === type);
     assert.ok(call, `a handler is registered for ${type}`);
-    return call!.args[1] as (job: unknown) => Promise<void>;
+    return call!;
+  }
+
+  function handlerFor(type: string) {
+    return registrationFor(type).args[1] as (job: unknown) => Promise<void>;
   }
 
   beforeEach(function () {
@@ -134,5 +138,14 @@ describe('register-job-handlers', function () {
     await processWebmentionHandler(job);
 
     assert.ok(mentionsController.processWebmention.calledOnceWithExactly(job));
+  });
+
+  // Guards the webmention isolation itself: dropping the options object in a
+  // refactor would silently move webmentions back onto the shared queue while
+  // every handler-behavior test still passes.
+  it('registers process-webmention on the dedicated webmentions queue', function () {
+    const registration = registrationFor('process-webmention');
+
+    assert.deepEqual(registration.args[2], { queue: 'webmentions', concurrency: 3 });
   });
 });
