@@ -577,7 +577,7 @@ module.exports = class MemberBREADService {
     // plan to apply once below, so the values aren't resolved and validated
     // twice.
     const plannedCustomFields = writeCustomFields
-      ? await this.customFieldValues.planWrite(customFields)
+      ? await this.customFieldValues.planWrite(customFields, ADMIN)
       : null;
 
     let model;

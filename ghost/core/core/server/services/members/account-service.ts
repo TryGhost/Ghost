@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { MEMBERS } from '../members-custom-fields';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -53,37 +54,75 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
+interface CustomFieldValues {
+  unwrapWire(input: unknown): unknown;
+  planWrite(values: unknown, audience: unknown): Promise<unknown[]>;
+  applyWrite(
+    memberId: string,
+    writes: unknown[],
+    options: { writtenBy: { type: string; id: string } },
+  ): Promise<void>;
+}
+
 export interface MemberAccountServiceDeps {
   memberBREADService: MemberBreadService;
   members: MemberRepository;
   emailSuppressionList: EmailSuppressionList;
+  customFieldValues: CustomFieldValues;
 }
 
 export class MemberAccountService {
   #memberBREADService: MemberBreadService;
   #members: MemberRepository;
   #emailSuppressionList: EmailSuppressionList;
+  #customFieldValues: CustomFieldValues;
 
-  constructor({ memberBREADService, members, emailSuppressionList }: MemberAccountServiceDeps) {
+  constructor({
+    memberBREADService,
+    members,
+    emailSuppressionList,
+    customFieldValues,
+  }: MemberAccountServiceDeps) {
     this.#memberBREADService = memberBREADService;
     this.#members = members;
     this.#emailSuppressionList = emailSuppressionList;
+    this.#customFieldValues = customFieldValues;
   }
 
   /** Everything a member is shown about themselves. */
   async read(memberId: string): Promise<Record<string, unknown> | null> {
-    // Without the extra fields a publisher defines: nothing in this projection
-    // carries them yet, so fetching them would cost a query per request and be
-    // discarded. The session read leaves them off for the same reason.
-    return this.#memberBREADService.read({ id: memberId }, { withCustomFields: false });
+    // As the member rather than as staff: how much of the extra fields a publisher
+    // defines is answered depends on which side of Ghost is asking.
+    return this.#memberBREADService.read({ id: memberId }, { customFieldsFor: MEMBERS });
   }
 
   /** Apply what a member asked to change about themselves, and say what they now hold. */
   async edit(data: Record<string, unknown>, memberId: string) {
+    // Worked out before the member is touched, so a value the catalog refuses fails
+    // the whole request rather than leaving a member renamed with their answers
+    // rejected. The write below reconciles subscriptions with Stripe and sends
+    // events, none of which giving up halfway could undo.
+    const plannedCustomFields =
+      data.metafields === undefined
+        ? null
+        : await this.#customFieldValues.planWrite(
+            this.#customFieldValues.unwrapWire(data.metafields),
+            MEMBERS,
+          );
+
     await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
       id: memberId,
       withRelated: WRITE_RELATIONS,
     });
+
+    if (plannedCustomFields) {
+      // A member is recorded as the author of their own answers, and is the one
+      // writer whose changes leave nothing in the staff action log: that log
+      // records what staff did.
+      await this.#customFieldValues.applyWrite(memberId, plannedCustomFields, {
+        writtenBy: { type: 'member', id: memberId },
+      });
+    }
 
     // Read back rather than returning what was written: a member is told what
     // Ghost now holds, which is not always what they sent. Setting the older
