@@ -52,8 +52,7 @@ function toWebhookMetadata(metadata) {
   return result;
 }
 
-function enableGiftCustomization() {
-  mockManager.mockLabsEnabled('giftSubCustomization');
+function enableAllGiftPlans() {
   mockManager.mockSetting('portal_plans', ['free', 'monthly', 'yearly']);
 }
 
@@ -163,7 +162,6 @@ describe('Gift Subscriptions', function () {
   beforeEach(function () {
     mockManager.mockStripe();
     mockManager.mockMail();
-    mockManager.mockLabsDisabled('giftSubCustomization');
   });
 
   afterEach(async function () {
@@ -181,6 +179,7 @@ describe('Gift Subscriptions', function () {
           type: 'gift',
           tierId: paidTier.id,
           cadence: 'month',
+          customerEmail: 'gift-buyer@example.com',
           metadata: {},
         })
         .expectStatus(200)
@@ -266,6 +265,7 @@ describe('Gift Subscriptions', function () {
           type: 'gift',
           tierId: paidTier.id,
           cadence: 'month',
+          customerEmail: 'delayed-gift-buyer@example.com',
           metadata: {},
         })
         .expectStatus(200);
@@ -315,6 +315,7 @@ describe('Gift Subscriptions', function () {
           type: 'gift',
           tierId: paidTier.id,
           cadence: 'month',
+          customerEmail: 'failed-gift-buyer@example.com',
           metadata: {},
         })
         .expectStatus(200);
@@ -351,7 +352,7 @@ describe('Gift Subscriptions', function () {
     });
 
     it('uses the persisted buyer email when the paid gift webhook has no customer details', async function () {
-      enableGiftCustomization();
+      enableAllGiftPlans();
 
       const paidTier = await getPaidTier();
       const buyerEmail = 'persisted-buyer@example.com';
@@ -461,7 +462,7 @@ describe('Gift Subscriptions', function () {
     });
 
     it('traces a customized 3-month gift from checkout through redemption and member access', async function () {
-      enableGiftCustomization();
+      enableAllGiftPlans();
 
       const paidTier = await getPaidTier();
       const buyerEmail = `gift-multi-month-buyer-${giftSequence + 1}@example.com`;
@@ -569,7 +570,7 @@ describe('Gift Subscriptions', function () {
     });
 
     it('rejects unsupported, malformed, conflicting and non-paid customized gift offers', async function () {
-      enableGiftCustomization();
+      enableAllGiftPlans();
 
       for (const request of [
         { duration: 2 },
@@ -586,8 +587,7 @@ describe('Gift Subscriptions', function () {
       });
     });
 
-    it('keeps legacy cadence-only gift checkout compatible when customization is enabled', async function () {
-      mockManager.mockLabsEnabled('giftSubCustomization');
+    it('keeps legacy cadence-only gift checkout compatible', async function () {
       // legacy clients predate the Portal plan gate, so a disabled yearly plan must not block them
       mockManager.mockSetting('portal_plans', ['free', 'monthly']);
       const paidTier = await getPaidTier();
@@ -621,6 +621,7 @@ describe('Gift Subscriptions', function () {
           type: 'gift',
           tierId: paidTier.id,
           cadence: 'month',
+          customerEmail: 'gift-token-buyer@example.com',
           metadata: {},
         })
         .expectStatus(200);
@@ -648,6 +649,7 @@ describe('Gift Subscriptions', function () {
           type: 'gift',
           tierId: paidTier.id,
           cadence: 'month',
+          customerEmail: 'idempotent-buyer@example.com',
           metadata: {},
         })
         .expectStatus(200);
@@ -694,7 +696,7 @@ describe('Gift Subscriptions', function () {
 
   describe('Refund a gift', function () {
     it('Marks a multi-month gift as refunded when Stripe charge.refunded webhook is received', async function () {
-      enableGiftCustomization();
+      enableAllGiftPlans();
       const paidTier = await getPaidTier();
       const expectedAmount = paidTier.monthly_price * 3;
 

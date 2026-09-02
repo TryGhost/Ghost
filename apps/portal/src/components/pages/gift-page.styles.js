@@ -1,7 +1,7 @@
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 
-export const BetaGiftPageStyles = `
+export const GiftPageStyles = `
 @property --shine-angle {
     syntax: '<angle>';
     inherits: false;

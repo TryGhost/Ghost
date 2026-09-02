@@ -20,8 +20,8 @@ import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import useSessionStorageState from '../../utils/use-session-storage-state';
-import { formatGiftValue } from './gift-page';
-import GiftDeliveryStep from './beta-gift/delivery-step';
+import { formatGiftValue } from '../../utils/format-gift-value';
+import GiftDeliveryStep from './gift/delivery-step';
 import {
   GIFT_EMAIL_MAX_LENGTH,
   GIFT_FORM_STATE_KEY,
@@ -29,17 +29,17 @@ import {
   GIFT_NAME_MAX_LENGTH,
   createGiftFormState,
   parseGiftFormState,
-} from './beta-gift/form-state';
-import GiftPlanStep from './beta-gift/plan-step';
-import GiftPreviewPanel from './beta-gift/preview-panel';
-import { ensureGiftPlanRoute, restoreGiftEntryRoute, setGiftRoute } from './beta-gift/navigation';
+} from './gift/form-state';
+import GiftPlanStep from './gift/plan-step';
+import GiftPreviewPanel from './gift/preview-panel';
+import { ensureGiftPlanRoute, restoreGiftEntryRoute, setGiftRoute } from './gift/navigation';
 import type {
   GiftDeliveryMethod,
   GiftCadenceDuration,
   GiftFormErrors,
   GiftInputField,
   GiftStep,
-} from './beta-gift/types';
+} from './gift/types';
 
 const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];
@@ -81,7 +81,7 @@ function getPortalHash(page: string | null) {
   return null;
 }
 
-const BetaGiftPage = () => {
+const GiftPage = () => {
   const { site, member, brandColor, action, doAction, lastPage, pageData } = useContext(
     AppContext,
   ) as GiftPageContext;
@@ -605,4 +605,4 @@ const BetaGiftPage = () => {
   );
 };
 
-export default BetaGiftPage;
+export default GiftPage;
