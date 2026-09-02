@@ -180,7 +180,12 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline">{activeView ? 'Edit view' : 'Save view'}</Button>
+        <Button
+          className="data-[control-shape=pill]:h-7 data-[control-shape=pill]:text-sm! data-[control-shape=pill]:[&_svg]:size-3"
+          variant="outline"
+        >
+          {activeView ? 'Edit view' : 'Save view'}
+        </Button>
       </PopoverTrigger>
       {open && (
         <ManageViewPopoverContent

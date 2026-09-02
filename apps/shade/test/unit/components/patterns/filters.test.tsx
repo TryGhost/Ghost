@@ -8,6 +8,7 @@ import {
   Filters,
   ValueSource,
 } from '../../../../src/components/patterns/filters';
+import ShadeProvider from '../../../../src/providers/shade-provider';
 
 vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({ selected, onSelect }: { selected?: Date; onSelect?: unknown }) => {
@@ -168,8 +169,33 @@ function openCalendar() {
   fireEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
 }
 
+function PillTextFilters() {
+  const [filters, setFilters] = useState<Filter<string>[]>([]);
+  const fields: FilterFieldConfig<string>[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      type: 'text',
+      placeholder: 'Enter name...',
+      operators: [{ value: 'is', label: 'is' }],
+    },
+  ];
+
+  return (
+    <ShadeProvider controlShape="pill" darkMode={false}>
+      <Filters
+        addButtonText="Add filter"
+        fields={fields}
+        filters={filters}
+        showSearchInput={false}
+        onChange={setFilters}
+      />
+    </ShadeProvider>
+  );
+}
+
 describe('Filters', () => {
-  describe('ValueSource', () => {
+  describe('picker interactions', () => {
     beforeAll(() => {
       global.ResizeObserver = class {
         observe() {
@@ -189,6 +215,17 @@ describe('Filters', () => {
 
     afterEach(() => {
       vi.useRealTimers();
+    });
+
+    it('focuses a newly added text filter input in pill mode', async () => {
+      render(<PillTextFilters />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add filter' }));
+      fireEvent.click(await screen.findByRole('option', { name: 'Name' }));
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByPlaceholderText('Enter name...'));
+      });
     });
 
     it('calls the value source with local query state and selected values', async () => {

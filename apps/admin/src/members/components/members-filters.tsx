@@ -212,6 +212,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       <Button
         className={cn(
           'hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex',
+          'data-[control-shape=pill]:h-7 data-[control-shape=pill]:text-sm! data-[control-shape=pill]:[&_svg]:size-3',
           !useConsolidatedFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"

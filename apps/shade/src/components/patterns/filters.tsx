@@ -1860,6 +1860,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
           }),
           field.triggerClassName ?? 'max-w-60',
         )}
+        data-slot="filters-value"
       >
         <div className="flex min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2097,6 +2098,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly,
         })}
+        data-slot="filters-value"
       >
         {field.customRenderer({ field, values, onChange, operator, onOperatorChange, readOnly })}
       </div>
@@ -2113,6 +2115,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly: true,
         })}
+        data-slot="filters-value"
       >
         {field.customValueRenderer
           ? field.customValueRenderer(values, field.options ?? [])
@@ -2143,6 +2146,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex items-center gap-2">
           <Switch
@@ -2302,6 +2306,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <FilterDatePicker
           className={cn('max-w-full', field.className)}
@@ -2424,6 +2429,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex w-full min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2715,6 +2721,8 @@ export function Filters<T = unknown>({
   onActiveFieldChange,
 }: FiltersProps<T>) {
   const { controlShape } = useShade();
+  const filtersContainerRef = useRef<HTMLDivElement>(null);
+  const pendingTextInputFocusIdRef = useRef<string | null>(null);
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2730,6 +2738,25 @@ export function Filters<T = unknown>({
   useEffect(() => {
     onActiveFieldChange?.(selectedFieldKeyForOptions);
   }, [selectedFieldKeyForOptions, onActiveFieldChange]);
+
+  useEffect(() => {
+    const pendingFilterId = pendingTextInputFocusIdRef.current;
+    if (!pendingFilterId || controlShape !== 'pill') {
+      return;
+    }
+
+    const filterItem = Array.from(
+      filtersContainerRef.current?.querySelectorAll<HTMLElement>('[data-filter-id]') ?? [],
+    ).find((item) => item.dataset.filterId === pendingFilterId);
+    const input = filterItem?.querySelector<HTMLInputElement>(
+      'input[data-slot="filters-input"][type="text"]',
+    );
+
+    if (input) {
+      input.focus();
+      pendingTextInputFocusIdRef.current = null;
+    }
+  }, [controlShape, filters]);
 
   // Keyboard shortcut handler
   useEffect(() => {
@@ -2797,6 +2824,7 @@ export function Filters<T = unknown>({
       ...i18n?.validation,
     },
   };
+  const addButtonLabel = addButtonText || mergedI18n.addFilter;
 
   const fieldsMap = useMemo(() => getFieldsMap(fields), [fields]);
 
@@ -2876,10 +2904,12 @@ export function Filters<T = unknown>({
       }
 
       const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
+      pendingTextInputFocusIdRef.current =
+        controlShape === 'pill' && field.type === 'text' ? newFilter.id : null;
       onChange([...filters, newFilter]);
       closeFilterPopover();
     },
-    [allowMultiple, closeFilterPopover, fieldsMap, filters, onChange],
+    [allowMultiple, closeFilterPopover, controlShape, fieldsMap, filters, onChange],
   );
 
   const addFilterWithOption = useCallback(
@@ -3009,6 +3039,7 @@ export function Filters<T = unknown>({
       }}
     >
       <div
+        ref={filtersContainerRef}
         className={cn(
           filtersContainerVariants({ variant, size }),
           filters.length > 0 && 'w-full',
@@ -3025,7 +3056,12 @@ export function Filters<T = unknown>({
           return (
             <div
               key={filter.id}
-              className={filterItemVariants({ variant })}
+              className={cn(
+                filterItemVariants({ variant }),
+                controlShape === 'pill' &&
+                  'text-xs [--control-height:calc(var(--spacing)*7)] [&_*]:text-xs! [&_[data-slot=filters-input-wrapper]:hover]:bg-button-hover! [&_[data-slot=filters-value]:hover]:bg-button-hover! [&>button:hover]:bg-button-hover!',
+              )}
+              data-filter-id={filter.id}
               data-slot="filter-item"
             >
               {/* Field Label */}
@@ -3087,6 +3123,9 @@ export function Filters<T = unknown>({
                 addButton
               ) : (
                 <button
+                  aria-label={
+                    controlShape === 'pill' && filters.length > 0 ? addButtonLabel : undefined
+                  }
                   className={cn(
                     filterAddButtonVariants({
                       variant: variant,
@@ -3094,6 +3133,7 @@ export function Filters<T = unknown>({
                       cursorPointer: cursorPointer,
                       radius: controlRadius,
                     }),
+                    controlShape === 'pill' && 'h-7 text-sm! [&_svg]:size-3',
                     controlShape === 'pill' &&
                       (filters.length > 0
                         ? 'border-0 shadow-none'
@@ -3109,7 +3149,7 @@ export function Filters<T = unknown>({
                   ) : (
                     addButtonIcon || <Plus />
                   )}
-                  {addButtonText || mergedI18n.addFilter}
+                  {!(controlShape === 'pill' && filters.length > 0) && addButtonLabel}
                 </button>
               )}
             </PopoverTrigger>
@@ -3236,6 +3276,7 @@ export function Filters<T = unknown>({
                   cursorPointer: cursorPointer,
                   radius: controlRadius,
                 }),
+                controlShape === 'pill' && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
                 controlShape === 'pill' &&
                   'px-3 shadow-control-outline active:shadow-control-outline-pressed',
