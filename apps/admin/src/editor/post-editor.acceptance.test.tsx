@@ -153,25 +153,50 @@ describe('Post editor', () => {
     await expect(editorScreen.excerptInput()).toHaveCount(0);
   });
 
-  it('converts a mobiledoc post to lexical before opening it', async () => {
+  it.each<['post' | 'page']>([['post'], ['page']])(
+    'converts a mobiledoc %s to lexical before opening it',
+    async (type) => {
+      const resource = `${type}s`;
+      const legacy = post({
+        id: POST_ID,
+        title: `Legacy ${type}`,
+        mobiledoc: MOBILEDOC,
+        lexical: null,
+        updated_at: '2024-05-06T07:08:09.000Z',
+      });
+      fakeEditorChrome();
+      fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${POST_ID}/\\?`), {
+        [resource]: [legacy],
+      });
+      const convertApi = fakeAdminEndpoint('PUT', new RegExp(`^/${resource}/${POST_ID}/\\?`), {
+        [resource]: [
+          post({
+            ...legacy,
+            mobiledoc: null,
+            lexical: buildLexicalParagraph('Converted from mobiledoc'),
+          }),
+        ],
+      });
+      await renderAdminApp(`/editor/${type}/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
+      expect(convertApi.requests).toHaveLength(1);
+      expect(convertApi.lastRequest?.url).toContain('convert_to_lexical=true');
+      expect(convertApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
+      const body = convertApi.lastRequest?.body as Record<string, unknown[]>;
+      expect(body[resource]).toEqual([{ id: POST_ID, updated_at: legacy.updated_at }]);
+    },
+  );
+
+  it('shows an error when the conversion response carries no post', async () => {
     fakeEditorPost({ title: 'Legacy post', mobiledoc: MOBILEDOC, lexical: null });
-    const convertApi = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [
-        post({
-          id: POST_ID,
-          title: 'Legacy post',
-          mobiledoc: null,
-          lexical: buildLexicalParagraph('Converted from mobiledoc'),
-        }),
-      ],
-    });
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [] });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-    await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
-    expect(convertApi.requests).toHaveLength(1);
-    expect(convertApi.lastRequest?.url).toContain('convert_to_lexical=true');
-    expect(convertApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
-    expect((convertApi.lastRequest?.body as { posts: { id: string }[] }).posts[0].id).toBe(POST_ID);
+    await expect
+      .element(editorScreen.loadError())
+      .toHaveTextContent('Couldn’t convert this post for editing.');
+    await expect(editorScreen.body()).toHaveCount(0);
   });
 
   it('shows an error instead of an empty body when the conversion fails', async () => {
@@ -221,10 +246,20 @@ describe('Post editor', () => {
     async (_role, role, type, status, authorId, listPath) => {
       fakeEditorChrome();
       fakeAdminEndpoint('GET', new RegExp(`^/${type}s/${POST_ID}/\\?`), {
-        [`${type}s`]: [post({ id: POST_ID, status, authors: [{ id: authorId }] })],
+        [`${type}s`]: [
+          post({
+            id: POST_ID,
+            status,
+            authors: [{ id: authorId }],
+            mobiledoc: MOBILEDOC,
+            lexical: null,
+          }),
+        ],
       });
       await renderAdminApp(`/editor/${type}/${POST_ID}`, bootAs(role));
 
+      // a mobiledoc record must not be converted for a user who is redirected;
+      // the PUT has no fake, so it would 418 and fail the test
       await expect.poll(currentRoute).toBe(listPath);
       await expect(editorScreen.root()).toHaveCount(0);
     },

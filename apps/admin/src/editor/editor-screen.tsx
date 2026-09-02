@@ -5,6 +5,7 @@ import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import {
@@ -155,7 +156,7 @@ function useLexicalConversion(postType: PostType) {
           postType === 'page'
             ? (await editPage({ page: payload, options })).pages[0]
             : (await editPost({ post: payload, options })).posts[0];
-        setState({ id: source.id, record });
+        setState(record ? { id: source.id, record } : { id: source.id, error: true });
       } catch (error) {
         setState({ id: source.id, error });
       }
@@ -190,14 +191,14 @@ function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }
     }
   }, [returnToList, navigate, listPath]);
 
-  const needsConversion = !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
+  const needsConversion = !!currentUser && !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
   useEffect(() => {
     if (needsConversion && loaded && conversion?.id !== loaded.id) {
       void convert(loaded);
     }
   }, [needsConversion, loaded, conversion?.id, convert]);
 
-  const notFound = (query.error as { response?: Response } | null)?.response?.status === 404;
+  const notFound = query.error instanceof APIError && query.error.response?.status === 404;
   if (notFound) {
     return <NotFound />;
   }

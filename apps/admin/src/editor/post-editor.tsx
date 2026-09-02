@@ -48,9 +48,17 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     if (!element) {
       return;
     }
-    const observer = new ResizeObserver(measure);
+    // measuring inside the observer callback would resize the observed element mid-loop
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    });
     observer.observe(element);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [ref, measure]);
 }
 
