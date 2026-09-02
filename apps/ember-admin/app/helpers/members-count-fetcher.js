@@ -3,6 +3,23 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+// DEMO ONLY: mirror of FIXTURE_RECIPIENT_COUNT in the React analytics
+// prototype (prototype-analytics-status/prototype-context.ts). While the
+// prototype's variant E is active, every publish-flow surface this fetcher
+// feeds quotes the same fixture-sized audience as the analytics page the
+// flow hands over to — otherwise the confirm step says 346 and the page
+// seconds later says 547,120.
+const DEMO_FIXTURE_RECIPIENT_COUNT = 547120;
+
+function demoFixtureCount() {
+    try {
+        const stored = JSON.parse(localStorage.getItem('ghost-prototype-analytics-status') || '{}');
+        return stored.variant === 'gatedUntilSent' ? DEMO_FIXTURE_RECIPIENT_COUNT : null;
+    } catch (e) {
+        return null;
+    }
+}
+
 export default class MembersCount extends Resource {
     @service membersCountCache;
     @service session;
@@ -42,6 +59,6 @@ export default class MembersCount extends Resource {
         }
 
         const count = yield this.membersCountCache.count(query);
-        this.count = count;
+        this.count = demoFixtureCount() ?? count;
     }
 }
