@@ -14,20 +14,26 @@ describe('InMemoryJobsBackend', function () {
     assert.deepEqual(backend.requiredFns, ['start', 'enqueue', 'scheduleRecurring', 'shutdown']);
   });
 
-  it('buffers envelopes enqueued before start, then delivers on start', async function () {
-    const received: JobEnvelope[] = [];
+  // Boot starts the jobs service before the web app is mounted or any
+  // recurring job is scheduled, so a pre-start enqueue or schedule is a
+  // boot-ordering bug.
+  it('throws on an enqueue before start instead of silently losing the job', function () {
     const backend = new InMemoryJobsBackend();
+    assert.throws(
+      () => backend.enqueue({ type: 'early', payload: '{}' }),
+      /before the jobs backend is started/,
+    );
+  });
 
-    backend.enqueue({ type: 'buffered', payload: '{"n":1}' });
-
-    backend.start({
-      processor: async (env) => {
-        received.push(env);
-      },
-    });
-    await backend.shutdown({ timeoutMs: 1000 });
-
-    assert.deepEqual(received, [{ type: 'buffered', payload: '{"n":1}' }]);
+  // A silently accepted pre-start schedule would throw from enqueue inside
+  // the timer callback later - an uncaughtException - so it must fail at the
+  // registration site instead.
+  it('throws on a recurring schedule before start instead of arming a delayed crash', function () {
+    const backend = new InMemoryJobsBackend();
+    assert.throws(
+      () => backend.scheduleRecurring({ type: 'early', payload: '{}' }, { cron: '0 0 3 * * *' }),
+      /before the jobs backend is started/,
+    );
   });
 
   it('caps concurrent deliveries at the default concurrency', async function () {
