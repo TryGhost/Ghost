@@ -121,7 +121,7 @@ function EditorContent({
   showExcerpt,
   snippetDialog,
 }: EditorContentProps) {
-  const session = useEditorSession({ postType, record });
+  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
   const featureImage = useFeatureImageBinding(session, record);
 
   useSaveShortcut(session.dispatchExplicit);

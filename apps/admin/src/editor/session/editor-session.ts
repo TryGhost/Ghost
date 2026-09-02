@@ -257,6 +257,10 @@ export function createEditorSession({
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
+    machine.saveAcknowledged(submitted, {
+      title: acknowledged.title,
+      slug: acknowledged.slug,
+    });
 
     const created = identity.id === null;
     identity = { id: result.id, updatedAt: result.updatedAt };

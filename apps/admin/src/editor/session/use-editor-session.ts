@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useGenerateSlug } from '@tryghost/admin-x-framework/api/slugs';
-import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   useAddPage,
   useEditPage,
@@ -24,7 +23,6 @@ import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
-import { useDeferredDispose } from './use-deferred-dispose';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
@@ -69,6 +67,7 @@ export interface EditorSessionHandle {
 export interface UseEditorSessionOptions {
   postType: PostType;
   record?: EditorRecord;
+  siteUrl: string;
 }
 
 function reportError(error: unknown): void {
@@ -80,11 +79,11 @@ function reportError(error: unknown): void {
 export function useEditorSession({
   postType,
   record,
+  siteUrl,
 }: UseEditorSessionOptions): EditorSessionHandle {
   const navigate = useNavigate();
   const sessionKey = useEditorSessionKey();
   const generateSlug = useGenerateSlug();
-  const { data: site } = useBrowseSite();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
   const { mutateAsync: addPage } = useAddPage();
@@ -105,7 +104,7 @@ export function useEditorSession({
   const [session] = useState<EditorSession>(() =>
     createEditorSession({
       record,
-      siteUrl: site?.site.url,
+      siteUrl,
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       onIdAcquired: setPersistedId,
       onError: reportError,
@@ -153,7 +152,15 @@ export function useEditorSession({
     }),
   );
 
-  useDeferredDispose(session.dispose);
+  // Disposal is deferred by a tick: StrictMode tears an effect down and sets it
+  // up again in the same commit, and that must not dispose a live session.
+  const pendingDispose = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => {
+    clearTimeout(pendingDispose.current);
+    return () => {
+      pendingDispose.current = setTimeout(() => session.dispose());
+    };
+  }, [session]);
 
   const state = useSyncExternalStore(session.subscribe, session.getState);
 

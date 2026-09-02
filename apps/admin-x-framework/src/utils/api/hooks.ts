@@ -16,7 +16,7 @@ import useHandleError from '../../hooks/use-handle-error';
 import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
 import { useFramework } from '../../providers/framework-provider';
-import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
+import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
 export interface Meta {
   capabilities?: {
@@ -47,8 +47,8 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
-  /** Transport options for this query, merged over the ones declared on the hook. */
-  requestOptions?: Omit<RequestOptions, 'body'>;
+  /** Whether this query leaves an expired session for its caller to handle in place. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 };
 
 export const createQuery =

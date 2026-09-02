@@ -38,7 +38,12 @@ interface Harness {
   acknowledged: EditorRecord;
 }
 
-function harness(options: Partial<EditorSessionOptions> = {}, duringSave?: () => void) {
+interface HarnessHooks {
+  duringSave?: () => void;
+  acknowledge?: (record: EditorRecord, saveCount: number) => EditorRecord;
+}
+
+function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
   const state: Harness = {
     updates: [],
     creates: [],
@@ -54,9 +59,9 @@ function harness(options: Partial<EditorSessionOptions> = {}, duringSave?: () =>
     transport: {
       create: (payload) => {
         state.creates.push(payload);
-        duringSave?.();
+        hooks.duringSave?.();
         saveCount += 1;
-        state.acknowledged = record({
+        const next = record({
           ...state.acknowledged,
           id: 'created-id',
           title: payload.title as string,
@@ -64,13 +69,14 @@ function harness(options: Partial<EditorSessionOptions> = {}, duringSave?: () =>
           lexical: payload.lexical as string,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
+        state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
       update: (payload, writeOptions) => {
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
-        duringSave?.();
+        hooks.duringSave?.();
         saveCount += 1;
-        state.acknowledged = record({
+        const next = record({
           ...state.acknowledged,
           title: payload.title as string,
           slug: payload.slug as string,
@@ -78,6 +84,7 @@ function harness(options: Partial<EditorSessionOptions> = {}, duringSave?: () =>
           custom_excerpt: (payload.custom_excerpt ?? null) as string | null,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
+        state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
       generateSlug: (text) => Promise.resolve(slugify(text)),
@@ -163,8 +170,14 @@ describe('createEditorSession', () => {
     expect(state.updates[1].payload.custom_excerpt).toBeNull();
   });
 
-  it('lands clean after a rename regenerates the slug', async () => {
-    const { session, state } = harness({ record: record() });
+  it('adopts a normalized generated slug and keeps following later titles', async () => {
+    const { session, state } = harness(
+      { record: record() },
+      {
+        acknowledge: (next, saveCount) =>
+          saveCount === 1 ? { ...next, slug: 'brand-new-name-2' } : next,
+      },
+    );
 
     session.patchTitle('Brand New Name');
     session.commitTitle('Brand New Name');
@@ -175,6 +188,16 @@ describe('createEditorSession', () => {
       slug: 'brand-new-name',
     });
     expect(session.getSaveSnapshot().isDirty).toBe(false);
+    expect(session.getSaveSnapshot().slug).toBe('brand-new-name-2');
+
+    session.patchLexical(body('Edited after acknowledgement'));
+    await session.dispatchExplicit();
+    expect(state.updates[1].payload.slug).toBe('brand-new-name-2');
+
+    session.patchTitle('Another Name');
+    session.commitTitle('Another Name');
+    await session.dispatchExplicit();
+    expect(state.updates[2].payload.slug).toBe('another-name');
   });
 
   it('lands clean after a new post is saved under the default title', async () => {
@@ -189,7 +212,7 @@ describe('createEditorSession', () => {
   });
 
   it('does not overwrite a title typed while the save was in flight', async () => {
-    const built = harness({}, () => built.session.patchTitle('Typed Later'));
+    const built = harness({}, { duringSave: () => built.session.patchTitle('Typed Later') });
     const { session } = built;
 
     session.setBaseline(null);

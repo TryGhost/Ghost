@@ -15,6 +15,7 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new789';
@@ -218,10 +219,11 @@ describe('Post editor saving', () => {
         published_at: null,
         tags: [],
       });
-      fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const createResponse = deferred<{ posts: SavedPost[] }>();
+      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
         const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
         created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
-        return { posts: [created] };
+        return createResponse.promise;
       });
       fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
         posts: [created],
@@ -240,10 +242,16 @@ describe('Post editor saving', () => {
       await expect.element(editorScreen.body()).toBeVisible();
 
       await typeIntoBody('First words');
-      await typeIntoBody(' and then some');
+      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
 
-      // A new post skips the debounce, so an update can fire while the rest of
-      // the typing is still arriving: what matters is where it ends up.
+      try {
+        await typeIntoBody(' and then some');
+        expect(submittedBody(createApi)).not.toContain('and then some');
+      } finally {
+        createResponse.resolve({ posts: [created] });
+      }
+
+      // The edit made while the create was held reaches the follow-up update.
       await expect
         .poll(() => submittedBody(updateApi), SAVE_POLL)
         .toContain('First words and then some');

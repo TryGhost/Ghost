@@ -6,12 +6,12 @@ interface KoenigFetchEmbedOptions {
   type?: string;
 }
 
-type EmbedRequestOptions = Omit<RequestOptions, 'body'>;
+type EmbedRequestOptions = Pick<RequestOptions, 'sessionExpiryRedirect'>;
 
 // Shared so an omitted argument keeps the returned fetcher's identity stable.
 const DEFAULT_REQUEST_OPTIONS: EmbedRequestOptions = {};
 
-/** `requestOptions` applies to every lookup this fetcher makes. */
+/** The session-expiry policy applies to every lookup this fetcher makes. */
 export const useKoenigFetchEmbed = (
   requestOptions: EmbedRequestOptions = DEFAULT_REQUEST_OPTIONS,
 ) => {
