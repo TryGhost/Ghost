@@ -38,7 +38,7 @@ interface Harness {
   acknowledged: EditorRecord;
 }
 
-function harness(options: Partial<EditorSessionOptions> = {}) {
+function harness(options: Partial<EditorSessionOptions> = {}, duringSave?: () => void) {
   const state: Harness = {
     updates: [],
     creates: [],
@@ -54,6 +54,7 @@ function harness(options: Partial<EditorSessionOptions> = {}) {
     transport: {
       create: (payload) => {
         state.creates.push(payload);
+        duringSave?.();
         saveCount += 1;
         state.acknowledged = record({
           ...state.acknowledged,
@@ -67,6 +68,7 @@ function harness(options: Partial<EditorSessionOptions> = {}) {
       },
       update: (payload, writeOptions) => {
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
+        duringSave?.();
         saveCount += 1;
         state.acknowledged = record({
           ...state.acknowledged,
@@ -159,6 +161,65 @@ describe('createEditorSession', () => {
 
     expect(state.updates[0].payload.custom_excerpt).toBe('A summary');
     expect(state.updates[1].payload.custom_excerpt).toBeNull();
+  });
+
+  it('lands clean after a rename regenerates the slug', async () => {
+    const { session, state } = harness({ record: record() });
+
+    session.patchTitle('Brand New Name');
+    session.commitTitle('Brand New Name');
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+    });
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('lands clean after a new post is saved under the default title', async () => {
+    const { session, state } = harness();
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+
+    expect(state.creates[0]).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('does not overwrite a title typed while the save was in flight', async () => {
+    const built = harness({}, () => built.session.patchTitle('Typed Later'));
+    const { session } = built;
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+
+    // The request carried the default title, but the writer moved past it.
+    expect(built.state.creates[0].title).toBe('(Untitled)');
+    expect(session.isDirty()).toBe(true);
+  });
+
+  it('leaves tags out of the payload so edits elsewhere survive', async () => {
+    const { session, state } = harness({
+      record: record({ tags: [{ id: 'tag1', name: 'News' }] }),
+    });
+
+    session.patchLexical(body('Edited'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload).not.toHaveProperty('tags');
+  });
+
+  it('never sends an empty collision token', async () => {
+    const { session, state } = harness({ record: record({ updated_at: null }) });
+
+    session.patchLexical(body('Edited'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload).not.toHaveProperty('updated_at');
+    expect(state.updates[0].payload.id).toBe('abc123');
   });
 
   it('gives each new post its own state', () => {

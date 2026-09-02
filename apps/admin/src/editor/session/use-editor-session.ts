@@ -24,7 +24,15 @@ import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
+import { useDeferredDispose } from './use-deferred-dispose';
 import type { EditorRecord } from './projection';
+
+/**
+ * Every request an open editor makes opts out of the transport's session-expiry
+ * redirect: leaving the page would take unsaved content with it. The editor
+ * surfaces an expired session itself instead.
+ */
+export const EDITOR_READ_OPTIONS = { sessionExpiryRedirect: false } as const;
 
 interface EditorSessionLocationState {
   editorSession?: string;
@@ -141,20 +149,17 @@ export function useEditorSession({
           return posts[0];
         },
         generateSlug: (text, postId) =>
-          transport.current.generateSlug({ type: 'post', text, id: postId ?? undefined }),
+          transport.current.generateSlug({
+            type: 'post',
+            text,
+            id: postId ?? undefined,
+            sessionExpiryRedirect: false,
+          }),
       },
     }),
   );
 
-  // Disposal is deferred by a tick: StrictMode tears an effect down and sets it
-  // up again in the same commit, and that must not dispose a live session.
-  const pendingDispose = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => {
-    clearTimeout(pendingDispose.current);
-    return () => {
-      pendingDispose.current = setTimeout(() => session.dispose());
-    };
-  }, [session]);
+  useDeferredDispose(session.dispose);
 
   const state = useSyncExternalStore(session.subscribe, session.getState);
 
@@ -163,10 +168,12 @@ export function useEditorSession({
   const postQuery = useEditorPost(persistedId ?? '', {
     enabled: postType === 'post' && !!persistedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_READ_OPTIONS,
   });
   const pageQuery = useEditorPage(persistedId ?? '', {
     enabled: postType === 'page' && !!persistedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_READ_OPTIONS,
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 

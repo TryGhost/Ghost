@@ -332,7 +332,7 @@ The wiring hook owns everything the three modules deliberately do not:
 - A fresh tracker per editing session, including a new one for each new-post session — two consecutive new posts share the null id, so a stale create acknowledgement from a previous session must never reach the current tracker.
 - Query data goes to `setSaved`, save responses to `saveAcknowledged`; never the reverse.
 - `revisionRestored` only after the restore has been saved.
-- Pass the snapshot the save request was built from as `submitted`.
+- Pass the editable projection the request submitted as `submitted`. The save snapshot is not that projection: it carries the identity, status and dirty bits the queue reasons about, and only the fields actually sent may act as the rebase base.
 
 ### Slug machine
 

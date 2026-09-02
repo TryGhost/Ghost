@@ -47,11 +47,13 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
+  /** Transport options for this query, merged over the ones declared on the hook. */
+  requestOptions?: Omit<RequestOptions, 'body'>;
 };
 
 export const createQuery =
   <ResponseData>(options: QueryOptions<ResponseData>) =>
-  ({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
+  ({ searchParams, requestOptions, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
     UseQueryResult<ResponseData>,
     'data'
   > & { data: ResponseData | undefined } => {
@@ -64,7 +66,7 @@ export const createQuery =
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
+      queryFn: () => fetchApi(url, { ...options, ...requestOptions }),
     });
 
     const data = useMemo(

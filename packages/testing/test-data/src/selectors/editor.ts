@@ -17,6 +17,7 @@ export const editorStatus = 'editor-status';
 export const editorScheduleCountdown = 'editor-schedule-countdown';
 export const editorFeatureImage = 'editor-feature-image';
 export const editorFeatureImageCaption = 'editor-feature-image-caption';
+export const editorSaveErrorBanner = 'editor-save-error-banner';
 export const tkIndicator = 'tk-indicator';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
 

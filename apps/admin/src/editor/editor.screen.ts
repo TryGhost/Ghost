@@ -9,6 +9,7 @@ import {
   editorLoadError,
   editorReauthBanner,
   editorScheduleCountdown,
+  editorSaveErrorBanner,
   editorSecondaryInstance,
   editorStatus,
   editorTitleInput,
@@ -39,6 +40,9 @@ export const editorScreen = {
   conflictBanner: () => page.getByTestId(editorConflictBanner),
   status: () => page.getByTestId(editorStatus),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
+  saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
+  dismissReauth: () =>
+    page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Dismiss' }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
 
