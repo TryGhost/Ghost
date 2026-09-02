@@ -79,7 +79,6 @@
     "@tryghost/limit-service": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
-    "@tryghost/string": "catalog:",
     "bson-objectid": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
