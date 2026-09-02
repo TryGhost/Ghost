@@ -104,7 +104,7 @@ export interface SaveRequest<S extends SaveSnapshot = SaveSnapshot> {
   readonly saveRevision: boolean;
 }
 
-/** The acknowledged identity; a create exposes the id the tracker adopts. */
+/** The acknowledged identity; a create exposes the id the caller adopts. */
 export interface SaveResult {
   id: string;
   status: PostStatus;
@@ -156,14 +156,14 @@ export type SaveEngineState =
 
 export type LeaveDecision = 'proceed' | 'confirm';
 
-/** A fresh generation, or `unchanged` when the slug machine keeps the current slug (custom, same title, frozen). */
+/** A fresh generation, or `unchanged` when the slug port keeps the current slug (custom, same title, frozen). */
 export interface SlugProposal {
   slug: string;
   source: 'generated' | 'unchanged';
 }
 
 export interface SlugPort {
-  /** Must await the machine's latest submission chain, not its `pending` flag: the flag drops at the emit before the deferred submission starts. */
+  /** Must resolve once the latest manual slug submission has settled, not when an in-progress flag drops before a deferred submission starts. */
   settled: () => Promise<void>;
   /** Asked for every draft save and whenever the post has no slug; `postId` excludes the post from dedup. */
   fromTitle: (title: string, postId: string | null, signal: AbortSignal) => Promise<SlugProposal>;
@@ -536,7 +536,7 @@ export function createSaveEngine<
     return title.trim() ? title : DEFAULT_TITLE;
   }
 
-  // Status is the one rule the slug machine cannot know; it answers custom/same-title/frozen itself.
+  // Status is the one rule the slug port cannot know; it answers custom/same-title/frozen itself.
   function proposeSlug(snapshot: S, signal: AbortSignal): Promise<SlugProposal | null> {
     if (snapshot.slug && snapshot.status !== 'draft') {
       return Promise.resolve(null);

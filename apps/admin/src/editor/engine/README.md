@@ -1,28 +1,21 @@
 # Editor engine
 
-The pure-TypeScript state-management core of the post editor consists of the
-save engine, change tracker, and slug machine. None of them import React or the
-network; every side effect goes through an injected port, and the editor's
-wiring hook composes the three. This file documents their behavior and shared
-contracts; the modules' tests enforce them.
+`apps/admin/src/editor/engine/` holds the pure, React-free modules behind the React post editor: none of them import React or the network, and every side effect goes through an injected port. This file describes each module's behavior and what callers own.
 
 ## Save engine
 
-Coordinates all persistence through one single-flight queue over typed save
-commands. The queue combines restartable and timed autosaves, field saves,
-explicit saves, leave saves, and status transitions without allowing requests
-to overlap.
+`save-engine.ts` is a single-flight queue over typed save intents with one coalescing pending slot, a prepare stage, typed outcomes, and a leave decision. It combines restartable and timed autosaves, field saves, explicit saves, leave saves, and status transitions without ever letting two requests overlap.
 
 ### Intents
 
-| Intent                            | Trigger                                                              | Debounce                            | `save_revision` | Changes status?                                                                                                                           |
-| --------------------------------- | -------------------------------------------------------------------- | ----------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `autosave`                        | body change; a new post's first edit fires immediately               | 3s restartable (none for new posts) | no              | never; drafts only, pinned to `draft`                                                                                                     |
-| `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing | 60s cycle                           | no              | never; drafts only                                                                                                                        |
-| `field`                           | title blur, excerpt blur, feature-image change                       | none                                | no              | never; drafts only. On a published/scheduled/sent post it is dropped with reason `not-draft`: the sidebar stages those edits until Update |
-| `explicit`                        | Cmd-S / Save / Update                                                | none                                | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition)                         |
-| `leave`                           | navigating away from a dirty draft with unrevisioned changes         | none                                | yes             | never; preserves the current status                                                                                                       |
-| `publish` / `schedule` / `revert` | the publish flow                                                     | none                                | no              | the only status-changing commands; each carries an explicit target                                                                        |
+| Intent                            | Trigger                                                                           | Debounce                            | `save_revision` | Changes status?                                                                                                                           |
+| --------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `autosave`                        | body change; a new post's first edit fires immediately                            | 3s restartable (none for new posts) | no              | never; drafts only, pinned to `draft`                                                                                                     |
+| `timed`                           | armed by an autosave dispatch, fires after 60s of continuous editing              | 60s cycle                           | no              | never; drafts only                                                                                                                        |
+| `field`                           | title blur, excerpt blur, feature-image change                                    | none                                | no              | never; drafts only. On a published/scheduled/sent post it is dropped with reason `not-draft`: the sidebar stages those edits until Update |
+| `explicit`                        | Cmd-S / Save / Update                                                             | none                                | yes             | never; preserves the current status (a past-scheduled post saves as `scheduled`, the server owns that transition)                         |
+| `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                | yes             | never; preserves the current status                                                                                                       |
+| `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                | no              | the only status-changing commands; each carries an explicit target                                                                        |
 
 ### Commands
 
@@ -55,34 +48,34 @@ Every dispatch settles with a typed `SaveCompletion`:
 
 `capture → prepare → execute → reconcile → drain`, all inside the single-flight unit:
 
-1. **Prepare** awaits pending manual slug work (`slug.settled()`), re-reads the snapshot, substitutes `(Untitled)` for a blank or whitespace title, asks `slug.fromTitle()` for every draft save and whenever the post has no slug (the machine answers `generated` or `unchanged`; after an `unchanged` answer the slug current at that moment is sent), resolves the target, then hands the `SaveRequest` to the adapter's `prepare()` to build and validate the candidate. IO starts only after prepare settles; a rejected prepare is a typed failure with no request sent.
+1. **Prepare** awaits pending manual slug work (`slug.settled()`), re-reads the snapshot, substitutes `(Untitled)` for a blank or whitespace title, asks `slug.fromTitle()` for every draft save and whenever the post has no slug (the port answers `generated` or `unchanged`; after an `unchanged` answer the slug current at that moment is sent), re-reads the snapshot again after the answer and re-runs the drop rules on it, resolves the target, then hands the `SaveRequest` to the caller's `prepare()` to build and validate the candidate. IO starts only after prepare settles; a rejected prepare is a typed failure with no request sent, and a save disposed during slug work is never prepared.
 2. **Execute** is IO only and returns a typed `SaveOutcome`; its `AbortSignal` is aborted on `dispose()`, and a response arriving after dispose is never reconciled.
 3. **Reconcile** is awaited before the pending slot drains and must not throw: adopt the acknowledged id, status and `updated_at` first, keep edits made after `prepared.snapshot.version`, resync server-normalized values only where the local value did not change in flight.
 4. **Drain** starts the pending slot only when nothing is in flight.
 
-Reconcile-before-drain is a hard ordering contract because Core enforces optimistic concurrency on posts: `@tryghost/bookshelf-collision` (registered in `models/base/bookshelf.js`) rejects any post update whose `updated_at` differs from the server's, when a meaningful field changed, with `UPDATE_COLLISION`. A queued save built from the pre-response snapshot carries the superseded `updated_at` and is rejected. The persisted snapshot type therefore requires `updatedAt` alongside `id`.
+Reconcile-before-drain is a hard ordering contract because the server enforces optimistic concurrency on posts: any post update whose `updated_at` differs from the persisted one is rejected with `UPDATE_COLLISION` when a meaningful field changed. A queued save built from the pre-response snapshot carries the superseded `updated_at` and is rejected. The persisted snapshot type therefore requires `updatedAt` alongside `id`.
 
 ### Errors and states
 
-| Error kind                      | State                                                                                                                                                                     | Exit                                                                         |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                    |
-| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                         |
-| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                         |
-| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or adopting a fresh baseline (reload) which lifts the halt |
-| `validation`                    | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                               |
-| `host-limit`                    | `error`; suppression as for validation, but only when the failing save was itself a draft save (a publish limit never halts autosave)                                     | next edit, or an explicit save                                               |
-| `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                    |
+| Error kind                      | State                                                                                                                                                                     | Exit                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                     |
+| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                          |
+| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                          |
+| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or a snapshot whose `updatedAt` no longer matches the rejected one (reload) |
+| `validation`                    | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                                                |
+| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                |
+| `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                     |
 
 `error` and `conflict` persist until a save actually starts; timers arming or a dropped save do not clear them. Other states: `idle`, `debouncing`, `saving`, `pending-coalesced`, `disposed`.
 
 ### Re-auth
 
-`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires; everything else re-enters through the normal enqueue path with its own intent, so a frozen explicit rider re-runs while the publish it coalesced into does not. Content a disarmed status command would have carried resumes through the autosave path; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the shell decides on a sign-in redirect, the queue never dangles.
+`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires; everything else is coalesced into the pending slot with its own command and drained, without re-debouncing, so a frozen explicit rider re-runs while the publish it coalesced into does not. Content a disarmed status command would have carried resumes through the autosave path; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the caller decides on a sign-in redirect, the queue never dangles.
 
 ### Leave
 
-`leaveRequested()` returns `proceed` or `confirm` and loops until nothing is in flight, pending, or armed with dirty content, re-reading the post after every wait: `saving` is never safe to leave. Save-on-leave (with a revision) fires at most once per attempt, only for a dirty draft with unrevisioned changes or an armed autosave, never on a stale baseline, never while frozen or halted. A post still dirty afterwards asks for confirmation. Concurrent calls share one decision; a decision that outlives the engine resolves `proceed`.
+`leaveRequested()` returns `proceed` or `confirm` and loops until nothing is in flight, pending, or armed with dirty content, re-reading the post after every wait: `saving` is never safe to leave. Save-on-leave (with a revision) fires at most once per attempt, only for a dirty draft with unrevisioned changes or an armed autosave, never while the snapshot carries a rejected `updated_at`, never while frozen, halted, or crashed. A post still dirty afterwards asks for confirmation, and so does an unreadable snapshot. Concurrent calls share one decision; a decision that outlives the engine resolves `proceed`.
 
 ### Subscriptions
 
@@ -90,38 +83,36 @@ Reconcile-before-drain is a hard ordering contract because Core enforces optimis
 
 ## Change tracker
 
-Answers one question for the editor: does the live post differ from what is
-persisted, and why? It is pure and React-free. The tracker consumes the hidden
-Koenig instance's post-load serialization as its normalization baseline.
+`change-tracker.ts` + `lexical-compare.ts`. Answers one question for the editor: does the live post differ from what is persisted, and why. Pure, React-free; the editor's hidden second Koenig instance supplies the baseline.
 
 ### State model
 
-Three documents: **saved** (last persisted state, from load/refetch/ack), **baseline** (the hidden instance's post-load serialization — the document after Lexical's load-time transforms), **live** (the visible editor). Body verdict: dirty ⇔ live differs from saved **and** from baseline. Baseline readiness is separate from its value: `pending` (not reported yet), `ready` (a known document; `null`, `''`, and an empty root are all known-empty), `failed`. A live edit while pending is dirty (`BASELINE_PENDING`, fail closed); a failed baseline falls back to live-vs-saved (`BASELINE_FAILED`) and never disables body protection. Title, ordered tag names, and the editable attributes contribute their own dirty bits. Stable reason codes identify each cause: `POST_HAS_ERROR`, `POST_TAGS_DIVERGED`, `POST_TITLE_DIVERGED`, `SCRATCH_DIVERGED_FROM_SECONDARY`, `NEW_POST_HAS_CHANGED_ATTRIBUTES`, `POST_HAS_DIRTY_ATTRIBUTES`, `BASELINE_PENDING`, `BASELINE_FAILED`, and `LEXICAL_PARSE_FAILED`. Malformed or structurally invalid Lexical is dirty rather than becoming a thrown route blocker.
+Three documents: **saved** (last persisted state, from load/refetch/acknowledged save), **baseline** (the hidden instance's post-load serialization — the document after Lexical's load-time transforms), **live** (the visible editor). Body verdict: dirty ⇔ live differs from saved **and** from baseline. Baseline readiness is separate from its value: `pending` (not reported yet), `ready` (a known document; `null`, `''`, and an empty root are all known-empty), `failed`. A live edit while pending is dirty (`BASELINE_PENDING`, fail closed); a failed baseline falls back to live-vs-saved (`BASELINE_FAILED`) and never disables body protection. Title, ordered tag names, and the editable attributes contribute their own dirty bits. Stable reason codes identify each cause: `POST_HAS_ERROR`, `POST_TAGS_DIVERGED`, `POST_TITLE_DIVERGED`, `SCRATCH_DIVERGED_FROM_SECONDARY`, `NEW_POST_HAS_CHANGED_ATTRIBUTES`, `POST_HAS_DIRTY_ATTRIBUTES`, `BASELINE_PENDING`, `BASELINE_FAILED`, `LEXICAL_PARSE_FAILED` (malformed or structurally invalid Lexical is dirty, never a thrown route blocker).
 
 ### API (id-first; events for another post are dropped)
 
-| Method                                                           | Meaning                                                                                                                                                                                                                                                                                                                                                                   |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `load(postId, post)`                                             | Reset for a post; `postId` is `null` for a new post until the create acks                                                                                                                                                                                                                                                                                                 |
-| `setSaved(postId, post)`                                         | Query refetch only. Never re-baselines. Dropped entirely if its `updated_at` is older than the held one                                                                                                                                                                                                                                                                   |
-| `saveAcknowledged(postId, submitted, acknowledged)`              | Mutation response, from the engine's reconcile port. Three-way rebase per key: base = submitted value (or previous saved when omitted); live still equal to base adopts the server value, otherwise the later edit wins. Always adopts `acknowledged.updated_at`; re-baselines to the acknowledged body. A create ack passes the created id — the projection carries none |
-| `setBaseline(postId, lexical)` / `baselineFailed(postId, error)` | The hidden instance's report                                                                                                                                                                                                                                                                                                                                              |
-| `setLive(postId, patch)`                                         | Patch semantics; `updated_at` in a patch is ignored                                                                                                                                                                                                                                                                                                                       |
-| `revisionRestored(postId, projection)`                           | After the restore save acks: adopts body, title, custom excerpt, feature image + alt + caption into saved and live atomically; baseline goes pending until the hidden instance re-reports                                                                                                                                                                                 |
-| `markSaveError()` / `clearSaveError()`                           | A failed save keeps the post dirty until an acknowledged save                                                                                                                                                                                                                                                                                                             |
-| `verdict({includeDiff?})`                                        | `{dirty, reasons[, diff]}`                                                                                                                                                                                                                                                                                                                                                |
-| `hasChangedSinceRevision(latest)`                                | The server's revision projection (body, title, custom excerpt, feature image), body compared semantically                                                                                                                                                                                                                                                                 |
-| `dispose()`                                                      | Inert thereafter                                                                                                                                                                                                                                                                                                                                                          |
+| Method                                                           | Meaning                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `load(postId, post)`                                             | Reset for a post; `postId` is `null` for a new post until the create is acknowledged                                                                                                                                                                                                                                                                                |
+| `setSaved(postId, post)`                                         | Query refetch only. Never re-baselines. Dropped entirely if its `updated_at` is older than the held one                                                                                                                                                                                                                                                             |
+| `saveAcknowledged(postId, submitted, acknowledged)`              | The response of a successful save. Three-way rebase per key: base = submitted value (or previous saved when omitted); live still equal to base adopts the server value, otherwise the later edit wins. Always adopts `acknowledged.updated_at`; re-baselines to the acknowledged body. A create acknowledgement passes the created id — the projection carries none |
+| `setBaseline(postId, lexical)` / `baselineFailed(postId, error)` | The hidden instance's report                                                                                                                                                                                                                                                                                                                                        |
+| `setLive(postId, patch)`                                         | Patch semantics; `updated_at` in a patch is ignored                                                                                                                                                                                                                                                                                                                 |
+| `revisionRestored(postId, projection)`                           | After a restore has been saved: adopts body, title, custom excerpt, feature image + alt + caption into saved and live atomically; baseline goes pending until the hidden instance re-reports                                                                                                                                                                        |
+| `markSaveError()` / `clearSaveError()`                           | A failed save keeps the post dirty until an acknowledged save                                                                                                                                                                                                                                                                                                       |
+| `verdict({includeDiff?})`                                        | `{dirty, reasons[, diff]}`                                                                                                                                                                                                                                                                                                                                          |
+| `hasChangedSinceRevision(latest)`                                | Compares against a revision projection (body, title, custom excerpt, feature image), body compared semantically                                                                                                                                                                                                                                                     |
+| `dispose()`                                                      | Inert thereafter                                                                                                                                                                                                                                                                                                                                                    |
 
-After a create ack promotes `null → id`, `null` is accepted as an alias on `setLive`/`setBaseline`/`baselineFailed` until the next `load()`/`dispose()`, so keystrokes between the ack and the caller's id swap are not dropped. While the id is still `null`, an ack for an id this tracker has already held is refused (a stale completion from a previous post).
+After a create acknowledgement promotes `null → id`, `null` is accepted as an alias on `setLive`/`setBaseline`/`baselineFailed` until the next `load()`/`dispose()`, so keystrokes between the acknowledgement and the caller's id swap are not dropped. While the id is still `null`, an acknowledgement for an id this tracker has already held is refused (a stale completion from a previous post).
 
 ### Normalization
 
-Element-node `direction` is stripped recursively before compare (Lexical's reconciler infers it per environment). Site URLs are normalized to relative **only on known URL-bearing node properties** (the same map the server's URL transforms use: link `url`, image/gallery/audio/video/file sources, bookmark url + icon/thumbnail, button/header/email-cta urls, product image, embed url), tolerant of trailing-slash and subdirectory site URLs; prose, code, html, markdown, captions, and opaque card payloads are never rewritten, so a deleted literal site URL stays dirty. Snapshots are cloned at ingress; tags compare as ordered name arrays.
+Element-node `direction` is stripped recursively before compare (Lexical's reconciler infers it per environment). Site URLs are normalized to relative only on URL-typed properties: the `url` property of any node outside the card map, and for cards the properties the server rewrites on save (image/gallery/audio/video/file sources, bookmark url + icon/thumbnail, button/header/email-cta urls, product image, embed url), tolerant of trailing-slash and subdirectory site URLs; prose, code, html, markdown, captions, and opaque card payloads are never rewritten, so a deleted literal site URL stays dirty. Snapshots are cloned at ingress; tags compare as ordered name arrays.
 
 ## Slug machine
 
-[`slug-machine.ts`](./slug-machine.ts) owns slug intent for one post: it derives
+`slug-machine.ts` owns slug intent for one post: it derives
 a slug from the title, accepts manual slug edits, sends both through the
 server's slug endpoint for sanitizing and deduplication, and reports the outcome
 as proposals. It never persists anything; the caller owns the input UI and the
@@ -277,61 +268,49 @@ Ordering and staleness
 - A failed or reverted manual edit never leaves the machine in custom mode and
   never discards a title commit queued behind it.
 
-## Contracts between modules
-
-- **Engine → tracker.** The engine's `reconcile(prepared, result)` port calls `tracker.saveAcknowledged(postId, submitted = prepared.snapshot, acknowledged = the full post the server returned)`; `execute` therefore returns the full acknowledged post as its `R`, and `SaveResult.id` is the id a create ack promotes the tracker to.
-- **Engine ← tracker.** The engine's `SaveSnapshot` is a structural superset of the tracker's `EditablePostProjection` (id, `updatedAt`, status, publish time, title, slug, dirty bits, version); the wiring hook builds it from the tracker's verdict plus post metadata.
-- **Engine ← slug machine.** `SlugPort` is an adapter over the machine: `settled()` awaits the machine's latest submission chain (not its `pending` flag, which drops at the emit before the deferred submission starts); `fromTitle(title, postId, signal)` runs `titleCommitted` and resolves the settled proposal as `{slug, source: 'generated' | 'unchanged'}`.
-- **Prepared object.** `prepared` is handed unchanged from `prepare` through `reconcile`; it is a plain structural superset of the `SaveRequest` (no brand), and `prepared.snapshot` is the complete post as read at execution time.
-
 ## Invariants
 
-| Invariant                                                                                                                     | Pinned in                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email                             | `save-engine.test.ts` "background saves"                      |
-| No two saves are in flight; payloads are built at execution; coalescing never loses the newest content                        | "single flight", "lifecycle"                                  |
-| Session expiry during a save loses nothing: re-auth completes, the save lands, content is present                             | "session expiry", "re-auth outcomes"                          |
-| Save-on-leave fires at most once per attempt and only for dirty drafts                                                        | "save-on-leave", "leave outcomes"                             |
-| Loading any post, including old-schema fixtures, is a clean verdict until the user edits                                      | `change-tracker.test.ts` fixture corpus                       |
-| A failed save leaves the post dirty and recoverable; no error path discards the payload                                       | "failed save", "collisions"                                   |
-| Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs)            | "only explicit and leave saves set save_revision"             |
-| A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore | "background saves", "commands"                                |
-| Slug generation never overwrites a custom slug and never applies a stale proposal                                             | `slug-machine.test.ts`; "prepare stage" for the port contract |
-| Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it                   | "scheduled saves", `deriveTarget`                             |
+- A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email.
+- No two saves are in flight; payloads are built at execution; coalescing never loses the newest content.
+- Session expiry during a save loses nothing: re-auth completes, the save lands, content is present.
+- Save-on-leave fires at most once per attempt and only for dirty drafts.
+- Loading any post, including old-schema fixtures, is a clean verdict until the user edits.
+- A failed save leaves the post dirty and recoverable; no error path discards the payload.
+- Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs).
+- A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore.
+- Slug generation never overwrites a custom slug and never applies a stale proposal.
+- Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it.
+- Clearing a non-empty body is dirty.
 
 ## Design decisions
 
 - Pending-slot coalescing carries autosaves that arrive during an in-flight create.
-- Leaving a post that is still dirty after the leave save asks for confirmation.
-- Sidebar edits on published/scheduled/sent posts are staged until Update; nothing persists immediately.
-- An explicit save on a past-scheduled post preserves `scheduled` and lets the server own the transition.
-- `UPDATE_COLLISION` enters a typed `conflict` state with a retry affordance.
-- After re-auth, publish/schedule/revert resolve `needs-retry`; safe saves re-enter the queue.
 - A manually edited slug stays custom for the session; a server-deduplicated slug keeps following the title.
 - `direction` is stripped recursively before Lexical documents are compared.
 - A query refetch never re-baselines; only an acknowledged save does.
 - Site URLs are normalized structurally only on known URL-bearing node properties.
-- Malformed Lexical fails closed and remains dirty.
-- Explicitly clearing a non-empty body is dirty.
 - `verdict({includeDiff: true})` produces the human-readable diff used by the leave modal.
 
 ## What the caller owns
 
 ### Save engine
 
-- A no-redirect request mode: the framework transport redirects on 401 (`apps/admin-x-framework/src/utils/api/fetch-api.ts`); the editor adapter must instead throw `SessionExpiredError` so the engine can enter `reauth-pending`.
-- Mapping API failures to `SaveError` kinds in `execute` (401 → `session-invalid`, 404 → `not-found`, `UPDATE_COLLISION` → `conflict`, 422 → `validation`, host-limit errors → `host-limit`, unreachable → `transport`).
+- `getSnapshot()` returns the complete post as the caller holds it: id with its `updatedAt` (both `null` until the create is acknowledged), status, publish time, title, slug, dirty bits, `changedSinceLastRevision`, and a monotonic edit `version`.
+- `prepare(request, signal)` builds and validates the candidate from the `SaveRequest`; the returned object is a plain structural superset of the request (no brand) and is handed unchanged to `execute` and `reconcile`, with `prepared.snapshot` being the complete execution-time snapshot.
+- `execute(prepared, signal)` performs the IO only and returns a typed `SaveOutcome`, mapping API failures to `SaveError` kinds (401 → `session-invalid`, 404 → `not-found`, `UPDATE_COLLISION` → `conflict`, 422 → `validation`, host-limit errors → `host-limit`, unreachable → `transport`); its result is the acknowledged post, whose `id` is the one a create returns.
+- `reconcile(prepared, result)` runs after a successful save and must not throw: adopt the acknowledged id, status and `updated_at` first, keep edits made after `prepared.snapshot.version`, resync server-normalized values only where the local value did not change in flight, advance the saved/revision baselines without marking newer edits clean.
+- A request mode that does not redirect on 401 and instead throws a session-expired error, so the engine can enter `reauth-pending` rather than losing the page.
+- The `SlugPort`: `settled()` resolves once the latest manual slug submission has settled (not when an in-progress flag drops before a deferred submission starts); `fromTitle(title, postId, signal)` resolves `{slug, source: 'generated' | 'unchanged'}`, where `unchanged` means keep the current slug (custom, same title, frozen); the raw title is pre-slugified before any generator request.
 - Detecting a past-scheduled post for the UI; the engine preserves the status but does not interpret its publish time.
-- Replacing the URL from new → edit as a state-driven effect after the create ack, with the editor screen keyed on the editing-session instance so the switch does not remount the editor.
-- The `SlugPort` adapter over the slug machine (`settled` = latest submission chain, `fromTitle` = `titleCommitted` → settled proposal), including pre-slugifying the raw title before the generator request.
+- Replacing the URL from new → edit as a state-driven effect after the create acknowledgement, keyed on the editing session so the switch does not remount the editor.
 - `(Untitled)` substitution is the engine's prepare duty; the title input never shows it.
 
 ### Change tracker
 
-- A fresh tracker per editing session, including a new one for each new-post session.
-- Query data goes to `setSaved`, mutation responses to `saveAcknowledged`; never the reverse.
-- `revisionRestored` only after the restore save acks.
-- Pass the execution-time snapshot (`prepared.snapshot`) as `submitted`.
+- A fresh tracker per editing session, including a new one for each new-post session — two consecutive new posts share the null id, so a stale create acknowledgement from a previous session must never reach the current tracker.
+- Query data goes to `setSaved`, save responses to `saveAcknowledged`; never the reverse.
+- `revisionRestored` only after the restore has been saved.
+- Pass the snapshot the save request was built from as `submitted`.
 
 ### Slug machine
 
