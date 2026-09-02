@@ -861,7 +861,10 @@ describe('createSaveEngine', () => {
 
       h.patch({ slug: 'my-custom-slug' });
       await h.resolveSlug('ignored', 'unchanged');
-      expect(h.requests[0]).toMatchObject({ slug: 'my-custom-slug' });
+      expect(h.requests[0]).toMatchObject({
+        slug: 'my-custom-slug',
+        snapshot: { slug: 'my-custom-slug' },
+      });
     });
 
     it('asks the slug port on every draft save and lets it keep the slug', async () => {
@@ -895,6 +898,33 @@ describe('createSaveEngine', () => {
       expect(h.slug.fromTitle).toHaveBeenCalledWith('Hello', 'post-1', expect.any(AbortSignal));
       await h.resolveSlug('hello');
       expect(h.requests[0]).toMatchObject({ slug: 'hello' });
+    });
+
+    it('drops a background save whose post was published during the slug request', async () => {
+      const h = setup();
+      h.holdSlugRequests();
+      const field = h.engine.dispatch('field');
+      await flush();
+
+      h.patch({ status: 'published', publishedAt: PAST, updatedAt: FUTURE });
+      await h.resolveSlug('hello', 'unchanged');
+      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'not-draft' });
+      expect(h.prepare).not.toHaveBeenCalled();
+      expect(h.execute).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('drops a background save whose post went clean during the slug request', async () => {
+      const h = setup();
+      h.holdSlugRequests();
+      const field = h.engine.dispatch('field');
+      await flush();
+
+      h.patch({ isDirty: false });
+      await h.resolveSlug('hello', 'unchanged');
+      await expect(field).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      expect(h.prepare).not.toHaveBeenCalled();
+      expect(h.execute).not.toHaveBeenCalled();
     });
 
     it('never prepares a save disposed while slug work was settling', async () => {

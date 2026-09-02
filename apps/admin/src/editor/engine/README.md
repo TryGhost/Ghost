@@ -1,6 +1,6 @@
 # Editor engine
 
-The pure-TypeScript core of the React post editor: the save engine (`save-engine.ts`), the change tracker (`change-tracker.ts` + `lexical-compare.ts`), and the slug machine (`slug-machine.ts`). None of them import React or the network; every side effect goes through an injected port, and the editor's wiring hook composes the three. This file states the intended behavior for a maintainer who has not read the design spec; the modules' tests pin it.
+The pure-TypeScript core of the React post editor: the save engine (`save-engine.ts`, this PR), the change tracker and the slug machine (each lands with its own PR). None of them import React or the network; every side effect goes through an injected port, and the editor's wiring hook composes the three. This file states the intended behavior; the modules' tests pin it.
 
 ## Save engine
 
@@ -32,7 +32,7 @@ Email extras (`newsletter`, `emailSegment`, `emailOnly`) ride on exactly that co
 
 ### Queue semantics
 
-One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters. The pending slot exists because Ember's `drop` autosave starved: autosaves fired during an in-flight create were silently lost.
+One save in flight, one pending slot. A command arriving while idle runs immediately (after its debounce); one arriving during a save lands in the pending slot and coalesces: priority `publish`/`schedule`/`revert` > `explicit` > `leave` > `field` > `timed` > `autosave`, the winner's kind executes, every waiter keeps its own command, `requiresRevision` ORs across the slot, and the payload is rebuilt from the current post at execution, so coalescing never loses newer content. A later status command supersedes only the earlier status command; its riders stay with the winner. A new autosave restarts the debounce; an explicit cancels it and carries its waiters.
 
 Every dispatch settles with a typed `SaveCompletion`:
 
@@ -53,7 +53,7 @@ Every dispatch settles with a typed `SaveCompletion`:
 3. **Reconcile** is awaited before the pending slot drains and must not throw: adopt the acknowledged id, status and `updated_at` first, keep edits made after `prepared.snapshot.version`, resync server-normalized values only where the local value did not change in flight.
 4. **Drain** starts the pending slot only when nothing is in flight.
 
-Reconcile-before-drain is a hard ordering contract because Core enforces optimistic concurrency on posts: `@tryghost/bookshelf-collision` (registered in `models/base/bookshelf.js`) rejects any post update whose `updated_at` differs from the server's, when a meaningful field changed, with `UPDATE_COLLISION`. A queued save built from the pre-response snapshot would manufacture exactly the false "someone else is editing" collision Ember users hit today. The persisted snapshot type therefore requires `updatedAt` alongside `id`.
+Reconcile-before-drain is a hard ordering contract because Core enforces optimistic concurrency on posts: `@tryghost/bookshelf-collision` (registered in `models/base/bookshelf.js`) rejects any post update whose `updated_at` differs from the server's, when a meaningful field changed, with `UPDATE_COLLISION`. A queued save built from the pre-response snapshot carries the superseded `updated_at` and is rejected. The persisted snapshot type therefore requires `updatedAt` alongside `id`.
 
 ### Errors and states
 
@@ -71,7 +71,7 @@ Reconcile-before-drain is a hard ordering contract because Core enforces optimis
 
 ### Re-auth
 
-`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires (Ember's post-re-auth retry is a no-op; the real contract is "no content loss"); everything else re-enters through the normal enqueue path with its own intent, so a frozen explicit rider re-runs while the publish it coalesced into does not. Content a disarmed status command would have carried resumes through the autosave path; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the shell decides on a sign-in redirect, the queue never dangles.
+`reauthSucceeded()` inspects every waiter in both the frozen and the pending slot and judges each by its resolved effect against the current post: a command whose target would change the status resolves `needs-retry` and never auto-fires; everything else re-enters through the normal enqueue path with its own intent, so a frozen explicit rider re-runs while the publish it coalesced into does not. Content a disarmed status command would have carried resumes through the autosave path; if the snapshot cannot be read at that point the debounce is re-armed so the retry surfaces a failure instead of abandoning content. `reauthAbandoned()` settles every waiter with the session error and moves to `error`; the shell decides on a sign-in redirect, the queue never dangles.
 
 ### Leave
 
@@ -83,7 +83,7 @@ Reconcile-before-drain is a hard ordering contract because Core enforces optimis
 
 ## Change tracker
 
-`change-tracker.ts` + `lexical-compare.ts`. Answers one question for the editor: does the live post differ from what is persisted, and why. Pure, React-free; the hidden second Koenig instance stays — the tracker consumes its serialization as the baseline.
+Lands with the change tracker PR. Answers one question for the editor: does the live post differ from what is persisted, and why. Pure, React-free; the hidden second Koenig instance stays — the tracker consumes its serialization as the baseline.
 
 ### State model
 
@@ -112,7 +112,7 @@ Element-node `direction` is stripped recursively before compare (Lexical's recon
 
 ## Slug machine
 
-`slug-machine.ts`. Tracks whether the slug follows the title (`derived`), was edited by hand (`custom`, sticky for the session), or is frozen for blank/`(Untitled)` titles; a saved title ending in `(Copy)` is an exception to custom detection, so a duplicated post's slug regenerates on its first rename. Details land with the machine.
+Lands with the slug machine PR. Tracks whether the slug follows the title (`derived`), was edited by hand (`custom`, sticky for the session), or is frozen for blank/`(Untitled)` titles; a saved title ending in `(Copy)` is an exception to custom detection, so a duplicated post's slug regenerates on its first rename. Details land with the machine.
 
 ## Contracts between modules
 
@@ -123,18 +123,18 @@ Element-node `direction` is stripped recursively before compare (Lexical's recon
 
 ## Invariants
 
-| Invariant                                                                                                                     | Pinned in                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email                             | `save-engine.test.ts` "invariant 1"                           |
-| No two saves are in flight; payloads are built at execution; coalescing never loses the newest content                        | "invariant 2", "lifecycle"                                    |
-| Session expiry during a save loses nothing: re-auth completes, the save lands, content is present                             | "invariant 3", "re-auth outcomes"                             |
-| Save-on-leave fires at most once per attempt and only for dirty drafts                                                        | "invariant 4", "leave outcomes"                               |
-| Loading any post, including old-schema fixtures, is a clean verdict until the user edits                                      | `change-tracker.test.ts` fixture corpus                       |
-| A failed save leaves the post dirty and recoverable; no error path discards the payload                                       | "invariant 6", "collisions"                                   |
-| Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs)            | "invariant 7"                                                 |
-| A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore | "invariant 1", "commands"                                     |
-| Slug generation never overwrites a custom slug and never applies a stale proposal                                             | `slug-machine.test.ts`; "prepare stage" for the port contract |
-| Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it                   | "invariant 10", `deriveTarget`                                |
+| Invariant                                                                                                                     | Pinned in                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| A background command (`autosave`/`timed`/`field`) can never change status, publish, or send email                             | `save-engine.test.ts` "invariant 1"                        |
+| No two saves are in flight; payloads are built at execution; coalescing never loses the newest content                        | "invariant 2", "lifecycle"                                 |
+| Session expiry during a save loses nothing: re-auth completes, the save lands, content is present                             | "invariant 3", "re-auth outcomes"                          |
+| Save-on-leave fires at most once per attempt and only for dirty drafts                                                        | "invariant 4", "leave outcomes"                            |
+| Loading any post, including old-schema fixtures, is a clean verdict until the user edits                                      | the change tracker PR (fixture corpus)                     |
+| A failed save leaves the post dirty and recoverable; no error path discards the payload                                       | "invariant 6", "collisions"                                |
+| Explicit and leave saves set `save_revision`; background saves do not; publish does not force one (coalescing ORs)            | "invariant 7"                                              |
+| A published/scheduled/sent post's persisted state changes only via explicit Update, publish-flow commands, delete, or restore | "invariant 1", "commands"                                  |
+| Slug generation never overwrites a custom slug and never applies a stale proposal                                             | the slug machine PR; "prepare stage" for the port contract |
+| Scheduled saves serialize with zeroed milliseconds and preserve the publish time unless the user changed it                   | "invariant 10", `deriveTarget`                             |
 
 ## Deliberate Ember deltas
 

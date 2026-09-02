@@ -430,7 +430,7 @@ export function createSaveEngine<
     return staleUpdatedAt !== null && snapshot.updatedAt === staleUpdatedAt;
   }
 
-  // Sidebar edits on published/scheduled/sent posts stage until Update (spec §4); never promote them to saves.
+  // Field saves on published/scheduled/sent posts are dropped: the sidebar stages those edits until Update.
   function backgroundDropReason(snapshot: S): DropReason | null {
     if (snapshot.status !== 'draft') {
       return 'not-draft';
@@ -537,31 +537,38 @@ export function createSaveEngine<
   }
 
   // Status is the one rule the slug machine cannot know; it answers custom/same-title/frozen itself.
-  async function buildRequest(
+  function proposeSlug(snapshot: S, signal: AbortSignal): Promise<SlugProposal | null> {
+    if (snapshot.slug && snapshot.status !== 'draft') {
+      return Promise.resolve(null);
+    }
+    return ports.slug.fromTitle(blankToDefault(snapshot.title), snapshot.id, signal);
+  }
+
+  function buildRequest(
     command: SaveCommand,
     snapshot: S,
-    signal: AbortSignal,
-  ): Promise<SaveRequest<S>> {
-    let slug = snapshot.slug;
-    if (!snapshot.slug || snapshot.status === 'draft') {
-      const proposal = await ports.slug.fromTitle(
-        blankToDefault(snapshot.title),
-        snapshot.id,
-        signal,
-      );
-      // A slug committed while the proposal was in flight wins over the one read before it.
-      snapshot = ports.getSnapshot();
-      slug = proposal.source === 'generated' ? proposal.slug : snapshot.slug;
-    }
-    const title = blankToDefault(snapshot.title);
+    proposal: SlugProposal | null,
+  ): SaveRequest<S> {
     return {
       command,
       snapshot,
-      title,
-      slug,
+      title: blankToDefault(snapshot.title),
+      slug: proposal?.source === 'generated' ? proposal.slug : snapshot.slug,
       target: resolveTarget(command, snapshot),
       saveRevision: command.requiresRevision,
     };
+  }
+
+  function dropInFlight(slot: Slot, snapshot: S): boolean {
+    const reason = dropReason(slot, snapshot);
+    if (!reason) {
+      return false;
+    }
+    inFlight = null;
+    inFlightAbort = null;
+    settle(slot.waiters, dropped(reason));
+    drain();
+    return true;
   }
 
   function dropReason(slot: Slot, snapshot: S): DropReason | null {
@@ -606,22 +613,25 @@ export function createSaveEngine<
       if (disposed) {
         return;
       }
-      // Manual slug work may have taken time; the payload reflects the post as it is now.
+      // Every await re-reads the post and re-runs the drop rules on it; the payload reflects the post as it is now.
       snapshot = ports.getSnapshot();
-      const late = dropReason(slot, snapshot);
-      if (late) {
-        inFlight = null;
-        inFlightAbort = null;
-        settle(slot.waiters, dropped(late));
-        drain();
+      if (dropInFlight(slot, snapshot)) {
         return;
       }
-      const request = await buildRequest(slot.command, snapshot, abort.signal);
-      snapshot = request.snapshot;
+      const proposal = await proposeSlug(snapshot, abort.signal);
       if (disposed) {
         return;
       }
-      const prepared = await ports.prepare(request, abort.signal);
+      if (proposal) {
+        snapshot = ports.getSnapshot();
+        if (dropInFlight(slot, snapshot)) {
+          return;
+        }
+      }
+      const prepared = await ports.prepare(
+        buildRequest(slot.command, snapshot, proposal),
+        abort.signal,
+      );
       if (disposed) {
         return;
       }
