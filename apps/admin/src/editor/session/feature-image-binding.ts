@@ -31,21 +31,39 @@ export function cleanCaptionHtml(html: string | null | undefined): string {
   return cleanBasicHtml(html ?? '', { firstChildInnerContent: true });
 }
 
+// The style attribute is read as written, not through the CSSOM: browsers
+// expand `white-space` into longhands, so a property count cannot identify it.
 function isLexicalPlainTextSpan(element: Element): boolean {
-  return (
-    element.tagName === 'SPAN' &&
-    element instanceof HTMLElement &&
-    element.style.length === 1 &&
-    element.style.whiteSpace === 'pre-wrap'
-  );
+  if (element.tagName !== 'SPAN' || element.attributes.length !== 1) {
+    return false;
+  }
+
+  const declarations = (element.getAttribute('style') ?? '')
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter(Boolean);
+
+  return declarations.length === 1 && /^white-space\s*:\s*pre-wrap$/i.test(declarations[0]);
+}
+
+/** The caption editor parses a document, so a bare fragment needs its paragraph back. */
+export function withCaptionParagraph(html: string | null | undefined): string | null {
+  if (!html) {
+    return null;
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.firstElementChild?.tagName === 'P' ? html : `<p>${html}</p>`;
 }
 
 /**
- * Lexical wraps plain text in `white-space: pre-wrap` spans on load. Ignoring
- * those wrappers keeps an API-loaded caption from reading as an edit.
+ * One comparable form for a caption in either shape. Both sides are wrapped
+ * back into a paragraph first, so `firstChildInnerContent` unwraps that
+ * paragraph rather than a caption's own leading element, and Lexical's
+ * load-time `white-space: pre-wrap` spans are ignored.
  */
 export function normalizeCaptionHtml(html: string | null | undefined): string {
-  const cleaned = cleanCaptionHtml(html);
+  const cleaned = cleanCaptionHtml(withCaptionParagraph(html));
   const doc = new DOMParser().parseFromString(cleaned, 'text/html');
 
   doc.body.querySelectorAll('span').forEach((element) => {
@@ -55,16 +73,6 @@ export function normalizeCaptionHtml(html: string | null | undefined): string {
   });
 
   return doc.body.innerHTML.trim();
-}
-
-/** The caption editor parses a document, so a bare fragment needs its paragraph back. */
-export function withCaptionParagraph(html: string | null): string | null {
-  if (!html) {
-    return null;
-  }
-
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.firstElementChild?.tagName === 'P' ? html : `<p>${html}</p>`;
 }
 
 /**

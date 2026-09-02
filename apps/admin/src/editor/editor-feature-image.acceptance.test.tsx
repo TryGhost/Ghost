@@ -120,7 +120,9 @@ describe('Post editor feature image', () => {
       await editorScreen.featureImageCaption().click();
       await userEvent.keyboard('Photo by me');
 
-      expect(saveApi.requests.length).toBe(0);
+      // The caption has reached the editor, so a save would have been sent by now.
+      await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by me');
+      await expect.poll(() => saveApi.requests.length).toBe(0);
 
       await editorScreen.titleInput().click();
 
@@ -129,6 +131,56 @@ describe('Post editor feature image', () => {
       // Lexical wraps typed text in a `white-space: pre-wrap` span; the
       // caption is stored as it serializes it.
       expect(String(submittedPost(saveApi).feature_image_caption)).toContain('Photo by me');
+    },
+    SLOW,
+  );
+
+  it(
+    'opens a post whose caption carries markup without making it unsaved',
+    async () => {
+      const saveApi = fakeSavablePost({
+        feature_image: UPLOADED,
+        feature_image_caption: 'Photo by <a href="https://example.com/j">Jane</a>',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      // The caption editor has loaded and re-serialized what it was given.
+      await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by Jane');
+      await editorScreen.titleInput().click();
+
+      await expect.poll(() => saveApi.requests.length).toBe(0);
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    },
+    SLOW,
+  );
+
+  it(
+    'stages a feature image edit on a published post until it is saved explicitly',
+    async () => {
+      const saveApi = fakeSavablePost({
+        feature_image: UPLOADED,
+        status: 'published',
+        published_at: '2026-01-01T00:00:00.000Z',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.featureImageAltToggle().click();
+      await editorScreen.featureImageAltInput().fill('Rolling hills');
+
+      // A published post's background saves are dropped: the sidebar stages
+      // these edits until Update.
+      await expect.element(editorScreen.featureImageAltInput()).toHaveValue('Rolling hills');
+      await expect.poll(() => saveApi.requests.length).toBe(0);
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({
+        id: POST_ID,
+        status: 'published',
+        feature_image: UPLOADED,
+        feature_image_alt: 'Rolling hills',
+      });
     },
     SLOW,
   );

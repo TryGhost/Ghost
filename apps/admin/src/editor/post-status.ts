@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import {
+  getFullRecipientFilter,
+  getNewsletterRecipientFilter,
+} from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type { SaveEngineState } from './engine/save-engine';
 
@@ -7,22 +11,37 @@ export const SAVING_MIN_DISPLAY_MS = 3000;
 
 export type EmailDeliveryStatus = 'pending' | 'submitting' | 'submitted' | 'failed';
 
+export interface EditorStatusNewsletter {
+  slug: string;
+  visibility?: string;
+}
+
 export interface EditorStatusRecord {
   status?: PostStatus;
   publishedAt?: string | null;
   url?: string;
   emailOnly?: boolean;
+  newsletter?: EditorStatusNewsletter | null;
+  emailSegment?: string | null;
+  /** An email record exists, so the send has already been handed over. */
+  hasEmail?: boolean;
   emailStatus?: EmailDeliveryStatus | null;
   emailCount?: number;
 }
 
 export type EditorStatusView =
-  /** A save engine state the writer has to act on; the message is the engine's. */
+  /** A save the writer has to act on; the message is the engine's. */
   | { kind: 'problem'; message: string }
   | { kind: 'saving' }
   | { kind: 'new' }
   | { kind: 'draft'; saved: boolean }
-  | { kind: 'scheduled'; publishedAt: string | null; emailOnly: boolean }
+  | {
+      kind: 'scheduled';
+      publishedAt: string | null;
+      emailOnly: boolean;
+      /** Members the send will reach, or null when nothing will be sent. */
+      recipientFilter: string | null;
+    }
   | {
       kind: 'published';
       url?: string;
@@ -52,6 +71,18 @@ function publishedEmailState(
   return status === 'failed' ? 'failed' : 'none';
 }
 
+/** Who a scheduled send will reach, or null once an email exists or none is going out. */
+function scheduledRecipientFilter(record: EditorStatusRecord): string | null {
+  if (!record.newsletter || record.hasEmail) {
+    return null;
+  }
+
+  return getFullRecipientFilter(
+    getNewsletterRecipientFilter(record.newsletter),
+    record.emailSegment,
+  );
+}
+
 /** A scheduled post whose time has passed reads as published; the server owns the transition. */
 function isPastScheduled(record: EditorStatusRecord, now: Date): boolean {
   if (record.status !== 'scheduled' || !record.publishedAt) {
@@ -68,7 +99,8 @@ export function deriveEditorStatus({
   isSaving,
   now = new Date(),
 }: DeriveEditorStatusInput): EditorStatusView {
-  if (state.kind === 'error' || state.kind === 'conflict') {
+  // A collision has its own banner; a failed save has nowhere else to surface.
+  if (state.kind === 'error') {
     return { kind: 'problem', message: state.error.message };
   }
 
@@ -89,7 +121,12 @@ export function deriveEditorStatus({
   }
 
   if (record.emailOnly && status === 'scheduled') {
-    return { kind: 'scheduled', publishedAt: record.publishedAt ?? null, emailOnly: true };
+    return {
+      kind: 'scheduled',
+      publishedAt: record.publishedAt ?? null,
+      emailOnly: true,
+      recipientFilter: scheduledRecipientFilter(record),
+    };
   }
 
   if (status === 'published' || isPastScheduled(record, now)) {
@@ -102,7 +139,12 @@ export function deriveEditorStatus({
   }
 
   if (status === 'scheduled') {
-    return { kind: 'scheduled', publishedAt: record.publishedAt ?? null, emailOnly: false };
+    return {
+      kind: 'scheduled',
+      publishedAt: record.publishedAt ?? null,
+      emailOnly: false,
+      recipientFilter: scheduledRecipientFilter(record),
+    };
   }
 
   return { kind: 'draft', saved: !isDirty };

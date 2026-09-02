@@ -17,19 +17,33 @@ export function useSaveShortcut(onSave: () => void): void {
   save.current = onSave;
 
   useEffect(() => {
+    const pending = new Set<ReturnType<typeof setTimeout>>();
+
     const onKeyDown = (event: KeyboardEvent) => {
       const withModifier = event.metaKey || event.ctrlKey;
       if (event.key.toLowerCase() !== 's' || !withModifier || event.altKey) {
         return;
       }
 
+      // A held key repeats; one press is one save.
       event.preventDefault();
+      if (event.repeat) {
+        return;
+      }
+
       blurFocusedTextInput();
       // the blur's handlers have to land in the session before the save reads it
-      setTimeout(() => save.current());
+      const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
+        pending.delete(timer);
+        save.current();
+      });
+      pending.add(timer);
     };
 
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      pending.forEach(clearTimeout);
+    };
   }, []);
 }

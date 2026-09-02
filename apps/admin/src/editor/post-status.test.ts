@@ -46,9 +46,14 @@ describe('deriveEditorStatus', () => {
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'field', error } }),
     ).toEqual({ kind: 'problem', message: 'Title is too long.' });
+  });
+
+  it('leaves a collision to its own banner', () => {
+    const error = { kind: 'conflict' as const, message: 'Someone else is editing this post.' };
+
     expect(
       derive({ status: 'draft' }, { state: { kind: 'conflict', intent: 'autosave', error } }),
-    ).toEqual({ kind: 'problem', message: 'Title is too long.' });
+    ).toEqual({ kind: 'draft', saved: true });
   });
 
   it('prefers the engine message over a save in progress', () => {
@@ -72,13 +77,51 @@ describe('deriveEditorStatus', () => {
       kind: 'scheduled',
       publishedAt: '2026-09-02T13:00:00.000Z',
       emailOnly: false,
+      recipientFilter: null,
     });
   });
 
   it('marks an email-only scheduled post as one that will be sent', () => {
     expect(
       derive({ status: 'scheduled', publishedAt: '2026-09-02T13:00:00.000Z', emailOnly: true }),
-    ).toEqual({ kind: 'scheduled', publishedAt: '2026-09-02T13:00:00.000Z', emailOnly: true });
+    ).toMatchObject({ kind: 'scheduled', emailOnly: true });
+  });
+
+  it('counts the audience of a scheduled send that has not been handed over', () => {
+    expect(
+      derive({
+        status: 'scheduled',
+        publishedAt: '2026-09-02T13:00:00.000Z',
+        newsletter: { slug: 'weekly' },
+        emailSegment: 'status:free',
+      }),
+    ).toMatchObject({
+      kind: 'scheduled',
+      recipientFilter: 'newsletters.slug:weekly+email_disabled:0+(status:free)',
+    });
+  });
+
+  it('scopes a paid-only newsletter to paid members', () => {
+    expect(
+      derive({
+        status: 'scheduled',
+        publishedAt: '2026-09-02T13:00:00.000Z',
+        newsletter: { slug: 'weekly', visibility: 'paid' },
+      }),
+    ).toMatchObject({
+      recipientFilter: 'newsletters.slug:weekly+email_disabled:0+status:-free',
+    });
+  });
+
+  it('stops counting once the send has an email record', () => {
+    expect(
+      derive({
+        status: 'scheduled',
+        publishedAt: '2026-09-02T13:00:00.000Z',
+        newsletter: { slug: 'weekly' },
+        hasEmail: true,
+      }),
+    ).toMatchObject({ recipientFilter: null });
   });
 
   it('reports the newsletter alongside a published post', () => {

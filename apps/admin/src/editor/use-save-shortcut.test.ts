@@ -64,6 +64,29 @@ describe('useSaveShortcut', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it('saves once for a held key, not once per repeat', async () => {
+    const onSave = vi.fn();
+    renderHook(() => useSaveShortcut(onSave));
+
+    pressSave();
+    expect(pressSave('s', { metaKey: true, repeat: true }).defaultPrevented).toBe(true);
+    pressSave('s', { metaKey: true, repeat: true });
+    await flush();
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops a save the editor unmounted before', async () => {
+    const onSave = vi.fn();
+    const { unmount } = renderHook(() => useSaveShortcut(onSave));
+
+    pressSave();
+    unmount();
+    await flush();
+
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it('stops listening once the editor unmounts', async () => {
     const onSave = vi.fn();
     const { unmount } = renderHook(() => useSaveShortcut(onSave));

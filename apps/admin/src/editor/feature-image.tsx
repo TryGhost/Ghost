@@ -110,6 +110,22 @@ export function FeatureImage({
     [onTkCountChange],
   );
 
+  // A new identity re-registers the caption editor on every keystroke
+  const registerCaptionApi = useCallback((api: KoenigInstance | null) => {
+    captionApi.current = api;
+  }, []);
+
+  const focusCaption = useCallback(() => {
+    captionApi.current?.focusEditor({ position: 'bottom' });
+  }, []);
+
+  const onCaptionFocus = useCallback(() => setCaptionFocused(true), []);
+
+  const onCaptionBlurred = useCallback(() => {
+    setCaptionFocused(false);
+    onCaptionBlur();
+  }, [onCaptionBlur]);
+
   const clearImage = () => {
     setIsEditingAlt(false);
     relayTkCount(0);
@@ -209,16 +225,11 @@ export function FeatureImage({
               darkMode={darkMode}
               html={caption}
               placeholder={captionFocused ? '' : 'Add a caption to the feature image'}
-              registerAPI={(api) => {
-                captionApi.current = api;
-              }}
+              registerAPI={registerCaptionApi}
               searchLinks={cardConfig.searchLinks}
-              onBlur={() => {
-                setCaptionFocused(false);
-                onCaptionBlur();
-              }}
+              onBlur={onCaptionBlurred}
               onChangeHtml={onCaptionChange}
-              onFocus={() => setCaptionFocused(true)}
+              onFocus={onCaptionFocus}
               onTkCountChange={relayTkCount}
             />
           </div>
@@ -228,7 +239,7 @@ export function FeatureImage({
             className="rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
             data-testid="feature-image-tk-indicator"
             type="button"
-            onClick={() => captionApi.current?.focusEditor({ position: 'bottom' })}
+            onClick={focusCaption}
           >
             TK
           </button>

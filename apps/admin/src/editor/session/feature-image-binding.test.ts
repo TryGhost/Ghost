@@ -37,9 +37,37 @@ describe('caption html', () => {
   });
 
   it('ignores the wrapper spans Lexical adds on load', () => {
-    const loaded = '<p><span style="white-space: pre-wrap;">A caption</span></p>';
+    // The shape the editor actually emits for a stored plain-text caption.
+    const loaded = '<p dir="ltr"><span style="white-space: pre-wrap;">A caption</span></p>';
 
-    expect(normalizeCaptionHtml(loaded)).toBe(normalizeCaptionHtml('<p>A caption</p>'));
+    expect(normalizeCaptionHtml(loaded)).toBe('A caption');
+    expect(normalizeCaptionHtml(loaded)).toBe(normalizeCaptionHtml('A caption'));
+  });
+
+  it('keeps a span that carries anything of its own', () => {
+    expect(normalizeCaptionHtml('<p><span class="x">A caption</span></p>')).toBe(
+      '<span class="x">A caption</span>',
+    );
+    expect(
+      normalizeCaptionHtml(
+        '<p><span style="white-space: pre-wrap; color: red">A caption</span></p>',
+      ),
+    ).toContain('span');
+  });
+
+  it('keeps a caption with markup whole on both sides of the compare', () => {
+    expect(normalizeCaptionHtml('<p>Photo by <a href="/j">Jane</a></p>')).toBe(
+      'Photo by <a href="/j">Jane</a>',
+    );
+    expect(normalizeCaptionHtml('Photo by <a href="/j">Jane</a>')).toBe(
+      'Photo by <a href="/j">Jane</a>',
+    );
+  });
+
+  it('separates markup captions that differ only outside their first element', () => {
+    expect(normalizeCaptionHtml('<a href="/j">Jane</a> took this')).not.toBe(
+      normalizeCaptionHtml('<a href="/j">Jane</a> shot this'),
+    );
   });
 });
 
@@ -137,5 +165,33 @@ describe('useFeatureImageBinding', () => {
     );
 
     expect(session.patchFeatureImage).not.toHaveBeenCalled();
+  });
+
+  it('loads a caption with markup clean', () => {
+    const session = port();
+    const stored = 'Photo by <a href="/j">Jane</a>';
+    const { result } = renderHook(() =>
+      useFeatureImageBinding(session, record({ feature_image_caption: stored })),
+    );
+
+    act(() => result.current.onFeatureImageCaptionChange(`<p>${stored}</p>`));
+
+    expect(session.patchFeatureImage).not.toHaveBeenCalled();
+  });
+
+  it('still sees an edit that changes only the text after a link', () => {
+    const session = port();
+    const { result } = renderHook(() =>
+      useFeatureImageBinding(
+        session,
+        record({ feature_image_caption: '<a href="/j">Jane</a> took this' }),
+      ),
+    );
+
+    act(() => result.current.onFeatureImageCaptionChange('<p><a href="/j">Jane</a> shot this</p>'));
+
+    expect(session.patchFeatureImage).toHaveBeenCalledWith({
+      feature_image_caption: '<a href="/j">Jane</a> shot this',
+    });
   });
 });

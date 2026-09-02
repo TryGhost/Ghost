@@ -1,5 +1,4 @@
-import * as Sentry from '@sentry/react';
-import { Suspense, useCallback, useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -7,6 +6,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
+import { reportKoenigError } from './koenig-error';
 
 export interface FeatureImageCaptionProps {
   /** Paragraph-wrapped caption HTML; the editor parses it as a document. */
@@ -32,8 +32,7 @@ function CaptionMount({
   onBlur,
   onTkCountChange,
   registerAPI,
-  onError,
-}: FeatureImageCaptionProps & { editor: EditorResource; onError: (error: unknown) => void }) {
+}: FeatureImageCaptionProps & { editor: EditorResource }) {
   const {
     KoenigComposer,
     KoenigComposableEditor,
@@ -49,7 +48,7 @@ function CaptionMount({
       cardConfig={{ searchLinks }}
       isTKEnabled={true}
       nodes={MINIMAL_NODES}
-      onError={onError}
+      onError={reportKoenigError}
     >
       <KoenigComposableEditor
         className="koenig-lexical-editor-input"
@@ -75,18 +74,11 @@ function CaptionMount({
 export function FeatureImageCaption(props: FeatureImageCaptionProps) {
   const editor = useMemo(() => loadKoenig(), []);
 
-  const onError = useCallback((error: unknown) => {
-    // eslint-disable-next-line no-console
-    console.error(error);
-    Sentry.captureException(error, { tags: { lexical: true } });
-    // not rethrown: Lexical attempts to recover without losing user data
-  }, []);
-
   return (
     <div className="koenig-react-editor koenig-lexical flex-1">
       <ErrorBoundary name="the feature image caption">
         <Suspense fallback={null}>
-          <CaptionMount {...props} editor={editor} onError={onError} />
+          <CaptionMount {...props} editor={editor} />
         </Suspense>
       </ErrorBoundary>
     </div>

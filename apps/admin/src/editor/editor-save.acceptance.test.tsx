@@ -218,11 +218,11 @@ describe('Post editor saving', () => {
       fakeSavablePost();
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
       await typeIntoBody(' and more');
 
       await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Saving');
-      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Saved');
+      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Draft - Saved');
     },
     SLOW,
   );

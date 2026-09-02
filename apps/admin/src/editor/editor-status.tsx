@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { formatPostTime } from '@/posts/list/post-time';
 import type { SaveEngineState } from './engine/save-engine';
 import {
@@ -15,13 +16,21 @@ function members(count: number): string {
   return `${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
 }
 
+/** The send's audience, counted the way the publish flow counts it. */
+function RecipientCount({ filter }: { filter: string }) {
+  const { count } = useMembersCount(filter);
+  return <>{members(count ?? 0)}</>;
+}
+
 function ScheduleCountdown({
   publishedAt,
   emailOnly,
+  recipientFilter,
   timezone,
 }: {
   publishedAt: string | null;
   emailOnly: boolean;
+  recipientFilter: string | null;
   timezone: string;
 }) {
   return (
@@ -30,7 +39,13 @@ function ScheduleCountdown({
       data-testid="editor-schedule-countdown"
       dateTime={publishedAt ?? undefined}
     >
-      {emailOnly ? 'to be sent' : 'to be published'}{' '}
+      {emailOnly ? 'to be sent' : 'to be published'}
+      {recipientFilter && (
+        <>
+          {emailOnly ? ' to ' : ' and sent to '}
+          <RecipientCount filter={recipientFilter} />
+        </>
+      )}{' '}
       {formatPostTime(publishedAt, { timezone, scheduled: true })}
     </time>
   );
@@ -47,7 +62,7 @@ function StatusBody({
 }) {
   switch (view.kind) {
     case 'problem':
-      return <Text tone="secondary">{view.message}</Text>;
+      return <Text className="text-state-danger">{view.message}</Text>;
     case 'saving':
       return <Text tone="secondary">Saving…</Text>;
     case 'new':
@@ -70,6 +85,7 @@ function StatusBody({
               <ScheduleCountdown
                 emailOnly={view.emailOnly}
                 publishedAt={view.publishedAt}
+                recipientFilter={view.recipientFilter}
                 timezone={timezone}
               />
             </>

@@ -29,7 +29,7 @@ import {
 import type { CardConfigPostSource, PostType } from './card-config';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
-import type { EditorStatusRecord } from './post-status';
+import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
@@ -84,12 +84,18 @@ function statusRecordOf(
   }
 
   const email = 'email' in record ? record.email : null;
+  // The API types the relation as a bare object; the editor read includes it.
+  const newsletter =
+    'newsletter' in record ? (record.newsletter as EditorStatusNewsletter | null) : null;
 
   return {
     status: record.status,
     publishedAt: record.published_at,
     url: record.url,
     emailOnly: 'email_only' in record ? record.email_only : false,
+    newsletter,
+    emailSegment: 'email_segment' in record ? record.email_segment : null,
+    hasEmail: !!email,
     emailStatus: email?.status ?? null,
     emailCount: email?.email_count ?? 0,
   };
