@@ -101,7 +101,7 @@ describe('createChangeTracker', () => {
     expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
   });
 
-  describe('invariant 5: loading old-schema content is clean until the user edits', () => {
+  describe('loading old-schema content is clean until the user edits', () => {
     it.each(OLD_SCHEMA_CORPUS)('$name ($provenance)', ({ before, after }) => {
       const tracker = createChangeTracker();
       tracker.load(POST_ID, post({ lexical: serialize(before) }));

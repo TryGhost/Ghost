@@ -28,7 +28,7 @@ const tick = () =>
     setTimeout(resolve, 0);
   });
 
-// Mirrors the hidden secondary instance in Ember's koenig-lexical-editor.js.
+// Render the same hidden Koenig instance that supplies the change tracker's normalization baseline.
 async function loadThroughKoenig(before: LexicalDocument): Promise<LexicalDocument> {
   let api: EditorApi | undefined;
 

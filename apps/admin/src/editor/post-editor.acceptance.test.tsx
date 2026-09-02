@@ -59,10 +59,9 @@ function pasteText(content: string) {
 }
 
 /**
- * The React post editor behind the `editorReact` flag: loads the post,
- * mounts Koenig with its hidden secondary instance and keeps edits in memory.
- * Nothing is saved yet — any write request other than the mobiledoc
- * conversion would 418 and fail the test.
+ * Covers post loading, Koenig mounting, and in-memory editing. Write requests
+ * remain unfaked unless a test expects a mobiledoc conversion, so any
+ * unexpected write returns 418 and fails the test.
  */
 describe('Post editor', () => {
   it('loads the post into the title and body', async () => {

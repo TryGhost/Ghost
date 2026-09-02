@@ -343,7 +343,7 @@ describe('zeroMilliseconds', () => {
 });
 
 describe('createSaveEngine', () => {
-  describe('invariant 1: background saves never change status', () => {
+  describe('background saves never change status', () => {
     it('persists a field change on a draft pinned to draft without a revision', async () => {
       const h = setup({ publishedAt: PAST });
 
@@ -388,7 +388,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 2: single flight, payload built at execution time, coalescing loses nothing', () => {
+  describe('single flight: payloads are built at execution time and coalescing loses nothing', () => {
     it('runs one save at a time and builds each payload from the snapshot current at execution', async () => {
       const h = setup();
       const first = h.engine.dispatch('explicit');
@@ -440,7 +440,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 3: session expiry loses nothing', () => {
+  describe('session expiry loses nothing', () => {
     it('freezes the queue on 401 and re-dispatches the failed save after re-authentication', async () => {
       const h = setup();
       const autosave = h.engine.dispatch('autosave');
@@ -506,7 +506,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 4: save-on-leave fires at most once and only for dirty drafts', () => {
+  describe('save-on-leave fires at most once and only for dirty drafts', () => {
     it('saves a dirty draft with unrevisioned changes exactly once, with a revision, then proceeds', async () => {
       const h = setup();
       const decision = h.engine.leaveRequested();
@@ -563,7 +563,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 6: a failed save keeps the post dirty and recoverable', () => {
+  describe('a failed save keeps the post dirty and recoverable', () => {
     it.each([validation, hostLimit, transport, unknown])(
       'surfaces a $kind error to the dispatcher and still runs the pending explicit save',
       async (error) => {
@@ -621,7 +621,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 7: only explicit and leave saves set save_revision', () => {
+  describe('only explicit and leave saves set save_revision', () => {
     it.each<[DispatchIntent, boolean]>([
       ['explicit', true],
       ['leave', true],
@@ -657,7 +657,7 @@ describe('createSaveEngine', () => {
     });
   });
 
-  describe('invariant 10: scheduled saves zero milliseconds and preserve the publish time', () => {
+  describe('scheduled saves zero milliseconds and preserve the publish time', () => {
     it('serializes a future scheduled post with a zeroed publish time across saves', async () => {
       const h = setup({ status: 'scheduled', publishedAt: '2026-09-03T09:30:15.789Z' });
 

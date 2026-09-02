@@ -466,7 +466,7 @@ describe('createSlugMachine', () => {
       });
     });
 
-    it('ignores a whitespace-only generator result like Ember does', async () => {
+    it('ignores a whitespace-only title result', async () => {
       const { machine } = createHarness(vi.fn().mockResolvedValueOnce('   '));
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
@@ -649,7 +649,7 @@ describe('createSlugMachine', () => {
       expect(machine.getState().mode).toBe('derived');
     });
 
-    it('ignores a whitespace-only manual result like Ember does for generated slugs', async () => {
+    it('ignores a whitespace-only manual result', async () => {
       const { machine } = createHarness(vi.fn().mockResolvedValueOnce('   '));
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
