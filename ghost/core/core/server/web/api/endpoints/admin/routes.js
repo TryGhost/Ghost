@@ -5,6 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const limits = require('../../../../services/limits');
 
 const shared = require('../../../shared');
 
@@ -197,19 +198,22 @@ module.exports = function apiRoutes() {
 
   // Reading definitions is deliberately not behind the feature flag: Admin asks every site
   // for them, and a site without the flag simply has none, so the answer is an empty list
-  // rather than a 404. Creating and changing them is flagged. Registered before /members/:id
-  // so the literal path is not captured as an id.
+  // rather than a 404. Creating and changing them is flagged, and separately gated on the
+  // host limit so a site whose plan drops keeps reading the fields it already has.
+  // Registered before /members/:id so the literal path is not captured as an id.
   router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
   router.post(
     '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
+    limits.requireFeature('limitCustomFields'),
     http(api.membersMetafields.add),
   );
   router.put(
     '/members/metafields/:namespace',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
+    limits.requireFeature('limitCustomFields'),
     http(api.membersMetafields.reorder),
   );
   router.get(
@@ -221,12 +225,14 @@ module.exports = function apiRoutes() {
     '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
+    limits.requireFeature('limitCustomFields'),
     http(api.membersMetafields.edit),
   );
   router.delete(
     '/members/metafields/:namespace/:key',
     mw.authAdminApi,
     labs.enabledMiddleware('membersCustomFields'),
+    limits.requireFeature('limitCustomFields'),
     http(api.membersMetafields.destroy),
   );
 

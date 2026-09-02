@@ -54,6 +54,7 @@ import { memberCustomFieldCsvColumns } from '@tryghost/admin-x-framework/api/mem
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
 
@@ -75,7 +76,7 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
-  const canCreateCustomFields = useFeatureFlag('membersCustomFields');
+  const canCreateCustomFields = useCustomFieldsAvailable();
   const { data: customFieldsData, isError: customFieldsFailed } = useCustomFieldDefinitions();
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a

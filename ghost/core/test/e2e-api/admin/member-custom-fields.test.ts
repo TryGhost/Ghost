@@ -2311,4 +2311,157 @@ describe('Member Custom Fields Admin API', function () {
       await agent.delete('members/metafields/custom/company/').expectStatus(404);
     });
   });
+
+  // Custom fields can be switched off for a site by its host, separately from the flag,
+  // so the feature can be sold with a plan. The limit is unset everywhere today, which is
+  // what the first test pins: nothing changes for a site nobody has limited. When it is
+  // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
+  // flag gives, because "your plan does not include this" is a different thing to tell a
+  // caller than "this does not exist here". Reading stays open either way, so a site whose
+  // plan drops can still see and export the fields it already has.
+  describe('Host limit', function () {
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('leaves every route alone when the limit is unset', async function () {
+      const field = await createField({ name: 'Unlimited' });
+
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Still unlimited' }] })
+        .expectStatus(200);
+      // Deleting is only offered on an archived field, so archiving is the step
+      // that proves the edit route is open, and the delete that follows it too.
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    it('leaves every route alone when the limit is present but not disabled', async function () {
+      configUtils.set('hostSettings:limits:limitCustomFields', { disabled: false });
+
+      const field = await createField({ name: 'Permitted' });
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    describe('when the host disables the feature', function () {
+      let existingKey: string;
+
+      beforeEach(async function () {
+        // Created before the limit goes on, standing in for a site that had the feature
+        // and then dropped below the plan that includes it.
+        existingKey = (await createField({ name: 'Bought earlier' })).key;
+        configUtils.set('hostSettings:limits:limitCustomFields', {
+          disabled: true,
+          error: 'Custom fields are available on the Publisher plan and above.',
+        });
+      });
+
+      it('still lists the fields the site already has', async function () {
+        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.equal(
+          body.members_metafields.some((field: { key: string }) => field.key === existingKey),
+          true,
+        );
+      });
+
+      it('still reads a single field', async function () {
+        await agent.get(`members/metafields/custom/${existingKey}/`).expectStatus(200);
+      });
+
+      it('403s the create endpoint, with the host copy', async function () {
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        assert.equal(
+          body.errors[0].message,
+          'Custom fields are available on the Publisher plan and above.',
+        );
+      });
+
+      it('403s the reorder endpoint', async function () {
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: existingKey }] })
+          .expectStatus(403);
+      });
+
+      it('403s the edit endpoint', async function () {
+        await agent
+          .put(`members/metafields/custom/${existingKey}/`)
+          .body({ members_metafields: [{ name: 'Employer' }] })
+          .expectStatus(403);
+      });
+
+      it('403s the delete endpoint', async function () {
+        await agent.delete(`members/metafields/custom/${existingKey}/`).expectStatus(403);
+      });
+
+      // Turning checkout collection on makes the field the collected value lands in, so
+      // this route creates definitions without going near the routes above. That is
+      // deliberate and stays allowed: the publisher is not managing custom fields here,
+      // they are turning on shipping, and the field is the machinery that serves it.
+      //
+      // What makes it safe is the packaging, not anything enforced along the way. Only one
+      // plan limit is involved at all: limitStripeConnect, which withholds Stripe, without
+      // which there is nothing to charge for and so no reason to have a paid tier. Admin
+      // then offers a checkout configuration only on a paid tier. The plan that includes
+      // Stripe is the plan that will include custom fields, so a site that reaches here is
+      // entitled to what it provisions.
+      //
+      // That chain holds by coincidence of pricing, and only its first link is enforced.
+      // The last one is a convention of the interface: this route accepts a free tier, and
+      // checks neither the tier's type nor whether Stripe is connected. Nor does the
+      // stripeCheckoutCollection flag stand in for any of it, being a rollout switch with
+      // no view on what a site pays for.
+      //
+      // So this pins a decision, not a mechanism. If checkout collection is ever sold
+      // apart from custom fields, this route needs a limit of its own rather than
+      // borrowing this one, because what it governs is what a checkout may collect.
+      it('still provisions the field a checkout collection needs', async function () {
+        const { body: tiers } = await agent
+          .get('tiers/?limit=1&filter=type:paid')
+          .expectStatus(200);
+
+        await agent
+          .put(`tiers/${tiers.tiers[0].id}/checkout_config/`)
+          .body({
+            tiers_checkout_config: [
+              {
+                shipping: {
+                  collect: true,
+                  allowed_countries: ['GB'],
+                  name: { custom_field_key: 'shipping_name' },
+                  address: { custom_field_key: 'shipping_address' },
+                },
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.equal(
+          body.members_metafields.some(
+            (field: { key: string }) => field.key === 'shipping_address',
+          ),
+          true,
+        );
+      });
+
+      it('falls back to generic copy when the host sets no message', async function () {
+        configUtils.set('hostSettings:limits:limitCustomFields', { disabled: true });
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        assert.equal(body.errors[0].message, 'Your plan does not support this feature.');
+      });
+    });
+  });
 });
