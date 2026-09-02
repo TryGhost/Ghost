@@ -2,6 +2,7 @@ import { page } from 'vitest/browser';
 import {
   publicPreviewWarningDialog,
   publishConfirmButton,
+  publishCompleteNote,
   publishConfirmError,
   publishContinueButton,
   publishEmailErrorStep,
@@ -33,6 +34,7 @@ export const publishScreen = {
   options: () => page.getByTestId(publishFlowOptions),
   confirm: () => page.getByTestId(publishFlowConfirm),
   complete: () => page.getByTestId(publishFlowComplete),
+  completeNote: () => page.getByTestId(publishCompleteNote),
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),

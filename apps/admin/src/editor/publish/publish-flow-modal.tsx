@@ -27,6 +27,8 @@ export interface PublishFlowModalProps {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The publish machine's clock, injected for tests. */
+  now?: () => Date;
   timezone: string;
   siteTitle?: string;
   /** Gates the flow behind a reminder when the body still has TK markers. */
@@ -47,6 +49,7 @@ export function PublishFlowModal({
   site,
   user,
   limits,
+  now,
   timezone,
   siteTitle,
   tkCount = 0,
@@ -97,6 +100,7 @@ export function PublishFlowModal({
     <PublishFlowDialog
       dispatch={dispatch}
       limits={limits}
+      now={now}
       post={post}
       site={site}
       siteTitle={siteTitle}
@@ -118,6 +122,7 @@ function PublishFlowDialog({
   site,
   user,
   limits,
+  now,
   timezone,
   siteTitle,
   dispatch,
@@ -127,7 +132,16 @@ function PublishFlowDialog({
   onRevertToDraft,
   onCompleted,
 }: PublishFlowDialogProps) {
-  const flow = usePublishFlow({ post, site, user, limits, dispatch, onBeforePublish, onCompleted });
+  const flow = usePublishFlow({
+    post,
+    site,
+    user,
+    limits,
+    now,
+    dispatch,
+    onBeforePublish,
+    onCompleted,
+  });
   const { machine, state, step } = flow;
 
   const transition =
@@ -179,6 +193,7 @@ function PublishFlowDialog({
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
+              note={flow.emailNote}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}

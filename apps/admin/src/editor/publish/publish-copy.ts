@@ -66,16 +66,14 @@ export function recipientsConfirmLabel({ recipientType, count }: RecipientLabelI
 
 export type ConfirmPublishType = 'publish+send' | 'publish' | 'send';
 
+// Ember's `buttonTextMap`, less its success copy: the flow replaces the confirm
+// step with the complete step, so a success state on this button never renders.
 const BUTTON_TEXT = {
-  'publish+send': {
-    idle: 'Publish & send',
-    running: 'Publishing & sending',
-    success: 'Published & sent',
-  },
-  send: { idle: 'Send email', running: 'Sending', success: 'Sent' },
-  publish: { idle: 'Publish', running: 'Publishing', success: 'Published' },
+  'publish+send': { idle: 'Publish & send', running: 'Publishing & sending' },
+  send: { idle: 'Send email', running: 'Sending' },
+  publish: { idle: 'Publish', running: 'Publishing' },
   // No idle text: a schedule keeps the underlying publish type's idle copy.
-  schedule: { running: 'Scheduling', success: 'Scheduled' },
+  schedule: { running: 'Scheduling' },
 } as const;
 
 export interface ConfirmButtonInputs {
@@ -111,10 +109,6 @@ export function confirmButtonText({
 
 export function confirmRunningText(publishType: ConfirmPublishType, isScheduled: boolean): string {
   return BUTTON_TEXT[isScheduled ? 'schedule' : publishType].running;
-}
-
-export function confirmSuccessText(publishType: ConfirmPublishType, isScheduled: boolean): string {
-  return BUTTON_TEXT[isScheduled ? 'schedule' : publishType].success;
 }
 
 /** `publish-flow/confirm.js` :60-70 — derived from the state captured at entry. */

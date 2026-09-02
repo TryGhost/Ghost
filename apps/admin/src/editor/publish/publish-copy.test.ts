@@ -3,7 +3,6 @@ import {
   confirmButtonText,
   confirmPublishType,
   confirmRunningText,
-  confirmSuccessText,
   recipientsConfirmLabel,
   recipientsRowLabel,
   siteCalendarDay,
@@ -71,11 +70,10 @@ describe('confirm button copy', () => {
     ).toBe('Publish & send, on September 2nd');
   });
 
-  it('keeps the underlying idle copy but takes the schedule running and success copy', () => {
+  it('keeps the underlying idle copy but takes the schedule running copy', () => {
     expect(confirmRunningText('send', false)).toBe('Sending');
+    expect(confirmRunningText('publish+send', false)).toBe('Publishing & sending');
     expect(confirmRunningText('send', true)).toBe('Scheduling');
-    expect(confirmSuccessText('publish+send', true)).toBe('Scheduled');
-    expect(confirmSuccessText('publish+send', false)).toBe('Published & sent');
   });
 });
 

@@ -259,29 +259,27 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
-  // Two zones a day apart, so one of them disagrees with the runner's whatever
-  // it is set to; `siteCalendarDay` covers the mapping itself deterministically.
-  it.each(['Pacific/Auckland', 'Pacific/Honolulu'])(
-    'keeps the calendar on the site timezone day the field shows (%s)',
-    async (timezone) => {
-      await renderPublishFlow({ timezone });
+  // 20:00 UTC on the 3rd is already the 4th in Auckland, and the schedule lands
+  // ten minutes later, so the site day differs from UTC and from US zones alike.
+  it('keeps the calendar on the site timezone day the field shows', async () => {
+    await renderPublishFlow({
+      timezone: 'Pacific/Auckland',
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
 
-      await publishScreen.setting('publish-at').click();
-      await page.getByLabelText('Schedule for later').click();
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
 
-      const shown = (publishScreen.scheduleDate().element() as HTMLInputElement).value;
-      const day = Number(shown.slice(-2));
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+    await publishScreen.scheduleDate().click();
 
-      await publishScreen.scheduleDate().click();
+    const selected = page.getByRole('gridcell', { selected: true });
+    await expect.element(selected).toHaveTextContent('4');
 
-      const selected = page.getByRole('gridcell', { selected: true });
-      await expect.element(selected).toHaveTextContent(String(day));
-
-      // Committing the day the calendar highlights must not move the date.
-      await selected.click();
-      await expect.element(publishScreen.scheduleDate()).toHaveValue(shown);
-    },
-  );
+    // Committing the day the calendar highlights must not move the date.
+    await selected.click();
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+  });
 
   it(
     'sends without publishing when the email-only type is chosen',
@@ -376,6 +374,51 @@ describe('Publish flow', () => {
       .toBeInTheDocument();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
+
+  it('blocks the options step on a publishing limit and links the upgrade phrase', async () => {
+    await renderPublishFlow({
+      limits: {
+        checkPublishingLimit: () =>
+          Promise.reject(
+            new Error('You have reached your member limit, please upgrade your plan.'),
+          ),
+      },
+    });
+
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('You have reached your member limit');
+    await expect
+      .element(publishScreen.options().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+    // A blocked publish offers no way forward.
+    await expect.element(publishScreen.continueButton()).not.toBeInTheDocument();
+  });
+
+  it(
+    'completes with a note when the email cannot be confirmed either way',
+    async () => {
+      // The poller's reload fails, the way a 401 does with the redirect opted out.
+      fakeAdminEndpoint(
+        'GET',
+        new RegExp(`^/posts/${POST_ID}/\\?`),
+        { errors: [{ message: 'Authorization failed' }] },
+        { status: 401 },
+      );
+      const { dispatch, onCompleted } = await renderPublishFlow();
+
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect
+        .element(publishScreen.completeNote())
+        .toHaveTextContent('could not confirm the newsletter was sent');
+      await expect.element(publishScreen.complete()).toBeInTheDocument();
+      expect(dispatch).toHaveBeenCalledTimes(1);
+      expect(onCompleted).toHaveBeenCalledTimes(1);
+    },
+    SLOW,
+  );
 
   it('shows a validation failure in place', async () => {
     const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));

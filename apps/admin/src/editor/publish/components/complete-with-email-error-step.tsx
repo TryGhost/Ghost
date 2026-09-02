@@ -66,11 +66,9 @@ export function CompleteWithEmailErrorStep({
         >
           {status === 'running'
             ? 'Sending'
-            : status === 'success'
-              ? 'Sent'
-              : partial
-                ? 'Send remaining emails'
-                : 'Retry sending email'}
+            : partial
+              ? 'Send remaining emails'
+              : 'Retry sending email'}
         </Button>
       </div>
     </Stack>

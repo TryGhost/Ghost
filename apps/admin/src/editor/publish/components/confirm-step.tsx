@@ -13,7 +13,6 @@ import {
   confirmButtonText,
   confirmPublishType,
   confirmRunningText,
-  confirmSuccessText,
   formatSiteDateTime,
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
@@ -69,7 +68,6 @@ export function ConfirmStep({
       timezone,
     }),
     running: confirmRunningText(publishType, state.isScheduled),
-    success: confirmSuccessText(publishType, state.isScheduled),
   };
 
   return (
@@ -125,16 +123,11 @@ export function ConfirmStep({
       <Stack align="start" gap="sm">
         <Button
           data-testid={publishConfirmButton}
-          // A succeeded publish must not offer a second dispatch either.
-          disabled={status === 'running' || status === 'success'}
+          disabled={status === 'running'}
           size="lg"
           onClick={onConfirm}
         >
-          {status === 'running'
-            ? buttonText.running
-            : status === 'success'
-              ? buttonText.success
-              : buttonText.idle}
+          {status === 'running' ? buttonText.running : buttonText.idle}
         </Button>
         <Button data-testid={publishBackToSettings} size="lg" variant="link" onClick={onBack}>
           Back to settings

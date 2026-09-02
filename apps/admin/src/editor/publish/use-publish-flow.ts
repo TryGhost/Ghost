@@ -29,6 +29,8 @@ export interface PublishFlowOptions {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The machine's clock, injected for tests. */
+  now?: () => Date;
   dispatch: PublishDispatcher;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -47,6 +49,8 @@ export interface PublishFlow {
   completedAt: string | null;
   /** False until `checkLimits()` settles; the options step cannot be left before then. */
   limitsChecked: boolean;
+  /** Set when the publish landed but its email could not be confirmed either way. */
+  emailNote: string | null;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
   captured: {
     willPublish: boolean;
@@ -66,6 +70,8 @@ export interface PublishFlow {
 
 const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
+export const EMAIL_UNCONFIRMED =
+  'This was published, but we could not confirm the newsletter was sent. Check the post’s email status from the posts list.';
 
 function initialEmailError(post: PublishFlowPost): string | null {
   return post.email?.status === 'failed' ? (post.email.error ?? UNKNOWN_EMAIL_ERROR) : null;
@@ -76,6 +82,7 @@ export function usePublishFlow({
   site,
   user,
   limits,
+  now,
   dispatch,
   onBeforePublish,
   onCompleted,
@@ -86,8 +93,8 @@ export function usePublishFlow({
 
   // The machine reads its inputs once, so it is keyed on the post rather than on
   // the identity of props a re-rendering caller rebuilds.
-  const inputs = useRef({ post, site, user, limits });
-  inputs.current = { post, site, user, limits };
+  const inputs = useRef({ post, site, user, limits, now });
+  inputs.current = { post, site, user, limits, now };
 
   const machine = useMemo(() => {
     const current = inputs.current;
@@ -97,6 +104,7 @@ export function usePublishFlow({
       site: current.site,
       user: current.user,
       limits: current.limits,
+      now: current.now,
     });
   }, [post.id]);
 
@@ -133,6 +141,7 @@ export function usePublishFlow({
   const [postCount, setPostCount] = useState<number | null>(null);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [limitsChecked, setLimitsChecked] = useState(false);
+  const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
   const [captured, setCaptured] = useState({
@@ -277,10 +286,17 @@ export function usePublishFlow({
     // Stays 'running' across the email poll: the publish is not finished until
     // the email is submitted, and the button must not invite a second dispatch.
     if (willEmailImmediately) {
-      // No `currentPost`: the acknowledged result carries no email, and the
-      // pre-save one would short-circuit the poll to "not needed".
-      const outcome = await confirmation.confirm(post.id);
-      applyEmailOutcome(outcome, isScheduled);
+      try {
+        // No `currentPost`: the acknowledged result carries no email, and the
+        // pre-save one would short-circuit the poll to "not needed".
+        const outcome = await confirmation.confirm(post.id);
+        applyEmailOutcome(outcome, isScheduled);
+      } catch {
+        // The post is published either way; only the email's fate is unknown,
+        // so the flow completes rather than stranding a disabled button.
+        setEmailNote(EMAIL_UNCONFIRMED);
+        complete(isScheduled, true);
+      }
       return;
     }
 
@@ -336,6 +352,7 @@ export function usePublishFlow({
     postCount,
     completedAt,
     limitsChecked,
+    emailNote,
     captured,
     refresh,
     toConfirm,

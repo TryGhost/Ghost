@@ -1,10 +1,11 @@
-import { Button } from '@tryghost/shade/components';
+import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
   publishBackToDashboard,
+  publishCompleteNote,
   publishFlowComplete,
   publishRevertToDraft,
 } from '@tryghost/test-data/selectors/editor';
@@ -32,6 +33,8 @@ export interface CompleteStepProps {
   postCount: number | null;
   /** When the publish landed, standing in for the publish time the server stamped. */
   completedAt: string | null;
+  /** Shown when the publish landed but something after it could not be confirmed. */
+  note?: string | null;
   onRevertToDraft?: () => void;
 }
 
@@ -63,6 +66,7 @@ export function CompleteStep({
   siteTitle,
   postCount,
   completedAt,
+  note,
   onRevertToDraft,
 }: CompleteStepProps) {
   const { count } = useMembersCount(state.fullRecipientFilter);
@@ -76,6 +80,11 @@ export function CompleteStep({
 
   return (
     <Stack data-testid={publishFlowComplete} gap="xl">
+      {note ? (
+        <Banner data-testid={publishCompleteNote} role="status" variant="warning">
+          {note}
+        </Banner>
+      ) : null}
       <Text as="h2" size="3xl" weight="bold">
         {captured.isScheduled ? (
           <>

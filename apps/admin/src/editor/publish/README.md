@@ -185,17 +185,25 @@ A publish that emails immediately is not done when the save acknowledges: the em
 
 A `failed` outcome moves to the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened.
 
+A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
+
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately.
 
 ## Requests
 
-Every request the flow makes opts out of the session-expiry redirect and the global error handler (`EDITOR_REQUEST_OPTIONS`). The flow runs over an editor holding unsaved work and the poller fires once a second immediately after a save, so a single 401 would otherwise navigate the user to sign-in and lose it; and the modal shows its own failures, so a toast would double them. `useRetryEmail` is the exception — mutation hooks take no per-call fetch options — and `useCurrentUser` is a shared boot query rather than the flow's own.
+`EDITOR_REQUEST_OPTIONS` collects what the flow's requests should opt out of, but only part of it can be applied today.
+
+The two requests the flow issues directly — the poller's reload and the published-post count — opt out of the session-expiry redirect. That is the one that matters: the poller fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 would navigate to sign-in and lose it.
+
+Nothing else can opt out yet. `createQuery` and `createInfiniteQuery` build their fetch options from the query definition rather than the call, so `sessionExpiryRedirect` is not passable per call; the seven `useMembersCount` call sites, `useCurrentUser` and `useRetryEmail` therefore all remain redirect-capable. The queries the flow owns do pass `defaultErrorHandler: false`, so their failures stay in the modal rather than raising a global toast; `useMembersCount` sets that itself, and `useCurrentUser` takes no options at all.
 
 ## Update flow
 
 `UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action Ember offers: reverting to a draft, dispatched as `toRevertDispatch()`.
 
-It reads the newsletter from the post rather than from the options machine, and forces its name into the copy when that newsletter has since been archived. The machine cannot answer this: it only ever exposes a selectable newsletter, so a post sent to an archived one would be described against the site's default instead. A scheduled post that already carries an email gets the extra sentence naming that earlier send.
+It reads the newsletter from the post rather than from the options machine, because the machine only ever exposes a selectable newsletter: a post sent to a since-archived one would be described against the site's default instead.
+
+That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the flow's own reads ask only for `include: 'email'`, and the framework's `Email` type carries no created date yet. Without those fields the copy degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
 
 ## Not yet ported
 
