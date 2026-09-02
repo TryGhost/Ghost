@@ -107,7 +107,7 @@ describe('createSlugMachine', () => {
     ] as const)('%s', (_label, post, mode, status) => {
       const { machine, events } = createHarness();
       machine.loaded(post);
-      const expected = { ...post, mode, status, pending: false };
+      const expected = { ...post, lastCommittedTitle: post.title, mode, status, pending: false };
       expect(machine.getState()).toEqual(expected);
       expect(events).toEqual([{ state: expected, proposal: null }]);
     });
@@ -195,7 +195,43 @@ describe('createSlugMachine', () => {
         reason: 'frozen',
       });
       expect(generateSlug).not.toHaveBeenCalled();
-      expect(machine.getState()).toMatchObject({ slug: 'hello', title: 'Hello' });
+      expect(machine.getState()).toMatchObject({
+        slug: 'hello',
+        title: 'Hello',
+        lastCommittedTitle: '',
+        status: 'frozen',
+      });
+    });
+
+    it('reports derived after a failed commit on an untitled post', async () => {
+      const { machine } = createHarness(vi.fn().mockRejectedValueOnce(new Error('boom')));
+      machine.loaded({ slug: 'untitled', title: DEFAULT_TITLE });
+      expect(machine.getState().status).toBe('frozen');
+
+      await expect(machine.titleCommitted('Hello')).resolves.toMatchObject({ reason: 'error' });
+
+      expect(machine.getState()).toMatchObject({
+        status: 'derived',
+        title: DEFAULT_TITLE,
+        lastCommittedTitle: 'Hello',
+        slug: 'untitled',
+      });
+    });
+
+    it('stops reporting pending for the previous post once a new one loads', async () => {
+      const pending = deferred<string>();
+      const { machine } = createHarness(vi.fn().mockReturnValueOnce(pending.promise));
+      machine.loaded({ slug: '', title: '' });
+
+      const commit = machine.titleCommitted('Old post');
+      expect(machine.getState().pending).toBe(true);
+
+      machine.loaded({ slug: 'other', title: 'Other' });
+      expect(machine.getState().pending).toBe(false);
+
+      pending.resolve('old-post');
+      await expect(commit).resolves.toMatchObject({ reason: 'stale' });
+      expect(machine.getState().pending).toBe(false);
     });
 
     it('sets the untitled slug once and never again', async () => {

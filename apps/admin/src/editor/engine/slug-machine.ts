@@ -10,8 +10,11 @@ export interface SlugMachineState {
   readonly status: SlugStatus;
   readonly mode: SlugMode;
   readonly slug: string;
-  /** The title the slug was loaded with or last generated from. */
+  /** The title the slug was loaded with or last generated from; drives the same-title check. */
   readonly title: string;
+  /** The title from the latest titleCommitted call regardless of outcome; drives `status`. */
+  readonly lastCommittedTitle: string;
+  /** True while a request issued since the last `loaded()` is in flight. */
   readonly pending: boolean;
 }
 
@@ -118,9 +121,11 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   const pendingManual = new Set<number>();
   let slug = '';
   let title = '';
-  let inFlight = 0;
+  let lastCommittedTitle = '';
   // Every request takes a ticket; a response applies only while its ticket is still the latest.
+  // loaded() clears the in-flight sets so requests from the previous post stop reading as pending.
   let latestTicket = 0;
+  const inFlightTickets = new Set<number>();
   const listeners = new Set<SlugListener>();
 
   const mode = (): SlugMode => (pendingManual.size > 0 ? 'custom' : settledMode);
@@ -130,10 +135,17 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     const status: SlugStatus =
       currentMode === 'custom'
         ? 'custom'
-        : shouldGenerateSlug({ mode: currentMode, slug }, title)
+        : shouldGenerateSlug({ mode: currentMode, slug }, lastCommittedTitle)
           ? 'derived'
           : 'frozen';
-    return { status, mode: currentMode, slug, title, pending: inFlight > 0 };
+    return {
+      status,
+      mode: currentMode,
+      slug,
+      title,
+      lastCommittedTitle,
+      pending: inFlightTickets.size > 0,
+    };
   };
 
   const notify = (proposal: SlugProposal | null): void => {
@@ -157,7 +169,7 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   ): Promise<{ ticket: number; result?: string; error?: unknown }> => {
     latestTicket += 1;
     const ticket = latestTicket;
-    inFlight += 1;
+    inFlightTickets.add(ticket);
     if (manual) {
       pendingManual.add(ticket);
     }
@@ -167,7 +179,7 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
     } catch (error) {
       return { ticket, error };
     } finally {
-      inFlight -= 1;
+      inFlightTickets.delete(ticket);
       pendingManual.delete(ticket);
     }
   };
@@ -175,15 +187,18 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
   return {
     loaded(post) {
       latestTicket += 1;
+      inFlightTickets.clear();
       pendingManual.clear();
       slug = post.slug;
       title = post.title;
+      lastCommittedTitle = post.title;
       settledMode = isCustomSlug(post.slug, post.title) ? 'custom' : 'derived';
       notify(null);
     },
 
     async titleCommitted(rawTitle) {
       const nextTitle = rawTitle.trim();
+      lastCommittedTitle = nextTitle;
       if (mode() === 'custom') {
         return unchanged('custom');
       }
