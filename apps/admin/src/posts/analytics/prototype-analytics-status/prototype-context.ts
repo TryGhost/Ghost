@@ -86,7 +86,11 @@ export const playbackProgress = (position: number): PlaybackProgress => ({
   // then hands off to the send count rather than a phase with nothing in it.
   prepared: clamp(position / 0.12),
   sent: clamp((position - 0.12) / 0.33),
-  counted: clamp((position - 0.17) / 0.83),
+  // Squared so results trickle in early and pour in late — which is also when
+  // the gate that opens on "100% sent" is looking: at that moment (~0.45)
+  // only about a tenth of outcomes are in, so the charts open onto small
+  // figures that visibly climb rather than a page already a third full.
+  counted: clamp((position - 0.17) / 0.83) ** 2,
 });
 
 /** The enum states the switcher highlights, read back off the position. */
