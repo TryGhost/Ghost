@@ -39,6 +39,7 @@ interface RunState {
   cancelled: boolean;
   timer: TimerHandle;
   release: (() => void) | null;
+  settleCancelled: () => void;
 }
 
 // A partially delivered send is only distinguishable by the word "partially"
@@ -98,6 +99,7 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
 
     state.release?.();
     state.release = null;
+    state.settleCancelled();
   }
 
   function cancel(): void {
@@ -168,8 +170,19 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
       current = null;
     }
 
-    const state: RunState = { operation, postId, cancelled: false, timer: null, release: null };
-    const promise = work(state);
+    let settleCancelled: () => void = () => {};
+    const cancellation = new Promise<EmailConfirmationOutcome>((resolve) => {
+      settleCancelled = () => resolve({ kind: 'cancelled' });
+    });
+    const state: RunState = {
+      operation,
+      postId,
+      cancelled: false,
+      timer: null,
+      release: null,
+      settleCancelled,
+    };
+    const promise = Promise.race([work(state), cancellation]);
     const settle = () => {
       if (current?.state === state) {
         current = null;

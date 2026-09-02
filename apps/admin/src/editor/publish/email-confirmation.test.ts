@@ -272,9 +272,9 @@ describe('createEmailConfirmation', () => {
     const result = confirmation.confirm('post-1');
     await advance(1);
     confirmation.cancel();
-    releaseReload(submitted);
 
     await expect(result).resolves.toEqual({ kind: 'cancelled' });
+    releaseReload(submitted);
   });
 
   it('settles as cancelled when cancelled during the retry request', async () => {
@@ -290,10 +290,29 @@ describe('createEmailConfirmation', () => {
 
     const result = confirmation.retryAndConfirm('post-1', 'email-1');
     confirmation.cancel();
-    releaseRetry();
 
     await expect(result).resolves.toEqual({ kind: 'cancelled' });
+    releaseRetry();
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('does not reject when an abandoned reload fails after cancellation', async () => {
+    let rejectReload: (error: Error) => void = () => {};
+    const transportError = new Error('Late network failure');
+    const reload = vi.fn(
+      () =>
+        new Promise<EmailConfirmationPost>((_resolve, reject) => {
+          rejectReload = reject;
+        }),
+    );
+    const confirmation = createEmailConfirmation({ reload, retry: () => Promise.resolve() });
+
+    const result = confirmation.confirm('post-1');
+    await advance(1);
+    confirmation.cancel();
+    rejectReload(transportError);
+
+    await expect(result).resolves.toEqual({ kind: 'cancelled' });
   });
 
   it('accepts a new confirmation immediately after cancelling a stuck one', async () => {
@@ -316,12 +335,12 @@ describe('createEmailConfirmation', () => {
     const restarted = confirmation.confirm('post-1');
     expect(restarted).not.toBe(abandoned);
 
-    releaseStuckReload(submitted);
     await advance(1);
 
     await expect(restarted).resolves.toEqual({ kind: 'submitted' });
     await expect(abandoned).resolves.toEqual({ kind: 'cancelled' });
     expect(reload).toHaveBeenCalledTimes(2);
+    releaseStuckReload(submitted);
   });
 
   it('coalesces a repeat confirmation of the same post', async () => {
