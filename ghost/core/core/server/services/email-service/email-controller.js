@@ -30,7 +30,7 @@ class EmailController {
   /**
    *
    * @param {EmailService} service
-   * @param {{models: {Post: any, Newsletter: any, Email: any}, getRequiredUrlRelations?: () => string[], sendingStatusService?: SendingStatusService}} dependencies
+   * @param {{models: {Post: any, Newsletter: any, Email: any}, getRequiredUrlRelations?: () => string[], sendingStatusService: SendingStatusService}} dependencies
    */
   constructor(service, { models, getRequiredUrlRelations = () => [], sendingStatusService }) {
     this.service = service;

@@ -1,32 +1,34 @@
 import type { Knex } from 'knex';
+import { z } from 'zod';
+import { DbDate } from '../../lib/db-types/date';
 
 const ETA_BATCH_WINDOW = 20;
 
+const StoredStatus = z.enum(['pending', 'submitting', 'submitted', 'failed']);
+const DbCount = z.number().int().nonnegative();
+
+const EmailRow = z.object({
+  id: z.string(),
+  status: StoredStatus,
+  email_count: DbCount,
+  updated_at: DbDate.nullable(),
+});
+
+const BatchRows = z.array(
+  z.object({
+    status: StoredStatus,
+    created_at: DbDate,
+    updated_at: DbDate,
+    recipient_count: DbCount,
+  }),
+);
+
+type EmailRow = z.output<typeof EmailRow>;
+type Batch = z.output<typeof BatchRows>[number];
+type BatchSample = { recipientCount: number; timestamp: number };
+
 type SendingPhase = 'preparing' | 'submitting';
 type SendingStatus = SendingPhase | 'submitted' | 'failed';
-type StoredEmailStatus = 'pending' | 'submitting' | 'submitted' | 'failed';
-type StoredBatchStatus = 'pending' | 'submitting' | 'submitted' | 'failed';
-
-type EmailRow = {
-  id: string;
-  status: StoredEmailStatus;
-  email_count: number;
-  updated_at: Date | string | null;
-};
-
-type BatchRow = {
-  status: StoredBatchStatus;
-  recipient_count: number | string;
-  created_at: Date | string;
-  updated_at: Date | string;
-};
-
-type Batch = {
-  status: StoredBatchStatus;
-  recipientCount: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-};
 
 type SendingProgress = {
   completed: number;
@@ -34,153 +36,157 @@ type SendingProgress = {
   estimated_seconds_remaining: number | null;
 };
 
-export type EmailSendingStatus = {
-  id: string;
-  sending: {
-    status: SendingStatus;
-    progress: SendingProgress;
-    failed_during?: SendingPhase;
-  };
+type Sending = {
+  status: SendingStatus;
+  progress: SendingProgress;
+  failed_during?: SendingPhase;
 };
 
-type Database = {
-  knex: Knex;
+export type EmailSendingStatus = {
+  id: string;
+  sending: Sending;
 };
 
 export class SendingStatusService {
-  #db: Database;
+  #knex: Knex;
 
-  constructor({ db }: { db: Database }) {
-    this.#db = db;
+  constructor({ knex }: { knex: Knex }) {
+    this.#knex = knex;
   }
 
   async statusFor(emailId: string): Promise<EmailSendingStatus | null> {
-    const email = await this.#db
-      .knex<EmailRow>('emails')
+    const emailRow = await this.#knex('emails')
       .select('id', 'status', 'email_count', 'updated_at')
       .where('id', emailId)
       .first();
 
-    if (!email) {
+    if (!emailRow) {
       return null;
     }
 
-    const recipientCount = this.#db
-      .knex('email_recipients as recipient')
-      .count('recipient.id')
+    const email = EmailRow.parse(emailRow);
+    const sending =
+      email.status === 'submitted'
+        ? await this.#submittedSending(emailId)
+        : openSending(email, await this.#batchesFor(emailId));
+
+    return { id: email.id, sending };
+  }
+
+  async #batchesFor(emailId: string): Promise<Batch[]> {
+    // Correlated per-batch count stays on the batch_id index; grouping recipients by email_id scans every recipient row.
+    const recipientCount = this.#knex('email_recipients as recipient')
+      .count('*')
       .whereRaw('recipient.batch_id = batch.id');
-    const batchRows = await this.#db
-      .knex<BatchRow>('email_batches as batch')
+    const rows = await this.#knex('email_batches as batch')
       .select('batch.status', 'batch.created_at', 'batch.updated_at')
       .select(recipientCount.as('recipient_count'))
       .where('batch.email_id', emailId);
-    const batches = batchRows.map((batch) => ({
-      status: batch.status,
-      recipientCount: Number(batch.recipient_count),
-      createdAt: batch.created_at,
-      updatedAt: batch.updated_at,
-    }));
 
-    return this.#buildStatus(email, batches);
+    return BatchRows.parse(rows);
   }
 
-  #buildStatus(email: EmailRow, batches: Batch[]): EmailSendingStatus {
-    const submissionStarted = batches.some((batch) => batch.status !== 'pending');
-    const failedDuring = submissionStarted ? 'submitting' : 'preparing';
-    const status =
-      email.status === 'submitted' || email.status === 'failed'
-        ? email.status
-        : submissionStarted
-          ? 'submitting'
-          : 'preparing';
-    const progressStatus = status === 'failed' ? failedDuring : status;
-
-    const preparedCount = batches.reduce((total, batch) => total + batch.recipientCount, 0);
-    const submittedCount = batches
-      .filter((batch) => batch.status === 'submitted')
-      .reduce((total, batch) => total + batch.recipientCount, 0);
-    const completed = progressStatus === 'preparing' ? preparedCount : submittedCount;
-    const total = Math.max(Number(email.email_count), completed);
-
-    const sending: EmailSendingStatus['sending'] = {
-      status,
-      progress: {
-        completed,
-        total,
-        estimated_seconds_remaining: this.#estimateSecondsRemaining({
-          status,
-          batches,
-          completed,
-          total,
-          attemptStartedAt: email.updated_at,
-        }),
-      },
-    };
-
-    if (status === 'failed') {
-      sending.failed_during = failedDuring;
-    }
+  async #submittedSending(emailId: string): Promise<Sending> {
+    const [countRow] = await this.#knex('email_recipients')
+      .count({ count: '*' })
+      .where('email_id', emailId);
+    const count = DbCount.parse(countRow.count);
 
     return {
-      id: email.id,
-      sending,
+      status: 'submitted',
+      progress: { completed: count, total: count, estimated_seconds_remaining: 0 },
+    };
+  }
+}
+
+function openSending(email: EmailRow, batches: Batch[]): Sending {
+  const phase: SendingPhase = batches.some((batch) => batch.status !== 'pending')
+    ? 'submitting'
+    : 'preparing';
+  const attemptStartedAt = email.updated_at?.getTime() ?? null;
+
+  const preparedCount = sumRecipients(batches);
+  const completedBatches =
+    phase === 'preparing' ? batches : batches.filter((batch) => batch.status === 'submitted');
+  const completed = sumRecipients(completedBatches);
+  const total = phase === 'preparing' ? Math.max(email.email_count, preparedCount) : preparedCount;
+
+  if (email.status === 'failed') {
+    return {
+      status: 'failed',
+      progress: { completed, total, estimated_seconds_remaining: null },
+      failed_during: phase,
     };
   }
 
-  #estimateSecondsRemaining({
-    status,
-    batches,
-    completed,
-    total,
-    attemptStartedAt,
-  }: {
-    status: SendingStatus;
-    batches: Batch[];
-    completed: number;
-    total: number;
-    attemptStartedAt: Date | string | null;
-  }): number | null {
-    if (status === 'submitted') {
-      return 0;
-    }
-    if (status === 'failed') {
-      return null;
-    }
+  const failedThisAttempt = batches.filter((batch) => failedDuringAttempt(batch, attemptStartedAt));
+  const remaining = total - completed - sumRecipients(failedThisAttempt);
+  const samples = completedBatches.map((batch) => ({
+    recipientCount: batch.recipient_count,
+    timestamp: (phase === 'preparing' ? batch.created_at : batch.updated_at).getTime(),
+  }));
 
-    const timestampField = status === 'preparing' ? 'createdAt' : 'updatedAt';
-    const attemptStarted = attemptStartedAt ? new Date(attemptStartedAt).getTime() : null;
-    const completedBatches = batches
-      .filter((batch) => status === 'preparing' || batch.status === 'submitted')
-      .map((batch) => ({
-        recipientCount: batch.recipientCount,
-        timestamp: new Date(batch[timestampField]).getTime(),
-      }))
-      .filter(
-        (batch) =>
-          Number.isFinite(batch.timestamp) &&
-          batch.recipientCount > 0 &&
-          (attemptStarted === null || batch.timestamp >= attemptStarted),
-      )
-      .sort((a, b) => a.timestamp - b.timestamp)
-      .slice(-ETA_BATCH_WINDOW);
+  return {
+    status: phase,
+    progress: {
+      completed,
+      total,
+      estimated_seconds_remaining: estimateSecondsRemaining({
+        remaining,
+        samples,
+        attemptStartedAt,
+      }),
+    },
+  };
+}
 
-    if (completedBatches.length < 2) {
-      return null;
-    }
+function sumRecipients(batches: Batch[]): number {
+  return batches.reduce((sum, batch) => sum + batch.recipient_count, 0);
+}
 
-    const firstTimestamp = completedBatches[0].timestamp;
-    const lastTimestamp = completedBatches[completedBatches.length - 1].timestamp;
-    const elapsedSeconds = (lastTimestamp - firstTimestamp) / 1000;
-    if (elapsedSeconds <= 0) {
-      return null;
-    }
+// A batch that fails is only retried together with its email, so within an attempt it is finished work.
+function failedDuringAttempt(batch: Batch, attemptStartedAt: number | null): boolean {
+  return (
+    batch.status === 'failed' &&
+    attemptStartedAt !== null &&
+    batch.updated_at.getTime() >= attemptStartedAt
+  );
+}
 
-    const averageRecipientsPerBatch =
-      completedBatches.reduce((sum, batch) => sum + batch.recipientCount, 0) /
-      completedBatches.length;
-    const recipientsPerSecond =
-      (averageRecipientsPerBatch * (completedBatches.length - 1)) / elapsedSeconds;
-
-    return Math.ceil(Math.max(total - completed, 0) / recipientsPerSecond);
+function estimateSecondsRemaining({
+  remaining,
+  samples,
+  attemptStartedAt,
+}: {
+  remaining: number;
+  samples: BatchSample[];
+  attemptStartedAt: number | null;
+}): number | null {
+  if (remaining <= 0) {
+    return 0;
   }
+
+  const window = samples
+    .filter(
+      (sample) =>
+        sample.recipientCount > 0 &&
+        (attemptStartedAt === null || sample.timestamp >= attemptStartedAt),
+    )
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .slice(-ETA_BATCH_WINDOW);
+
+  if (window.length < 2) {
+    return null;
+  }
+
+  const elapsedSeconds = (window[window.length - 1].timestamp - window[0].timestamp) / 1000;
+  if (elapsedSeconds <= 0) {
+    return null;
+  }
+
+  const averageRecipientsPerBatch =
+    window.reduce((sum, sample) => sum + sample.recipientCount, 0) / window.length;
+  const recipientsPerSecond = (averageRecipientsPerBatch * (window.length - 1)) / elapsedSeconds;
+
+  return Math.ceil(remaining / recipientsPerSecond);
 }

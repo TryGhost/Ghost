@@ -128,7 +128,7 @@ class EmailServiceWrapper {
       sentry,
       getRequiredUrlRelations,
     });
-    const sendingStatusService = new SendingStatusService({ db });
+    const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
     if (ghostServer) {
       // Two phases: stop claiming batches immediately, drain in-flight ones later.

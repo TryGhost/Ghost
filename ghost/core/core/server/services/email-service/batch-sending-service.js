@@ -213,6 +213,7 @@ class BatchSendingService {
 
     // Check if email is 'pending' only + change status to submitting in one transaction.
     // This allows us to have a lock around the email job that makes sure an email can only have one active job.
+    // Also stamps updated_at, which SendingStatusService reads as the attempt start; do not save the Email once batches submit.
     let email;
     try {
       email = await this.retryDb(
@@ -704,6 +705,7 @@ class BatchSendingService {
     const deliveryTimes = this.calculateDeliveryTimes(email, batches.length);
 
     // Loop batches and send them via the EmailProvider
+    // SendingStatusService treats a batch that fails in this run as finished work; never re-queue it within the run.
     let succeededCount = 0;
     const queue = batches.slice();
 
