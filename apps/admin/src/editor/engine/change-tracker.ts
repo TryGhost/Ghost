@@ -353,8 +353,8 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
 
     // Single-flight save engine with one coalescing pending slot: acknowledgements
     // arrive in submit order, so no save-attempt id is needed here.
-    // The save engine's post-generation fence is the primary guard against stale
-    // completions; a new post only refuses acks for ids this tracker has already held.
+    // Callers must build a fresh tracker per load(null) or fence stale completions
+    // themselves; a new post only refuses acks for ids this tracker has already held.
     saveAcknowledged(id, submitted, acknowledged) {
       if (disposed || !saved || !live || (postId !== null && id !== postId)) {
         return;

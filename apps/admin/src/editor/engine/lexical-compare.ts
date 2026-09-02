@@ -90,6 +90,11 @@ function parseSiteUrl(siteUrl: string): URL | null {
   }
 }
 
+function underSubdirectory(pathname: string, sitePathname: string): boolean {
+  const subdirectory = sitePathname.endsWith('/') ? sitePathname.slice(0, -1) : sitePathname;
+  return pathname === subdirectory || pathname.startsWith(`${subdirectory}/`);
+}
+
 // Same rule as url-utils' absoluteToRelative: host match (protocol ignored), a path
 // under the site's subdirectory (kept in the result), and userinfo URLs left alone.
 function toSiteRelative(value: string, site: URL): string {
@@ -102,7 +107,7 @@ function toSiteRelative(value: string, site: URL): string {
   if (parsed.username || parsed.password) {
     return value;
   }
-  if (parsed.host !== site.host || !parsed.pathname.startsWith(site.pathname)) {
+  if (parsed.host !== site.host || !underSubdirectory(parsed.pathname, site.pathname)) {
     return value;
   }
   return `${parsed.pathname}${parsed.search}${parsed.hash}`;

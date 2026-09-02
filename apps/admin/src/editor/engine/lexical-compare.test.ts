@@ -288,13 +288,19 @@ describe('normalizeSiteUrls', () => {
   it('keeps the subdirectory of a subdirectory install and ignores paths outside it', () => {
     const nodes = [
       { type: 'link', url: 'https://site.example/blog/about/', children: [] },
+      { type: 'link', url: 'https://site.example/blog', children: [] },
       { type: 'link', url: 'https://site.example/other/', children: [] },
+      { type: 'link', url: 'https://site.example/blogger/x', children: [] },
     ];
 
-    expect(normalizeSiteUrls(nodes, 'https://site.example/blog')).toEqual([
-      { type: 'link', url: '/blog/about/', children: [] },
-      { type: 'link', url: 'https://site.example/other/', children: [] },
-    ]);
+    for (const subdirectorySite of ['https://site.example/blog', 'https://site.example/blog/']) {
+      expect(normalizeSiteUrls(nodes, subdirectorySite)).toEqual([
+        { type: 'link', url: '/blog/about/', children: [] },
+        { type: 'link', url: '/blog', children: [] },
+        { type: 'link', url: 'https://site.example/other/', children: [] },
+        { type: 'link', url: 'https://site.example/blogger/x', children: [] },
+      ]);
+    }
   });
 
   it('returns the input untouched without a valid site url', () => {
