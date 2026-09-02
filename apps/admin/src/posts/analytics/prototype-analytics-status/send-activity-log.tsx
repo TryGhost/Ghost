@@ -597,6 +597,14 @@ const SendActivityLog: React.FC = () => {
       const bounced = formatNumber(counting.bouncedCount);
       const countingEta = prototype?.countingEtaSeconds ?? null;
       status.label = `All ${total} emails sent`;
+      // The remainder stated outright: testers were subtracting delivered and
+      // bounced from sent in their heads to work out what the gap was, and
+      // the estimate names what it counts down to — "left" beside a green
+      // check read as the send not being finished after all.
+      const awaiting = Math.max(
+        0,
+        send.reachedCount - counting.deliveredCount - counting.bouncedCount,
+      );
       detail = isSendFullyAccountedFor(resolved.status) ? (
         <>
           {`Delivery complete · ${delivered} delivered · ${bounced} bounced`}
@@ -605,8 +613,9 @@ const SendActivityLog: React.FC = () => {
         </>
       ) : (
         <>
-          {`Delivery still being confirmed — normal for a few minutes · ${delivered} delivered · ${bounced} bounced`}
-          {countingEta !== null && ` · ${formatEta(countingEta)}`}
+          {`Confirming delivery (this is normal) · ${delivered} delivered · ${bounced} bounced · ${formatNumber(awaiting)} awaiting confirmation`}
+          {countingEta !== null &&
+            ` · ${formatEta(countingEta).replace(/ left$/, ' until confirmed')}`}
         </>
       );
     }
