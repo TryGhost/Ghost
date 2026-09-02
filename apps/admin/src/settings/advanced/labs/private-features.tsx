@@ -50,6 +50,11 @@ const features: Feature[] = [
     flag: 'admin7PageChrome',
   },
   {
+    title: 'Admin 7 pill styles',
+    description: 'Enable the new pill-shaped controls in approved Admin areas.',
+    flag: 'admin7Pill',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
