@@ -80,10 +80,10 @@ export function EmailPreview({
   const preview = data?.email_previews[0];
   const selectedNewsletter =
     newsletters.find((newsletter) => newsletter.slug === newsletterSlug) ?? newsletters[0];
-  const senderEmail = selectedNewsletter?.sender_email ?? defaultEmailAddress ?? '';
+  const senderAddress = (sender: string | null) => sender ?? defaultEmailAddress ?? '';
 
   return (
-    <PreviewChrome data-device={device} data-testid="post-preview-email" device={device}>
+    <PreviewChrome data-testid="post-preview-email" device={device}>
       <Stack className="size-full bg-background" gap="none">
         <Stack className="border-b border-border-default p-4" gap="md">
           <Inline gap="lg" justify="between">
@@ -97,7 +97,7 @@ export function EmailPreview({
                   <SelectContent>
                     {newsletters.map((newsletter) => (
                       <SelectItem key={newsletter.id} value={newsletter.slug}>
-                        {newsletter.name}
+                        {newsletter.name} &lt;{senderAddress(newsletter.sender_email)}&gt;
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -105,7 +105,9 @@ export function EmailPreview({
               ) : (
                 <p className="min-w-0 truncate text-sm" data-testid="post-preview-email-from">
                   {selectedNewsletter?.name}{' '}
-                  <span className="text-muted-foreground">&lt;{senderEmail}&gt;</span>
+                  <span className="text-muted-foreground">
+                    &lt;{senderAddress(selectedNewsletter?.sender_email ?? null)}&gt;
+                  </span>
                 </p>
               )}
             </Inline>

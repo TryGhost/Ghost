@@ -18,6 +18,7 @@ import {
   fakeTiers,
   newsletter,
   settingsResponse,
+  staffRole,
   tier,
   type Newsletter,
   type Tier,
@@ -33,18 +34,16 @@ const CURRENT_USER_EMAIL = String(currentUserResponse().users[0].email);
 interface RenderOptions {
   isPost?: boolean;
   newsletterSlug?: string;
+  previewUrl?: string;
   onBeforeOpen?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
 }
 
-/**
- * Renders the preview modal on its own — the editor header that opens it in
- * production is not built yet — inside the app's provider stack, against the
- * acceptance harness's fake Ghost API.
- */
+/** Mounts the modal on its own, in the app's provider stack, against the fake Ghost API. */
 async function renderPreviewModal({
   isPost = true,
   newsletterSlug,
+  previewUrl = PREVIEW_URL,
   onBeforeOpen,
   onOpenChange = () => {},
 }: RenderOptions = {}) {
@@ -73,7 +72,7 @@ async function renderPreviewModal({
             isPost={isPost}
             newsletterSlug={newsletterSlug}
             postId={POST_ID}
-            previewUrl={PREVIEW_URL}
+            previewUrl={previewUrl}
             open
             onBeforeOpen={onBeforeOpen}
             onOpenChange={onOpenChange}
@@ -125,7 +124,6 @@ describe('Post preview modal', () => {
     await expect
       .element(previewScreen.browserFrame())
       .toHaveAttribute('src', `${PREVIEW_URL}?member_status=free`);
-    await expect.element(previewScreen.browserChrome()).toHaveAttribute('data-device', 'desktop');
   });
 
   it('waits for the caller to save the post before previewing it', async () => {
@@ -139,10 +137,29 @@ describe('Post preview modal', () => {
     );
     await renderPreviewModal({ onBeforeOpen });
 
+    // No frame at all until the save resolves: a frame rendered early would
+    // fetch the post as the server still has it.
     await expect(previewScreen.browserFrame()).toHaveCount(0);
     expect(onBeforeOpen).toHaveBeenCalled();
 
     releaseSave();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+  });
+
+  it('offers a retry when the save before previewing fails', async () => {
+    fakePreviewWorld();
+    let saveFails = true;
+    const onBeforeOpen = vi.fn(() =>
+      saveFails ? Promise.reject(new Error('Save failed')) : Promise.resolve(),
+    );
+    await renderPreviewModal({ onBeforeOpen });
+
+    await expect.element(previewScreen.saveFailed()).toBeVisible();
+    await expect(previewScreen.browserFrame()).toHaveCount(0);
+
+    saveFails = false;
+    await previewScreen.retryButton().click();
 
     await expect.element(previewScreen.browserFrame()).toBeVisible();
   });
@@ -194,10 +211,21 @@ describe('Post preview modal', () => {
     fakePreviewWorld();
     await renderPreviewModal();
 
+    await expect.element(previewScreen.browserChrome()).not.toHaveClass('w-[380px]');
+
     await previewScreen.mobileToggle().click();
 
-    await expect.element(previewScreen.browserChrome()).toHaveAttribute('data-device', 'mobile');
     await expect.element(previewScreen.browserChrome()).toHaveClass('w-[380px]');
+  });
+
+  it('has nothing to preview, copy or open before the post is first saved', async () => {
+    fakePreviewWorld();
+    await renderPreviewModal({ previewUrl: '' });
+
+    await expect.element(previewScreen.unavailable()).toBeVisible();
+    await expect(previewScreen.browserFrame()).toHaveCount(0);
+    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
   });
 
   it('copies the preview link for the selected audience', async () => {
@@ -323,6 +351,52 @@ describe('Post preview modal', () => {
       .toMatchObject({
         emails: ['someone@example.com'],
       });
+  });
+
+  it('reports a rejected test send', async () => {
+    installBootOverrides({ browseConfig: { response: configWithMailgun() } });
+    fakePreviewWorld();
+    fakeEmailPreview();
+    fakeAdminEndpoint(
+      'POST',
+      new RegExp(`^/email_previews/posts/${POST_ID}/`),
+      { errors: [{ message: 'Email could not be sent, verify mail settings' }] },
+      { status: 422 },
+    );
+    await renderPreviewModal();
+
+    await previewScreen.emailTab().click();
+    await previewScreen.testEmailButton().click();
+    await previewScreen.sendTestEmailButton().click();
+
+    await expect.element(previewScreen.toastWithText(/Email could not be sent/)).toBeVisible();
+  });
+
+  it('rejects an address that is not an email before sending', async () => {
+    installBootOverrides({ browseConfig: { response: configWithMailgun() } });
+    fakePreviewWorld();
+    fakeEmailPreview();
+    const sendApi = fakeTestEmailSend();
+    await renderPreviewModal();
+
+    await previewScreen.emailTab().click();
+    await previewScreen.testEmailButton().click();
+    await previewScreen.testEmailInput().fill('not-an-email');
+    await previewScreen.sendTestEmailButton().click();
+
+    await expect.element(previewScreen.toastWithText('Please enter a valid email')).toBeVisible();
+    expect(sendApi.requests).toHaveLength(0);
+  });
+
+  it('has no email preview for a contributor', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Contributor' })];
+    installBootOverrides({ browseMe: { response: me } });
+    fakePreviewWorld();
+    await renderPreviewModal();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+    await expect(previewScreen.emailTab()).toHaveCount(0);
   });
 
   it('has no email preview when newsletters are disabled', async () => {

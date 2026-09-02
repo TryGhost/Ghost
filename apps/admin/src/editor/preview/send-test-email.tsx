@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { Stack } from '@tryghost/shade/primitives';
 import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
@@ -84,27 +85,29 @@ export function SendTestEmail({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
         <form
-          className="flex flex-col gap-3"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault();
             void send();
           }}
         >
-          <Label htmlFor="post-preview-test-email">Send test email</Label>
-          <Input
-            data-testid="post-preview-test-email-input"
-            id="post-preview-test-email"
-            placeholder="you@yoursite.com"
-            type="email"
-            value={address}
-            onChange={(event) => setEditedAddress(event.target.value)}
-          />
-          <p className="text-sm text-muted-foreground">
-            You&rsquo;ll receive this as a {audienceLabel}.
-          </p>
-          <Button disabled={isPending} type="submit">
-            {isPending ? 'Sending...' : 'Send'}
-          </Button>
+          <Stack gap="md">
+            <Label htmlFor="post-preview-test-email">Send test email</Label>
+            <Input
+              data-testid="post-preview-test-email-input"
+              id="post-preview-test-email"
+              placeholder="you@yoursite.com"
+              type="email"
+              value={address}
+              onChange={(event) => setEditedAddress(event.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              You&rsquo;ll receive this as a {audienceLabel}.
+            </p>
+            <Button disabled={isPending} type="submit">
+              {isPending ? 'Sending...' : 'Send'}
+            </Button>
+          </Stack>
         </form>
       </PopoverContent>
     </Popover>

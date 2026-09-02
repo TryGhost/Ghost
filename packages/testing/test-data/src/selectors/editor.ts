@@ -22,6 +22,8 @@ export const postPreviewEmailFrame = 'post-preview-email-frame';
 export const postPreviewEmailFrom = 'post-preview-email-from';
 export const postPreviewEmailSubject = 'post-preview-email-subject';
 export const postPreviewTestEmailInput = 'post-preview-test-email-input';
+export const postPreviewUnavailable = 'post-preview-unavailable';
+export const postPreviewSaveFailed = 'post-preview-save-failed';
 
 // accessible names
 export const postsBackLink = 'Posts';
@@ -36,5 +38,6 @@ export const previewNewsletterSelectLabel = 'Newsletter';
 export const copyPreviewLinkButton = 'Copy preview link';
 export const openPreviewInNewTabLink = 'Open in new tab';
 export const closePreviewButton = 'Close';
+export const retryPreviewButton = 'Retry';
 export const testEmailButton = 'Test';
 export const sendTestEmailButton = 'Send';

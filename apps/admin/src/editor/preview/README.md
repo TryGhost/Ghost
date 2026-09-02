@@ -33,3 +33,7 @@ The Email tab is offered for posts only, when members are on, newsletters are no
 The rendered email arrives as a complete HTML document and is shown in a `srcdoc` iframe sandboxed without `allow-scripts` and without `allow-same-origin`, so it can neither run its own scripts nor reach the admin page. Scrollbar styling is concatenated into that document because the admin stylesheet does not apply inside it.
 
 Switching newsletters re-renders the preview against that newsletter, and the test send goes to exactly one address — the current user's, unless it is edited — for the audience currently selected.
+
+## Not here yet
+
+Deliberately out of this module for now, and worth picking up with the editor header that opens it: an editable email subject (it writes to the post), the over-100kB "may get clipped" warning, closing the modal from an Escape pressed inside the site preview frame, rendering an already-sent post's stored email instead of re-requesting a preview, and the managed-email sender-address override.

@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  EmptyIndicator,
   LoadingIndicator,
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 
@@ -43,6 +45,8 @@ import {
 } from './preview-url';
 
 type PreviewFormat = 'browser' | 'email';
+
+type PrepareState = 'preparing' | 'ready' | 'failed';
 
 interface SegmentOption {
   label: string;
@@ -77,16 +81,24 @@ export function PostPreviewModal({
   const [segment, setSegment] = useState<PreviewSegment>('free');
   const [pickedTierSlug, setPickedTierSlug] = useState<string | null>(null);
   const [pickedNewsletterSlug, setPickedNewsletterSlug] = useState<string | null>(null);
-  const [isPreparing, setIsPreparing] = useState(false);
+  const [prepareState, setPrepareState] = useState<PrepareState>(() =>
+    onBeforeOpen && open ? 'preparing' : 'ready',
+  );
+  const [wasOpen, setWasOpen] = useState(open);
 
+  const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
   const paidMembersEnabled = usePaidMembersEnabled();
   const newslettersEnabled = useNewslettersEnabled();
   const membersEnabled =
     getSettingValue<boolean>(settingsData?.settings ?? [], 'members_enabled') === true;
-  const isContributor = currentUser ? isContributorUser(currentUser) : false;
-  const emailAvailable = isPost && membersEnabled && Boolean(newslettersEnabled) && !isContributor;
+  const emailAvailable =
+    isPost &&
+    membersEnabled &&
+    Boolean(newslettersEnabled) &&
+    Boolean(currentUser) &&
+    !(currentUser && isContributorUser(currentUser));
 
   const { data: tiersData } = useBrowseTiers({
     searchParams: { filter: 'type:paid', limit: 'all' },
@@ -95,7 +107,7 @@ export function PostPreviewModal({
   const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
 
   const { data: newslettersData } = useBrowseNewsletters({
-    searchParams: { filter: 'status:active', limit: '50' },
+    searchParams: { filter: 'status:active', limit: 'all' },
     enabled: open && emailAvailable,
   });
   const newsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
@@ -105,26 +117,43 @@ export function PostPreviewModal({
     beforeOpen.current = onBeforeOpen;
   });
 
+  // Opening must not render a preview of the unsaved post, so the state moves
+  // during render rather than in an effect that runs after that first commit.
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    setPrepareState(open && beforeOpen.current ? 'preparing' : 'ready');
+  }
+
   useEffect(() => {
-    if (!open || !beforeOpen.current) {
+    if (!open || prepareState !== 'preparing') {
+      return;
+    }
+
+    const prepare = beforeOpen.current;
+    if (!prepare) {
+      setPrepareState('ready');
       return;
     }
 
     let cancelled = false;
-    setIsPreparing(true);
-    void beforeOpen
-      .current()
-      .catch(() => undefined)
-      .finally(() => {
+    void prepare().then(
+      () => {
         if (!cancelled) {
-          setIsPreparing(false);
+          setPrepareState('ready');
         }
-      });
+      },
+      (error: unknown) => {
+        if (!cancelled) {
+          handleError(error);
+          setPrepareState('failed');
+        }
+      },
+    );
 
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [handleError, open, prepareState]);
 
   const segmentOptions = useMemo<SegmentOption[]>(() => {
     const options: SegmentOption[] =
@@ -152,12 +181,12 @@ export function PostPreviewModal({
   const activeTiers = tiers.filter((tier) => tier.active);
   const archivedTiers = tiers.filter((tier) => !tier.active);
 
-  const postNewsletterSlug = newsletters.find(
-    (newsletter) => newsletter.slug === newsletterSlug,
-  )?.slug;
-  const selectedNewsletterSlug = pickedNewsletterSlug ?? postNewsletterSlug ?? newsletters[0]?.slug;
+  // The post's own newsletter wins even when it is no longer on the active
+  // list, because that is the newsletter its email would be rendered for.
+  const selectedNewsletterSlug = pickedNewsletterSlug ?? newsletterSlug ?? newsletters[0]?.slug;
 
   const audience: PreviewAudience = { segment, tierSlug };
+  const audienceUrl = browserPreviewUrl(previewUrl, audience);
   const showSegmentSelect = format === 'browser' || segmentOptions.length > 1;
   const showTierSelect = segment === 'tier' && tiers.length > 0;
   const showEmail = format === 'email' && emailAvailable;
@@ -172,7 +201,7 @@ export function PostPreviewModal({
 
   const copyPreviewLink = async () => {
     try {
-      await navigator.clipboard.writeText(browserPreviewUrl(previewUrl, audience));
+      await navigator.clipboard.writeText(audienceUrl);
       toast.success('Preview link copied');
     } catch {
       toast.error('Could not copy the preview link');
@@ -267,29 +296,47 @@ export function PostPreviewModal({
           <Inline gap="sm">
             <Button
               aria-label="Copy preview link"
+              disabled={!audienceUrl}
               variant="outline"
               onClick={() => void copyPreviewLink()}
             >
               <LucideIcon.Link />
             </Button>
-            <Button variant="outline" asChild>
-              <a
-                href={browserPreviewUrl(previewUrl, audience)}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+            {audienceUrl ? (
+              <Button variant="outline" asChild>
+                <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
+                  <LucideIcon.ExternalLink />
+                  Open in new tab
+                </a>
+              </Button>
+            ) : (
+              <Button variant="outline" disabled>
                 <LucideIcon.ExternalLink />
                 Open in new tab
-              </a>
-            </Button>
+              </Button>
+            )}
             <Button onClick={() => onOpenChange(false)}>Close</Button>
           </Inline>
         </DialogHeader>
         <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
-          {isPreparing ? (
+          {prepareState === 'preparing' ? (
             <Inline align="center" className="grow" gap="none" justify="center">
               <LoadingIndicator size="lg" />
             </Inline>
+          ) : prepareState === 'failed' ? (
+            <EmptyIndicator
+              actions={
+                <Button variant="outline" onClick={() => setPrepareState('preparing')}>
+                  Retry
+                </Button>
+              }
+              className="grow justify-center"
+              data-testid="post-preview-save-failed"
+              description="Saving the post failed, so there is nothing new to preview."
+              title="Couldn’t preview this post"
+            >
+              <LucideIcon.TriangleAlert />
+            </EmptyIndicator>
           ) : showEmail ? (
             <EmailPreview
               audience={audience}
