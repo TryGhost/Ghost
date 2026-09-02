@@ -58,6 +58,13 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 }
 
 async function assertMemberEvents({ eventType, memberId, asserts }) {
+  // These rows are not written by the request under test. Ghost dispatches the member
+  // and subscription events once the transaction that created them has committed, and a
+  // subscriber then writes a row for each one. That write is still running when the
+  // response reaches us, so read the rows only once every dispatched event has been
+  // handled.
+  await DomainEvents.allSettled();
+
   const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
   for (let i = 0; i < asserts.length; i++) {
     assertObjectMatches(events[i], asserts[i]);
