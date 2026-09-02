@@ -140,3 +140,53 @@ Both blocks feed the state directly. An email block disables the email publish t
 `isDirty` compares the publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
 
 `reset()` restores every option and re-arms the automatic type fallback that `setPublishType()` disables. It takes a fresh scheduled time from the current clock, since the floor the machine was created with may itself have passed.
+
+# Publish flow
+
+`PublishFlowModal` is the screen that machine drives. It renders the three steps of Ghost's publish flow — options, confirm, complete — plus the email-failure step, over a fullscreen Shade dialog.
+
+It is self-contained: the caller supplies the post projection, the site and user inputs, the site timezone and a `dispatch` function, and gets back a flow that publishes. The caller passes the save engine's `dispatch` unchanged; the modal never touches the engine, the editor session or the router. `usePublishInputs()` assembles the site and user inputs from the API for callers that have no better source.
+
+## Steps
+
+The flow is a four-way branch, in the same precedence as the Ember template it replaces:
+
+| Condition                                | Step                         |
+| ---------------------------------------- | ---------------------------- |
+| An email failed, at open or after saving | `CompleteWithEmailErrorStep` |
+| The publish landed                       | `CompleteStep`               |
+| The user asked for the final review      | `ConfirmStep`                |
+| Otherwise                                | `OptionsStep`                |
+
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+
+## Gates
+
+Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. As in Ember they never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
+
+## Publishing
+
+Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the completion the engine returns:
+
+| Completion              | Result                                                              |
+| ----------------------- | ------------------------------------------------------------------- |
+| `saved`                 | The email confirmation runs when the publish emails immediately     |
+| `needs-retry`           | Back to confirm with the re-auth message; the user retries in place |
+| `failed` (`conflict`)   | The collision message, in place                                     |
+| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link      |
+| `failed` (`validation`) | The validation message, in place                                    |
+| `dropped`/`superseded`  | The post is no longer publishable from here                         |
+
+No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`) that the posts list reads, and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
+
+## Email confirmation
+
+A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously. The flow hands the post to `createEmailConfirmation()` and waits. Every outcome but `failed` completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — while a failure moves to the email-error step with the message the API stored. The email's id is only knowable from a reload, so the poller's reload records it for the retry.
+
+## Update flow
+
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action Ember offers: reverting to a draft, dispatched as `toRevertDispatch()`. It forces the newsletter name into its copy when the post's newsletter has since been archived, so a historic send is never described against the wrong newsletter.
+
+## Not yet ported
+
+The email size warning renders its slot but not its estimate; the estimate needs the Ember `email-size-warning` service ported. The host limit ports are optional and unset, so `checkLimits()` currently finds no blocks unless a caller supplies them.

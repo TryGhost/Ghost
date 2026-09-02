@@ -1,0 +1,320 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
+import { render } from 'vitest-browser-react';
+
+import { fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import { TestWrapper } from '@test-utils/fixtures/query-client';
+import '@/index.css';
+
+import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
+import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
+import { publishScreen } from '@/editor/publish/publish.screen';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type {
+  PublishDispatch,
+  PublishSiteInput,
+  PublishUserInput,
+} from '@/editor/publish/publish-options';
+import type { SaveCompletion, SaveErrorKind } from '@/editor/engine/save-engine';
+
+const POST_ID = 'post-1';
+const EMAIL_ID = 'email-1';
+const EVERYONE = 'status:free,status:-free';
+// The email poller waits a second between reads, so these journeys outlast the default timeout.
+const SLOW = 25_000;
+
+const SITE: PublishSiteInput = {
+  membersEnabled: true,
+  mailgunConfigured: true,
+  editorDefaultEmailRecipients: 'visibility',
+  editorDefaultEmailRecipientsFilter: null,
+  memberCount: 20,
+  newsletters: [
+    { slug: 'weekly', name: 'Weekly', status: 'active', visibility: 'members', sortOrder: 0 },
+  ],
+};
+
+const USER: PublishUserInput = { isAdmin: true, isAuthorOrContributor: false };
+
+function draft(overrides: Partial<PublishFlowPost> = {}): PublishFlowPost {
+  return {
+    id: POST_ID,
+    displayName: 'post',
+    status: 'draft',
+    title: 'Hello from React',
+    excerpt: 'A short summary',
+    url: 'https://example.com/hello-from-react/',
+    visibility: 'public',
+    publishedAt: null,
+    ...overrides,
+  };
+}
+
+function saved(status: PublishFlowPost['status'] = 'published'): SaveCompletion {
+  return {
+    kind: 'saved',
+    result: { id: POST_ID, status, updatedAt: '2026-09-02T10:00:00.000Z' },
+    executedAs: status === 'scheduled' ? 'schedule' : 'publish',
+  };
+}
+
+function failed(kind: SaveErrorKind, message: string): SaveCompletion {
+  return { kind: 'failed', error: { kind, message }, executedAs: 'publish' };
+}
+
+/** Member counts for every recipient probe the flow makes. */
+function fakeMemberCounts(total: number) {
+  return fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total, next: null, prev: null } },
+  });
+}
+
+/** The published-post total the complete step counts up from. */
+function fakePublishedCount(total: number) {
+  return fakeAdminEndpoint('GET', /^\/posts\/\?/, {
+    posts: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total, next: null, prev: null } },
+  });
+}
+
+/** What the email poller reads back after the save. */
+function fakeEmailPolling(...states: Array<{ status: string; error?: string | null }>) {
+  let index = 0;
+
+  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => {
+    const email = states[Math.min(index, states.length - 1)];
+    index += 1;
+
+    return {
+      posts: [
+        {
+          id: POST_ID,
+          status: 'published',
+          email: { id: EMAIL_ID, email_count: 20, opened_count: 0, ...email },
+        },
+      ],
+    };
+  });
+}
+
+function completesWith(completion: SaveCompletion) {
+  return vi.fn((command: PublishDispatch): Promise<SaveCompletion> => {
+    void command;
+    return Promise.resolve(completion);
+  });
+}
+
+async function renderPublishFlow(
+  props: Partial<React.ComponentProps<typeof PublishFlowModal>> = {},
+) {
+  const dispatch = completesWith(saved());
+
+  await render(
+    <TestWrapper>
+      <PublishFlowModal
+        dispatch={dispatch}
+        post={draft()}
+        site={SITE}
+        timezone="Etc/UTC"
+        user={USER}
+        onClose={() => {}}
+        {...props}
+      />
+    </TestWrapper>,
+  );
+
+  return { dispatch };
+}
+
+describe('Publish flow', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    fakeMemberCounts(20);
+    fakePublishedCount(41);
+    fakeEmailPolling({ status: 'submitted' });
+    fakeTiers([]);
+    fakeLabels([]);
+  });
+
+  it(
+    'publishes and emails a draft, then hands the celebration to the list',
+    async () => {
+      const { dispatch } = await renderPublishFlow();
+
+      await expect.element(publishScreen.options()).toBeInTheDocument();
+      await publishScreen.continueButton().click();
+
+      await expect.element(publishScreen.confirm()).toBeInTheDocument();
+      await expect
+        .element(publishScreen.confirmButton())
+        .toHaveTextContent('Publish & send, right now');
+
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.complete()).toBeInTheDocument();
+      expect(dispatch).toHaveBeenCalledWith({
+        kind: 'publish',
+        options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
+      });
+      expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+        id: POST_ID,
+        type: 'post',
+      });
+      await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+      await expect
+        .element(publishScreen.complete())
+        .toHaveTextContent('That’s 42 posts published, keep going!');
+    },
+    SLOW,
+  );
+
+  it('schedules a draft and hands over the scheduled celebration key', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+
+    const command = dispatch.mock.calls[0][0];
+    expect(command.kind).toBe('schedule');
+    expect(command).toMatchObject({
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+    expect(
+      Date.parse(command.kind === 'schedule' ? command.options.publishedAt : ''),
+    ).toBeGreaterThan(Date.now());
+    expect(localStorage.getItem('ghost-last-scheduled-post')).not.toBeNull();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it(
+    'sends without publishing when the email-only type is chosen',
+    async () => {
+      fakeEmailPolling({ status: 'submitted' });
+      const { dispatch } = await renderPublishFlow();
+
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Email only').click();
+      await publishScreen.continueButton().click();
+
+      await expect
+        .element(publishScreen.confirm())
+        .toHaveTextContent('and will not be published on your site.');
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.complete()).toBeInTheDocument();
+      expect(dispatch).toHaveBeenCalledWith({
+        kind: 'publish',
+        options: { emailOnly: true, newsletter: 'weekly', emailSegment: EVERYONE },
+      });
+    },
+    SLOW,
+  );
+
+  it('gates the flow behind the TK reminder', async () => {
+    await renderPublishFlow({ tkCount: 2 });
+
+    await expect.element(publishScreen.tkReminder()).toHaveTextContent('2 TK reminders');
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('warns about an ineffective public preview before opening the flow', async () => {
+    await renderPublishFlow({
+      paywallImprovements: true,
+      post: draft({
+        visibility: 'public',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', text: 'a' }] },
+              { type: 'paywall' },
+              { type: 'paragraph', children: [{ type: 'text', text: 'b' }] },
+            ],
+          },
+        }),
+      }),
+    });
+
+    await expect
+      .element(publishScreen.publicPreviewWarning())
+      .toHaveTextContent('Public preview has no effect');
+  });
+
+  it('keeps the user on confirm when re-auth interrupts the publish', async () => {
+    const dispatch = completesWith({ kind: 'needs-retry' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your session expired');
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+  });
+
+  it('explains a collision instead of completing', async () => {
+    const dispatch = completesWith(failed('conflict', 'Saving failed! Someone else is editing'));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Someone else has edited this post');
+  });
+
+  it(
+    'offers a retry when the email fails after a successful publish',
+    async () => {
+      fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+      const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+      await renderPublishFlow();
+
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+      await publishScreen.retryEmailButton().click();
+
+      await expect.element(publishScreen.complete()).toBeInTheDocument();
+      expect(retryApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+});
+
+describe('Update flow', () => {
+  beforeEach(() => {
+    fakeMemberCounts(20);
+  });
+
+  it('reverts a published post to a draft', async () => {
+    const dispatch = completesWith(saved('draft'));
+    const onClose = vi.fn();
+
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+        />
+      </TestWrapper>,
+    );
+
+    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('has been published');
+    await publishScreen.revertToDraft().click();
+
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'revert' });
+    await expect.poll(() => onClose.mock.calls.length).toBe(1);
+  });
+});
