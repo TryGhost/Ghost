@@ -259,27 +259,30 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
-  // 20:00 UTC on the 3rd is already the 4th in Auckland, and the schedule lands
-  // ten minutes later, so the site day differs from UTC and from US zones alike.
-  it('keeps the calendar on the site timezone day the field shows', async () => {
-    await renderPublishFlow({
-      timezone: 'Pacific/Auckland',
-      now: () => new Date('2026-09-03T20:00:00.000Z'),
-    });
+  // One pinned instant, two zones a day apart: whatever zone the runner uses, it
+  // agrees with at most one of them, so a browser-day mapping fails at least one.
+  it.each([
+    ['Pacific/Auckland', '2026-09-04', '4'],
+    ['Pacific/Honolulu', '2026-09-03', '3'],
+  ])(
+    'keeps the calendar on the site timezone day the field shows (%s)',
+    async (timezone, date, day) => {
+      await renderPublishFlow({ timezone, now: () => new Date('2026-09-03T20:00:00.000Z') });
 
-    await publishScreen.setting('publish-at').click();
-    await page.getByLabelText('Schedule for later').click();
+      await publishScreen.setting('publish-at').click();
+      await page.getByLabelText('Schedule for later').click();
 
-    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
-    await publishScreen.scheduleDate().click();
+      await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
+      await publishScreen.scheduleDate().click();
 
-    const selected = page.getByRole('gridcell', { selected: true });
-    await expect.element(selected).toHaveTextContent('4');
+      const selected = page.getByRole('gridcell', { selected: true });
+      await expect.element(selected).toHaveTextContent(day);
 
-    // Committing the day the calendar highlights must not move the date.
-    await selected.click();
-    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
-  });
+      // Committing the day the calendar highlights must not move the date.
+      await selected.click();
+      await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
+    },
+  );
 
   it(
     'sends without publishing when the email-only type is chosen',
@@ -412,10 +415,40 @@ describe('Publish flow', () => {
 
       await expect
         .element(publishScreen.completeNote())
-        .toHaveTextContent('could not confirm the newsletter was sent');
-      await expect.element(publishScreen.complete()).toBeInTheDocument();
+        .toHaveTextContent('couldn’t confirm the newsletter was sent');
+      await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
       expect(dispatch).toHaveBeenCalledTimes(1);
       expect(onCompleted).toHaveBeenCalledTimes(1);
+    },
+    SLOW,
+  );
+
+  it(
+    'never claims an email-only send landed when it could not be confirmed',
+    async () => {
+      fakeAdminEndpoint(
+        'GET',
+        new RegExp(`^/posts/${POST_ID}/\\?`),
+        { errors: [{ message: 'Authorization failed' }] },
+        { status: 401 },
+      );
+      await renderPublishFlow();
+
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Email only').click();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect
+        .element(publishScreen.completeNote())
+        .toHaveTextContent('couldn’t confirm the newsletter was sent');
+      // Nothing on the step may assert a send, or celebrate one.
+      await expect
+        .element(publishScreen.complete())
+        .toHaveTextContent('Your post has been created');
+      await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
+      await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
+      await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
     },
     SLOW,
   );

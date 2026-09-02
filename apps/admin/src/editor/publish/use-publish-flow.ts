@@ -71,7 +71,7 @@ export interface PublishFlow {
 const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
 export const EMAIL_UNCONFIRMED =
-  'This was published, but we could not confirm the newsletter was sent. Check the post’s email status from the posts list.';
+  'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
 
 function initialEmailError(post: PublishFlowPost): string | null {
   return post.email?.status === 'failed' ? (post.email.error ?? UNKNOWN_EMAIL_ERROR) : null;

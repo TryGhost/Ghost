@@ -77,6 +77,8 @@ export function CompleteStep({
     : (completedAt ?? post.publishedAt ?? state.scheduledAt);
 
   const deliveryVerb = emailOnly ? 'sent' : captured.willEmail ? 'published and sent' : 'published';
+  // With a note the send is the unknown, so nothing here may claim one landed.
+  const unconfirmed = Boolean(note);
 
   return (
     <Stack data-testid={publishFlowComplete} gap="xl">
@@ -94,9 +96,15 @@ export function CompleteStep({
           </>
         ) : (
           <>
-            <span className="text-state-success">Boom. It’s out there.</span>{' '}
+            {emailOnly && unconfirmed ? null : (
+              <span className="text-state-success">Boom. It’s out there. </span>
+            )}
             {emailOnly ? (
-              'Your email has been sent.'
+              unconfirmed ? (
+                <>Your {post.displayName} has been created.</>
+              ) : (
+                'Your email has been sent.'
+              )
             ) : post.displayName === 'post' && postCount ? (
               <>
                 That’s {formatNumber(postCount)} {postCount === 1 ? 'post' : 'posts'} published,
@@ -111,22 +119,24 @@ export function CompleteStep({
 
       {emailOnly ? (
         <Stack gap="md">
-          <Text>
-            Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
-            <strong>
-              {recipientsConfirmLabel({
-                recipientType: getRecipientType(state.recipientFilter),
-                count,
-              })}
-            </strong>
-            {state.onlyDefaultNewsletter ? null : (
-              <>
-                {' '}
-                of <strong>{state.newsletter?.name}</strong>
-              </>
-            )}{' '}
-            on {formatSiteDateTime(publishedAt, timezone)}.
-          </Text>
+          {unconfirmed ? null : (
+            <Text>
+              Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
+              <strong>
+                {recipientsConfirmLabel({
+                  recipientType: getRecipientType(state.recipientFilter),
+                  count,
+                })}
+              </strong>
+              {state.onlyDefaultNewsletter ? null : (
+                <>
+                  {' '}
+                  of <strong>{state.newsletter?.name}</strong>
+                </>
+              )}{' '}
+              on {formatSiteDateTime(publishedAt, timezone)}.
+            </Text>
+          )}
           {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
         </Stack>
       ) : (

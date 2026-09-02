@@ -149,7 +149,7 @@ It is self-contained: the caller supplies the post projection, the site and user
 
 ## Steps
 
-The flow is a four-way branch, in the same precedence as the Ember template it replaces:
+The flow is a four-way branch, taken in this order:
 
 | Condition                                | Step                         |
 | ---------------------------------------- | ---------------------------- |
@@ -162,7 +162,7 @@ The flow is a four-way branch, in the same precedence as the Ember template it r
 
 ## Gates
 
-Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. As in Ember they never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
+Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. They never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
 
 ## Publishing
 
@@ -177,7 +177,7 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 | `failed` (`validation`) | The validation message, in place                                    |
 | `dropped`/`superseded`  | The post is no longer publishable from here                         |
 
-No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`) that the posts list reads, and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
+No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
 
 ## Email confirmation
 
@@ -199,7 +199,7 @@ Nothing else can opt out yet. `createQuery` and `createInfiniteQuery` build thei
 
 ## Update flow
 
-`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action Ember offers: reverting to a draft, dispatched as `toRevertDispatch()`.
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`.
 
 It reads the newsletter from the post rather than from the options machine, because the machine only ever exposes a selectable newsletter: a post sent to a since-archived one would be described against the site's default instead.
 
@@ -207,4 +207,6 @@ That reading depends on what the caller supplies. `newsletterName` and `newslett
 
 ## Not yet ported
 
-The email size warning renders its slot but not its estimate; the estimate needs the Ember `email-size-warning` service ported. The host limit ports are optional and unset, so `checkLimits()` currently finds no blocks unless a caller supplies them.
+The size of a newsletter is not shown. The options step keeps the slot the warning belongs in, but nothing measures the rendered email yet, so a send over the 100kB clipping threshold goes unflagged.
+
+The host limit ports are optional and unset, so `checkLimits()` finds no blocks unless a caller supplies them.
