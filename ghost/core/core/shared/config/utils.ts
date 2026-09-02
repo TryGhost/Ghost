@@ -90,9 +90,35 @@ function getNodeEnv(): string {
   return process.env.NODE_ENV || 'development';
 }
 
+// jsonc-parser reports character offsets, but a line and column is what someone
+// needs to fix the file
+function offsetToLineColumn(text: string, offset: number): string {
+  const preceding = text.slice(0, offset);
+  const line = preceding.split('\n').length;
+  const column = offset - (preceding.lastIndexOf('\n') + 1) + 1;
+  return `${line}:${column}`;
+}
+
 const jsoncFormat: IFormat = {
+  // jsonc.parse is error-tolerant by default, so collect the errors and throw to
+  // match the loud failure a malformed .json config file produces
   parse: function (text: string) {
-    return jsonc.parse(text);
+    const errors: jsonc.ParseError[] = [];
+    // trailing commas are part of what makes a .jsonc file easier to hand-edit
+    const result = jsonc.parse(text, errors, { allowTrailingComma: true });
+
+    if (errors.length > 0) {
+      const details = errors
+        .map(
+          ({ error, offset }) =>
+            `${jsonc.printParseErrorCode(error)} at ${offsetToLineColumn(text, offset)}`,
+        )
+        .join(', ');
+      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      throw new Error(details);
+    }
+
+    return result;
   },
   stringify: function (obj: unknown, replacer: unknown, spacing?: unknown) {
     return JSON.stringify(

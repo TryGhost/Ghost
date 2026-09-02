@@ -22,12 +22,13 @@ this list:
 2. Command-line arguments
 3. Secret files referenced by environment variables
 4. Environment variables
-5. `config.<NODE_ENV>.json` in `ghost/core/`
-6. Docker development defaults when `GHOST_DEV_IS_DOCKER=true`
-7. `config.local.json` in `ghost/core/`
+5. `config.<NODE_ENV>.jsonc` in `ghost/core/`
+6. `config.<NODE_ENV>.json` in `ghost/core/`
+7. Docker development defaults when `GHOST_DEV_IS_DOCKER=true`
 8. `config.local.jsonc` in `ghost/core/`
-9. Environment defaults in `core/shared/config/env/config.<NODE_ENV>.json`
-10. Global defaults in `core/shared/config/defaults.json`
+9. `config.local.json` in `ghost/core/`
+10. Environment defaults in `core/shared/config/env/config.<NODE_ENV>.json`
+11. Global defaults in `core/shared/config/defaults.json`
 
 Internal overrides cannot be replaced by another configuration source.
 `NODE_ENV` defaults to `development`. Environments whose names begin with
@@ -45,8 +46,9 @@ Create `ghost/core/config.local.json` for local overrides:
 }
 ```
 
-Use `config.local.jsonc` instead if comments are useful. If both local files
-define the same key, `config.local.json` takes precedence. Do not modify the
+Use `config.local.jsonc` instead if comments are useful. When both files define
+the same key, the `.jsonc` file takes precedence — the same rule applies to
+`config.<NODE_ENV>.jsonc` and `config.<NODE_ENV>.json`. Do not modify the
 tracked `config.development.json`, or commit credentials and local overrides.
 
 The standard `pnpm dev` environment also supplies container connection values

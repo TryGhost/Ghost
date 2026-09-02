@@ -68,6 +68,38 @@ describe('Config Utils', function () {
     });
   });
 
+  describe('jsoncFormat', function () {
+    it('parses JSONC, ignoring comments and trailing commas', function () {
+      const parsed = configUtils.jsoncFormat.parse(
+        '{\n  // a comment\n  "logging": {"level": "debug"},\n}',
+      );
+
+      assert.deepEqual(parsed, { logging: { level: 'debug' } });
+    });
+
+    it('throws on a truncated file rather than returning partial config', function () {
+      assert.throws(
+        () => configUtils.jsoncFormat.parse('{"database": {"connection": {"password": "hunter2"'),
+        /CloseBraceExpected at 1:51/,
+      );
+    });
+
+    it('reports every parse error, not just the first', function () {
+      let message;
+
+      try {
+        configUtils.jsoncFormat.parse('{\n  "a": 1,,\n  "b" 2,\n  "c": [1 2]\n}');
+      } catch (err) {
+        message = err.message;
+      }
+
+      assert.equal(
+        message,
+        'PropertyNameExpected at 2:10, ValueExpected at 2:10, ColonExpected at 3:7, CommaExpected at 4:11',
+      );
+    });
+  });
+
   describe('sanitizeDatabaseProperties', function () {
     let nconf;
 

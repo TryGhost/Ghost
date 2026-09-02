@@ -146,6 +146,80 @@ describe('Config Loader', function () {
       assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
     });
 
+    it('config.<env>.jsonc is stronger than config.<env>.json', function () {
+      process.env.NODE_ENV = 'development';
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.development.json'),
+        JSON.stringify({ logging: { level: 'weaker' }, database: { client: 'from-json' } }),
+      );
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.development.jsonc'),
+        '{\n  // stronger\n  "logging": {"level": "stronger"}\n}',
+      );
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: tmpDir,
+      });
+
+      assert.equal(customConfig.get('logging:level'), 'stronger');
+      // keys only present in the json file still apply
+      assert.equal(customConfig.get('database:client'), 'from-json');
+    });
+
+    it('config.local.jsonc is stronger than config.local.json', function () {
+      process.env.NODE_ENV = 'development';
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.local.json'),
+        JSON.stringify({ logging: { level: 'weaker' }, database: { client: 'from-json' } }),
+      );
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.local.jsonc'),
+        '{\n  // stronger\n  "logging": {"level": "stronger"}\n}',
+      );
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: tmpDir,
+      });
+
+      assert.equal(customConfig.get('logging:level'), 'stronger');
+      assert.equal(customConfig.get('database:client'), 'from-json');
+    });
+
+    it('config.<env>.jsonc is stronger than the local config files', function () {
+      process.env.NODE_ENV = 'development';
+      fs.writeFileSync(path.join(tmpDir, 'config.local.jsonc'), '{"logging": {"level": "weaker"}}');
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.development.jsonc'),
+        '{"logging": {"level": "stronger"}}',
+      );
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: tmpDir,
+      });
+
+      assert.equal(customConfig.get('logging:level'), 'stronger');
+    });
+
+    it('throws with the file path when a JSONC config file is malformed', function () {
+      process.env.NODE_ENV = 'development';
+      fs.writeFileSync(
+        path.join(tmpDir, 'config.development.jsonc'),
+        '{"database": {"connection": {"password": "hunter2"',
+      );
+
+      assert.throws(
+        () =>
+          loader.loadNconf({
+            baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+            customConfigPath: tmpDir,
+          }),
+        /Error parsing your configuration file: \[.*config\.development\.jsonc\]: CloseBraceExpected at 1:51/,
+      );
+    });
+
     it('should load JSONC files', function () {
       process.env.NODE_ENV = 'development';
       customConfig = loader.loadNconf({

@@ -43,16 +43,20 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   });
 
   // Now load various config json files
-  nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
+  nconf.file('custom-env-jsonc', {
+    file: path.join(customConfigPath, `config.${env}.jsonc`),
+    format: localUtils.jsoncFormat,
+  });
+  nconf.file('custom-env', path.join(customConfigPath, `config.${env}.json`));
   if (!env.startsWith('testing')) {
     if (process.env.GHOST_DEV_IS_DOCKER === 'true') {
       nconf.file('docker-env', path.join(baseConfigPath, 'env', 'config.development.docker.json'));
     }
-    nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
     nconf.file('local-env-jsonc', {
       file: path.join(customConfigPath, 'config.local.jsonc'),
       format: localUtils.jsoncFormat,
     });
+    nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
   }
   nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
 
