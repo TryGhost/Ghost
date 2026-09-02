@@ -182,8 +182,13 @@ export const buildStatus = (
   progress?: PlaybackProgress,
 ): AnalyticsStatus => {
   const recipientCount = FIXTURE_RECIPIENT_COUNT;
+  // Batches leave in blocks, so the counter climbs in thousands rather than
+  // trembling through every integer — until the end, which is the exact list
+  // and not a round number.
   const reachedCount = progress
-    ? Math.round(recipientCount * progress.sent)
+    ? progress.sent >= 1
+      ? recipientCount
+      : Math.floor((recipientCount * progress.sent) / 1000) * 1000
     : {
         preparing: 0,
         sending: 196_800,

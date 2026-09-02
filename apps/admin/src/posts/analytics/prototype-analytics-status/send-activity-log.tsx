@@ -56,19 +56,19 @@ import { useStatusCopy } from './use-status-copy';
 import type { AnalyticsStatus } from './types';
 
 /**
- * A time-left estimate a human would say out loud, not a stopwatch. Seconds
- * are rounded up to the nearest five so the countdown moves without
- * flickering, and anything over a minute talks in minutes — a reader planning
- * around the wait does not need precision the estimate never had.
+ * A time-left estimate a human would say out loud, not a stopwatch. Never in
+ * seconds: a seconds figure fluctuates, and a fluctuating promise reads as a
+ * system that does not know — minutes granularity is all the precision the
+ * estimate ever had.
  */
 const formatEta = (seconds: number): string => {
-  if (seconds >= 90) {
+  if (seconds > 80) {
     return `About ${Math.ceil(seconds / 60)} minutes left`;
   }
-  if (seconds >= 60) {
+  if (seconds > 40) {
     return 'About a minute left';
   }
-  return `About ${Math.max(5, Math.ceil(seconds / 5) * 5)} seconds left`;
+  return 'Less than a minute left';
 };
 
 /**
@@ -543,9 +543,10 @@ const SendActivityLog: React.FC = () => {
 
     // Preparation counted in emails rather than a percentage, the same shape
     // sending uses, so the number a reader starts watching is the number that
-    // keeps counting through the whole send.
+    // keeps counting through the whole send. In thousands, like the send
+    // counter: the list is cut in blocks, not one member at a time.
     if (send.state === 'preparing') {
-      const preparedCount = Math.round(send.preparedFraction * send.recipientCount);
+      const preparedCount = Math.floor((send.preparedFraction * send.recipientCount) / 1000) * 1000;
       status.detail = `${formatNumber(preparedCount)} of ${formatNumber(send.recipientCount)}`;
     }
 
@@ -569,7 +570,8 @@ const SendActivityLog: React.FC = () => {
       <Inline align="center" gap="md" justify="between">
         <Inline align="center" gap="sm">
           <StatusGlyph status={resolved.status} />
-          <Text size="sm">
+          {/* Tabular figures so the line holds still while its numbers climb. */}
+          <Text className="tabular-nums" size="sm">
             <Text as="strong" size="sm" weight="semibold">
               {status.label}
               {isPreparing && <AnimatedEllipsis />}
