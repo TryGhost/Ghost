@@ -7,16 +7,36 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PLAYBACK_MS,
+  PREPARING_END_POSITION,
+  PREPARING_ETA_SECONDS,
   PrototypeContext,
   type PrototypeContextValue,
   type PrototypeState,
   SEND_COMPLETE_POSITION,
+  SENDING_ETA_SECONDS,
   STORAGE_KEY,
   buildStatus,
   playbackProgress,
   playbackStates,
   readStoredState,
 } from './prototype-context';
+
+/**
+ * The current phase's remaining budget on the send's fictional clock:
+ * preparation counts down from its two minutes, then sending from its four.
+ * See PREPARING_ETA_SECONDS for why this is not the playback's own clock.
+ */
+const etaSecondsAt = (position: number): number | null => {
+  if (position < PREPARING_END_POSITION) {
+    return Math.ceil((1 - position / PREPARING_END_POSITION) * PREPARING_ETA_SECONDS);
+  }
+  if (position < SEND_COMPLETE_POSITION) {
+    const sendSpan = SEND_COMPLETE_POSITION - PREPARING_END_POSITION;
+    const remaining = (SEND_COMPLETE_POSITION - position) / sendSpan;
+    return Math.ceil(remaining * SENDING_ETA_SECONDS);
+  }
+  return null;
+};
 import type { CountingState, EmailDataTreatment, SendState, StatusVariant } from './types';
 
 const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -107,10 +127,7 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       status: buildStatus(activeSend, activeCounting, progress),
       // Recomputed on every tick because `position` is a dependency of this
       // memo, which is what makes the line's estimate count down live.
-      sendEtaSeconds:
-        isPlaying && position !== null && position < SEND_COMPLETE_POSITION
-          ? Math.max(0, Math.ceil(((SEND_COMPLETE_POSITION - position) * PLAYBACK_MS) / 1000))
-          : null,
+      sendEtaSeconds: isPlaying && position !== null ? etaSecondsAt(position) : null,
       isPlaying,
       isPaused: !isPlaying && position !== null && position < 1,
       hasPlayback: position !== null,

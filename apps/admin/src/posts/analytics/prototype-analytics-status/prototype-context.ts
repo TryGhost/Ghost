@@ -63,6 +63,20 @@ const clamp = (value: number): number => Math.max(0, Math.min(1, value));
  */
 export const SEND_COMPLETE_POSITION = 0.45;
 
+/** Where preparation hands off to sending, from the fractions below. */
+export const PREPARING_END_POSITION = 0.12;
+
+/**
+ * The ETA the sending line shows runs on the send's own fictional clock, not
+ * the playback's: a demo compressed into a minute would otherwise promise
+ * "about 30 seconds" for a send that takes minutes in reality. Each phase
+ * counts down from its own budget — preparation from two minutes, sending
+ * from four — scaled by how far through the phase the run is, so the figures
+ * shrink live while staying at the magnitude a real send would show.
+ */
+export const PREPARING_ETA_SECONDS = 2 * 60;
+export const SENDING_ETA_SECONDS = 4 * 60;
+
 export const playbackProgress = (position: number): PlaybackProgress => ({
   // Three seconds of preparation: published, nothing out yet. Long enough to
   // read, short enough that it is not the thing the run is about — this is the
@@ -86,10 +100,11 @@ export const playbackStates = (
 export interface PrototypeContextValue extends PrototypeState {
   status: AnalyticsStatus;
   /**
-   * Seconds until the send reaches 100%, recomputed on every playback tick so
-   * it counts down as the run advances. Null when nothing is playing (a state
-   * picked from the switcher is a frozen snapshot with no clock to estimate
-   * from) and once the last batch is away.
+   * Time left in the current phase, in the send's fictional seconds (see
+   * PREPARING_ETA_SECONDS), recomputed on every playback tick so it counts
+   * down as the run advances. Null when nothing is playing (a state picked
+   * from the switcher is a frozen snapshot with no clock to estimate from)
+   * and once the last batch is away.
    */
   sendEtaSeconds: number | null;
   isPlaying: boolean;
@@ -140,7 +155,7 @@ export const readStoredState = (): PrototypeState => {
 const minutesAgo = (minutes: number): Date => new Date(Date.now() - minutes * 60_000);
 
 /**
- * Stubbed numbers, sized like a Tangle-scale send so the copy is stress-tested
+ * Stubbed numbers, sized beyond half a million so the copy is stress-tested
  * at the width it has to survive. The two dimensions are built independently,
  * which is the whole point: every combination is reachable, including a failed
  * send whose successful batches are still hours behind.
@@ -150,14 +165,14 @@ export const buildStatus = (
   counting: CountingState,
   progress?: PlaybackProgress,
 ): AnalyticsStatus => {
-  const recipientCount = 87_420;
+  const recipientCount = 547_120;
   const reachedCount = progress
     ? Math.round(recipientCount * progress.sent)
     : {
         preparing: 0,
-        sending: 31_500,
+        sending: 196_800,
         submitted: recipientCount,
-        partiallyFailed: 52_900,
+        partiallyFailed: 331_000,
         failed: 0,
       }[send];
 
