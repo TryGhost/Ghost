@@ -7,8 +7,29 @@ import {
   useDeleteSession,
   useVerifySession,
 } from '../../../src/api/session';
-import { JSONError, SessionExpiredError, UnauthorizedError } from '../../../src/utils/errors';
+import {
+  JSONError,
+  SessionExpiredError,
+  UnauthorizedError,
+  ValidationError,
+} from '../../../src/utils/errors';
 import { withMockFetch } from '../../utils/mock-fetch';
+
+const passwordIncorrectResponse = {
+  errors: [
+    {
+      code: 'PASSWORD_INCORRECT',
+      context: 'Your password is incorrect.',
+      details: null,
+      ghostErrorCode: null,
+      help: 'Visit and save your profile after logging in to check for problems.',
+      id: 'session-error-id',
+      message: 'Your password is incorrect.',
+      property: null,
+      type: 'ValidationError',
+    },
+  ],
+};
 
 const twoFactorRequiredResponse = {
   errors: [
@@ -78,14 +99,14 @@ describe('session api', () => {
     );
   });
 
-  it('does not treat a wrong password (401) as a two-factor prompt or a session expiry', async () => {
+  it('does not treat missing credentials (401) as a two-factor prompt or a session expiry', async () => {
     await withMockFetch({ status: 401, ok: false }, async () => {
       const { result } = renderHookWithProviders(() => useAddSession());
 
       let error: unknown;
       await act(async () => {
         try {
-          await result.current.mutateAsync({ username: 'owner@example.com', password: 'x' });
+          await result.current.mutateAsync({ username: 'owner@example.com', password: '' });
         } catch (caught) {
           error = caught;
         }
@@ -95,6 +116,34 @@ describe('session api', () => {
       expect(error).not.toBeInstanceOf(SessionExpiredError);
       expect(isTwoFactorRequiredError(error)).toBe(false);
     });
+  });
+
+  it('surfaces a wrong password as a 422 ValidationError carrying PASSWORD_INCORRECT', async () => {
+    await withMockFetch(
+      {
+        json: passwordIncorrectResponse,
+        headers: { 'content-type': 'application/json' },
+        ok: false,
+        status: 422,
+      },
+      async () => {
+        const { result } = renderHookWithProviders(() => useAddSession());
+
+        let error: unknown;
+        await act(async () => {
+          try {
+            await result.current.mutateAsync({ username: 'owner@example.com', password: 'x' });
+          } catch (caught) {
+            error = caught;
+          }
+        });
+
+        expect(error).toBeInstanceOf(ValidationError);
+        expect((error as ValidationError).data?.errors[0].code).toBe('PASSWORD_INCORRECT');
+        expect((error as ValidationError).message).toBe('Your password is incorrect.');
+        expect(isTwoFactorRequiredError(error)).toBe(false);
+      },
+    );
   });
 
   it('verifies via PUT with the token body and resolves the 200', async () => {

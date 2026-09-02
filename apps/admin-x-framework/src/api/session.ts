@@ -10,15 +10,15 @@ export interface SessionVerification {
   token: string;
 }
 
-// The server replies 201 Created on sign-in with only a status-text body; there is no data to read.
-export const useAddSession = createMutation<void, SessionCredentials>({
+// The server replies 201 Created with only the status text ("Created") as a text/plain body.
+export const useAddSession = createMutation<string, SessionCredentials>({
   method: 'POST',
   path: () => '/session/',
   body: (credentials) => credentials,
 });
 
-// The server replies 200 OK with only a status-text body; a wrong code is a bare 401.
-export const useVerifySession = createMutation<void, SessionVerification>({
+// The server replies 200 OK with only the status text ("OK") as a text/plain body; a wrong code is a bare 401.
+export const useVerifySession = createMutation<string, SessionVerification>({
   method: 'PUT',
   path: () => '/session/verify/',
   body: ({ token }) => ({ token }),
