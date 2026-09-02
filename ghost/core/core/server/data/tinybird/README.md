@@ -108,6 +108,18 @@ Keep in mind that as you update fixtures, it will rebuild data, but materialized
 data will not be cleared from them. One way to approach this to make sure data is consistent is to truncate all data
 sources before adding test data to it.
 
+### Automation data sync
+
+Ghost copies `automation_runs` and `automation_run_steps` into the `automation_run_events` and
+`automation_run_step_events` data sources with a recurring job (`core/server/services/tinybird-sync`).
+It runs every five minutes when Tinybird is configured, sending only rows updated since the
+watermark stored in the `tinybird_syncs` table. Set `backgroundJobs.tinybirdSync` to `false` in config
+to turn the job off.
+
+To force a full backfill, for example after pointing Ghost at a different Tinybird workspace or
+truncating the data sources, delete the matching rows from `tinybird_syncs`; the next run starts from
+the beginning.
+
 ### Architecture
 
 [See full documentation regarding analytics architecture in following document](ARCHITECTURE.md)

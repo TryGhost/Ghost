@@ -473,93 +473,6 @@ async function initBackgroundServices({ config }) {
     return;
   }
 
-  const tinybirdConfig = config.get('tinybird:stats');
-  const tinybirdEndpoint = tinybirdConfig?.local?.enabled
-    ? tinybirdConfig.local.endpoint
-    : tinybirdConfig?.endpoint;
-
-  if (tinybirdEndpoint && Math.random() === 100) {
-    const db = require('./server/data/db');
-    const logging = require('@tryghost/logging');
-    const settingsCache = require('./shared/settings-cache');
-    const token = config.get('tinybird:adminToken');
-    const siteUuid = tinybirdConfig.id || settingsCache.get('site_uuid');
-    const batchSize = 10_000;
-
-    const syncAutomationEvents = async ({ table, datasource, name }) => {
-      try {
-        if (!token) {
-          logging.info(`Skipping ${name} sync to Tinybird: no admin token configured`);
-          return;
-        }
-
-        let lastId;
-        let totalSent = 0;
-
-        while (true) {
-          const query = db.knex(table).select('*').orderBy('id').limit(batchSize);
-          if (lastId) {
-            query.where('id', '>', lastId);
-          }
-
-          const rows = await query;
-          if (!rows.length) {
-            if (!totalSent) {
-              logging.info(`Skipping ${name} sync to Tinybird: no ${name}s found`);
-            }
-            return;
-          }
-
-          const events = rows.map((row) => ({
-            site_uuid: siteUuid,
-            id: row.id,
-            updated_at: row.updated_at,
-            payload: {
-              ...row,
-              site_uuid: siteUuid,
-            },
-          }));
-
-          logging.info(`Sending ${events.length} ${name} events to Tinybird`);
-
-          const response = await fetch(`${tinybirdEndpoint}/v0/events?name=${datasource}`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/x-ndjson',
-            },
-            body: events.map((event) => JSON.stringify(event)).join('\n'),
-          });
-
-          if (!response.ok) {
-            // I don't care
-            // eslint-disable-next-line
-            throw new Error(`Tinybird API error: ${response.status} - ${await response.text()}`);
-          }
-
-          totalSent += events.length;
-          lastId = rows.at(-1).id;
-          logging.info(`Sent ${totalSent} ${name} events to Tinybird`);
-        }
-      } catch (err) {
-        logging.error(err);
-      }
-    };
-
-    setTimeout(async () => {
-      await syncAutomationEvents({
-        table: 'automation_runs',
-        datasource: 'automation_run_events',
-        name: 'automation run',
-      });
-      await syncAutomationEvents({
-        table: 'automation_run_steps',
-        datasource: 'automation_run_step_events',
-        name: 'automation run step',
-      });
-    }, 10_000);
-  }
-
   // Resume any newsletter sends interrupted by a prior container shutdown.
   // Runs before activitypub.init so an activitypub failure can't disable recovery.
   try {
@@ -606,6 +519,16 @@ async function initBackgroundServices({ config }) {
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
+  }
+
+  if (config.get('backgroundJobs:tinybirdSync')) {
+    try {
+      const tinybirdSync = require('./server/services/tinybird-sync');
+      await tinybirdSync.scheduleTinybirdSyncJob(jobsService);
+    } catch (err) {
+      const logging = require('@tryghost/logging');
+      logging.error(err);
+    }
   }
 
   const activitypub = require('./server/services/activitypub');

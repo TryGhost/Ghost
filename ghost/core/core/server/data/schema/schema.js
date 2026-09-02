@@ -2258,7 +2258,7 @@ module.exports = {
       nullable: false,
       validations: { isEmail: true },
     },
-    '@@INDEXES@@': [['automation_id', 'created_at']],
+    '@@INDEXES@@': [['automation_id', 'created_at'], ['updated_at']],
   },
   automation_run_steps: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2302,7 +2302,14 @@ module.exports = {
     },
     locked_by: { type: 'string', maxlength: 191, nullable: true },
     locked_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id']],
+    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id'], ['updated_at']],
+  },
+  tinybird_syncs: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    table_name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    last_synced_updated_at: { type: 'dateTime', nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
   },
   welcome_email_automated_emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

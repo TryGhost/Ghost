@@ -152,16 +152,16 @@ const processStep = async ({
   // NOTE: This will change once we support additional automation triggers.
   const memberStatus = slugToMemberStatus.get(step.automation_slug);
   if (!memberStatus) {
-    // logging.error(
-    //   {
-    //     system: {
-    //       event: 'automations.poll.unknown_slug',
-    //       slug: step.automation_slug,
-    //       step_id: step.id,
-    //     },
-    //   },
-    //   `[AUTOMATIONS] Unknown automation slug: ${step.automation_slug}`,
-    // );
+    logging.error(
+      {
+        system: {
+          event: 'automations.poll.unknown_slug',
+          slug: step.automation_slug,
+          step_id: step.id,
+        },
+      },
+      `[AUTOMATIONS] Unknown automation slug: ${step.automation_slug}`,
+    );
     await automationsApi.markStepTerminal(step, 'failed');
     return null;
   }

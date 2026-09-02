@@ -76,6 +76,7 @@ const BACKUP_TABLES = [
   'automation_runs',
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
+  'tinybird_syncs',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
