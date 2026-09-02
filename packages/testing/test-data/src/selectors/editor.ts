@@ -23,6 +23,7 @@ export const postPreviewEmailFrom = 'post-preview-email-from';
 export const postPreviewEmailSubject = 'post-preview-email-subject';
 export const postPreviewTestEmailInput = 'post-preview-test-email-input';
 export const postPreviewUnavailable = 'post-preview-unavailable';
+export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewSaveFailed = 'post-preview-save-failed';
 
 // accessible names

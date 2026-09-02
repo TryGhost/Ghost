@@ -122,13 +122,16 @@ export function PostPreviewModal({
     searchParams: { filter: `slug:${newsletterSlug ?? ''}`, limit: '1' },
     enabled: open && emailAvailable && postNewsletterMissing,
   });
-  const newsletters = useMemo(() => {
-    const postNewsletter = postNewsletterMissing
-      ? postNewsletterData?.newsletters.find((newsletter) => newsletter.slug === newsletterSlug)
+  const postNewsletter =
+    postNewsletterMissing && postNewsletterData
+      ? postNewsletterData.newsletters.find((newsletter) => newsletter.slug === newsletterSlug)
       : undefined;
-
-    return postNewsletter ? [postNewsletter, ...activeNewsletters] : activeNewsletters;
-  }, [activeNewsletters, newsletterSlug, postNewsletterData, postNewsletterMissing]);
+  const postNewsletterDeleted =
+    postNewsletterMissing && Boolean(postNewsletterData) && !postNewsletter;
+  const newsletters = useMemo(
+    () => (postNewsletter ? [postNewsletter, ...activeNewsletters] : activeNewsletters),
+    [activeNewsletters, postNewsletter],
+  );
 
   const beforeOpen = useRef(onBeforeOpen);
   useEffect(() => {
@@ -359,6 +362,7 @@ export function PostPreviewModal({
             <EmailPreview
               audience={audience}
               device={device}
+              newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
               newsletters={newsletters}
               newsletterSlug={selectedNewsletterSlug}
               postId={postId}

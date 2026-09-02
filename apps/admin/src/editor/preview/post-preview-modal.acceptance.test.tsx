@@ -433,6 +433,29 @@ describe('Post preview modal', () => {
       .toMatchObject({ newsletter: 'retired-letter' });
   });
 
+  it('cannot send when the post’s newsletter has been deleted', async () => {
+    installBootOverrides({ browseConfig: { response: configWithMailgun() } });
+    fakeTiers([]);
+    fakeNewsletters(({ filter }) =>
+      filter?.includes('slug:')
+        ? []
+        : [newsletter({ name: 'Weekly digest', slug: 'weekly-digest' })],
+    );
+    fakeEmailPreview();
+    const sendApi = fakeTestEmailSend();
+    await renderPreviewModal({ newsletterSlug: 'deleted-letter' });
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterMissing()).toBeVisible();
+    await expect(previewScreen.emailFrom()).toHaveCount(0);
+
+    await previewScreen.testEmailButton().click();
+
+    await expect.element(previewScreen.sendTestEmailButton()).toBeDisabled();
+    expect(sendApi.requests).toHaveLength(0);
+  });
+
   it('sends a test email to the current user for the selected audience', async () => {
     installBootOverrides({ browseConfig: { response: configWithMailgun() } });
     fakePreviewWorld();

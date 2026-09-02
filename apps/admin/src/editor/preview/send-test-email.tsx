@@ -25,6 +25,7 @@ interface SendTestEmailProps {
   /** How the recipient's audience reads, e.g. "Gold tier member". */
   audienceLabel: string;
   newsletterSlug?: string;
+  disabled?: boolean;
 }
 
 export function SendTestEmail({
@@ -32,6 +33,7 @@ export function SendTestEmail({
   audience,
   audienceLabel,
   newsletterSlug,
+  disabled = false,
 }: SendTestEmailProps) {
   const { data: currentUser } = useCurrentUser();
   const { data: configData } = useBrowseConfig();
@@ -51,6 +53,10 @@ export function SendTestEmail({
 
   const send = async () => {
     const recipient = address.trim();
+
+    if (disabled) {
+      return;
+    }
 
     if (!validator.isEmail(recipient)) {
       toast.error('Please enter a valid email');
@@ -104,7 +110,7 @@ export function SendTestEmail({
             <p className="text-sm text-muted-foreground">
               You&rsquo;ll receive this as a {audienceLabel}.
             </p>
-            <Button disabled={isPending} type="submit">
+            <Button disabled={disabled || isPending} type="submit">
               {isPending ? 'Sending...' : 'Send'}
             </Button>
           </Stack>
