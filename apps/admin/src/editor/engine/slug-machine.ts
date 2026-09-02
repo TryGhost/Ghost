@@ -10,8 +10,8 @@ export interface SlugMachineState {
   readonly status: SlugStatus;
   readonly mode: SlugMode;
   readonly slug: string;
+  /** The title the slug was loaded with or last generated from. */
   readonly title: string;
-  readonly isNew: boolean;
   readonly pending: boolean;
 }
 
@@ -37,7 +37,6 @@ export type SlugProposal =
 export interface LoadedPost {
   readonly slug: string;
   readonly title: string;
-  readonly isNew: boolean;
 }
 
 export interface SlugMachineOptions {
@@ -45,7 +44,8 @@ export interface SlugMachineOptions {
   generateSlug: (text: string) => Promise<string>;
 }
 
-export type SlugListener = (proposal: SlugProposal, state: SlugMachineState) => void;
+/** Called on every state change; `proposal` is null when only `pending` changed or a post loaded. */
+export type SlugListener = (state: SlugMachineState, proposal: SlugProposal | null) => void;
 
 export interface SlugMachine {
   loaded(post: LoadedPost): void;
@@ -112,30 +112,39 @@ export function resolveDedupedSlug(
 }
 
 export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMachine {
-  let mode: SlugMode = 'derived';
+  // Only load and an applied manual edit move settledMode; an in-flight manual edit reads as
+  // custom so a title commit cannot race it.
+  let settledMode: SlugMode = 'derived';
+  const pendingManual = new Set<number>();
   let slug = '';
   let title = '';
-  let isNew = true;
   let inFlight = 0;
   // Every request takes a ticket; a response applies only while its ticket is still the latest.
   let latestTicket = 0;
   const listeners = new Set<SlugListener>();
 
+  const mode = (): SlugMode => (pendingManual.size > 0 ? 'custom' : settledMode);
+
   const getState = (): SlugMachineState => {
+    const currentMode = mode();
     const status: SlugStatus =
-      mode === 'custom'
+      currentMode === 'custom'
         ? 'custom'
-        : shouldGenerateSlug({ mode, slug }, title)
+        : shouldGenerateSlug({ mode: currentMode, slug }, title)
           ? 'derived'
           : 'frozen';
-    return { status, mode, slug, title, isNew, pending: inFlight > 0 };
+    return { status, mode: currentMode, slug, title, pending: inFlight > 0 };
+  };
+
+  const notify = (proposal: SlugProposal | null): void => {
+    const state = getState();
+    for (const listener of listeners) {
+      listener(state, proposal);
+    }
   };
 
   const emit = (proposal: SlugProposal): SlugProposal => {
-    const state = getState();
-    for (const listener of listeners) {
-      listener(proposal, state);
-    }
+    notify(proposal);
     return proposal;
   };
 
@@ -144,42 +153,48 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
 
   const request = async (
     text: string,
+    manual: boolean,
   ): Promise<{ ticket: number; result?: string; error?: unknown }> => {
     latestTicket += 1;
     const ticket = latestTicket;
     inFlight += 1;
+    if (manual) {
+      pendingManual.add(ticket);
+    }
+    notify(null);
     try {
       return { ticket, result: await generateSlug(text) };
     } catch (error) {
       return { ticket, error };
     } finally {
       inFlight -= 1;
+      pendingManual.delete(ticket);
     }
   };
 
   return {
     loaded(post) {
       latestTicket += 1;
+      pendingManual.clear();
       slug = post.slug;
       title = post.title;
-      isNew = post.isNew;
-      mode = isCustomSlug(post.slug, post.title) ? 'custom' : 'derived';
+      settledMode = isCustomSlug(post.slug, post.title) ? 'custom' : 'derived';
+      notify(null);
     },
 
     async titleCommitted(rawTitle) {
       const nextTitle = rawTitle.trim();
+      if (mode() === 'custom') {
+        return unchanged('custom');
+      }
       if (nextTitle === title && slug) {
         return unchanged('same-title');
       }
-      title = nextTitle;
-      if (mode === 'custom') {
-        return unchanged('custom');
-      }
-      if (!shouldGenerateSlug({ mode, slug }, nextTitle)) {
+      if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
         return unchanged('frozen');
       }
 
-      const { ticket, result, error } = await request(nextTitle);
+      const { ticket, result, error } = await request(nextTitle, false);
       if (ticket !== latestTicket) {
         return unchanged('stale');
       }
@@ -190,6 +205,7 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
         return unchanged('empty-result');
       }
       slug = result;
+      title = nextTitle;
       return emit({ slug, source: 'generated' });
     },
 
@@ -199,26 +215,22 @@ export function createSlugMachine({ generateSlug }: SlugMachineOptions): SlugMac
         return unchanged('reverted');
       }
 
-      const previousMode = mode;
-      mode = 'custom';
-      const { ticket, result, error } = await request(candidate);
+      const { ticket, result, error } = await request(candidate, true);
       if (ticket !== latestTicket) {
         return unchanged('stale');
       }
       if (error !== undefined) {
-        mode = previousMode;
         return unchanged('error', error);
       }
       if (!result) {
-        mode = previousMode;
         return unchanged('empty-result');
       }
       const resolved = resolveDedupedSlug(result, candidate, slug);
       if (resolved === slug) {
-        mode = previousMode;
         return unchanged('reverted');
       }
       slug = resolved;
+      settledMode = 'custom';
       return emit({ slug, source: 'manual' });
     },
 
