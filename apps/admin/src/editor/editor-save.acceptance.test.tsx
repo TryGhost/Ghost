@@ -10,6 +10,7 @@ import {
   post,
   renderAdminApp,
   tag,
+  type CapturedEndpointRequest,
   type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -27,9 +28,18 @@ const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
+function postIn(request: CapturedEndpointRequest | undefined): Record<string, unknown> {
+  const body = request?.body as { posts: Record<string, unknown>[] } | undefined;
+  return body?.posts[0] ?? {};
+}
+
 function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] };
-  return body.posts[0];
+  return postIn(capture.lastRequest);
+}
+
+function submittedBody(capture: EndpointCapture): string {
+  const lexical = submittedPost(capture).lexical;
+  return typeof lexical === 'string' ? lexical : '';
 }
 
 function editorChrome() {
@@ -111,7 +121,7 @@ describe('Post editor saving', () => {
         status: 'draft',
         updated_at: LOADED_AT,
       });
-      expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
+      expect(submittedBody(saveApi)).toContain('Hello from React and more');
     },
     SLOW,
   );
@@ -232,13 +242,16 @@ describe('Post editor saving', () => {
       await typeIntoBody('First words');
       await typeIntoBody(' and then some');
 
-      await expect.poll(() => updateApi.requests.length, SAVE_POLL).toBe(1);
-      // The update carries the id and the token the create handed back.
-      expect(submittedPost(updateApi)).toMatchObject({
+      // A new post skips the debounce, so an update can fire while the rest of
+      // the typing is still arriving: what matters is where it ends up.
+      await expect
+        .poll(() => submittedBody(updateApi), SAVE_POLL)
+        .toContain('First words and then some');
+      // The first update carries the id and the token the create handed back.
+      expect(postIn(updateApi.requests[0])).toMatchObject({
         id: NEW_POST_ID,
         updated_at: CREATED_AT,
       });
-      expect(String(submittedPost(updateApi).lexical)).toContain('First words and then some');
       await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
     },
     SLOW,

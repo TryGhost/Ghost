@@ -67,7 +67,7 @@ export interface EditorSessionOptions {
 export interface EditorSession {
   getState: () => SaveEngineState;
   subscribe: (listener: () => void) => () => void;
-  isDirty: () => boolean;
+  getSaveSnapshot: () => EditorSaveSnapshot;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
   patchFeatureImage: (
@@ -135,18 +135,20 @@ export function createEditorSession({
     tracker.setLive(identity.id, patch);
   }
 
-  // The request carries a title and slug the writer never typed. The live post
-  // adopts them, or the rebase keeps the superseded local value forever. This is
-  // not an edit, so the version the request was built against must not move.
-  function adoptAuthoredFields(prepared: PreparedSave): void {
+  // A save writes a title and slug the writer never typed: the request's own
+  // default title and generated slug, then whatever the server normalized them
+  // to. The live document adopts those, or the rebase keeps the superseded local
+  // value forever -- but only where the writer has not moved past them, which is
+  // the same rule the rebase applies. Adopting is not an edit, so the version the
+  // request was built against must not move.
+  function adoptWhereUnchanged(before: AuthoredFields, next: Partial<AuthoredFields>): void {
     for (const key of AUTHORED_KEYS) {
-      const authored = prepared.projection[key];
-      const before = prepared.authoredFrom[key];
-      if (authored === undefined || authored === before || live[key] !== before) {
+      const value = next[key];
+      if (value === undefined || value === before[key] || live[key] !== before[key]) {
         continue;
       }
-      live = { ...live, [key]: authored };
-      tracker.setLive(identity.id, { [key]: authored });
+      live = { ...live, [key]: value };
+      tracker.setLive(identity.id, { [key]: value });
     }
   }
 
@@ -191,11 +193,15 @@ export function createEditorSession({
       published_at: request.target.publishedAt,
     };
     if (!isCreate) {
-      payload.id = request.snapshot.id;
-      // An empty token is not a token; sending one would fail the server's compare.
-      if (projection.updated_at) {
-        payload.updated_at = projection.updated_at;
+      if (!projection.updated_at) {
+        // Without the token the server skips its collision check entirely and the
+        // save would overwrite whatever landed in the meantime.
+        return Promise.reject(
+          new Error('Cannot save without the version this post was loaded at.'),
+        );
       }
+      payload.id = request.snapshot.id;
+      payload.updated_at = projection.updated_at;
     }
     if (request.target.emailOnly !== undefined) {
       payload.email_only = request.target.emailOnly;
@@ -242,17 +248,22 @@ export function createEditorSession({
   }
 
   function reconcile(prepared: PreparedSave, result: EditorSaveResult): void {
-    adoptAuthoredFields(prepared);
+    const submitted: AuthoredFields = {
+      title: prepared.projection.title ?? prepared.authoredFrom.title,
+      slug: prepared.projection.slug ?? prepared.authoredFrom.slug,
+    };
+    adoptWhereUnchanged(prepared.authoredFrom, submitted);
 
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
+    adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
 
     const created = identity.id === null;
     identity = { id: result.id, updatedAt: result.updatedAt };
     status = result.status;
     publishedAt = result.post.published_at ?? null;
     latestRevision = latestRevisionOf(result.post);
-    live = { ...live, slug: acknowledged.slug, updated_at: result.updatedAt };
+    live = { ...live, updated_at: result.updatedAt };
 
     if (created) {
       onIdAcquired(result.id);
@@ -276,7 +287,7 @@ export function createEditorSession({
   return {
     getState: () => engine.getState(),
     subscribe: (listener) => engine.subscribe(listener),
-    isDirty: () => tracker.verdict().dirty,
+    getSaveSnapshot: getSnapshot,
 
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.

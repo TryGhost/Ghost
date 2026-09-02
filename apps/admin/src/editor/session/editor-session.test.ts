@@ -92,11 +92,11 @@ describe('createEditorSession', () => {
   it('loads a post clean and dirties it on the first edit', () => {
     const { session } = harness({ record: record() });
 
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
 
     session.patchLexical(body('Hello and more'));
 
-    expect(session.isDirty()).toBe(true);
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
   it('submits the edited body and lands the post clean again', async () => {
@@ -117,7 +117,7 @@ describe('createEditorSession', () => {
       status: 'draft',
     });
     expect(state.updates[0].saveRevision).toBe(true);
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('sends the acknowledged collision token on the next save', async () => {
@@ -174,7 +174,7 @@ describe('createEditorSession', () => {
       title: 'Brand New Name',
       slug: 'brand-new-name',
     });
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('lands clean after a new post is saved under the default title', async () => {
@@ -185,7 +185,7 @@ describe('createEditorSession', () => {
     await session.dispatchExplicit();
 
     expect(state.creates[0]).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('does not overwrite a title typed while the save was in flight', async () => {
@@ -198,7 +198,7 @@ describe('createEditorSession', () => {
 
     // The request carried the default title, but the writer moved past it.
     expect(built.state.creates[0].title).toBe('(Untitled)');
-    expect(session.isDirty()).toBe(true);
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
   it('leaves tags out of the payload so edits elsewhere survive', async () => {
@@ -212,14 +212,43 @@ describe('createEditorSession', () => {
     expect(state.updates[0].payload).not.toHaveProperty('tags');
   });
 
-  it('never sends an empty collision token', async () => {
+  it('refuses to update a post it has no collision token for', async () => {
     const { session, state } = harness({ record: record({ updated_at: null }) });
 
     session.patchLexical(body('Edited'));
+    const completion = await session.dispatchExplicit();
+
+    // Sending no token makes the server skip its collision check, so the save
+    // fails instead of overwriting whatever landed meanwhile.
+    expect(state.updates).toHaveLength(0);
+    expect(completion).toMatchObject({ kind: 'failed', error: { kind: 'unknown' } });
+  });
+
+  it('creates a post without a collision token', async () => {
+    const { session, state } = harness();
+
+    session.patchLexical(body('First words'));
     await session.dispatchExplicit();
 
-    expect(state.updates[0].payload).not.toHaveProperty('updated_at');
-    expect(state.updates[0].payload.id).toBe('abc123');
+    expect(state.creates).toHaveLength(1);
+    expect(state.creates[0]).not.toHaveProperty('updated_at');
+  });
+
+  it('does not count adopting the request\u2019s own values as an edit', async () => {
+    const { session } = harness();
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    const before = session.getSaveSnapshot().version;
+    await session.dispatchExplicit();
+
+    // The save adopted a default title and a generated slug; neither is an edit.
+    expect(session.getSaveSnapshot().version).toBe(before);
+    expect(session.getSaveSnapshot().title).toBe('(Untitled)');
+    expect(session.getSaveSnapshot().slug).toBe('untitled');
+
+    session.patchTitle('A real title');
+    expect(session.getSaveSnapshot().version).toBeGreaterThan(before);
   });
 
   it('gives each new post its own state', () => {
@@ -228,8 +257,8 @@ describe('createEditorSession', () => {
 
     first.session.patchLexical(body('Only mine'));
 
-    expect(first.session.isDirty()).toBe(true);
-    expect(second.session.isDirty()).toBe(false);
+    expect(first.session.getSaveSnapshot().isDirty).toBe(true);
+    expect(second.session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('adopts a refetched record without re-baselining', () => {
@@ -240,7 +269,7 @@ describe('createEditorSession', () => {
     session.patchLexical(edited);
     session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
 
-    expect(session.isDirty()).toBe(true);
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
   it('stops saving once disposed', async () => {

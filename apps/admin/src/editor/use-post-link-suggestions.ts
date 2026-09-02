@@ -3,6 +3,7 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 import type { PostType } from './card-config';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import {
   type AutocompleteLink,
   type LatestPostSource,
@@ -63,6 +64,7 @@ export function usePostLinkSuggestions({
 
       const request: Promise<SearchIndex[Key]> = fetchApi<Record<Key, SearchIndex[Key]>>(
         apiUrl(`/search-index/${key}/`),
+        EDITOR_REQUEST_OPTIONS,
       )
         .then((response) => response[key])
         .catch(() => {
@@ -80,6 +82,7 @@ export function usePostLinkSuggestions({
     // gone and retention offers only surface in cancellation flows
     cache.current.offerLinks ??= fetchApi<{ offers?: Offer[] }>(
       apiUrl('/offers/', { filter: 'status:active+redemption_type:signup' }),
+      EDITOR_REQUEST_OPTIONS,
     )
       .then((response) => buildOfferLinks(response.offers ?? [], homepageUrl))
       .catch(() => {
@@ -117,6 +120,7 @@ export function usePostLinkSuggestions({
             order: 'published_at desc',
             limit: '5',
           }),
+          EDITOR_REQUEST_OPTIONS,
         )
           .then((response) => buildLatestPostsGroup(response.posts, decorationSettings))
           .catch((error: unknown) => {

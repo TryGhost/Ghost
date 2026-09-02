@@ -307,9 +307,21 @@ The wiring hook owns everything the three modules deliberately do not:
 - A blank title held in the live projection as the default title while the input
   stays empty, so a post persisted under that title does not read as permanently
   diverged from what the writer sees.
-- Routing query responses to `setSaved` and mutation responses to
+- Routing query responses to `setSaved` and save responses to
   `saveAcknowledged`, passing the projection the request submitted and the full
   record the server acknowledged.
+- Adopting into the live document any title or slug the save request wrote
+  itself — the default title for a blank one, the slug derived from the title —
+  and then whatever the server normalized them to. Both happen before the
+  acknowledgement is applied, and only where the writer has not typed past the
+  value since, which is the rule the rebase itself uses. Skip this and the
+  rebase keeps the superseded local value: the post reads as diverged from its
+  own saved state for the rest of the session. Adopting is not an edit, so it
+  must not move the version the request was built against.
+- Refusing to send an update with no collision token: without one the server
+  skips its concurrency check and the save overwrites whatever landed meanwhile.
+- Requesting without the transport's session-expiry redirect, so an expired
+  session is surfaced in place rather than navigating away from unsaved content.
 - Replacing the URL once a create acquires an id, with the screen keyed on the
   session so the swap does not remount the editor.
 - Deciding what a halted queue looks like: `reauth-pending` and `conflict` are

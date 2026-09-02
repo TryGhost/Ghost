@@ -26,13 +26,7 @@ import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import { useDeferredDispose } from './use-deferred-dispose';
 import type { EditorRecord } from './projection';
-
-/**
- * Every request an open editor makes opts out of the transport's session-expiry
- * redirect: leaving the page would take unsaved content with it. The editor
- * surfaces an expired session itself instead.
- */
-export const EDITOR_READ_OPTIONS = { sessionExpiryRedirect: false } as const;
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 interface EditorSessionLocationState {
   editorSession?: string;
@@ -168,12 +162,12 @@ export function useEditorSession({
   const postQuery = useEditorPost(persistedId ?? '', {
     enabled: postType === 'post' && !!persistedId,
     defaultErrorHandler: false,
-    requestOptions: EDITOR_READ_OPTIONS,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(persistedId ?? '', {
     enabled: postType === 'page' && !!persistedId,
     defaultErrorHandler: false,
-    requestOptions: EDITOR_READ_OPTIONS,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
@@ -248,7 +242,7 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
-    isDirty: session.isDirty,
+    isDirty: () => session.getSaveSnapshot().isDirty,
     patchFeatureImage: session.patchFeatureImage,
     dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),

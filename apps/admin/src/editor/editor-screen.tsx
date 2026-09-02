@@ -32,11 +32,8 @@ import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { useFeatureImageBinding } from './session/feature-image-binding';
-import {
-  EDITOR_READ_OPTIONS,
-  useEditorSession,
-  useEditorSessionKey,
-} from './session/use-editor-session';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import { useSaveShortcut } from './use-save-shortcut';
@@ -262,12 +259,12 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
-    requestOptions: EDITOR_READ_OPTIONS,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
-    requestOptions: EDITOR_READ_OPTIONS,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
   const loaded: EditorRecord | undefined =
