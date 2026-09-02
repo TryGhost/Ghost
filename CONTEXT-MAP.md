@@ -20,6 +20,12 @@ Path: `ghost/core/core/server/services/gift-links/CONTEXT.md`
 
 Gift Links covers shareable access to individual protected posts and pages without creating a membership.
 
+### Newsletter Email Sending
+
+Path: `ghost/core/core/server/services/email-service/CONTEXT.md`
+
+Newsletter Email Sending covers the preparation and submission of newsletter emails to the configured email provider.
+
 ## Relationships
 
 - **Portal ↔ Gift Subscriptions**: Portal presents the purchase and redemption journeys for gift subscriptions.

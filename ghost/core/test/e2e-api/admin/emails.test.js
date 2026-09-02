@@ -84,6 +84,31 @@ describe('Emails API', function () {
       });
   });
 
+  it('Can read an email sending status', async function () {
+    const email = fixtureManager.get('emails', 0);
+    const { body } = await agent.get(`emails/${email.id}/status/`).expectStatus(200);
+
+    assert.deepEqual(body, {
+      email_statuses: [
+        {
+          id: email.id,
+          sending: {
+            status: 'submitted',
+            progress: {
+              completed: 6,
+              total: 6,
+              estimated_seconds_remaining: 0,
+            },
+          },
+        },
+      ],
+    });
+  });
+
+  it('Returns 404 when reading sending status for a missing email', async function () {
+    await agent.get('emails/123456789012345678901234/status/').expectStatus(404);
+  });
+
   it('Can retry a failed email', async function () {
     await agent
       .put(`emails/${fixtureManager.get('emails', 1).id}/retry`)

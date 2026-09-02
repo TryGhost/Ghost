@@ -2,6 +2,12 @@ const batchMapper = require('./mappers/email-batches');
 const failureMapper = require('./mappers/email-failures');
 
 module.exports = {
+  sendingStatus(response, apiConfig, frame) {
+    frame.response = {
+      email_statuses: [response],
+    };
+  },
+
   browseBatches(response, apiConfig, frame) {
     frame.response = {};
 
