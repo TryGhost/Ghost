@@ -90,19 +90,22 @@ function parseSiteUrl(siteUrl: string): URL | null {
   }
 }
 
-// Same rule as url-utils' absoluteToRelative: host match (protocol ignored) and
-// a path under the site's subdirectory; the subdirectory is kept in the result.
+// Same rule as url-utils' absoluteToRelative: host match (protocol ignored), a path
+// under the site's subdirectory (kept in the result), and userinfo URLs left alone.
 function toSiteRelative(value: string, site: URL): string {
   let parsed: URL;
   try {
-    parsed = new URL(value);
+    parsed = new URL(value.startsWith('//') ? `${site.protocol}${value}` : value);
   } catch {
+    return value;
+  }
+  if (parsed.username || parsed.password) {
     return value;
   }
   if (parsed.host !== site.host || !parsed.pathname.startsWith(site.pathname)) {
     return value;
   }
-  return parsed.href.slice(parsed.origin.length);
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
 }
 
 function updateAt(

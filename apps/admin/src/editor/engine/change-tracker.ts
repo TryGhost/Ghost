@@ -184,6 +184,8 @@ function isOlderToken(candidate: string | null, held: string | null): boolean {
 export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeTracker {
   const siteUrl = options.siteUrl ?? '';
   let postId: PostId = null;
+  let idAdopted = false;
+  const heldIds = new Set<string>();
   let saved: EditablePostProjection | null = null;
   let live: EditablePostProjection | null = null;
   let baseline: Baseline = { status: 'pending' };
@@ -213,6 +215,11 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
 
   function isCurrent(id: PostId): boolean {
     return !disposed && saved !== null && id === postId;
+  }
+
+  // Editor-side events may still say null between a create ack and the caller learning the id.
+  function isCurrentOrAlias(id: PostId): boolean {
+    return isCurrent(id) || (id === null && idAdopted && !disposed && saved !== null);
   }
 
   function changedAttributes(): Record<string, [unknown, unknown]> {
@@ -320,6 +327,10 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         return;
       }
       postId = id;
+      idAdopted = false;
+      if (id !== null) {
+        heldIds.add(id);
+      }
       saved = pickProjection(post);
       live = pickProjection(post);
       baseline = { status: 'pending' };
@@ -342,17 +353,26 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
 
     // Single-flight save engine with one coalescing pending slot: acknowledgements
     // arrive in submit order, so no save-attempt id is needed here.
+    // The save engine's post-generation fence is the primary guard against stale
+    // completions; a new post only refuses acks for ids this tracker has already held.
     saveAcknowledged(id, submitted, acknowledged) {
       if (disposed || !saved || !live || (postId !== null && id !== postId)) {
+        return;
+      }
+      if (postId === null && id !== null && heldIds.has(id)) {
         return;
       }
       const next = pickProjection(acknowledged);
       const rebased: Record<string, unknown> = { ...live };
       for (const key of PROJECTION_KEYS) {
-        const base = key in submitted ? submitted[key] : saved[key];
+        const base = submitted[key] !== undefined ? submitted[key] : saved[key];
         if (key === 'updated_at' || sameField(key, live[key], base)) {
           rebased[key] = next[key];
         }
+      }
+      if (postId === null && id !== null) {
+        idAdopted = true;
+        heldIds.add(id);
       }
       postId = id;
       saved = next;
@@ -362,21 +382,21 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     },
 
     setBaseline(id, lexical) {
-      if (!isCurrent(id)) {
+      if (!isCurrentOrAlias(id)) {
         return;
       }
       baseline = { status: 'ready', lexical: serializeLexical(lexical) };
     },
 
     baselineFailed(id, error) {
-      if (!isCurrent(id)) {
+      if (!isCurrentOrAlias(id)) {
         return;
       }
       baseline = { status: 'failed', error: errorMessage(error) };
     },
 
     setLive(id, patch) {
-      if (!isCurrent(id) || !live) {
+      if (!isCurrentOrAlias(id) || !live) {
         return;
       }
       const defined = pickPatch(patch);
@@ -459,6 +479,8 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
     dispose() {
       disposed = true;
       postId = null;
+      idAdopted = false;
+      heldIds.clear();
       saved = null;
       live = null;
       baseline = { status: 'pending' };

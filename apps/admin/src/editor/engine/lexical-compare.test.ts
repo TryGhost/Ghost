@@ -256,6 +256,27 @@ describe('normalizeSiteUrls', () => {
     expect(normalizeSiteUrls(nodes, siteUrl)).toEqual(nodes);
   });
 
+  it('resolves protocol-relative urls against the site protocol', () => {
+    const nodes = [
+      { type: 'link', url: '//site.example/about/', children: [] },
+      { type: 'link', url: '//other.example/about/', children: [] },
+    ];
+
+    expect(normalizeSiteUrls(nodes, siteUrl)).toEqual([
+      { type: 'link', url: '/about/', children: [] },
+      { type: 'link', url: '//other.example/about/', children: [] },
+    ]);
+  });
+
+  it('leaves urls carrying credentials alone', () => {
+    const nodes = [
+      { type: 'link', url: 'https://user:pw@site.example/x', children: [] },
+      { type: 'link', url: 'https://other:pw@site.example/x', children: [] },
+    ];
+
+    expect(normalizeSiteUrls(nodes, siteUrl)).toEqual(nodes);
+  });
+
   it('ignores the protocol and tolerates a trailing slash on the site url', () => {
     const nodes = [{ type: 'link', url: 'http://site.example/about/', children: [] }];
 

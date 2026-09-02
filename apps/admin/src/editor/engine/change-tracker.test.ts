@@ -684,6 +684,17 @@ describe('createChangeTracker', () => {
       ]);
     });
 
+    it('treats an undefined submitted field as not submitted', () => {
+      const tracker = loadedTracker();
+      tracker.saveAcknowledged(
+        POST_ID,
+        { title: undefined },
+        post({ title: 'Server title', updated_at: T1 }),
+      );
+
+      expect(tracker.verdict().dirty).toBe(false);
+    });
+
     it('treats a semantically equal body as still matching the submission', () => {
       const tracker = loadedTracker();
       const submittedBody = serialize(appendParagraph(SAVED_DOC, 'Edit'));
@@ -728,6 +739,56 @@ describe('createChangeTracker', () => {
 
       tracker.setSaved(null, post({ title: 'Stale', lexical: null }));
       expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+    });
+
+    it('keeps accepting null-id editor events after the created id is adopted', () => {
+      const tracker = createChangeTracker();
+      tracker.load(null, post({ lexical: null, updated_at: null }));
+      tracker.setBaseline(null, serialize(BLANK_DOC));
+      tracker.setLive(null, { lexical: serialize(BLANK_DOC) });
+      const submitted = post({ lexical: serialize(BLANK_DOC), updated_at: null });
+      tracker.saveAcknowledged('new1', submitted, { ...submitted, updated_at: T1 });
+      expect(tracker.verdict().dirty).toBe(false);
+
+      tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed')])) });
+      expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+
+      tracker.setBaseline(null, serialize(doc([paragraph('Typed')])));
+      expect(tracker.verdict().dirty).toBe(false);
+      tracker.baselineFailed(null, 'boom');
+      tracker.setLive(null, { lexical: serialize(doc([paragraph('Typed more')])) });
+      expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
+
+      tracker.setSaved(null, post({ title: 'Stale' }));
+      expect(codes(tracker)).toEqual(['BASELINE_FAILED']);
+    });
+
+    it('does not alias null to a post loaded with an id', () => {
+      const tracker = loadedTracker();
+      tracker.setLive(null, { title: 'Edited' });
+
+      expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    it('rejects a late acknowledgement for a previously held post while a new post is open', () => {
+      const tracker = loadedTracker(post({ title: 'A' }), 'a');
+      tracker.setLive('a', { title: 'A edited' });
+      tracker.load(null, post({ title: '', lexical: null, updated_at: null }));
+
+      tracker.saveAcknowledged(
+        'a',
+        post({ title: 'A edited' }),
+        post({ title: 'A edited', updated_at: T2 }),
+      );
+      expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+      tracker.setSaved('a', post({ title: 'A refetched', updated_at: T2 }));
+      expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+
+      const submitted = post({ title: 'New', lexical: null, updated_at: null });
+      tracker.setLive(null, { title: 'New' });
+      tracker.saveAcknowledged('new1', submitted, { ...submitted, updated_at: T2 });
+      tracker.setSaved('new1', post({ title: 'New refetched', lexical: null, updated_at: T2 }));
+      expect(codes(tracker)).toEqual(['POST_TITLE_DIVERGED']);
     });
 
     it('ignores a refetch of the previous post after switching', () => {
