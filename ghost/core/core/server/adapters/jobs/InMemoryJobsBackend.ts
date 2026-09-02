@@ -42,6 +42,11 @@ interface RecurringTimer {
   clear(): void;
 }
 
+// Work only flows between start() and shutdown(): boot starts the service
+// before the web app is mounted or any recurring job is scheduled, so an
+// enqueue or recurring registration before start() is a boot-ordering bug and
+// throws, while an enqueue after shutdown() is a benign shutdown race and is
+// dropped.
 export default class InMemoryJobsBackend extends JobsBackendBase {
   private _processor: JobProcessor | null;
   private _stopped: boolean;
@@ -59,53 +64,58 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
   }
 
   private _createQueue(): queueAsPromised<JobEnvelope> {
-    const queue = fastq.promise(
-      (envelope: JobEnvelope) => this._deliver(envelope),
-      this._concurrency,
-    );
-    // Paused until start() attaches a processor; enqueue buffers meanwhile.
-    queue.pause();
-    return queue;
+    return fastq.promise((envelope: JobEnvelope) => this._deliver(envelope), this._concurrency);
   }
 
   start({ processor }: JobsStartOptions): void {
     this._processor = processor;
     this._stopped = false;
-    this._queue.resume();
   }
 
   enqueue(envelope: JobEnvelope): void {
     if (this._stopped) {
       return;
     }
+    if (!this._processor) {
+      throw new errors.IncorrectUsageError({
+        message: `Cannot enqueue job "${envelope.type}" before the jobs backend is started.`,
+      });
+    }
     this._queue.push(envelope);
   }
 
   private async _deliver(envelope: JobEnvelope): Promise<void> {
-    const processor = this._processor;
-    if (!processor) {
-      throw new errors.IncorrectUsageError({
-        message:
-          'InMemoryJobsBackend attempted a delivery with no processor attached - the backend lifecycle is broken.',
-      });
-    }
     try {
-      await processor(envelope);
+      await this._processor!(envelope);
     } catch (err) {
       logging.error(`Job "${envelope.type}" delivery failed`, err);
     }
   }
 
   scheduleRecurring(envelope: JobEnvelope, { cron }: RecurringSchedule): void {
+    if (this._stopped) {
+      return;
+    }
+    if (!this._processor) {
+      throw new errors.IncorrectUsageError({
+        message: `Cannot schedule recurring job "${envelope.type}" before the jobs backend is started.`,
+      });
+    }
     // First schedule per type wins; a re-registration must not disturb a
     // schedule that is already running (parity with a durable backend).
-    if (this._stopped || this._recurring.has(envelope.type)) {
+    if (this._recurring.has(envelope.type)) {
       return;
     }
 
     const parsed = later.parse.cron(cron, hasSeconds(cron));
     const timer = later.setInterval(() => {
-      this.enqueue(envelope);
+      // A throw inside a later timer callback would be an uncaughtException;
+      // a recurring tick must never take the process down.
+      try {
+        this.enqueue(envelope);
+      } catch (err) {
+        logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
+      }
     }, parsed);
     this._recurring.set(envelope.type, timer);
   }
@@ -132,8 +142,8 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       await Promise.race([queue.drained(), delay(timeoutMs)]);
     }
 
-    // Fresh (paused) queue so a re-boot never inherits this lifecycle's
-    // abandoned in-flight deliveries against its concurrency limit.
+    // Fresh queue so a re-boot never inherits this lifecycle's abandoned
+    // in-flight deliveries against its concurrency limit.
     this._queue = this._createQueue();
     this._processor = null;
   }
