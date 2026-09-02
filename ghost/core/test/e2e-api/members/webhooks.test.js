@@ -1310,11 +1310,6 @@ describe('Members API', function () {
       assert.equal(member.status, 'paid', 'The member should be "paid"');
       assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-      mockManager.assert.sentEmail({
-        subject: '🙌 Thank you for signing up to Ghost!',
-        to: 'checkout-webhook-test@email.com',
-      });
-
       // Check whether MRR and status has been set
       await assertSubscription(member.subscriptions[0].id, {
         subscription_id: subscription.id,
@@ -1357,10 +1352,20 @@ describe('Members API', function () {
         ],
       });
 
-      // Wait for the dispatched events (because this happens async)
+      // Neither of these emails is sent by the webhook request itself. The staff
+      // notification comes from a subscriber to a domain event that is only dispatched
+      // once the member transaction has committed, and the member's own signup email is
+      // started by the webhook handler without being awaited. Both can therefore still
+      // be in flight when the request returns, and nothing decides which of the two is
+      // sent first, so wait for each on its own rather than reading them in send order.
       await DomainEvents.allSettled();
 
-      mockManager.assert.sentEmail({
+      await mockManager.assert.sentEmailEventually({
+        subject: '🙌 Thank you for signing up to Ghost!',
+        to: 'checkout-webhook-test@email.com',
+      });
+
+      await mockManager.assert.sentEmailEventually({
         subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
         to: 'jbloggs@example.com',
       });
