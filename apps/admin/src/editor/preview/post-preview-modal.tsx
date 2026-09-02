@@ -97,8 +97,8 @@ export function PostPreviewModal({
     isPost &&
     membersEnabled &&
     Boolean(newslettersEnabled) &&
-    Boolean(currentUser) &&
-    !(currentUser && isContributorUser(currentUser));
+    !!currentUser &&
+    !isContributorUser(currentUser);
 
   const { data: tiersData } = useBrowseTiers({
     searchParams: { filter: 'type:paid', limit: 'all' },
@@ -110,7 +110,25 @@ export function PostPreviewModal({
     searchParams: { filter: 'status:active', limit: 'all' },
     enabled: open && emailAvailable,
   });
-  const newsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
+  const activeNewsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
+
+  // The post's newsletter is what its email renders as, so it stays selectable
+  // even once it has left the active list.
+  const postNewsletterMissing =
+    Boolean(newslettersData) &&
+    Boolean(newsletterSlug) &&
+    !activeNewsletters.some((newsletter) => newsletter.slug === newsletterSlug);
+  const { data: postNewsletterData } = useBrowseNewsletters({
+    searchParams: { filter: `slug:${newsletterSlug ?? ''}`, limit: '1' },
+    enabled: open && emailAvailable && postNewsletterMissing,
+  });
+  const newsletters = useMemo(() => {
+    const postNewsletter = postNewsletterMissing
+      ? postNewsletterData?.newsletters.find((newsletter) => newsletter.slug === newsletterSlug)
+      : undefined;
+
+    return postNewsletter ? [postNewsletter, ...activeNewsletters] : activeNewsletters;
+  }, [activeNewsletters, newsletterSlug, postNewsletterData, postNewsletterMissing]);
 
   const beforeOpen = useRef(onBeforeOpen);
   useEffect(() => {
@@ -121,7 +139,7 @@ export function PostPreviewModal({
   // during render rather than in an effect that runs after that first commit.
   if (open !== wasOpen) {
     setWasOpen(open);
-    setPrepareState(open && beforeOpen.current ? 'preparing' : 'ready');
+    setPrepareState(open && onBeforeOpen ? 'preparing' : 'ready');
   }
 
   useEffect(() => {

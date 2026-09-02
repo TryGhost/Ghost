@@ -78,8 +78,9 @@ export function EmailPreview({
   });
 
   const preview = data?.email_previews[0];
-  const selectedNewsletter =
-    newsletters.find((newsletter) => newsletter.slug === newsletterSlug) ?? newsletters[0];
+  // Only the newsletter the preview was requested for, so the From line, the
+  // selection and the test send can never name a different one.
+  const selectedNewsletter = newsletters.find((newsletter) => newsletter.slug === newsletterSlug);
   const senderAddress = (sender: string | null) => sender ?? defaultEmailAddress ?? '';
 
   return (
@@ -114,7 +115,7 @@ export function EmailPreview({
             <SendTestEmail
               audience={audience}
               audienceLabel={audienceDescription(audience, tierName)}
-              newsletterSlug={selectedNewsletter?.slug}
+              newsletterSlug={newsletterSlug}
               postId={postId}
             />
           </Inline>

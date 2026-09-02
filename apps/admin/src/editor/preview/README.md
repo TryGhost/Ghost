@@ -36,4 +36,4 @@ Switching newsletters re-renders the preview against that newsletter, and the te
 
 ## Not here yet
 
-Deliberately out of this module for now, and worth picking up with the editor header that opens it: an editable email subject (it writes to the post), the over-100kB "may get clipped" warning, closing the modal from an Escape pressed inside the site preview frame, rendering an already-sent post's stored email instead of re-requesting a preview, and the managed-email sender-address override.
+Known gaps, listed so they are not mistaken for decisions: the email subject is read-only (editing it would write to the post), there is no over-100kB "may get clipped" warning, an Escape pressed inside the site preview frame does not close the modal, an already-sent post is re-rendered by the preview endpoint rather than showing its stored email, and the sender address does not apply the managed-email override.

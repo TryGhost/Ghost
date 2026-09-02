@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
-import { StrictMode } from 'react';
+import { StrictMode, useState, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { ShadeApp } from '@tryghost/shade/app';
 import {
@@ -39,14 +40,8 @@ interface RenderOptions {
   onOpenChange?: (open: boolean) => void;
 }
 
-/** Mounts the modal on its own, in the app's provider stack, against the fake Ghost API. */
-async function renderPreviewModal({
-  isPost = true,
-  newsletterSlug,
-  previewUrl = PREVIEW_URL,
-  onBeforeOpen,
-  onOpenChange = () => {},
-}: RenderOptions = {}) {
+/** Mounts a subject in the app's provider stack, against the fake Ghost API. */
+async function renderInApp(children: ReactNode) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { refetchOnWindowFocus: false, retry: false, networkMode: 'always' },
@@ -68,19 +63,93 @@ async function renderPreviewModal({
     <StrictMode>
       <FrameworkProvider {...framework}>
         <ShadeApp className="shade-admin" darkMode={false}>
-          <PostPreviewModal
-            isPost={isPost}
-            newsletterSlug={newsletterSlug}
-            postId={POST_ID}
-            previewUrl={previewUrl}
-            open
-            onBeforeOpen={onBeforeOpen}
-            onOpenChange={onOpenChange}
-          />
+          {children}
         </ShadeApp>
       </FrameworkProvider>
     </StrictMode>,
   );
+}
+
+async function renderPreviewModal({
+  isPost = true,
+  newsletterSlug,
+  previewUrl = PREVIEW_URL,
+  onBeforeOpen,
+  onOpenChange = () => {},
+}: RenderOptions = {}) {
+  return await renderInApp(
+    <PostPreviewModal
+      isPost={isPost}
+      newsletterSlug={newsletterSlug}
+      postId={POST_ID}
+      previewUrl={previewUrl}
+      open
+      onBeforeOpen={onBeforeOpen}
+      onOpenChange={onOpenChange}
+    />,
+  );
+}
+
+/** A caller that only saves a dirty post: the prop appears on the render that opens the modal. */
+function DirtyGatedPreview({ onBeforeOpen }: { onBeforeOpen: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open preview
+      </button>
+      <PostPreviewModal
+        open={open}
+        postId={POST_ID}
+        previewUrl={PREVIEW_URL}
+        onBeforeOpen={open ? onBeforeOpen : undefined}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
+}
+
+/**
+ * Records every iframe carrying a src that enters or leaves the page, so a
+ * preview frame mounted and swapped out between paints is still caught.
+ */
+function trackPreviewFrames() {
+  const seen: string[] = [];
+
+  const recordNodes = (nodes: NodeList) => {
+    for (const node of nodes) {
+      if (!(node instanceof HTMLElement)) {
+        continue;
+      }
+      const frames =
+        node instanceof HTMLIFrameElement ? [node] : [...node.querySelectorAll('iframe')];
+      for (const frame of frames) {
+        const src = frame.getAttribute('src');
+        if (src) {
+          seen.push(src);
+        }
+      }
+    }
+  };
+
+  const record = (records: MutationRecord[]) => {
+    for (const mutation of records) {
+      recordNodes(mutation.addedNodes);
+      recordNodes(mutation.removedNodes);
+    }
+  };
+
+  const observer = new MutationObserver(record);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return {
+    stop() {
+      record(observer.takeRecords());
+      observer.disconnect();
+      return seen;
+    },
+  };
 }
 
 function fakePreviewWorld({
@@ -135,12 +204,35 @@ describe('Post preview modal', () => {
           releaseSave = resolve;
         }),
     );
+    const frames = trackPreviewFrames();
     await renderPreviewModal({ onBeforeOpen });
 
-    // No frame at all until the save resolves: a frame rendered early would
-    // fetch the post as the server still has it.
-    await expect(previewScreen.browserFrame()).toHaveCount(0);
+    await expect.element(previewScreen.modal()).toBeVisible();
     expect(onBeforeOpen).toHaveBeenCalled();
+    expect(frames.stop()).toEqual([]);
+
+    releaseSave();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+  });
+
+  it('saves first when the caller only passes a save on the opening render', async () => {
+    fakePreviewWorld();
+    let releaseSave = () => {};
+    const onBeforeOpen = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseSave = resolve;
+        }),
+    );
+    await renderInApp(<DirtyGatedPreview onBeforeOpen={onBeforeOpen} />);
+
+    const frames = trackPreviewFrames();
+    await page.getByRole('button', { name: 'Open preview' }).click();
+
+    await expect.element(previewScreen.modal()).toBeVisible();
+    await expect.poll(() => onBeforeOpen.mock.calls.length).toBeGreaterThan(0);
+    expect(frames.stop()).toEqual([]);
 
     releaseSave();
 
@@ -309,6 +401,36 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
     await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
+  });
+
+  it('keeps the post’s archived newsletter selected everywhere', async () => {
+    installBootOverrides({ browseConfig: { response: configWithMailgun() } });
+    const archived = newsletter({
+      name: 'Retired letter',
+      slug: 'retired-letter',
+      status: 'archived',
+    });
+    fakeTiers([]);
+    fakeNewsletters(({ filter }) =>
+      filter?.includes('slug:retired-letter')
+        ? [archived]
+        : [newsletter({ name: 'Weekly digest', slug: 'weekly-digest' })],
+    );
+    const previewApi = fakeEmailPreview();
+    const sendApi = fakeTestEmailSend();
+    await renderPreviewModal({ newsletterSlug: 'retired-letter' });
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.newsletterSelect()).toHaveTextContent('Retired letter');
+    await expect.poll(() => previewApi.lastRequest?.url).toContain('newsletter=retired-letter');
+
+    await previewScreen.testEmailButton().click();
+    await previewScreen.sendTestEmailButton().click();
+
+    await expect
+      .poll(() => sendApi.lastRequest?.body)
+      .toMatchObject({ newsletter: 'retired-letter' });
   });
 
   it('sends a test email to the current user for the selected audience', async () => {
