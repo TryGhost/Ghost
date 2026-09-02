@@ -42,6 +42,10 @@
       "dependsOn": ["build"],
       "inputs": ["default", "^default", { "runtime": "node -v" }]
     },
+    "test:types": {
+      "cache": true,
+      "dependsOn": ["^build"]
+    },
     "test:ci:*": {
       "cache": true,
       "inputs": ["default", "^default"]
