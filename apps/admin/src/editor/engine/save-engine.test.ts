@@ -6,6 +6,7 @@ import {
   resolveStatus,
   TIMED_SAVE_INTERVAL_MS,
   zeroMilliseconds,
+  type DispatchIntent,
   type PostStatus,
   type SaveEngineState,
   type SaveError,
@@ -39,6 +40,7 @@ function setup(overrides: Partial<SaveSnapshot> = {}) {
   const states: SaveEngineState[] = [];
   let concurrent = 0;
   let maxConcurrent = 0;
+  let snapshotError: Error | null = null;
 
   const execute = vi.fn(async (request: SaveRequest) => {
     requests.push(request);
@@ -54,7 +56,14 @@ function setup(overrides: Partial<SaveSnapshot> = {}) {
   });
 
   const engine = createSaveEngine({
-    getSnapshot: () => snapshot,
+    getSnapshot: () => {
+      if (snapshotError) {
+        const error = snapshotError;
+        snapshotError = null;
+        throw error;
+      }
+      return snapshot;
+    },
     execute,
     now: () => NOW,
     onStateChange: (state) => states.push(state),
@@ -78,6 +87,9 @@ function setup(overrides: Partial<SaveSnapshot> = {}) {
     },
     edit() {
       snapshot = { ...snapshot, isDirty: true, version: snapshot.version + 1 };
+    },
+    throwNextSnapshot(error: Error) {
+      snapshotError = error;
     },
     // Mirrors what the editor does on a successful response: adopt id/status, dirty iff edited since the request left.
     async succeed(changes: Partial<SaveSnapshot> = {}) {
@@ -188,12 +200,11 @@ describe('createSaveEngine', () => {
 
         const completions = await Promise.all([
           h.engine.dispatch('autosave'),
-          h.engine.dispatch('timed'),
           h.engine.dispatch('field'),
         ]);
         await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS + AUTOSAVE_DEBOUNCE_MS);
 
-        expect(completions).toEqual(Array(3).fill({ kind: 'dropped', reason: 'not-draft' }));
+        expect(completions).toEqual(Array(2).fill({ kind: 'dropped', reason: 'not-draft' }));
         expect(h.execute).not.toHaveBeenCalled();
       },
     );
@@ -415,11 +426,10 @@ describe('createSaveEngine', () => {
   });
 
   describe('invariant 7: only explicit and leave saves create revisions', () => {
-    it.each<[SaveIntent, boolean]>([
+    it.each<[DispatchIntent, boolean]>([
       ['explicit', true],
       ['leave', true],
       ['autosave', false],
-      ['timed', false],
       ['field', false],
       ['publish', false],
       ['revert', false],
@@ -673,9 +683,10 @@ describe('createSaveEngine', () => {
 
     it('forces a timed save after 60s of continuous editing', async () => {
       const h = setup();
+      const autosaves: Promise<unknown>[] = [];
       for (let second = 0; second < 60; second += 1) {
         h.edit();
-        void h.engine.dispatch('autosave');
+        autosaves.push(h.engine.dispatch('autosave'));
         await vi.advanceTimersByTimeAsync(1000);
       }
 
@@ -684,9 +695,15 @@ describe('createSaveEngine', () => {
         intent: 'timed',
         status: 'draft',
         saveRevision: false,
+        snapshot: { version: 61 },
       });
 
       await h.succeed();
+      const completions = await Promise.all(autosaves);
+      expect(completions).toHaveLength(60);
+      for (const completion of completions) {
+        expect(completion).toMatchObject({ kind: 'saved' });
+      }
       await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
       expect(h.execute).toHaveBeenCalledTimes(1);
     });
@@ -734,6 +751,206 @@ describe('createSaveEngine', () => {
         reason: 'disposed',
       });
       await expect(h.engine.leaveRequested()).resolves.toBe('proceed');
+      expect(h.engine.getState()).toEqual({ kind: 'disposed' });
+    });
+  });
+
+  describe('leave outcomes', () => {
+    it('asks for confirmation when the in-flight save it waited for fails', async () => {
+      const h = setup({ changedSinceLastRevision: false });
+      void h.engine.dispatch('explicit');
+      const decision = h.engine.leaveRequested();
+      await flush();
+
+      await h.fail(transport);
+      await expect(decision).resolves.toBe('confirm');
+      expect(h.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks for confirmation when the leave save replacing an armed autosave fails', async () => {
+      const h = setup({ changedSinceLastRevision: false });
+      void h.engine.dispatch('autosave');
+      const decision = h.engine.leaveRequested();
+      await flush();
+      expect(h.requests[0]).toMatchObject({ intent: 'leave' });
+
+      await h.fail(transport);
+      await expect(decision).resolves.toBe('confirm');
+    });
+
+    it('shares one leave save across concurrent leave requests', async () => {
+      const h = setup();
+      const first = h.engine.leaveRequested();
+      const second = h.engine.leaveRequested();
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      await h.succeed();
+      await expect(first).resolves.toBe('proceed');
+      await expect(second).resolves.toBe('proceed');
+      expect(h.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-runs a leave save interrupted by re-auth and then proceeds', async () => {
+      const h = setup();
+      const decision = h.engine.leaveRequested();
+      await flush();
+
+      await h.fail(sessionInvalid);
+      expect(h.engine.getState()).toEqual({ kind: 'reauth-pending', intent: 'leave' });
+
+      h.engine.reauthSucceeded();
+      await flush();
+      expect(h.requests[1]).toMatchObject({ intent: 'leave', saveRevision: true });
+
+      await h.succeed();
+      await expect(decision).resolves.toBe('proceed');
+    });
+
+    it('asks for confirmation when re-auth is abandoned during a leave save', async () => {
+      const h = setup();
+      const decision = h.engine.leaveRequested();
+      await flush();
+      await h.fail(sessionInvalid);
+
+      h.engine.reauthAbandoned();
+      await expect(decision).resolves.toBe('confirm');
+      expect(h.engine.getState()).toEqual({
+        kind: 'error',
+        intent: 'leave',
+        error: sessionInvalid,
+      });
+    });
+  });
+
+  describe('re-auth outcomes', () => {
+    it.each<DispatchIntent>(['publish', 'revert'])(
+      'never auto-fires a %s after re-auth; it resolves needs-retry',
+      async (intent) => {
+        const h = setup(
+          intent === 'revert' ? { status: 'published', publishedAt: PAST } : { willPublish: true },
+        );
+        const completion = h.engine.dispatch(intent);
+        await h.fail(sessionInvalid);
+
+        h.engine.reauthSucceeded();
+        await flush();
+        await expect(completion).resolves.toEqual({ kind: 'needs-retry' });
+        expect(h.execute).toHaveBeenCalledTimes(1);
+        expect(h.engine.getState()).toEqual({ kind: 'idle' });
+      },
+    );
+
+    it('settles every waiter with the session error when re-auth is abandoned', async () => {
+      const h = setup();
+      const field = h.engine.dispatch('field');
+      await h.fail(sessionInvalid);
+      const explicit = h.engine.dispatch('explicit');
+      h.edit();
+      const autosave = h.engine.dispatch('autosave');
+
+      h.engine.reauthAbandoned();
+      await expect(field).resolves.toEqual({ kind: 'failed', error: sessionInvalid });
+      await expect(explicit).resolves.toEqual({ kind: 'failed', error: sessionInvalid });
+      await expect(autosave).resolves.toEqual({ kind: 'failed', error: sessionInvalid });
+      expect(h.engine.getState()).toEqual({
+        kind: 'error',
+        intent: 'field',
+        error: sessionInvalid,
+      });
+
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      void h.engine.dispatch('explicit');
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores reauthAbandoned when nothing is waiting on re-authentication', () => {
+      const h = setup();
+      h.engine.reauthAbandoned();
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+  });
+
+  describe('coalescing and state reporting', () => {
+    it('lets a contradictory revert replace a pending publish and marks the publish superseded', async () => {
+      const h = setup();
+      void h.engine.dispatch('explicit');
+      h.patch({ willPublish: true });
+      const publish = h.engine.dispatch('publish');
+      const revert = h.engine.dispatch('revert');
+
+      await expect(publish).resolves.toEqual({ kind: 'superseded', by: 'revert' });
+      expect(h.engine.getState()).toEqual({
+        kind: 'pending-coalesced',
+        intent: 'explicit',
+        pending: 'revert',
+      });
+
+      await h.succeed();
+      expect(h.requests[1]).toMatchObject({ intent: 'revert', status: 'draft' });
+      await h.succeed();
+      await expect(revert).resolves.toMatchObject({ kind: 'saved' });
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
+
+    it('emits each state once even when several timers arm', () => {
+      const h = setup();
+      void h.engine.dispatch('autosave');
+      h.edit();
+      void h.engine.dispatch('autosave');
+      h.edit();
+      void h.engine.dispatch('autosave');
+
+      expect(h.states).toEqual([{ kind: 'debouncing' }]);
+    });
+
+    it('keeps an error state while a dropped-clean autosave passes through', async () => {
+      const h = setup();
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      const autosave = h.engine.dispatch('autosave');
+      h.patch({ isDirty: false });
+      await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+
+      await expect(autosave).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: transport });
+    });
+
+    it('surfaces a throwing snapshot port as an unknown failure', async () => {
+      const h = setup();
+      const cause = new Error('snapshot exploded');
+      h.throwNextSnapshot(cause);
+
+      await expect(h.engine.dispatch('explicit')).resolves.toEqual({
+        kind: 'failed',
+        error: { kind: 'unknown', message: 'snapshot exploded', cause },
+      });
+      expect(h.execute).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toMatchObject({ kind: 'error', intent: 'explicit' });
+    });
+
+    it('tolerates listeners that dispatch or unsubscribe during notification', () => {
+      const h = setup();
+      const seen: string[] = [];
+      const unsubscribe = h.engine.subscribe((state) => {
+        seen.push(state.kind);
+        if (state.kind === 'saving') {
+          unsubscribe();
+          void h.engine.dispatch('field');
+        }
+      });
+      h.engine.subscribe((state) => seen.push(`other:${state.kind}`));
+
+      void h.engine.dispatch('explicit');
+
+      expect(seen).toEqual(['saving', 'other:pending-coalesced', 'other:pending-coalesced']);
+      expect(h.engine.getState()).toEqual({
+        kind: 'pending-coalesced',
+        intent: 'explicit',
+        pending: 'field',
+      });
     });
   });
 });

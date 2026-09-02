@@ -14,6 +14,9 @@ export type SaveIntent =
   | 'publish'
   | 'revert';
 
+/** `timed` is engine-internal: an autosave dispatch arms the 60s cycle. */
+export type DispatchIntent = Exclude<SaveIntent, 'timed'>;
+
 // Coalescing ladder: the higher number wins the pending slot.
 const PRIORITY: Record<SaveIntent, number> = {
   autosave: 0,
@@ -27,6 +30,10 @@ const PRIORITY: Record<SaveIntent, number> = {
 
 export function isBackgroundIntent(intent: SaveIntent): boolean {
   return intent === 'autosave' || intent === 'timed' || intent === 'field';
+}
+
+function isStatusChangingIntent(intent: SaveIntent): boolean {
+  return intent === 'publish' || intent === 'revert';
 }
 
 export interface SaveSnapshot {
@@ -79,7 +86,11 @@ export type DropReason = 'not-draft' | 'clean' | 'suppressed' | 'halted' | 'disp
 export type SaveCompletion =
   | { kind: 'saved'; result: SaveResult }
   | { kind: 'failed'; error: SaveError }
-  | { kind: 'dropped'; reason: DropReason };
+  | { kind: 'dropped'; reason: DropReason }
+  /** A contradictory status-changing intent replaced this one before it ran. */
+  | { kind: 'superseded'; by: SaveIntent }
+  /** Publish/revert interrupted by re-auth; the publish flow must re-confirm, never auto-fire. */
+  | { kind: 'needs-retry' };
 
 export type SaveEngineState =
   | { kind: 'idle' }
@@ -90,6 +101,7 @@ export type SaveEngineState =
   | { kind: 'error'; intent: SaveIntent; error: SaveError }
   | { kind: 'halted' }
   | { kind: 'crashed' }
+  | { kind: 'disposed' }
   // Reserved for server-side OCC; posts are last-write-wins today so it is never entered.
   | { kind: 'conflict' };
 
@@ -106,10 +118,11 @@ export interface SaveEnginePorts<S extends SaveSnapshot = SaveSnapshot> {
 }
 
 export interface SaveEngine {
-  dispatch(intent: SaveIntent): Promise<SaveCompletion>;
+  dispatch(intent: DispatchIntent): Promise<SaveCompletion>;
   getState(): SaveEngineState;
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
+  reauthAbandoned(): void;
   leaveRequested(): Promise<LeaveDecision>;
   dispose(): void;
 }
@@ -181,6 +194,11 @@ interface Timer {
   waiters: Waiter[];
 }
 
+interface Frozen {
+  slot: Slot;
+  error: SaveError;
+}
+
 function dropped(reason: DropReason): SaveCompletion {
   return { kind: 'dropped', reason };
 }
@@ -191,13 +209,20 @@ function settle(waiters: Waiter[], completion: SaveCompletion): void {
   }
 }
 
-function higherPriority(current: SaveIntent, incoming: SaveIntent): SaveIntent {
-  return PRIORITY[incoming] > PRIORITY[current] ? incoming : current;
-}
-
 function toSaveError(cause: unknown): SaveError {
   const message = cause instanceof Error ? cause.message : 'Save failed';
   return { kind: 'unknown', message, cause };
+}
+
+function sameState(a: SaveEngineState, b: SaveEngineState): boolean {
+  if (a.kind !== b.kind) {
+    return false;
+  }
+  const left = a as Partial<Record<'intent' | 'pending' | 'error', unknown>>;
+  const right = b as Partial<Record<'intent' | 'pending' | 'error', unknown>>;
+  return (
+    left.intent === right.intent && left.pending === right.pending && left.error === right.error
+  );
 }
 
 export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
@@ -211,17 +236,21 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
   let state: SaveEngineState = { kind: 'idle' };
   let inFlight: Slot | null = null;
   let pending: Slot | null = null;
-  // Set while re-authentication is pending: the failed slot, and the reason the queue is frozen.
-  let resume: Slot | null = null;
+  // Set while re-authentication is pending: the failed slot freezes the queue until reauth resolves.
+  let frozen: Frozen | null = null;
   let debounce: Timer | null = null;
   let timedCycle: Timer | null = null;
   let suppressedVersion: number | null = null;
+  let leaveInProgress: Promise<LeaveDecision> | null = null;
   let disposed = false;
 
   function setState(next: SaveEngineState): void {
+    if (sameState(state, next)) {
+      return;
+    }
     state = next;
     ports.onStateChange?.(state);
-    for (const listener of listeners) {
+    for (const listener of [...listeners]) {
       listener(state);
     }
   }
@@ -230,8 +259,9 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     return state.kind === 'halted' || state.kind === 'crashed';
   }
 
+  // Errors persist until a save actually starts; timers arming or dropping do not clear them.
   function deriveState(): SaveEngineState {
-    if (resume || isTerminal()) {
+    if (frozen || isTerminal() || disposed) {
       return state;
     }
     if (inFlight) {
@@ -239,10 +269,13 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
         ? { kind: 'pending-coalesced', intent: inFlight.intent, pending: pending.intent }
         : { kind: 'saving', intent: inFlight.intent };
     }
+    if (state.kind === 'error') {
+      return state;
+    }
     if (debounce || timedCycle) {
       return { kind: 'debouncing' };
     }
-    return state.kind === 'error' ? state : { kind: 'idle' };
+    return { kind: 'idle' };
   }
 
   function isSuppressed(snapshot: S): boolean {
@@ -275,14 +308,11 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     setState(deriveState());
   }
 
-  function armTimedCycle(waiter?: Waiter): void {
+  function armTimedCycle(): void {
     if (timedCycle) {
-      if (waiter) {
-        timedCycle.waiters.push(waiter);
-      }
       return;
     }
-    const waiters = waiter ? [waiter] : [];
+    const waiters: Waiter[] = [];
     const handle = schedule(() => {
       timedCycle = null;
       enqueue('timed', waiters);
@@ -291,17 +321,34 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     setState(deriveState());
   }
 
+  // Higher priority wins and carries the loser's content; contradictory publish/revert is last-wins.
+  function coalesce(intent: SaveIntent, waiters: Waiter[]): void {
+    if (!pending) {
+      pending = { intent, waiters };
+      return;
+    }
+    const current = pending.intent;
+    if (PRIORITY[intent] > PRIORITY[current]) {
+      pending.intent = intent;
+      pending.waiters.push(...waiters);
+      return;
+    }
+    if (
+      PRIORITY[intent] === PRIORITY[current] &&
+      intent !== current &&
+      isStatusChangingIntent(intent)
+    ) {
+      settle(pending.waiters, { kind: 'superseded', by: intent });
+      pending = { intent, waiters };
+      return;
+    }
+    pending.waiters.push(...waiters);
+  }
+
   function enqueue(intent: SaveIntent, waiters: Waiter[]): void {
-    if (inFlight || resume) {
-      if (pending) {
-        pending.intent = higherPriority(pending.intent, intent);
-        pending.waiters.push(...waiters);
-      } else {
-        pending = { intent, waiters };
-      }
-      if (!resume) {
-        setState(deriveState());
-      }
+    if (inFlight || frozen) {
+      coalesce(intent, waiters);
+      setState(deriveState());
       return;
     }
     void run({ intent, waiters });
@@ -317,9 +364,26 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     }
   }
 
+  function failSlot(slot: Slot, error: SaveError): void {
+    settle(slot.waiters, { kind: 'failed', error });
+    setState({ kind: 'error', intent: slot.intent, error });
+    if (pending) {
+      const next = pending;
+      pending = null;
+      void run(next);
+    }
+  }
+
   async function run(slot: Slot): Promise<void> {
     clearTimers(slot.waiters);
-    const snapshot = ports.getSnapshot();
+
+    let snapshot: S;
+    try {
+      snapshot = ports.getSnapshot();
+    } catch (cause) {
+      failSlot(slot, toSaveError(cause));
+      return;
+    }
 
     if (isBackgroundIntent(slot.intent)) {
       let reason: DropReason | null = null;
@@ -371,7 +435,7 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
 
   function handleError(slot: Slot, snapshot: S, error: SaveError): void {
     if (error.kind === 'session-invalid') {
-      resume = slot;
+      frozen = { slot, error };
       setState({ kind: 'reauth-pending', intent: slot.intent });
       return;
     }
@@ -392,17 +456,10 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     if (error.kind === 'validation' || error.kind === 'host-limit') {
       suppressedVersion = snapshot.version;
     }
-    settle(slot.waiters, { kind: 'failed', error });
-    setState({ kind: 'error', intent: slot.intent, error });
-
-    if (pending) {
-      const next = pending;
-      pending = null;
-      void run(next);
-    }
+    failSlot(slot, error);
   }
 
-  function dispatch(intent: SaveIntent): Promise<SaveCompletion> {
+  function dispatch(intent: DispatchIntent): Promise<SaveCompletion> {
     return new Promise<SaveCompletion>((resolve) => {
       if (disposed) {
         resolve(dropped('disposed'));
@@ -434,10 +491,6 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
         enqueue('field', [resolve]);
         return;
       }
-      if (intent === 'timed') {
-        armTimedCycle(resolve);
-        return;
-      }
       armTimedCycle();
       if (snapshot.isNew) {
         enqueue('autosave', [resolve]);
@@ -448,18 +501,33 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
   }
 
   function reauthSucceeded(): void {
-    if (!resume || disposed) {
+    if (!frozen || disposed) {
       return;
     }
-    const slot = resume;
-    resume = null;
-    if (pending) {
-      pending.intent = higherPriority(pending.intent, slot.intent);
-      pending.waiters.push(...slot.waiters);
+    const { slot } = frozen;
+    frozen = null;
+    if (isStatusChangingIntent(slot.intent)) {
+      settle(slot.waiters, { kind: 'needs-retry' });
     } else {
-      pending = slot;
+      coalesce(slot.intent, slot.waiters);
     }
     drain();
+  }
+
+  function reauthAbandoned(): void {
+    if (!frozen || disposed) {
+      return;
+    }
+    const { slot, error } = frozen;
+    frozen = null;
+    const waiters = [...slot.waiters];
+    clearTimers(waiters);
+    if (pending) {
+      waiters.push(...pending.waiters);
+      pending = null;
+    }
+    settle(waiters, { kind: 'failed', error });
+    setState({ kind: 'error', intent: slot.intent, error });
   }
 
   function queueSettled(): Promise<SaveCompletion> {
@@ -476,12 +544,21 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     return snapshot.status === 'draft' && snapshot.isDirty && snapshot.changedSinceLastRevision;
   }
 
-  async function leaveRequested(): Promise<LeaveDecision> {
+  function leaveRequested(): Promise<LeaveDecision> {
+    if (!leaveInProgress) {
+      leaveInProgress = decideLeave().finally(() => {
+        leaveInProgress = null;
+      });
+    }
+    return leaveInProgress;
+  }
+
+  async function decideLeave(): Promise<LeaveDecision> {
     if (disposed) {
       return 'proceed';
     }
     let snapshot = ports.getSnapshot();
-    if (isTerminal() || resume) {
+    if (isTerminal() || frozen) {
       return snapshot.isDirty ? 'confirm' : 'proceed';
     }
 
@@ -495,19 +572,19 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     if (!snapshot.isDirty) {
       return 'proceed';
     }
-    if (resume) {
+    if (frozen) {
       return 'confirm';
     }
     if (inFlight || pending) {
       await queueSettled();
-      return 'proceed';
+      return ports.getSnapshot().isDirty ? 'confirm' : 'proceed';
     }
     if (debounce || timedCycle) {
       if (saveOnLeavePerformed) {
         return 'confirm';
       }
       await dispatch('leave');
-      return 'proceed';
+      return ports.getSnapshot().isDirty ? 'confirm' : 'proceed';
     }
     return 'confirm';
   }
@@ -526,15 +603,16 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     disposed = true;
     const waiters: Waiter[] = [];
     clearTimers(waiters);
-    for (const slot of [inFlight, pending, resume]) {
+    for (const slot of [inFlight, pending, frozen?.slot ?? null]) {
       if (slot) {
         waiters.push(...slot.waiters);
       }
     }
     inFlight = null;
     pending = null;
-    resume = null;
+    frozen = null;
     settle(waiters, dropped('disposed'));
+    setState({ kind: 'disposed' });
     listeners.clear();
   }
 
@@ -543,6 +621,7 @@ export function createSaveEngine<S extends SaveSnapshot = SaveSnapshot>(
     getState: () => state,
     subscribe,
     reauthSucceeded,
+    reauthAbandoned,
     leaveRequested,
     dispose,
   };
