@@ -349,7 +349,7 @@ describe('createSlugMachine', () => {
       });
     });
 
-    it('applies only the latest response when commits overlap', async () => {
+    it('serializes overlapping title commits', async () => {
       const first = deferred<string>();
       const second = deferred<string>();
       const generateSlug = vi
@@ -363,42 +363,47 @@ describe('createSlugMachine', () => {
       const secondCommit = machine.titleCommitted('Second');
       expect(machine.getState()).toMatchObject({ pending: true, title: '' });
 
-      second.resolve('second');
-      await expect(secondCommit).resolves.toEqual({ slug: 'second', source: 'generated' });
-      expect(machine.getState().pending).toBe(false);
-
       first.resolve('first');
       await expect(firstCommit).resolves.toEqual({
-        slug: '',
-        source: 'unchanged',
-        reason: 'stale',
+        slug: 'first',
+        source: 'generated',
       });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
+
+      second.resolve('second');
+      await expect(secondCommit).resolves.toEqual({ slug: 'second', source: 'generated' });
 
       expect(machine.getState()).toMatchObject({ slug: 'second', title: 'Second', pending: false });
       expect(proposals.filter((p) => p.source === 'generated')).toEqual([
+        { slug: 'first', source: 'generated' },
         { slug: 'second', source: 'generated' },
       ]);
     });
 
-    it('discards a response that resolves before a later commit only if superseded', async () => {
+    it('retains only the latest deferred title commit', async () => {
       const first = deferred<string>();
-      const second = deferred<string>();
+      const third = deferred<string>();
       const generateSlug = vi
         .fn()
         .mockReturnValueOnce(first.promise)
-        .mockReturnValueOnce(second.promise);
+        .mockReturnValueOnce(third.promise);
       const { machine } = createHarness(generateSlug);
       machine.loaded({ slug: '', title: '' });
 
       const firstCommit = machine.titleCommitted('First');
       const secondCommit = machine.titleCommitted('Second');
+      const thirdCommit = machine.titleCommitted('Third');
+
+      await expect(secondCommit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+      expect(generateSlug).toHaveBeenCalledTimes(1);
 
       first.resolve('first');
-      await expect(firstCommit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
-      expect(machine.getState().slug).toBe('');
+      await expect(firstCommit).resolves.toEqual({ slug: 'first', source: 'generated' });
+      expect(generateSlug).toHaveBeenCalledTimes(2);
 
-      second.resolve('second');
-      await expect(secondCommit).resolves.toEqual({ slug: 'second', source: 'generated' });
+      third.resolve('third');
+      await expect(thirdCommit).resolves.toEqual({ slug: 'third', source: 'generated' });
+      expect(machine.getState()).toMatchObject({ slug: 'third', title: 'Third', pending: false });
     });
 
     it('discards in-flight responses when a post is loaded', async () => {
@@ -491,6 +496,27 @@ describe('createSlugMachine', () => {
         await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
       },
     );
+
+    it('keeps title generation when a deferred manual edit is withdrawn', async () => {
+      const pending = deferred<string>();
+      const generateSlug = vi.fn().mockReturnValueOnce(pending.promise);
+      const { machine } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
+
+      const commit = machine.titleCommitted('Changed');
+      const manual = machine.slugEdited('mine');
+      await expect(machine.slugEdited('')).resolves.toMatchObject({ reason: 'reverted' });
+      await expect(manual).resolves.toMatchObject({ reason: 'stale' });
+      expect(generateSlug).toHaveBeenCalledTimes(1);
+
+      pending.resolve('changed');
+      await expect(commit).resolves.toEqual({ slug: 'changed', source: 'generated' });
+      expect(machine.getState()).toMatchObject({
+        slug: 'changed',
+        mode: 'derived',
+        pending: false,
+      });
+    });
   });
 
   describe('slugEdited', () => {
@@ -541,7 +567,7 @@ describe('createSlugMachine', () => {
       expect(proposals.filter((proposal) => proposal.source === 'manual')).toEqual([]);
     });
 
-    it('generates from the title while an invalidated manual edit is still pending', async () => {
+    it('generates from the title after an invalidated manual request settles', async () => {
       const pending = deferred<string>();
       const generateSlug = vi
         .fn()
@@ -552,8 +578,11 @@ describe('createSlugMachine', () => {
 
       const edit = machine.slugEdited('mine');
       await machine.slugEdited('hello');
+      const commit = machine.titleCommitted('Changed');
 
-      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      pending.resolve('mine');
+      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+      await expect(commit).resolves.toEqual({
         slug: 'changed',
         source: 'generated',
       });
@@ -563,8 +592,6 @@ describe('createSlugMachine', () => {
         pending: false,
       });
 
-      pending.resolve('mine');
-      await expect(edit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
       expect(machine.getState()).toMatchObject({ slug: 'changed', pending: false });
     });
 
@@ -650,24 +677,22 @@ describe('createSlugMachine', () => {
       expect(machine.getState()).toMatchObject({ slug: 'hello', mode: 'derived', pending: false });
     });
 
-    it('reads as custom while a manual edit is in flight and refuses title generation', async () => {
+    it('defers title generation while a manual edit is in flight', async () => {
       const pending = deferred<string>();
       const generateSlug = vi.fn().mockReturnValueOnce(pending.promise);
       const { machine } = createHarness(generateSlug);
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
       const edit = machine.slugEdited('mine');
-      await expect(machine.titleCommitted('Changed')).resolves.toMatchObject({
-        source: 'unchanged',
-        reason: 'custom',
-      });
+      const commit = machine.titleCommitted('Changed');
 
       pending.resolve('mine');
       await expect(edit).resolves.toEqual({ slug: 'mine', source: 'manual' });
+      await expect(commit).resolves.toMatchObject({ source: 'unchanged', reason: 'custom' });
       expect(generateSlug).toHaveBeenCalledTimes(1);
     });
 
-    it('lets a refused title commit regenerate once the in-flight manual edit fails', async () => {
+    it('runs a deferred title commit when the in-flight manual edit fails', async () => {
       const pending = deferred<string>();
       const generateSlug = vi
         .fn()
@@ -677,19 +702,22 @@ describe('createSlugMachine', () => {
       machine.loaded({ slug: 'hello', title: 'Hello' });
 
       const edit = machine.slugEdited('mine');
-      await expect(machine.titleCommitted('Changed')).resolves.toMatchObject({ reason: 'custom' });
+      const commit = machine.titleCommitted('Changed');
 
       pending.reject(new Error('boom'));
       await expect(edit).resolves.toMatchObject({ reason: 'error' });
-      expect(machine.getState()).toMatchObject({ mode: 'derived', slug: 'hello', title: 'Hello' });
-
-      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      await expect(commit).resolves.toEqual({
         slug: 'changed',
         source: 'generated',
       });
+      expect(machine.getState()).toMatchObject({
+        mode: 'derived',
+        slug: 'changed',
+        title: 'Changed',
+      });
     });
 
-    it('lets a superseded title commit regenerate once the later manual edit fails', async () => {
+    it('finishes title generation before running a deferred manual edit', async () => {
       const generation = deferred<string>();
       const edit = deferred<string>();
       const generateSlug = vi
@@ -706,16 +734,18 @@ describe('createSlugMachine', () => {
       generation.resolve('changed');
 
       await expect(manual).resolves.toMatchObject({ reason: 'error' });
-      await expect(commit).resolves.toMatchObject({ reason: 'stale' });
-      expect(machine.getState()).toMatchObject({ mode: 'derived', slug: 'hello', title: 'Hello' });
-
-      await expect(machine.titleCommitted('Changed')).resolves.toEqual({
+      await expect(commit).resolves.toEqual({
         slug: 'changed',
         source: 'generated',
       });
+      expect(machine.getState()).toMatchObject({
+        mode: 'derived',
+        slug: 'changed',
+        title: 'Changed',
+      });
     });
 
-    it('applies only the latest of overlapping manual edits', async () => {
+    it('serializes overlapping manual edits', async () => {
       const first = deferred<string>();
       const second = deferred<string>();
       const generateSlug = vi
@@ -727,76 +757,34 @@ describe('createSlugMachine', () => {
 
       const firstEdit = machine.slugEdited('one');
       const secondEdit = machine.slugEdited('two');
-      second.resolve('two');
       first.resolve('one');
 
+      await expect(firstEdit).resolves.toEqual({ slug: 'one', source: 'manual' });
+      second.resolve('two');
       await expect(secondEdit).resolves.toEqual({ slug: 'two', source: 'manual' });
-      await expect(firstEdit).resolves.toEqual({
-        slug: 'hello',
-        source: 'unchanged',
-        reason: 'stale',
-      });
       expect(machine.getState().mode).toBe('custom');
     });
 
-    describe('overlapping manual edits where the latest does not apply', () => {
-      function overlap() {
-        const first = deferred<string>();
-        const second = deferred<string>();
-        const generateSlug = vi
-          .fn()
-          .mockReturnValueOnce(first.promise)
-          .mockReturnValueOnce(second.promise)
-          .mockResolvedValueOnce('changed');
-        const { machine } = createHarness(generateSlug);
-        machine.loaded({ slug: 'hello', title: 'Hello' });
-        const firstEdit = machine.slugEdited('one');
-        const secondEdit = machine.slugEdited('two');
-        return { first, second, firstEdit, secondEdit, machine };
-      }
+    it('retains only the latest deferred manual edit', async () => {
+      const first = deferred<string>();
+      const third = deferred<string>();
+      const generateSlug = vi
+        .fn()
+        .mockReturnValueOnce(first.promise)
+        .mockReturnValueOnce(third.promise);
+      const { machine } = createHarness(generateSlug);
+      machine.loaded({ slug: 'hello', title: 'Hello' });
 
-      async function expectDerivedAndRegenerating(
-        machine: ReturnType<typeof createHarness>['machine'],
-      ) {
-        expect(machine.getState()).toMatchObject({
-          mode: 'derived',
-          slug: 'hello',
-          pending: false,
-        });
-        await expect(machine.titleCommitted('Changed')).resolves.toEqual({
-          slug: 'changed',
-          source: 'generated',
-        });
-      }
+      const firstEdit = machine.slugEdited('one');
+      const secondEdit = machine.slugEdited('two');
+      const thirdEdit = machine.slugEdited('three');
 
-      it('latest rejects, then the earlier one resolves', async () => {
-        const { first, second, firstEdit, secondEdit, machine } = overlap();
-        second.reject(new Error('boom'));
-        await expect(secondEdit).resolves.toMatchObject({ reason: 'error' });
-        expect(machine.getState()).toMatchObject({ mode: 'derived', pending: false });
-        first.resolve('one');
-        await expect(firstEdit).resolves.toMatchObject({ reason: 'stale' });
-        await expectDerivedAndRegenerating(machine);
-      });
-
-      it('latest sanitizes back to the current slug, then the earlier one resolves', async () => {
-        const { first, second, firstEdit, secondEdit, machine } = overlap();
-        second.resolve('hello');
-        await expect(secondEdit).resolves.toMatchObject({ reason: 'reverted' });
-        first.resolve('one');
-        await expect(firstEdit).resolves.toMatchObject({ reason: 'stale' });
-        await expectDerivedAndRegenerating(machine);
-      });
-
-      it('earlier one resolves, then the latest rejects', async () => {
-        const { first, second, firstEdit, secondEdit, machine } = overlap();
-        first.resolve('one');
-        await expect(firstEdit).resolves.toMatchObject({ reason: 'stale' });
-        expect(machine.getState().mode).toBe('custom');
-        second.reject(new Error('boom'));
-        await expect(secondEdit).resolves.toMatchObject({ reason: 'error' });
-        await expectDerivedAndRegenerating(machine);
-      });
+      await expect(secondEdit).resolves.toMatchObject({ source: 'unchanged', reason: 'stale' });
+      first.resolve('one');
+      await expect(firstEdit).resolves.toEqual({ slug: 'one', source: 'manual' });
+      third.resolve('three');
+      await expect(thirdEdit).resolves.toEqual({ slug: 'three', source: 'manual' });
+      expect(machine.getState()).toMatchObject({ slug: 'three', mode: 'custom', pending: false });
     });
   });
 

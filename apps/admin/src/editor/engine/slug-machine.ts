@@ -120,8 +120,16 @@ export function createSlugMachine({
   generateSlug,
   onListenerError,
 }: SlugMachineOptions): SlugMachine {
-  // Only load and an applied manual edit move settledMode; the latest request reads as custom
-  // while it is a manual edit so a title commit cannot race it. Older pending edits are stale.
+  type Submission = { kind: 'title'; value: string } | { kind: 'manual'; value: string };
+  type DeferredSubmission = {
+    submission: Submission;
+    slugAtSubmission: string;
+    resolve: (proposal: SlugProposal) => void;
+    reject: (error: unknown) => void;
+  };
+
+  // Only load and an applied manual edit move settledMode. An active manual request reads as
+  // custom until it settles, and request tickets still guard explicit invalidation and post loads.
   let settledMode: SlugMode = 'derived';
   const pendingManual = new Set<number>();
   let slug = '';
@@ -134,6 +142,12 @@ export function createSlugMachine({
   let latestManualTicket = 0;
   const inFlightTickets = new Set<number>();
   const listeners = new Set<SlugListener>();
+  // Slug requests are serialized. While one is active, only the latest deferred submission is
+  // retained so a slow response cannot create overlapping title/manual request races.
+  let nextSubmissionToken = 0;
+  let activeSubmissionToken = 0;
+  let activeSubmissionKind: Submission['kind'] | null = null;
+  let deferredSubmission: DeferredSubmission | null = null;
 
   const mode = (): SlugMode => (pendingManual.has(latestManualTicket) ? 'custom' : settledMode);
 
@@ -242,8 +256,158 @@ export function createSlugMachine({
     return { ticket, result, error, slugAtRequest };
   };
 
+  const commitTitle = async (rawTitle: string): Promise<SlugProposal> => {
+    const nextTitle = rawTitle.trim();
+    lastCommittedTitle = nextTitle;
+    if (mode() === 'custom') {
+      return unchanged('custom');
+    }
+    if (nextTitle === title && slug) {
+      invalidateTitleRequest();
+      return unchanged('same-title');
+    }
+    if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
+      invalidateTitleRequest();
+      return unchanged('frozen');
+    }
+
+    const { ticket, result, error, slugAtRequest } = await request(nextTitle, false);
+    const cleanupChangedState = cleanupRequest(ticket);
+    if (ticket !== latestTitleTicket) {
+      if (cleanupChangedState) {
+        notify(null);
+      }
+      return stale(slugAtRequest);
+    }
+    if (error !== undefined) {
+      return unchanged('error', error);
+    }
+    if (!result?.trim()) {
+      return unchanged('empty-result');
+    }
+    slug = result;
+    title = nextTitle;
+    return emit({ slug, source: 'generated' });
+  };
+
+  const editSlug = async (input: string): Promise<SlugProposal> => {
+    const candidate = normalizeManualSlug(input, slug);
+    if (candidate === null) {
+      invalidateManualRequest();
+      return unchanged('reverted');
+    }
+
+    const { ticket, result, error, slugAtRequest } = await request(candidate, true);
+    const cleanupChangedState = cleanupRequest(ticket);
+    if (ticket !== latestManualTicket) {
+      if (cleanupChangedState) {
+        notify(null);
+      }
+      return stale(slugAtRequest);
+    }
+    if (error !== undefined) {
+      return unchanged('error', error);
+    }
+    if (!result?.trim()) {
+      return unchanged('empty-result');
+    }
+    const resolved = resolveDedupedSlug(result, candidate, slug);
+    if (resolved === slug) {
+      return unchanged('reverted');
+    }
+    slug = resolved;
+    settledMode = 'custom';
+    return emit({ slug, source: 'manual' });
+  };
+
+  const executeSubmission = (submission: Submission): Promise<SlugProposal> =>
+    submission.kind === 'title' ? commitTitle(submission.value) : editSlug(submission.value);
+
+  const finishSubmission = (token: number): void => {
+    if (token !== activeSubmissionToken) {
+      return;
+    }
+    const next = deferredSubmission;
+    deferredSubmission = null;
+    if (!next) {
+      activeSubmissionToken = 0;
+      activeSubmissionKind = null;
+      return;
+    }
+    const nextPromise = startSubmission(next.submission);
+    void nextPromise.then(next.resolve, next.reject);
+  };
+
+  const startSubmission = (submission: Submission): Promise<SlugProposal> => {
+    nextSubmissionToken += 1;
+    const token = nextSubmissionToken;
+    activeSubmissionToken = token;
+    activeSubmissionKind = submission.kind;
+    const submissionPromise = executeSubmission(submission);
+    void submissionPromise.then(
+      () => finishSubmission(token),
+      () => finishSubmission(token),
+    );
+    return submissionPromise;
+  };
+
+  const submit = (submission: Submission): Promise<SlugProposal> => {
+    if (!activeSubmissionToken) {
+      return startSubmission(submission);
+    }
+
+    // A no-op manual blur cancels a deferred manual value. If a manual request itself is active,
+    // it also withdraws that request without disturbing an active title generation.
+    if (submission.kind === 'manual' && normalizeManualSlug(submission.value, slug) === null) {
+      if (deferredSubmission?.submission.kind === 'manual') {
+        deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+        deferredSubmission = null;
+      }
+      if (activeSubmissionKind === 'manual') {
+        invalidateManualRequest();
+      }
+      return Promise.resolve(unchanged('reverted'));
+    }
+
+    // A title returning to a settled/frozen value can invalidate active title generation without
+    // waiting for its physical request. Title intent behind a manual request remains deferred.
+    if (submission.kind === 'title' && activeSubmissionKind === 'title') {
+      const nextTitle = submission.value.trim();
+      lastCommittedTitle = nextTitle;
+      if (nextTitle === title && slug) {
+        if (deferredSubmission) {
+          deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+          deferredSubmission = null;
+        }
+        invalidateTitleRequest();
+        return Promise.resolve(unchanged('same-title'));
+      }
+      if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
+        if (deferredSubmission) {
+          deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+          deferredSubmission = null;
+        }
+        invalidateTitleRequest();
+        return Promise.resolve(unchanged('frozen'));
+      }
+    }
+
+    if (deferredSubmission) {
+      deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+    }
+    return new Promise<SlugProposal>((resolve, reject) => {
+      deferredSubmission = { submission, slugAtSubmission: slug, resolve, reject };
+    });
+  };
+
   return {
     loaded(post) {
+      activeSubmissionToken = 0;
+      activeSubmissionKind = null;
+      if (deferredSubmission) {
+        deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+        deferredSubmission = null;
+      }
       latestTitleTicket = 0;
       latestManualTicket = 0;
       inFlightTickets.clear();
@@ -255,68 +419,12 @@ export function createSlugMachine({
       notify(null);
     },
 
-    async titleCommitted(rawTitle) {
-      const nextTitle = rawTitle.trim();
-      lastCommittedTitle = nextTitle;
-      if (mode() === 'custom') {
-        return unchanged('custom');
-      }
-      if (nextTitle === title && slug) {
-        invalidateTitleRequest();
-        return unchanged('same-title');
-      }
-      if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
-        invalidateTitleRequest();
-        return unchanged('frozen');
-      }
-
-      const { ticket, result, error, slugAtRequest } = await request(nextTitle, false);
-      const cleanupChangedState = cleanupRequest(ticket);
-      if (ticket !== latestTitleTicket) {
-        if (cleanupChangedState) {
-          notify(null);
-        }
-        return stale(slugAtRequest);
-      }
-      if (error !== undefined) {
-        return unchanged('error', error);
-      }
-      if (!result?.trim()) {
-        return unchanged('empty-result');
-      }
-      slug = result;
-      title = nextTitle;
-      return emit({ slug, source: 'generated' });
+    titleCommitted(rawTitle) {
+      return submit({ kind: 'title', value: rawTitle });
     },
 
-    async slugEdited(input) {
-      const candidate = normalizeManualSlug(input, slug);
-      if (candidate === null) {
-        invalidateManualRequest();
-        return unchanged('reverted');
-      }
-
-      const { ticket, result, error, slugAtRequest } = await request(candidate, true);
-      const cleanupChangedState = cleanupRequest(ticket);
-      if (ticket !== latestManualTicket) {
-        if (cleanupChangedState) {
-          notify(null);
-        }
-        return stale(slugAtRequest);
-      }
-      if (error !== undefined) {
-        return unchanged('error', error);
-      }
-      if (!result?.trim()) {
-        return unchanged('empty-result');
-      }
-      const resolved = resolveDedupedSlug(result, candidate, slug);
-      if (resolved === slug) {
-        return unchanged('reverted');
-      }
-      slug = resolved;
-      settledMode = 'custom';
-      return emit({ slug, source: 'manual' });
+    slugEdited(input) {
+      return submit({ kind: 'manual', value: input });
     },
 
     getState,
