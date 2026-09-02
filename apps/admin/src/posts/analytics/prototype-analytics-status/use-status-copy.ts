@@ -69,6 +69,10 @@ export const useNewsletterCards = (): { showProgress: boolean; showPerformance: 
  *
  * Null until something has been processed: "up to" a time when nothing has been
  * read yet would be pointing at a cursor that has not moved.
+ *
+ * Null in variant D too: the watermark is a counting fact, and D refuses to
+ * speak about counting at all. E inherits the suppression along with the rest
+ * of D's chrome.
  */
 export const useCountedThrough = (): string | null => {
   const prototype = usePrototypeAnalyticsStatus();
@@ -76,6 +80,9 @@ export const useCountedThrough = (): string | null => {
   const { settings } = useAnalyticsData();
 
   if (!prototype || (prototype.variant === 'off' && prototype.emailData === 'off')) {
+    return null;
+  }
+  if (prototype.variant === 'sendingOnly' || prototype.variant === 'gatedUntilSent') {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
@@ -108,10 +115,36 @@ export const useEmailDataHiddenReason = (): EmailDataHiddenReason | null => {
   const prototype = usePrototypeAnalyticsStatus();
   const { post } = usePostAnalytics();
 
-  if (!prototype || prototype.emailData === 'off') {
+  if (!prototype) {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
+    return null;
+  }
+
+  // E is D with a gate. The line above reads "Sending emails · 31,500 of
+  // 87,420" and retires the moment the last batch is away — E makes every card
+  // below wait for that same moment, so the page tells one story: the line
+  // counts the send up to 100%, then the figures arrive together. The gate is a
+  // property of the variant, so it applies regardless of the EMAIL DATA axis
+  // and does not fall through to it: a second gate waiting on the first
+  // delivery would hold the data back right after the line promised it.
+  //
+  // Partial and failed sends never reach 100%, so they hold — which is the one
+  // place E overrules its parent: D shows figures over a half-failed send and
+  // trusts its card to qualify them, while E's whole contract is that figures
+  // only appear for a send that fully went out.
+  if (prototype.variant === 'gatedUntilSent') {
+    if (prototype.status.send.state === 'failed') {
+      return 'failed';
+    }
+    if (prototype.status.send.state === 'partiallyFailed') {
+      return 'partial';
+    }
+    return isSendComplete(prototype.status) ? null : 'pending';
+  }
+
+  if (prototype.emailData === 'off') {
     return null;
   }
 
@@ -165,7 +198,12 @@ export const useSentToMembers = (): string | null => {
   const prototype = usePrototypeAnalyticsStatus();
   const { post } = usePostAnalytics();
 
-  if (!prototype || prototype.variant !== 'sendingOnly') {
+  // E retires its line at the same moment D does, so it hands the fact to the
+  // subtitle the same way.
+  if (
+    !prototype ||
+    (prototype.variant !== 'sendingOnly' && prototype.variant !== 'gatedUntilSent')
+  ) {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
@@ -194,4 +232,20 @@ export const useSendingOnlyVariant = (): boolean => {
   const { post } = usePostAnalytics();
 
   return Boolean(prototype?.variant === 'sendingOnly' && post && hasBeenEmailed(post));
+};
+
+/**
+ * Whether the funnel's first tile is counting dispatches rather than results.
+ *
+ * Where D relabels the tile Delivered, E keeps it Sent and makes the word
+ * literal: dispatched over addressed, the same fraction its line was counting.
+ * The gate means the tile is only ever visible once the send is done, so on a
+ * clean send the ring reads 100% — the line's final figure, restated in the
+ * chart's own language, rather than a delivered count falling a hair short.
+ */
+export const useGatedUntilSentVariant = (): boolean => {
+  const prototype = usePrototypeAnalyticsStatus();
+  const { post } = usePostAnalytics();
+
+  return Boolean(prototype?.variant === 'gatedUntilSent' && post && hasBeenEmailed(post));
 };

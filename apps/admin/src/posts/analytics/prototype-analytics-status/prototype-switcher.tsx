@@ -25,11 +25,14 @@ const PrototypeSwitcher: React.FC = () => {
     counting,
     emailData,
     isPlaying,
+    isPaused,
+    hasPlayback,
     setVariant,
     setSend,
     setCounting,
     setEmailData,
     play,
+    pause,
     stop,
   } = prototype;
 
@@ -40,19 +43,46 @@ const PrototypeSwitcher: React.FC = () => {
   const toggleFailure = () => {
     // Playback drives the send state itself, so it has to yield before a manual
     // pick will hold — otherwise the next tick overwrites it 120ms later.
-    stop();
+    pause();
     setSend(send === 'partiallyFailed' ? 'submitted' : 'partiallyFailed');
   };
 
   const playButton = (
     <Button
-      aria-label={isPlaying ? 'Stop the send' : 'Play a send'}
+      aria-label={isPaused ? 'Resume the send' : 'Play a send'}
       className="size-7 p-0 shadow-lg"
+      disabled={isPlaying}
+      size="sm"
+      variant="outline"
+      onClick={play}
+    >
+      <LucideIcon.Play />
+    </Button>
+  );
+
+  const pauseButton = (
+    <Button
+      aria-label="Pause the send"
+      className="size-7 p-0 shadow-lg"
+      disabled={!isPlaying}
       size="sm"
       variant={isPlaying ? 'secondary' : 'outline'}
-      onClick={() => (isPlaying ? stop() : play())}
+      onClick={pause}
     >
-      {isPlaying ? <LucideIcon.Square /> : <LucideIcon.Play />}
+      <LucideIcon.Pause />
+    </Button>
+  );
+
+  const stopButton = (
+    <Button
+      aria-label="Stop the send"
+      className="size-7 p-0 shadow-lg"
+      disabled={!hasPlayback}
+      size="sm"
+      variant="outline"
+      onClick={stop}
+    >
+      <LucideIcon.Square />
     </Button>
   );
 
@@ -77,6 +107,8 @@ const PrototypeSwitcher: React.FC = () => {
           Prototype
         </Button>
         {playButton}
+        {pauseButton}
+        {stopButton}
         {failureButton}
       </Inline>
     );
@@ -142,12 +174,33 @@ const PrototypeSwitcher: React.FC = () => {
       <Inline align="center" gap="xs">
         <Button
           className="grow justify-center"
+          disabled={isPlaying}
+          size="sm"
+          variant="outline"
+          onClick={play}
+        >
+          <LucideIcon.Play size={13} />
+          {isPaused ? 'Resume' : 'Play a send'}
+        </Button>
+        <Button
+          aria-label="Pause the send"
+          className="size-7 shrink-0 p-0"
+          disabled={!isPlaying}
           size="sm"
           variant={isPlaying ? 'secondary' : 'outline'}
-          onClick={() => (isPlaying ? stop() : play())}
+          onClick={pause}
         >
-          {isPlaying ? <LucideIcon.Square size={13} /> : <LucideIcon.Play size={13} />}
-          {isPlaying ? 'Stop' : 'Play a send'}
+          <LucideIcon.Pause />
+        </Button>
+        <Button
+          aria-label="Stop the send"
+          className="size-7 shrink-0 p-0"
+          disabled={!hasPlayback}
+          size="sm"
+          variant="outline"
+          onClick={stop}
+        >
+          <LucideIcon.Square />
         </Button>
         <Button
           aria-label="Toggle a partly failed send"

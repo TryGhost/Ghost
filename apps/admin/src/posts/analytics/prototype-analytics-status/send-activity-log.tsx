@@ -51,8 +51,25 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { formatClock } from './status-copy';
 import { ENGINEERS_NOTIFIED, isSendComplete, isSendFullyAccountedFor } from './types';
+import { usePrototypeAnalyticsStatus } from './prototype-context';
 import { useStatusCopy } from './use-status-copy';
 import type { AnalyticsStatus } from './types';
+
+/**
+ * A time-left estimate a human would say out loud, not a stopwatch. Seconds
+ * are rounded up to the nearest five so the countdown moves without
+ * flickering, and anything over a minute talks in minutes — a reader planning
+ * around the wait does not need precision the estimate never had.
+ */
+const formatEta = (seconds: number): string => {
+  if (seconds >= 90) {
+    return `About ${Math.ceil(seconds / 60)} minutes left`;
+  }
+  if (seconds >= 60) {
+    return 'About a minute left';
+  }
+  return `About ${Math.max(5, Math.ceil(seconds / 5) * 5)} seconds left`;
+};
 
 /**
  * The log only knows about things that have happened and things that have not.
@@ -476,10 +493,15 @@ const buildSendingStatus = ({ send }: AnalyticsStatus): { label: string; detail?
 
 const SendActivityLog: React.FC = () => {
   const resolved = useStatusCopy();
+  const prototype = usePrototypeAnalyticsStatus();
   const { settings } = useAnalyticsData();
   const [isOpen, setIsOpen] = useState(false);
 
-  const isSendingOnly = resolved?.variant === 'sendingOnly';
+  // E is D's line with different rules below it: the same sending-only status,
+  // retiring the same way, while the cards underneath wait for it to finish
+  // rather than showing figures as they trickle in.
+  const isSendingOnly =
+    resolved?.variant === 'sendingOnly' || resolved?.variant === 'gatedUntilSent';
 
   if (
     !resolved ||
@@ -512,6 +534,29 @@ const SendActivityLog: React.FC = () => {
   const at = (date: Date | null) => (date ? formatClock(date, timezone) : null);
   const rows = buildRows(resolved.status);
   const status = isSendingOnly ? buildSendingStatus(resolved.status) : buildStatus(resolved.status);
+
+  // E only: everything below this line waits on it, so the line owes the
+  // reader more than the other variants' lines do — their figures are already
+  // on screen.
+  if (resolved.variant === 'gatedUntilSent') {
+    const { send } = resolved.status;
+
+    // Preparation counted in emails rather than a percentage, the same shape
+    // sending uses, so the number a reader starts watching is the number that
+    // keeps counting through the whole send.
+    if (send.state === 'preparing') {
+      const preparedCount = Math.round(send.preparedFraction * send.recipientCount);
+      status.detail = `${formatNumber(preparedCount)} of ${formatNumber(send.recipientCount)}`;
+    }
+
+    // Time left until 100% sent, recomputed as the run advances. Only while a
+    // run is live: a state picked from the switcher has no clock to estimate
+    // from, and the line simply says less.
+    const etaSeconds = prototype?.sendEtaSeconds ?? null;
+    if ((send.state === 'preparing' || send.state === 'sending') && etaSeconds !== null) {
+      status.detail = `${status.detail} · ${formatEta(etaSeconds)}`;
+    }
+  }
   // The state where nothing has happened yet, so the label has to carry the
   // waiting itself. Except in D, which has a percentage doing that job — and
   // doing it better, since it moves.

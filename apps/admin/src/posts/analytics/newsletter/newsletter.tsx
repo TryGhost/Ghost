@@ -56,7 +56,8 @@ import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-frame
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useCountedThrough,
-  useEmailDataHidden,
+  useEmailDataHiddenReason,
+  useGatedUntilSentVariant,
   useSendingOnlyVariant,
 } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
 import { useStubbedNewsletterStats } from '@/posts/analytics/prototype-analytics-status/use-stubbed-newsletter-stats';
@@ -168,12 +169,23 @@ const Newsletter: React.FC = () => {
 
   // Determine if feedback component should be shown
   // PROTOTYPE: the footer is pagination for a list that is not being shown.
-  const isEmailDataHidden = useEmailDataHidden();
+  const emailDataHiddenReason = useEmailDataHiddenReason();
+  const isEmailDataHidden = emailDataHiddenReason !== null;
   // PROTOTYPE: a rate carries no timestamp of its own.
   const countedThrough = useCountedThrough();
   // PROTOTYPE: variant D — the card above reports sending, so this tile reports
   // what came back of it.
   const isSendingOnly = useSendingOnlyVariant();
+  // PROTOTYPE: variant E — everything below waits for the send to finish, so
+  // while it is pending the empty states name the send as the thing being
+  // waited on, rather than the first recorded result. Only while pending:
+  // a partial or failed send keeps the shared permanent copy.
+  const isGatedUntilSent = useGatedUntilSentVariant();
+  const isSendingGated = isGatedUntilSent && emailDataHiddenReason === 'pending';
+  // PROTOTYPE: variant E drops the clicks card entirely while the send is
+  // running — a card whose whole body is "not yet" earns no place on the page;
+  // it arrives with the data, once the send is done.
+  const showClicksCard = emailTrackClicksEnabled && !isSendingGated;
   // An absent value, at display size. An em dash at 2.6rem semibold is a slab —
   // heavier than the figures it stands in for, so the eye lands on the three
   // things that are missing before anything that is there. Narrower character,
@@ -280,8 +292,15 @@ const Newsletter: React.FC = () => {
   // finished send, which is correct and is the reason the tile was relabelled.
   // The denominator stays the addressed list in both, so the ring answers the
   // same question its label asks: what share of everyone got there.
+  // PROTOTYPE: under E, Sent means dispatched — the send the retired line was
+  // counting — rather than landed, so a completed send reads 100% instead of
+  // falling short by whatever has not reported back yet.
   const sentLabel = isSendingOnly ? 'Delivered' : 'Sent';
-  const sentValue = isSendingOnly ? stats.delivered : stats.sent;
+  const sentValue = isSendingOnly
+    ? stats.delivered
+    : isGatedUntilSent
+      ? stats.dispatched
+      : stats.sent;
   const sentRate = stats.addressed > 0 ? sentValue / stats.addressed : 0;
 
   const sentChartData: NewsletterRadialChartData[] = [
@@ -381,9 +400,9 @@ const Newsletter: React.FC = () => {
       <PostAnalyticsHeader currentTab="Newsletter" />
       <PostAnalyticsContent>
         <div
-          className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && emailTrackClicksEnabled && 'lg:grid-cols-2'}`}
+          className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && showClicksCard && 'lg:grid-cols-2'}`}
         >
-          <Card className={shouldShowFeedback && emailTrackClicksEnabled ? 'lg:col-span-2' : ''}>
+          <Card className={shouldShowFeedback && showClicksCard ? 'lg:col-span-2' : ''}>
             <CardHeader className="hidden">
               <CardTitle>Newsletters</CardTitle>
               <CardDescription>How did this post perform</CardDescription>
@@ -432,7 +451,7 @@ const Newsletter: React.FC = () => {
                           nothing to read it against. */}
                       {isSendingOnly
                         ? `Delivered of ${formatNumber(stats.addressed)}`
-                        : !isEmailDataHidden && stats.addressed > stats.sent
+                        : !isEmailDataHidden && stats.addressed > sentValue
                           ? `Sent of ${formatNumber(stats.addressed)}`
                           : 'Sent'}
                     </KpiCardLabel>
@@ -497,8 +516,16 @@ const Newsletter: React.FC = () => {
                   )}
                 </div>
                 <PendingSendEmpty
-                  description="Once the first opens and clicks are recorded, they'll show here"
-                  title="No newsletter data available"
+                  description={
+                    isSendingGated
+                      ? 'Opens, clicks and delivery data will appear once every email has been sent'
+                      : "Once the first opens and clicks are recorded, they'll show here"
+                  }
+                  title={
+                    isSendingGated
+                      ? 'This newsletter is still sending'
+                      : 'No newsletter data available'
+                  }
                 >
                   <div
                     className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
@@ -566,7 +593,7 @@ const Newsletter: React.FC = () => {
 
           {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
 
-          {emailTrackClicksEnabled && (
+          {showClicksCard && (
             <Card className="group/datalist overflow-hidden">
               <div className="flex items-center justify-between p-6">
                 <CardHeader className="p-0">

@@ -46,6 +46,13 @@ export interface NewsletterStats {
    * new word rather than the old number under a new caption.
    */
   delivered: number;
+  /**
+   * Recipients whose batches Ghost has handed over, whatever happens to them
+   * afterwards. Variant E's Sent tile means dispatch rather than landing, so it
+   * needs this figure — on a completed send it equals `addressed`, which is
+   * what makes E's first ring read 100%.
+   */
+  dispatched: number;
   opened: number;
   clicked: number;
   openedRate: number;
@@ -57,7 +64,7 @@ const OPENS_PER_DELIVERY = 0.42;
 const CLICKS_PER_DELIVERY = 0.037;
 
 export const useStubbedNewsletterStats = (
-  real: Omit<NewsletterStats, 'addressed' | 'delivered'>,
+  real: Omit<NewsletterStats, 'addressed' | 'delivered' | 'dispatched'>,
 ): NewsletterStats => {
   const prototype = usePrototypeAnalyticsStatus();
   const { post } = usePostAnalytics();
@@ -65,11 +72,11 @@ export const useStubbedNewsletterStats = (
   // Same condition that greys out the pipeline rows in the switcher: with every
   // treatment off, nothing is reading the fixture and the real numbers stand.
   if (!prototype || (prototype.variant === 'off' && prototype.emailData === 'off')) {
-    return { ...real, addressed: real.sent, delivered: real.sent };
+    return { ...real, addressed: real.sent, delivered: real.sent, dispatched: real.sent };
   }
 
   if (!post || !hasBeenEmailed(post)) {
-    return { ...real, addressed: real.sent, delivered: real.sent };
+    return { ...real, addressed: real.sent, delivered: real.sent, dispatched: real.sent };
   }
 
   const { send, counting } = prototype.status;
@@ -90,6 +97,7 @@ export const useStubbedNewsletterStats = (
     sent,
     addressed: send.recipientCount,
     delivered,
+    dispatched: send.reachedCount,
     opened,
     clicked,
     openedRate: delivered > 0 ? opened / delivered : 0,

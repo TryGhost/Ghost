@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import PendingSendEmpty from '@/posts/analytics/prototype-analytics-status/pending-send-empty';
 import {
   useCountedThrough,
-  useEmailDataHidden,
+  useEmailDataHiddenReason,
+  useGatedUntilSentVariant,
 } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
 import { useStubbedNewsletterStats } from '@/posts/analytics/prototype-analytics-status/use-stubbed-newsletter-stats';
 import SendStageCard from '@/posts/analytics/prototype-analytics-status/send-stage-card';
@@ -57,7 +58,12 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   const { showProgress, showPerformance } = useNewsletterCards();
   // PROTOTYPE: "View more" goes to the newsletter tab, which is empty for the
   // same reason this card is. Offering the trip is offering a dead end.
-  const isEmailDataHidden = useEmailDataHidden();
+  const emailDataHiddenReason = useEmailDataHiddenReason();
+  const isEmailDataHidden = emailDataHiddenReason !== null;
+  // PROTOTYPE: variant E — while the send is still running, the empty state
+  // names the send as the thing being waited on rather than the first result.
+  const isGatedUntilSent = useGatedUntilSentVariant();
+  const isSendingGated = isGatedUntilSent && emailDataHiddenReason === 'pending';
   // PROTOTYPE: a rate carries no timestamp of its own.
   const countedThrough = useCountedThrough();
 
@@ -163,8 +169,14 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           <CardContent>
             <PendingSendEmpty
               className={`${fullWidth && 'grid grid-cols-2'}`}
-              description="Once the first opens and clicks are recorded, they'll show here"
-              title="No newsletter data available"
+              description={
+                isSendingGated
+                  ? 'Opens, clicks and delivery data will appear once every email has been sent'
+                  : "Once the first opens and clicks are recorded, they'll show here"
+              }
+              title={
+                isSendingGated ? 'This newsletter is still sending' : 'No newsletter data available'
+              }
             >
               <div className={`${fullWidth && 'border-r pr-6'}`}>
                 <div className="grid grid-cols-2 gap-6">

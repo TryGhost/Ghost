@@ -119,7 +119,13 @@ export const EMAIL_DATA_TREATMENTS: { value: EmailDataTreatment; label: string }
 ];
 
 /** Which stubbed UI treatment is active. */
-export type StatusVariant = 'off' | 'activityLog' | 'stageCard' | 'statusLine' | 'sendingOnly';
+export type StatusVariant =
+  | 'off'
+  | 'activityLog'
+  | 'stageCard'
+  | 'statusLine'
+  | 'sendingOnly'
+  | 'gatedUntilSent';
 
 export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'off', label: 'Off' },
@@ -127,6 +133,7 @@ export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'stageCard', label: 'B. Stage card' },
   { value: 'statusLine', label: 'C. Status line' },
   { value: 'sendingOnly', label: 'D. Sending only' },
+  { value: 'gatedUntilSent', label: 'E. Gated until sent' },
 ];
 
 /**

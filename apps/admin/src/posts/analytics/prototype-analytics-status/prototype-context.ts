@@ -35,8 +35,12 @@ export interface PrototypeState {
  * while results keep arriving to the end — the lag between them is the entire
  * subject of this prototype, and a playback where they finished together would
  * show a send nobody has ever had.
+ *
+ * DEMO pacing: a real Tangle-scale send takes minutes, and 25 seconds read as
+ * a progress bar rather than a send. Sixty gives a recording time to dwell on
+ * each phase — preparation ~7s, batches away by ~27s, counting to the end.
  */
-export const PLAYBACK_MS = 25_000;
+export const PLAYBACK_MS = 60_000;
 
 export interface PlaybackProgress {
   /** Nothing has been handed over yet, and nothing is being counted. */
@@ -50,6 +54,14 @@ export interface PlaybackProgress {
 }
 
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
+
+/**
+ * Where on the playback line the last batch is away: preparation ends at 0.12
+ * and sending runs 0.33 past it (the fractions below). The ETA the sending
+ * line shows counts down to this point, not to the end of playback — counting
+ * continues after it, but the promise being timed is "100% sent".
+ */
+export const SEND_COMPLETE_POSITION = 0.45;
 
 export const playbackProgress = (position: number): PlaybackProgress => ({
   // Three seconds of preparation: published, nothing out yet. Long enough to
@@ -73,8 +85,21 @@ export const playbackStates = (
 
 export interface PrototypeContextValue extends PrototypeState {
   status: AnalyticsStatus;
+  /**
+   * Seconds until the send reaches 100%, recomputed on every playback tick so
+   * it counts down as the run advances. Null when nothing is playing (a state
+   * picked from the switcher is a frozen snapshot with no clock to estimate
+   * from) and once the last batch is away.
+   */
+  sendEtaSeconds: number | null;
   isPlaying: boolean;
+  /** Halted partway through a run, holding a position play() will resume from. */
+  isPaused: boolean;
+  /** A run has a position on screen — live, paused, or settled at the end. */
+  hasPlayback: boolean;
   play: () => void;
+  pause: () => void;
+  /** Ends the run and drops its position, handing back to the manual picks. */
   stop: () => void;
   setVariant: (variant: StatusVariant) => void;
   setSend: (send: SendState) => void;

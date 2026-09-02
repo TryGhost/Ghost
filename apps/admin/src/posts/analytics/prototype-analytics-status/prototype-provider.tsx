@@ -4,12 +4,13 @@
 // Nothing here talks to the API; a real implementation would poll
 // GET /emails/:id/analytics and derive the same shape.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PLAYBACK_MS,
   PrototypeContext,
   type PrototypeContextValue,
   type PrototypeState,
+  SEND_COMPLETE_POSITION,
   STORAGE_KEY,
   buildStatus,
   playbackProgress,
@@ -26,6 +27,10 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
   // Where playback has got to, 0-1. Null when nothing has been played, which is
   // also how the switcher takes control back: any manual pick clears it.
   const [position, setPosition] = useState<number | null>(null);
+  // Mirror for the playback effect, which must read the position it resumes
+  // from without restarting its interval on every tick.
+  const positionRef = useRef(position);
+  positionRef.current = position;
 
   // A clock, not a sequence of frames. Ticking often enough that the figures
   // climb rather than hop, and holding the last position when it ends so the
@@ -36,7 +41,9 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       return;
     }
 
-    const startedAt = Date.now();
+    // Backdate the start by the held position so a paused run continues where
+    // it stopped; play() resets the position first when starting fresh.
+    const startedAt = Date.now() - (positionRef.current ?? 0) * PLAYBACK_MS;
     const timer = setInterval(() => {
       const elapsed = Date.now() - startedAt;
 
@@ -51,6 +58,22 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
 
     return () => clearInterval(timer);
   }, [isPlaying]);
+
+  // DEMO ONLY: publishing writes 'ghost-last-published-post' for the share
+  // modal, and this provider's effect runs before the parent hook that
+  // consumes and clears it (child effects fire first), so a fresh publish
+  // auto-starts playback — Publish in the editor rolls straight into a live
+  // send behind the share modal, repeatably: every publish rewrites the key.
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem('ghost-last-published-post')) {
+        setPosition(0);
+        setIsPlaying(true);
+      }
+    } catch {
+      // Prototype convenience only.
+    }
+  }, []);
 
   const persist = useCallback((next: PrototypeState) => {
     setState(next);
@@ -82,12 +105,28 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       send: activeSend,
       counting: activeCounting,
       status: buildStatus(activeSend, activeCounting, progress),
+      // Recomputed on every tick because `position` is a dependency of this
+      // memo, which is what makes the line's estimate count down live.
+      sendEtaSeconds:
+        isPlaying && position !== null && position < SEND_COMPLETE_POSITION
+          ? Math.max(0, Math.ceil(((SEND_COMPLETE_POSITION - position) * PLAYBACK_MS) / 1000))
+          : null,
       isPlaying,
+      isPaused: !isPlaying && position !== null && position < 1,
+      hasPlayback: position !== null,
       play: () => {
-        setPosition(0);
+        // Resume a paused run from where it stopped; a finished (or never
+        // started) one begins again.
+        if (position === null || position >= 1) {
+          setPosition(0);
+        }
         setIsPlaying(true);
       },
-      stop: () => setIsPlaying(false),
+      pause: () => setIsPlaying(false),
+      stop: () => {
+        setIsPlaying(false);
+        setPosition(null);
+      },
       setVariant: (variant: StatusVariant) => persist({ ...state, variant }),
       setSend: (send: SendState) => {
         setPosition(null);

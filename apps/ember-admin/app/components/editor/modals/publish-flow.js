@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -99,6 +100,18 @@ export default class PublishModalComponent extends Component {
 
             this.isConfirming = false;
             this.isComplete = true;
+
+            // DEMO ONLY: auto-advance a published-and-emailed post to its
+            // analytics page (which opens the share modal) a second after
+            // publish completes, so a recorded demo rolls straight from
+            // Publish into the live send status without a manual click.
+            if (!this.args.data.publishOptions.isScheduled && this.args.data.publishOptions.post.hasEmail) {
+                later(this, () => {
+                    if (!this.isDestroyed && this.isComplete) {
+                        this.setCompleted();
+                    }
+                }, 1000);
+            }
         } catch (e) {
             if (e?.name === 'EmailFailedError') {
                 this.emailErrorMessage = e.message;
