@@ -23,8 +23,8 @@ export interface KoenigPostEditorProps {
   cardConfig: PostCardConfig;
   darkMode: boolean;
   cursorDidExitAtTop?: () => void;
-  onChange: (lexical: unknown) => void;
-  onSecondaryChange: (lexical: unknown) => void;
+  onChange?: (lexical: unknown) => void;
+  onSecondaryChange?: (lexical: unknown) => void;
   registerAPI: (api: KoenigInstance | null) => void;
   registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;

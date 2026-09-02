@@ -1,16 +1,30 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
-import { useParams } from '@tryghost/admin-x-framework';
+import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { type PageEditorRecord, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
-import { type PostEditorRecord, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
-import { isAdminUser, isEditorUser, isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import type { KoenigInstance } from '@/settings/components/koenig-loader';
+import {
+  type PageEditorRecord,
+  useEditPage,
+  useEditorPage,
+} from '@tryghost/admin-x-framework/api/pages';
+import {
+  type PostEditorRecord,
+  useEditPost,
+  useEditorPost,
+} from '@tryghost/admin-x-framework/api/posts';
+import {
+  type User,
+  isAdminUser,
+  isAuthorOrContributor,
+  isContributorUser,
+  isEditorUser,
+  isOwnerUser,
+} from '@tryghost/admin-x-framework/api/users';
 import type { CardConfigPostSource, PostType } from './card-config';
 import { PostEditor } from './post-editor';
 import { usePostCardConfig } from './use-post-card-config';
@@ -22,6 +36,17 @@ function EditorLoading() {
   return (
     <Stack align="center" className="h-full" justify="center">
       <LoadingIndicator size="lg" />
+    </Stack>
+  );
+}
+
+function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <Stack align="center" className="h-full" data-testid="editor-load-error" justify="center">
+      <Text tone="secondary">{message}</Text>
+      <Button variant="outline" onClick={onRetry}>
+        Retry
+      </Button>
     </Stack>
   );
 }
@@ -41,8 +66,6 @@ function EditorHeader({ postType }: { postType: PostType }) {
   );
 }
 
-// Keyed on the record so navigating to another post remounts with fresh state;
-// edits stay in memory until the save engine attaches to the callbacks below
 function EditorSurface({ postType, record }: { postType: PostType; record?: EditorRecord }) {
   const { data: currentUser } = useCurrentUser();
   const showExcerpt = useFeatureFlag('editorExcerpt');
@@ -50,10 +73,6 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
     record?.title === '(Untitled)' ? '' : (record?.title ?? ''),
   );
   const [excerpt, setExcerpt] = useState(() => record?.custom_excerpt ?? '');
-  const lexicalRef = useRef<unknown>(null);
-  const secondaryLexicalRef = useRef<unknown>(null);
-  const editorApiRef = useRef<KoenigInstance | null>(null);
-  const secondaryApiRef = useRef<KoenigInstance | null>(null);
 
   const canManageSnippets =
     !!currentUser &&
@@ -77,19 +96,6 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
     deleteSnippet,
   });
 
-  const onLexicalChange = useCallback((lexical: unknown) => {
-    lexicalRef.current = lexical;
-  }, []);
-  const onSecondaryChange = useCallback((lexical: unknown) => {
-    secondaryLexicalRef.current = lexical;
-  }, []);
-  const registerEditorApi = useCallback((api: KoenigInstance | null) => {
-    editorApiRef.current = api;
-  }, []);
-  const registerSecondaryApi = useCallback((api: KoenigInstance | null) => {
-    secondaryApiRef.current = api;
-  }, []);
-
   if (!cardConfig) {
     return <EditorLoading />;
   }
@@ -104,13 +110,9 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
           excerpt={excerpt}
           initialLexical={record?.lexical ?? null}
           postType={postType}
-          registerEditorApi={registerEditorApi}
-          registerSecondaryApi={registerSecondaryApi}
           showExcerpt={showExcerpt}
           title={title}
           onExcerptChange={setExcerpt}
-          onLexicalChange={onLexicalChange}
-          onSecondaryChange={onSecondaryChange}
           onTitleChange={setTitle}
         />
       </div>
@@ -119,19 +121,122 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
   );
 }
 
-function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }) {
-  const postQuery = useEditorPost(id, { enabled: postType === 'post' });
-  const pageQuery = useEditorPage(id, { enabled: postType === 'page' });
-  const query = postType === 'page' ? pageQuery : postQuery;
-  const record: EditorRecord | undefined =
-    postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
+// The API returns posts the user cannot edit, so authorship is checked here
+function shouldReturnToList(user: User, record: EditorRecord): boolean {
+  const isAuthored = record.authors?.some((author) => author.id === user.id) ?? false;
 
-  if (query.isPending) {
+  if (isAuthorOrContributor(user) && !isAuthored) {
+    return true;
+  }
+
+  return isContributorUser(user) && record.status !== 'draft';
+}
+
+interface ConversionState {
+  id: string;
+  record?: EditorRecord;
+  error?: unknown;
+}
+
+// Mobiledoc content is converted server-side before the editor opens it
+function useLexicalConversion(postType: PostType) {
+  const { mutateAsync: editPost } = useEditPost();
+  const { mutateAsync: editPage } = useEditPage();
+  const [state, setState] = useState<ConversionState | null>(null);
+
+  const convert = useCallback(
+    async (source: EditorRecord) => {
+      const payload = { id: source.id, updated_at: source.updated_at };
+      const options = { convertToLexical: true };
+      setState({ id: source.id });
+
+      try {
+        const record: EditorRecord | undefined =
+          postType === 'page'
+            ? (await editPage({ page: payload, options })).pages[0]
+            : (await editPost({ post: payload, options })).posts[0];
+        setState({ id: source.id, record });
+      } catch (error) {
+        setState({ id: source.id, error });
+      }
+    },
+    [editPage, editPost, postType],
+  );
+
+  return { state, convert };
+}
+
+function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }) {
+  const navigate = useNavigate();
+  const { data: currentUser } = useCurrentUser();
+  const postQuery = useEditorPost(id, {
+    enabled: postType === 'post',
+    defaultErrorHandler: false,
+  });
+  const pageQuery = useEditorPage(id, {
+    enabled: postType === 'page',
+    defaultErrorHandler: false,
+  });
+  const query = postType === 'page' ? pageQuery : postQuery;
+  const loaded: EditorRecord | undefined =
+    postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
+  const { state: conversion, convert } = useLexicalConversion(postType);
+  const listPath = postType === 'page' ? '/pages' : '/posts';
+
+  const returnToList = !!currentUser && !!loaded && shouldReturnToList(currentUser, loaded);
+  useEffect(() => {
+    if (returnToList) {
+      navigate(listPath, { replace: true });
+    }
+  }, [returnToList, navigate, listPath]);
+
+  const needsConversion = !!loaded?.mobiledoc && !loaded.lexical && !returnToList;
+  useEffect(() => {
+    if (needsConversion && loaded && conversion?.id !== loaded.id) {
+      void convert(loaded);
+    }
+  }, [needsConversion, loaded, conversion?.id, convert]);
+
+  const notFound = (query.error as { response?: Response } | null)?.response?.status === 404;
+  if (notFound) {
+    return <NotFound />;
+  }
+
+  if (query.error) {
+    return (
+      <EditorLoadError
+        message={`Couldn’t load this ${postType}.`}
+        onRetry={() => void query.refetch()}
+      />
+    );
+  }
+
+  if (query.isPending || !currentUser || returnToList) {
     return <EditorLoading />;
   }
 
-  if (!record) {
+  if (!loaded) {
     return <NotFound />;
+  }
+
+  let record = loaded;
+  if (needsConversion) {
+    const converted = conversion?.id === loaded.id ? conversion : undefined;
+
+    if (converted?.error) {
+      return (
+        <EditorLoadError
+          message={`Couldn’t convert this ${postType} for editing.`}
+          onRetry={() => void convert(loaded)}
+        />
+      );
+    }
+
+    if (!converted?.record) {
+      return <EditorLoading />;
+    }
+
+    record = converted.record;
   }
 
   return <EditorSurface key={record.id} postType={postType} record={record} />;
@@ -139,12 +244,19 @@ function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
-  const [typeSegment, id] = editorPath.split('/');
-  const postType: PostType = typeSegment === 'page' ? 'page' : 'post';
+  const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
-  if (id) {
-    return <ExistingPostEditor id={id} postType={postType} />;
+  if (!typeSegment) {
+    return <Navigate to="/editor/post" replace />;
   }
 
-  return <EditorSurface key={postType} postType={postType} />;
+  if ((typeSegment !== 'post' && typeSegment !== 'page') || rest.length > 0) {
+    return <NotFound />;
+  }
+
+  if (id) {
+    return <ExistingPostEditor id={id} postType={typeSegment} />;
+  }
+
+  return <EditorSurface key={typeSegment} postType={typeSegment} />;
 }

@@ -8,9 +8,6 @@ import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/s
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import type { AutocompleteLink, LinkSearchGroup } from './link-suggestions';
 
-// Pure builder for the post editor's Koenig `cardConfig`; every asynchronous
-// piece (embeds, link search, labels, snippets) arrives as a port.
-
 export type PostType = 'post' | 'page';
 
 export interface CardConfigPost {

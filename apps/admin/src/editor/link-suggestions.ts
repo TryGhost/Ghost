@@ -2,9 +2,6 @@ import type { ComponentType } from 'react';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from './card-config';
 
-// Link toolbar suggestions as pure functions over already-fetched data; the
-// hook layer owns the requests.
-
 export interface AutocompleteLink {
   label: string;
   value: string;

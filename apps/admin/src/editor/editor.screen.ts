@@ -2,6 +2,7 @@ import { page } from 'vitest/browser';
 import {
   editorBody,
   editorExcerptInput,
+  editorLoadError,
   editorSecondaryInstance,
   editorTitleInput,
   editorWordCount,
@@ -20,10 +21,16 @@ export const editorScreen = {
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
   wordCount: () => page.getByTestId(editorWordCount),
+  loadError: () => page.getByTestId(editorLoadError),
+  notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
   backLink: (postType: 'post' | 'page') =>
     page.getByRole('link', {
       name: postType === 'page' ? pagesBackLink : postsBackLink,
       exact: true,
     }),
+  /** Whether keyboard focus is inside the primary Koenig body. */
+  bodyHasFocus: (): boolean =>
+    document.querySelector(`[data-testid="${editorBody}"]`)?.contains(document.activeElement) ??
+    false,
 };

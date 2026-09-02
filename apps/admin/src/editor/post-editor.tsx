@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Textarea } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useFocusContext } from '@tryghost/shade/app';
@@ -20,8 +19,8 @@ export interface PostEditorProps {
   autofocusTitle?: boolean;
   onTitleChange: (title: string) => void;
   onExcerptChange: (excerpt: string) => void;
-  onLexicalChange: (lexical: unknown) => void;
-  onSecondaryChange: (lexical: unknown) => void;
+  onLexicalChange?: (lexical: unknown) => void;
+  onSecondaryChange?: (lexical: unknown) => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
   registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
@@ -29,20 +28,30 @@ export interface PostEditorProps {
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-const fieldClassName = cn(
-  'min-h-0 w-full resize-none overflow-hidden rounded-none border-0 bg-transparent p-0 shadow-none',
-  'focus-visible:border-0 focus-visible:ring-0',
-);
+const fieldClassName =
+  'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
 function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
-  useLayoutEffect(() => {
+  const measure = useCallback(() => {
     const element = ref.current;
     if (!element) {
       return;
     }
     element.style.height = 'auto';
     element.style.height = `${element.scrollHeight}px`;
-  }, [ref, value]);
+  }, [ref]);
+
+  useLayoutEffect(measure, [measure, value]);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) {
+      return;
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, measure]);
 }
 
 function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string }) {
@@ -58,8 +67,6 @@ function TkIndicator({ onClick, testId }: { onClick: () => void; testId: string 
   );
 }
 
-// Title, optional excerpt and the Koenig body with keyboard travel between them;
-// edits are reported through the callbacks, nothing is persisted here
 export function PostEditor({
   postType,
   title,
@@ -233,7 +240,7 @@ export function PostEditor({
         >
           <div className="relative mx-auto w-full max-w-[740px]">
             {titleHasTk && <TkIndicator testId="tk-indicator" onClick={focusTitle} />}
-            <Textarea
+            <textarea
               ref={titleRef}
               aria-label={`${capitalize(postType)} title`}
               autoFocus={autofocusTitle}
@@ -254,7 +261,7 @@ export function PostEditor({
                 {excerptHasTk && (
                   <TkIndicator testId="tk-indicator-excerpt" onClick={focusExcerpt} />
                 )}
-                <Textarea
+                <textarea
                   ref={excerptRef}
                   aria-label="Excerpt"
                   className={cn(
