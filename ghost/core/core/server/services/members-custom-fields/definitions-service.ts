@@ -7,6 +7,7 @@ import { FieldTypeSchema, type FieldType } from '@tryghost/custom-field-types';
 import { CUSTOM_NAMESPACE } from '@tryghost/custom-field-types/identity';
 import { customFieldCodec } from './codec';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
+import { ADMIN, readableFields, type Audience } from './access';
 import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
 import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordCustomFieldAction, type RequestContext } from './actions';
@@ -141,7 +142,10 @@ export class CustomFieldDefinitionsService {
     }
   }
 
-  async browse(options: { namespace?: string; filter?: string } = {}): Promise<CustomField[]> {
+  async browse(
+    options: { namespace?: string; filter?: string } = {},
+    audience: Audience = ADMIN,
+  ): Promise<CustomField[]> {
     if (options.namespace !== undefined && !this.isStored(options.namespace)) {
       return [];
     }
@@ -155,7 +159,7 @@ export class CustomFieldDefinitionsService {
     const query = options.filter
       ? applyFilter(this.knex(TABLE), options.filter)
       : activeFields(this.knex);
-    return this.list(query);
+    return readableFields(audience, await this.list(query));
   }
 
   /**

@@ -38,6 +38,10 @@ export const WrittenBy = z.discriminatedUnion('type', [
   z.object({ type: z.literal('integration'), id: z.string() }),
   z.object({ type: z.literal('binding'), id: z.string() }),
   z.object({ type: z.literal('import'), id: z.null() }),
+  // A member writing their own answers. Resolvable in `members`, like the others,
+  // and the only writer whose changes leave nothing in the staff action log: that
+  // log records what staff did.
+  z.object({ type: z.literal('member'), id: z.string() }),
 ]);
 export type WrittenBy = z.infer<typeof WrittenBy>;
 
