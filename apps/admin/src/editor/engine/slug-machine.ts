@@ -1,0 +1,475 @@
+/**
+ * Slug behavior contract
+ * ----------------------
+ *
+ * This machine owns slug intent and request ordering; callers own the input UI and persistence of
+ * emitted proposals. Its behavior follows Ember Admin unless an intentional rule below says
+ * otherwise.
+ *
+ * Ownership
+ * - A derived slug follows eligible title commits. A custom slug stops following the title.
+ * - Loading infers ownership structurally because posts do not persist slug provenance: a slug
+ *   matching `slugify(title)` is derived; a different slug is custom. `(Untitled)` and titles ending
+ *   in `(Copy)` remain derived to preserve Ember's first-real-title and duplicated-post behavior.
+ * - A successful manual edit makes the slug custom. Blank, unchanged, failed, or rejected manual
+ *   edits leave ownership unchanged.
+ *
+ * Generation
+ * - Derived slugs regenerate for non-blank committed titles. An existing slug is frozen for a blank
+ *   title or `(Untitled)` so transient editor titles cannot erase it.
+ * - The server remains authoritative for sanitization and uniqueness. Whitespace-only responses are
+ *   ignored, and an apparent uniqueness increment is ignored when it only increments the current
+ *   slug rather than representing the user's canonicalized input.
+ *
+ * Ordering
+ * - At most one slug request is sent at a time. While it is active, only the latest additional
+ *   request-requiring submission is retained and run after it settles; replaced submissions
+ *   resolve as stale.
+ * - Withdrawing a deferred manual edit does not cancel active title generation. Withdrawing an
+ *   active manual edit invalidates its result without starting another request.
+ * - `loaded()` is a document boundary: it invalidates active and deferred work from the old post.
+ *
+ * Observation
+ * - Applied, rejected, and no-op decisions emit proposals. Stale completions return a proposal to
+ *   their caller but never notify subscribers, so old work cannot look like a current state change.
+ * - Listener failures are reported and isolated from transitions and from other listeners.
+ */
+import { slugify } from '@tryghost/string';
+import { DEFAULT_TITLE } from './save-engine';
+
+export const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
+
+export type SlugMode = 'derived' | 'custom';
+export type SlugStatus = 'derived' | 'custom' | 'frozen';
+
+export interface SlugMachineState {
+  readonly status: SlugStatus;
+  readonly mode: SlugMode;
+  readonly slug: string;
+  /** The title the slug was loaded with or last generated from; drives the same-title check. */
+  readonly title: string;
+  /** The title from the latest titleCommitted call regardless of outcome; drives `status`. */
+  readonly lastCommittedTitle: string;
+  /** True while an applicable title or manual request is in flight. */
+  readonly pending: boolean;
+}
+
+export type UnchangedReason =
+  | 'same-title'
+  | 'custom'
+  | 'frozen'
+  | 'stale'
+  | 'empty-result'
+  | 'reverted'
+  | 'error';
+
+export type SlugProposal =
+  | { readonly slug: string; readonly source: 'generated' }
+  | { readonly slug: string; readonly source: 'manual' }
+  | {
+      readonly slug: string;
+      readonly source: 'unchanged';
+      readonly reason: UnchangedReason;
+      readonly error?: unknown;
+    };
+
+export interface LoadedPost {
+  readonly slug: string;
+  readonly title: string;
+}
+
+export interface SlugMachineOptions {
+  /** Port for GET /slugs/post/:name/:id — receives the raw text, returns the deduplicated slug. */
+  generateSlug: (text: string) => Promise<string>;
+  /** Listener failures are isolated from machine transitions and reported here. Must not throw. */
+  onListenerError: (error: unknown) => void;
+}
+
+/** Called on every state change; `proposal` is null when only `pending` changed or a post loaded. */
+export type SlugListener = (state: SlugMachineState, proposal: SlugProposal | null) => void;
+
+export interface SlugMachine {
+  loaded(post: LoadedPost): void;
+  titleCommitted(title: string): Promise<SlugProposal>;
+  slugEdited(input: string): Promise<SlugProposal>;
+  getState(): SlugMachineState;
+  subscribe(listener: SlugListener): () => void;
+}
+
+// Mirrors Ember generateSlugTask: a slug that differs from slugify(saved title) is treated as
+// custom unless the saved title is (Untitled) or ends with (Copy).
+export function isCustomSlug(slug: string, title: string): boolean {
+  if (!slug) {
+    return false;
+  }
+  if (title === DEFAULT_TITLE || title.endsWith(DUPLICATED_POST_TITLE_SUFFIX)) {
+    return false;
+  }
+  return slugify(title) !== slug;
+}
+
+export function shouldGenerateSlug(
+  state: Pick<SlugMachineState, 'mode' | 'slug'>,
+  title: string,
+): boolean {
+  if (state.mode === 'custom') {
+    return false;
+  }
+  const trimmed = title.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (trimmed === DEFAULT_TITLE && state.slug) {
+    return false;
+  }
+  return true;
+}
+
+// Returns null when the input must revert to the current slug (blank or unchanged).
+export function normalizeManualSlug(input: string, currentSlug: string): string | null {
+  const candidate = (input || currentSlug).trim();
+  if (!candidate || candidate === currentSlug) {
+    return null;
+  }
+  return candidate;
+}
+
+// Mirrors Ember updateSlugTask: keep the current slug when the server only appended an
+// incrementor to it and the user did not type that exact value.
+export function resolveDedupedSlug(
+  serverSlug: string,
+  candidate: string,
+  currentSlug: string,
+): string {
+  if (serverSlug === currentSlug) {
+    return currentSlug;
+  }
+  const tokens = serverSlug.split('-');
+  const increment = Number(tokens.pop());
+  if (increment > 0 && tokens.join('-') === currentSlug && serverSlug !== slugify(candidate)) {
+    return currentSlug;
+  }
+  return serverSlug;
+}
+
+export function createSlugMachine({
+  generateSlug,
+  onListenerError,
+}: SlugMachineOptions): SlugMachine {
+  type Submission = { kind: 'title'; value: string } | { kind: 'manual'; value: string };
+  type DeferredSubmission = {
+    submission: Submission;
+    slugAtSubmission: string;
+    resolve: (proposal: SlugProposal) => void;
+    reject: (error: unknown) => void;
+  };
+
+  // Only load and an applied manual edit move settledMode. An active manual request reads as
+  // custom until it settles, and request tickets still guard explicit invalidation and post loads.
+  let settledMode: SlugMode = 'derived';
+  const pendingManual = new Set<number>();
+  let slug = '';
+  let title = '';
+  let lastCommittedTitle = '';
+  // Requests have separate applicability per intent. A manual request supersedes title generation,
+  // but a no-op manual blur only supersedes older manual work and must not cancel a title request.
+  let nextTicket = 0;
+  let latestTitleTicket = 0;
+  let latestManualTicket = 0;
+  const inFlightTickets = new Set<number>();
+  const listeners = new Set<SlugListener>();
+  // Slug requests are serialized. While one is active, only the latest deferred submission is
+  // retained so a slow response cannot create overlapping title/manual request races.
+  let nextSubmissionToken = 0;
+  let activeSubmissionToken = 0;
+  let activeSubmissionKind: Submission['kind'] | null = null;
+  let deferredSubmission: DeferredSubmission | null = null;
+
+  const mode = (): SlugMode => (pendingManual.has(latestManualTicket) ? 'custom' : settledMode);
+
+  const getState = (): SlugMachineState => {
+    const currentMode = mode();
+    const status: SlugStatus =
+      currentMode === 'custom'
+        ? 'custom'
+        : shouldGenerateSlug({ mode: currentMode, slug }, lastCommittedTitle)
+          ? 'derived'
+          : 'frozen';
+    return {
+      status,
+      mode: currentMode,
+      slug,
+      title,
+      lastCommittedTitle,
+      pending: inFlightTickets.has(latestTitleTicket) || inFlightTickets.has(latestManualTicket),
+    };
+  };
+
+  const notify = (proposal: SlugProposal | null): void => {
+    const state = getState();
+    for (const listener of listeners) {
+      try {
+        listener(state, proposal);
+      } catch (error) {
+        try {
+          onListenerError(error);
+        } catch {
+          // Error reporting must not corrupt the state transition or prevent other listeners.
+        }
+      }
+    }
+  };
+
+  const emit = (proposal: SlugProposal): SlugProposal => {
+    notify(proposal);
+    return proposal;
+  };
+
+  const unchanged = (reason: UnchangedReason, error?: unknown): SlugProposal =>
+    emit({ slug, source: 'unchanged', reason, ...(error !== undefined && { error }) });
+
+  const stale = (slugAtRequest: string): SlugProposal => ({
+    slug: slugAtRequest,
+    source: 'unchanged',
+    reason: 'stale',
+  });
+
+  const invalidateTitleRequest = (): void => {
+    inFlightTickets.delete(latestTitleTicket);
+    latestTitleTicket = 0;
+  };
+
+  const invalidateManualRequest = (): void => {
+    inFlightTickets.delete(latestManualTicket);
+    pendingManual.delete(latestManualTicket);
+    latestManualTicket = 0;
+  };
+
+  const cleanupRequest = (ticket: number): boolean => {
+    const stateBeforeCleanup = getState();
+    inFlightTickets.delete(ticket);
+    pendingManual.delete(ticket);
+    const stateAfterCleanup = getState();
+    return (
+      stateBeforeCleanup.pending !== stateAfterCleanup.pending ||
+      stateBeforeCleanup.mode !== stateAfterCleanup.mode ||
+      stateBeforeCleanup.status !== stateAfterCleanup.status
+    );
+  };
+
+  const request = async (
+    text: string,
+    manual: boolean,
+  ): Promise<{
+    ticket: number;
+    result?: string;
+    error?: unknown;
+    slugAtRequest: string;
+  }> => {
+    nextTicket += 1;
+    const ticket = nextTicket;
+    const slugAtRequest = slug;
+    if (manual) {
+      invalidateTitleRequest();
+      invalidateManualRequest();
+      latestManualTicket = ticket;
+    } else {
+      invalidateTitleRequest();
+      latestTitleTicket = ticket;
+    }
+    inFlightTickets.add(ticket);
+    if (manual) {
+      pendingManual.add(ticket);
+    }
+    notify(null);
+    let result: string | undefined;
+    let error: unknown;
+    try {
+      result = await generateSlug(text);
+    } catch (requestError) {
+      error = requestError;
+    }
+    return { ticket, result, error, slugAtRequest };
+  };
+
+  const commitTitle = async (rawTitle: string): Promise<SlugProposal> => {
+    const nextTitle = rawTitle.trim();
+    lastCommittedTitle = nextTitle;
+    if (mode() === 'custom') {
+      return unchanged('custom');
+    }
+    if (nextTitle === title && slug) {
+      invalidateTitleRequest();
+      return unchanged('same-title');
+    }
+    if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
+      invalidateTitleRequest();
+      return unchanged('frozen');
+    }
+
+    const { ticket, result, error, slugAtRequest } = await request(nextTitle, false);
+    const cleanupChangedState = cleanupRequest(ticket);
+    if (ticket !== latestTitleTicket) {
+      if (cleanupChangedState) {
+        notify(null);
+      }
+      return stale(slugAtRequest);
+    }
+    if (error !== undefined) {
+      return unchanged('error', error);
+    }
+    if (!result?.trim()) {
+      return unchanged('empty-result');
+    }
+    slug = result;
+    title = nextTitle;
+    return emit({ slug, source: 'generated' });
+  };
+
+  const editSlug = async (input: string): Promise<SlugProposal> => {
+    const candidate = normalizeManualSlug(input, slug);
+    if (candidate === null) {
+      invalidateManualRequest();
+      return unchanged('reverted');
+    }
+
+    const { ticket, result, error, slugAtRequest } = await request(candidate, true);
+    const cleanupChangedState = cleanupRequest(ticket);
+    if (ticket !== latestManualTicket) {
+      if (cleanupChangedState) {
+        notify(null);
+      }
+      return stale(slugAtRequest);
+    }
+    if (error !== undefined) {
+      return unchanged('error', error);
+    }
+    if (!result?.trim()) {
+      return unchanged('empty-result');
+    }
+    const resolved = resolveDedupedSlug(result, candidate, slug);
+    if (resolved === slug) {
+      return unchanged('reverted');
+    }
+    slug = resolved;
+    settledMode = 'custom';
+    return emit({ slug, source: 'manual' });
+  };
+
+  const executeSubmission = (submission: Submission): Promise<SlugProposal> =>
+    submission.kind === 'title' ? commitTitle(submission.value) : editSlug(submission.value);
+
+  const finishSubmission = (token: number): void => {
+    if (token !== activeSubmissionToken) {
+      return;
+    }
+    const next = deferredSubmission;
+    deferredSubmission = null;
+    if (!next) {
+      activeSubmissionToken = 0;
+      activeSubmissionKind = null;
+      return;
+    }
+    const nextPromise = startSubmission(next.submission);
+    void nextPromise.then(next.resolve, next.reject);
+  };
+
+  const startSubmission = (submission: Submission): Promise<SlugProposal> => {
+    nextSubmissionToken += 1;
+    const token = nextSubmissionToken;
+    activeSubmissionToken = token;
+    activeSubmissionKind = submission.kind;
+    const submissionPromise = executeSubmission(submission);
+    void submissionPromise.then(
+      () => finishSubmission(token),
+      () => finishSubmission(token),
+    );
+    return submissionPromise;
+  };
+
+  const submit = (submission: Submission): Promise<SlugProposal> => {
+    if (!activeSubmissionToken) {
+      return startSubmission(submission);
+    }
+
+    // A no-op manual blur cancels a deferred manual value. If a manual request itself is active,
+    // it also withdraws that request without disturbing an active title generation.
+    if (submission.kind === 'manual' && normalizeManualSlug(submission.value, slug) === null) {
+      if (deferredSubmission?.submission.kind === 'manual') {
+        deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+        deferredSubmission = null;
+      }
+      if (activeSubmissionKind === 'manual') {
+        invalidateManualRequest();
+      }
+      return Promise.resolve(unchanged('reverted'));
+    }
+
+    // A title returning to a settled/frozen value can invalidate active title generation without
+    // waiting for its physical request. Title intent behind a manual request remains deferred.
+    if (submission.kind === 'title' && activeSubmissionKind === 'title') {
+      const nextTitle = submission.value.trim();
+      lastCommittedTitle = nextTitle;
+      if (nextTitle === title && slug) {
+        if (deferredSubmission) {
+          deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+          deferredSubmission = null;
+        }
+        invalidateTitleRequest();
+        return Promise.resolve(unchanged('same-title'));
+      }
+      if (!shouldGenerateSlug({ mode: 'derived', slug }, nextTitle)) {
+        if (deferredSubmission) {
+          deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+          deferredSubmission = null;
+        }
+        invalidateTitleRequest();
+        return Promise.resolve(unchanged('frozen'));
+      }
+    }
+
+    if (deferredSubmission) {
+      deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+    }
+    return new Promise<SlugProposal>((resolve, reject) => {
+      deferredSubmission = { submission, slugAtSubmission: slug, resolve, reject };
+    });
+  };
+
+  return {
+    loaded(post) {
+      activeSubmissionToken = 0;
+      activeSubmissionKind = null;
+      if (deferredSubmission) {
+        deferredSubmission.resolve(stale(deferredSubmission.slugAtSubmission));
+        deferredSubmission = null;
+      }
+      latestTitleTicket = 0;
+      latestManualTicket = 0;
+      inFlightTickets.clear();
+      pendingManual.clear();
+      slug = post.slug;
+      title = post.title;
+      lastCommittedTitle = post.title;
+      settledMode = isCustomSlug(post.slug, post.title) ? 'custom' : 'derived';
+      notify(null);
+    },
+
+    titleCommitted(rawTitle) {
+      return submit({ kind: 'title', value: rawTitle });
+    },
+
+    slugEdited(input) {
+      return submit({ kind: 'manual', value: input });
+    },
+
+    getState,
+
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+}

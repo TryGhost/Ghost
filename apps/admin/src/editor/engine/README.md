@@ -112,7 +112,161 @@ Element-node `direction` is stripped recursively before compare (Lexical's recon
 
 ## Slug machine
 
-Lands with the slug machine PR. Tracks whether the slug follows the title (`derived`), was edited by hand (`custom`, sticky for the session), or is frozen for blank/`(Untitled)` titles; a saved title ending in `(Copy)` is an exception to custom detection, so a duplicated post's slug regenerates on its first rename. Details land with the machine.
+[`slug-machine.ts`](./slug-machine.ts) owns slug intent for one post: it derives
+a slug from the title, accepts manual slug edits, sends both through the
+server's slug endpoint for sanitizing and deduplication, and reports the outcome
+as proposals. It never persists anything; the caller owns the input UI and the
+save.
+
+### State model
+
+Two modes and three statuses.
+
+| Mode      | Meaning                                                           |
+| --------- | ----------------------------------------------------------------- |
+| `derived` | The slug follows the title. Eligible title commits regenerate it. |
+| `custom`  | The slug belongs to the user. Title commits never touch it.       |
+
+Mode is `custom` while a manual edit that can still apply is in flight.
+Otherwise it is the settled mode, which changes only when a post loads or a
+manual edit applies. A manual edit that fails, returns nothing, or resolves back
+to the current slug leaves the settled mode as it was. Mode is never re-derived
+from the title while a post is open; only loading a post runs the custom
+detection described under Rules.
+
+| Status    | Meaning                                                                                                          |
+| --------- | ---------------------------------------------------------------------------------------------------------------- |
+| `custom`  | Mode is `custom`.                                                                                                |
+| `derived` | Mode is `derived` and the last committed title would generate.                                                   |
+| `frozen`  | Mode is `derived` but the last committed title would not generate: it is blank, or `(Untitled)` with a slug set. |
+
+Status follows the latest committed title regardless of what happened to that
+commit: a post whose blank title was just committed reads `frozen`, and a post
+whose commit failed reads `derived`.
+
+`getState()` returns `{status, mode, slug, title, lastCommittedTitle, pending}`.
+
+- `slug`: the current slug.
+- `title`: the title the slug was loaded with or last generated from. Only a
+  load or an applied generation advances it, so a refused or failed commit can
+  be retried with the same title.
+- `lastCommittedTitle`: the trimmed title of the most recent `titleCommitted`
+  call, whatever its outcome.
+- `pending`: true while a title or manual request that can still apply is in
+  flight. Withdrawn requests and requests from a previous post are not pending
+  even if their HTTP call has not returned. A submission waiting behind an
+  active request is not pending until it starts.
+
+### Inputs and proposals
+
+`createSlugMachine({generateSlug, onListenerError})` takes the generator port
+(`(text: string) => Promise<string>`) and an error sink for listener failures.
+
+| Call                    | Effect                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `loaded({slug, title})` | Document boundary. Resets the machine to the post, infers the settled mode, discards in-flight and waiting work from the previous post, notifies with a `null` proposal. |
+| `titleCommitted(title)` | The title was committed (blur). Resolves with a proposal; never rejects.                                                                                                 |
+| `slugEdited(input)`     | The slug input was committed. Resolves with a proposal; never rejects.                                                                                                   |
+| `getState()`            | Snapshot of the state above.                                                                                                                                             |
+| `subscribe(listener)`   | `listener(state, proposal)` on every state change, `proposal` being `null` when only `pending` changed or a post loaded. Returns an unsubscribe function.                |
+
+A listener that throws is reported to `onListenerError` and affects neither the
+transition nor the other listeners.
+
+Proposals are `{slug, source}`:
+
+| Source      | Meaning                                                      | Caller action               |
+| ----------- | ------------------------------------------------------------ | --------------------------- |
+| `generated` | A slug generated from the title was applied.                 | Show `slug` and persist it. |
+| `manual`    | A manual edit was applied after server sanitizing and dedup. | Show `slug` and persist it. |
+| `unchanged` | Nothing was applied; `reason` says why.                      | See the table below.        |
+
+`unchanged` proposals carry a `reason`:
+
+| Reason         | When                                                                                                                                                                  | Caller action                                                |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `same-title`   | The committed title equals the title the slug came from and a slug exists. No request was made.                                                                       | None.                                                        |
+| `custom`       | The machine is in custom mode. No request was made.                                                                                                                   | None.                                                        |
+| `frozen`       | The committed title is blank, or is `(Untitled)` while a slug exists. No request was made.                                                                            | None.                                                        |
+| `stale`        | The call was superseded before it could apply: replaced by a newer submission, withdrawn, or a post loaded. `slug` is the slug at call time, not necessarily current. | Ignore it.                                                   |
+| `empty-result` | The server returned a blank slug.                                                                                                                                     | None.                                                        |
+| `reverted`     | A manual edit was blank or unchanged, or the server resolved it back to the current slug.                                                                             | Reset the slug input to `slug`.                              |
+| `error`        | The generator threw; `error` carries the thrown value.                                                                                                                | Surface the error; reset the slug input to `slug` if manual. |
+
+Every proposal except `stale` is delivered to subscribers with the state it
+produced. Subscribers are also notified with a `null` proposal when a request
+starts (`pending` becomes true) and when a post loads. A rejected manual edit is
+always reported (`reverted`, `empty-result`, or `error`) so the input can be
+reset to the kept slug instead of showing the rejected text.
+
+### Rules
+
+Generation
+
+- A title commit generates when mode is `derived`, the trimmed title is not
+  blank, and neither the `same-title` nor the `frozen` case applies. A blank
+  title never generates. `(Untitled)` generates `untitled` once, when no slug
+  exists, and is frozen after that.
+- The same-title check only applies when a slug exists; a post loaded with a
+  title and no slug generates on its first commit.
+- The server result is applied as returned. A deduplicated result (`hello-2`)
+  is still a derived slug and keeps following the title for the rest of the
+  session.
+- A whitespace-only server result is ignored (`empty-result`).
+
+Custom detection at load
+
+- A loaded slug is custom when it is non-empty and differs from
+  `slugify(title)`, unless the title is `(Untitled)` or ends with `(Copy)`. A
+  blank slug is never custom.
+- `(Copy)`: a duplicated post's slug is derived regardless of its value, so the
+  first rename regenerates it. This is the one case where a slug that differs
+  from `slugify(title)` is not custom.
+- Known limitation: posts do not store slug provenance, so any
+  server-transformed slug (a deduplicated `hello-2`, a truncated or
+  protected-slug-suffixed result) reads as custom after reload and stops
+  following the title.
+
+Manual edits
+
+- Input is trimmed. Blank or unchanged input reverts without a request. The
+  trimmed text is sent to the generator as typed; the server sanitizes it and
+  the result is applied, so `My Slug` becomes `my-slug`.
+- If the server returns the current slug, the edit reverts.
+- Dedup guard: if the server returns `<current slug>-<N>` with `N > 0` and that
+  is not exactly `slugify(candidate)`, the server is assumed to have appended a
+  uniqueness counter to a candidate that sanitized back to the current slug, and
+  the edit reverts. Typing `top 10` on slug `top` still applies `top-10`. Known
+  false positive: the guard decides by shape, so a candidate the server
+  canonicalizes differently from `slugify` (protected slugs, the 185-character
+  cap) is reverted when its result happens to take that shape.
+- An applied manual edit switches mode to `custom` for the rest of the session;
+  no later title commit regenerates the slug until the post is reloaded.
+  Reverted, empty, and failed edits leave the mode where it was.
+
+Ordering and staleness
+
+- At most one generator request is in flight. Further submissions wait behind
+  it; only the newest waiting submission is kept, and each one it replaces
+  resolves `stale` without reaching the server. The kept submission runs when
+  the active request settles and is evaluated against the state at that time.
+- A title commit behind an in-flight manual edit is deferred, not refused. If
+  the edit applies, the deferred commit resolves `custom`; if the edit fails or
+  reverts, the commit generates as normal.
+- A manual edit behind an in-flight title generation waits for it. Withdrawing
+  that waiting edit (blank or unchanged input) drops it and leaves the
+  generation running.
+- Withdrawing an in-flight manual edit makes its result `stale`, and mode and
+  `pending` fall back immediately; a title commit waiting behind it still runs
+  once the request physically settles.
+- Committing the slug's source title, or a frozen title, while a title
+  generation is in flight invalidates that generation immediately, drops any
+  waiting submission, and returns `same-title` or `frozen`.
+- `loaded()` invalidates everything from the previous post: in-flight results
+  resolve `stale` to their callers, are not delivered to subscribers, and the
+  new post reads not pending.
+- A failed or reverted manual edit never leaves the machine in custom mode and
+  never discards a title commit queued behind it.
 
 ## Contracts between modules
 
@@ -172,4 +326,16 @@ Lands with the slug machine PR. Tracks whether the slug follows the title (`deri
 
 ### Slug machine
 
-- Wiring duties land with the machine.
+- Persistence. The machine does not save proposals; the caller persists
+  `generated` and `manual` slugs.
+- The generator port. The machine passes trimmed text as typed, whether a title
+  or a manual candidate. The port must send `encodeURIComponent(slugify(text))`
+  to `GET /slugs/post/:name/:id` (raw text containing a character such as a
+  newline is not a valid path segment) and pass the post id so the server does
+  not count the post's own slug as a collision.
+- Draft-only title commits. Title blur drives generation for drafts only; do
+  not call `titleCommitted` on blur for published or scheduled posts.
+- Regenerate when there is no slug, for any status, before save, including
+  after `(Untitled)` substitution.
+- `(Untitled)` substitution for a blank title before save.
+- No save for a new post on a manual edit; the first explicit save persists it.
