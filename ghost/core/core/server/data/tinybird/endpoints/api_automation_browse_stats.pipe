@@ -1,0 +1,39 @@
+NODE automation_browse_stats
+SQL >
+    %
+    SELECT
+        runs.automation_id AS automation_id,
+        max(runs.created_at) AS last_run_created_at,
+        count() AS total_run_count,
+        countIf(
+            runs.id IN (
+                SELECT automation_run_id
+                FROM _mv_pending_automation_runs FINAL
+                WHERE
+                    site_uuid
+                    = {{
+                        String(
+                            site_uuid,
+                            '00000000-0000-0000-0000-000000000000',
+                            description="Site UUID",
+                            required=True,
+                        )
+                    }}
+                    AND is_pending = 1
+            )
+        ) AS in_progress_run_count
+    FROM _mv_automation_runs AS runs FINAL
+    WHERE
+        runs.site_uuid
+        = {{
+            String(
+                site_uuid,
+                '00000000-0000-0000-0000-000000000000',
+                description="Site UUID",
+                required=True,
+            )
+        }}
+    GROUP BY runs.automation_id
+    ORDER BY runs.automation_id
+
+TYPE ENDPOINT
