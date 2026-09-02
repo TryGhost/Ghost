@@ -1136,6 +1136,9 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      '@tryghost/string':
+        specifier: 'catalog:'
+        version: 0.3.5
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
