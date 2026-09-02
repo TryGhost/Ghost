@@ -283,6 +283,24 @@ describe('publish type availability', () => {
     expect(machine.getState().emailDisabled).toBe(true);
   });
 
+  it.each([
+    ['page draft', { isPage: true }, {}],
+    ['members disabled', {}, { membersEnabled: false }],
+    ['recipients disabled', {}, { editorDefaultEmailRecipients: 'disabled' as const }],
+  ])('rejects a forced send for a %s', (_name, post, site) => {
+    const machine = create({ post: createPost(post), site: createSite(site) });
+
+    machine.setRecipientFilter('label:vip');
+    machine.setPublishType('send');
+
+    const state = machine.getState();
+
+    expect(state.emailUnavailable).toBe(true);
+    expect(state.willEmail).toBe(false);
+    expect(state.canPublish).toBe(false);
+    expect(machine.toDispatch()).toBeNull();
+  });
+
   it('reports the newsletter selection', () => {
     const single = create().getState();
     const many = create({
@@ -446,6 +464,7 @@ describe('will* matrix', () => {
 
     machine.setRecipientFilter(null);
 
+    expect(machine.getState().emailUnavailable).toBe(true);
     expect(machine.getState().willEmail).toBe(true);
   });
 });

@@ -93,7 +93,7 @@ Core represents the special segments as `all` and `none`. Inputs and explicit se
 
 ## Whether the post emails
 
-`willEmail` requires a selected newsletter and email that is not disabled — without those there is nothing to send and nothing to send it with. Given both, it is true when either holds:
+`willEmail` requires a selected newsletter and email that is not disabled. Fresh emails must also be available; a failed-email draft is the only unavailable state allowed through because it retries an existing email. Given those prerequisites, it is true when either holds:
 
 - the type is not `publish`, a recipient filter is set, the post is still a draft, and it has no email record; or
 - the post is a draft whose email record failed. A failed send is retried regardless of the selected type or filter.

@@ -411,8 +411,8 @@ export function createPublishOptions({
   };
 
   const willEmail = (): boolean => {
-    // No newsletter means no email can be built at all, whatever the type says.
-    if (!newsletter || emailDisabled()) {
+    // Failed emails are unavailable for a fresh send but must remain retryable.
+    if (!newsletter || emailDisabled() || (emailUnavailable && !retryingFailedEmail)) {
       return false;
     }
 
