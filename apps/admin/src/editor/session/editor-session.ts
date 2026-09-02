@@ -59,6 +59,11 @@ export interface EditorSession {
   isDirty: () => boolean;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
+  patchFeatureImage: (
+    patch: Partial<
+      Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
+    >,
+  ) => void;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -238,6 +243,7 @@ export function createEditorSession({
     // even while the input stays empty.
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
     patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
+    patchFeatureImage: (patch) => patchLive(patch),
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => tracker.setBaseline(identity.id, lexical),
     baselineFailed: (error) => tracker.baselineFailed(identity.id, error),

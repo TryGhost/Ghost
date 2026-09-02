@@ -906,6 +906,9 @@ importers:
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@tryghost/kg-clean-basic-html':
+        specifier: workspace:*
+        version: link:../../koenig/kg-clean-basic-html
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector

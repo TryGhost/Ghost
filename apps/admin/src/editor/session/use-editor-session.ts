@@ -57,6 +57,8 @@ export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
   isDirty: () => boolean;
+  patchFeatureImage: EditorSession['patchFeatureImage'];
+  dispatchField: () => void;
   dispatchExplicit: () => void;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
@@ -240,6 +242,8 @@ export function useEditorSession({
     },
     state,
     isDirty: session.isDirty,
+    patchFeatureImage: session.patchFeatureImage,
+    dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,

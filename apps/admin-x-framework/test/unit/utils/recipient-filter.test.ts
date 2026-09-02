@@ -7,10 +7,24 @@ import {
   getFullRecipientFilter,
   getNewsletterRecipientFilter,
   getRecipientType,
+  normalizeRecipientFilter,
   parseRecipientFilter,
 } from '../../../src/utils/recipient-filter';
 
 describe('recipient-filter', () => {
+  describe('normalizeRecipientFilter', () => {
+    it('expands legacy all and none sentinels', () => {
+      expect(normalizeRecipientFilter('all')).toBe(EVERYONE_RECIPIENT_FILTER);
+      expect(normalizeRecipientFilter('none')).toBeNull();
+    });
+
+    it('preserves real filters and normalizes empty values', () => {
+      expect(normalizeRecipientFilter('label:vip')).toBe('label:vip');
+      expect(normalizeRecipientFilter(null)).toBeNull();
+      expect(normalizeRecipientFilter(undefined)).toBeNull();
+    });
+  });
+
   describe('parseRecipientFilter', () => {
     it('returns empty segments for null, undefined and empty filters', () => {
       for (const filter of [null, undefined, '']) {

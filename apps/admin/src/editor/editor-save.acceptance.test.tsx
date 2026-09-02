@@ -189,6 +189,45 @@ describe('Post editor saving', () => {
   );
 
   it(
+    'saves on Cmd-S and asks the server for a revision',
+    async () => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+      await typeIntoBody(' and more');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
+      expect(submittedPost(saveApi)).toMatchObject({
+        id: POST_ID,
+        title: 'Hello from React',
+        slug: 'hello-from-react',
+        status: 'draft',
+        updated_at: LOADED_AT,
+      });
+      expect(String(submittedPost(saveApi).lexical)).toContain('Hello from React and more');
+    },
+    SLOW,
+  );
+
+  it(
+    'reports the save in the header and settles on saved',
+    async () => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+      await typeIntoBody(' and more');
+
+      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Saving');
+      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Draft - Saved');
+    },
+    SLOW,
+  );
+
+  it(
     'halts on a collision and keeps the content',
     async () => {
       editorChrome();

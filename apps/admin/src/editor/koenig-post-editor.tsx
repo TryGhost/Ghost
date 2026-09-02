@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { Suspense, useCallback, useMemo } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { koenigFileUploadTypes, useKoenigFileUpload } from '@tryghost/admin-x-framework/hooks';
@@ -9,6 +8,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
+import { reportKoenigError } from './koenig-error';
 
 const fileUploader = {
   useFileUpload: useKoenigFileUpload,
@@ -91,27 +91,12 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
   const editor = useMemo(() => loadKoenig(), []);
   const { onSecondaryError } = props;
 
-  const reportError = useCallback((error: unknown) => {
-    // eslint-disable-next-line no-console
-    console.error(error);
-
-    Sentry.captureException(error, {
-      tags: { lexical: true },
-      contexts: {
-        koenig: {
-          version: window['@tryghost/koenig-lexical']?.version,
-        },
-      },
-    });
-    // not rethrown: Lexical attempts to recover without losing user data
-  }, []);
-
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
-      reportError(error);
+      reportKoenigError(error);
       onSecondaryError?.(error);
     },
-    [reportError, onSecondaryError],
+    [onSecondaryError],
   );
 
   return (
@@ -128,7 +113,7 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
             {...props}
             editor={editor}
             isSecondary={false}
-            onError={reportError}
+            onError={reportKoenigError}
           />
           <KoenigInstanceMount
             {...props}

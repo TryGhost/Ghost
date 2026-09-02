@@ -1,17 +1,27 @@
 import { page } from 'vitest/browser';
 import {
+  addFeatureImageLabel,
   editorBody,
   editorConflictBanner,
   editorExcerptInput,
+  editorFeatureImage,
+  editorFeatureImageCaption,
   editorLoadError,
   editorReauthBanner,
+  editorScheduleCountdown,
   editorSecondaryInstance,
+  editorStatus,
   editorTitleInput,
   editorWordCount,
+  featureImageAltLabel,
+  featureImageTkIndicator,
+  featureImageUnsplashButton,
   pagesBackLink,
   postEditor,
   postsBackLink,
+  removeFeatureImageButton,
   tkIndicator,
+  toggleFeatureImageAltButton,
 } from '@tryghost/test-data/selectors/editor';
 
 /** Editor screen locators and gestures for acceptance specs; no assertions. */
@@ -27,8 +37,20 @@ export const editorScreen = {
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
+  status: () => page.getByTestId(editorStatus),
+  scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
+
+  featureImage: () => page.getByTestId(editorFeatureImage),
+  featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
+  featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
+  removeFeatureImage: () => page.getByRole('button', { name: removeFeatureImageButton }),
+  featureImageAltToggle: () => page.getByRole('button', { name: toggleFeatureImageAltButton }),
+  featureImageAltInput: () => page.getByLabelText(featureImageAltLabel),
+  /** The caption's Koenig content editable. */
+  featureImageCaption: () => page.getByTestId(editorFeatureImageCaption).getByRole('textbox'),
+  featureImageTkIndicator: () => page.getByTestId(featureImageTkIndicator),
   backLink: (postType: 'post' | 'page') =>
     page.getByRole('link', {
       name: postType === 'page' ? pagesBackLink : postsBackLink,
