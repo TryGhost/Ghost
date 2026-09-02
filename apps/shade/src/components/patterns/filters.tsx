@@ -3059,7 +3059,7 @@ export function Filters<T = unknown>({
               className={cn(
                 filterItemVariants({ variant }),
                 controlShape === 'pill' &&
-                  'text-xs [--control-height:calc(var(--spacing)*7)] [&_*]:text-xs! [&_[data-slot=filters-input-wrapper]:hover]:bg-button-hover! [&_[data-slot=filters-value]:hover]:bg-button-hover! [&>button:hover]:bg-button-hover!',
+                  'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm! [&_[data-slot=filters-input-wrapper]:hover]:bg-button-hover! [&_[data-slot=filters-value]:hover]:bg-button-hover! [&>button:hover]:bg-button-hover!',
               )}
               data-filter-id={filter.id}
               data-slot="filter-item"
