@@ -538,24 +538,34 @@ const SendActivityLog: React.FC = () => {
   // E only: everything below this line waits on it, so the line owes the
   // reader more than the other variants' lines do — their figures are already
   // on screen.
+  let detail: React.ReactNode = status.detail;
   if (resolved.variant === 'gatedUntilSent') {
     const { send } = resolved.status;
 
-    // Preparation counted in emails rather than a percentage, the same shape
-    // sending uses, so the number a reader starts watching is the number that
-    // keeps counting through the whole send. In thousands, like the send
-    // counter: the list is cut in blocks, not one member at a time.
-    if (send.state === 'preparing') {
-      const preparedCount = Math.floor((send.preparedFraction * send.recipientCount) / 1000) * 1000;
-      status.detail = `${formatNumber(preparedCount)} of ${formatNumber(send.recipientCount)}`;
-    }
+    if (send.state === 'preparing' || send.state === 'sending') {
+      // Preparation counted in emails rather than a percentage, the same shape
+      // sending uses, so the number a reader starts watching is the number
+      // that keeps counting through the whole send. In thousands, like the
+      // send counter: the list is cut in blocks, not one member at a time.
+      const count =
+        send.state === 'preparing'
+          ? Math.floor((send.preparedFraction * send.recipientCount) / 1000) * 1000
+          : send.reachedCount;
+      // Time left until 100% sent, recomputed as the run advances. Only while
+      // a run is live: a state picked from the switcher has no clock to
+      // estimate from, and the line simply says less.
+      const etaSeconds = prototype?.sendEtaSeconds ?? null;
 
-    // Time left until 100% sent, recomputed as the run advances. Only while a
-    // run is live: a state picked from the switcher has no clock to estimate
-    // from, and the line simply says less.
-    const etaSeconds = prototype?.sendEtaSeconds ?? null;
-    if ((send.state === 'preparing' || send.state === 'sending') && etaSeconds !== null) {
-      status.detail = `${status.detail} · ${formatEta(etaSeconds)}`;
+      detail = (
+        <>
+          {/* Tabular figures keep digits from wobbling, but the counter also
+              GROWS digits — so it gets a right-aligned slot as wide as the
+              total it is counting to, and the rest of the line never moves. */}
+          <span className="inline-block min-w-[7ch] text-right">{formatNumber(count)}</span>
+          {` of ${formatNumber(send.recipientCount)}`}
+          {etaSeconds !== null && ` · ${formatEta(etaSeconds)}`}
+        </>
+      );
     }
   }
   // The state where nothing has happened yet, so the label has to carry the
@@ -576,8 +586,11 @@ const SendActivityLog: React.FC = () => {
               {status.label}
               {isPreparing && <AnimatedEllipsis />}
             </Text>
-            {status.detail && (
-              <Text as="span" size="sm" tone="secondary">{` · ${status.detail}`}</Text>
+            {detail && (
+              <Text as="span" size="sm" tone="secondary">
+                {' · '}
+                {detail}
+              </Text>
             )}
           </Text>
         </Inline>
