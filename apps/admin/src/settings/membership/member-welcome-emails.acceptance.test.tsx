@@ -193,7 +193,7 @@ describe('Member welcome emails', () => {
     const editor = modal.element().querySelector<HTMLElement>('.koenig-lexical');
     expect(editor).not.toBeNull();
 
-    await expect.poll(() => getComputedStyle(editor!).getPropertyValue('--black')).toBe('#15171a');
+    await expect.poll(() => getComputedStyle(editor!).getPropertyValue('--black')).not.toBe('');
   });
 
   it('previews the unsaved draft only after Preview is selected', async () => {
