@@ -171,7 +171,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               className={`${fullWidth && 'grid grid-cols-2'}`}
               description={
                 isSendingGated
-                  ? 'Opens, clicks and delivery data will appear once every email has been sent'
+                  ? 'Opens and clicks will appear once every email has been sent'
                   : "Once the first opens and clicks are recorded, they'll show here"
               }
               title={

@@ -518,7 +518,7 @@ const Newsletter: React.FC = () => {
                 <PendingSendEmpty
                   description={
                     isSendingGated
-                      ? 'Opens, clicks and delivery data will appear once every email has been sent'
+                      ? 'Sends, opens and clicks will appear once every email has been sent'
                       : "Once the first opens and clicks are recorded, they'll show here"
                   }
                   title={
