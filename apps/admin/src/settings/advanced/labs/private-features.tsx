@@ -61,6 +61,11 @@ const features: Feature[] = [
     flag: 'emailUniqueid',
   },
   {
+    title: 'Improve sending UI',
+    description: 'Enables improvements to email sending and delivery status for large email sends',
+    flag: 'improveSendingUI',
+  },
+  {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation',

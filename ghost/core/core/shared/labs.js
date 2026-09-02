@@ -49,6 +49,7 @@ const PRIVATE_FEATURES = [
   'admin7PageChrome',
   'tagsX',
   'emailUniqueid',
+  'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
