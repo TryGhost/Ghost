@@ -3,7 +3,7 @@ import {
   PAID_SEGMENT,
   getFullRecipientFilter,
   getNewsletterRecipientFilter,
-} from '@tryghost/admin-x-framework';
+} from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type {
   PublishOptions as PublishCommandOptions,
@@ -60,7 +60,7 @@ export interface PublishSiteInput {
   mailgunConfigured: boolean;
   editorDefaultEmailRecipients: DefaultEmailRecipients;
   editorDefaultEmailRecipientsFilter: string | null;
-  /** Null when the count could not be read; treated as "has members". */
+  /** Read for admins only; null when the count could not be read, and treated as "has members". */
   memberCount: number | null;
   newsletters: ReadonlyArray<NewsletterInput>;
 }
@@ -116,6 +116,7 @@ export type EmailUnavailableReason = 'page' | 'already-emailed' | 'disabled-in-s
 export type EmailDisabledReason =
   | 'no-mailgun'
   | 'no-members'
+  | 'no-newsletter'
   | 'sending-limit'
   | 'email-verification';
 
@@ -248,14 +249,18 @@ export function getEmailUnavailableReason(
 }
 
 export function getEmailDisabledReason(
-  site: Pick<PublishSiteInput, 'mailgunConfigured' | 'memberCount'>,
+  { mailgunConfigured, memberCount }: Pick<PublishSiteInput, 'mailgunConfigured' | 'memberCount'>,
   emailBlock: EmailBlock | null,
+  hasNewsletter: boolean,
 ): EmailDisabledReason | null {
-  if (!site.mailgunConfigured) {
+  if (!mailgunConfigured) {
     return 'no-mailgun';
   }
-  if (site.memberCount === 0) {
+  if (memberCount === 0) {
     return 'no-members';
+  }
+  if (!hasNewsletter) {
+    return 'no-newsletter';
   }
   return emailBlock?.kind ?? null;
 }
@@ -327,14 +332,18 @@ export function createPublishOptions({
   const newsletters = selectableNewsletters(site.newsletters);
   const defaultNewsletter = newsletters[0] ?? null;
   const isDraft = post.status === 'draft';
+  // Only admins can browse members, so nobody else's count is trusted as a zero.
+  const memberCount = user.isAdmin ? site.memberCount : null;
 
   const emailUnavailableReason = getEmailUnavailableReason(post, site);
   const emailUnavailable = emailUnavailableReason !== null;
 
   let emailBlock: EmailBlock | null = null;
   let publishBlock: PublishBlock | null = null;
+  let newsletter: NewsletterInput | null = defaultNewsletter;
 
-  const emailDisabledReason = () => getEmailDisabledReason(site, emailBlock);
+  const emailDisabledReason = () =>
+    getEmailDisabledReason({ ...site, memberCount }, emailBlock, newsletter !== null);
   const emailDisabled = () => emailDisabledReason() !== null;
 
   const minScheduledAt = () => zeroMilliseconds(now().getTime() + MIN_SCHEDULE_LEAD_MS);
@@ -347,7 +356,8 @@ export function createPublishOptions({
   let publishTypeTouched = false;
   let isScheduled = false;
   let scheduledAt = minScheduledAt();
-  let newsletter: NewsletterInput | null = defaultNewsletter;
+  // A time only counts as a change once it is chosen, so unscheduling cannot leave the state dirty.
+  let scheduledAtTouched = false;
   // `undefined` means "not chosen": the filter follows the post and the site default.
   let selectedRecipientFilter: string | null | undefined;
 
@@ -379,6 +389,11 @@ export function createPublishOptions({
   };
 
   const willEmail = (): boolean => {
+    // No newsletter means no email can be built at all, whatever the type says.
+    if (!newsletter || emailDisabled()) {
+      return false;
+    }
+
     const hasEmail = Boolean(post.email);
     const emailFailed = post.email?.status === 'failed';
 
@@ -401,7 +416,7 @@ export function createPublishOptions({
   const isDirty = (): boolean =>
     publishType !== initial.publishType ||
     isScheduled !== initial.isScheduled ||
-    scheduledAt !== initial.scheduledAt ||
+    ((isScheduled || scheduledAtTouched) && scheduledAt !== initial.scheduledAt) ||
     (newsletter?.slug ?? null) !== initial.newsletterSlug ||
     recipientFilter() !== initial.recipientFilter;
 
@@ -412,7 +427,9 @@ export function createPublishOptions({
     return {
       publishType,
       publishTypeOptions: options,
-      availablePublishTypes: options.filter((o) => !o.disabled).map((o) => o.value),
+      availablePublishTypes: emailUnavailable
+        ? ['publish']
+        : options.filter((o) => !o.disabled).map((o) => o.value),
       isScheduled,
       scheduledAt,
       minScheduledAt: minScheduledAt(),
@@ -447,6 +464,7 @@ export function createPublishOptions({
     const floor = minScheduledAt();
 
     scheduledAt = isBefore(candidate, floor) ? floor : candidate;
+    scheduledAtTouched = true;
   };
 
   const runSendingCheck = async (): Promise<void> => {
@@ -520,7 +538,9 @@ export function createPublishOptions({
       publishType = initial.publishType;
       publishTypeTouched = false;
       isScheduled = initial.isScheduled;
-      scheduledAt = initial.scheduledAt;
+      // The construction-time floor may itself be in the past by now.
+      scheduledAt = minScheduledAt();
+      scheduledAtTouched = false;
       newsletter =
         newsletters.find((option) => option.slug === initial.newsletterSlug) ?? defaultNewsletter;
       selectedRecipientFilter = undefined;
@@ -532,7 +552,8 @@ export function createPublishOptions({
 
       await Promise.all([runSendingCheck(), runPublishingCheck()]);
 
-      if (!publishTypeTouched) {
+      // A block that lands after the user picked an email type still demotes that pick.
+      if (!publishTypeTouched || emailDisabled()) {
         publishType = getInitialPublishType(post, site, {
           emailUnavailable,
           emailDisabled: emailDisabled(),

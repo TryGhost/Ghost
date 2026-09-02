@@ -127,25 +127,41 @@ describe('getEmailUnavailableReason', () => {
 
 describe('getEmailDisabledReason', () => {
   it.each([
-    ['configured with members', {}, null, null],
-    ['no mailgun', { mailgunConfigured: false }, null, 'no-mailgun'],
-    ['no members', { memberCount: 0 }, null, 'no-members'],
-    ['unknown member count', { memberCount: null }, null, null],
-    ['sending limit', {}, { kind: 'sending-limit' as const, message: 'over' }, 'sending-limit'],
+    ['configured with members', {}, null, true, null],
+    ['no mailgun', { mailgunConfigured: false }, null, true, 'no-mailgun'],
+    ['no members', { memberCount: 0 }, null, true, 'no-members'],
+    ['unknown member count', { memberCount: null }, null, true, null],
+    ['no newsletter to send', {}, null, false, 'no-newsletter'],
+    [
+      'sending limit',
+      {},
+      { kind: 'sending-limit' as const, message: 'over' },
+      true,
+      'sending-limit',
+    ],
     [
       'verification hold',
       {},
       { kind: 'email-verification' as const, message: 'in review' },
+      true,
       'email-verification',
     ],
     [
       'mailgun wins over a block',
       { mailgunConfigured: false },
       { kind: 'sending-limit' as const, message: 'over' },
+      true,
       'no-mailgun',
     ],
-  ])('%s', (_name, site, block, expected) => {
-    expect(getEmailDisabledReason(createSite(site), block)).toBe(expected);
+    [
+      'a missing newsletter wins over a block',
+      {},
+      { kind: 'sending-limit' as const, message: 'over' },
+      false,
+      'no-newsletter',
+    ],
+  ])('%s', (_name, site, block, hasNewsletter, expected) => {
+    expect(getEmailDisabledReason(createSite(site), block, hasNewsletter)).toBe(expected);
   });
 });
 
@@ -195,35 +211,24 @@ describe('publish type availability', () => {
       'publish+send',
       ['publish+send', 'publish', 'send'],
     ],
-    [
-      'members disabled',
-      {},
-      { membersEnabled: false },
-      'publish',
-      ['publish+send', 'publish', 'send'],
-    ],
+    ['members disabled', {}, { membersEnabled: false }, 'publish', ['publish']],
     [
       'recipients disabled',
       {},
       { editorDefaultEmailRecipients: 'disabled' as const },
       'publish',
-      ['publish+send', 'publish', 'send'],
+      ['publish'],
     ],
-    ['page', { isPage: true }, {}, 'publish', ['publish+send', 'publish', 'send']],
-    [
-      'already emailed post',
-      { email: { status: 'submitted' } },
-      {},
-      'publish',
-      ['publish+send', 'publish', 'send'],
-    ],
+    ['page', { isPage: true }, {}, 'publish', ['publish']],
+    ['already emailed post', { email: { status: 'submitted' } }, {}, 'publish', ['publish']],
     ['sent post', { status: 'sent' as const }, {}, 'send', ['publish+send', 'publish', 'send']],
+    ['no active newsletters', {}, { newsletters: [] }, 'publish', ['publish']],
     [
-      'no newsletters',
+      'only archived newsletters',
       {},
-      { newsletters: [] },
-      'publish+send',
-      ['publish+send', 'publish', 'send'],
+      { newsletters: [{ slug: 'old', status: 'archived' }] },
+      'publish',
+      ['publish'],
     ],
   ])('%s', (_name, post, site, publishType, available) => {
     const state = create({ post: createPost(post), site: createSite(site) }).getState();
@@ -266,6 +271,52 @@ describe('publish type availability', () => {
     expect(single.onlyDefaultNewsletter).toBe(true);
     expect(many.newsletter?.slug).toBe('weekly');
     expect(many.onlyDefaultNewsletter).toBe(false);
+  });
+
+  it('trusts a member count of zero only from an admin', () => {
+    const site = createSite({ memberCount: 0 });
+
+    expect(create({ site }).getState().emailDisabledReason).toBe('no-members');
+    expect(
+      create({ site, user: createUser({ isAdmin: false }) }).getState().emailDisabledReason,
+    ).toBeNull();
+  });
+});
+
+describe('without a newsletter to send', () => {
+  const site = createSite({ newsletters: [] });
+
+  it('disables email rather than offering a send with no newsletter', () => {
+    const state = create({ site }).getState();
+
+    expect(state.newsletter).toBeNull();
+    expect(state.emailDisabled).toBe(true);
+    expect(state.emailDisabledReason).toBe('no-newsletter');
+    expect(state.willEmail).toBe(false);
+    expect(state.willEmailImmediately).toBe(false);
+    expect(state.fullRecipientFilter).toBeNull();
+  });
+
+  it.each([
+    ['a chosen send type', createPost(), 'send' as const],
+    ['a failed email retry', createPost({ email: { status: 'failed' } }), 'publish' as const],
+  ])('emits no email options for %s', (_name, post, publishType) => {
+    const machine = create({ post, site });
+
+    machine.setPublishType(publishType);
+
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
+  });
+
+  it('disables email when the selected newsletter is cleared', () => {
+    const machine = create();
+
+    machine.setNewsletter(null);
+
+    expect(machine.getState().emailDisabledReason).toBe('no-newsletter');
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
   });
 });
 
@@ -435,6 +486,20 @@ describe('scheduling', () => {
 
     machine.setIsScheduled(true);
     expect(machine.getState().scheduledAt).toBe('2026-09-02T11:10:00.000Z');
+  });
+
+  it('resets to a floor taken from the current time, not from creation', () => {
+    let now = NOW;
+    const machine = create({ now: () => now });
+
+    machine.setScheduledAt('2026-09-02T10:30:00.000Z');
+    machine.setIsScheduled(true);
+
+    now = new Date('2026-09-02T11:00:00.000Z');
+    machine.reset();
+
+    expect(machine.getState().scheduledAt).toBe('2026-09-02T11:00:05.000Z');
+    expect(machine.getState().isDirty).toBe(false);
   });
 
   it('keeps a future schedule untouched', () => {
@@ -862,14 +927,37 @@ describe('checkLimits', () => {
     expect(state.isDirty).toBe(false);
   });
 
-  it('keeps a type the user already chose', async () => {
+  it('demotes an email type the user chose before the block landed', async () => {
     const limits = ports({ getEmailVerification: vi.fn(() => ({ required: true })) });
     const machine = create({ limits });
 
     machine.setPublishType('send');
     await machine.checkLimits();
 
-    expect(machine.getState().publishType).toBe('send');
+    expect(machine.getState().publishType).toBe('publish');
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
+  });
+
+  it('keeps a type the user chose while email stays available', async () => {
+    const limits = ports();
+    const machine = create({ limits });
+
+    machine.setPublishType('publish');
+    await machine.checkLimits();
+
+    expect(machine.getState().publishType).toBe('publish');
+  });
+
+  it('emits no email options for a send type chosen after a block', async () => {
+    const limits = ports({ getEmailVerification: vi.fn(() => ({ required: true })) });
+    const machine = create({ limits });
+
+    await machine.checkLimits();
+    machine.setPublishType('send');
+
+    expect(machine.getState().willEmail).toBe(false);
+    expect(machine.toDispatch()).toEqual({ kind: 'publish', options: {} });
   });
 
   it('keeps send for a sent post', async () => {
@@ -932,6 +1020,27 @@ describe('dirty tracking and reset', () => {
     change(machine);
 
     expect(machine.getState().isDirty).toBe(expected);
+  });
+
+  it('is clean again once scheduling is turned back off', () => {
+    const machine = create();
+
+    machine.setIsScheduled(true);
+    expect(machine.getState().isDirty).toBe(true);
+
+    machine.setIsScheduled(false);
+    expect(machine.getState().isDirty).toBe(false);
+  });
+
+  it('stays dirty when a chosen time survives unscheduling', () => {
+    const machine = create();
+
+    machine.setScheduledAt('2026-09-03T09:00:00.000Z');
+    machine.setIsScheduled(true);
+    machine.setIsScheduled(false);
+
+    expect(machine.getState().scheduledAt).toBe('2026-09-03T09:00:00.000Z');
+    expect(machine.getState().isDirty).toBe(true);
   });
 
   it('is dirty when the newsletter changes', () => {

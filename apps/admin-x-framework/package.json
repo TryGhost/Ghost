@@ -46,6 +46,11 @@
       "import": "./dist/utils/get-site-timezone.js",
       "require": "./dist/utils/get-site-timezone.cjs"
     },
+    "./utils/recipient-filter": {
+      "types": "./types/utils/recipient-filter.d.ts",
+      "import": "./dist/utils/recipient-filter.js",
+      "require": "./dist/utils/recipient-filter.cjs"
+    },
     "./vite": {
       "types": "./types/vite.d.ts",
       "import": "./dist/vite.js",

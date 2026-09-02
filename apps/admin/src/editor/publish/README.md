@@ -16,13 +16,13 @@ It is pure TypeScript. It imports no React and performs no network calls; every 
 
 Inputs are read once, at creation: the machine is built after the data it needs has loaded, and replaced rather than updated when the post changes.
 
-`memberCount` is `null` when the count could not be read — an editor, author or contributor cannot browse members — and a `null` count counts as "has members" so email is not disabled for the wrong reason.
+`memberCount` is read for admins only, because nobody else can browse members. A count of `null` — not read, or not readable — counts as "has members" so email is never disabled for the wrong reason.
 
-Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`, and the first is selected by default.
+Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`, and the first is selected by default. `onlyDefaultNewsletter` reports whether there is exactly one, which is what decides whether the flow offers a newsletter picker at all.
 
 ## Publish types
 
-Three types, and the flow shows all three whenever the type picker is shown at all:
+Three types:
 
 | Value          | Label             | Effect                                       |
 | -------------- | ----------------- | -------------------------------------------- |
@@ -38,7 +38,15 @@ The initial type is `publish+send`, narrowed in order:
 2. `publish` when the site's default recipients are "usually nobody" (a `filter` default with no filter). Recipients still follow post visibility, so turning email on is a single click.
 3. `send` for a post that has already been sent, whatever the two rules above decided.
 
-`setPublishType()` does not validate: the caller may select a disabled type, and `availablePublishTypes` tells the UI which ones to offer.
+`setPublishType()` does not validate, so `availablePublishTypes` is what tells the UI which types to offer:
+
+| State             | `availablePublishTypes`           |
+| ----------------- | --------------------------------- |
+| Email available   | `publish+send`, `publish`, `send` |
+| Email disabled    | `publish`                         |
+| Email unavailable | `publish`                         |
+
+Selecting a type that is not on offer never produces an email: the post-emails rules below gate on availability, not on the selection alone.
 
 ## Email availability
 
@@ -54,12 +62,13 @@ Two separate states, because they have different UI consequences.
 
 **Disabled** shows the picker with the two email types disabled. `emailDisabledReason` names the first reason that applies:
 
-| Reason               | Condition                                         |
-| -------------------- | ------------------------------------------------- |
-| `no-mailgun`         | No bulk email provider is configured              |
-| `no-members`         | The member count is exactly `0`                   |
-| `sending-limit`      | The host's email limit would be exceeded          |
-| `email-verification` | Sending is on hold while the account is in review |
+| Reason               | Condition                                           |
+| -------------------- | --------------------------------------------------- |
+| `no-mailgun`         | No bulk email provider is configured                |
+| `no-members`         | The member count is exactly `0`                     |
+| `no-newsletter`      | No newsletter is selected, so no email can be built |
+| `sending-limit`      | The host's email limit would be exceeded            |
+| `email-verification` | Sending is on hold while the account is in review   |
 
 The last two are set by `checkLimits()`.
 
@@ -82,7 +91,7 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 ## Whether the post emails
 
-`willEmail` is true when either holds:
+`willEmail` requires a selected newsletter and email that is not disabled — without those there is nothing to send and nothing to send it with. Given both, it is true when either holds:
 
 - the type is not `publish`, a recipient filter is set, the post is still a draft, and it has no email record; or
 - the post is a draft whose email record failed. A failed send is retried regardless of the selected type or filter.
@@ -111,7 +120,7 @@ Times are ISO 8601 strings with milliseconds zeroed, because the API stores seco
 
 Email extras ride on the command only when `willEmail` is true: `emailOnly` (true only for `send`), the selected newsletter's slug, and the recipient filter as `emailSegment`. An empty filter sends the newsletter with no segment. `toRevertDispatch()` returns `{kind: 'revert'}` for any status; the engine derives the rest of that transition (clearing the publish time only when unscheduling, and always clearing `emailOnly`).
 
-The machine never mutates a post, so it needs no snapshot-and-rollback around a failed save: the save engine builds each request from its own snapshot, and the change tracker adopts the acknowledged status only once the server confirms it. A failed publish leaves both the post and these options exactly as they were, ready to dispatch again.
+The machine never mutates a post, so it needs no snapshot-and-rollback around a failed save: the save engine builds each request from its own snapshot and adopts the acknowledged status only once the server confirms it. A failed publish leaves both the post and these options exactly as they were, ready to dispatch again.
 
 ## Limits
 
@@ -121,8 +130,10 @@ The sending check awaits `refreshSettings()` before anything else, so a hold app
 
 The publishing check runs for admins only, since nobody else can read the member count. A rejection becomes a `host-limit` block with the host's message split into `parts`, where the segment marked `upgrade` is the phrase to render as an upgrade link. The message is returned as data, never as markup.
 
-Both blocks feed the state directly: an email block disables the email publish types, and — unless the user has already chosen a type — the initial-type rules are re-applied so the selection falls back to `publish`.
+Both blocks feed the state directly. An email block disables the email publish types and re-applies the initial-type rules, so the selection falls back to `publish`; that demotion also applies to a type the user picked before the block landed, since a block that arrives late must not leave an unsendable type selected.
 
 ## Dirty state and reset
 
-`isDirty` compares the publish type, scheduling, scheduled time, newsletter and recipient filter against the values the machine started with. Selecting the value that was already there is not a change. `reset()` restores all of them, and re-arms the automatic type fallback that `setPublishType()` disables.
+`isDirty` compares the publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
+
+`reset()` restores every option and re-arms the automatic type fallback that `setPublishType()` disables. It takes a fresh scheduled time from the current clock, since the floor the machine was created with may itself have passed.
