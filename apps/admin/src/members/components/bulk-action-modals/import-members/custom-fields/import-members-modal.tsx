@@ -50,10 +50,8 @@ import {
   isImportMembersCompleteResponse,
   useImportMembers,
 } from '@tryghost/admin-x-framework/api/members';
-import {
-  memberCustomFieldCsvColumns,
-  useBrowseMemberCustomFields,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { memberCustomFieldCsvColumns } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -77,25 +75,15 @@ export function ImportMembersModal({
   const { mutateAsync: importMembers } = useImportMembers();
   const importMemberTier = useFeatureFlag('importMemberTier');
 
-  // Defined custom fields become mapping targets. Browse returns active fields only, which
-  // are the ones the importer writes to. No flag check anywhere in this file: the gate does
-  // not render it unless membersCustomFields is on.
-  const { data: customFieldsData, isError: customFieldsFailed } = useBrowseMemberCustomFields();
+  const canCreateCustomFields = useFeatureFlag('membersCustomFields');
+  const { data: customFieldsData, isError: customFieldsFailed } = useCustomFieldDefinitions();
   // A field created from the mapping step is in here the moment it is created: the create
   // mutation puts it into the cached list, so there is no window where a row points at a
   // column the picker cannot name yet.
   const customFieldColumns = useMemo(
-    () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
+    () => memberCustomFieldCsvColumns(customFieldsData ?? []),
     [customFieldsData],
   );
-  // The file-reader effect waits for this before its first parse: the custom field
-  // definitions must be loaded or auto-detection would miss custom_fields.* columns on a
-  // fast upload. It flips false -> true once and stays true (a refetch keeps data defined),
-  // so readiness never re-triggers the read.
-  // Ready, or never going to be. A failure has no representation in `data`, so waiting on it
-  // alone leaves the file unparsed and the step on a spinner with nothing said — for a query
-  // whose only job is to add targets to a list. Failing it costs the custom fields; blocking
-  // on it costs the import.
   const customFieldsReady = customFieldsData !== undefined || customFieldsFailed;
   // Detection options are read inside the effect through this ref rather than as deps, so
   // a later refetch of the options can't re-run the read and overwrite a mapping the user
@@ -108,7 +96,7 @@ export function ImportMembersModal({
   }, [importMemberTier, customFieldColumns]);
   // Auto-detection takes customFieldColumns separately, through detectOptionsRef above: it
   // matches on column names rather than on what is offered.
-  const targets = useMemo(
+  const targetGroups = useMemo(
     () =>
       fieldTargets({
         membershipFields: getFieldMappings({ importMemberTier }),
@@ -474,6 +462,7 @@ export function ImportMembersModal({
         {(state.status === 'MAPPING' || state.status === 'UPLOADING') &&
           state.fileData !== null && (
             <MappingStep
+              canCreateCustomFields={canCreateCustomFields}
               dataPreviewIndex={state.dataPreviewIndex}
               fileData={state.fileData}
               labelPicker={labelPicker}
@@ -481,7 +470,7 @@ export function ImportMembersModal({
               mappingError={state.mappingError}
               showMappingErrors={state.showMappingErrors}
               status={state.status}
-              targets={targets}
+              targetGroups={targetGroups}
               onColumnsChanged={() => {
                 hasEditsRef.current = true;
               }}

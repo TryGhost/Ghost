@@ -62,6 +62,8 @@ const MANAGED_PAYMENTS_DISABLED = { enabled: false };
  */
 
 module.exports = class StripeAPI {
+  static API_VERSION = STRIPE_API_VERSION;
+
   /**
    * StripeAPI
    * @param {object} deps

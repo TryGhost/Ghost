@@ -14,6 +14,7 @@ const messages = {
   cannotDestroyComments: 'You cannot destroy comments.',
   memberNotFound: 'Unable to find member',
   unsupportedReportCountFilter: 'Unsupported count.reports filter',
+  errorParsingFilter: 'Error parsing filter',
 };
 
 module.exports = class CommentsController {
@@ -24,6 +25,16 @@ module.exports = class CommentsController {
   constructor(service, stats) {
     this.service = service;
     this.stats = stats;
+  }
+
+  #getPostIdFromFilter(query) {
+    if (typeof query.post_id === 'string') {
+      return query.post_id;
+    }
+
+    // Only equality conditions required by an AND can scope a legacy browse.
+    // Choosing an ID from an OR or an exclusion would authorize the wrong posts.
+    return query.$and?.map((part) => this.#getPostIdFromFilter(part)).find(Boolean);
   }
 
   #withPostFilter(options) {
@@ -138,7 +149,17 @@ module.exports = class CommentsController {
    * @param {Frame} frame
    */
   async browse(frame) {
-    return await this.service.getComments(this.#withPostFilter(frame.options));
+    const options = { ...frame.options };
+    if (!options.post_id && options.filter) {
+      let query;
+      try {
+        query = nql(options.filter).parse();
+      } catch (err) {
+        throw new errors.BadRequestError({ message: tpl(messages.errorParsingFilter), err });
+      }
+      options.post_id = this.#getPostIdFromFilter(query);
+    }
+    return await this.service.getComments(this.#withPostFilter(options));
   }
 
   async adminBrowse(frame) {
@@ -345,13 +366,13 @@ module.exports = class CommentsController {
   async like(frame) {
     this.#checkMember(frame);
 
+    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
+
     const result = await this.service.likeComment(
       frame.options.id,
       frame.options?.context?.member,
       frame.options,
     );
-
-    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
     this.setCacheInvalidationHeaders(comment, frame);
 
@@ -364,13 +385,13 @@ module.exports = class CommentsController {
   async unlike(frame) {
     this.#checkMember(frame);
 
+    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
+
     const result = await this.service.unlikeComment(
       frame.options.id,
       frame.options?.context?.member,
       frame.options,
     );
-
-    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
     this.setCacheInvalidationHeaders(comment, frame);
 
@@ -420,13 +441,13 @@ module.exports = class CommentsController {
   async dislike(frame) {
     this.#checkMember(frame);
 
+    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
+
     const result = await this.service.dislikeComment(
       frame.options.id,
       frame.options?.context?.member,
       frame.options,
     );
-
-    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
     this.setCacheInvalidationHeaders(comment, frame);
 
@@ -439,13 +460,13 @@ module.exports = class CommentsController {
   async undislike(frame) {
     this.#checkMember(frame);
 
+    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
+
     const result = await this.service.undislikeComment(
       frame.options.id,
       frame.options?.context?.member,
       frame.options,
     );
-
-    const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
     this.setCacheInvalidationHeaders(comment, frame);
 

@@ -31,7 +31,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
 
       const deliveryTime = new Date();
@@ -77,7 +76,7 @@ describe('Mailgun Email Provider', function () {
         sendStub,
         {
           subject: 'Hi',
-          html: '<html><body>Hi %recipient.name%</body></html>',
+          html: '<html><body>Hi %recipient.name_html%</body></html>',
           plaintext: 'Hi',
           from: 'ghost@example.com',
           replyTo: 'ghost@example.com',
@@ -88,9 +87,80 @@ describe('Mailgun Email Provider', function () {
           track_clicks: true,
           tags: ['bulk-email', 'newsletter-email'],
         },
-        { 'member@example.com': { name: 'John' } },
+        { 'member@example.com': { name: 'John', name_html: 'John' } },
         [],
       );
+    });
+
+    it('does not html-escape trusted replacements', async function () {
+      const mailgunEmailProvider = new MailgunEmailProvider({
+        mailgunClient,
+        config,
+      });
+
+      const unsubscribeUrl = 'http://127.0.0.1:2369/unsubscribe/?uuid=abc&key=def';
+
+      await mailgunEmailProvider.send(
+        {
+          subject: 'Hi',
+          html: '<html><body><a href="{{unsubscribe_url}}">Hi {{name}}</a></body></html>',
+          plaintext: '{{unsubscribe_url}} {{name}}',
+          from: 'ghost@example.com',
+          replyTo: 'ghost@example.com',
+          emailId: '123',
+          domainOverride: undefined,
+          recipients: [
+            {
+              email: 'member@example.com',
+              replacements: [
+                {
+                  id: 'unsubscribe_url',
+                  token: '{{unsubscribe_url}}',
+                  value: unsubscribeUrl,
+                },
+                {
+                  id: 'name',
+                  token: '{{name}}',
+                  value: '<script>alert(1)</script>',
+                },
+              ],
+            },
+          ],
+          replacementDefinitions: [
+            {
+              id: 'unsubscribe_url',
+              token: '{{unsubscribe_url}}',
+              getValue: () => unsubscribeUrl,
+              trusted: true,
+            },
+            {
+              id: 'name',
+              token: '{{name}}',
+              getValue: () => '<script>alert(1)</script>',
+            },
+          ],
+        },
+        {
+          clickTrackingEnabled: true,
+          openTrackingEnabled: true,
+        },
+      );
+
+      const [messageData, recipientData] = sendStub.firstCall.args;
+
+      // The trusted url keeps the plain variable in both bodies, so its query
+      // string isn't entity-encoded inside the href
+      assert.equal(
+        messageData.html,
+        '<html><body><a href="%recipient.unsubscribe_url%">Hi %recipient.name_html%</a></body></html>',
+      );
+      assert.equal(messageData.plaintext, '%recipient.unsubscribe_url% %recipient.name%');
+
+      assert.deepEqual(recipientData['member@example.com'], {
+        unsubscribe_url: unsubscribeUrl,
+        name: '<script>alert(1)</script>',
+        name_html: '&lt;script&gt;alert(1)&lt;/script&gt;',
+      });
     });
 
     it('handles mailgun client error correctly', async function () {
@@ -109,7 +179,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -164,7 +233,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -218,7 +286,6 @@ describe('Mailgun Email Provider', function () {
       const mailgunEmailProvider = new MailgunEmailProvider({
         mailgunClient,
         config,
-        errorHandler: () => {},
       });
       await assert.rejects(
         async () => {
@@ -275,7 +342,6 @@ describe('Mailgun Email Provider', function () {
 
       const provider = new MailgunEmailProvider({
         mailgunClient,
-        errorHandler: () => {},
       });
       assert.equal(provider.getMaximumRecipients(), 1000);
     });
@@ -294,7 +360,6 @@ describe('Mailgun Email Provider', function () {
 
       const provider = new MailgunEmailProvider({
         mailgunClient,
-        errorHandler: () => {},
       });
       assert.equal(provider.getTargetDeliveryWindow(), 0);
     });

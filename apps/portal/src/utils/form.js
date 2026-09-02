@@ -5,6 +5,7 @@ export const FormInputError = ({ field }) => {
   if (field.required && !field.value) {
     switch (field.name) {
       case 'name':
+      case 'buyerName':
         return t(`Enter your name`);
 
       case 'email':

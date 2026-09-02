@@ -536,7 +536,7 @@ const UserDetailModalContent: React.FC<{
                               'flex h-8 cursor-pointer items-center justify-center rounded px-3',
                               formState.cover_image
                                 ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
-                                : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white',
+                                : 'border border-gray-300 bg-transparent text-black dark:border-gray-800 dark:text-white',
                             )}
                             type="button"
                           >

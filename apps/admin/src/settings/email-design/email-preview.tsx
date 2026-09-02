@@ -50,24 +50,24 @@ const EnvelopeHeader: React.FC<{
   }
 
   return (
-    <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-grey-700">
+    <div className="flex flex-col justify-center gap-1 border-b border-gray-200 bg-white p-6 text-gray-700">
       {senderDisplay && (
         <div>
-          <span className="font-semibold text-grey-900">From:</span> {senderDisplay}
+          <span className="font-semibold text-gray-900">From:</span> {senderDisplay}
         </div>
       )}
       {showRecipientLine && senderEmail && (
         <div>
-          <span className="font-semibold text-grey-900">To:</span> subscriber@example.com
+          <span className="font-semibold text-gray-900">To:</span> subscriber@example.com
         </div>
       )}
       {resolvedReplyToEmail && (
         <div>
-          <span className="font-semibold text-grey-900">Reply-to:</span> {resolvedReplyToEmail}
+          <span className="font-semibold text-gray-900">Reply-to:</span> {resolvedReplyToEmail}
         </div>
       )}
       {showSubjectLine && subject && (
-        <div className="text-base font-medium text-grey-900">{subject}</div>
+        <div className="text-base font-medium text-gray-900">{subject}</div>
       )}
     </div>
   );

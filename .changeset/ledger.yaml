@@ -79,6 +79,10 @@
     - clean-flags-retire
     - common-squids-argue
     - six-parents-shout
+'@tryghost/kg-default-nodes@2.2.1':
+  dir: koenig/kg-default-nodes
+  intents:
+    - khaki-poets-clap
 '@tryghost/kg-default-transforms@1.3.4':
   dir: koenig/kg-default-transforms
   intents:
@@ -105,6 +109,11 @@
     - petite-schools-accept
     - six-parents-shout
     - swift-guests-grin
+'@tryghost/kg-unsplash-selector@0.4.5':
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - gray-scale-spelling
+    - tidy-mangos-repeat
 '@tryghost/kg-utils@1.1.4':
   dir: koenig/kg-utils
   intents:
@@ -132,6 +141,12 @@
   dir: koenig/koenig-lexical
   intents:
     - plenty-moons-smile
+'@tryghost/koenig-lexical@1.9.4':
+  dir: koenig/koenig-lexical
+  intents:
+    - gray-scale-spelling
+    - khaki-poets-clap
+    - tidy-mangos-repeat
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:

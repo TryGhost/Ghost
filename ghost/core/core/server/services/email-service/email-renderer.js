@@ -13,7 +13,7 @@ function isUnsplashImage(url) {
 }
 const { DateTime } = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const EmailAddressParser = require('../email-address/email-address-parser');
+const emailAddressParser = require('../email-address/email-address-parser');
 const { getEmailDesign } = require('../email-rendering/email-design');
 const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
@@ -229,6 +229,8 @@ function cheerioLoad(html) {
  * @prop {string} id
  * @prop {RegExp} token
  * @prop {(member: MemberLike) => string} getValue
+ * @prop {boolean} [trusted] - Value is server-generated, so it is inserted into the
+ *   html body as-is instead of being HTML-escaped. Defaults to false (escaped).
  */
 
 /**
@@ -337,7 +339,7 @@ class EmailRenderer {
   }
 
   #getRawFromAddress(post, newsletter) {
-    // Pass the raw name through; EmailAddressParser.stringify() is the single
+    // Pass the raw name through; emailAddressParser.stringify() is the single
     // point that escapes it for the RFC5322 quoted-string From header. Escaping
     // here too would double-escape (e.g. a title containing a double quote).
     let senderName = this.#settingsCache.get('title') || '';
@@ -394,7 +396,7 @@ class EmailRenderer {
       { useFallbackAddress },
     );
 
-    return EmailAddressParser.stringify(addresses.from);
+    return emailAddressParser.stringify(addresses.from);
   }
 
   /**
@@ -423,7 +425,7 @@ class EmailRenderer {
     );
 
     if (addresses.replyTo) {
-      return EmailAddressParser.stringify(addresses.replyTo);
+      return emailAddressParser.stringify(addresses.replyTo);
     }
     return null;
   }
@@ -920,18 +922,21 @@ class EmailRenderer {
         getValue: (member) => {
           return this.createUnsubscribeUrl(member.uuid, { newsletterUuid });
         },
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       {
         id: 'manage_account_url',
         getValue: () => {
           return this.createManageAccountUrl();
         },
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       {
         id: 'uuid',
         getValue: (member) => {
           return member.uuid;
         },
+        trusted: true, // Server-generated identifier
       },
       {
         id: 'key',
@@ -941,6 +946,7 @@ class EmailRenderer {
             .update(member.uuid)
             .digest('hex');
         },
+        trusted: true, // Server-generated hmac
       },
       {
         id: 'first_name',
@@ -1000,6 +1006,7 @@ class EmailRenderer {
           return this.createUnsubscribeUrl(member.uuid, { newsletterUuid });
         },
         required: true, // Used in email headers
+        trusted: true, // Server-generated URL, must not be HTML-escaped
       },
       // Unique ID used for ad images to bypass ESP image proxies
       {
@@ -1007,6 +1014,7 @@ class EmailRenderer {
         getValue: () => {
           return crypto.randomUUID();
         },
+        trusted: true, // Server-generated identifier
       },
     ];
 
@@ -1043,6 +1051,7 @@ class EmailRenderer {
             getValue: fallback
               ? (member) => definition.getValue(member) || fallback
               : definition.getValue,
+            trusted: definition.trusted === true,
           });
         }
       }
@@ -1056,6 +1065,7 @@ class EmailRenderer {
           originalId: definition.id,
           token: new RegExp(`%%\\{${definition.id}\\}%%`, 'g'),
           getValue: definition.getValue,
+          trusted: definition.trusted === true,
         });
       }
     }

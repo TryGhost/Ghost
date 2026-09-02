@@ -37,12 +37,10 @@
                             id="username"
                             name="username"
                             class="gh-input"
-                            placeholder="jamie@example.com"
-                            autocorrect="off"
                             autocomplete="username"
                             value={{this.signupDetails.email}}
-                            {{on "input" (fn this.setSignupProperty "email")}}
-                            {{on "blur" (fn this.validate "email")}}
+                            readonly="readonly"
+                            disabled="disabled"
                             data-test-input="email"
                         />
                     </span>

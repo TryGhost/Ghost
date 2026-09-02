@@ -1,62 +1,82 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
-import logging from '@tryghost/logging';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import ExternalMediaInliner from '../../../../../core/server/services/media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
+import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
+import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
+import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
 
 describe('register-job-handlers', function () {
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
-  let db: { knex: sinon.SinonStub };
-  let loggingStub: sinon.SinonStubbedInstance<typeof logging>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
+  let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
+  let giftService: { cleanup: sinon.SinonStub };
+  let mentionsController: { processWebmention: sinon.SinonStub };
+
+  // Handlers are looked up by their job type rather than registration order,
+  // so adding a handler does not silently shift which one a test exercises.
+  function handlerFor(type: string) {
+    const call = jobsService.handle
+      .getCalls()
+      .find((c) => (c.args[0] as { type?: string }).type === type);
+    assert.ok(call, `a handler is registered for ${type}`);
+    return call!.args[1] as (job: unknown) => Promise<void>;
+  }
 
   beforeEach(function () {
     jobsService = sinon.createStubInstance(JobsService);
-    db = { knex: sinon.stub() };
-    loggingStub = sinon.stub(logging);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
+    memberJobs = {
+      cleanTokens: sinon.stub().resolves(0),
+      cleanExpiredComped: sinon.stub().resolves(),
+    };
+    giftService = { cleanup: sinon.stub().resolves() };
+    mentionsController = { processWebmention: sinon.stub().resolves() };
 
-    registerJobHandlers({ jobsService, db, logging: loggingStub, mediaInliner });
+    registerJobHandlers({
+      jobsService,
+      memberJobs,
+      giftService,
+      mediaInliner,
+      mentionsController,
+    });
   });
 
   afterEach(function () {
     sinon.restore();
   });
 
-  // Nothing initialises the gifts service here, which is the state the guard
-  // exists for: a dispatch that lands before boot has built the service must
-  // fail loudly rather than reading undefined off the module.
-  it('fails a clean-gifts delivery when the gift service is not initialised', async function () {
-    const cleanGiftsHandler = jobsService.handle.secondCall.args[1];
+  it('runs clean-gifts with the injected gift service', async function () {
+    const cleanGiftsHandler = handlerFor('clean-gifts');
 
-    await assert.rejects(async () => {
-      await cleanGiftsHandler({});
-    }, /clean-gifts ran before the gifts service was initialised/);
+    await cleanGiftsHandler({});
+
+    assert.ok(giftService.cleanup.calledOnce);
   });
 
-  it('runs clean-tokens with the injected database and logger', async function () {
-    const deleteStub = sinon.stub().resolves(2);
-    const whereStub = sinon.stub().returns({ delete: deleteStub });
-    db.knex.withArgs('tokens').returns({ where: whereStub });
-    const cleanTokensHandler = jobsService.handle.firstCall.args[1];
+  it('runs clean-tokens with the injected member jobs module', async function () {
+    const cleanTokensHandler = handlerFor('clean-tokens');
 
     await cleanTokensHandler({});
 
-    assert.ok(db.knex.calledOnceWithExactly('tokens'));
-    assert.ok(loggingStub.info.calledOnce);
-    const metadata = loggingStub.info.firstCall.args[0] as {
-      system: { deleted_count: number };
-    };
-    assert.equal(metadata.system.deleted_count, 2);
+    assert.ok(memberJobs.cleanTokens.calledOnce);
+  });
+
+  it('runs clean-expired-comped with the injected member jobs module', async function () {
+    const cleanExpiredCompedHandler = handlerFor('clean-expired-comped');
+
+    await cleanExpiredCompedHandler({});
+
+    assert.ok(memberJobs.cleanExpiredComped.calledOnce);
   });
 
   it('runs external-media-inliner with the injected media inliner', async function () {
-    const externalMediaInlinerHandler = jobsService.handle.thirdCall.args[1];
+    const externalMediaInlinerHandler = handlerFor('external-media-inliner');
     const job = new ExternalMediaInlinerJob({ domains: ['https://example.com'] });
 
     await externalMediaInlinerHandler(job);
@@ -67,11 +87,52 @@ describe('register-job-handlers', function () {
   it('propagates external-media-inliner failures', async function () {
     const error = new Error('Inlining failed');
     mediaInliner.inline.rejects(error);
-    const externalMediaInlinerHandler = jobsService.handle.thirdCall.args[1];
+    const externalMediaInlinerHandler = handlerFor('external-media-inliner');
     const job = new ExternalMediaInlinerJob({ domains: ['https://example.com'] });
 
     await assert.rejects(async () => {
       await externalMediaInlinerHandler(job);
     }, error);
+  });
+
+  it('routes content CSV import jobs to the content import service', async function () {
+    const job = new ContentCSVImportJob({
+      importId: 'run_test',
+      file: { path: '/tmp/staged-import', name: 'posts.zip' },
+      mapping: { Headline: 'title' },
+      importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
+      emailRecipient: 'owner@example.com',
+    });
+    const contentImportHandler = handlerFor('content-csv-import');
+
+    await assert.rejects(
+      () => contentImportHandler(job),
+      /Content import service used before init/,
+    );
+  });
+
+  // Under the test env the update check executor exits at its environment
+  // gate, so invoking the registered handler proves the wiring without
+  // touching the network.
+  it('registers the update-check handler', async function () {
+    // handlerFor matches on the type string, not class identity: the module
+    // under test loads its job class through the CJS cache, a different
+    // instance from this file's ESM import.
+    const updateCheckHandler = handlerFor('update-check');
+
+    await updateCheckHandler(new UpdateCheckJob());
+  });
+
+  it('runs process-webmention with the injected mentions controller', async function () {
+    const processWebmentionHandler = handlerFor('process-webmention');
+    const job = new ProcessWebmentionJob({
+      source: 'https://source.com/post/',
+      target: 'https://target.com/post/',
+      payload: {},
+    });
+
+    await processWebmentionHandler(job);
+
+    assert.ok(mentionsController.processWebmention.calledOnceWithExactly(job));
   });
 });

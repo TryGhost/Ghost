@@ -6,4 +6,10 @@
 export { membersRouteChildren } from './routes';
 export { buildMembersUrl } from './member-route';
 export { formatMemberName, getMemberInitials, memberAvatarProps } from './member-format';
-export { type SharedView, parseAllSharedViewsJSON } from './shared-views';
+export {
+  type SharedView,
+  findMatchingSharedViewIndexes,
+  hasSharedViewNameConflict,
+  normalizeSharedViewName,
+  parseAllSharedViewsJSON,
+} from './shared-views';

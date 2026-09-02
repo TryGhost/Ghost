@@ -99,7 +99,8 @@ cd ghost/core
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
-Ghost Core's database-backed suites use SQLite by default locally. Tests for
+Ghost Core's database-backed suites use MySQL locally and in CI. Start the
+development services with `pnpm dev` before running them locally. Tests for
 optional Redis and object-storage adapters skip when their services are not
 available; start the relevant development services when you need to exercise
 those adapters.

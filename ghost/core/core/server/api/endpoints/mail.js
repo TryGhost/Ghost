@@ -25,7 +25,7 @@ _private.sendMail = (object) => {
               message: [
                 tpl(messages.unableToSendEmail),
                 tpl(messages.seeLinkForInstructions, {
-                  link: 'https://ghost.org/docs/concepts/config/#mail',
+                  link: 'https://docs.ghost.org/concepts/config/#mail',
                 }),
               ].join(' '),
             },

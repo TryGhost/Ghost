@@ -45,6 +45,11 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 page chrome',
+    description: 'Enable the new Admin page chrome on desktop in light mode.',
+    flag: 'admin7PageChrome',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -73,15 +78,22 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'React tag details',
+    title: 'Member custom fields',
     description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
+      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
+    flag: 'membersCustomFields',
   },
   {
-    title: 'Member custom fields',
-    description: 'Let admins create and manage custom field definitions for members',
-    flag: 'membersCustomFields',
+    title: 'Stripe checkout collection',
+    description:
+      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+    flag: 'stripeCheckoutCollection',
+  },
+  {
+    title: 'Members import redesign',
+    description:
+      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
+    flag: 'membersImportRedesign',
   },
   {
     title: 'Paywall improvements',
@@ -93,6 +105,12 @@ const features: Feature[] = [
     description:
       'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
     flag: 'giftSubCustomization',
+  },
+  {
+    title: 'React posts & pages lists',
+    description:
+      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
+    flag: 'postsListReact',
   },
   {
     title: 'Self-serve archives',

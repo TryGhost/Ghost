@@ -19,7 +19,6 @@ import MembersCSVExporter, {
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
-const labs = require('../../../../shared/labs');
 const logging = require('@tryghost/logging');
 const sentry = require('../../../../shared/sentry');
 
@@ -116,12 +115,8 @@ export function makeImporter(deps: ImporterServices) {
       }),
   };
 
-  // Gated by the same labs flag as the export, so the two halves round-trip or stay
-  // silent together: off, activeFields resolves empty and every custom_fields.* column
-  // is dropped.
   const customFields: CustomFieldsImport = {
-    activeFields: async () =>
-      labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : [],
+    activeFields: async () => deps.customFields.definitions.browse(),
     planWrite: (values) => deps.customFields.values.planWrite(values),
     // Every value the import writes came out of the file, whichever column carried it.
     // An import has no id to give until runs are tracked, so it names its kind only.
@@ -171,9 +166,7 @@ export function makeImporter(deps: ImporterServices) {
 
 // Build the members CSV exporter. The same composition root from the other direction:
 // knex and the members id lookup are wired here, and the custom fields definitions and
-// values services are injected (boot builds them before this one). The labs flag alone
-// decides whether custom field columns appear, so nothing flag-shaped leaks into the
-// exporter itself.
+// values services are injected (boot builds them before this one).
 export function makeExporter({
   definitions,
   values,
@@ -197,10 +190,8 @@ export function makeExporter({
 
     customFields: {
       // Boot builds the definitions and values services before this one, so they
-      // are always present -- no not-initialised state to guard. The flag decides
-      // whether their columns are included at all.
-      activeDefinitions: async (): Promise<CustomFieldDefinition[]> =>
-        labs.isSet('membersCustomFields') ? definitions.browse() : [],
+      // are always present -- no not-initialised state to guard.
+      activeDefinitions: async (): Promise<CustomFieldDefinition[]> => definitions.browse(),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds),
     },
   });

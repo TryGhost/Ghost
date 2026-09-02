@@ -57,8 +57,8 @@ export function InitStep({ fileError, onClose, onDropAccepted, onDropRejected }:
         >
           {({ isDragActive, isDragReject }) => (
             <>
-              <LucideIcon.Upload className="mb-2 size-6 text-grey-600" />
-              <span className="text-sm text-grey-700">
+              <LucideIcon.Upload className="mb-2 size-6 text-gray-600" />
+              <span className="text-sm text-gray-700">
                 {isDragReject
                   ? 'The file type you uploaded is not supported'
                   : isDragActive

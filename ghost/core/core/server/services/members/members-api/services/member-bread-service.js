@@ -17,11 +17,6 @@ const messages = {
 const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
 
 /**
- * @typedef {object} ILabsService
- * @prop {(key: string) => boolean} isSet
- */
-
-/**
  * @typedef {object} IEmailService
  * @prop {(data: {email: string, requestedType: string}) => Promise<any>} sendEmailWithMagicLink
  */
@@ -45,7 +40,6 @@ module.exports = class MemberBREADService {
    * @param {object} deps
    * @param {import('../repositories/member-repository')} deps.memberRepository
    * @param {import('../../../offers/application/offers-api')} deps.offersAPI
-   * @param {ILabsService} deps.labsService
    * @param {IEmailService} deps.emailService
    * @param {IStripeService} deps.stripeService
    * @param {import('../../../member-attribution/member-attribution-service')} deps.memberAttributionService
@@ -54,10 +48,10 @@ module.exports = class MemberBREADService {
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
    * @param {import('../../../members-custom-fields/values-service').CustomFieldValuesService} deps.customFieldValues Required: boot builds it before the members service
+   * @param {import('../../../members-custom-fields/definitions-service').CustomFieldDefinitionsService} deps.customFieldDefinitions Required: boot builds it before the members service
    */
   constructor({
     memberRepository,
-    labsService,
     emailService,
     stripeService,
     offersAPI,
@@ -68,12 +62,11 @@ module.exports = class MemberBREADService {
     commentsService,
     giftService,
     customFieldValues,
+    customFieldDefinitions,
   }) {
     this.offersAPI = offersAPI;
     /** @private */
     this.memberRepository = memberRepository;
-    /** @private */
-    this.labsService = labsService;
     /** @private */
     this.emailService = emailService;
     /** @private */
@@ -92,31 +85,25 @@ module.exports = class MemberBREADService {
     this.giftService = giftService;
     /** @private */
     this.customFieldValues = customFieldValues;
+    /** @private */
+    this.customFieldDefinitions = customFieldDefinitions;
   }
 
   /**
-   * @private
-   * Custom field values keyed by member id, or `null` when the feature is off —
-   * the flag lives here, so callers just check the result: `null` means omit the
-   * `custom_fields` key entirely, keeping a pre-feature member payload identical.
+   * Metafields are extra fields a publisher can define on member records, such as a shoe
+   * size or a delivery address. Their values live in their own table, so they are fetched
+   * here rather than loaded alongside the member.
    *
-   * A read gets values on the flag alone, with no opt-in include: a member's
-   * custom fields are their own data, like labels and tiers, which a read
-   * already returns unasked. `include` is for things that are expensive or
-   * aggregate (email_recipients, counts), and one flat lookup on a read that
-   * already issues a dozen queries is neither. The flag, not an include, is what
-   * protects consumers that predate the feature — an include would outlive it
-   * and become permanent API surface.
-   *
-   * Browse is the opposite — opt-in via `include=custom_fields`, exactly how
-   * `products`/`tiers` already behave: a read always carries them, a list only
-   * when asked. Read and browse must stay format-identical, so a browse that
-   * asks gets the same key a read gives unasked.
+   * Returns null when the site has defined no fields, which tells the caller to leave the
+   * `metafields` key off the member payload rather than send an empty object: a key added to
+   * an API response cannot be withdrawn without breaking whoever started reading it, and
+   * most sites have never defined a field, so those sites keep the payload they had before
+   * this feature existed.
    * @param {string[]} memberIds
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
   async fetchCustomFieldValues(memberIds) {
-    if (!this.labsService.isSet('membersCustomFields')) {
+    if (!(await this.customFieldDefinitions.hasAnyActive())) {
       return null;
     }
 
@@ -394,7 +381,16 @@ module.exports = class MemberBREADService {
     }
   }
 
-  async read(data, options = {}) {
+  /**
+   * @param {object} data
+   * @param {object} [options]
+   * @param {boolean} [options.withCustomFields] Pass false to leave custom field values
+   *   off the result. Ghost calls this method to identify a signed-in reader on every page
+   *   view of a themed site, and that caller renders the member through a fixed list of
+   *   fields that has never included custom ones. Fetching them there costs two database
+   *   queries per page view whose results are then thrown away.
+   */
+  async read(data, { withCustomFields = true, ...options } = {}) {
     const defaultWithRelated = [
       'labels',
       'stripeSubscriptions',
@@ -455,43 +451,25 @@ module.exports = class MemberBREADService {
     const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
     member.unsubscribe_url = unsubscribeUrl;
 
-    const customFields = await this.fetchCustomFieldValues([member.id]);
-    if (customFields) {
-      member.custom_fields = customFields.get(member.id) ?? {};
+    if (withCustomFields) {
+      const customFields = await this.fetchCustomFieldValues([member.id]);
+      if (customFields) {
+        member.metafields = customFields.get(member.id) ?? {};
+      }
     }
 
     return member;
   }
 
-  /**
-   * @private
-   * The write-side flag gate, paired with `fetchCustomFieldValues` on the read
-   * side. The schema declares `custom_fields` for every site, so the key arrives
-   * whether or not the feature is on and this is what decides it goes no further.
-   * @param {object} data
-   */
-  dropCustomFieldsWhenDisabled(data) {
-    if (!this.labsService.isSet('membersCustomFields')) {
-      delete data.custom_fields;
-    }
-  }
-
   async add(data, options) {
-    this.dropCustomFieldsWhenDisabled(data);
-
-    // Values cannot be set on create, only on a subsequent edit. `namesValues`
-    // both judges the body and rejects a malformed one, so a body refused here is
-    // refused on edit for the same reason.
-    if (this.customFieldValues.namesValues(data.custom_fields)) {
+    if (this.customFieldValues.namesValues(this.customFieldValues.unwrapWire(data.metafields))) {
       throw new errors.ValidationError({
         message: tpl(messages.customFieldsOnAdd),
-        property: 'custom_fields',
+        property: 'metafields',
       });
     }
 
-    // Not a member column, so it comes off before the repository sees it. Only
-    // an absent key or one naming no values gets this far.
-    delete data.custom_fields;
+    delete data.metafields;
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -587,15 +565,9 @@ module.exports = class MemberBREADService {
   async edit(data, options) {
     delete data.last_seen_at;
 
-    this.dropCustomFieldsWhenDisabled(data);
-
-    // Values live in their own table, so they come off the member data before
-    // the repository sees it — `custom_fields` is not a member column. The gate
-    // above has already dropped it when the feature is off, so by this point its
-    // presence is the signal to write.
-    const customFields = data.custom_fields;
+    const customFields = this.customFieldValues.unwrapWire(data.metafields);
     const writeCustomFields = customFields !== undefined;
-    delete data.custom_fields;
+    delete data.metafields;
 
     // Plan (which validates) before the member is touched, so a bad value 422s
     // here rather than after the member edit has been applied — and keep the
@@ -833,7 +805,7 @@ module.exports = class MemberBREADService {
         delete member.products;
       }
       if (customFieldsByMember) {
-        member.custom_fields = customFieldsByMember.get(model.id) ?? {};
+        member.metafields = customFieldsByMember.get(model.id) ?? {};
       }
       member.email_suppression = {
         suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

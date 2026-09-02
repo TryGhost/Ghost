@@ -18,7 +18,7 @@ interface TierCardProps {
 }
 
 const cardContainerClasses = clsx(
-  'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-50 hover:shadow-sm min-[900px]:min-h-[200px] dark:bg-grey-950 dark:hover:border-grey-800',
+  'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-gray-100 p-4 transition-all hover:border-gray-100 hover:bg-gray-50 hover:shadow-sm min-[900px]:min-h-[200px] dark:bg-gray-950 dark:hover:border-gray-800',
 );
 
 const TierCard: React.FC<TierCardProps> = ({ tier }) => {
@@ -45,7 +45,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier }) => {
             {formatNumber(currencyToDecimal(tier.monthly_price || 0), { maximumFractionDigits: 2 })}
           </span>
           {tier.monthly_price && tier.monthly_price > 0 && (
-            <span className="text-grey-700">/month</span>
+            <span className="text-gray-700">/month</span>
           )}
         </div>
         {tier.trial_days ? (

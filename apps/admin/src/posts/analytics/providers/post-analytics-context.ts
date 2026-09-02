@@ -5,8 +5,10 @@ import { createContext, useContext } from 'react';
 export interface Post extends PostBase {
   published_at?: string;
   excerpt?: string;
+  // `name` optional, matching the framework's PostAuthor: invited staff have
+  // an email but no name yet.
   authors?: {
-    name: string;
+    name?: string;
   }[];
   email?: {
     opened_count: number;

@@ -128,11 +128,11 @@ export type Member = {
   };
   last_seen_at: string | null;
   last_commented_at: string | null;
-  // Custom field values keyed by field key, present only when requested via
-  // `include=custom_fields` (behind the `membersCustomFields` flag). Values
-  // are type-dependent: string for text-backed fields, an object for
-  // composites like address — hence `unknown`; consumers narrow per field type.
-  custom_fields?: Record<string, unknown>;
+  // The custom-field values a site collects on its members, grouped by the namespace that
+  // declared each field. Optional because a site with no fields defined gets no key at all
+  // in the response, not an empty object. Values differ by field type — a string for text,
+  // an object for an address — so consumers narrow per field.
+  metafields?: Record<string, Record<string, unknown> | undefined>;
   can_comment?: boolean;
   commenting?: {
     disabled: boolean;
@@ -543,19 +543,16 @@ export interface EditMemberData {
   labels?: Array<{ name: string; slug?: string }>;
   newsletters?: Array<{ id: string }>;
   tiers?: Array<{ id: string; expiry_at?: string | null }>;
-  // Merge semantics: only the keys present are written; `null` clears a
-  // value. The value union is derived from the shared schemas, so a field type
-  // added there is writable here without this line being edited. Requires the
-  // `membersCustomFields` flag server-side.
-  custom_fields?: Record<string, FieldValue | null>;
+  // The server applies this as a merge: only the keys present are written, and `null` clears
+  // a value. Every key is checked against the fields the site has defined; naming one that
+  // does not exist rejects the edit rather than being ignored.
+  metafields?: Record<string, Record<string, FieldValue | null>>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
   method: 'PUT',
   path: ({ id }) => `/members/${id}/`,
-  // `custom_fields` is asked back only when the payload writes it, so the
-  // request stays valid on sites where the flag (and the include) is off.
-  searchParams: (payload) => ({ include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers' }),
+  searchParams: () => ({ include: 'tiers,metafields' }),
   body: ({ id, ...rest }) => ({ members: [{ id, ...rest }] }),
   invalidateQueries: { dataType },
 });

@@ -15,6 +15,7 @@ import {
   webAnalyticsBootOverrides,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
+import { sidebarScreen } from '@/layout/sidebar.screen';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
@@ -127,12 +128,26 @@ function seedEmptyPostAnalyticsWorld() {
 }
 
 describe('Post analytics overview', () => {
+  it('applies the Admin 7 chrome on post analytics', async () => {
+    seedPostAnalyticsWorld();
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { admin7PageChrome: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
+  });
+
   it('renders the seeded post with web and growth sections', async () => {
     const { postsApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
     await expect(postsApi).toHaveSentFilter(`id:${POST_ID}`);
+    await expect
+      .element(sidebarScreen.navLink('Analytics'))
+      .toHaveAttribute('aria-current', 'page');
+    await expect.element(sidebarScreen.navLink('Posts')).not.toHaveAttribute('aria-current');
 
     // Web performance: visitors summed from the Tinybird rows.
     await expect.element(postAnalyticsScreen.webPerformanceCard()).toBeVisible();

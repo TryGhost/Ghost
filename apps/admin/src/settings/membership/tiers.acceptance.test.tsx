@@ -21,22 +21,20 @@ const supporterTier = tier({
   benefits: ['Simple benefit'],
 });
 
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+function stripeSettings() {
   return settingsResponse({
-    ...overrides,
     settings: {
       stripe_connect_display_name: 'Dummy',
       stripe_connect_livemode: false,
       stripe_connect_account_id: 'acct_123',
       stripe_connect_publishable_key: 'pk_test_123',
       stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
     },
   });
 }
 
 function withoutSettings(keys: string[]) {
-  const response = stripeSettings({ labs: { machinePayments: true } });
+  const response = stripeSettings();
   response.settings = response.settings.filter(({ key }) => !keys.includes(key));
   return response;
 }
@@ -341,7 +339,7 @@ describe('Tier settings', () => {
     fakeTiers([freeTier, supporterTier]);
     await renderAdminApp('/settings', {
       labs: { machinePayments: true },
-      boot: { browseSettings: { response: stripeSettings({ labs: { machinePayments: true } }) } },
+      boot: { browseSettings: { response: stripeSettings() } },
     });
 
     await expect

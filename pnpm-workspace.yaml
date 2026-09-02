@@ -38,6 +38,7 @@ allowBuilds:
   'protobufjs@7.6.4': true
   're2@1.26.1': true
   'sharp@0.35.3': true
+  sqlite3: false
   ssh2: false
 
 catalog:
@@ -223,6 +224,7 @@ catalog:
   cron-validate: 1.4.5
   '@types/stoppable': 1.1.3
   '@types/express-brute': 1.0.6
+  '@tryghost/validator': 3.2.10
 
 catalogs:
   react17:

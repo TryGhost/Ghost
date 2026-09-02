@@ -36,6 +36,7 @@
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/custom-field-types": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",

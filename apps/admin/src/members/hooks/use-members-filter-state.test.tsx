@@ -2,7 +2,7 @@ import { MemoryRouter, useSearchParams } from 'react-router';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  shouldDelayMembersDateFilterHydration,
+  shouldDelayMembersFilterHydration,
   useMembersFilterState,
 } from './use-members-filter-state';
 import type { ReactNode } from 'react';
@@ -19,30 +19,98 @@ function createWrapper(initialEntry: string) {
   };
 }
 
-describe('shouldDelayMembersDateFilterHydration', () => {
-  it('waits for timezone resolution when date filters are present', () => {
+describe('shouldDelayMembersFilterHydration', () => {
+  const DATE_FILTER = "created_at:<='2024-02-01T22:59:59.999Z'";
+  const resolved = {
+    hasResolvedSettings: true,
+    isLoadingSettings: false,
+    newsletters: [],
+    customFields: [],
+  };
+
+  it('waits for the timezone when the filter says a date', () => {
     expect(
-      shouldDelayMembersDateFilterHydration("created_at:<='2024-02-01T22:59:59.999Z'", false, true),
+      shouldDelayMembersFilterHydration(DATE_FILTER, {
+        ...resolved,
+        hasResolvedSettings: false,
+        isLoadingSettings: true,
+      }),
     ).toBe(true);
   });
 
-  it('does not wait for unsupported non-date filters', () => {
-    expect(shouldDelayMembersDateFilterHydration('status:paid,label:vip', false, true)).toBe(false);
-  });
-
-  it('does not wait once the site timezone is resolved', () => {
+  it('does not wait for the timezone when no date is named', () => {
     expect(
-      shouldDelayMembersDateFilterHydration("created_at:<='2024-02-01T22:59:59.999Z'", true, false),
+      shouldDelayMembersFilterHydration('status:paid,label:vip', {
+        ...resolved,
+        hasResolvedSettings: false,
+        isLoadingSettings: true,
+      }),
     ).toBe(false);
   });
 
-  it('does not wait if settings loading has already stopped', () => {
+  it('does not wait once the site timezone is resolved', () => {
+    expect(shouldDelayMembersFilterHydration(DATE_FILTER, resolved)).toBe(false);
+  });
+
+  it('waits for the definitions a filter names, and only those', () => {
+    // A custom field can only be read for what it holds once the site says what it holds, so
+    // the page waits rather than reading it as text and answering a wider question.
+    const customFieldFilter = "(metafields.key:'custom.joined'+metafields.value:<'2024-01-01')";
+
     expect(
-      shouldDelayMembersDateFilterHydration(
-        "created_at:<='2024-02-01T22:59:59.999Z'",
-        false,
-        false,
-      ),
+      shouldDelayMembersFilterHydration(customFieldFilter, {
+        ...resolved,
+        customFields: undefined,
+      }),
+    ).toBe(true);
+    expect(shouldDelayMembersFilterHydration(customFieldFilter, resolved)).toBe(false);
+
+    expect(
+      shouldDelayMembersFilterHydration('(newsletters.slug:weekly+email_disabled:0)', {
+        ...resolved,
+        newsletters: undefined,
+      }),
+    ).toBe(true);
+    expect(
+      shouldDelayMembersFilterHydration('status:paid', {
+        ...resolved,
+        newsletters: undefined,
+        customFields: undefined,
+      }),
+    ).toBe(false);
+  });
+
+  it('does not wait for a source only a quoted value mentions', () => {
+    expect(
+      shouldDelayMembersFilterHydration("name:~'metafields.'", {
+        ...resolved,
+        customFields: undefined,
+      }),
+    ).toBe(false);
+  });
+
+  it('does not wait for definitions that are never coming', () => {
+    // An empty list means nothing is on its way, so waiting would never end.
+    const customFieldFilter = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
+
+    expect(
+      shouldDelayMembersFilterHydration(customFieldFilter, { ...resolved, customFields: [] }),
+    ).toBe(false);
+    expect(
+      shouldDelayMembersFilterHydration('(newsletters.slug:weekly+email_disabled:0)', {
+        ...resolved,
+        newsletters: [],
+      }),
+    ).toBe(false);
+  });
+
+  it('does not wait when there is no filter at all', () => {
+    expect(
+      shouldDelayMembersFilterHydration(undefined, {
+        ...resolved,
+        newsletters: undefined,
+        customFields: undefined,
+      }),
     ).toBe(false);
   });
 });
@@ -370,5 +438,40 @@ describe('useMembersFilterState', () => {
     expect(result.current.filters).toEqual([]);
     expect(result.current.search).toBe('');
     expect(result.current.hasFilterOrSearch).toBe(false);
+  });
+});
+
+describe('useMembersFilterState — once its sources have arrived', () => {
+  const CUSTOM_FIELD_FILTER = "(metafields.key:'custom.company'+metafields.value:'Ghost')";
+
+  function renderWithSources(sources: {
+    newsletters?: { slug: string; name: string }[];
+    customFields?: { namespace: string; key: string; name: string; type: 'short_text' }[];
+  }) {
+    return renderHook(
+      () => {
+        const state = useMembersFilterState('UTC', sources.newsletters, sources.customFields);
+        const [searchParams] = useSearchParams();
+
+        return { ...state, query: searchParams.toString() };
+      },
+      {
+        wrapper: createWrapper(`/?filter=${encodeURIComponent(CUSTOM_FIELD_FILTER)}`),
+      },
+    );
+  }
+
+  it('reads and writes normally once they have', async () => {
+    const { result } = renderWithSources({
+      customFields: [{ namespace: 'custom', key: 'company', name: 'Company', type: 'short_text' }],
+    });
+
+    await waitFor(() => {
+      expect(result.current.filters).toHaveLength(1);
+    });
+
+    expect(result.current.filters[0].field).toBe('metafields.custom.company');
+    expect(result.current.nql).toBe(CUSTOM_FIELD_FILTER);
+    expect(decodeURIComponent(result.current.query)).toContain("metafields.key:'custom.company'");
   });
 });

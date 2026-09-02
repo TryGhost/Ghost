@@ -16,7 +16,7 @@ const CSV = 'email,name\nada@example.com,Ada Lovelace\n';
  * The one thing the split can break.
  *
  * Both implementations have their own tests: the import as it shipped is covered by
- * import-members/modal.test.tsx, and the custom fields experience by
+ * import-members/modal.test.tsx, and the redesigned one by
  * import-members-custom-fields.acceptance.test.tsx. Neither can regress from the other's
  * changes, because they share no file. What is left is whether the gate hands over to the
  * right one, which is what this asserts — by a marker only that implementation renders.
@@ -36,11 +36,37 @@ async function openMappingStep(labs: Record<string, boolean>) {
 }
 
 describe('Import members gate', () => {
-  it('serves the custom fields import when the flag is on', async () => {
-    await openMappingStep({ membersCustomFields: true });
+  it.each([false, true])(
+    'inherits portal typography in the import flow (redesigned: %s)',
+    async (membersImportRedesign) => {
+      await openMappingStep({ admin7PageChrome: true, membersImportRedesign });
+      const modal = membersScreen.dialog();
+      await expect.element(modal).toBeVisible();
+      expect(modal.element().closest('#root')).toBeNull();
+      const select = page.getByRole('combobox').first();
+      await expect.element(select).toBeVisible();
+      const hasFont = () => getComputedStyle(modal.element()).fontFamily.includes('Inter Admin 7');
+      await expect.poll(hasFont).toBe(true);
 
-    // A checkbox per column exists only in the custom fields experience: it is what decides
-    // whether a column is imported there, a job the select does in the import as it shipped.
+      const originalModal = modal.element();
+      try {
+        await page.viewport(800, 800);
+        await expect.element(modal).toBeVisible();
+        expect(modal.element()).toBe(originalModal);
+        await expect.poll(hasFont).toBe(false);
+        await page.viewport(801, 800);
+        await expect.poll(hasFont).toBe(true);
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    },
+  );
+
+  it('serves the redesigned import when the flag is on', async () => {
+    await openMappingStep({ membersImportRedesign: true });
+
+    // A checkbox per column exists only in the redesigned dialog: it is what decides whether
+    // a column is imported there, a job the select does in the import as it shipped.
     await expect.element(importMembersScreen.importToggle('name')).toBeVisible();
   });
 
@@ -54,5 +80,14 @@ describe('Import members gate', () => {
     await expect.element(page.getByRole('combobox').first()).toBeVisible();
     await page.getByRole('combobox').first().click();
     await expect.element(importMembersScreen.option('Not imported')).toBeVisible();
+  });
+
+  // Custom fields are no longer what chooses between the two: they are an experiment the
+  // redesign is meant to ship ahead of, so on their own they must move nothing.
+  it('serves the import as it shipped when only custom fields are on', async () => {
+    await openMappingStep({ membersCustomFields: true });
+
+    await expect.element(importMembersScreen.importToggle('name')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('combobox').first()).toBeVisible();
   });
 });

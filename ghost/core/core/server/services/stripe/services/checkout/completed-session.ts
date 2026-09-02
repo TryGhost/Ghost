@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { STRIPE_PORTS, type StripePort } from './field-ports';
+import { STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 
 /**
  * What Ghost reads off a completed session.

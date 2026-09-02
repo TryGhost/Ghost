@@ -99,14 +99,14 @@ describe('csv helpers', () => {
         email: 'b@example.com',
         labels: [],
         newsletters: [{ name: 'Daily News' }],
-        'custom_fields.topic': 'ghosts',
+        'metafields.custom.topic': 'ghosts',
         error: 'nope',
       },
     ]);
 
     const header = output.split('\n')[0].trimEnd();
     expect(header).toContain('"newsletters"');
-    expect(header).toContain('"custom_fields.topic"');
+    expect(header).toContain('"metafields.custom.topic"');
     expect(header.endsWith('"error"')).toBe(true);
   });
 

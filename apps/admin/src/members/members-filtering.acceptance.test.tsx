@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
-import { fakeMembers, label, member, renderAdminApp, tier } from '@test-utils/acceptance';
+import {
+  fakeMemberCustomFields,
+  fakeMembers,
+  label,
+  member,
+  renderAdminApp,
+  tier,
+} from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
 
 describe('Members list', () => {
@@ -73,6 +81,48 @@ describe('Members list', () => {
     await expect(membersApi).toHaveSentFilter(`tier_id:[${silver.id}]`);
     await expect(membersScreen.memberRows()).toHaveCount(1);
     await expect.element(membersScreen.link('Silver Member')).toBeVisible();
+  });
+
+  it('builds a custom field filter without losing the page to the hydration gate', async () => {
+    const fieldsApi = fakeMemberCustomFields([
+      {
+        namespace: 'custom',
+        key: 'employer',
+        name: 'Employer',
+        type: 'short_text',
+        status: 'active',
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+
+    // The filter bar fetches the archived-inclusive catalog up front: it is the query the
+    // hydration gate waits on once a filter names a custom field, so it must be answered
+    // before a field can be picked — a cold cache here unmounts the page to a spinner on
+    // the first keystroke of the value.
+    await expect(fieldsApi).toHaveSentFilter('status:[active,archived]');
+
+    await membersScreen.openFilterField('Employer');
+    const valueInput = page.getByRole('textbox', { name: 'Employer value' });
+    await valueInput.fill('Acme');
+
+    // Still here: typing the value must not unmount the filter UI.
+    await expect.element(valueInput).toBeVisible();
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.key:'custom.employer'+metafields.value:~'Acme')",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+
+    // Every catalog browse this flow made was the archived-inclusive one the gate shares.
+    expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
+      fieldsApi.requests.map(() => 'status:[active,archived]'),
+    );
   });
 
   it('builds a name filter through the filters UI', async () => {
