@@ -1,0 +1,50 @@
+{
+  "before": {
+    "root": {
+      "children": [
+        {
+          "type": "callout",
+          "version": 1,
+          "calloutText": "Callout with <b>bold</b> and <i>italic</i>",
+          "calloutEmoji": "💡",
+          "backgroundColor": "blue"
+        },
+        {
+          "type": "toggle",
+          "version": 1,
+          "heading": "Toggle <i>heading</i>",
+          "content": "<p>First paragraph</p><p>Second with a <a href=\"https://example.com/\">link</a></p>"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "after": {
+    "root": {
+      "children": [
+        {
+          "type": "callout",
+          "version": 1,
+          "calloutText": "<p><span style=\"white-space: pre-wrap;\">Callout with </span><b><strong style=\"white-space: pre-wrap;\">bold</strong></b><span style=\"white-space: pre-wrap;\"> and </span><i><em style=\"white-space: pre-wrap;\">italic</em></i></p>",
+          "calloutEmoji": "💡",
+          "backgroundColor": "blue"
+        },
+        {
+          "type": "toggle",
+          "version": 1,
+          "heading": "<span style=\"white-space: pre-wrap;\">Toggle </span><i><em style=\"white-space: pre-wrap;\">heading</em></i>",
+          "content": "<p><span style=\"white-space: pre-wrap;\">First paragraph</span></p><p><span style=\"white-space: pre-wrap;\">Second with a </span><a href=\"https://example.com/\"><span style=\"white-space: pre-wrap;\">link</span></a></p>"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  }
+}
