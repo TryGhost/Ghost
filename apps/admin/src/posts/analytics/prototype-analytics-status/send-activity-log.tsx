@@ -525,7 +525,17 @@ const SendActivityLog: React.FC = () => {
   // A failed or partly failed send is not complete, so it holds. That is the
   // one state the figures below structurally cannot report — their denominator
   // is the addressed list, so they describe a send in which nothing went wrong.
-  if (isSendingOnly && isSendComplete(resolved.status)) {
+  //
+  // The gated variants hold on past that point. Testing showed the line's
+  // disappearance was read as "done" while the figures beneath it were a tenth
+  // counted — so it stays for the counting phase, saying so, and retires only
+  // once every sent email has a result against it.
+  const isGated = isGatedVariant(resolved.variant);
+  if (
+    isSendingOnly &&
+    isSendComplete(resolved.status) &&
+    (!isGated || isSendFullyAccountedFor(resolved.status))
+  ) {
     return null;
   }
 
@@ -569,6 +579,22 @@ const SendActivityLog: React.FC = () => {
           <span className="inline-block min-w-[7ch] text-right">{formatNumber(count)}</span>
           {` of ${formatNumber(send.recipientCount)}`}
           {etaSeconds !== null && ` · ${formatEta(etaSeconds)}`}
+        </>
+      );
+    }
+
+    // The counting phase: sending is done and says so, and the same line now
+    // owns the one fact the figures below cannot carry for themselves — that
+    // they are still being counted, how current they are, and that a refresh
+    // is how they move.
+    if (send.state === 'submitted') {
+      const through = at(resolved.status.counting.countedThrough);
+      status.label = `All ${formatNumber(send.recipientCount)} emails sent`;
+      detail = (
+        <>
+          {'Still counting deliveries and opens'}
+          {through && ` · Processed through ${through}`}
+          {' · Refresh for the latest'}
         </>
       );
     }

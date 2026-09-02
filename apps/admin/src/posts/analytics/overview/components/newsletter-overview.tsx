@@ -5,6 +5,7 @@ import {
   useCountedThrough,
   useEmailDataHiddenReason,
   useGatedUntilSentVariant,
+  useProvisionalFigures,
 } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
 import { useStubbedNewsletterStats } from '@/posts/analytics/prototype-analytics-status/use-stubbed-newsletter-stats';
 import SendStageCard from '@/posts/analytics/prototype-analytics-status/send-stage-card';
@@ -64,6 +65,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   // names the send as the thing being waited on rather than the first result.
   const isGatedUntilSent = useGatedUntilSentVariant();
   const isSendingGated = isGatedUntilSent && emailDataHiddenReason === 'pending';
+  // PROTOTYPE: figures on screen but still rising — say so above them.
+  const isProvisional = useProvisionalFigures();
   // PROTOTYPE: a rate carries no timestamp of its own.
   const countedThrough = useCountedThrough();
 
@@ -167,6 +170,16 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           </CardContent>
         ) : (
           <CardContent>
+            {isProvisional && (
+              <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                <span>
+                  Still counting — these figures will keep rising until every email has been
+                  counted.
+                </span>
+                {countedThrough && <Badge variant="secondary">{countedThrough}</Badge>}
+                <span>Refresh for the latest.</span>
+              </div>
+            )}
             <PendingSendEmpty
               className={`${fullWidth && 'grid grid-cols-2'}`}
               description={

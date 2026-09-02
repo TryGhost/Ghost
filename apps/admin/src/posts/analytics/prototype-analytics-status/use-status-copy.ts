@@ -71,8 +71,9 @@ export const useNewsletterCards = (): { showProgress: boolean; showPerformance: 
  * read yet would be pointing at a cursor that has not moved.
  *
  * Null in variant D too: the watermark is a counting fact, and D refuses to
- * speak about counting at all. E inherits the suppression along with the rest
- * of D's chrome.
+ * speak about counting at all. The gated variants do NOT inherit that: once
+ * their gate opens the figures are provisional and rising, and the watermark
+ * is the one honest answer to "how current is this".
  */
 export const useCountedThrough = (): string | null => {
   const prototype = usePrototypeAnalyticsStatus();
@@ -82,7 +83,7 @@ export const useCountedThrough = (): string | null => {
   if (!prototype || (prototype.variant === 'off' && prototype.emailData === 'off')) {
     return null;
   }
-  if (prototype.variant === 'sendingOnly' || isGatedVariant(prototype.variant)) {
+  if (prototype.variant === 'sendingOnly') {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
@@ -276,4 +277,24 @@ export const useSentAsDenominatorVariant = (): boolean => {
   const { post } = usePostAnalytics();
 
   return Boolean(prototype?.variant === 'sentAsDenominator' && post && hasBeenEmailed(post));
+};
+
+/**
+ * Whether the figures on screen are visible but still rising.
+ *
+ * The gated variants open onto a send that is 100% out but perhaps a tenth
+ * counted, and user testing was unanimous: a provisional number wearing the
+ * chrome of a final one — rate rings, an Average to fall short of — reads as
+ * a failed send, not a young one. Everything that dresses a figure as final
+ * asks this first, and waits.
+ */
+export const useProvisionalFigures = (): boolean => {
+  const prototype = usePrototypeAnalyticsStatus();
+  const { post } = usePostAnalytics();
+
+  if (!prototype || !isGatedVariant(prototype.variant) || !post || !hasBeenEmailed(post)) {
+    return false;
+  }
+
+  return isSendComplete(prototype.status) && prototype.status.counting.state !== 'current';
 };

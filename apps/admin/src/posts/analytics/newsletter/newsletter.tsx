@@ -60,6 +60,7 @@ import {
   useEmailDataHiddenReason,
   useGatedUntilSentVariant,
   useSendingOnlyVariant,
+  useProvisionalFigures,
   useSentAsDenominatorVariant,
 } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
 import { FIXTURE_AVERAGE_DELIVERED_RATE } from '@/posts/analytics/prototype-analytics-status/prototype-context';
@@ -233,6 +234,14 @@ const Newsletter: React.FC = () => {
   // first position becomes Delivered: a metric with the same anatomy as the
   // two beside it (count, rate, average, hover).
   const isSentDenominator = useSentAsDenominatorVariant();
+  // PROTOTYPE: once the gate opens the figures are real but still rising.
+  // Testing was unanimous that a provisional number in final chrome — a rate
+  // ring, an Average to fall short of — reads as a failed send. So while
+  // counting runs: no Average rings, no comparison hovers, labels say "so
+  // far", and a strip above the card says the numbers are still moving.
+  const isProvisional = useProvisionalFigures();
+  const withoutAverage = (data: NewsletterRadialChartData[]) =>
+    isProvisional ? data.filter((entry) => entry.datatype !== 'Average') : data;
   // PROTOTYPE: variant E drops the clicks card entirely while the send is
   // running — a card whose whole body is "not yet" earns no place on the page;
   // it arrives with the data, once the send is done.
@@ -368,7 +377,15 @@ const Newsletter: React.FC = () => {
       : sentRate;
   // G names the rate the way the rings beside it do, so the three read as one
   // series: Delivery rate → Open rate → Click rate.
-  const ringLabel = isSentDenominator ? 'Delivery rate' : isDeliveryRing ? 'Delivered' : sentLabel;
+  const ringLabelBase = isSentDenominator
+    ? 'Delivery rate'
+    : isDeliveryRing
+      ? 'Delivered'
+      : sentLabel;
+  const ringLabel =
+    isProvisional && (isSentDenominator || isDeliveryRing)
+      ? `${ringLabelBase} so far`
+      : ringLabelBase;
 
   const sentChartData: NewsletterRadialChartData[] = isSentDenominator
     ? [
@@ -500,6 +517,18 @@ const Newsletter: React.FC = () => {
                 {/* PROTOTYPE: the tiles stay so the card keeps its shape, but
                     dimmed and inert — nothing here is a link worth following
                     while the numbers behind it are not there yet. */}
+                {/* PROTOTYPE: while counting runs the card says so, once, at the
+                    top — with how current the figures are and what moves them. */}
+                {isProvisional && (
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b bg-muted/30 px-6 py-2.5 text-sm text-muted-foreground">
+                    <span>
+                      Still counting — these figures will keep rising until every email has been
+                      counted.
+                    </span>
+                    {countedThrough && <Badge variant="secondary">{countedThrough}</Badge>}
+                    <span>Refresh for the latest.</span>
+                  </div>
+                )}
                 {/* PROTOTYPE: variant G — Sent as the denominator, given a row of
                     its own above the three rates it divides. Same KPI anatomy
                     as the tiles below so it reads as the top of the same
@@ -531,7 +560,20 @@ const Newsletter: React.FC = () => {
                         }}
                       >
                         <div className="ml-0.5 size-[9px] rounded-full bg-muted-foreground opacity-50"></div>
-                        {isSendingGated ? 'Sending to' : 'Sent'}
+                        {isSendingGated ? (
+                          'Sending to'
+                        ) : (
+                          <>
+                            Sent
+                            {!isEmailDataHidden && (
+                              <LucideIcon.Check
+                                className="text-state-success"
+                                size={14}
+                                strokeWidth={2.5}
+                              />
+                            )}
+                          </>
+                        )}
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
@@ -664,7 +706,7 @@ const Newsletter: React.FC = () => {
                     >
                       {/* G: the same hover as every other ring, because it is
                           every other ring. */}
-                      {isSentDenominator && !isEmailDataHidden && (
+                      {isSentDenominator && !isEmailDataHidden && !isProvisional && (
                         <BlockTooltip
                           avgValue={formatPercentage(FIXTURE_AVERAGE_DELIVERED_RATE)}
                           dataColor="var(--chart-purple)"
@@ -682,7 +724,7 @@ const Newsletter: React.FC = () => {
                       <NewsletterRadialChart
                         className={chartClass}
                         config={sentChartConfig}
-                        data={sentChartData}
+                        data={withoutAverage(sentChartData)}
                         percentageLabel={ringLabel}
                         percentageValue={formatPercentage(ringRate)}
                         size={chartSize}
@@ -695,16 +737,18 @@ const Newsletter: React.FC = () => {
                       <div
                         className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}
                       >
-                        <BlockTooltip
-                          avgValue={formatPercentage(averageStats.openedRate)}
-                          dataColor="var(--chart-blue)"
-                          value={formatPercentage(stats.openedRate)}
-                        />
+                        {!isProvisional && (
+                          <BlockTooltip
+                            avgValue={formatPercentage(averageStats.openedRate)}
+                            dataColor="var(--chart-blue)"
+                            value={formatPercentage(stats.openedRate)}
+                          />
+                        )}
                         <NewsletterRadialChart
                           className={chartClass}
                           config={openedChartConfig}
-                          data={openedChartData}
-                          percentageLabel="Open rate"
+                          data={withoutAverage(openedChartData)}
+                          percentageLabel={isProvisional ? 'Open rate so far' : 'Open rate'}
                           percentageValue={formatPercentage(stats.openedRate)}
                           size={chartSize}
                           tooltip={false}
@@ -715,16 +759,18 @@ const Newsletter: React.FC = () => {
 
                     {emailTrackClicksEnabled && (
                       <div className="group/block relative px-6 transition-all hover:bg-muted/25">
-                        <BlockTooltip
-                          avgValue={formatPercentage(averageStats.clickedRate)}
-                          dataColor="var(--chart-teal)"
-                          value={formatPercentage(stats.clickedRate)}
-                        />
+                        {!isProvisional && (
+                          <BlockTooltip
+                            avgValue={formatPercentage(averageStats.clickedRate)}
+                            dataColor="var(--chart-teal)"
+                            value={formatPercentage(stats.clickedRate)}
+                          />
+                        )}
                         <NewsletterRadialChart
                           className={chartClass}
                           config={clickedChartConfig}
-                          data={clickedChartData}
-                          percentageLabel="Click rate"
+                          data={withoutAverage(clickedChartData)}
+                          percentageLabel={isProvisional ? 'Click rate so far' : 'Click rate'}
                           percentageValue={formatPercentage(stats.clickedRate)}
                           size={chartSize}
                           tooltip={false}

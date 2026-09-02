@@ -42,13 +42,17 @@ const clearAnchor = () => {
 };
 
 /**
- * The current phase's remaining budget on the send's fictional clock:
- * preparation counts down from its two minutes, then sending from its four.
+ * Time left until 100% sent on the send's fictional clock: during preparation
+ * the rest of preparing plus the whole sending budget, then the rest of
+ * sending. One figure that only ever falls — an estimate that jumped from two
+ * minutes to four at the handoff read, in testing, as the send stalling.
  * See PREPARING_ETA_SECONDS for why this is not the playback's own clock.
  */
 const etaSecondsAt = (position: number): number | null => {
   if (position < PREPARING_END_POSITION) {
-    return Math.ceil((1 - position / PREPARING_END_POSITION) * PREPARING_ETA_SECONDS);
+    return Math.ceil(
+      (1 - position / PREPARING_END_POSITION) * PREPARING_ETA_SECONDS + SENDING_ETA_SECONDS,
+    );
   }
   if (position < SEND_COMPLETE_POSITION) {
     const sendSpan = SEND_COMPLETE_POSITION - PREPARING_END_POSITION;
