@@ -173,12 +173,15 @@ const minutesAgo = (minutes: number): Date => new Date(Date.now() - minutes * 60
  * which is the whole point: every combination is reachable, including a failed
  * send whose successful batches are still hours behind.
  */
+/** The fixture's addressed list, shared with every surface that names it. */
+export const FIXTURE_RECIPIENT_COUNT = 547_120;
+
 export const buildStatus = (
   send: SendState,
   counting: CountingState,
   progress?: PlaybackProgress,
 ): AnalyticsStatus => {
-  const recipientCount = 547_120;
+  const recipientCount = FIXTURE_RECIPIENT_COUNT;
   const reachedCount = progress
     ? Math.round(recipientCount * progress.sent)
     : {

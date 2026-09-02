@@ -1,4 +1,9 @@
 import React from 'react';
+// PROTOTYPE: demo copy override — remove with ../prototype-analytics-status
+import {
+  FIXTURE_RECIPIENT_COUNT,
+  readStoredState,
+} from '@/posts/analytics/prototype-analytics-status/prototype-context';
 import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useState } from 'react';
@@ -73,20 +78,32 @@ export const usePostSuccessModal = () => {
 
     const showPostCount = !!postCount;
 
+    // PROTOTYPE/DEMO: under variant E the send behind this modal is still in
+    // flight and sized by the fixture, so the sentence has to match the page
+    // it is covering — present tense, fixture count — rather than the dev
+    // site's real member list and a past tense the send has not earned yet.
+    const isGatedDemo = !!post.email?.email_count && readStoredState().variant === 'gatedUntilSent';
+
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
       const parts = [];
 
       if (post.email_only) {
-        parts.push('Your email was sent to');
+        parts.push(isGatedDemo ? 'Your email is being sent to' : 'Your email was sent to');
       } else if (post.email?.email_count) {
-        parts.push('Your post was published on your site and sent to');
+        parts.push(
+          isGatedDemo
+            ? 'Your post was published on your site and is being sent to'
+            : 'Your post was published on your site and sent to',
+        );
       } else {
         parts.push('Your post was published on your site');
       }
 
       if (post.email?.email_count) {
-        const subscriberText = formatSubscriberCount(post.email.email_count);
+        const subscriberText = formatSubscriberCount(
+          isGatedDemo ? FIXTURE_RECIPIENT_COUNT : post.email.email_count,
+        );
         parts.push(' ');
         parts.push(React.createElement('strong', { key: 'subscriber-count' }, subscriberText));
 
