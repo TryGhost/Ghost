@@ -4,6 +4,7 @@ import {
   FIXTURE_RECIPIENT_COUNT,
   readStoredState,
 } from '@/posts/analytics/prototype-analytics-status/prototype-context';
+import { isGatedVariant } from '@/posts/analytics/prototype-analytics-status/types';
 import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useState } from 'react';
@@ -82,7 +83,7 @@ export const usePostSuccessModal = () => {
     // flight and sized by the fixture, so the sentence has to match the page
     // it is covering — present tense, fixture count — rather than the dev
     // site's real member list and a past tense the send has not earned yet.
-    const isGatedDemo = !!post.email?.email_count && readStoredState().variant === 'gatedUntilSent';
+    const isGatedDemo = !!post.email?.email_count && isGatedVariant(readStoredState().variant);
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {

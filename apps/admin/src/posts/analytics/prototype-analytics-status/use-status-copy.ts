@@ -7,7 +7,7 @@ import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-con
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { usePrototypeAnalyticsStatus } from './prototype-context';
 import { formatNumber } from '@tryghost/shade/utils';
-import { isSendComplete } from './types';
+import { isGatedVariant, isSendComplete } from './types';
 import type { AnalyticsStatus, StatusVariant } from './types';
 
 interface ResolvedStatus {
@@ -82,7 +82,7 @@ export const useCountedThrough = (): string | null => {
   if (!prototype || (prototype.variant === 'off' && prototype.emailData === 'off')) {
     return null;
   }
-  if (prototype.variant === 'sendingOnly' || prototype.variant === 'gatedUntilSent') {
+  if (prototype.variant === 'sendingOnly' || isGatedVariant(prototype.variant)) {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
@@ -134,7 +134,7 @@ export const useEmailDataHiddenReason = (): EmailDataHiddenReason | null => {
   // place E overrules its parent: D shows figures over a half-failed send and
   // trusts its card to qualify them, while E's whole contract is that figures
   // only appear for a send that fully went out.
-  if (prototype.variant === 'gatedUntilSent') {
+  if (isGatedVariant(prototype.variant)) {
     if (prototype.status.send.state === 'failed') {
       return 'failed';
     }
@@ -200,10 +200,7 @@ export const useSentToMembers = (): string | null => {
 
   // E retires its line at the same moment D does, so it hands the fact to the
   // subtitle the same way.
-  if (
-    !prototype ||
-    (prototype.variant !== 'sendingOnly' && prototype.variant !== 'gatedUntilSent')
-  ) {
+  if (!prototype || (prototype.variant !== 'sendingOnly' && !isGatedVariant(prototype.variant))) {
     return null;
   }
   if (!post || !hasBeenEmailed(post)) {
@@ -247,5 +244,20 @@ export const useGatedUntilSentVariant = (): boolean => {
   const prototype = usePrototypeAnalyticsStatus();
   const { post } = usePostAnalytics();
 
-  return Boolean(prototype?.variant === 'gatedUntilSent' && post && hasBeenEmailed(post));
+  return Boolean(prototype && isGatedVariant(prototype.variant) && post && hasBeenEmailed(post));
+};
+
+/**
+ * Whether the funnel's first ring counts deliveries under a Sent figure.
+ *
+ * F keeps E's tile — Sent, the whole dispatched list — but hands the ring a
+ * different job: how much of that list has landed. The tile answers "did it go
+ * out", the ring answers "did it arrive", and the gap between a full number and
+ * a ring still filling is the delivery tail made visible.
+ */
+export const useDeliveryRingVariant = (): boolean => {
+  const prototype = usePrototypeAnalyticsStatus();
+  const { post } = usePostAnalytics();
+
+  return Boolean(prototype?.variant === 'deliveryRing' && post && hasBeenEmailed(post));
 };

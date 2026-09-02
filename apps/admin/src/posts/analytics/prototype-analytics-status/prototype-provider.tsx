@@ -57,6 +57,7 @@ const etaSecondsAt = (position: number): number | null => {
   }
   return null;
 };
+import { isGatedVariant } from './types';
 import type { CountingState, EmailDataTreatment, SendState, StatusVariant } from './types';
 
 const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -92,7 +93,7 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       // numbers do not move on their own, so the figures that appear at
       // gate-open hold still. Fictional time keeps passing via the anchor —
       // a hard refresh re-reads the clock and shows how far counting has got.
-      if (state.variant === 'gatedUntilSent' && pos >= SEND_COMPLETE_POSITION) {
+      if (isGatedVariant(state.variant) && pos >= SEND_COMPLETE_POSITION) {
         setPosition(Math.min(pos, 1));
         setIsPlaying(false);
         return;
@@ -133,8 +134,7 @@ const PrototypeAnalyticsStatusProvider: React.FC<{ children: React.ReactNode }> 
       if (Number.isFinite(anchor) && anchor > 0) {
         const pos = Math.min(1, (Date.now() - anchor) / PLAYBACK_MS);
         const frozen =
-          pos >= 1 ||
-          (readStoredState().variant === 'gatedUntilSent' && pos >= SEND_COMPLETE_POSITION);
+          pos >= 1 || (isGatedVariant(readStoredState().variant) && pos >= SEND_COMPLETE_POSITION);
         setPosition(pos);
         setIsPlaying(!frozen);
       }

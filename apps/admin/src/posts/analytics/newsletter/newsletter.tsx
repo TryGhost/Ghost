@@ -56,6 +56,7 @@ import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-frame
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useCountedThrough,
+  useDeliveryRingVariant,
   useEmailDataHiddenReason,
   useGatedUntilSentVariant,
   useSendingOnlyVariant,
@@ -182,6 +183,8 @@ const Newsletter: React.FC = () => {
   // a partial or failed send keeps the shared permanent copy.
   const isGatedUntilSent = useGatedUntilSentVariant();
   const isSendingGated = isGatedUntilSent && emailDataHiddenReason === 'pending';
+  // PROTOTYPE: variant F — E's tile, but the ring beneath it counts deliveries.
+  const isDeliveryRing = useDeliveryRingVariant();
   // PROTOTYPE: variant E drops the clicks card entirely while the send is
   // running — a card whose whole body is "not yet" earns no place on the page;
   // it arrives with the data, once the send is done.
@@ -303,10 +306,22 @@ const Newsletter: React.FC = () => {
       : stats.sent;
   const sentRate = stats.addressed > 0 ? sentValue / stats.addressed : 0;
 
+  // PROTOTYPE: under F the tile and the ring answer two different questions.
+  // The tile says Sent 547,120 — did it go out — and holds there. The ring
+  // says how much of that list has landed, filling from near-empty at
+  // gate-open toward the delivered share, so the delivery tail is visible as
+  // the gap between a full number and a ring still filling.
+  const ringRate = isDeliveryRing
+    ? stats.addressed > 0
+      ? stats.delivered / stats.addressed
+      : 0
+    : sentRate;
+  const ringLabel = isDeliveryRing ? 'Delivered' : sentLabel;
+
   const sentChartData: NewsletterRadialChartData[] = [
     {
-      datatype: sentLabel,
-      value: sentRate,
+      datatype: ringLabel,
+      value: ringRate,
       fill: 'url(#gradientPurple)',
       color: 'var(--chart-purple)',
     },

@@ -125,7 +125,8 @@ export type StatusVariant =
   | 'stageCard'
   | 'statusLine'
   | 'sendingOnly'
-  | 'gatedUntilSent';
+  | 'gatedUntilSent'
+  | 'deliveryRing';
 
 export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'off', label: 'Off' },
@@ -134,7 +135,16 @@ export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'statusLine', label: 'C. Status line' },
   { value: 'sendingOnly', label: 'D. Sending only' },
   { value: 'gatedUntilSent', label: 'E. Gated until sent' },
+  { value: 'deliveryRing', label: 'F. Delivery ring' },
 ];
+
+/**
+ * E and F share everything — the sending line, the gate, the demo hooks. F
+ * differs in one tile: the funnel's first ring counts deliveries rather than
+ * dispatches, under a Sent figure that still reports the whole send.
+ */
+export const isGatedVariant = (variant: StatusVariant): boolean =>
+  variant === 'gatedUntilSent' || variant === 'deliveryRing';
 
 /**
  * Sending is over and every batch was accepted, so there is nothing left for a

@@ -14,7 +14,7 @@ const DEMO_FIXTURE_RECIPIENT_COUNT = 547120;
 function demoFixtureCount() {
     try {
         const stored = JSON.parse(localStorage.getItem('ghost-prototype-analytics-status') || '{}');
-        return stored.variant === 'gatedUntilSent' ? DEMO_FIXTURE_RECIPIENT_COUNT : null;
+        return ['gatedUntilSent', 'deliveryRing'].includes(stored.variant) ? DEMO_FIXTURE_RECIPIENT_COUNT : null;
     } catch (e) {
         return null;
     }

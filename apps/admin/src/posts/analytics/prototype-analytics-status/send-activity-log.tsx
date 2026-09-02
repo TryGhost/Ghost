@@ -50,7 +50,12 @@ import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/util
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { formatClock } from './status-copy';
-import { ENGINEERS_NOTIFIED, isSendComplete, isSendFullyAccountedFor } from './types';
+import {
+  ENGINEERS_NOTIFIED,
+  isGatedVariant,
+  isSendComplete,
+  isSendFullyAccountedFor,
+} from './types';
 import { usePrototypeAnalyticsStatus } from './prototype-context';
 import { useStatusCopy } from './use-status-copy';
 import type { AnalyticsStatus } from './types';
@@ -501,7 +506,7 @@ const SendActivityLog: React.FC = () => {
   // retiring the same way, while the cards underneath wait for it to finish
   // rather than showing figures as they trickle in.
   const isSendingOnly =
-    resolved?.variant === 'sendingOnly' || resolved?.variant === 'gatedUntilSent';
+    resolved?.variant === 'sendingOnly' || (!!resolved && isGatedVariant(resolved.variant));
 
   if (
     !resolved ||
@@ -539,7 +544,7 @@ const SendActivityLog: React.FC = () => {
   // reader more than the other variants' lines do — their figures are already
   // on screen.
   let detail: React.ReactNode = status.detail;
-  if (resolved.variant === 'gatedUntilSent') {
+  if (isGatedVariant(resolved.variant)) {
     const { send } = resolved.status;
 
     if (send.state === 'preparing' || send.state === 'sending') {
