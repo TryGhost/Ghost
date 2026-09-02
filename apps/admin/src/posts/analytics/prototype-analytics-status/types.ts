@@ -126,7 +126,8 @@ export type StatusVariant =
   | 'statusLine'
   | 'sendingOnly'
   | 'gatedUntilSent'
-  | 'deliveryRing';
+  | 'deliveryRing'
+  | 'sentAsDenominator';
 
 export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'off', label: 'Off' },
@@ -136,15 +137,18 @@ export const STATUS_VARIANTS: { value: StatusVariant; label: string }[] = [
   { value: 'sendingOnly', label: 'D. Sending only' },
   { value: 'gatedUntilSent', label: 'E. Gated until sent' },
   { value: 'deliveryRing', label: 'F. Delivery ring' },
+  { value: 'sentAsDenominator', label: 'G. Sent as denominator' },
 ];
 
 /**
- * E and F share everything — the sending line, the gate, the demo hooks. F
- * differs in one tile: the funnel's first ring counts deliveries rather than
- * dispatches, under a Sent figure that still reports the whole send.
+ * E, F and G share everything — the sending line, the gate, the demo hooks —
+ * and differ only in the funnel's first position. E counts dispatches there.
+ * F keeps the Sent figure but fills the ring with deliveries. G takes Sent out
+ * of the funnel altogether (the subtitle states it once, as the denominator)
+ * and makes Delivered a metric like the two beside it: count, rate, average.
  */
 export const isGatedVariant = (variant: StatusVariant): boolean =>
-  variant === 'gatedUntilSent' || variant === 'deliveryRing';
+  variant === 'gatedUntilSent' || variant === 'deliveryRing' || variant === 'sentAsDenominator';
 
 /**
  * Sending is over and every batch was accepted, so there is nothing left for a

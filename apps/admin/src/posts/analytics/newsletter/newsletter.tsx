@@ -60,7 +60,9 @@ import {
   useEmailDataHiddenReason,
   useGatedUntilSentVariant,
   useSendingOnlyVariant,
+  useSentAsDenominatorVariant,
 } from '@/posts/analytics/prototype-analytics-status/use-status-copy';
+import { FIXTURE_AVERAGE_DELIVERED_RATE } from '@/posts/analytics/prototype-analytics-status/prototype-context';
 import { useStubbedNewsletterStats } from '@/posts/analytics/prototype-analytics-status/use-stubbed-newsletter-stats';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
@@ -227,6 +229,10 @@ const Newsletter: React.FC = () => {
   const isSendingGated = isGatedUntilSent && emailDataHiddenReason === 'pending';
   // PROTOTYPE: variant F — E's tile, but the ring beneath it counts deliveries.
   const isDeliveryRing = useDeliveryRingVariant();
+  // PROTOTYPE: variant G — Sent leaves the funnel for the subtitle, and the
+  // first position becomes Delivered: a metric with the same anatomy as the
+  // two beside it (count, rate, average, hover).
+  const isSentDenominator = useSentAsDenominatorVariant();
   // PROTOTYPE: variant E drops the clicks card entirely while the send is
   // running — a card whose whole body is "not yet" earns no place on the page;
   // it arrives with the data, once the send is done.
@@ -340,12 +346,13 @@ const Newsletter: React.FC = () => {
   // PROTOTYPE: under E, Sent means dispatched — the send the retired line was
   // counting — rather than landed, so a completed send reads 100% instead of
   // falling short by whatever has not reported back yet.
-  const sentLabel = isSendingOnly ? 'Delivered' : 'Sent';
-  const sentValue = isSendingOnly
-    ? stats.delivered
-    : isGatedUntilSent
-      ? stats.dispatched
-      : stats.sent;
+  const sentLabel = isSendingOnly || isSentDenominator ? 'Delivered' : 'Sent';
+  const sentValue =
+    isSendingOnly || isSentDenominator
+      ? stats.delivered
+      : isGatedUntilSent
+        ? stats.dispatched
+        : stats.sent;
   const sentRate = stats.addressed > 0 ? sentValue / stats.addressed : 0;
 
   // PROTOTYPE: under F the tile and the ring answer two different questions.
@@ -353,21 +360,39 @@ const Newsletter: React.FC = () => {
   // says how much of that list has landed, filling from near-empty at
   // gate-open toward the delivered share, so the delivery tail is visible as
   // the gap between a full number and a ring still filling.
-  const ringRate = isDeliveryRing
-    ? stats.addressed > 0
-      ? stats.delivered / stats.addressed
-      : 0
-    : sentRate;
-  const ringLabel = isDeliveryRing ? 'Delivered' : sentLabel;
+  const ringRate =
+    isDeliveryRing || isSentDenominator
+      ? stats.addressed > 0
+        ? stats.delivered / stats.addressed
+        : 0
+      : sentRate;
+  // G names the rate the way the rings beside it do, so the three read as one
+  // series: Delivery rate → Open rate → Click rate.
+  const ringLabel = isSentDenominator ? 'Delivery rate' : isDeliveryRing ? 'Delivered' : sentLabel;
 
-  const sentChartData: NewsletterRadialChartData[] = [
-    {
-      datatype: ringLabel,
-      value: ringRate,
-      fill: 'url(#gradientPurple)',
-      color: 'var(--chart-purple)',
-    },
-  ];
+  const sentChartData: NewsletterRadialChartData[] = isSentDenominator
+    ? [
+        {
+          datatype: 'Average',
+          value: FIXTURE_AVERAGE_DELIVERED_RATE,
+          fill: 'url(#gradientGray)',
+          color: 'var(--chart-gray)',
+        },
+        {
+          datatype: 'This newsletter',
+          value: ringRate,
+          fill: 'url(#gradientPurple)',
+          color: 'var(--chart-purple)',
+        },
+      ]
+    : [
+        {
+          datatype: ringLabel,
+          value: ringRate,
+          fill: 'url(#gradientPurple)',
+          color: 'var(--chart-purple)',
+        },
+      ];
 
   const sentChartConfig = {
     percentage: {
@@ -508,9 +533,11 @@ const Newsletter: React.FC = () => {
                           nothing to read it against. */}
                       {isSendingOnly
                         ? `Delivered of ${formatNumber(stats.addressed)}`
-                        : !isEmailDataHidden && stats.addressed > sentValue
-                          ? `Sent of ${formatNumber(stats.addressed)}`
-                          : 'Sent'}
+                        : isSentDenominator
+                          ? 'Delivered'
+                          : !isEmailDataHidden && stats.addressed > sentValue
+                            ? `Sent of ${formatNumber(stats.addressed)}`
+                            : 'Sent'}
                     </KpiCardLabel>
                     <KpiCardContent>
                       <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
@@ -588,8 +615,17 @@ const Newsletter: React.FC = () => {
                     className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
                   >
                     <div
-                      className={`relative border-r-0 px-6 ${isDeliveryRing ? 'group/block transition-all hover:bg-muted/25' : ''} ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
+                      className={`relative border-r-0 px-6 ${isDeliveryRing || isSentDenominator ? 'group/block transition-all hover:bg-muted/25' : ''} ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
                     >
+                      {/* G: the same hover as every other ring, because it is
+                          every other ring. */}
+                      {isSentDenominator && !isEmailDataHidden && (
+                        <BlockTooltip
+                          avgValue={formatPercentage(FIXTURE_AVERAGE_DELIVERED_RATE)}
+                          dataColor="var(--chart-purple)"
+                          value={formatPercentage(ringRate)}
+                        />
+                      )}
                       {isDeliveryRing && !isEmailDataHidden && (
                         <DeliveryTooltip
                           bounced={stats.sent - stats.delivered}

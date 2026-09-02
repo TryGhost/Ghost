@@ -176,6 +176,13 @@ const minutesAgo = (minutes: number): Date => new Date(Date.now() - minutes * 60
 /** The fixture's addressed list, shared with every surface that names it. */
 export const FIXTURE_RECIPIENT_COUNT = 547_120;
 
+/**
+ * What this site's sends usually deliver at, for variant G's comparison ring.
+ * The API carries average open and click rates but no average delivery rate
+ * yet; this stands in for the one aggregate query shipping G would add.
+ */
+export const FIXTURE_AVERAGE_DELIVERED_RATE = 0.991;
+
 export const buildStatus = (
   send: SendState,
   counting: CountingState,

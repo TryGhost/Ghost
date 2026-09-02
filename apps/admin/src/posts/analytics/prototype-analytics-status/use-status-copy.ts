@@ -261,3 +261,19 @@ export const useDeliveryRingVariant = (): boolean => {
 
   return Boolean(prototype?.variant === 'deliveryRing' && post && hasBeenEmailed(post));
 };
+
+/**
+ * Whether Sent has left the funnel entirely.
+ *
+ * G's funnel is Delivered → Opened → Clicked, three metrics with the same
+ * anatomy — a count, a rate, an average to compare against — and Sent is the
+ * denominator they all sit over, stated once in the post's subtitle rather
+ * than competing for a tile. Each ring's denominator is the previous ring's
+ * numerator, which is what the arrows between them were always implying.
+ */
+export const useSentAsDenominatorVariant = (): boolean => {
+  const prototype = usePrototypeAnalyticsStatus();
+  const { post } = usePostAnalytics();
+
+  return Boolean(prototype?.variant === 'sentAsDenominator' && post && hasBeenEmailed(post));
+};
