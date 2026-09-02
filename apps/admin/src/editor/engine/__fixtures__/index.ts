@@ -2,12 +2,15 @@ import adjacentListsMerge from './adjacent-lists-merge.json';
 import alignedBlocks from './aligned-blocks.json';
 import directionNullVsLtr from './direction-null-vs-ltr.json';
 import emptyDocumentParagraph from './empty-document-paragraph.json';
+import headingInListitem from './heading-in-listitem.json';
 import invalidNesting from './invalid-nesting.json';
 import legacyHeadingQuoteNodes from './legacy-heading-quote-nodes.json';
 import legacyTextNodes from './legacy-text-nodes.json';
+import listInHeading from './list-in-heading.json';
 import missingDefaultProps from './missing-default-props.json';
 import nestedEditorHtml from './nested-editor-html.json';
 import oldVisibilityFormat from './old-visibility-format.json';
+import partialVisibilityFormat from './partial-visibility-format.json';
 import type { LexicalDocument } from '@/editor/engine/lexical-compare';
 
 // headless-koenig / mounted-koenig: `after` recorded from koenig-lexical loading `before`.
@@ -38,6 +41,9 @@ export const OLD_SCHEMA_CORPUS: OldSchemaFixture[] = [
   fixture('adjacent-lists-merge', 'headless-koenig', adjacentListsMerge),
   fixture('aligned-blocks', 'headless-koenig', alignedBlocks),
   fixture('nested-editor-html', 'mounted-koenig', nestedEditorHtml),
+  fixture('partial-visibility-format', 'mounted-koenig', partialVisibilityFormat),
+  fixture('list-in-heading', 'mounted-koenig', listInHeading),
+  fixture('heading-in-listitem', 'mounted-koenig', headingInListitem),
   fixture('direction-null-vs-ltr', 'hand-authored', directionNullVsLtr),
   fixture('empty-document-paragraph', 'hand-authored', emptyDocumentParagraph),
 ];
