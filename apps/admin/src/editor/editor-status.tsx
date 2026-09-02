@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { formatPostTime } from '@/posts/list/post-time';
 import type { SaveEngineState } from './engine/save-engine';
 import {
   type EditorStatusRecord,
   type EditorStatusView,
   deriveEditorStatus,
+  useScheduledBoundary,
   useSavingHold,
 } from './post-status';
 
@@ -17,20 +18,22 @@ function members(count: number): string {
 }
 
 /** The send's audience, counted the way the publish flow counts it. */
-function RecipientCount({ filter }: { filter: string }) {
+export function RecipientCount({ filter, segment }: { filter: string; segment: string }) {
   const { count } = useMembersCount(filter);
-  return <>{members(count ?? 0)}</>;
+  return <>{typeof count === 'number' ? members(count) : membersCountString(segment, { count })}</>;
 }
 
 function ScheduleCountdown({
   publishedAt,
   emailOnly,
   recipientFilter,
+  recipientSegment,
   timezone,
 }: {
   publishedAt: string | null;
   emailOnly: boolean;
   recipientFilter: string | null;
+  recipientSegment: string | null;
   timezone: string;
 }) {
   return (
@@ -40,10 +43,10 @@ function ScheduleCountdown({
       dateTime={publishedAt ?? undefined}
     >
       {emailOnly ? 'to be sent' : 'to be published'}
-      {recipientFilter && (
+      {recipientFilter && recipientSegment && (
         <>
           {emailOnly ? ' to ' : ' and sent to '}
-          <RecipientCount filter={recipientFilter} />
+          <RecipientCount filter={recipientFilter} segment={recipientSegment} />
         </>
       )}{' '}
       {formatPostTime(publishedAt, { timezone, scheduled: true })}
@@ -86,6 +89,7 @@ function StatusBody({
                 emailOnly={view.emailOnly}
                 publishedAt={view.publishedAt}
                 recipientFilter={view.recipientFilter}
+                recipientSegment={view.recipientSegment}
                 timezone={timezone}
               />
             </>
@@ -128,6 +132,11 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
   const [, setTick] = useState(0);
+
+  useScheduledBoundary(
+    record?.publishedAt,
+    record?.status === 'scheduled' && record.emailOnly !== true,
+  );
 
   // The countdown only reads while hovered, so it only has to tick then.
   useEffect(() => {

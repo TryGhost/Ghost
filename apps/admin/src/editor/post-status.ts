@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  EVERYONE_RECIPIENT_FILTER,
+  PAID_SEGMENT,
   getFullRecipientFilter,
   getNewsletterRecipientFilter,
+  normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type { SaveEngineState } from './engine/save-engine';
@@ -41,6 +44,8 @@ export type EditorStatusView =
       emailOnly: boolean;
       /** Members the send will reach, or null when nothing will be sent. */
       recipientFilter: string | null;
+      /** The selected segment without its newsletter scope, for descriptive count copy. */
+      recipientSegment: string | null;
     }
   | {
       kind: 'published';
@@ -71,16 +76,25 @@ function publishedEmailState(
   return status === 'failed' ? 'failed' : 'none';
 }
 
+interface ScheduledRecipientAudience {
+  filter: string;
+  segment: string;
+}
+
 /** Who a scheduled send will reach, or null once an email exists or none is going out. */
-function scheduledRecipientFilter(record: EditorStatusRecord): string | null {
-  if (!record.newsletter || record.hasEmail) {
+function scheduledRecipientAudience(record: EditorStatusRecord): ScheduledRecipientAudience | null {
+  if (!record.newsletter || record.hasEmail || record.emailSegment === 'none') {
     return null;
   }
 
-  return getFullRecipientFilter(
-    getNewsletterRecipientFilter(record.newsletter),
-    record.emailSegment,
-  );
+  const segment = normalizeRecipientFilter(record.emailSegment);
+  const descriptiveSegment =
+    segment ?? (record.newsletter.visibility === 'paid' ? PAID_SEGMENT : EVERYONE_RECIPIENT_FILTER);
+
+  return {
+    filter: getFullRecipientFilter(getNewsletterRecipientFilter(record.newsletter), segment),
+    segment: descriptiveSegment,
+  };
 }
 
 /** A scheduled post whose time has passed reads as published; the server owns the transition. */
@@ -115,6 +129,7 @@ export function deriveEditorStatus({
   }
 
   const count = record.emailCount ?? 0;
+  const recipientAudience = status === 'scheduled' ? scheduledRecipientAudience(record) : null;
 
   if (status === 'sent') {
     return { kind: 'sent', failed: record.emailStatus === 'failed', count };
@@ -125,7 +140,8 @@ export function deriveEditorStatus({
       kind: 'scheduled',
       publishedAt: record.publishedAt ?? null,
       emailOnly: true,
-      recipientFilter: scheduledRecipientFilter(record),
+      recipientFilter: recipientAudience?.filter ?? null,
+      recipientSegment: recipientAudience?.segment ?? null,
     };
   }
 
@@ -143,11 +159,40 @@ export function deriveEditorStatus({
       kind: 'scheduled',
       publishedAt: record.publishedAt ?? null,
       emailOnly: false,
-      recipientFilter: scheduledRecipientFilter(record),
+      recipientFilter: recipientAudience?.filter ?? null,
+      recipientSegment: recipientAudience?.segment ?? null,
     };
   }
 
   return { kind: 'draft', saved: !isDirty };
+}
+
+/** Browsers clamp longer timeouts; reschedule in bounded steps for distant posts. */
+export const MAX_SCHEDULE_TIMEOUT_MS = 2_147_483_647;
+
+/** Rerenders the caller when a future scheduled time is reached. */
+export function useScheduledBoundary(
+  publishedAt: string | null | undefined,
+  enabled: boolean,
+): void {
+  const [generation, setGeneration] = useState(0);
+
+  useEffect(() => {
+    if (!enabled || !publishedAt) {
+      return;
+    }
+
+    const remaining = Date.parse(publishedAt) - Date.now();
+    if (!Number.isFinite(remaining) || remaining <= 0) {
+      return;
+    }
+
+    const timer = setTimeout(
+      () => setGeneration((current) => current + 1),
+      Math.min(remaining, MAX_SCHEDULE_TIMEOUT_MS),
+    );
+    return () => clearTimeout(timer);
+  }, [enabled, generation, publishedAt]);
 }
 
 /**

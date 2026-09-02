@@ -140,6 +140,7 @@ export function FeatureImage({
           className="group/dropzone border-transparent bg-transparent transition-colors hover:bg-interactive-hover"
           disabled={isPending}
           inputAriaLabel="Add feature image"
+          noDragEventsBubbling
           onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
           onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
         >

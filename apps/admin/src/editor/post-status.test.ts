@@ -2,8 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { SaveEngineState } from './engine/save-engine';
 import {
+  MAX_SCHEDULE_TIMEOUT_MS,
   SAVING_MIN_DISPLAY_MS,
   deriveEditorStatus,
+  useScheduledBoundary,
   useSavingHold,
   type EditorStatusRecord,
 } from './post-status';
@@ -78,6 +80,7 @@ describe('deriveEditorStatus', () => {
       publishedAt: '2026-09-02T13:00:00.000Z',
       emailOnly: false,
       recipientFilter: null,
+      recipientSegment: null,
     });
   });
 
@@ -98,7 +101,33 @@ describe('deriveEditorStatus', () => {
     ).toMatchObject({
       kind: 'scheduled',
       recipientFilter: 'newsletters.slug:weekly+email_disabled:0+(status:free)',
+      recipientSegment: 'status:free',
     });
+  });
+
+  it('normalizes the persisted all recipient sentinel', () => {
+    expect(
+      derive({
+        status: 'scheduled',
+        publishedAt: '2026-09-02T13:00:00.000Z',
+        newsletter: { slug: 'weekly' },
+        emailSegment: 'all',
+      }),
+    ).toMatchObject({
+      recipientFilter: 'newsletters.slug:weekly+email_disabled:0+(status:free,status:-free)',
+      recipientSegment: 'status:free,status:-free',
+    });
+  });
+
+  it('does not count a persisted none recipient sentinel', () => {
+    expect(
+      derive({
+        status: 'scheduled',
+        publishedAt: '2026-09-02T13:00:00.000Z',
+        newsletter: { slug: 'weekly' },
+        emailSegment: 'none',
+      }),
+    ).toMatchObject({ recipientFilter: null, recipientSegment: null });
   });
 
   it('scopes a paid-only newsletter to paid members', () => {
@@ -149,6 +178,48 @@ describe('deriveEditorStatus', () => {
       failed: true,
       count: 40,
     });
+  });
+});
+
+describe('useScheduledBoundary', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  function renderScheduledBoundary(publishedAt: string) {
+    const record: EditorStatusRecord = { status: 'scheduled', publishedAt };
+
+    return renderHook(() => {
+      useScheduledBoundary(publishedAt, true);
+      return deriveEditorStatus({
+        state: IDLE,
+        record,
+        isDirty: false,
+        isSaving: false,
+      });
+    });
+  }
+
+  it('rerenders when the scheduled time arrives', () => {
+    const { result } = renderScheduledBoundary('2026-09-02T12:00:01.000Z');
+    expect(result.current.kind).toBe('scheduled');
+
+    act(() => void vi.advanceTimersByTime(1000));
+
+    expect(result.current.kind).toBe('published');
+  });
+
+  it('reschedules posts beyond the browser timeout limit', () => {
+    const publishedAt = new Date(NOW.getTime() + MAX_SCHEDULE_TIMEOUT_MS + 1000).toISOString();
+    const { result } = renderScheduledBoundary(publishedAt);
+
+    act(() => void vi.advanceTimersByTime(MAX_SCHEDULE_TIMEOUT_MS));
+    expect(result.current.kind).toBe('scheduled');
+
+    act(() => void vi.advanceTimersByTime(1000));
+    expect(result.current.kind).toBe('published');
   });
 });
 

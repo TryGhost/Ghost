@@ -14,6 +14,17 @@ export const PAID_SEGMENT = 'status:-free';
  */
 export const EVERYONE_RECIPIENT_FILTER = `${FREE_SEGMENT},${PAID_SEGMENT}`;
 
+/** Expands the API's legacy segment sentinels into the filters used by Admin. */
+export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
+  if (filter === 'all') {
+    return EVERYONE_RECIPIENT_FILTER;
+  }
+  if (!filter || filter === 'none') {
+    return null;
+  }
+  return filter;
+}
+
 const BASE_SEGMENTS: string[] = [FREE_SEGMENT, PAID_SEGMENT];
 
 export interface RecipientFilterSegments {

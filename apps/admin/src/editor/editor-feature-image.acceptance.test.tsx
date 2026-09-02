@@ -93,6 +93,45 @@ describe('Post editor feature image', () => {
   );
 
   it(
+    'does not insert a dropped feature image into the post body',
+    async () => {
+      const saveApi = fakeSavablePost();
+      const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
+        images: [{ url: UPLOADED, ref: null }],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+      const dropzone = editorScreen
+        .featureImage()
+        .element()
+        .querySelector('[data-slot="image-upload-dropzone"]');
+      expect(dropzone).not.toBeNull();
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(new File(['image'], 'hills.png', { type: 'image/png' }));
+      dropzone!.dispatchEvent(
+        new DragEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer,
+        }),
+      );
+
+      await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+
+      const saved = submittedPost(saveApi);
+      expect(saved.feature_image).toBe(UPLOADED);
+      expect(saved.lexical).toBeTypeOf('string');
+      expect(String(saved.lexical)).not.toContain('"type":"image"');
+    },
+    SLOW,
+  );
+
+  it(
     'saves alt text for the image',
     async () => {
       const saveApi = fakeSavablePost({ feature_image: UPLOADED });
