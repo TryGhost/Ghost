@@ -11,9 +11,30 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { usePrototypeAnalyticsStatus } from './prototype-context';
 
+// Open by default so the panel is discoverable, but a collapse sticks: the
+// panel remounts on every navigation (publish → analytics included) and a
+// demo take cannot open on the controls it is trying to keep out of frame.
+const OPEN_STORAGE_KEY = 'ghost-prototype-switcher-open';
+
+const readStoredOpen = (): boolean => {
+  try {
+    return window.localStorage.getItem(OPEN_STORAGE_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+};
+
 const PrototypeSwitcher: React.FC = () => {
   const prototype = usePrototypeAnalyticsStatus();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpenState] = useState(readStoredOpen);
+  const setIsOpen = (open: boolean) => {
+    setIsOpenState(open);
+    try {
+      window.localStorage.setItem(OPEN_STORAGE_KEY, String(open));
+    } catch {
+      // Prototype convenience only.
+    }
+  };
 
   if (!prototype) {
     return null;
