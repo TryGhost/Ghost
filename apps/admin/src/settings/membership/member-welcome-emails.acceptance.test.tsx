@@ -188,6 +188,14 @@ function pasteText(content: string) {
 }
 
 describe('Member welcome emails', () => {
+  it('loads the Koenig stylesheet with the editor', async () => {
+    const modal = await openWelcomeEmailModal();
+    const editor = modal.element().querySelector<HTMLElement>('.koenig-lexical');
+    expect(editor).not.toBeNull();
+
+    await expect.poll(() => getComputedStyle(editor!).getPropertyValue('--black')).not.toBe('');
+  });
+
   it('previews the unsaved draft only after Preview is selected', async () => {
     fakeSettingsScreens();
     fakeDefaultNewsletter();
