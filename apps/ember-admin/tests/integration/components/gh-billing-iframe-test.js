@@ -174,6 +174,37 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
     });
 
+    it('shows the overdue billing alert for a delinquent subscription', async function () {
+        const notifications = this.owner.lookup('service:notifications');
+        const showAlert = sinon.stub(notifications, 'showAlert');
+        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+        sinon.stub(this.owner.lookup('service:limit'), 'reload');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({subscription: {status: 'past_due'}});
+
+        expect(showAlert.calledOnce).to.be.true;
+        expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
+    });
+
+    it('stands the overdue alert down when the dunningWarnings flag is enabled', async function () {
+        const notifications = this.owner.lookup('service:notifications');
+        const showAlert = sinon.stub(notifications, 'showAlert');
+        const closeAlerts = sinon.stub(notifications, 'closeAlerts');
+        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+        sinon.stub(this.owner.lookup('service:limit'), 'reload');
+        const feature = this.owner.lookup('service:feature');
+        sinon.stub(feature, 'dunningWarnings').get(() => true);
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({subscription: {status: 'past_due'}});
+
+        expect(showAlert.called).to.be.false;
+        expect(closeAlerts.calledWith('billing.overdue')).to.be.true;
+    });
+
     it('ignores a navigateToAdmin message with an unknown destination', async function () {
         const router = this.owner.lookup('service:router');
         const transitionTo = sinon.stub(router, 'transitionTo');
