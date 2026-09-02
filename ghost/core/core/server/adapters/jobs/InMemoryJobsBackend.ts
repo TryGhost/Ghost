@@ -5,6 +5,7 @@ import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type {
   JobProcessor,
   JobEnvelope,
+  JobRouting,
   JobsStartOptions,
   RecurringSchedule,
   JobsShutdownOptions,
@@ -15,6 +16,9 @@ const logging = require('@tryghost/logging');
 
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10000;
 const DEFAULT_CONCURRENCY = 3;
+// Envelopes with no routing share this lane; routing to "default" by name is
+// the same lane, not a collision.
+const DEFAULT_QUEUE = 'default';
 
 function hasSeconds(cron: string): boolean {
   return cron.trim().split(/\s+/).length >= 6;
@@ -50,29 +54,46 @@ interface RecurringTimer {
 export default class InMemoryJobsBackend extends JobsBackendBase {
   private _processor: JobProcessor | null;
   private _stopped: boolean;
-  private _concurrency: number;
-  private _queue: queueAsPromised<JobEnvelope>;
+  private _defaultConcurrency: number;
+  private _queues: Map<string, queueAsPromised<JobEnvelope>>;
   private _recurring: Map<string, RecurringTimer>;
 
   constructor(config: { concurrency?: unknown } = {}) {
     super();
     this._processor = null;
     this._stopped = false;
-    this._concurrency = resolveConcurrency(config.concurrency);
-    this._queue = this._createQueue();
+    this._defaultConcurrency = resolveConcurrency(config.concurrency);
+    this._queues = new Map();
     this._recurring = new Map();
   }
 
-  private _createQueue(): queueAsPromised<JobEnvelope> {
-    return fastq.promise((envelope: JobEnvelope) => this._deliver(envelope), this._concurrency);
+  private _makeQueue(concurrency: number): queueAsPromised<JobEnvelope> {
+    return fastq.promise((envelope: JobEnvelope) => this._deliver(envelope), concurrency);
   }
 
-  start({ processor }: JobsStartOptions): void {
+  start({ processor, queues }: JobsStartOptions): void {
+    const declared = new Map<string, number>();
+    for (const [name, { concurrency }] of Object.entries(queues ?? {})) {
+      // A declaration the backend cannot satisfy must fail loudly here, never
+      // silently fall back (see the jobs-base README).
+      if (concurrency !== undefined && (!Number.isInteger(concurrency) || concurrency < 1)) {
+        throw new errors.IncorrectUsageError({
+          message: `Invalid concurrency for declared queue "${name}": ${JSON.stringify(concurrency)}. Expected a positive integer.`,
+        });
+      }
+      declared.set(name, concurrency ?? this._defaultConcurrency);
+    }
+
+    // State only changes once every declaration is valid, so a rejected
+    // start() never leaves a partially started backend that accepts work.
     this._processor = processor;
     this._stopped = false;
+    for (const [name, concurrency] of declared) {
+      this._queues.set(name, this._makeQueue(concurrency));
+    }
   }
 
-  enqueue(envelope: JobEnvelope): void {
+  enqueue(envelope: JobEnvelope, routing?: JobRouting): void {
     if (this._stopped) {
       return;
     }
@@ -81,7 +102,15 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
         message: `Cannot enqueue job "${envelope.type}" before the jobs backend is started.`,
       });
     }
-    this._queue.push(envelope);
+    const name = routing?.queue ?? DEFAULT_QUEUE;
+    let queue = this._queues.get(name);
+    if (!queue) {
+      // Lanes are created lazily: the default lane, and any queue name no
+      // handler declared, each get their own lane at the default concurrency.
+      queue = this._makeQueue(this._defaultConcurrency);
+      this._queues.set(name, queue);
+    }
+    queue.push(envelope);
   }
 
   private async _deliver(envelope: JobEnvelope): Promise<void> {
@@ -92,7 +121,11 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     }
   }
 
-  scheduleRecurring(envelope: JobEnvelope, { cron }: RecurringSchedule): void {
+  scheduleRecurring(
+    envelope: JobEnvelope,
+    { cron }: RecurringSchedule,
+    routing?: JobRouting,
+  ): void {
     if (this._stopped) {
       return;
     }
@@ -112,7 +145,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       // A throw inside a later timer callback would be an uncaughtException;
       // a recurring tick must never take the process down.
       try {
-        this.enqueue(envelope);
+        this.enqueue(envelope, routing);
       } catch (err) {
         logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
       }
@@ -136,15 +169,18 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       this._clearRecurring(type);
     }
 
-    const queue = this._queue;
-    queue.kill();
-    if (!queue.idle()) {
-      await Promise.race([queue.drained(), delay(timeoutMs)]);
+    const queues = [...this._queues.values()];
+    for (const queue of queues) {
+      queue.kill();
+    }
+    const draining = queues.filter((queue) => !queue.idle());
+    if (draining.length > 0) {
+      await Promise.race([Promise.all(draining.map((queue) => queue.drained())), delay(timeoutMs)]);
     }
 
-    // Fresh queue so a re-boot never inherits this lifecycle's abandoned
-    // in-flight deliveries against its concurrency limit.
-    this._queue = this._createQueue();
+    // Discard the queues so a re-boot never inherits this lifecycle's
+    // abandoned in-flight deliveries against its concurrency limits.
+    this._queues = new Map();
     this._processor = null;
   }
 }
