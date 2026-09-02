@@ -83,7 +83,7 @@ describe('SignupPage', () => {
 
   test('shows the gift promotion and opens gift checkout when it is available', () => {
     const site = {
-      ...getSiteData({ labs: { giftSubCustomization: true } }),
+      ...getSiteData(),
       portal_signup_gift_promotion: true,
     };
     const { getByRole, mockDoActionFn } = setup({ site });
@@ -109,7 +109,7 @@ describe('SignupPage', () => {
     },
   ])('hides the gift promotion when $label', ({ membersSignupAccess, pageQuery }) => {
     const site = {
-      ...getSiteData({ labs: { giftSubCustomization: true }, membersSignupAccess }),
+      ...getSiteData({ membersSignupAccess }),
       portal_signup_gift_promotion: true,
     };
     const { queryByRole } = setup({ site, pageQuery });
@@ -120,23 +120,19 @@ describe('SignupPage', () => {
   test.each([
     {
       label: 'the setting is missing',
-      site: getSiteData({ labs: { giftSubCustomization: true } }),
+      site: getSiteData(),
     },
     {
       label: 'the setting is disabled',
       site: {
-        ...getSiteData({ labs: { giftSubCustomization: true } }),
+        ...getSiteData(),
         portal_signup_gift_promotion: false,
       },
     },
     {
-      label: 'the feature flag is disabled',
-      site: { ...getSiteData(), portal_signup_gift_promotion: true },
-    },
-    {
       label: 'there is no giftable offering',
       site: {
-        ...getSiteData({ labs: { giftSubCustomization: true }, portalPlans: ['free'] }),
+        ...getSiteData({ portalPlans: ['free'] }),
         portal_signup_gift_promotion: true,
       },
     },
