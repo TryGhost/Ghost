@@ -29,14 +29,14 @@
         {
           "type": "callout",
           "version": 1,
-          "calloutText": "<p><span style=\"white-space: pre-wrap;\">Callout with </span><b><strong style=\"white-space: pre-wrap;\">bold</strong></b><span style=\"white-space: pre-wrap;\"> and </span><i><em style=\"white-space: pre-wrap;\">italic</em></i></p>",
+          "calloutText": "<p><span style=\"white-space: pre-wrap;\">Callout with </span><b><strong style=\"white-space: pre-wrap;\">bold</strong></b><span style=\"white-space: pre-wrap;\"> and </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">italic</em></i></p>",
           "calloutEmoji": "💡",
           "backgroundColor": "blue"
         },
         {
           "type": "toggle",
           "version": 1,
-          "heading": "<span style=\"white-space: pre-wrap;\">Toggle </span><i><em style=\"white-space: pre-wrap;\">heading</em></i>",
+          "heading": "<span style=\"white-space: pre-wrap;\">Toggle </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">heading</em></i>",
           "content": "<p><span style=\"white-space: pre-wrap;\">First paragraph</span></p><p><span style=\"white-space: pre-wrap;\">Second with a </span><a href=\"https://example.com/\"><span style=\"white-space: pre-wrap;\">link</span></a></p>"
         }
       ],

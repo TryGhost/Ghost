@@ -25,19 +25,19 @@ export function parseLexical(input: LexicalInput): LexicalDocument | null {
   return input;
 }
 
-// Lexical's reconciler infers `direction` from rendered text at mount time, so
-// it differs between a mounted editor, a headless parse, and the saved JSON.
+// Lexical's reconciler infers element `direction` from rendered text at mount
+// time, so it differs between a mounted editor, a headless parse, and saved JSON.
 export function stripDirection(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(stripDirection);
   }
-  if (isRecord(value)) {
+  if (isRecord(value) && Array.isArray(value.children)) {
     const out: Record<string, unknown> = {};
     for (const key of Object.keys(value)) {
       if (key === 'direction') {
         continue;
       }
-      out[key] = stripDirection(value[key]);
+      out[key] = key === 'children' ? stripDirection(value.children) : value[key];
     }
     return out;
   }
@@ -105,9 +105,19 @@ function humanizePath(path: ReadonlyArray<string | number>, document: unknown): 
     .join('.');
 }
 
+function stripDocumentDirection(input: LexicalInput): LexicalDocument {
+  const document = parseLexical(input);
+  if (!document) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(document).map(([key, value]) => [key, stripDirection(value)]),
+  );
+}
+
 export function humanizeLexicalDiff(from: LexicalInput, to: LexicalInput): HumanizedDiffEntry[] {
-  const fromDocument = stripDirection(parseLexical(from) ?? {}) as LexicalDocument;
-  const toDocument = stripDirection(parseLexical(to) ?? {}) as LexicalDocument;
+  const fromDocument = stripDocumentDirection(from);
+  const toDocument = stripDocumentDirection(to);
 
   return microdiff(fromDocument, toDocument, { cyclesFix: false }).map((change) => {
     const entry: HumanizedDiffEntry = {

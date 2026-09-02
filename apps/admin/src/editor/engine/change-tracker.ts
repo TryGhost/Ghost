@@ -13,6 +13,7 @@ export type ChangeReasonCode =
   | 'POST_TAGS_DIVERGED'
   | 'POST_TITLE_DIVERGED'
   | 'SCRATCH_DIVERGED_FROM_SECONDARY'
+  | 'LEXICAL_PARSE_FAILED'
   | 'NEW_POST_HAS_CHANGED_ATTRIBUTES'
   | 'POST_HAS_DIRTY_ATTRIBUTES';
 
@@ -137,14 +138,22 @@ export function createChangeTracker(): ChangeTracker {
     }
 
     const scratch = live.lexical ?? null;
-    if (saved.lexical && baseline && scratch) {
-      const divergedFromBaseline = !lexicalEquals(baseline, scratch);
-      const divergedFromSaved = !lexicalEquals(saved.lexical, scratch);
-      if (divergedFromBaseline && divergedFromSaved) {
+    if (baseline && scratch) {
+      try {
+        const divergedFromBaseline = !lexicalEquals(baseline, scratch);
+        const divergedFromSaved = !lexicalEquals(saved.lexical, scratch);
+        if (divergedFromBaseline && divergedFromSaved) {
+          reasons.push({
+            code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
+            reason: 'main editor content has diverged from both hidden editor and saved content',
+            context: { secondaryLexical: baseline, lexical: saved.lexical, scratch },
+          });
+        }
+      } catch (error) {
         reasons.push({
-          code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
-          reason: 'main editor content has diverged from both hidden editor and saved content',
-          context: { secondaryLexical: baseline, lexical: saved.lexical, scratch },
+          code: 'LEXICAL_PARSE_FAILED',
+          reason: 'lexical state could not be parsed for comparison',
+          context: { error: error instanceof Error ? error.message : String(error) },
         });
       }
     }
@@ -171,6 +180,9 @@ export function createChangeTracker(): ChangeTracker {
 
   return {
     setSaved(next) {
+      if (saved) {
+        baseline = next.lexical;
+      }
       saved = next;
       saveError = null;
       live = {
@@ -186,7 +198,10 @@ export function createChangeTracker(): ChangeTracker {
     },
 
     setLive(next) {
-      live = { ...live, ...next };
+      const defined = Object.fromEntries(
+        Object.entries(next).filter(([, value]) => value !== undefined),
+      ) as LivePostState;
+      live = { ...live, ...defined };
     },
 
     markSaveError(messages) {
@@ -197,6 +212,8 @@ export function createChangeTracker(): ChangeTracker {
       saveError = null;
     },
 
+    // Call only after the restore save is acknowledged: Ember updates the
+    // editors on success, so a failed restore never reaches the baseline.
     revisionRestored(lexical) {
       const restored = serializeLexical(lexical);
       baseline = restored;
@@ -211,7 +228,7 @@ export function createChangeTracker(): ChangeTracker {
         options.includeDiff &&
         reasons.some((r) => r.code === 'SCRATCH_DIVERGED_FROM_SECONDARY')
       ) {
-        result.diff = humanizeLexicalDiff(live.lexical, baseline);
+        result.diff = humanizeLexicalDiff(baseline, live.lexical);
       }
 
       return result;

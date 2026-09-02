@@ -31,13 +31,21 @@ const doc = (children: unknown[], direction: string | null = null) => ({
 });
 
 describe('stripDirection', () => {
-  it('removes direction from every nesting level', () => {
+  it('removes direction from element nodes at every nesting level', () => {
     const input = {
       direction: 'ltr',
       children: [{ direction: 'ltr', children: [{ direction: null, text: 'x' }] }],
     };
 
-    expect(stripDirection(input)).toEqual({ children: [{ children: [{ text: 'x' }] }] });
+    expect(stripDirection(input)).toEqual({
+      children: [{ children: [{ direction: null, text: 'x' }] }],
+    });
+  });
+
+  it('does not reach into card payloads', () => {
+    const card = { type: 'html', html: '<p>x</p>', visibility: { direction: 'keep' } };
+
+    expect(stripDirection({ children: [card] })).toEqual({ children: [card] });
   });
 
   it('leaves primitives and arrays of primitives untouched', () => {
@@ -186,6 +194,9 @@ describe('humanizeLexicalDiff', () => {
   it('accepts serialized strings and missing documents', () => {
     expect(humanizeLexicalDiff(JSON.stringify(doc([paragraph('A')])), null)).toEqual([
       { type: 'REMOVE', path: 'root', oldValue: stripDirection(doc([paragraph('A')]).root) },
+    ]);
+    expect(humanizeLexicalDiff(null, doc([paragraph('A')]))).toEqual([
+      { type: 'CREATE', path: 'root', value: stripDirection(doc([paragraph('A')]).root) },
     ]);
   });
 });

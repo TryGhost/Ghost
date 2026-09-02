@@ -10,9 +10,9 @@ import nestedEditorHtml from './nested-editor-html.json';
 import oldVisibilityFormat from './old-visibility-format.json';
 import type { LexicalDocument } from '@/editor/engine/lexical-compare';
 
-// headless-koenig: `after` = `before` parsed by koenig-lexical DEFAULT_NODES + default transforms.
-// hand-authored: the divergence only exists in a mounted editor, so the pair mirrors it by hand.
-export type FixtureProvenance = 'headless-koenig' | 'hand-authored';
+// headless-koenig / mounted-koenig: `after` recorded from koenig-lexical loading `before`.
+// hand-authored: pair written by hand; after-load.test.tsx verifies every pair regardless.
+export type FixtureProvenance = 'headless-koenig' | 'mounted-koenig' | 'hand-authored';
 
 export interface OldSchemaFixture {
   name: string;
@@ -37,7 +37,7 @@ export const OLD_SCHEMA_CORPUS: OldSchemaFixture[] = [
   fixture('invalid-nesting', 'headless-koenig', invalidNesting),
   fixture('adjacent-lists-merge', 'headless-koenig', adjacentListsMerge),
   fixture('aligned-blocks', 'headless-koenig', alignedBlocks),
-  fixture('nested-editor-html', 'headless-koenig', nestedEditorHtml),
+  fixture('nested-editor-html', 'mounted-koenig', nestedEditorHtml),
   fixture('direction-null-vs-ltr', 'hand-authored', directionNullVsLtr),
   fixture('empty-document-paragraph', 'hand-authored', emptyDocumentParagraph),
 ];

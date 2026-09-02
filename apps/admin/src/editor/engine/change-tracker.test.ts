@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import { createChangeTracker, type SavedPostState } from '@/editor/engine/change-tracker';
-import type { LexicalDocument } from '@/editor/engine/lexical-compare';
+import { stripDirection, type LexicalDocument } from '@/editor/engine/lexical-compare';
 
 const textNode = (text: string) => ({
   detail: 0,
@@ -133,13 +133,41 @@ describe('createChangeTracker', () => {
       expect(tracker.verdict().dirty).toBe(false);
     });
 
-    it('is not dirty for a new post without saved content', () => {
+    it('is dirty for a new post without saved content once the user types', () => {
       const tracker = createChangeTracker();
       tracker.setSaved(savedPost({ isNew: true, lexical: null }));
-      tracker.setBaseline(serialize(doc([paragraph('')])));
-      tracker.setLive({ lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
-
+      const blank = serialize(doc([{ ...paragraph(''), children: [] }]));
+      tracker.setBaseline(blank);
+      tracker.setLive({ lexical: blank });
       expect(tracker.verdict().dirty).toBe(false);
+
+      tracker.setLive({ lexical: serialize(doc([paragraph('Typed')])) });
+      expect(tracker.verdict().reasons.map((r) => r.code)).toEqual([
+        'SCRATCH_DIVERGED_FROM_SECONDARY',
+      ]);
+    });
+
+    it('fails closed when the lexical state cannot be parsed', () => {
+      const tracker = loadedTracker();
+      tracker.setLive({ lexical: '{not json' });
+
+      expect(tracker.verdict().reasons).toEqual([
+        {
+          code: 'LEXICAL_PARSE_FAILED',
+          reason: 'lexical state could not be parsed for comparison',
+          context: { error: expect.stringContaining('JSON') as string },
+        },
+      ]);
+    });
+
+    it('ignores undefined fields passed to setLive', () => {
+      const tracker = loadedTracker();
+      tracker.setLive({ lexical: serialize(appendParagraph(SAVED_DOC, 'Edit')) });
+      tracker.setLive({ lexical: undefined, title: undefined });
+
+      expect(tracker.verdict().reasons.map((r) => r.code)).toEqual([
+        'SCRATCH_DIVERGED_FROM_SECONDARY',
+      ]);
     });
 
     it('carries the three serialized states in the reason context', () => {
@@ -301,20 +329,41 @@ describe('createChangeTracker', () => {
       expect(tracker.verdict().dirty).toBe(false);
     });
 
-    it('keeps the baseline across an acknowledged save', () => {
+    it('re-baselines on an acknowledged save', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;
       const tracker = createChangeTracker();
       tracker.setSaved(savedPost({ lexical: serialize(fixture.before) }));
       tracker.setBaseline(serialize(fixture.after));
       tracker.setLive({ lexical: serialize(fixture.after) });
 
-      tracker.setSaved(savedPost({ lexical: serialize(fixture.before) }));
+      const edited = serialize(appendParagraph(fixture.after, 'Edit'));
+      tracker.setLive({ lexical: edited });
+      tracker.setSaved(savedPost({ lexical: edited }));
       expect(tracker.verdict().dirty).toBe(false);
 
-      tracker.setLive({ lexical: serialize(appendParagraph(fixture.after, 'Edit')) });
+      tracker.setLive({ lexical: serialize(fixture.after) });
       expect(tracker.verdict().reasons.map((r) => r.code)).toEqual([
         'SCRATCH_DIVERGED_FROM_SECONDARY',
       ]);
+    });
+
+    it('does not touch the baseline on the initial load', () => {
+      const [fixture] = OLD_SCHEMA_CORPUS;
+      const tracker = createChangeTracker();
+      tracker.setSaved(savedPost({ lexical: serialize(fixture.before) }));
+      tracker.setLive({ lexical: serialize(fixture.after) });
+      expect(tracker.verdict().dirty).toBe(false);
+
+      tracker.setBaseline(serialize(fixture.after));
+      expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    it('reports dirty when a save fails after a restore', () => {
+      const tracker = loadedTracker();
+      tracker.revisionRestored(doc([paragraph('Restored')]));
+      tracker.markSaveError(['Server error']);
+
+      expect(tracker.verdict().reasons.map((r) => r.code)).toEqual(['POST_HAS_ERROR']);
     });
 
     it('re-captures the baseline when a revision is restored', () => {
@@ -407,7 +456,7 @@ describe('createChangeTracker', () => {
       expect(tracker.verdict().diff).toBeUndefined();
     });
 
-    it('humanizes the live-vs-baseline difference with node types', () => {
+    it('humanizes the baseline-to-live difference with node types', () => {
       const tracker = loadedTracker();
       tracker.setLive({ lexical: serialize(doc([paragraph('Hello world', 'ltr')], 'ltr')) });
 
@@ -415,8 +464,23 @@ describe('createChangeTracker', () => {
         {
           type: 'CHANGE',
           path: 'root.children.0[paragraph].children.0[extended-text].text',
-          value: 'Hello',
-          oldValue: 'Hello world',
+          value: 'Hello world',
+          oldValue: 'Hello',
+        },
+      ]);
+    });
+
+    it('reports a deleted block as a removal', () => {
+      const tracker = loadedTracker(
+        savedPost({ lexical: serialize(doc([paragraph('Hello'), paragraph('Gone')])) }),
+      );
+      tracker.setLive({ lexical: serialize(doc([paragraph('Hello')])) });
+
+      expect(tracker.verdict({ includeDiff: true }).diff).toEqual([
+        {
+          type: 'REMOVE',
+          path: 'root.children.1[paragraph]',
+          oldValue: stripDirection(paragraph('Gone')),
         },
       ]);
     });
