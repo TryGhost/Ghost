@@ -66,9 +66,9 @@ const formatEta = (seconds: number): string => {
     return `About ${Math.ceil(seconds / 60)} minutes left`;
   }
   if (seconds > 40) {
-    return 'About a minute left';
+    return 'About 1 minute left';
   }
-  return 'Less than a minute left';
+  return 'Less than 1 minute left';
 };
 
 /**
