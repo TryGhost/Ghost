@@ -9,6 +9,7 @@ export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
     @service configManager;
+    @service feature;
     @service ghostPaths;
     @service limit;
     @service notifications;
@@ -165,8 +166,13 @@ export default class GhBillingIframe extends Component {
             this.config.hostSettings.forceUpgrade = false;
         }
 
-        // Detect if the current subscription is in a grace state and render a notification
-        if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
+        // Detect if the current subscription is in a grace state and render a notification.
+        // The dunningWarnings flag replaces this alert with the React admin's own
+        // payment-failure warning states, so it stands down while the flag is on.
+        if (
+            (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid')
+            && !this.feature.dunningWarnings
+        ) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
