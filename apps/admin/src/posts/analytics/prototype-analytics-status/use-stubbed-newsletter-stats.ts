@@ -29,6 +29,7 @@
 import { hasBeenEmailed } from '@tryghost/admin-x-framework';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { usePrototypeAnalyticsStatus } from './prototype-context';
+import { isGatedVariant } from './types';
 
 export interface NewsletterStats {
   sent: number;
@@ -81,13 +82,12 @@ export const useStubbedNewsletterStats = (
 
   const { send, counting } = prototype.status;
   const delivered = counting.deliveredCount;
-  // Variant G is named for what production actually does: open and click
-  // rates are opened_count / email_count — everything over the addressed
-  // list. The other variants keep this file's delivered-based rates (the
-  // Mailchimp definition argued for above), so G is the one that matches the
-  // product as it ships today, and the comparison between them is honest.
-  const rateDenominator =
-    prototype.variant === 'sentAsDenominator' ? send.recipientCount : delivered;
+  // E, F and G promise production-normal figures once the send is done, and
+  // production computes open and click rates as opened_count / email_count —
+  // everything over the addressed list. So the gated variants divide by sent;
+  // A–D keep this file's delivered-based rates (the Mailchimp definition
+  // argued for above), which is their own position and stays comparable.
+  const rateDenominator = isGatedVariant(prototype.variant) ? send.recipientCount : delivered;
 
   // How much of the send has reported back, standing in for how long it has
   // been running. Opens are scaled by it so that a third of the way through the
