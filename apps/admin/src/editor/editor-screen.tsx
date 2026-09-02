@@ -28,6 +28,8 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import type { CardConfigPostSource, PostType } from './card-config';
 import { PostEditor } from './post-editor';
+import { SessionBanners } from './session/session-banners';
+import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 
@@ -70,10 +72,7 @@ function EditorHeader({ postType }: { postType: PostType }) {
 function EditorSurface({ postType, record }: { postType: PostType; record?: EditorRecord }) {
   const { data: currentUser } = useCurrentUser();
   const showExcerpt = useFeatureFlag('editorExcerpt');
-  const [title, setTitle] = useState(() =>
-    record?.title === '(Untitled)' ? '' : (record?.title ?? ''),
-  );
-  const [excerpt, setExcerpt] = useState(() => record?.custom_excerpt ?? '');
+  const session = useEditorSession({ postType, record });
 
   const canManageSnippets =
     !!currentUser &&
@@ -104,17 +103,18 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
   return (
     <Stack className="h-full" gap="none">
       <EditorHeader postType={postType} />
+      <SessionBanners
+        state={session.state}
+        onDismissReauth={session.reauthAbandoned}
+        onRetryReauth={session.reauthSucceeded}
+      />
       <div className="min-h-0 flex-1">
         <PostEditor
+          {...session.bind}
           autofocusTitle={!record}
           cardConfig={cardConfig}
-          excerpt={excerpt}
-          initialLexical={record?.lexical ?? null}
           postType={postType}
           showExcerpt={showExcerpt}
-          title={title}
-          onExcerptChange={setExcerpt}
-          onTitleChange={setTitle}
         />
       </div>
       {snippetDialog}
@@ -167,15 +167,17 @@ function useLexicalConversion(postType: PostType) {
   return { state, convert };
 }
 
-function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }) {
+function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
+  // A create replaces the URL with the id it acquired; the load must not restart.
+  const [openedId] = useState(id);
   const navigate = useNavigate();
   const { data: currentUser } = useCurrentUser();
-  const postQuery = useEditorPost(id, {
-    enabled: postType === 'post',
+  const postQuery = useEditorPost(openedId ?? '', {
+    enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
   });
-  const pageQuery = useEditorPage(id, {
-    enabled: postType === 'page',
+  const pageQuery = useEditorPage(openedId ?? '', {
+    enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
@@ -197,6 +199,10 @@ function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }
       void convert(loaded);
     }
   }, [needsConversion, loaded, conversion?.id, convert]);
+
+  if (!openedId) {
+    return <EditorSurface postType={postType} />;
+  }
 
   const notFound = query.error instanceof APIError && query.error.response?.status === 404;
   if (notFound) {
@@ -240,11 +246,12 @@ function ExistingPostEditor({ postType, id }: { postType: PostType; id: string }
     record = converted.record;
   }
 
-  return <EditorSurface key={record.id} postType={postType} record={record} />;
+  return <EditorSurface postType={postType} record={record} />;
 }
 
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
+  const sessionKey = useEditorSessionKey();
   const [typeSegment, id, ...rest] = editorPath.split('/').filter(Boolean);
 
   if (!typeSegment) {
@@ -255,9 +262,5 @@ export default function EditorScreen() {
     return <NotFound />;
   }
 
-  if (id) {
-    return <ExistingPostEditor id={id} postType={typeSegment} />;
-  }
-
-  return <EditorSurface key={typeSegment} postType={typeSegment} />;
+  return <EditorLoader key={sessionKey} id={id} postType={typeSegment} />;
 }

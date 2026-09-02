@@ -120,11 +120,15 @@ export const useEditorPost = (
 export interface AddPostPayload {
   post: CreateContentData<PostEditableData>;
   options?: PostCreateOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
 }
 
 export interface EditPostPayload {
   post: EditContentData<PostEditableData>;
   options?: PostWriteOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
 }
 
 export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
@@ -132,6 +136,7 @@ export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
   path: () => '/posts/',
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType },
 });
 
@@ -140,6 +145,7 @@ export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
   path: ({ post }) => `/posts/${post.id}/`,
   searchParams: ({ options }) => buildPostWriteParams(options),
   body: ({ post }) => ({ posts: [serializePostPayload(post)] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType },
 });
 

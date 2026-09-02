@@ -1,8 +1,10 @@
 import { page } from 'vitest/browser';
 import {
   editorBody,
+  editorConflictBanner,
   editorExcerptInput,
   editorLoadError,
+  editorReauthBanner,
   editorSecondaryInstance,
   editorTitleInput,
   editorWordCount,
@@ -22,6 +24,9 @@ export const editorScreen = {
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
   wordCount: () => page.getByTestId(editorWordCount),
   loadError: () => page.getByTestId(editorLoadError),
+  reauthBanner: () => page.getByTestId(editorReauthBanner),
+  retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
+  conflictBanner: () => page.getByTestId(editorConflictBanner),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
   backLink: (postType: 'post' | 'page') =>

@@ -172,6 +172,8 @@ interface MutationOptions<ResponseData, Payload>
   headers?: Record<string, string>;
   body?: (payload: Payload) => FormData | object;
   searchParams?: (payload: Payload) => { [key: string]: string };
+  /** Per-payload transport options, merged over the ones declared on the hook. */
+  requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
     | { dataType: string | string[] }
     | {
@@ -198,7 +200,7 @@ const mutate = <ResponseData, Payload>({
   searchParams?: Record<string, string>;
   options: Omit<MutationOptions<ResponseData, Payload>, 'path'>;
 }) => {
-  const { defaultSearchParams, body, ...requestOptions } = options;
+  const { defaultSearchParams, body, requestOptions, ...staticOptions } = options;
   const url = apiUrl(path, searchParams || defaultSearchParams);
   const generatedBody = payload && body?.(payload);
 
@@ -211,7 +213,8 @@ const mutate = <ResponseData, Payload>({
 
   return fetchApi<ResponseData>(url, {
     body: requestBody,
-    ...requestOptions,
+    ...staticOptions,
+    ...(payload === undefined ? {} : requestOptions?.(payload)),
   });
 };
 

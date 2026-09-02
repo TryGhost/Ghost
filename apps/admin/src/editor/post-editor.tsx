@@ -18,9 +18,12 @@ export interface PostEditorProps {
   showExcerpt: boolean;
   autofocusTitle?: boolean;
   onTitleChange: (title: string) => void;
+  onTitleBlur?: () => void;
   onExcerptChange: (excerpt: string) => void;
+  onExcerptBlur?: () => void;
   onLexicalChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
+  onSecondaryError?: (error: unknown) => void;
   registerEditorApi?: (api: KoenigInstance | null) => void;
   registerSecondaryApi?: (api: KoenigInstance | null) => void;
   onTkCountChange?: (count: number) => void;
@@ -84,9 +87,12 @@ export function PostEditor({
   showExcerpt,
   autofocusTitle = false,
   onTitleChange,
+  onTitleBlur,
   onExcerptChange,
+  onExcerptBlur,
   onLexicalChange,
   onSecondaryChange,
+  onSecondaryError,
   registerEditorApi,
   registerSecondaryApi,
   onTkCountChange,
@@ -260,6 +266,7 @@ export function PostEditor({
               placeholder={`${capitalize(postType)} title`}
               rows={1}
               value={title}
+              onBlur={onTitleBlur}
               onChange={(event) => onTitleChange(event.target.value)}
               onKeyDown={onTitleKeyDown}
               onPaste={cleanPastedTitle}
@@ -280,6 +287,7 @@ export function PostEditor({
                   placeholder="Add an excerpt"
                   rows={1}
                   value={excerpt}
+                  onBlur={onExcerptBlur}
                   onChange={(event) => onExcerptChange(event.target.value)}
                   onKeyDown={onExcerptKeyDown}
                 />
@@ -297,6 +305,7 @@ export function PostEditor({
             registerSecondaryAPI={registerSecondary}
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
+            onSecondaryError={onSecondaryError}
             onTkCountChange={setBodyTkCount}
             onWordCountChange={setWordCount}
           />

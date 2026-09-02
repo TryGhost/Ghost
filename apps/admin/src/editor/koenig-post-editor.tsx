@@ -25,6 +25,8 @@ export interface KoenigPostEditorProps {
   cursorDidExitAtTop?: () => void;
   onChange?: (lexical: unknown) => void;
   onSecondaryChange?: (lexical: unknown) => void;
+  /** The hidden instance failed, so its serialization cannot be a change baseline. */
+  onSecondaryError?: (error: unknown) => void;
   registerAPI: (api: KoenigInstance | null) => void;
   registerSecondaryAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
@@ -87,8 +89,9 @@ function KoenigInstanceMount({
 
 export function KoenigPostEditor(props: KoenigPostEditorProps) {
   const editor = useMemo(() => loadKoenig(), []);
+  const { onSecondaryError } = props;
 
-  const onError = useCallback((error: unknown) => {
+  const reportError = useCallback((error: unknown) => {
     // eslint-disable-next-line no-console
     console.error(error);
 
@@ -103,6 +106,14 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
     // not rethrown: Lexical attempts to recover without losing user data
   }, []);
 
+  const onSecondaryInstanceError = useCallback(
+    (error: unknown) => {
+      reportError(error);
+      onSecondaryError?.(error);
+    },
+    [reportError, onSecondaryError],
+  );
+
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
       <ErrorBoundary name="the editor">
@@ -113,8 +124,18 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
             </div>
           }
         >
-          <KoenigInstanceMount {...props} editor={editor} isSecondary={false} onError={onError} />
-          <KoenigInstanceMount {...props} editor={editor} isSecondary={true} onError={onError} />
+          <KoenigInstanceMount
+            {...props}
+            editor={editor}
+            isSecondary={false}
+            onError={reportError}
+          />
+          <KoenigInstanceMount
+            {...props}
+            editor={editor}
+            isSecondary={true}
+            onError={onSecondaryInstanceError}
+          />
         </Suspense>
       </ErrorBoundary>
     </div>
