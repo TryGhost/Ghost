@@ -85,10 +85,6 @@ export type SaveSnapshot = PersistedIdentity & {
   title: string;
   /** Empty until generated */
   slug: string;
-  /** Title differs from the last saved title; a draft's derived slug regenerates on save. */
-  titleDirty: boolean;
-  /** The slug machine's custom mode: the slug never follows the title again. */
-  slugIsCustom: boolean;
   isDirty: boolean;
   changedSinceLastRevision: boolean;
   /** Monotonic local edit counter; validation/host-limit suppression lifts once it moves. */
@@ -102,9 +98,9 @@ export interface SaveRequest<S extends SaveSnapshot = SaveSnapshot> {
   readonly snapshot: S;
   /** `(Untitled)` substituted for a blank title */
   readonly title: string;
-  /** Generated when missing or when a draft's derived slug is stale */
+  /** The slug port's generated proposal, else the slug current after slug work settled */
   readonly slug: string;
-  readonly target: SaveTarget;
+  readonly target: Readonly<SaveTarget>;
   readonly saveRevision: boolean;
 }
 
@@ -160,11 +156,17 @@ export type SaveEngineState =
 
 export type LeaveDecision = 'proceed' | 'confirm';
 
+/** A fresh generation, or `unchanged` when the slug machine keeps the current slug (custom, same title, frozen). */
+export interface SlugProposal {
+  slug: string;
+  source: 'generated' | 'unchanged';
+}
+
 export interface SlugPort {
-  /** Resolves once any manual slug edit in progress has settled. */
+  /** Must await the machine's latest submission chain, not its `pending` flag: the flag drops at the emit before the deferred submission starts. */
   settled: () => Promise<void>;
-  /** Server-deduplicated slug for a title; `postId` excludes the post itself. */
-  fromTitle: (title: string, postId: string | null, signal: AbortSignal) => Promise<string>;
+  /** Asked for every draft save and whenever the post has no slug; `postId` excludes the post from dedup. */
+  fromTitle: (title: string, postId: string | null, signal: AbortSignal) => Promise<SlugProposal>;
 }
 
 /** `P` is a plain structural superset of the request (no brand); `R` of the acknowledged result. */
@@ -179,17 +181,12 @@ export interface SaveEnginePorts<
   prepare: (request: SaveRequest<S>, signal: AbortSignal) => Promise<P>;
   /** IO only. A rejected promise is treated as an `unknown` error. */
   execute: (prepared: P, signal: AbortSignal) => Promise<SaveOutcome<R>>;
-  /**
-   * Awaited before the pending slot drains. Adopt the id, the authoritative status
-   * and updated_at; preserve edits made after `prepared.snapshot.version`; resync
-   * server-normalized values only where the local value did not change in flight;
-   * advance the saved/revision baselines without marking newer edits clean.
-   */
+  /** Awaited before the pending slot drains. Must not throw: adopt the acknowledged id/status/updated_at before any work that can fail. */
   reconcile: (prepared: P, result: R) => Promise<void> | void;
   setTimeout?: (fn: () => void, ms: number) => unknown;
   clearTimeout?: (handle: unknown) => void;
   onStateChange?: (state: SaveEngineState) => void;
-  /** A throwing subscriber is reported here instead of interrupting the others. */
+  /** A throwing `onStateChange` or subscriber is reported here instead of interrupting the save. */
   onListenerError?: (error: unknown) => void;
 }
 
@@ -265,7 +262,7 @@ export function deriveTarget(
 }
 
 /** Background intents pin draft; explicit and leave preserve the status; status intents carry their own target. */
-export function resolveTarget(command: SaveCommand, snapshot: TargetSource): SaveTarget {
+export function resolveTarget(command: SaveCommand, snapshot: TargetSource): Readonly<SaveTarget> {
   if (command.target) {
     return command.target;
   }
@@ -382,14 +379,13 @@ export function createSaveEngine<
       return;
     }
     state = next;
-    ports.onStateChange?.(next);
-    for (const listener of [...listeners]) {
+    for (const listener of [ports.onStateChange, ...listeners]) {
       // A nested transition already notified everyone with the newer state.
       if (state !== next) {
         break;
       }
       try {
-        listener(next);
+        listener?.(next);
       } catch (error) {
         reportListenerError(error);
       }
@@ -536,28 +532,28 @@ export function createSaveEngine<
     drain();
   }
 
-  function needsSlug(snapshot: S, title: string): boolean {
-    if (!snapshot.slug) {
-      return true;
-    }
-    return (
-      snapshot.status === 'draft' &&
-      snapshot.titleDirty &&
-      !snapshot.slugIsCustom &&
-      title !== DEFAULT_TITLE
-    );
+  function blankToDefault(title: string): string {
+    return title.trim() ? title : DEFAULT_TITLE;
   }
 
+  // Status is the one rule the slug machine cannot know; it answers custom/same-title/frozen itself.
   async function buildRequest(
     command: SaveCommand,
     snapshot: S,
     signal: AbortSignal,
   ): Promise<SaveRequest<S>> {
-    const title = snapshot.title.trim() ? snapshot.title : DEFAULT_TITLE;
     let slug = snapshot.slug;
-    if (needsSlug(snapshot, title)) {
-      slug = (await ports.slug.fromTitle(title, snapshot.id, signal)) || slug;
+    if (!snapshot.slug || snapshot.status === 'draft') {
+      const proposal = await ports.slug.fromTitle(
+        blankToDefault(snapshot.title),
+        snapshot.id,
+        signal,
+      );
+      // A slug committed while the proposal was in flight wins over the one read before it.
+      snapshot = ports.getSnapshot();
+      slug = proposal.source === 'generated' ? proposal.slug : snapshot.slug;
     }
+    const title = blankToDefault(snapshot.title);
     return {
       command,
       snapshot,
@@ -620,10 +616,12 @@ export function createSaveEngine<
         drain();
         return;
       }
-      const prepared = await ports.prepare(
-        await buildRequest(slot.command, snapshot, abort.signal),
-        abort.signal,
-      );
+      const request = await buildRequest(slot.command, snapshot, abort.signal);
+      snapshot = request.snapshot;
+      if (disposed) {
+        return;
+      }
+      const prepared = await ports.prepare(request, abort.signal);
       if (disposed) {
         return;
       }
@@ -680,14 +678,18 @@ export function createSaveEngine<
       return;
     }
 
+    // No automatic retry against the stale baseline: queued work is dropped, an explicit retry is the way out.
     if (error.kind === 'conflict') {
       staleUpdatedAt = snapshot.updatedAt;
       const dropWaiters: Waiter[] = [];
       clearTimers(dropWaiters);
+      if (pending) {
+        dropWaiters.push(...pending.waiters);
+        pending = null;
+      }
       settle(dropWaiters, dropped('conflict'));
       settle(slot.waiters, failed(error, intent));
       setState({ kind: 'conflict', intent, error });
-      drain();
       return;
     }
 

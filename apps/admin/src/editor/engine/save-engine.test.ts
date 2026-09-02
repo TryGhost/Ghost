@@ -20,6 +20,7 @@ import {
   type SaveSnapshot,
   type SaveTarget,
   type SlugPort,
+  type SlugProposal,
 } from './save-engine';
 
 const NOW = Date.parse('2026-09-02T12:00:00.000Z');
@@ -41,8 +42,6 @@ const BASE: SnapshotFields = {
   publishedAt: null,
   title: 'Hello',
   slug: 'hello',
-  titleDirty: false,
-  slugIsCustom: false,
   isDirty: true,
   changedSinceLastRevision: true,
   version: 1,
@@ -50,7 +49,7 @@ const BASE: SnapshotFields = {
 
 const idleSlug: SlugPort = {
   settled: () => Promise.resolve(),
-  fromTitle: () => Promise.reject(new Error('unexpected slug request')),
+  fromTitle: () => Promise.resolve({ slug: '', source: 'unchanged' }),
 };
 
 function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
@@ -71,18 +70,26 @@ function setup(overrides: Partial<SnapshotFields> = {}) {
   const outstanding: Deferred<SaveOutcome>[] = [];
   const states: SaveEngineState[] = [];
   const listenerErrors: unknown[] = [];
-  const slugRequests: Array<{ title: string; postId: string | null; outcome: Deferred<string> }> =
-    [];
+  const slugRequests: Array<{
+    title: string;
+    postId: string | null;
+    outcome: Deferred<SlugProposal>;
+  }> = [];
   let concurrent = 0;
   let maxConcurrent = 0;
   let snapshotError: Error | null = null;
   let slugSettled: Deferred<void> | null = null;
+  let holdSlugRequests = false;
   let sequence = 0;
 
+  // Answers "unchanged" immediately unless a test holds the requests to answer them itself.
   const slug: SlugPort = {
     settled: vi.fn(() => (slugSettled ? slugSettled.promise : Promise.resolve())),
     fromTitle: vi.fn((title: string, postId: string | null) => {
-      const outcome = deferred<string>();
+      if (!holdSlugRequests) {
+        return Promise.resolve<SlugProposal>({ slug: snapshot.slug, source: 'unchanged' });
+      }
+      const outcome = deferred<SlugProposal>();
       slugRequests.push({ title, postId, outcome });
       return outcome.promise;
     }),
@@ -114,7 +121,6 @@ function setup(overrides: Partial<SnapshotFields> = {}) {
       status: result.status,
       publishedAt: prepared.target.publishedAt,
       slug: prepared.slug,
-      titleDirty: editedInFlight && snapshot.titleDirty,
       isDirty: editedInFlight,
     };
   });
@@ -173,8 +179,11 @@ function setup(overrides: Partial<SnapshotFields> = {}) {
         await flush();
       };
     },
-    async resolveSlug(value: string) {
-      slugRequests.shift()!.outcome.resolve(value);
+    holdSlugRequests() {
+      holdSlugRequests = true;
+    },
+    async resolveSlug(value: string, source: SlugProposal['source'] = 'generated') {
+      slugRequests.shift()!.outcome.resolve({ slug: value, source });
       await flush();
     },
     // Each of these lets the prepare stage reach execute before answering the request.
@@ -787,6 +796,7 @@ describe('createSaveEngine', () => {
 
     it('waits for a slow slug request before a leave save leaves', async () => {
       const h = setup({ slug: '' });
+      h.holdSlugRequests();
       const decision = h.engine.leaveRequested();
       await flush();
       expect(h.slug.fromTitle).toHaveBeenCalledWith('Hello', 'post-1', expect.any(AbortSignal));
@@ -801,6 +811,7 @@ describe('createSaveEngine', () => {
 
     it('creates a titleless body-first post as (Untitled) with a generated slug', async () => {
       const h = setup({ id: null, updatedAt: null, title: '', slug: '' });
+      h.holdSlugRequests();
       void h.engine.dispatch('autosave');
       await flush();
       expect(h.slug.fromTitle).toHaveBeenCalledWith(DEFAULT_TITLE, null, expect.any(AbortSignal));
@@ -816,6 +827,7 @@ describe('createSaveEngine', () => {
 
     it('treats a whitespace title as blank', async () => {
       const h = setup({ id: null, updatedAt: null, title: '   ', slug: '' });
+      h.holdSlugRequests();
       void h.engine.dispatch('explicit');
       await flush();
       expect(h.slug.fromTitle).toHaveBeenCalledWith(DEFAULT_TITLE, null, expect.any(AbortSignal));
@@ -824,17 +836,9 @@ describe('createSaveEngine', () => {
       expect(h.requests[0]).toMatchObject({ title: DEFAULT_TITLE, slug: 'untitled' });
     });
 
-    it('never regenerates a custom slug', async () => {
-      const h = setup({ title: 'Renamed', titleDirty: true, slug: 'my-slug', slugIsCustom: true });
-      void h.engine.dispatch('explicit');
-      await flush();
-
-      expect(h.slug.fromTitle).not.toHaveBeenCalled();
-      expect(h.requests[0]).toMatchObject({ title: 'Renamed', slug: 'my-slug' });
-    });
-
-    it('applies the server-deduplicated slug requested with the post id', async () => {
-      const h = setup({ title: 'Hello world', titleDirty: true });
+    it('applies a generated proposal requested with the post id', async () => {
+      const h = setup({ title: 'Hello world' });
+      h.holdSlugRequests();
       void h.engine.dispatch('explicit');
       await flush();
       expect(h.slug.fromTitle).toHaveBeenCalledWith(
@@ -849,22 +853,32 @@ describe('createSaveEngine', () => {
       expect(h.snapshot.slug).toBe('hello-world-2');
     });
 
-    it('keeps the existing slug when a draft title is cleared', async () => {
-      const h = setup({ title: '', titleDirty: true });
+    it('sends the slug current after an unchanged answer, not the one read before the request', async () => {
+      const h = setup({ slug: 'my-slug' });
+      h.holdSlugRequests();
       void h.engine.dispatch('explicit');
       await flush();
 
-      expect(h.slug.fromTitle).not.toHaveBeenCalled();
+      h.patch({ slug: 'my-custom-slug' });
+      await h.resolveSlug('ignored', 'unchanged');
+      expect(h.requests[0]).toMatchObject({ slug: 'my-custom-slug' });
+    });
+
+    it('asks the slug port on every draft save and lets it keep the slug', async () => {
+      const h = setup({ title: '' });
+      void h.engine.dispatch('explicit');
+      await flush();
+
+      expect(h.slug.fromTitle).toHaveBeenCalledWith(
+        DEFAULT_TITLE,
+        'post-1',
+        expect.any(AbortSignal),
+      );
       expect(h.requests[0]).toMatchObject({ title: DEFAULT_TITLE, slug: 'hello' });
     });
 
-    it('does not regenerate a published post’s slug when its title changes', async () => {
-      const h = setup({
-        status: 'published',
-        publishedAt: PAST,
-        title: 'Renamed',
-        titleDirty: true,
-      });
+    it('never asks for a slug when a non-draft post already has one', async () => {
+      const h = setup({ status: 'published', publishedAt: PAST, title: 'Renamed' });
       void h.engine.dispatch('explicit');
       await flush();
 
@@ -872,12 +886,42 @@ describe('createSaveEngine', () => {
       expect(h.requests[0]).toMatchObject({ slug: 'hello' });
     });
 
-    it('generates a slug for a post of any status that has none', async () => {
+    it('asks for a slug for a post of any status that has none', async () => {
       const h = setup({ status: 'published', publishedAt: PAST, slug: '' });
+      h.holdSlugRequests();
       void h.engine.dispatch('explicit');
       await flush();
 
       expect(h.slug.fromTitle).toHaveBeenCalledWith('Hello', 'post-1', expect.any(AbortSignal));
+      await h.resolveSlug('hello');
+      expect(h.requests[0]).toMatchObject({ slug: 'hello' });
+    });
+
+    it('never prepares a save disposed while slug work was settling', async () => {
+      const h = setup();
+      const release = h.holdSlugWork();
+      const explicit = h.engine.dispatch('explicit');
+      await flush();
+
+      h.engine.dispose();
+      await expect(explicit).resolves.toEqual({ kind: 'dropped', reason: 'disposed' });
+      await release();
+      expect(h.prepare).not.toHaveBeenCalled();
+      expect(h.execute).not.toHaveBeenCalled();
+    });
+
+    it('never prepares a save disposed while a slug proposal was pending', async () => {
+      const h = setup();
+      h.holdSlugRequests();
+      const explicit = h.engine.dispatch('explicit');
+      await flush();
+      expect(h.slug.fromTitle).toHaveBeenCalledTimes(1);
+
+      h.engine.dispose();
+      await expect(explicit).resolves.toEqual({ kind: 'dropped', reason: 'disposed' });
+      await h.resolveSlug('late');
+      expect(h.prepare).not.toHaveBeenCalled();
+      expect(h.execute).not.toHaveBeenCalled();
     });
   });
 
@@ -1354,6 +1398,50 @@ describe('createSaveEngine', () => {
       expect(h.execute).toHaveBeenCalledTimes(1);
       expect(h.snapshot).toMatchObject({ isDirty: true, version: 2 });
     });
+
+    it('never auto-retries a pending explicit save against the stale baseline', async () => {
+      const h = setup();
+      void h.engine.dispatch('field');
+      const explicit = h.engine.dispatch('explicit');
+
+      await h.fail(conflict);
+      await expect(explicit).resolves.toEqual({ kind: 'dropped', reason: 'conflict' });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      expect(h.engine.getState()).toEqual({ kind: 'conflict', intent: 'field', error: conflict });
+
+      void h.engine.dispatch('explicit');
+      await flush();
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
+
+    it('drains a publish with the updated_at the preceding save reconciled', async () => {
+      const h = setup();
+      void h.engine.dispatch('field');
+      const publish = h.engine.dispatch('publish');
+
+      await h.succeed({ updatedAt: '2026-09-02T12:30:00.000Z' });
+      expect(h.requests[1]).toMatchObject({
+        command: { kind: 'publish' },
+        snapshot: { updatedAt: '2026-09-02T12:30:00.000Z' },
+      });
+
+      await h.succeed();
+      await expect(publish).resolves.toMatchObject({ kind: 'saved', executedAs: 'publish' });
+    });
+
+    it('fails a past-scheduled explicit save whose changed publish time the server rejects', async () => {
+      const h = setup({ status: 'scheduled', publishedAt: PAST });
+      const explicit = h.engine.dispatch('explicit');
+      await h.fail(validation);
+
+      await expect(explicit).resolves.toEqual({
+        kind: 'failed',
+        error: validation,
+        executedAs: 'explicit',
+      });
+      expect(h.snapshot).toMatchObject({ isDirty: true, status: 'scheduled', publishedAt: PAST });
+      expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: validation });
+    });
   });
 
   describe('leave outcomes', () => {
@@ -1797,6 +1885,55 @@ describe('createSaveEngine', () => {
 
       expect(h.listenerErrors).toEqual([failure]);
       expect(seen).toEqual([{ kind: 'saving', intent: 'explicit' }]);
+    });
+
+    it('still saves when the onStateChange port throws, and reports it', async () => {
+      const failure = new Error('state port exploded');
+      const reported: unknown[] = [];
+      const snapshot = { ...BASE, status: 'published', publishedAt: PAST } as SaveSnapshot;
+      const engine = createSaveEngine({
+        getSnapshot: () => snapshot,
+        slug: idleSlug,
+        prepare: (request) => Promise.resolve(request),
+        execute: (prepared) =>
+          Promise.resolve<SaveOutcome>({
+            ok: true,
+            result: { id: prepared.snapshot.id!, status: 'published', updatedAt: FUTURE },
+          }),
+        reconcile: () => {},
+        onStateChange: () => {
+          throw failure;
+        },
+        onListenerError: (error) => reported.push(error),
+      });
+
+      await expect(engine.dispatch('explicit')).resolves.toMatchObject({ kind: 'saved' });
+      expect(engine.getState()).toEqual({ kind: 'idle' });
+      expect(reported).toEqual([failure, failure]);
+    });
+
+    it('re-runs a frozen explicit after a superseded publish while the winning revert needs retry', async () => {
+      const h = setup({ status: 'scheduled', publishedAt: FUTURE });
+      const explicit = h.engine.dispatch('explicit');
+      const publish = h.engine.dispatch('publish');
+      const revert = h.engine.dispatch('revert');
+      await expect(publish).resolves.toEqual({ kind: 'superseded', by: 'revert' });
+
+      await h.fail(sessionInvalid);
+      expect(h.engine.getState()).toEqual({ kind: 'reauth-pending', intent: 'explicit' });
+
+      h.engine.reauthSucceeded();
+      await flush();
+      await expect(revert).resolves.toEqual({ kind: 'needs-retry' });
+      expect(h.execute).toHaveBeenCalledTimes(2);
+      expect(h.requests[1]).toMatchObject({
+        command: { kind: 'explicit' },
+        target: { status: 'scheduled', publishedAt: FUTURE },
+      });
+
+      await h.succeed();
+      await expect(explicit).resolves.toMatchObject({ kind: 'saved', executedAs: 'explicit' });
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
     });
   });
 });
