@@ -504,10 +504,18 @@ const Newsletter: React.FC = () => {
                     its own above the three rates it divides. Same KPI anatomy
                     as the tiles below so it reads as the top of the same
                     hierarchy, not as metadata; a neutral dot because it is the
-                    size of the thing being measured, not a metric. */}
+                    size of the thing being measured, not a metric.
+
+                    It is the one figure the gate does not hide. The rates
+                    below have nothing to say mid-send, but the denominator is
+                    known before the first email leaves — it is the recipient
+                    list — so the row states it from the start as "Sending to"
+                    and turns to "Sent" at completion. A partial or failed send
+                    withholds it like everything else: the number would be
+                    false. */}
                 {isSentDenominator && (
                   <div
-                    className={`border-b ${isEmailDataHidden ? 'pointer-events-none opacity-40' : ''}`}
+                    className={`border-b ${isEmailDataHidden && !isSendingGated ? 'pointer-events-none opacity-40' : ''}`}
                   >
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
@@ -523,11 +531,15 @@ const Newsletter: React.FC = () => {
                         }}
                       >
                         <div className="ml-0.5 size-[9px] rounded-full bg-muted-foreground opacity-50"></div>
-                        Sent
+                        {isSendingGated ? 'Sending to' : 'Sent'}
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {isEmailDataHidden ? noValue : formatNumber(stats.dispatched)}
+                          {isSendingGated
+                            ? formatNumber(stats.addressed)
+                            : isEmailDataHidden
+                              ? noValue
+                              : formatNumber(stats.dispatched)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
