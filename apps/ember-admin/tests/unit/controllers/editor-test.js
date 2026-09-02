@@ -377,6 +377,44 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(isDirty).to.be.true;
         });
 
+        it('afterSave syncs secondary baseline so reverting to open-time content is dirty', async function () {
+            const openTimeLexical = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Version A open time","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+            const savedLexical = `{"root":{"children":[{"children": [{"detail": 0,"format": 0,"mode": "normal","style": "","text": "Version B after save","type": "extended-text","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "paragraph","version": 1}],"direction": "ltr","format": "","indent": 0,"type": "root","version": 1}}`;
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            const post = createPost({
+                title: 'this is a title',
+                status: 'published',
+                lexical: savedLexical,
+                tags: [],
+                authors: [],
+                postRevisions: []
+            });
+            const postJson = {...post.serialize(), id: 1};
+            this.owner.lookup('service:store').unloadRecord(post);
+            this.owner.lookup('service:store').pushPayload({posts: [postJson]});
+
+            // scratch attrs are not serialized/deserialized so need to be set manually
+            const savedPost = this.owner.lookup('service:store').peekRecord('post', 1);
+            savedPost.set('titleScratch', postJson.title);
+            // Simulate stale open-time secondary baseline after a later save of B
+            savedPost.set('secondaryLexicalState', openTimeLexical);
+            savedPost.set('lexicalScratch', savedLexical);
+            controller.set('post', savedPost);
+
+            // Production fix: afterSave refreshes secondary to the saved lexical
+            controller.afterSave(savedPost);
+
+            expect(savedPost.get('secondaryLexicalState')).to.equal(savedLexical);
+
+            // User reverts visible body to open-time content
+            // Use updateScratch (same as other tests) so Ember tracking stays valid
+            controller.send('updateScratch', JSON.parse(openTimeLexical));
+
+            expect(controller.hasDirtyAttributes).to.be.true;
+        });
+
         it('dirty is false if no Post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('post', null);
