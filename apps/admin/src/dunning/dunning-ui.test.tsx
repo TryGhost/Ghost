@@ -108,7 +108,10 @@ describe('dunning UI', () => {
 
       expect(screen.getByText('Your payment didn’t go through.')).toBeInTheDocument();
       expect(screen.getByText(/26 days left/)).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute('href', '#/pro');
+      expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute(
+        'href',
+        '#/pro/update-card',
+      );
     });
 
     test('shows staff an Email the owner link instead', () => {
@@ -170,7 +173,10 @@ describe('dunning UI', () => {
 
       expect(screen.getByText('Your site will be suspended in 14 days')).toBeInTheDocument();
       expect(screen.getByText('Your site is still online for readers.')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute('href', '#/pro');
+      expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute(
+        'href',
+        '#/pro/update-card',
+      );
       expect(screen.getByRole('link', { name: 'Download my data' })).toHaveAttribute(
         'href',
         '#/settings/migration',
