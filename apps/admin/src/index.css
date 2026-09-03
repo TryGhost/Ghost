@@ -85,7 +85,7 @@
         #ember-notifications-wormhole
       )
   )
-  :where(.admin7-heading-features, .gh-publish-title) {
+  :is(.admin7-heading-features, .gh-publish-title) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
