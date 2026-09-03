@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
@@ -26,12 +26,17 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import type { CardConfigPostSource, PostType } from './card-config';
+import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
+import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
+import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { useFeatureImageBinding } from './session/feature-image-binding';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useSaveShortcut } from './use-save-shortcut';
 
 type EditorRecord = PostEditorRecord | PageEditorRecord;
 
@@ -54,7 +59,7 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
   );
 }
 
-function EditorHeader({ postType }: { postType: PostType }) {
+function EditorHeader({ postType, children }: { postType: PostType; children?: ReactNode }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
 
   return (
@@ -65,14 +70,103 @@ function EditorHeader({ postType }: { postType: PostType }) {
           {listLabel}
         </AdminLink>
       </Button>
+      {children}
     </Inline>
   );
 }
 
-function EditorSurface({ postType, record }: { postType: PostType; record?: EditorRecord }) {
+// A created post has no loaded record yet, but it is no longer new.
+function statusRecordOf(
+  record: EditorRecord | undefined,
+  createdId?: string,
+): EditorStatusRecord | undefined {
+  if (!record) {
+    return createdId ? { status: 'draft' } : undefined;
+  }
+
+  const email = 'email' in record ? record.email : null;
+  // The API types the relation as a bare object; the editor read includes it.
+  const newsletter =
+    'newsletter' in record ? (record.newsletter as EditorStatusNewsletter | null) : null;
+
+  return {
+    status: record.status,
+    publishedAt: record.published_at,
+    url: record.url,
+    emailOnly: 'email_only' in record ? record.email_only : false,
+    newsletter,
+    emailSegment: 'email_segment' in record ? record.email_segment : null,
+    hasEmail: !!email,
+    emailStatus: email?.status ?? null,
+    emailCount: email?.email_count ?? 0,
+  };
+}
+
+interface EditorContentProps {
+  postType: PostType;
+  record?: EditorRecord;
+  createdId?: string;
+  cardConfig: PostCardConfig;
+  showExcerpt: boolean;
+  snippetDialog: ReactNode;
+}
+
+// Mounted only once the boot data has resolved: the session reads the site URL
+// when it is built, and normalization cannot be switched on afterwards.
+function EditorContent({
+  postType,
+  record,
+  createdId,
+  cardConfig,
+  showExcerpt,
+  snippetDialog,
+}: EditorContentProps) {
+  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
+  const featureImage = useFeatureImageBinding(session, record);
+
+  useSaveShortcut(session.dispatchExplicit);
+
+  return (
+    <Stack className="h-full" gap="none">
+      <EditorHeader postType={postType}>
+        <EditorStatus
+          isDirty={session.isDirty()}
+          record={statusRecordOf(record, createdId)}
+          state={session.state}
+        />
+      </EditorHeader>
+      <SessionBanners
+        state={session.state}
+        onDismissReauth={session.reauthAbandoned}
+        onRetryReauth={session.reauthSucceeded}
+        onRetrySave={session.dispatchExplicit}
+      />
+      <div className="min-h-0 flex-1">
+        <PostEditor
+          {...session.bind}
+          autofocusTitle={!record}
+          cardConfig={cardConfig}
+          featureImage={featureImage}
+          postType={postType}
+          showExcerpt={showExcerpt}
+        />
+      </div>
+      {snippetDialog}
+    </Stack>
+  );
+}
+
+function EditorSurface({
+  postType,
+  record,
+  createdId,
+}: {
+  postType: PostType;
+  record?: EditorRecord;
+  createdId?: string;
+}) {
   const { data: currentUser } = useCurrentUser();
   const showExcerpt = useFeatureFlag('editorExcerpt');
-  const session = useEditorSession({ postType, record });
 
   const canManageSnippets =
     !!currentUser &&
@@ -101,24 +195,14 @@ function EditorSurface({ postType, record }: { postType: PostType; record?: Edit
   }
 
   return (
-    <Stack className="h-full" gap="none">
-      <EditorHeader postType={postType} />
-      <SessionBanners
-        state={session.state}
-        onDismissReauth={session.reauthAbandoned}
-        onRetryReauth={session.reauthSucceeded}
-      />
-      <div className="min-h-0 flex-1">
-        <PostEditor
-          {...session.bind}
-          autofocusTitle={!record}
-          cardConfig={cardConfig}
-          postType={postType}
-          showExcerpt={showExcerpt}
-        />
-      </div>
-      {snippetDialog}
-    </Stack>
+    <EditorContent
+      cardConfig={cardConfig}
+      createdId={createdId}
+      postType={postType}
+      record={record}
+      showExcerpt={showExcerpt}
+      snippetDialog={snippetDialog}
+    />
   );
 }
 
@@ -175,10 +259,12 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
   const loaded: EditorRecord | undefined =
@@ -201,7 +287,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   }, [needsConversion, loaded, conversion?.id, convert]);
 
   if (!openedId) {
-    return <EditorSurface postType={postType} />;
+    return <EditorSurface createdId={id} postType={postType} />;
   }
 
   const notFound = query.error instanceof APIError && query.error.response?.status === 404;

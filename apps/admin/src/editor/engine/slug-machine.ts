@@ -84,11 +84,13 @@ export interface SlugMachineOptions {
   onListenerError: (error: unknown) => void;
 }
 
-/** Called on every state change; `proposal` is null when only `pending` changed or a post loaded. */
+/** Called on every state change; acknowledgements, pending changes and loads have no proposal. */
 export type SlugListener = (state: SlugMachineState, proposal: SlugProposal | null) => void;
 
 export interface SlugMachine {
   loaded(post: LoadedPost): void;
+  /** Adopts server-normalized values only while the submitted source still owns the state. */
+  saveAcknowledged(submitted: LoadedPost, acknowledged: LoadedPost): void;
   titleCommitted(title: string): Promise<SlugProposal>;
   slugEdited(input: string): Promise<SlugProposal>;
   getState(): SlugMachineState;
@@ -452,6 +454,24 @@ export function createSlugMachine({
       lastCommittedTitle = post.title;
       settledMode = isCustomSlug(post.slug, post.title) ? 'custom' : 'derived';
       notify(null);
+    },
+
+    saveAcknowledged(submitted, acknowledged) {
+      let changed = false;
+      if (slug === submitted.slug && slug !== acknowledged.slug) {
+        slug = acknowledged.slug;
+        changed = true;
+      }
+      if (title === submitted.title && title !== acknowledged.title) {
+        title = acknowledged.title;
+        if (lastCommittedTitle === submitted.title) {
+          lastCommittedTitle = acknowledged.title;
+        }
+        changed = true;
+      }
+      if (changed) {
+        notify(null);
+      }
     },
 
     titleCommitted(rawTitle) {

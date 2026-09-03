@@ -25,6 +25,10 @@ await expect.poll(currentRoute).toBe("/members");   // URL assertions
 await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);   // DOM state no locator reaches
 ```
 
+**The URL leads the app.** `currentRoute` reads the address bar, which the browser updates before the router has re-rendered — so a route assertion says where the app is going, not what is on screen. That is fine for asserting the URL, and wrong as a cue to act: after `window.history.back()` or a dialog close, wait for the screen itself (`await expect(dialog).toHaveCount(0)`, `await expect.element(dialog).toBeVisible()`). A spec that reopens the same dialog, or dismisses a confirmation and triggers it again, will otherwise act on the instance that is on its way out — the click lands, the departing copy takes it, and nothing happens.
+
+**Unsaved-changes guards.** Typing into a dirty screen arms its navigation guard through a chain of passive effects, so a spec that navigates straight after a `fill` races the guard and an unguarded navigation just goes through. Wait for the guard itself, never for a frame count: `await expect.poll(unsavedChangesGuarded).toBe(true)` before the click or `window.history.back()`.
+
 **One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is _represented_ by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.

@@ -367,4 +367,24 @@ describe('JobsService', function () {
       assert.deepEqual(backend.shutdownCalls, [{ timeoutMs: 42 }]);
     });
   });
+
+  describe('restart', function () {
+    it('clearHandlers lets a rebooted process register the same job types again', function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {});
+
+      service.clearHandlers();
+
+      service.handle(GreetJob, async () => {});
+    });
+
+    it('clearHandlers resets queue declarations so a reboot can re-declare them', function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 1 });
+
+      service.clearHandlers();
+
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
+    });
+  });
 });

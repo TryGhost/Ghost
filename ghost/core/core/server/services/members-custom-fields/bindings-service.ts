@@ -2,6 +2,7 @@ import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/custom-field-types';
+import { INTERNAL } from './access';
 import { DbBoundField, FIELD_STATUS } from './schema';
 import type { CustomFieldValuesService, PlannedWrite } from './values-service';
 
@@ -83,7 +84,13 @@ export class CustomFieldBindingsService {
   private async writeOne(memberId: string, into: BoundField, value: unknown): Promise<void> {
     let planned: PlannedWrite[];
     try {
-      planned = await this.values.planWrite({ [`${CUSTOM_NAMESPACE}.${into.key}`]: value });
+      // Internal: a value collected by Stripe at checkout is written on nobody's
+      // behalf, and what may be set is bounded by the binding rather than by who
+      // is looking.
+      planned = await this.values.planWrite(
+        { [`${CUSTOM_NAMESPACE}.${into.key}`]: value },
+        INTERNAL,
+      );
     } catch (err) {
       logging.warn(
         {

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { normalizeRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import {
   DEFAULT_SCHEDULE_LEAD_MS,
   EMAIL_VERIFICATION_HOLD_MESSAGE,
@@ -8,7 +9,6 @@ import {
   getEmailDisabledReason,
   getEmailUnavailableReason,
   getInitialPublishType,
-  normalizeRecipientFilter,
   selectableNewsletters,
   splitUpgradeMessage,
   tiersSegment,

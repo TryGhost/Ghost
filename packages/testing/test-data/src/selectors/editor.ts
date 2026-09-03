@@ -13,7 +13,13 @@ export const editorWordCount = 'editor-word-count';
 export const editorLoadError = 'editor-load-error';
 export const editorReauthBanner = 'editor-reauth-banner';
 export const editorConflictBanner = 'editor-conflict-banner';
+export const editorStatus = 'editor-status';
+export const editorScheduleCountdown = 'editor-schedule-countdown';
+export const editorFeatureImage = 'editor-feature-image';
+export const editorFeatureImageCaption = 'editor-feature-image-caption';
+export const editorSaveErrorBanner = 'editor-save-error-banner';
 export const tkIndicator = 'tk-indicator';
+export const featureImageTkIndicator = 'feature-image-tk-indicator';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -55,3 +61,8 @@ export const updateFlowPreviousEmail = 'update-flow-previous-email';
 // accessible names
 export const postsBackLink = 'Posts';
 export const pagesBackLink = 'Pages';
+export const addFeatureImageLabel = 'Add feature image';
+export const featureImageAltLabel = 'Alt text for feature image';
+export const featureImageUnsplashButton = 'Select feature image from Unsplash';
+export const removeFeatureImageButton = 'Remove feature image';
+export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';

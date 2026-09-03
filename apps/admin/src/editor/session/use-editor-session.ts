@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useGenerateSlug } from '@tryghost/admin-x-framework/api/slugs';
-import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   useAddPage,
   useEditPage,
@@ -25,6 +24,7 @@ import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import type { EditorRecord } from './projection';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 interface EditorSessionLocationState {
   editorSession?: string;
@@ -57,6 +57,8 @@ export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
   isDirty: () => boolean;
+  patchFeatureImage: EditorSession['patchFeatureImage'];
+  dispatchField: () => void;
   dispatchExplicit: () => void;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
@@ -65,6 +67,7 @@ export interface EditorSessionHandle {
 export interface UseEditorSessionOptions {
   postType: PostType;
   record?: EditorRecord;
+  siteUrl: string;
 }
 
 function reportError(error: unknown): void {
@@ -76,11 +79,11 @@ function reportError(error: unknown): void {
 export function useEditorSession({
   postType,
   record,
+  siteUrl,
 }: UseEditorSessionOptions): EditorSessionHandle {
   const navigate = useNavigate();
   const sessionKey = useEditorSessionKey();
   const generateSlug = useGenerateSlug();
-  const { data: site } = useBrowseSite();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
   const { mutateAsync: addPage } = useAddPage();
@@ -101,7 +104,7 @@ export function useEditorSession({
   const [session] = useState<EditorSession>(() =>
     createEditorSession({
       record,
-      siteUrl: site?.site.url,
+      siteUrl,
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       onIdAcquired: setPersistedId,
       onError: reportError,
@@ -139,7 +142,12 @@ export function useEditorSession({
           return posts[0];
         },
         generateSlug: (text, postId) =>
-          transport.current.generateSlug({ type: 'post', text, id: postId ?? undefined }),
+          transport.current.generateSlug({
+            type: 'post',
+            text,
+            id: postId ?? undefined,
+            sessionExpiryRedirect: false,
+          }),
       },
     }),
   );
@@ -161,10 +169,12 @@ export function useEditorSession({
   const postQuery = useEditorPost(persistedId ?? '', {
     enabled: postType === 'post' && !!persistedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(persistedId ?? '', {
     enabled: postType === 'page' && !!persistedId,
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
@@ -239,7 +249,9 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
-    isDirty: session.isDirty,
+    isDirty: () => session.getSaveSnapshot().isDirty,
+    patchFeatureImage: session.patchFeatureImage,
+    dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,

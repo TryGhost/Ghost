@@ -12,6 +12,7 @@ import {
 } from '@tryghost/custom-field-types/identity';
 import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
+import { canWrite, readableFields, type Audience } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 
 const FIELDS_TABLE = 'members_custom_fields';
@@ -92,6 +93,7 @@ export class CustomFieldValuesService {
 
   async getValuesForMembers(
     memberIds: string[],
+    audience: Audience,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (memberIds.length === 0) {
       return new Map();
@@ -130,7 +132,10 @@ export class CustomFieldValuesService {
       }
     }
 
-    const flat = valuesFromLeaves(leaves);
+    // Narrowed before assembly, not after: a composite is one value spread across
+    // several rows, and dropping some of its parts later would hand back half an
+    // address rather than no address.
+    const flat = valuesFromLeaves(readableFields(audience, leaves));
     return new Map(
       memberIds.map((memberId) => [memberId, { [CUSTOM_NAMESPACE]: flat.get(memberId) ?? {} }]),
     );
@@ -190,7 +195,7 @@ export class CustomFieldValuesService {
    * validate before opening a transaction it would otherwise have to unwind, then apply
    * the same plan without re-resolving it.
    */
-  async planWrite(input: unknown): Promise<PlannedWrite[]> {
+  async planWrite(input: unknown, audience: Audience): Promise<PlannedWrite[]> {
     const values = this.parseValues(input);
     const identities = Object.keys(values);
 
@@ -212,6 +217,13 @@ export class CustomFieldValuesService {
       if (!field) {
         throw new errors.ValidationError({
           message: `Unknown custom field: ${identity}`,
+          property: wireProperty(identity),
+        });
+      }
+
+      if (!canWrite(audience, field)) {
+        throw new errors.ValidationError({
+          message: `Cannot set custom field: ${identity}`,
           property: wireProperty(identity),
         });
       }
