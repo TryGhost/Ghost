@@ -74,16 +74,17 @@ export const usePostSuccessModal = () => {
     }
 
     const showPostCount = !!postCount;
+    const isEmailStillSending = improveSendingUI && post.email?.status !== 'submitted';
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
       const parts = [];
 
       if (post.email_only) {
-        parts.push(improveSendingUI ? 'Your email is being sent to' : 'Your email was sent to');
+        parts.push(isEmailStillSending ? 'Your email is being sent to' : 'Your email was sent to');
       } else if (post.email?.email_count) {
         parts.push(
-          improveSendingUI
+          isEmailStillSending
             ? 'Your post was published on your site and is being sent to'
             : 'Your post was published on your site and sent to',
         );

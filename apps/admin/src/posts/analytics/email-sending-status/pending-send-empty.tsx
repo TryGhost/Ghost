@@ -27,15 +27,13 @@ const PendingSendEmpty = ({
   }
 
   return (
-    <div className="py-20 text-center">
-      <EmptyIndicator
-        className="h-full"
-        description={newsletterDataHiddenReason === 'failed' ? failedDescription : description}
-        title={newsletterDataHiddenReason === 'failed' ? failedTitle : title}
-      >
-        <LucideIcon.Mail strokeWidth={1.5} />
-      </EmptyIndicator>
-    </div>
+    <EmptyIndicator
+      className="py-20"
+      description={newsletterDataHiddenReason === 'failed' ? failedDescription : description}
+      title={newsletterDataHiddenReason === 'failed' ? failedTitle : title}
+    >
+      <LucideIcon.Mail strokeWidth={1.5} />
+    </EmptyIndicator>
   );
 };
 

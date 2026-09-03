@@ -1,6 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {Response} from 'miragejs';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
@@ -786,13 +785,12 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
 
-        it('uses the analytics sending flow when the status endpoint is available', async function () {
+        it('uses the analytics sending flow when improved sending UI is enabled', async function () {
             enableLabsFlag(this.server, 'improveSendingUI');
 
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             const email = this.server.create('email', {status: 'pending'});
-            let statusRequestCount = 0;
 
             this.server.put('/posts/:id/', function ({posts}, {params}) {
                 return posts.find(params.id).update({
@@ -800,37 +798,17 @@ describe('Acceptance: Publish flow', function () {
                     email
                 });
             });
-            this.server.get('/emails/:id/status/', () => {
-                statusRequestCount += 1;
-                return {
-                    email_statuses: [{
-                        id: email.id,
-                        sending: {
-                            status: 'preparing',
-                            progress: {
-                                completed: 0,
-                                total: 7,
-                                estimated_seconds_remaining: null
-                            }
-                        }
-                    }]
-                };
-            });
-
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-button="continue"]');
             await click('[data-test-button="confirm-publish"]');
 
-            expect(statusRequestCount, 'status support request').to.equal(1);
             await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
             expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
             expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
         });
 
-        it('preserves the email failure flow when the sending status endpoint is unavailable', async function () {
-            enableLabsFlag(this.server, 'improveSendingUI');
-
+        it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             const email = this.server.create('email', {status: 'pending'});
@@ -841,9 +819,6 @@ describe('Acceptance: Publish flow', function () {
                     email
                 });
             });
-            this.server.get('/emails/:id/status/', () => new Response(404, {}, {
-                errors: [{message: 'Resource not found.', type: 'NotFoundError'}]
-            }));
             this.server.get('/posts/:id/', function ({posts}, {params}) {
                 const savedPost = posts.find(params.id);
                 if (savedPost.status === 'published') {

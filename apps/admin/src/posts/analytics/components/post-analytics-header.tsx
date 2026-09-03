@@ -42,7 +42,6 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
 import {
   isEmailOnly,
-  isPublishedAndEmailed,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
@@ -73,13 +72,17 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
-  const { hasNewsletterAnalytics } = useEmailSendingStatusContext();
+  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
   const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
+  const isPublishedPost = post?.status === 'published';
+  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
+  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
+  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -289,9 +292,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
                       {isEmailOnly(post) &&
                         `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedOnly(post) &&
+                      {showPublishedOnSite &&
                         `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedAndEmailed(post) &&
+                      {showPublishedAndSent &&
                         `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}

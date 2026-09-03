@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
+import { focusManager } from '@tanstack/react-query';
 
 import {
   currentRoute,
@@ -260,7 +261,7 @@ describe('Post analytics overview', () => {
     await expect
       .poll(() => statusRequestCount, { timeout: 3500 })
       .toBeGreaterThan(pendingStatusRequestCount);
-    await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(1);
@@ -320,6 +321,8 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(page.getByText('Some emails failed to send')).toBeVisible();
+    await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent on/)).not.toBeInTheDocument();
     await expect.element(page.getByText(/Mailgun rejected the batch/)).toBeVisible();
     await expect.element(page.getByText('No newsletter data available')).toBeVisible();
 
@@ -327,7 +330,7 @@ describe('Post analytics overview', () => {
     await expect.poll(() => retryApi.requests.length).toBe(1);
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(2);
-    await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
   });
 
   it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
@@ -353,22 +356,16 @@ describe('Post analytics overview', () => {
       ],
     });
     const batchesApi = fakeSubmittingBatches([{ id: 'batch-1', status: 'submitting' }]);
-
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
       labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
     await expect.element(page.getByText('Emails failed to send')).toBeVisible();
-    await expect
-      .element(page.getByText('Something went wrong while sending this email.'))
-      .toBeVisible();
-    await expect.element(page.getByText(/only partially sent/)).not.toBeInTheDocument();
+    await expect.element(page.getByText(/only partially sent/)).toBeVisible();
     await expect
       .element(
-        page
-          .getByTestId('email-sending-status-banner')
-          .getByRole('button', { name: /send|retry/i }),
+        postAnalyticsScreen.emailSendingStatusBanner().getByRole('button', { name: /send|retry/i }),
       )
       .not.toBeInTheDocument();
     await expect
@@ -467,9 +464,74 @@ describe('Post analytics overview', () => {
     await expect
       .element(page.getByText('This newsletter is still sending'))
       .not.toBeInTheDocument();
-    await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
+  });
+
+  it('recovers from a transient status error on focus', async () => {
+    seedPostAnalyticsWorld({
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 400, status: 'submitting' },
+    });
+    const failedStatusApi = fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ message: 'Bad gateway' }] },
+      { status: 502 },
+    );
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+
+    const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 500, total: 1000, estimated_seconds_remaining: 30 },
+          },
+        },
+      ],
+    });
+    focusManager.setFocused(false);
+    focusManager.setFocused(true);
+
+    await expect.poll(() => recoveredStatusApi.requests.length).toBeGreaterThan(0);
+    await expect.element(page.getByText('Sending emails')).toBeVisible();
+    focusManager.setFocused(undefined);
+  });
+
+  it('does not show sending UI or retry a failed email after the post is unpublished', async () => {
+    seedPostAnalyticsWorld({
+      status: 'draft',
+      email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'failed' },
+    });
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            failed_during: 'preparing',
+            progress: { completed: 0, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+    await expect.element(postAnalyticsScreen.newsletterTab()).not.toBeInTheDocument();
+    expect(statusApi.requests).toHaveLength(0);
   });
 
   it('applies the Admin 7 chrome on post analytics', async () => {

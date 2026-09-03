@@ -18,16 +18,6 @@
   }
 }
 
-.email-sending-arrow-rise {
-  animation: email-sending-arrow-rise 1200ms linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .email-sending-arrow-rise {
-    animation: none;
-  }
-}
-
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
@@ -113,6 +103,7 @@
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
+  --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;

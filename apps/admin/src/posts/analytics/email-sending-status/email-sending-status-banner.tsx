@@ -1,5 +1,5 @@
-import { Button } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Banner, Button } from '@tryghost/shade/components';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
@@ -8,7 +8,8 @@ import type { ReactNode } from 'react';
 
 const formatEta = (seconds: number): string => {
   if (seconds > 80) {
-    return `About ${formatNumber(Math.ceil(seconds / 60))} minutes left`;
+    const minutes = Math.round(seconds / 60);
+    return `About ${formatNumber(minutes)} ${minutes === 1 ? 'minute' : 'minutes'} left`;
   }
   if (seconds > 40) {
     return 'About 1 minute left';
@@ -41,7 +42,7 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
 
   return (
     <span className="relative flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-state-info text-white ring-1 ring-state-info ring-offset-1 ring-offset-background">
-      <span className="email-sending-arrow-rise">
+      <span className="animate-email-sending-arrow-rise motion-reduce:animate-none">
         <LucideIcon.ArrowUp aria-hidden="true" size={12} strokeWidth={2.5} />
       </span>
     </span>
@@ -106,17 +107,17 @@ const EmailSendingStatusBanner = () => {
       : 'Sending emails';
   const detail = isFailed
     ? hasUnknownDeliveryOutcome
-      ? 'Something went wrong while sending this email.'
+      ? post?.email?.error || 'Something went wrong while sending this email.'
       : failureDetail(sending, post?.email?.error)
     : activeDetail(sending);
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
-    <Stack
-      className="rounded-lg border border-border-default bg-surface-elevated p-4"
+    <Banner
+      className="bg-surface-elevated shadow-none hover:shadow-none"
       data-testid="email-sending-status-banner"
-      gap="none"
       role={isFailed ? 'alert' : 'status'}
+      size="lg"
     >
       <Inline align="center" gap="md" justify="between" wrap>
         <Inline align="center" className="min-w-0" gap="sm">
@@ -145,7 +146,7 @@ const EmailSendingStatusBanner = () => {
           </Button>
         )}
       </Inline>
-    </Stack>
+    </Banner>
   );
 };
 

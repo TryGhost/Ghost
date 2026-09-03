@@ -114,7 +114,6 @@ const Newsletter: React.FC = () => {
   const { post, isPostLoading, postId } = usePostAnalytics();
   const navigateToMembers = (filter: string) => navigate(buildMembersUrl({ filter }));
   const typedPost = post as Post;
-  // Use the utility function from admin-x-framework
   const showNewsletterSection = hasNewsletterAnalytics;
 
   useEffect(() => {
@@ -439,7 +438,7 @@ const Newsletter: React.FC = () => {
                   title="This newsletter is still sending"
                 >
                   <div
-                    className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
+                    className={`mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
                   >
                     <div
                       className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}

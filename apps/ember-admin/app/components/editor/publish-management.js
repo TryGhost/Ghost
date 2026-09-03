@@ -23,9 +23,7 @@ export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 // modal display, and provide an editor-specific save behaviour wrapper around
 // PublishOptions saving.
 export default class PublishManagement extends Component {
-    @service ajax;
     @service feature;
-    @service ghostPaths;
     @service modals;
     @service notifications;
     @service settings;
@@ -259,10 +257,7 @@ export default class PublishManagement extends Component {
         yield this.args.afterPublish(result);
 
         if (willEmailImmediately && this.publishOptions.post.email) {
-            const supportsSendingStatus = this.feature.improveSendingUI && (yield this._supportsSendingStatus());
-
-            // Older Core versions need the legacy poll so failures remain visible in the publish flow.
-            if (!supportsSendingStatus) {
+            if (!this.feature.improveSendingUI) {
                 yield this.confirmEmailTask.perform();
             }
         }
@@ -312,21 +307,6 @@ export default class PublishManagement extends Component {
         }
 
         return true;
-    }
-
-    async _supportsSendingStatus() {
-        const emailId = this.publishOptions.post.email?.id;
-        if (!emailId) {
-            return false;
-        }
-
-        try {
-            const url = this.ghostPaths.url.api(`/emails/${emailId}/status`);
-            await this.ajax.request(url);
-            return true;
-        } catch {
-            return false;
-        }
     }
 
     @task

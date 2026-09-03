@@ -2,7 +2,6 @@ import { createContext, useContext } from 'react';
 import type { EmailSendingStatus } from '@tryghost/admin-x-framework/api/emails';
 
 export interface EmailSendingStatusContextValue {
-  enabled: boolean;
   status: EmailSendingStatus | undefined;
   isStatusLoading: boolean;
   isNewsletterDataHidden: boolean;

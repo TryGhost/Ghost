@@ -162,7 +162,6 @@ const Overview: React.FC = () => {
   const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || chartLoading;
   const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
-  // Use the utility function from admin-x-framework
   const showNewsletterSection =
     hasNewsletterAnalytics && emailTrackOpensEnabled && emailTrackClicksEnabled;
   const showWebSection = !post?.email_only && webAnalyticsEnabled;

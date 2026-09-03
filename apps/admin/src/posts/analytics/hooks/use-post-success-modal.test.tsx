@@ -461,6 +461,26 @@ describe('usePostSuccessModal', () => {
     ).toBeTruthy();
   });
 
+  test('uses completed copy when the legacy flow has already observed submission', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email: { email_count: 100, opened_count: 0, status: 'submitted' },
+        newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your post was published on your site and sent to/)).toBeTruthy();
+  });
+
   test('uses in-progress copy for an email-only send when improved sending UI is enabled', async ({
     server,
     wrapper,
