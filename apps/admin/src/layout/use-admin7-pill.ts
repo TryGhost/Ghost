@@ -1,7 +1,12 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
-const approvedRoutePatterns = [/^\/members\/?$/, /^\/members\/import\/?$/, /^\/tags\/?$/];
+const approvedRoutePatterns = [
+  /^\/members\/?$/,
+  /^\/members\/import\/?$/,
+  /^\/tags\/?$/,
+  /^\/comments\/?$/,
+];
 const memberDetailRoutePattern = /^\/members\/[0-9a-f]{24}\/?$/i;
 const tagDetailRoutePattern = /^\/tags\/([^/]+)\/?$/;
 const editorRoutePattern = /^\/editor(?:\/|$)/;
