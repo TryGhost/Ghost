@@ -2230,7 +2230,7 @@ describe('Member Custom Fields Admin API', function () {
 
   describe('Authorization', function () {
     // The full role matrix is pinned in migration.test.js; here we only prove
-    // the endpoint enforces the permission — a role without it is rejected.
+    // the endpoint enforces the permission — a role without it may look but not touch.
     beforeAll(async function () {
       await agent.loginAsEditor();
     });
@@ -2239,8 +2239,9 @@ describe('Member Custom Fields Admin API', function () {
       await agent.loginAsOwner();
     });
 
-    it('forbids a role without permission from browsing', async function () {
-      await agent.get('members/metafields/custom/').expectStatus(403);
+    it('lets a role without permission read what the site collects', async function () {
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent.get('members/metafields/custom/company/').expectStatus(404);
     });
 
     it('forbids a role without permission from creating', async function () {
@@ -2255,6 +2256,17 @@ describe('Member Custom Fields Admin API', function () {
         .put('members/metafields/custom/')
         .body({ members_metafields: [{ key: 'topic' }] })
         .expectStatus(403);
+    });
+
+    it('answers for the namespace before it answers for the caller', async function () {
+      // Nobody can define a field here, so the namespace is the reason and the role is
+      // beside the point. Answering 403 would send this caller after a permission that
+      // would not have helped them.
+      const { body } = await agent
+        .post('members/metafields/shopify/')
+        .body({ members_metafields: [{ name: 'Topic', type: 'short_text' }] })
+        .expectStatus(422);
+      assert.match(body.errors[0].context, /shopify/);
     });
   });
 
