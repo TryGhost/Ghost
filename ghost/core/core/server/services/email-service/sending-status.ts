@@ -13,17 +13,16 @@ export const SendingProgress = z.object({
 });
 export type SendingProgress = z.infer<typeof SendingProgress>;
 
+export const SendingStatus = z.discriminatedUnion('status', [
+  z.object({ status: SendingPhase, progress: SendingProgress }),
+  z.object({ status: z.literal('submitted'), progress: SendingProgress }),
+  z.object({ status: z.literal('failed'), progress: SendingProgress, failedDuring: SendingPhase }),
+]);
+export type SendingStatus = z.infer<typeof SendingStatus>;
+
 export const EmailSendingStatus = z.object({
   id: z.string(),
-  sending: z.discriminatedUnion('status', [
-    z.object({ status: SendingPhase, progress: SendingProgress }),
-    z.object({ status: z.literal('submitted'), progress: SendingProgress }),
-    z.object({
-      status: z.literal('failed'),
-      progress: SendingProgress,
-      failedDuring: SendingPhase,
-    }),
-  ]),
+  sending: SendingStatus,
 });
 export type EmailSendingStatus = z.infer<typeof EmailSendingStatus>;
 
