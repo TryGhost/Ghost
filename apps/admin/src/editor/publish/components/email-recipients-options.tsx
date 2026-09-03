@@ -7,14 +7,16 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { checkStripeEnabled, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { EDITOR_QUERY_OPTIONS } from '@/editor/publish/request-options';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useMemo } from 'react';
+import { z } from 'zod';
+import { parseRecipientSegments } from './email-recipients-boundary';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
 import type { NewsletterInput, PublishOptionsState } from '@/editor/publish/publish-options';
 
@@ -24,27 +26,54 @@ export interface EmailRecipientsOptionsProps {
   onSetRecipientFilter: (filter: string | null) => void;
 }
 
+const stripeBoundarySchema = z.object({
+  settingsData: z.looseObject({
+    settings: z.array(z.looseObject({ key: z.string(), value: z.unknown() })),
+  }),
+  configData: z.looseObject({ config: z.looseObject({ stripeDirect: z.boolean() }) }),
+});
 export function EmailRecipientsOptions({
   state,
   onSetNewsletter,
   onSetRecipientFilter,
 }: EmailRecipientsOptionsProps) {
-  const { data: settingsData } = useBrowseSettings(EDITOR_QUERY_OPTIONS);
-  const { data: configData } = useBrowseConfig(EDITOR_QUERY_OPTIONS);
+  const { data: settingsData } = useBrowseSettings({
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const { data: configData } = useBrowseConfig({
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const { data: tiersData } = useBrowseTiers({
-    ...EDITOR_QUERY_OPTIONS,
+    defaultErrorHandler: false,
     searchParams: { filter: 'type:paid', limit: 'all' },
   });
-  const { data: labelsData } = useBrowseLabelsInfinite(EDITOR_QUERY_OPTIONS);
+  const { data: labelsData } = useBrowseLabelsInfinite({
+    defaultErrorHandler: false,
+    searchParams: { limit: 'all' },
+  });
 
-  const paidAvailable = Boolean(
-    settingsData?.settings &&
-    configData?.config &&
-    checkStripeEnabled(settingsData.settings, configData.config),
-  );
+  const stripeBoundary = stripeBoundarySchema.safeParse({ settingsData, configData });
+  const paidAvailable = stripeBoundary.success
+    ? (() => {
+        const { settings, config } = {
+          settings: stripeBoundary.data.settingsData.settings,
+          config: stripeBoundary.data.configData.config,
+        };
+        const hasSetting = (key: string) =>
+          settings.some((setting) => setting.key === key && Boolean(setting.value));
+        const hasDirectKeys =
+          hasSetting('stripe_secret_key') && hasSetting('stripe_publishable_key');
+        const hasConnectKeys =
+          hasSetting('stripe_connect_secret_key') && hasSetting('stripe_connect_publishable_key');
+
+        return config.stripeDirect ? hasDirectKeys : hasConnectKeys || hasDirectKeys;
+      })()
+    : false;
 
   const segmentOptions = useMemo<SegmentOption[]>(() => {
-    const tiers = tiersData?.tiers ?? [];
+    const { tiers, labels } = parseRecipientSegments(tiersData, labelsData);
     // A single paid tier adds nothing to a paid/free split, so Ember hides it.
     const tierOptions =
       tiers.length > 1
@@ -55,7 +84,7 @@ export function EmailRecipientsOptions({
 
     return [
       ...tierOptions,
-      ...(labelsData?.labels ?? []).map((label) => ({
+      ...labels.map((label) => ({
         segment: `label:${label.slug}`,
         name: label.name,
       })),

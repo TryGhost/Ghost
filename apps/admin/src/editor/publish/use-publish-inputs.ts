@@ -1,33 +1,116 @@
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import {
-  isAdminUser,
-  isAuthorOrContributor,
-  isOwnerUser,
-} from '@tryghost/admin-x-framework/api/users';
+import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useMemo } from 'react';
-import { EDITOR_QUERY_OPTIONS } from './request-options';
-import type { DefaultEmailRecipients, PublishSiteInput, PublishUserInput } from './publish-options';
+import { useCallback, useMemo } from 'react';
+import { z } from 'zod';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
-/** Both sources count: self-hosters configure Mailgun in settings, hosts inject it via config. */
-function mailgunConfigured(
-  settings: ReturnType<typeof useBrowseSettings>['data'],
-  config: ReturnType<typeof useBrowseConfig>['data'],
-): boolean {
-  const values = settings?.settings ?? [];
-  const fromSettings = Boolean(
-    getSettingValue<string>(values, 'mailgun_api_key') &&
-    getSettingValue<string>(values, 'mailgun_domain') &&
-    getSettingValue<string>(values, 'mailgun_base_url'),
+const settingValueSchema = z.union([z.string(), z.boolean(), z.number(), z.null()]);
+const settingSchema = z.looseObject({ key: z.string(), value: settingValueSchema });
+const defaultRecipientsSchema = z.enum(['disabled', 'visibility', 'filter']);
+const newsletterSchema = z
+  .looseObject({
+    slug: z.string(),
+    name: z.string(),
+    status: z.string(),
+    visibility: z.string(),
+    sort_order: z.number().optional(),
+  })
+  // The API's serialized field is intentionally snake_case at this boundary.
+  .transform(({ sort_order: sortOrder, ...newsletter }) => ({ ...newsletter, sortOrder }));
+
+const publishInputsBoundarySchema = z.object({
+  settingsData: z.looseObject({ settings: z.array(settingSchema) }),
+  configData: z.looseObject({
+    config: z.looseObject({ mailgunIsConfigured: z.boolean().optional() }),
+  }),
+  newslettersData: z.looseObject({ newsletters: z.array(newsletterSchema) }),
+  currentUser: z.looseObject({
+    roles: z.array(z.looseObject({ name: z.string() })),
+  }),
+  memberCount: z.number().int().nonnegative().nullable(),
+});
+
+const DEFAULT_SITE: PublishSiteInput = {
+  membersEnabled: true,
+  mailgunConfigured: false,
+  editorDefaultEmailRecipients: 'visibility',
+  editorDefaultEmailRecipientsFilter: null,
+  memberCount: null,
+  newsletters: [],
+};
+const DEFAULT_USER: PublishUserInput = { isAdmin: false, isAuthorOrContributor: false };
+
+function stringSetting(settings: z.infer<typeof settingSchema>[], key: string): string | null {
+  const value = settings.find((setting) => setting.key === key)?.value;
+  return typeof value === 'string' ? value : null;
+}
+
+export interface AssembledPublishInputs {
+  site: PublishSiteInput;
+  user: PublishUserInput;
+  timezone: string;
+  isValid: boolean;
+}
+
+/** Validates API-backed values before projecting the small publish-machine input. */
+export function assemblePublishInputs(boundaryData: {
+  settingsData: unknown;
+  configData: unknown;
+  newslettersData: unknown;
+  currentUser: unknown;
+  memberCount: unknown;
+}): AssembledPublishInputs {
+  const parsed = publishInputsBoundarySchema.safeParse(boundaryData);
+
+  if (!parsed.success) {
+    return { site: DEFAULT_SITE, user: DEFAULT_USER, timezone: 'Etc/UTC', isValid: false };
+  }
+
+  const { settingsData, configData, newslettersData, currentUser, memberCount } = parsed.data;
+  const settings = settingsData.settings;
+  const defaultRecipientsValue = settings.find(
+    (setting) => setting.key === 'editor_default_email_recipients',
+  )?.value;
+  const defaultRecipients =
+    defaultRecipientsValue === null || defaultRecipientsValue === undefined
+      ? defaultRecipientsSchema.safeParse('visibility')
+      : defaultRecipientsSchema.safeParse(defaultRecipientsValue);
+
+  if (!defaultRecipients.success) {
+    return { site: DEFAULT_SITE, user: DEFAULT_USER, timezone: 'Etc/UTC', isValid: false };
+  }
+  const roles = new Set(currentUser.roles.map((role) => role.name));
+
+  // Both sources count: self-hosters configure Mailgun in settings, hosts inject it via config.
+  const configuredInSettings = Boolean(
+    stringSetting(settings, 'mailgun_api_key') &&
+    stringSetting(settings, 'mailgun_domain') &&
+    stringSetting(settings, 'mailgun_base_url'),
   );
 
-  return (
-    fromSettings ||
-    (config?.config as { mailgunIsConfigured?: boolean } | undefined)?.mailgunIsConfigured === true
-  );
+  return {
+    site: {
+      membersEnabled: stringSetting(settings, 'members_signup_access') !== 'none',
+      mailgunConfigured: configuredInSettings || configData.config.mailgunIsConfigured === true,
+      editorDefaultEmailRecipients: defaultRecipients.data,
+      editorDefaultEmailRecipientsFilter: stringSetting(
+        settings,
+        'editor_default_email_recipients_filter',
+      ),
+      memberCount,
+      newsletters: newslettersData.newsletters,
+    },
+    user: {
+      isAdmin: roles.has('Owner') || roles.has('Administrator'),
+      isAuthorOrContributor: roles.has('Author') || roles.has('Contributor'),
+    },
+    timezone: stringSetting(settings, 'timezone') ?? 'Etc/UTC',
+    isValid: true,
+  };
 }
 
 export interface PublishInputs {
@@ -36,6 +119,18 @@ export interface PublishInputs {
   timezone: string;
   /** False until every input has loaded; the machine reads its inputs once. */
   isReady: boolean;
+  /** A query or validation failure that the caller can render in place. */
+  error: Error | null;
+  /** Retries each API input owned by this adapter. */
+  retry: () => void;
+}
+
+function publishInputError(error: unknown): Error | null {
+  if (!error) {
+    return null;
+  }
+
+  return error instanceof Error ? error : new Error('The publish settings could not be loaded.');
 }
 
 /**
@@ -44,47 +139,80 @@ export interface PublishInputs {
  * `isReady`.
  */
 export function usePublishInputs(): PublishInputs {
-  const { data: settingsData } = useBrowseSettings(EDITOR_QUERY_OPTIONS);
-  const { data: configData } = useBrowseConfig(EDITOR_QUERY_OPTIONS);
-  const { data: newslettersData } = useBrowseNewsletters(EDITOR_QUERY_OPTIONS);
+  const settingsQuery = useBrowseSettings({
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const configQuery = useBrowseConfig({
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const newslettersQuery = useBrowseNewsletters({
+    defaultErrorHandler: false,
+    searchParams: { limit: 'all' },
+  });
   // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
-  const { data: currentUser } = useCurrentUser();
+  const currentUserQuery = useCurrentUser();
   // Site-wide total, the way Ember's publish options read it.
   const { count: memberCount, isLoading: memberCountLoading } = useMembersCount('');
+  const settingsData = settingsQuery.data;
+  const configData = configQuery.data;
+  const newslettersData = newslettersQuery.data;
+  const currentUser = currentUserQuery.data;
 
-  const settings = settingsData?.settings ?? [];
-  const isAdmin = Boolean(currentUser && (isOwnerUser(currentUser) || isAdminUser(currentUser)));
-
-  const site = useMemo<PublishSiteInput>(
-    () => ({
-      membersEnabled: getSettingValue<string>(settings, 'members_signup_access') !== 'none',
-      mailgunConfigured: mailgunConfigured(settingsData, configData),
-      editorDefaultEmailRecipients:
-        (getSettingValue<string>(settings, 'editor_default_email_recipients') as
-          | DefaultEmailRecipients
-          | undefined) ?? 'visibility',
-      editorDefaultEmailRecipientsFilter:
-        getSettingValue<string>(settings, 'editor_default_email_recipients_filter') ?? null,
-      memberCount,
-      newsletters: newslettersData?.newsletters ?? [],
-    }),
-    [settings, settingsData, configData, memberCount, newslettersData],
+  const assembled = useMemo(
+    () =>
+      assemblePublishInputs({
+        settingsData,
+        configData,
+        newslettersData,
+        currentUser,
+        memberCount,
+      }),
+    [settingsData, configData, newslettersData, currentUser, memberCount],
   );
+  const isLoading =
+    settingsQuery.isLoading ||
+    configQuery.isLoading ||
+    newslettersQuery.isLoading ||
+    currentUserQuery.isLoading ||
+    memberCountLoading;
+  const error = useMemo(() => {
+    const queryError =
+      settingsQuery.error ?? configQuery.error ?? newslettersQuery.error ?? currentUserQuery.error;
 
-  const user = useMemo<PublishUserInput>(
-    () => ({
-      isAdmin,
-      isAuthorOrContributor: Boolean(currentUser && isAuthorOrContributor(currentUser)),
-    }),
-    [currentUser, isAdmin],
-  );
+    if (queryError) {
+      return publishInputError(queryError);
+    }
+
+    if (!isLoading && !assembled.isValid) {
+      return new Error('The publish settings response was invalid.');
+    }
+
+    return null;
+  }, [
+    assembled.isValid,
+    configQuery.error,
+    currentUserQuery.error,
+    isLoading,
+    newslettersQuery.error,
+    settingsQuery.error,
+  ]);
+  const retry = useCallback(() => {
+    void Promise.all([
+      settingsQuery.refetch(),
+      configQuery.refetch(),
+      newslettersQuery.refetch(),
+      currentUserQuery.refetch(),
+    ]);
+  }, [configQuery, currentUserQuery, newslettersQuery, settingsQuery]);
 
   return {
-    site,
-    user,
-    timezone: getSettingValue<string>(settings, 'timezone') ?? 'Etc/UTC',
-    isReady: Boolean(
-      settingsData && configData && newslettersData && currentUser && !memberCountLoading,
-    ),
+    site: assembled.site,
+    user: assembled.user,
+    timezone: assembled.timezone,
+    isReady: assembled.isValid && !isLoading && !error,
+    error,
+    retry,
   };
 }

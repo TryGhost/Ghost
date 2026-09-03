@@ -129,7 +129,13 @@ export function ConfirmStep({
         >
           {status === 'running' ? buttonText.running : buttonText.idle}
         </Button>
-        <Button data-testid={publishBackToSettings} size="lg" variant="link" onClick={onBack}>
+        <Button
+          data-testid={publishBackToSettings}
+          disabled={status === 'running'}
+          size="lg"
+          variant="link"
+          onClick={onBack}
+        >
           Back to settings
         </Button>
       </Stack>

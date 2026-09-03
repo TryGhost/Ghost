@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   publicPreviewWarningDialog,
+  publishBackToSettings,
   publishConfirmButton,
   publishCompleteNote,
   publishConfirmError,
@@ -10,6 +11,7 @@ import {
   publishFlowConfirm,
   publishFlowModal,
   publishFlowOptions,
+  publishRecipientFree,
   publishRetryEmailButton,
   publishRevertToDraft,
   publishScheduleDate,
@@ -18,6 +20,7 @@ import {
   publishSettingPublishType,
   tkReminderDialog,
   updateFlowModal,
+  updateFlowConfirmation,
   updateFlowPreviousEmail,
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
@@ -40,13 +43,16 @@ export const publishScreen = {
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
   scheduleDate: () => page.getByTestId(publishScheduleDate),
   continueButton: () => page.getByTestId(publishContinueButton),
+  recipientFree: () => page.getByTestId(publishRecipientFree),
   confirmButton: () => page.getByTestId(publishConfirmButton),
+  backToSettings: () => page.getByTestId(publishBackToSettings),
   confirmError: () => page.getByTestId(publishConfirmError),
   retryEmailButton: () => page.getByTestId(publishRetryEmailButton),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),
   updateFlow: () => page.getByTestId(updateFlowModal),
+  updateFlowConfirmation: () => page.getByTestId(updateFlowConfirmation),
   updateFlowPreviousEmail: () => page.getByTestId(updateFlowPreviousEmail),
   updateFlowTitle: () => page.getByTestId(updateFlowTitle),
 };

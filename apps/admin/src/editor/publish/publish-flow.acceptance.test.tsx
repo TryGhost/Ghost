@@ -110,8 +110,7 @@ async function renderPublishFlow(
 ) {
   const dispatch = completesWith(saved());
   const onCompleted = vi.fn();
-
-  const rendered = await render(
+  const renderModal = (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>> = {}) => (
     <TestWrapper>
       <PublishFlowModal
         dispatch={dispatch}
@@ -122,11 +121,20 @@ async function renderPublishFlow(
         onClose={() => {}}
         onCompleted={onCompleted}
         {...props}
+        {...nextProps}
       />
-    </TestWrapper>,
+    </TestWrapper>
   );
 
-  return { dispatch, onCompleted, unmount: () => rendered.unmount() };
+  const rendered = await render(renderModal());
+
+  return {
+    dispatch,
+    onCompleted,
+    rerender: (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>>) =>
+      rendered.rerender(renderModal(nextProps)),
+    unmount: () => rendered.unmount(),
+  };
 }
 
 describe('Publish flow', () => {
@@ -142,7 +150,7 @@ describe('Publish flow', () => {
   it(
     'publishes and emails a draft, then hands the celebration to the list',
     async () => {
-      const { dispatch } = await renderPublishFlow();
+      const { dispatch, onCompleted } = await renderPublishFlow();
 
       await expect.element(publishScreen.options()).toBeInTheDocument();
       await publishScreen.continueButton().click();
@@ -167,6 +175,12 @@ describe('Publish flow', () => {
       await expect
         .element(publishScreen.complete())
         .toHaveTextContent('That’s 42 posts published, keep going!');
+      expect(onCompleted).toHaveBeenCalledTimes(1);
+      expect(onCompleted).toHaveBeenCalledWith({
+        postId: POST_ID,
+        isScheduled: false,
+        hasEmail: true,
+      });
     },
     SLOW,
   );
@@ -219,6 +233,61 @@ describe('Publish flow', () => {
     },
     SLOW,
   );
+
+  it('completes nothing when the flow is torn down during the save', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const { onCompleted, unmount } = await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+
+    await unmount();
+    finishDispatch(saved());
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onCompleted).not.toHaveBeenCalled();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('cannot return to settings or dispatch twice while the save is running', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.backToSettings()).toBeDisabled();
+
+    publishScreen
+      .backToSettings()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    publishScreen
+      .confirmButton()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+
+    finishDispatch(saved());
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
 
   it('publishes without emailing when the publish-only type is chosen', async () => {
     const { dispatch } = await renderPublishFlow();
@@ -308,6 +377,22 @@ describe('Publish flow', () => {
     SLOW,
   );
 
+  it('cannot continue with Email only after clearing every recipient', async () => {
+    await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    publishScreen
+      .continueButton()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
   it('gates the flow behind the TK reminder', async () => {
     await renderPublishFlow({ tkCount: 2 });
 
@@ -362,6 +447,19 @@ describe('Publish flow', () => {
       .toHaveTextContent('Someone else has edited this post');
   });
 
+  it('recovers when the publish dispatcher rejects unexpectedly', async () => {
+    const dispatch = vi.fn(() => Promise.reject(new Error('The save engine stopped')));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent('The save engine stopped');
+    await expect
+      .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'))
+      .toBe(false);
+  });
+
   it('links the upgrade phrase in a host limit without completing', async () => {
     const dispatch = completesWith(
       failed('host-limit', 'Your plan is full, please upgrade to publish more.'),
@@ -396,6 +494,45 @@ describe('Publish flow', () => {
       .toBeInTheDocument();
     // A blocked publish offers no way forward.
     await expect.element(publishScreen.continueButton()).not.toBeInTheDocument();
+  });
+
+  it('rechecks limit readiness when the mounted flow moves to another post', async () => {
+    let finishSecondCheck: () => void = () => {};
+    const secondCheck = () =>
+      new Promise<void>((resolve) => {
+        finishSecondCheck = resolve;
+      });
+    const rendered = await renderPublishFlow();
+
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+
+    await rendered.rerender({
+      post: draft({ id: 'post-2' }),
+      limits: { checkPublishingLimit: secondCheck },
+    });
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(true);
+    finishSecondCheck();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+  });
+
+  it('does not strand the options step when refreshing limits fails', async () => {
+    await renderPublishFlow({
+      limits: { refreshSettings: () => Promise.reject(new Error('Settings are offline')) },
+    });
+
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
   });
 
   it(
@@ -449,6 +586,35 @@ describe('Publish flow', () => {
       await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
       await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
       await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
+    },
+    SLOW,
+  );
+
+  it(
+    'never claims an email-only send landed when the reload has no email',
+    async () => {
+      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+        posts: [{ id: POST_ID, status: 'published', email: null }],
+      });
+      const { onCompleted } = await renderPublishFlow();
+
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Email only').click();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect
+        .element(publishScreen.completeNote())
+        .toHaveTextContent('couldn’t confirm the newsletter was sent');
+      await expect
+        .element(publishScreen.complete())
+        .toHaveTextContent('Your post has been created');
+      await expect.element(publishScreen.complete()).not.toHaveTextContent('email has been sent');
+      expect(onCompleted).toHaveBeenCalledWith({
+        postId: POST_ID,
+        isScheduled: false,
+        hasEmail: false,
+      });
     },
     SLOW,
   );
@@ -508,6 +674,65 @@ describe('Publish flow', () => {
     },
     SLOW,
   );
+
+  it('reports a retry failure when the failed email has no id', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: { email_count: 0, opened_count: 0, status: 'failed', error: 'Sending failed' },
+      }),
+    });
+
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.emailError().getByRole('alert'))
+      .toHaveTextContent('Unknown Error occurred when attempting to resend');
+  });
+
+  it('describes an at-open failed email-only post as created, not published', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'sent',
+        email: {
+          id: EMAIL_ID,
+          email_count: 20,
+          opened_count: 0,
+          status: 'failed',
+          error: 'Sending failed',
+        },
+      }),
+    });
+
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent('Your post has been created but the email failed to send.');
+    await expect.element(publishScreen.emailError()).not.toHaveTextContent('has been published');
+  });
+
+  it('takes a draft with a failed historic email through the normal publish dispatch', async () => {
+    const { dispatch } = await renderPublishFlow({
+      post: draft({
+        email: {
+          id: EMAIL_ID,
+          email_count: 20,
+          opened_count: 0,
+          status: 'failed',
+          error: 'Sending failed',
+        },
+      }),
+    });
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false },
+    });
+  });
 });
 
 describe('Update flow', () => {
@@ -539,6 +764,123 @@ describe('Update flow', () => {
     await expect.poll(() => onClose.mock.calls.length).toBe(1);
   });
 
+  it('recovers when the revert dispatcher rejects unexpectedly', async () => {
+    const dispatch = vi.fn(() => Promise.reject(new Error('The revert stopped')));
+    const onClose = vi.fn();
+
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+        />
+      </TestWrapper>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect
+      .element(publishScreen.updateFlow().getByRole('alert'))
+      .toHaveTextContent('The revert stopped');
+    await expect
+      .poll(() => publishScreen.revertToDraft().element().hasAttribute('disabled'))
+      .toBe(false);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('abandons a pending revert when the update flow closes', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </TestWrapper>,
+    );
+
+    await publishScreen.revertToDraft().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await publishScreen.updateFlow().getByRole('button', { name: 'Close' }).click();
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    finishDispatch(saved('draft'));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onReverted).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('abandons a pending revert when the mounted update flow changes posts', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+    const modal = (post: PublishFlowPost) => (
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={post}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </TestWrapper>
+    );
+    const rendered = await render(
+      modal(draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })),
+    );
+
+    await publishScreen.revertToDraft().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await rendered.rerender(
+      modal(
+        draft({
+          id: 'post-2',
+          status: 'scheduled',
+          publishedAt: '2026-09-10T09:00:00.000Z',
+        }),
+      ),
+    );
+    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('scheduled');
+
+    finishDispatch(saved('draft'));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onReverted).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    await expect.element(publishScreen.updateFlow().getByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('names a since-archived newsletter a scheduled post was already sent to', async () => {
     await render(
       <TestWrapper>
@@ -567,5 +909,149 @@ describe('Update flow', () => {
     await expect
       .element(publishScreen.updateFlowPreviousEmail())
       .toHaveTextContent('on 1 Sep 2026 at 09:00');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published on your site');
+  });
+
+  it('describes the audience for a scheduled email that has not been sent yet', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to 20 subscribers');
+  });
+
+  it('does not claim a scheduled email-only post will be published', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+            emailOnly: true,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('will be sent to 20 subscribers');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('published and sent');
+  });
+
+  it('does not count the current default newsletter for a missing persisted newsletter', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'retired',
+            newsletterName: 'Retired Weekly',
+            newsletterStatus: 'archived',
+            emailSegment: 'label:vip',
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers of Retired Weekly');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('20 subscribers');
+  });
+
+  it('does not replace a missing persisted segment with the current site default', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: null,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('20 subscribers');
+  });
+
+  it('does not claim that a failed published email was sent', async () => {
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'published',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            email: {
+              id: EMAIL_ID,
+              email_count: 12,
+              opened_count: 0,
+              status: 'failed',
+            },
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published on your site');
   });
 });

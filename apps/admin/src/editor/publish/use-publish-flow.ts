@@ -2,10 +2,18 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import {
+  confirmationResponseSchema,
+  publishedPostCountResponseSchema,
+} from './api-response-schemas';
 import { createEmailConfirmation } from './email-confirmation';
 import { createPublishOptions } from './publish-options';
-import { describeCompletionFailure, type CompletionFailure } from './completion-message';
-import { EDITOR_FETCH_OPTIONS } from './request-options';
+import {
+  describeCompletionFailure,
+  describeRejectedAction,
+  type CompletionFailure,
+} from './completion-message';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -66,6 +74,8 @@ export interface PublishFlow {
   retryEmail: () => Promise<void>;
   retryStatus: ConfirmStatus;
   retryFailure: string | null;
+  /** Abandons any asynchronous continuation before the caller closes the modal. */
+  cancel: () => void;
 }
 
 const UNKNOWN_EMAIL_ERROR = 'Unknown error';
@@ -74,7 +84,12 @@ export const EMAIL_UNCONFIRMED =
   'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
 
 function initialEmailError(post: PublishFlowPost): string | null {
-  return post.email?.status === 'failed' ? (post.email.error ?? UNKNOWN_EMAIL_ERROR) : null;
+  const didEmailFail =
+    post.displayName === 'post' &&
+    (post.status === 'published' || post.status === 'sent') &&
+    post.email?.status === 'failed';
+
+  return didEmailFail ? (post.email?.error ?? UNKNOWN_EMAIL_ERROR) : null;
 }
 
 export function usePublishFlow({
@@ -115,13 +130,20 @@ export function usePublishFlow({
     () =>
       createEmailConfirmation({
         reload: async (postId) => {
-          const data = await fetchApi<{ posts: PublishFlowPost[] }>(
-            apiUrl(`/posts/${postId}/`, { include: 'email' }),
-            EDITOR_FETCH_OPTIONS,
+          const data = confirmationResponseSchema.parse(
+            await fetchApi<unknown>(
+              apiUrl(`/posts/${postId}/`, { include: 'email' }),
+              EDITOR_REQUEST_OPTIONS,
+            ),
           );
-          const reloaded = data.posts?.[0];
-          emailIdRef.current = reloaded?.email?.id ?? emailIdRef.current;
-          return { status: reloaded?.status, email: reloaded?.email ?? null };
+          const reloaded = data.posts.at(0);
+
+          if (!reloaded) {
+            throw new Error('The published post was missing from its reload response.');
+          }
+
+          emailIdRef.current = reloaded.email?.id ?? emailIdRef.current;
+          return { status: reloaded.status, email: reloaded.email ?? null };
         },
         retry: async (emailId) => {
           await retryEmailRequest(emailId);
@@ -140,28 +162,47 @@ export function usePublishFlow({
   );
   const [postCount, setPostCount] = useState<number | null>(null);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
-  const [limitsChecked, setLimitsChecked] = useState(false);
+  const [checkedMachine, setCheckedMachine] = useState<PublishOptionsMachine | null>(null);
   const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
-  const [captured, setCaptured] = useState({
-    willPublish: true,
-    willEmail: false,
-    willOnlyEmail: false,
-    isScheduled: false,
+  const [captured, setCaptured] = useState(() => {
+    if (initialEmailError(post)) {
+      return {
+        willPublish: post.status === 'published' && post.emailOnly !== true,
+        willEmail: true,
+        willOnlyEmail: post.emailOnly === true || post.status === 'sent',
+        isScheduled: false,
+      };
+    }
+
+    const initialState = machine.getState();
+    return {
+      willPublish: initialState.willPublish,
+      willEmail: initialState.willEmail,
+      willOnlyEmail: initialState.willOnlyEmail,
+      isScheduled: initialState.isScheduled,
+    };
   });
+  const activeRef = useRef(true);
+  const completedRef = useRef(false);
+  const publishRunningRef = useRef(false);
+  const retryRunningRef = useRef(false);
 
   // A schedule chosen before the editor sat idle may now be in the past.
   useEffect(() => {
     machine.resetPastScheduledAt();
     let cancelled = false;
 
-    void machine.checkLimits().then(() => {
-      if (!cancelled) {
-        setLimitsChecked(true);
-        refresh();
-      }
-    });
+    void machine
+      .checkLimits()
+      .catch(() => undefined)
+      .then(() => {
+        if (!cancelled) {
+          setCheckedMachine(machine);
+          refresh();
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -170,11 +211,16 @@ export function usePublishFlow({
 
   const confirmationRef = useRef(confirmation);
   confirmationRef.current = confirmation;
+  const cancel = useCallback(() => {
+    activeRef.current = false;
+    confirmationRef.current.cancel();
+  }, []);
 
   // Only leaving the flow abandons a poll; a re-render must not interrupt one.
-  useEffect(() => () => confirmationRef.current.cancel(), []);
+  useEffect(() => cancel, [cancel]);
 
   const state = machine.getState();
+  const limitsChecked = checkedMachine === machine;
 
   const fetchPostCount = useCallback(async () => {
     // No count is shown for pages, scheduled posts, or email-only posts.
@@ -184,17 +230,26 @@ export function usePublishFlow({
     }
 
     try {
-      const data = await fetchApi<{ meta?: { pagination?: { total?: number } } }>(
-        apiUrl('/posts/', { filter: 'status:published', limit: '1' }),
-        EDITOR_FETCH_OPTIONS,
+      const data = publishedPostCountResponseSchema.parse(
+        await fetchApi<unknown>(
+          apiUrl('/posts/', { filter: `status:published+id:-'${post.id}'`, limit: '1' }),
+          EDITOR_REQUEST_OPTIONS,
+        ),
       );
-      setPostCount((data.meta?.pagination?.total ?? 0) + 1);
+      if (activeRef.current) {
+        setPostCount(data.meta.pagination.total + 1);
+      }
     } catch {
-      setPostCount(null);
+      if (activeRef.current) {
+        setPostCount(null);
+      }
     }
-  }, [fetchApi, post.displayName, state.isScheduled, state.willPublish]);
+  }, [fetchApi, post.displayName, post.id, state.isScheduled, state.willPublish]);
 
   const toConfirm = useCallback(() => {
+    if (!limitsChecked || !state.canPublish) {
+      return;
+    }
     setCaptured({
       willPublish: state.willPublish,
       willEmail: state.willEmail,
@@ -205,28 +260,42 @@ export function usePublishFlow({
     setConfirmStatus('idle');
     setStep('confirm');
     void fetchPostCount();
-  }, [fetchPostCount, state]);
+  }, [fetchPostCount, limitsChecked, state]);
 
   const toOptions = useCallback(() => {
+    if (publishRunningRef.current) {
+      return;
+    }
     setStep('options');
     setConfirmStatus('idle');
   }, []);
 
   const complete = useCallback(
     (isScheduled: boolean, hasEmail: boolean) => {
+      if (!activeRef.current || completedRef.current) {
+        return;
+      }
+      completedRef.current = true;
       setEmailErrorMessage(null);
       setConfirmStatus('success');
       setStep('complete');
       // The server stamps the publish time; this is the closest the client has.
       setCompletedAt(new Date().toISOString());
-      writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
-      onCompleted?.({ postId: post.id, isScheduled, hasEmail });
+      try {
+        writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
+      } finally {
+        onCompleted?.({ postId: post.id, isScheduled, hasEmail });
+      }
     },
     [onCompleted, post.displayName, post.id],
   );
 
   const applyEmailOutcome = useCallback(
     (outcome: EmailConfirmationOutcome, isScheduled: boolean): void => {
+      if (!activeRef.current) {
+        return;
+      }
+
       if (outcome.kind === 'failed') {
         setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
         setStep('email-error');
@@ -241,22 +310,27 @@ export function usePublishFlow({
         return;
       }
 
+      if (outcome.kind !== 'submitted') {
+        setEmailNote(EMAIL_UNCONFIRMED);
+      }
       complete(isScheduled, outcome.kind !== 'not-needed');
     },
     [complete],
   );
 
   const confirmPublish = useCallback(async () => {
-    if (confirmStatus === 'running') {
+    if (publishRunningRef.current) {
       return;
     }
 
+    publishRunningRef.current = true;
     setFailure(null);
     setConfirmStatus('running');
 
     const command = machine.toDispatch();
 
     if (!command) {
+      publishRunningRef.current = false;
       setFailure({ message: 'This post can no longer be published from here. Reload the editor.' });
       setConfirmStatus('failure');
       return;
@@ -267,15 +341,38 @@ export function usePublishFlow({
     try {
       await onBeforePublish?.();
     } catch (error) {
-      setFailure({ message: error instanceof Error ? error.message : String(error) });
-      setConfirmStatus('failure');
+      if (activeRef.current) {
+        publishRunningRef.current = false;
+        setFailure(describeRejectedAction(error));
+        setConfirmStatus('failure');
+      }
       return;
     }
 
-    const completion = await dispatch(command);
+    if (!activeRef.current) {
+      return;
+    }
+
+    let completion: SaveCompletion;
+
+    try {
+      completion = await dispatch(command);
+    } catch (error) {
+      if (activeRef.current) {
+        publishRunningRef.current = false;
+        setFailure(describeRejectedAction(error));
+        setConfirmStatus('failure');
+      }
+      return;
+    }
+
+    if (!activeRef.current) {
+      return;
+    }
     const completionFailure = describeCompletionFailure(completion);
 
     if (completionFailure) {
+      publishRunningRef.current = false;
       setFailure(completionFailure);
       setConfirmStatus('failure');
       // A re-auth interruption sends the user back to confirm and try again.
@@ -286,17 +383,24 @@ export function usePublishFlow({
     // Stays 'running' across the email poll: the publish is not finished until
     // the email is submitted, and the button must not invite a second dispatch.
     if (willEmailImmediately) {
+      let outcome: EmailConfirmationOutcome;
+
       try {
         // No `currentPost`: the acknowledged result carries no email, and the
         // pre-save one would short-circuit the poll to "not needed".
-        const outcome = await confirmation.confirm(post.id);
-        applyEmailOutcome(outcome, isScheduled);
+        outcome = await confirmation.confirm(post.id);
       } catch {
+        if (!activeRef.current) {
+          return;
+        }
         // The post is published either way; only the email's fate is unknown,
         // so the flow completes rather than stranding a disabled button.
         setEmailNote(EMAIL_UNCONFIRMED);
         complete(isScheduled, true);
+        return;
       }
+
+      applyEmailOutcome(outcome, isScheduled);
       return;
     }
 
@@ -304,7 +408,6 @@ export function usePublishFlow({
   }, [
     applyEmailOutcome,
     complete,
-    confirmStatus,
     confirmation,
     dispatch,
     machine,
@@ -316,17 +419,29 @@ export function usePublishFlow({
   const retryEmail = useCallback(async () => {
     const emailId = emailIdRef.current;
 
-    if (!emailId || retryStatus === 'running') {
+    if (retryRunningRef.current) {
       return;
     }
 
+    if (!emailId) {
+      setRetryFailure(UNKNOWN_RETRY_ERROR);
+      setRetryStatus('failure');
+      return;
+    }
+
+    retryRunningRef.current = true;
     setRetryFailure(null);
     setRetryStatus('running');
 
     try {
       const outcome = await confirmation.retryAndConfirm(post.id, emailId);
 
+      if (!activeRef.current) {
+        return;
+      }
+
       if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
+        retryRunningRef.current = false;
         if (outcome.kind === 'failed') {
           setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
         }
@@ -334,13 +449,19 @@ export function usePublishFlow({
         return;
       }
 
+      if (outcome.kind !== 'submitted') {
+        setEmailNote(EMAIL_UNCONFIRMED);
+      }
       setRetryStatus('success');
       complete(false, outcome.kind !== 'not-needed');
     } catch (error) {
-      setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
-      setRetryStatus('failure');
+      if (activeRef.current) {
+        retryRunningRef.current = false;
+        setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
+        setRetryStatus('failure');
+      }
     }
-  }, [complete, confirmation, post.id, retryStatus]);
+  }, [complete, confirmation, post.id]);
 
   return {
     machine,
@@ -361,5 +482,6 @@ export function usePublishFlow({
     retryEmail,
     retryStatus,
     retryFailure,
+    cancel,
   };
 }

@@ -44,7 +44,12 @@ export interface PublishFlowModalProps {
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
 
-export function PublishFlowModal({
+export function PublishFlowModal({ post, ...props }: PublishFlowModalProps) {
+  return <KeyedPublishFlowModal key={post.id} post={post} {...props} />;
+}
+
+/** A post change is a new journey; no gate, failure, or completion state carries across it. */
+function KeyedPublishFlowModal({
   post,
   site,
   user,
@@ -143,6 +148,10 @@ function PublishFlowDialog({
     onCompleted,
   });
   const { machine, state, step } = flow;
+  const close = () => {
+    flow.cancel();
+    onClose();
+  };
 
   const transition =
     <T,>(apply: (value: T) => void) =>
@@ -152,7 +161,7 @@ function PublishFlowDialog({
     };
 
   return (
-    <Dialog modal={false} open onOpenChange={(open) => !open && onClose()}>
+    <Dialog modal={false} open onOpenChange={(open) => !open && close()}>
       <DialogContent
         className={FULLSCREEN}
         data-testid={publishFlowModal}
@@ -163,7 +172,7 @@ function PublishFlowDialog({
           <Inline className="py-4" justify="end">
             {step === 'complete' ? null : (
               <>
-                <Button variant="outline" onClick={onClose}>
+                <Button variant="outline" onClick={close}>
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (

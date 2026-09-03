@@ -3,13 +3,21 @@
  * caller gates the result on the `paywallImprovements` flag, as Ember does.
  */
 
+import { z } from 'zod';
+
 export type PublicPreviewWarning = 'public-access' | 'no-content-before' | 'no-content-after';
 
-interface LexicalNode {
-  type?: string;
-  text?: unknown;
-  children?: unknown;
-}
+const lexicalNodeSchema = z.looseObject({
+  type: z.string(),
+  text: z.unknown().optional(),
+  children: z.array(z.unknown()).optional(),
+});
+
+const lexicalStateSchema = z.looseObject({
+  root: z.looseObject({
+    children: z.array(z.unknown()),
+  }),
+});
 
 export interface PublicPreviewWarningPost {
   /** The unsaved body when the editor has one, else the persisted body. */
@@ -17,22 +25,32 @@ export interface PublicPreviewWarningPost {
   visibility?: string | null;
 }
 
-function parseLexicalState(lexical: string | object | null | undefined): LexicalNode | null {
+function parseLexicalState(
+  lexical: string | object | null | undefined,
+): z.infer<typeof lexicalStateSchema> | null {
   if (!lexical) {
     return null;
   }
 
   try {
-    return (typeof lexical === 'string' ? JSON.parse(lexical) : lexical) as LexicalNode;
+    const candidate: unknown = typeof lexical === 'string' ? JSON.parse(lexical) : lexical;
+    const parsed = lexicalStateSchema.safeParse(candidate);
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }
 }
 
 function hasContent(node: unknown): boolean {
-  const candidate = node as LexicalNode | null;
+  const parsed = lexicalNodeSchema.safeParse(node);
 
-  if (!candidate || candidate.type === 'paywall' || candidate.type === 'linebreak') {
+  if (!parsed.success) {
+    return false;
+  }
+
+  const candidate = parsed.data;
+
+  if (candidate.type === 'paywall' || candidate.type === 'linebreak') {
     return false;
   }
 
@@ -54,16 +72,17 @@ function hasContent(node: unknown): boolean {
 export function getPublicPreviewWarning(
   post: PublicPreviewWarningPost,
 ): PublicPreviewWarning | null {
-  const state = parseLexicalState(post.lexical) as { root?: { children?: unknown } } | null;
+  const state = parseLexicalState(post.lexical);
   const children = state?.root?.children;
 
-  if (!Array.isArray(children)) {
+  if (!children) {
     return null;
   }
 
-  const publicPreviewIndex = children.findIndex(
-    (node) => (node as LexicalNode | null)?.type === 'paywall',
-  );
+  const publicPreviewIndex = children.findIndex((node) => {
+    const parsed = lexicalNodeSchema.safeParse(node);
+    return parsed.success && parsed.data.type === 'paywall';
+  });
 
   if (publicPreviewIndex === -1) {
     return null;

@@ -23,6 +23,8 @@ export interface PublishFlowPost {
   newsletterName?: string | null;
   newsletterStatus?: string | null;
   emailSegment?: string | null;
+  /** The durable `email_only` flag; scheduled email-only posts still have `status: scheduled`. */
+  emailOnly?: boolean;
   email?: Email | null;
   /** When the post's email was created, for the update flow's historic sentence. */
   emailCreatedAt?: string | null;

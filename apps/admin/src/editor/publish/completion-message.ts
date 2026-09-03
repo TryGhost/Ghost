@@ -17,6 +17,19 @@ export interface CompletionFailure {
   parts?: LimitMessagePart[];
 }
 
+/** Turns an unexpected rejected promise into safe inline copy. */
+export function describeRejectedAction(error: unknown): CompletionFailure {
+  if (error instanceof Error && error.message) {
+    return { message: error.message };
+  }
+
+  if (typeof error === 'string' && error) {
+    return { message: error };
+  }
+
+  return { message: UNKNOWN_MESSAGE };
+}
+
 /**
  * Turns a non-success completion into the confirm step's inline error.
  * Ported from `publish-flow/confirm.js` :108-138, re-expressed over the

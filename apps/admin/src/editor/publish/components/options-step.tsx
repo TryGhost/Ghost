@@ -194,7 +194,7 @@ export function OptionsStep({
         <div>
           <Button
             data-testid={publishContinueButton}
-            disabled={!limitsChecked}
+            disabled={!limitsChecked || !state.canPublish}
             size="lg"
             onClick={onContinue}
           >

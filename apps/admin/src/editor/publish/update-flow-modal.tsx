@@ -1,8 +1,13 @@
 import { Banner, Button, Dialog, DialogContent, DialogTitle } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import {
+  getFullRecipientFilter,
+  getNewsletterRecipientFilter,
+  normalizeRecipientFilter,
+} from '@tryghost/admin-x-framework/utils/recipient-filter';
 import {
   publishRevertToDraft,
   updateFlowConfirmation,
@@ -11,11 +16,16 @@ import {
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
 import { createPublishOptions } from './publish-options';
-import { describeCompletionFailure, type CompletionFailure } from './completion-message';
+import {
+  describeCompletionFailure,
+  describeRejectedAction,
+  type CompletionFailure,
+} from './completion-message';
 import { formatSiteDateTime } from './publish-copy';
 import type { PublishDispatcher } from './use-publish-flow';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
+import type { SaveCompletion } from '@/editor/engine/save-engine';
 
 const FULLSCREEN =
   'top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 overflow-y-auto rounded-none border-0 p-0 shadow-none sm:rounded-none';
@@ -38,7 +48,11 @@ function pluralSubscribers(count: number | null | undefined): string {
   return `${formatNumber(count)} ${count === 1 ? 'subscriber' : 'subscribers'}`;
 }
 
-export function UpdateFlowModal({
+export function UpdateFlowModal({ post, ...props }: UpdateFlowModalProps) {
+  return <KeyedUpdateFlowModal key={post.id} post={post} {...props} />;
+}
+
+function KeyedUpdateFlowModal({
   post,
   site,
   user,
@@ -61,39 +75,93 @@ export function UpdateFlowModal({
     });
   }, [post.id]);
   const state = machine.getState();
-  const { count } = useMembersCount(state.fullRecipientFilter);
+  const isScheduled = post.status === 'scheduled';
+  const isSent = post.status === 'sent';
+  const emailOnly = post.emailOnly === true || isSent;
+  const willEmail = isScheduled && Boolean(post.newsletter) && !post.email;
+  const hasBeenEmailed =
+    post.displayName === 'post' &&
+    (post.status === 'sent' || post.status === 'published') &&
+    Boolean(post.email && post.email.status !== 'failed');
+  const persistedNewsletter = site.newsletters.find(
+    (newsletter) => newsletter.slug === post.newsletter,
+  );
+  const persistedSegment = normalizeRecipientFilter(post.emailSegment);
+  const scheduledRecipientFilter =
+    willEmail && persistedNewsletter && persistedSegment
+      ? getFullRecipientFilter(getNewsletterRecipientFilter(persistedNewsletter), persistedSegment)
+      : null;
+  const { count: queriedCount } = useMembersCount(scheduledRecipientFilter);
+  const count = scheduledRecipientFilter ? queriedCount : null;
   const [failure, setFailure] = useState<CompletionFailure | null>(null);
   const [running, setRunning] = useState(false);
-
-  const isScheduled = post.status === 'scheduled';
-  const emailOnly = post.status === 'sent';
-  const hasBeenEmailed = Boolean(post.email);
+  const runningRef = useRef(false);
+  const activeRef = useRef(true);
   // The post's own newsletter, not the picker's: a send to a since-archived
   // newsletter must still be named, or it reads as a send to the default one.
   const showNewsletterName = !state.onlyDefaultNewsletter || post.newsletterStatus === 'archived';
+  const close = () => {
+    if (!activeRef.current) {
+      return;
+    }
+    activeRef.current = false;
+    onClose();
+  };
+
+  useEffect(
+    () => () => {
+      activeRef.current = false;
+    },
+    [],
+  );
 
   const revert = async () => {
+    if (runningRef.current) {
+      return;
+    }
+    runningRef.current = true;
     setFailure(null);
     setRunning(true);
 
-    const completion = await dispatch(machine.toRevertDispatch());
-    const completionFailure = describeCompletionFailure(completion);
+    let completion: SaveCompletion;
 
-    setRunning(false);
-
-    if (completionFailure) {
-      setFailure(completionFailure);
+    try {
+      completion = await dispatch(machine.toRevertDispatch());
+    } catch (error) {
+      if (activeRef.current) {
+        setFailure(describeRejectedAction(error));
+        setRunning(false);
+      }
+      runningRef.current = false;
       return;
     }
 
+    if (!activeRef.current) {
+      runningRef.current = false;
+      return;
+    }
+
+    const completionFailure = describeCompletionFailure(completion);
+
+    if (completionFailure) {
+      setFailure(completionFailure);
+      setRunning(false);
+      runningRef.current = false;
+      return;
+    }
+
+    setRunning(false);
+    runningRef.current = false;
     onReverted?.();
-    onClose();
+    if (activeRef.current) {
+      close();
+    }
   };
 
   const publishedAt = post.publishedAt;
 
   return (
-    <Dialog modal={false} open onOpenChange={(open) => !open && onClose()}>
+    <Dialog modal={false} open onOpenChange={(open) => !open && close()}>
       <DialogContent
         className={FULLSCREEN}
         data-testid={updateFlowModal}
@@ -102,24 +170,24 @@ export function UpdateFlowModal({
         <DialogTitle className="sr-only">{isScheduled ? 'Unschedule' : 'Unpublish'}</DialogTitle>
         <Stack className="mx-auto w-full max-w-2xl px-6 pb-16" gap="xl">
           <Inline className="py-4" justify="end">
-            {emailOnly ? null : (
-              <Button variant="outline" onClick={onClose}>
+            {isSent ? null : (
+              <Button variant="outline" onClick={close}>
                 Close
               </Button>
             )}
           </Inline>
 
           <Text as="h2" data-testid={updateFlowTitle} size="3xl" weight="bold">
-            This {post.displayName} {emailOnly ? 'was' : 'has been'}{' '}
+            This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
             <span className="text-state-success">
               {post.status}
-              {emailOnly ? ' by email' : ''}
+              {isSent ? ' by email' : ''}
             </span>
           </Text>
 
           <Text data-testid={updateFlowConfirmation}>
             Your {post.displayName} {isScheduled ? 'will be' : 'was'}{' '}
-            {hasBeenEmailed || state.willEmail ? (
+            {hasBeenEmailed || willEmail ? (
               <>
                 {emailOnly ? 'sent to' : 'published and sent to'}{' '}
                 <strong>

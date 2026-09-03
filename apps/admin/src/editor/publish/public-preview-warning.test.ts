@@ -54,8 +54,33 @@ describe('getPublicPreviewWarning', () => {
     ).toBeNull();
   });
 
+  it('does not count a malformed object as content', () => {
+    expect(
+      getPublicPreviewWarning({
+        lexical: lexical([paragraph('Above'), paywall, {}]),
+        visibility: 'paid',
+      }),
+    ).toBe('no-content-after');
+  });
+
   it('is silent on unparseable or absent content', () => {
     expect(getPublicPreviewWarning({ lexical: 'not json', visibility: 'paid' })).toBeNull();
     expect(getPublicPreviewWarning({ lexical: null, visibility: 'paid' })).toBeNull();
+  });
+
+  it.each([
+    ['a primitive root', { root: 'text' }],
+    ['a non-array child collection', { root: { children: [{ type: 'paragraph', children: {} }] } }],
+  ])('is silent on malformed Lexical data with %s', (_name, value) => {
+    expect(getPublicPreviewWarning({ lexical: value, visibility: 'paid' })).toBeNull();
+  });
+
+  it('ignores primitive top-level nodes when evaluating content', () => {
+    expect(
+      getPublicPreviewWarning({
+        lexical: { root: { children: ['text', paywall, paragraph('Below')] } },
+        visibility: 'paid',
+      }),
+    ).toBe('no-content-before');
   });
 });
