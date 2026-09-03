@@ -115,7 +115,7 @@
     "@tryghost/kg-html-to-lexical": "workspace:*",
     "@tryghost/kg-lexical-html-renderer": "workspace:*",
     "@tryghost/kg-markdown-html-renderer": "workspace:*",
-    "@tryghost/limit-service": "catalog:",
+    "@tryghost/limit-service": "workspace:*",
     "@tryghost/logging": "catalog:",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/metrics": "catalog:",

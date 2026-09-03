@@ -53,7 +53,7 @@
     "@tryghost/kg-clean-basic-html": "workspace:*",
     "@tryghost/kg-converters": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
-    "@tryghost/limit-service": "catalog:",
+    "@tryghost/limit-service": "workspace:*",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/string": "catalog:",
