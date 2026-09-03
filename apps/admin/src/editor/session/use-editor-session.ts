@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
@@ -9,12 +10,14 @@ import {
   useAddPage,
   useEditPage,
   useEditorPage,
+  pagesDataType,
   type PageEditableData,
 } from '@tryghost/admin-x-framework/api/pages';
 import {
   useAddPost,
   useEditPost,
   useEditorPost,
+  postsDataType,
   type PostEditableData,
 } from '@tryghost/admin-x-framework/api/posts';
 import type {
@@ -109,6 +112,7 @@ export function useEditorSession({
   const navigate = useNavigate();
   const sessionKey = useEditorSessionKey();
   const fetchApi = useFetchApi();
+  const queryClient = useQueryClient();
   const generateSlug = useGenerateSlug();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
@@ -223,18 +227,17 @@ export function useEditorSession({
       return 'failed';
     }
 
-    let fresh: EditorRecord | undefined;
+    const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
+    const url = apiUrl(path, buildPostEditorReadParams());
+    const queryKey = [postType === 'page' ? pagesDataType : postsDataType, url] as const;
+    let data: EditorReadResponse;
     try {
-      const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
-      const data = await fetchApi<EditorReadResponse>(
-        apiUrl(path, buildPostEditorReadParams()),
-        EDITOR_REQUEST_OPTIONS,
-      );
-      fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
+      data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
     } catch (error) {
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
     }
 
+    const fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
     if (!fresh) {
       return 'gone';
     }
@@ -242,13 +245,18 @@ export function useEditorSession({
     if (!session.recordReloaded(fresh)) {
       return 'failed';
     }
+    // The loader owns the same query. Seed it with the accepted document so a
+    // quick close and reopen cannot resurrect the stale version it first read.
+    // Cancel first so an older refetch cannot land after this write.
+    await queryClient.cancelQueries({ queryKey, exact: true });
+    queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setExcerpt(fresh.custom_excerpt ?? '');
     setInitialLexical(fresh.lexical ?? null);
     setLoadedRecord(fresh);
     setContentKey((key) => key + 1);
     return 'reloaded';
-  }, [fetchApi, persistedId, postType, session]);
+  }, [fetchApi, persistedId, postType, queryClient, session]);
 
   const contentText = useCallback(
     () => contentToText(title, session.getLiveLexical()),
