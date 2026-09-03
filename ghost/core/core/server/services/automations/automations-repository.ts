@@ -147,8 +147,12 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
+export interface BrowseOptions {
+  includeDatabaseStats?: boolean;
+}
+
 export interface AutomationsRepository {
-  browse(): Promise<Page<AutomationBrowseResult>>;
+  browse(options?: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
   getById(id: string): Promise<Automation | null>;
   getAutomationActionLinks(
     automationId: string,

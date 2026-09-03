@@ -6,12 +6,17 @@ import { createDatabaseAutomationsRepository } from './database-automations-repo
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import type { AutomationsRepository, EditAutomationData } from './automations-repository';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { EMPTY_AUTOMATION_STATS, fetchAutomationStats } from './tinybird-automation-stats';
 
 const { knex } = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 const lexicalLib = require('../../lib/lexical');
+const requestExternal = require('../../lib/request-external');
+const TinybirdServiceWrapper = require('../tinybird');
+const { create: createTinybirdClient } = require('../stats/utils/tinybird');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
@@ -72,8 +77,41 @@ const repository = createDatabaseAutomationsRepository({
   ),
 });
 
+function getTinybirdClient() {
+  if (!labs.isSet('automationRunAnalytics') || !config.get('tinybird')) {
+    return null;
+  }
+  if (!TinybirdServiceWrapper.instance) {
+    TinybirdServiceWrapper.init();
+  }
+  const tinybirdService = TinybirdServiceWrapper.instance;
+  if (!tinybirdService?.getToken()) {
+    return null;
+  }
+  return createTinybirdClient({ config, request: requestExternal, settingsCache, tinybirdService });
+}
+
 export async function browse() {
-  return await repository.browse();
+  const tinybirdClient = getTinybirdClient();
+  if (!tinybirdClient) {
+    return await repository.browse();
+  }
+
+  const [browseResult, stats] = await Promise.all([
+    repository.browse({ includeDatabaseStats: false }),
+    fetchAutomationStats(tinybirdClient),
+  ]);
+  if (!stats) {
+    return browseResult;
+  }
+
+  return {
+    ...browseResult,
+    data: browseResult.data.map((automation) => ({
+      ...automation,
+      stats: stats.get(automation.id) ?? EMPTY_AUTOMATION_STATS,
+    })),
+  };
 }
 
 export async function read(automationId: string) {

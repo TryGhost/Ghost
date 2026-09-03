@@ -1,10 +1,13 @@
 const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
 const sinon = require('sinon');
+const nock = require('nock');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const mailService = require('../../../core/server/services/mail');
+const TinybirdServiceWrapper = require('../../../core/server/services/tinybird');
+const configUtils = require('../../utils/config-utils');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
   MEMBER_WELCOME_EMAIL_SLUGS,
@@ -318,6 +321,81 @@ describe('Automations API', function () {
       const automation = body.automations.find((candidate) => candidate.id === automationId);
 
       assert.equal(automation.stats.in_progress_run_count, 1);
+    });
+
+    describe('with Tinybird configured', function () {
+      const TINYBIRD_ENDPOINT = 'https://api.tinybird.co';
+
+      beforeEach(function () {
+        configUtils.set('tinybird', {
+          workspaceId: 'test-workspace-id',
+          adminToken: 'test-admin-token',
+          stats: { endpoint: TINYBIRD_ENDPOINT },
+        });
+        TinybirdServiceWrapper.reset();
+      });
+
+      afterEach(async function () {
+        nock.cleanAll();
+        await configUtils.restore();
+        TinybirdServiceWrapper.reset();
+      });
+
+      it('populates stats from Tinybird instead of the database', async function () {
+        const { body: beforeBody } = await agent.get('automations').expectStatus(200);
+        const [automationId, otherAutomationId] = beforeBody.automations.map(
+          (automation) => automation.id,
+        );
+        await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
+
+        const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
+        const tinybird = nock(TINYBIRD_ENDPOINT)
+          .get('/v0/pipes/api_automation_browse_stats.json')
+          .query({ site_uuid: siteUuid })
+          .reply(200, {
+            data: [
+              {
+                automation_id: automationId,
+                last_run_created_at: '2026-02-01 01:00:00',
+                total_run_count: 5,
+                in_progress_run_count: 2,
+              },
+            ],
+          });
+
+        const { body } = await agent.get('automations').expectStatus(200);
+
+        assert.ok(tinybird.isDone());
+        const automation = body.automations.find((candidate) => candidate.id === automationId);
+        assert.deepEqual(automation.stats, {
+          last_run_created_at: '2026-02-01T01:00:00.000Z',
+          total_run_count: 5,
+          in_progress_run_count: 2,
+        });
+        const otherAutomation = body.automations.find(
+          (candidate) => candidate.id === otherAutomationId,
+        );
+        assert.deepEqual(otherAutomation.stats, {
+          last_run_created_at: null,
+          total_run_count: 0,
+          in_progress_run_count: 0,
+        });
+      });
+
+      it('omits stats when Tinybird is unavailable', async function () {
+        sinon.stub(console, 'error');
+        nock(TINYBIRD_ENDPOINT)
+          .get('/v0/pipes/api_automation_browse_stats.json')
+          .query(true)
+          .reply(500, 'nope');
+
+        const { body } = await agent.get('automations').expectStatus(200);
+
+        assert.equal(body.automations.length, 2);
+        for (const automation of body.automations) {
+          assert.equal(automation.stats, undefined);
+        }
+      });
     });
 
     it('upserts the default free and paid automations', async function () {

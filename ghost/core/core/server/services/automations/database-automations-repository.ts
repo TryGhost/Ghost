@@ -22,6 +22,7 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
+  BrowseOptions,
   EditAutomationData,
   Page,
 } from './automations-repository';
@@ -160,14 +161,18 @@ export function createDatabaseAutomationsRepository({
   fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
   return {
-    async browse(): Promise<Page<AutomationBrowseResult>> {
+    async browse({ includeDatabaseStats = true }: BrowseOptions = {}): Promise<
+      Page<AutomationBrowseResult>
+    > {
       return await knex.transaction(async (trx) => {
         await ensureDefaultAutomations(trx);
-        const rows = await loadAutomations(trx);
+        const data = includeDatabaseStats
+          ? (await loadAutomationsWithStats(trx)).map((row) => buildAutomationBrowseResult(row))
+          : (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
         return {
-          data: rows.map((row) => buildAutomationBrowseResult(row)),
+          data,
           meta: {
-            pagination: buildPagination(rows.length),
+            pagination: buildPagination(data.length),
           },
         };
       });
@@ -1070,7 +1075,13 @@ async function loadAutomationBySlug(
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+  return await trx('automations')
+    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .orderBy('name');
+}
+
+async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
   const inProgressRuns = trx('automation_run_steps')
     .distinct('automation_run_id')
     .where('status', 'pending')

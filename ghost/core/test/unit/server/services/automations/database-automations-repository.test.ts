@@ -643,6 +643,15 @@ describe('automations repository', function () {
   });
 
   describe('browse', function () {
+    it('omits stats when includeDatabaseStats is false', async function () {
+      const result = await repo.browse({ includeDatabaseStats: false });
+
+      assert.ok(result.data.length > 0);
+      for (const automation of result.data) {
+        assert.equal('stats' in automation, false);
+      }
+    });
+
     const deleteActionsForAutomationIds = async (automationIds: string[]) => {
       const actionIds = await knex('automation_actions')
         .whereIn('automation_id', automationIds)
