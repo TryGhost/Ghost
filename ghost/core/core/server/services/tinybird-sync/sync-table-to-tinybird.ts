@@ -13,7 +13,6 @@ export interface TinybirdSyncTarget {
 export interface TinybirdSyncOptions {
   knex: Knex;
   endpoint: string;
-  token: string;
   siteUuid: string;
   now?: () => Date;
   batchSize?: number;
@@ -66,11 +65,12 @@ interface Cursor {
 const serializeValue = (value: unknown): unknown =>
   value instanceof Date ? toDatabaseDate(value) : value;
 
-const toEventLine = (row: Row, siteUuid: string): string => {
+const toEventLine = (row: Row, siteUuid: string, type: string): string => {
   const payload = Object.fromEntries(
     Object.entries(row).map(([key, value]) => [key, serializeValue(value)]),
   );
   return JSON.stringify({
+    type,
     site_uuid: siteUuid,
     id: row.id,
     updated_at: toDatabaseDate(row.updated_at),
@@ -104,14 +104,13 @@ export function chunkByBytes(lines: string[], maxBytes: number): string[][] {
 async function postEvents(
   lines: string[],
   { datasource }: TinybirdSyncTarget,
-  { endpoint, token, requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS }: TinybirdSyncOptions,
+  { requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS }: TinybirdSyncOptions,
 ): Promise<void> {
   // wait=true makes Tinybird acknowledge only once the rows are committed.
-  const url = `${endpoint}/v0/events?name=${encodeURIComponent(datasource)}&wait=true`;
+  const url = `http://traffic-analytics-local:3000/api/v1/automations`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/x-ndjson',
     },
     body: lines.join('\n'),
@@ -203,7 +202,7 @@ export async function syncTableToTinybird(
       return sent;
     }
 
-    const lines = rows.map((row) => toEventLine(row, siteUuid));
+    const lines = rows.map((row) => toEventLine(row, siteUuid, target.table));
     for (const chunk of chunkByBytes(lines, maxPayloadBytes)) {
       await postEvents(chunk, target, options);
     }

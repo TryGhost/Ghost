@@ -40,11 +40,10 @@ describe('tinybird-sync scheduling', function () {
     assert.ok(jobsService.scheduleRecurring.notCalled);
   });
 
-  it('schedules a single five-minute job with a random offset when Tinybird is configured', async function () {
+  it('schedules a single 20-second job with a random offset when Tinybird is configured', async function () {
     process.env.NODE_ENV = 'production';
     const get = sinon.stub(config, 'get');
     get.withArgs('tinybird:stats').returns({ endpoint: 'https://api.tinybird.co' });
-    get.withArgs('tinybird:adminToken').returns('admin-token');
     sinon.stub(settingsCache, 'get').withArgs('site_uuid').returns('site-uuid');
 
     await scheduleTinybirdSyncJob(jobsService);
@@ -53,6 +52,8 @@ describe('tinybird-sync scheduling', function () {
     assert.ok(jobsService.scheduleRecurring.calledOnce);
     const [job, schedule] = jobsService.scheduleRecurring.firstCall.args;
     assert.ok(job instanceof TinybirdSyncJob);
-    assert.match(schedule.cron, /^\d{1,2} [0-4]\/5 \* \* \* \*$/);
+    assert.match(schedule.cron, /^(?:\d|1\d)\/20 \* \* \* \* \*$/);
+    assert.ok(get.neverCalledWith('tinybird:adminToken'));
+    assert.ok(get.neverCalledWith('tinybird:tracker'));
   });
 });

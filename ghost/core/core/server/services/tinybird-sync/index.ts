@@ -6,7 +6,6 @@ const logging = require('@tryghost/logging');
 
 interface IngestConfig {
   endpoint: string;
-  token: string;
   siteUuid: string;
 }
 
@@ -19,18 +18,17 @@ function getIngestConfig(): IngestConfig | null {
     return null;
   }
 
-  const local = stats.local?.enabled ? stats.local : null;
-  const endpoint = local ? local.endpoint : stats.endpoint;
-  const token = local ? local.token : config.get('tinybird:adminToken');
+  const localStats = stats.local?.enabled ? stats.local : null;
+  const endpoint = localStats ? localStats.endpoint : stats.endpoint;
   const siteUuid = stats.id || settingsCache.get('site_uuid');
 
-  return endpoint && token && siteUuid ? { endpoint, token, siteUuid } : null;
+  return endpoint && siteUuid ? { endpoint, siteUuid } : null;
 }
 
 const randomBelow = (max: number) => Math.floor(Math.random() * max);
 
-// Every five minutes, offset per process so sites don't all hit Tinybird at the same instant.
-const randomFiveMinuteCron = () => `${randomBelow(60)} ${randomBelow(5)}/5 * * * *`;
+// Every 20 seconds, offset per process so sites don't all hit Tinybird at the same instant.
+const randomTwentySecondCron = () => `${randomBelow(20)}/20 * * * * *`;
 
 let hasScheduled = false;
 
@@ -45,7 +43,7 @@ export async function scheduleTinybirdSyncJob(
     return;
   }
 
-  const cron = randomFiveMinuteCron();
+  const cron = randomTwentySecondCron();
   logging.info(`[Background Job] tinybird-sync scheduled at ${cron}`);
   await jobsService.scheduleRecurring(new TinybirdSyncJob(), { cron });
 
@@ -84,7 +82,7 @@ async function syncAll(): Promise<void> {
 
 let inFlight: Promise<void> | null = null;
 
-// A run can outlast the five-minute interval on a large backlog; the jobs backend
+// A run can outlast the 20-second interval on a large backlog; the jobs backend
 // processes concurrently, so overlapping runs would race on the watermark.
 export function run(): Promise<void> {
   inFlight ??= syncAll().finally(() => {

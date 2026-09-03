@@ -5,7 +5,7 @@ import type { Server } from 'node:http';
 import express from 'express';
 import createKnex, { type Knex } from 'knex';
 import ObjectId from 'bson-objectid';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, it, vi } from 'vitest';
 import {
   AUTOMATION_SYNC_TARGETS,
   SAFETY_LAG_MS,
@@ -15,11 +15,15 @@ import {
 import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 const SITE_UUID = 'bd05ceed-1df9-4af7-832a-d3b5faa7ca1d';
-const TOKEN = 'admin-token';
 const TARGET = AUTOMATION_SYNC_TARGETS.find((target) => target.table === 'automation_runs')!;
+const STEP_TARGET = AUTOMATION_SYNC_TARGETS.find(
+  (target) => target.table === 'automation_run_steps',
+)!;
 const NOW = new Date('2026-03-01T12:00:00.000Z');
+const fetch = globalThis.fetch;
 
 interface EventLine {
+  type: string;
   site_uuid: string;
   id: string;
   updated_at: string;
@@ -56,6 +60,19 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('member_email').notNullable();
   });
 
+  await database.schema.createTable('automation_run_steps', (table) => {
+    table.text('id').primary();
+    table.text('automation_run_id').notNullable();
+    table.text('automation_action_revision_id').notNullable();
+    table.text('status').notNullable();
+    table.integer('step_attempts').notNullable();
+    table.text('ready_at');
+    table.text('started_at');
+    table.text('finished_at');
+    table.text('created_at').notNullable();
+    table.text('updated_at').notNullable();
+  });
+
   await database.schema.createTable('tinybird_syncs', (table) => {
     table.text('id').primary();
     table.text('table_name').notNullable().unique();
@@ -87,7 +104,15 @@ const sync = (options: Partial<Parameters<typeof syncTableToTinybird>[1]> = {}) 
   syncTableToTinybird(TARGET, {
     knex,
     endpoint,
-    token: TOKEN,
+    siteUuid: SITE_UUID,
+    now: () => NOW,
+    ...options,
+  });
+
+const syncSteps = (options: Partial<Parameters<typeof syncTableToTinybird>[1]> = {}) =>
+  syncTableToTinybird(STEP_TARGET, {
+    knex,
+    endpoint,
     siteUuid: SITE_UUID,
     now: () => NOW,
     ...options,
@@ -103,7 +128,7 @@ const watermark = async () => {
 beforeAll(async () => {
   const app = express();
   app.use(express.text({ type: 'application/x-ndjson', limit: '20mb' }));
-  app.post('/v0/events', (req, res) => {
+  app.post('/api/v1/automations', (req, res) => {
     received.push({
       url: req.originalUrl,
       authorization: req.get('authorization'),
@@ -132,9 +157,16 @@ beforeEach(async () => {
   received = [];
   respondWith = { status: 200, body: { successful_rows: 0, quarantined_rows: 0 } };
   knex = await createDatabase();
+  vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+    const url = new URL(String(input));
+    url.hostname = '127.0.0.1';
+    url.port = new URL(endpoint).port;
+    return fetch(url, init);
+  });
 });
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   await knex.destroy();
 });
 
@@ -148,11 +180,12 @@ describe('syncTableToTinybird', () => {
     assert.equal(sent, 1);
     assert.equal(received.length, 1);
     const [request] = received;
-    assert.equal(request.url, '/v0/events?name=automation_run_events&wait=true');
-    assert.equal(request.authorization, `Bearer ${TOKEN}`);
+    assert.equal(request.url, '/api/v1/automations');
+    assert.equal(request.authorization, undefined);
     assert.equal(request.contentType, 'application/x-ndjson');
     assert.deepEqual(request.lines, [
       {
+        type: 'automation_runs',
         site_uuid: SITE_UUID,
         id,
         updated_at: '2026-03-01 11:50:00',
@@ -165,6 +198,27 @@ describe('syncTableToTinybird', () => {
         },
       },
     ]);
+  });
+
+  it('identifies automation run step payloads by their source table', async () => {
+    const updatedAt = minutesBeforeNow(10);
+    const id = ObjectId().toHexString();
+    await knex('automation_run_steps').insert({
+      id,
+      automation_run_id: 'run-1',
+      automation_action_revision_id: 'revision-1',
+      status: 'completed',
+      step_attempts: 1,
+      ready_at: null,
+      started_at: null,
+      finished_at: null,
+      created_at: toDatabaseDate(updatedAt),
+      updated_at: toDatabaseDate(updatedAt),
+    });
+
+    await syncSteps();
+
+    assert.equal(received[0].lines[0].type, 'automation_run_steps');
   });
 
   it('never sends member identity columns', async () => {

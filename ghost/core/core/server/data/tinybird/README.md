@@ -112,9 +112,11 @@ sources before adding test data to it.
 
 Ghost copies `automation_runs` and `automation_run_steps` into the `automation_run_events` and
 `automation_run_step_events` data sources with a recurring job (`core/server/services/tinybird-sync`).
-It runs every five minutes when Tinybird is configured, sending only rows updated since the
+It runs every 20 seconds when Tinybird is configured, sending only rows updated since the
 watermark stored in the `tinybird_syncs` table. Set `backgroundJobs.tinybirdSync` to `false` in config
 to turn the job off.
+Each NDJSON event includes a `type` field identifying its source table as either `automation_runs`
+or `automation_run_steps`.
 
 To force a full backfill, for example after pointing Ghost at a different Tinybird workspace or
 truncating the data sources, delete the matching rows from `tinybird_syncs`; the next run starts from
