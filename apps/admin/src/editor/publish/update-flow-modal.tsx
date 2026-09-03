@@ -3,6 +3,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   getFullRecipientFilter,
   getNewsletterRecipientFilter,
@@ -91,7 +92,9 @@ function KeyedUpdateFlowModal({
     willEmail && persistedNewsletter && persistedSegment
       ? getFullRecipientFilter(getNewsletterRecipientFilter(persistedNewsletter), persistedSegment)
       : null;
-  const { count: queriedCount } = useMembersCount(scheduledRecipientFilter);
+  const { count: queriedCount } = useMembersCount(scheduledRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const count = scheduledRecipientFilter ? queriedCount : null;
   const [failure, setFailure] = useState<CompletionFailure | null>(null);
   const [running, setRunning] = useState(false);

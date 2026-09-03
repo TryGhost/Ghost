@@ -193,11 +193,11 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 ## Requests
 
-The shared editor `EDITOR_REQUEST_OPTIONS` opts requests out of the transport's session-expiry redirect wherever the framework supports a per-call option.
+Every request the flow owns carries the shared editor `EDITOR_REQUEST_OPTIONS`, which opts it out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, and the email retry. An expired session is left to surface where the user is — as an unreadable count that falls back to descriptive copy, a note on the complete step, or an error on the email-error step.
 
-The two requests the flow issues directly — the poller's reload and the published-post count — opt out, as do its settings and config queries. The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
+The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
-`createInfiniteQuery` does not yet accept transport options, so newsletter, tier and label queries remain redirect-capable; `useMembersCount`, `useCurrentUser` and `useRetryEmail` also own their request options. Flow-owned queries disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
+The one request left redirect-capable is `useCurrentUser`, which every screen shares as a boot read rather than the flow owning it — including the copy `useMembersCount` makes to decide whether the role may count members at all. Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
 
 ## Update flow
 

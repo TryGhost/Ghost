@@ -149,7 +149,7 @@ export function usePublishFlow({
           return { status: reloaded.status, email: reloaded.email ?? null };
         },
         retry: async (emailId) => {
-          await retryEmailRequest(emailId);
+          await retryEmailRequest({ id: emailId, ...EDITOR_REQUEST_OPTIONS });
         },
       }),
     [fetchApi, retryEmailRequest],

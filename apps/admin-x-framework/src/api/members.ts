@@ -7,7 +7,7 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
-import { apiUrl } from '../utils/api/fetch-api';
+import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
 import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
@@ -213,6 +213,14 @@ export interface MembersCountResult {
   refetch: () => Promise<unknown>;
 }
 
+export interface MembersCountOptions {
+  /**
+   * Transport options for the count request. `useCurrentUser` is a shared boot
+   * query rather than this hook's own, so it keeps the framework defaults.
+   */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+}
+
 /**
  * Number of members matching a filter, consolidated from the Ember
  * `members-count-cache` service + `members-count-fetcher` resource: a browse
@@ -225,7 +233,10 @@ export interface MembersCountResult {
  * browse members. The request error and retry are also exposed for callers
  * such as publish limits that cannot safely treat an unreadable count as zero.
  */
-export function useMembersCount(filter: string | null | undefined): MembersCountResult {
+export function useMembersCount(
+  filter: string | null | undefined,
+  { requestOptions }: MembersCountOptions = {},
+): MembersCountResult {
   const { data: currentUser } = useCurrentUser();
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
   const enabled = canFetch && filter !== null && filter !== undefined;
@@ -236,6 +247,7 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
     staleTime: MEMBERS_COUNT_STALE_TIME,
     enabled,
     defaultErrorHandler: false,
+    requestOptions,
   });
 
   if (currentUser === undefined) {

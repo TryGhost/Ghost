@@ -21,6 +21,10 @@ import type { SaveCompletion, SaveErrorKind } from '@/editor/engine/save-engine'
 const POST_ID = 'post-1';
 const EMAIL_ID = 'email-1';
 const EVERYONE = 'status:free,status:-free';
+/** What the API returns once the admin session cookie has expired. */
+const SESSION_EXPIRED = {
+  errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
 // The email poller waits a second between reads, so these journeys outlast the default timeout.
 const SLOW = 25_000;
 
@@ -781,6 +785,39 @@ describe('Publish flow', () => {
 
       await expect.element(publishScreen.complete()).toBeInTheDocument();
       expect(retryApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps an expired session inside the flow instead of leaving the page',
+    async () => {
+      const { pathname } = window.location;
+      // The recipient count and the email retry are the flow's own requests,
+      // issued over an editor that may still hold unsaved work: a 401 on
+      // either has to surface here rather than navigate.
+      const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
+        status: 401,
+      });
+      fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+      const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+        status: 401,
+      });
+      await renderPublishFlow();
+
+      await expect.element(publishScreen.options()).toBeInTheDocument();
+      await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+      await publishScreen.retryEmailButton().click();
+
+      await expect
+        .element(publishScreen.emailError().getByRole('alert'))
+        .toHaveTextContent('You are not authorised to make this request.');
+      expect(retryApi.requests).toHaveLength(1);
+      expect(window.location.pathname).toBe(pathname);
     },
     SLOW,
   );

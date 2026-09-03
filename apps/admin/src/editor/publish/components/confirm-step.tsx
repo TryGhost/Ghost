@@ -2,6 +2,7 @@ import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
@@ -51,7 +52,9 @@ export function ConfirmStep({
   onConfirm,
   onBack,
 }: ConfirmStepProps) {
-  const { count } = useMembersCount(state.fullRecipientFilter);
+  const { count } = useMembersCount(state.fullRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const publishType = confirmPublishType(captured);
   const showNewsletterName = !state.onlyDefaultNewsletter && state.newsletter?.name;
   const recipients = recipientsConfirmLabel({

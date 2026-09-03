@@ -149,6 +149,7 @@ export function usePublishInputs(): PublishInputs {
   });
   const newslettersQuery = useBrowseNewsletters({
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: { limit: 'all' },
   });
   const {
@@ -179,7 +180,7 @@ export function usePublishInputs(): PublishInputs {
     isFetching: memberCountFetching,
     error: memberCountError,
     refetch: refetchMemberCount,
-  } = useMembersCount('');
+  } = useMembersCount('', { requestOptions: EDITOR_REQUEST_OPTIONS });
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
   const newslettersData = newslettersQuery.data;
