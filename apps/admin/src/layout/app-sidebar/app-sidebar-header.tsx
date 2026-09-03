@@ -39,7 +39,9 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
               <img alt="Site icon" className="size-full rounded-md object-cover" src={siteIcon} />
             </div>
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <div className="min-w-0 truncate text-lg font-semibold text-foreground">{title}</div>
+              <div className="admin7-heading-features min-w-0 truncate text-lg font-semibold text-foreground">
+                {title}
+              </div>
               {isPrivate && (
                 <a aria-label="Open access settings" className="shrink-0" href="#/settings/members">
                   <Badge
