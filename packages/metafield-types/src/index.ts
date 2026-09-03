@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * The shared catalog of member custom field types.
+ * The shared catalog of member metafield types.
  *
  * ## What a field type is
  *

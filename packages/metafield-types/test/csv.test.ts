@@ -4,7 +4,7 @@ import {
   csvCellsForFields,
   csvColumnsForField,
   fieldValuesFromCsvRow,
-  isCustomFieldColumn,
+  isMetafieldColumn,
 } from '../src/csv.ts';
 
 // The behavioural outcomes — an export carrying the right columns, an exported
@@ -12,7 +12,7 @@ import {
 // export and import HTTP API integration tests. What is asserted here is the one
 // invariant those tests can only observe indirectly: the key set is fixed by the
 // field definitions alone, never by which values a given member happens to hold.
-describe('custom field CSV cells', function () {
+describe('metafield CSV cells', function () {
   const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
   const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
 
@@ -109,7 +109,7 @@ describe('custom field CSV cells', function () {
 
 // The column names are the vocabulary the admin offers as import mapping targets and
 // the error report echoes, so they are derived from the same primitives the cells are.
-describe('custom field CSV columns', function () {
+describe('metafield CSV columns', function () {
   it('gives a scalar field one namespaced column holding no particular part', function () {
     assert.deepEqual(
       csvColumnsForField({ namespace: 'custom', key: 'nickname', type: 'short_text' }),
@@ -131,18 +131,18 @@ describe('custom field CSV columns', function () {
     );
   });
 
-  it('recognises a custom field column by its namespace', function () {
-    assert.equal(isCustomFieldColumn('metafields.custom.nickname'), true);
-    assert.equal(isCustomFieldColumn('metafields.custom.shipping_address.city'), true);
-    assert.equal(isCustomFieldColumn('email'), false);
+  it('recognises a metafield column by its qualifier', function () {
+    assert.equal(isMetafieldColumn('metafields.custom.nickname'), true);
+    assert.equal(isMetafieldColumn('metafields.custom.shipping_address.city'), true);
+    assert.equal(isMetafieldColumn('email'), false);
     // A core column that merely starts with the word is not namespaced by it.
-    assert.equal(isCustomFieldColumn('custom_fields_note'), false);
+    assert.equal(isMetafieldColumn('custom_fields_note'), false);
   });
 });
 
 // End-to-end round-tripping is proven in the member import HTTP API tests; the row-level
 // reading rules are pinned here.
-describe('reading custom field values from a CSV row', function () {
+describe('reading metafield values from a CSV row', function () {
   const nickname = { namespace: 'custom', key: 'nickname', type: 'short_text' } as const;
   const address = { namespace: 'custom', key: 'shipping_address', type: 'address' } as const;
 

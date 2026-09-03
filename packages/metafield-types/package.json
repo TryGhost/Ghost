@@ -1,14 +1,14 @@
 {
-  "name": "@tryghost/custom-field-types",
+  "name": "@tryghost/metafield-types",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared catalog of member custom field types: storage routing and value validation, consumed by Ghost core and admin",
+  "description": "Shared catalog of member metafield types: storage routing and value validation, consumed by Ghost core and admin",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
-    "directory": "packages/custom-field-types"
+    "directory": "packages/metafield-types"
   },
   "files": [
     "build"

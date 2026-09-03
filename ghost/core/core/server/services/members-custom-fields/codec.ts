@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CUSTOM_NAMESPACE } from '@tryghost/custom-field-types/identity';
+import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbCustomField } from './schema';
 import { CustomField } from './models';

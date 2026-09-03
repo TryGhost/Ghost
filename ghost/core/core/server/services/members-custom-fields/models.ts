@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema } from '@tryghost/metafield-types';
 import { FieldStatusSchema } from './schema';
 
 export const CustomField = z.object({

@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { CsvField } from '@tryghost/custom-field-types/csv';
+import type { CsvField } from '@tryghost/metafield-types/csv';
 import type { WrittenBy } from '../../members-custom-fields';
 import MembersCSVImporter, {
   type MembersRepository,

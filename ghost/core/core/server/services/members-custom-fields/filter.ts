@@ -18,7 +18,7 @@ import {
   CUSTOM_NAMESPACE,
   formatIdentity,
   parseIdentity,
-} from '@tryghost/custom-field-types/identity';
+} from '@tryghost/metafield-types/identity';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;

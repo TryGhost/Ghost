@@ -11,10 +11,10 @@ import {
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
-// address round-tripping, sub-field 422s) are proven end-to-end through the members
-// custom-fields HTTP API integration tests, which exercise this catalog together with
+// address round-tripping, sub-field 422s) are proven end-to-end through the member
+// metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
-describe('custom-field-types catalog', function () {
+describe('metafield-types catalog', function () {
   it('offers the expected field types, and says which of them have parts', function () {
     // Whether a value has parts is the only structural fact the backend reads off a
     // type: it decides how many rows the value occupies and what they are keyed by.

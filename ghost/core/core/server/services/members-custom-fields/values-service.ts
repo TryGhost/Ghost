@@ -3,13 +3,13 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/custom-field-types';
+import { FIELD_TYPES, subFieldsOf, type FieldType } from '@tryghost/metafield-types';
 import {
   CUSTOM_NAMESPACE,
   QUALIFIER,
   formatIdentity,
   parseIdentity,
-} from '@tryghost/custom-field-types/identity';
+} from '@tryghost/metafield-types/identity';
 import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
 import { canWrite, readableFields, type Audience } from './access';

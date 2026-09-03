@@ -8,7 +8,7 @@ import {
   createQueryWithId,
 } from '../utils/api/hooks';
 import { apiUrl } from '../utils/api/fetch-api';
-import type { FieldValue } from '@tryghost/custom-field-types';
+import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';

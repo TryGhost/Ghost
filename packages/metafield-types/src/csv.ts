@@ -57,7 +57,7 @@ export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
     : [{ column, subField: null }];
 }
 
-export function isCustomFieldColumn(column: string): boolean {
+export function isMetafieldColumn(column: string): boolean {
   return column === QUALIFIER || column.startsWith(PREFIX);
 }
 
@@ -100,7 +100,7 @@ export function csvCellsForFields(
 }
 
 /**
- * The inverse of `csvCellsForFields`: read a row's custom field cells into the values a
+ * The inverse of `csvCellsForFields`: read a row's metafield cells into the values a
  * member write takes. Only the passed fields are read, so a column naming no active
  * field is dropped rather than erroring.
  *
