@@ -5,16 +5,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Common Development Commands
 
 ### Testing
+
 - **Run all tests with coverage**: `npm test`
 - **Run a specific test file**: `NODE_ENV=testing mocha './test/limit.test.js'`
 - **Run tests matching a pattern**: `NODE_ENV=testing mocha './test/**/*.test.js' --grep "MaxLimit"`
 - **Run tests with coverage report**: `NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'`
 
 ### Linting
+
 - **Run ESLint**: `npm run lint`
 - **Fix linting issues**: `npm run lint -- --fix`
 
 ### Development
+
 - **Note**: There is no dev script currently implemented (placeholder exists)
 
 ## High-Level Architecture
@@ -45,6 +48,7 @@ The limit-service is a centralized limit enforcement system for Ghost that follo
 ### Adding New Limits
 
 1. Add the limit configuration in `lib/config.js`:
+
    ```javascript
    newFeature: {
        type: 'max', // or 'flag', 'allowlist'

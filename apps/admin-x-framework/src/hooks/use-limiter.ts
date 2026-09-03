@@ -6,32 +6,15 @@ import { useBrowseNewsletters } from '../api/newsletters';
 import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
+import type { Counter, GhostErrorOptions, LimitConfig } from '@tryghost/limit-service';
 
 const limitServiceImport = import('@tryghost/limit-service');
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
-  constructor({ message }: { message: string }) {
+  constructor({ message }: GhostErrorOptions) {
     super(message);
   }
-}
-
-interface LimiterLimits {
-  staff?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  members?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  newsletters?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
 }
 
 export interface Limiter {
@@ -89,11 +72,12 @@ export const useLimiter = (): Limiter => {
       return noOpLimiter;
     }
 
-    const limits = { ...config.hostSettings.limits } as LimiterLimits;
     const limiter = new LimitService();
 
-    if (limits.staff) {
-      limits.staff.currentCountQuery = () => {
+    // How Admin counts, as opposed to how the server does. The limit service asks for a
+    // number and neither side has to know how the other arrives at one.
+    const counters: Record<string, Counter> = {
+      staff: () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
         // PLA-369 because excluded users/invites can push countable staff onto later pages.
         const staffUsers = users.filter(
@@ -105,26 +89,23 @@ export const useLimiter = (): Limiter => {
           return role?.name !== 'Contributor';
         });
 
-        return Promise.resolve(staffUsers.length + staffInvites.length);
-      };
-    }
+        return staffUsers.length + staffInvites.length;
+      },
 
-    if (limits.members) {
-      limits.members.currentCountQuery = async () => {
+      members: async () => {
         const { data: members } = await fetchMembers();
         return members?.meta?.pagination?.total || 0;
-      };
-    }
+      },
 
-    if (limits.newsletters) {
-      limits.newsletters.currentCountQuery = async () => {
+      newsletters: async () => {
         const { data: { pages } = { pages: [] } } = await fetchNewsletters();
         return pages[0].meta?.pagination.total || 0;
-      };
-    }
+      },
+    };
 
     limiter.loadLimits({
-      limits,
+      limits: config.hostSettings.limits as Record<string, LimitConfig>,
+      counters,
       helpLink,
       errors: {
         HostLimitError,
@@ -134,9 +115,12 @@ export const useLimiter = (): Limiter => {
 
     return {
       isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
-      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName),
-      checkWouldGoOverLimit: (limitName: string): Promise<boolean> =>
-        limiter.checkWouldGoOverLimit(limitName),
+      // Both answer `undefined` for a limit this site does not have, which every caller
+      // already reads as falsy. Said explicitly now the package ships its own types; the
+      // hand-written declarations this replaces claimed a plain boolean.
+      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
+      checkWouldGoOverLimit: async (limitName: string): Promise<boolean> =>
+        (await limiter.checkWouldGoOverLimit(limitName)) ?? false,
       errorIfWouldGoOverLimit: (
         limitName: string,
         metadata: Record<string, unknown> = {},

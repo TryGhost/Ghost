@@ -18,7 +18,6 @@
     "koenig/kg-simplemde/debug/**",
     "koenig/koenig-lexical/**",
     "packages/i18n/locales/**",
-    "packages/limit-service/**",
     ".changeset/ledger.yaml"
   ]
 }
