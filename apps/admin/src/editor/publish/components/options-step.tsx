@@ -1,7 +1,10 @@
-import { Button } from '@tryghost/shade/components';
+import { Banner, Button } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
+import {
+  getRecipientType,
+  normalizeRecipientFilter,
+} from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { useState } from 'react';
 import {
@@ -9,6 +12,7 @@ import {
   publishContinueButton,
   publishEmailSizeWarning,
   publishFlowOptions,
+  publishLimitsError,
   publishSettingEmailRecipients,
   publishSettingPublishAt,
   publishSettingPublishType,
@@ -36,12 +40,15 @@ export interface OptionsStepProps {
   emailDisabledInSettings: boolean;
   /** The limit checks can demote the publish type, so review waits for them. */
   limitsChecked: boolean;
+  /** A failed limit read keeps Continue disabled and offers a retry. */
+  limitsFailure: string | null;
   onSetPublishType: (publishType: PublishType) => void;
   onSetNewsletter: (newsletter: NewsletterInput | null) => void;
   onSetRecipientFilter: (filter: string | null) => void;
   onToggleScheduled: (isScheduled: boolean) => void;
   onSetScheduledAt: (date: Date) => void;
   onContinue: () => void;
+  onRetryLimits: () => void;
 }
 
 function capitalize(value: string): string {
@@ -72,12 +79,14 @@ export function OptionsStep({
   timezone,
   emailDisabledInSettings,
   limitsChecked,
+  limitsFailure,
   onSetPublishType,
   onSetNewsletter,
   onSetRecipientFilter,
   onToggleScheduled,
   onSetScheduledAt,
   onContinue,
+  onRetryLimits,
 }: OptionsStepProps) {
   const [openSection, setOpenSection] = useState<Section | null>(null);
   const toggle = (section: Section) => () =>
@@ -88,7 +97,7 @@ export function OptionsStep({
     (option) => option.value === state.publishType,
   );
   const historicEmail = post.email;
-  const historicRecipientType = getRecipientType(state.recipientFilter);
+  const historicRecipientType = getRecipientType(normalizeRecipientFilter(post.emailSegment));
 
   return (
     <Stack data-testid={publishFlowOptions} gap="xl">
@@ -100,6 +109,17 @@ export function OptionsStep({
           Share it with the world.
         </Text>
       </Stack>
+
+      {limitsFailure ? (
+        <Banner data-testid={publishLimitsError} role="alert" variant="destructive">
+          <Stack align="start" gap="sm">
+            <Text>{limitsFailure}</Text>
+            <Button size="sm" variant="outline" onClick={onRetryLimits}>
+              Try again
+            </Button>
+          </Stack>
+        </Banner>
+      ) : null}
 
       <Stack gap="none">
         <PublishSetting
@@ -161,7 +181,9 @@ export function OptionsStep({
               historicEmail.status === 'failed' ? 'Retry sending to' : 'Already sent to',
               formatNumber(historicEmail.email_count ?? 0),
               // The segment word is dropped for "all", as in the row above it.
-              historicRecipientType === 'all' ? null : historicRecipientType,
+              historicRecipientType === 'all' || historicRecipientType === 'none'
+                ? null
+                : historicRecipientType,
               historicEmail.email_count === 1 ? 'subscriber' : 'subscribers',
               state.onlyDefaultNewsletter || !post.newsletterName
                 ? null

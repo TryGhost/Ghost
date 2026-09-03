@@ -108,12 +108,13 @@ function KeyedUpdateFlowModal({
     onClose();
   };
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // Admin runs under StrictMode, which replays cleanup before this setup.
+    activeRef.current = true;
+    return () => {
       activeRef.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const revert = async () => {
     if (runningRef.current) {

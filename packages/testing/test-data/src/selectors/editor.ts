@@ -43,6 +43,7 @@ export const publishScheduleTime = 'publish-schedule-time';
 export const publishContinueButton = 'publish-continue';
 export const publishConfirmButton = 'publish-confirm';
 export const publishConfirmError = 'publish-confirm-error';
+export const publishLimitsError = 'publish-limits-error';
 export const publishBackToSettings = 'publish-back-to-settings';
 export const publishCompleteBookmark = 'publish-complete-bookmark';
 export const publishCompleteNote = 'publish-complete-note';

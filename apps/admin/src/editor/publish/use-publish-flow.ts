@@ -57,6 +57,8 @@ export interface PublishFlow {
   completedAt: string | null;
   /** False until `checkLimits()` settles; the options step cannot be left before then. */
   limitsChecked: boolean;
+  /** A failed limit check blocks review until the user retries it successfully. */
+  limitsFailure: string | null;
   /** Set when the publish landed but its email could not be confirmed either way. */
   emailNote: string | null;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
@@ -68,6 +70,7 @@ export interface PublishFlow {
   };
   /** Re-renders after a machine transition; the machine has no subscription. */
   refresh: () => void;
+  retryLimits: () => void;
   toConfirm: () => void;
   toOptions: () => void;
   confirmPublish: () => Promise<void>;
@@ -163,6 +166,7 @@ export function usePublishFlow({
   const [postCount, setPostCount] = useState<number | null>(null);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [checkedMachine, setCheckedMachine] = useState<PublishOptionsMachine | null>(null);
+  const [limitsFailure, setLimitsFailure] = useState<string | null>(null);
   const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
@@ -188,36 +192,69 @@ export function usePublishFlow({
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
+  const limitCheckGenerationRef = useRef(0);
+  const limitCheckRef = useRef<{
+    machine: PublishOptionsMachine;
+    promise: Promise<void>;
+  } | null>(null);
+
+  const checkLimits = useCallback(async () => {
+    const generation = limitCheckGenerationRef.current + 1;
+    limitCheckGenerationRef.current = generation;
+    setCheckedMachine(null);
+    setLimitsFailure(null);
+    const existing = limitCheckRef.current;
+    const check =
+      existing?.machine === machine
+        ? existing
+        : { machine, promise: machine.checkLimits().then(() => undefined) };
+    limitCheckRef.current = check;
+
+    try {
+      await check.promise;
+    } catch (error) {
+      if (activeRef.current && generation === limitCheckGenerationRef.current) {
+        const { message } = describeRejectedAction(error);
+        setLimitsFailure(`Couldn’t check publishing limits. ${message}`);
+        refresh();
+      }
+      return;
+    } finally {
+      if (limitCheckRef.current === check) {
+        limitCheckRef.current = null;
+      }
+    }
+
+    if (activeRef.current && generation === limitCheckGenerationRef.current) {
+      setCheckedMachine(machine);
+      refresh();
+    }
+  }, [machine]);
 
   // A schedule chosen before the editor sat idle may now be in the past.
   useEffect(() => {
     machine.resetPastScheduledAt();
-    let cancelled = false;
-
-    void machine
-      .checkLimits()
-      .catch(() => undefined)
-      .then(() => {
-        if (!cancelled) {
-          setCheckedMachine(machine);
-          refresh();
-        }
-      });
+    void checkLimits();
 
     return () => {
-      cancelled = true;
+      limitCheckGenerationRef.current += 1;
     };
-  }, [machine]);
+  }, [checkLimits, machine]);
 
   const confirmationRef = useRef(confirmation);
   confirmationRef.current = confirmation;
   const cancel = useCallback(() => {
     activeRef.current = false;
     confirmationRef.current.cancel();
+    limitCheckGenerationRef.current += 1;
   }, []);
 
-  // Only leaving the flow abandons a poll; a re-render must not interrupt one.
-  useEffect(() => cancel, [cancel]);
+  // StrictMode replays this effect's cleanup before its second setup. Restore
+  // activity on setup so that development mode does not leave the flow inert.
+  useEffect(() => {
+    activeRef.current = true;
+    return cancel;
+  }, [cancel]);
 
   const state = machine.getState();
   const limitsChecked = checkedMachine === machine;
@@ -473,9 +510,11 @@ export function usePublishFlow({
     postCount,
     completedAt,
     limitsChecked,
+    limitsFailure,
     emailNote,
     captured,
     refresh,
+    retryLimits: () => void checkLimits(),
     toConfirm,
     toOptions,
     confirmPublish,

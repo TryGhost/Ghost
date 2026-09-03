@@ -3,7 +3,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -151,10 +151,35 @@ export function usePublishInputs(): PublishInputs {
     defaultErrorHandler: false,
     searchParams: { limit: 'all' },
   });
+  const {
+    fetchNextPage: fetchNextNewsletterPage,
+    hasNextPage: hasNextNewsletterPage,
+    isError: newslettersError,
+    isFetchingNextPage: isFetchingNextNewsletterPage,
+  } = newslettersQuery;
+
+  // Core caps `limit=all`, so the response can still contain a next page.
+  // The publish machine must see every newsletter before it chooses a default.
+  useEffect(() => {
+    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !newslettersError) {
+      void fetchNextNewsletterPage();
+    }
+  }, [
+    fetchNextNewsletterPage,
+    hasNextNewsletterPage,
+    isFetchingNextNewsletterPage,
+    newslettersError,
+  ]);
   // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
   const currentUserQuery = useCurrentUser();
   // Site-wide total, the way Ember's publish options read it.
-  const { count: memberCount, isLoading: memberCountLoading } = useMembersCount('');
+  const {
+    count: memberCount,
+    isLoading: memberCountLoading,
+    isFetching: memberCountFetching,
+    error: memberCountError,
+    refetch: refetchMemberCount,
+  } = useMembersCount('');
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
   const newslettersData = newslettersQuery.data;
@@ -173,13 +198,24 @@ export function usePublishInputs(): PublishInputs {
   );
   const isLoading =
     settingsQuery.isLoading ||
+    settingsQuery.isFetching ||
     configQuery.isLoading ||
+    configQuery.isFetching ||
     newslettersQuery.isLoading ||
+    newslettersQuery.isFetching ||
+    newslettersQuery.hasNextPage ||
+    newslettersQuery.isFetchingNextPage ||
     currentUserQuery.isLoading ||
-    memberCountLoading;
+    currentUserQuery.isFetching ||
+    memberCountLoading ||
+    memberCountFetching;
   const error = useMemo(() => {
     const queryError =
-      settingsQuery.error ?? configQuery.error ?? newslettersQuery.error ?? currentUserQuery.error;
+      settingsQuery.error ??
+      configQuery.error ??
+      newslettersQuery.error ??
+      currentUserQuery.error ??
+      memberCountError;
 
     if (queryError) {
       return publishInputError(queryError);
@@ -195,6 +231,7 @@ export function usePublishInputs(): PublishInputs {
     configQuery.error,
     currentUserQuery.error,
     isLoading,
+    memberCountError,
     newslettersQuery.error,
     settingsQuery.error,
   ]);
@@ -204,8 +241,9 @@ export function usePublishInputs(): PublishInputs {
       configQuery.refetch(),
       newslettersQuery.refetch(),
       currentUserQuery.refetch(),
+      refetchMemberCount(),
     ]);
-  }, [configQuery, currentUserQuery, newslettersQuery, settingsQuery]);
+  }, [configQuery, currentUserQuery, newslettersQuery, refetchMemberCount, settingsQuery]);
 
   return {
     site: assembled.site,

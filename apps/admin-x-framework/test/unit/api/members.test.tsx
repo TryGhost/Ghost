@@ -355,7 +355,8 @@ describe('members api', () => {
           queryClient,
         });
 
-        expect(result.current).toEqual({ count: null, isLoading: true });
+        expect(result.current).toMatchObject({ count: null, isLoading: true, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
       } finally {
         globalThis.fetch = originalFetch;
       }
@@ -373,7 +374,11 @@ describe('members api', () => {
           await Promise.resolve();
         });
 
-        expect(result.current).toEqual({ count: null, isLoading: false });
+        expect(result.current).toMatchObject({ count: null, isLoading: false, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
+        await act(async () => {
+          await result.current.refetch();
+        });
         expect(mockFetch.calls).toHaveLength(0);
       });
     });
@@ -390,12 +395,16 @@ describe('members api', () => {
           await Promise.resolve();
         });
 
-        expect(result.current).toEqual({ count: 0, isLoading: false });
+        expect(result.current).toMatchObject({ count: 0, isLoading: false, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
+        await act(async () => {
+          await result.current.refetch();
+        });
         expect(mockFetch.calls).toHaveLength(0);
       });
     });
 
-    it('resolves request errors to a count of 0', async () => {
+    it('resolves request errors to a count of 0 while preserving retry state', async () => {
       const queryClient = createQueryClientWithCurrentUser([
         { id: 'role-1', name: 'Administrator' },
       ]);
@@ -407,9 +416,9 @@ describe('members api', () => {
             queryClient,
           });
 
-          await waitFor(() => {
-            expect(result.current).toEqual({ count: 0, isLoading: false });
-          });
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expect(result.current).toMatchObject({ count: 0, isLoading: false });
+          expect(result.current.refetch).toBeTypeOf('function');
         },
       );
     });

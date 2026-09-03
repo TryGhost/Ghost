@@ -225,10 +225,12 @@ function PublishFlowDialog({
             <OptionsStep
               emailDisabledInSettings={site.editorDefaultEmailRecipients === 'disabled'}
               limitsChecked={flow.limitsChecked}
+              limitsFailure={flow.limitsFailure}
               post={post}
               state={state}
               timezone={timezone}
               onContinue={flow.toConfirm}
+              onRetryLimits={flow.retryLimits}
               onSetNewsletter={transition((value) => machine.setNewsletter(value))}
               onSetPublishType={transition((value) => machine.setPublishType(value))}
               onSetRecipientFilter={transition((value) => machine.setRecipientFilter(value))}

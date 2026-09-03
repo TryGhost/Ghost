@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { StrictMode } from 'react';
 
 import { fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
@@ -35,6 +36,11 @@ const SITE: PublishSiteInput = {
 };
 
 const USER: PublishUserInput = { isAdmin: true, isAuthorOrContributor: false };
+
+afterEach(() => {
+  localStorage.removeItem('ghost-last-published-post');
+  localStorage.removeItem('ghost-last-scheduled-post');
+});
 
 function draft(overrides: Partial<PublishFlowPost> = {}): PublishFlowPost {
   return {
@@ -393,6 +399,54 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.options()).toBeInTheDocument();
   });
 
+  it('loads every page before exposing tier and label recipients', async () => {
+    const pagination = (pageNumber: number) => ({
+      page: pageNumber,
+      limit: 100,
+      pages: 2,
+      total: 2,
+      next: pageNumber === 1 ? 2 : null,
+      prev: pageNumber === 2 ? 1 : null,
+    });
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+
+      return {
+        tiers: [
+          pageNumber === 1
+            ? { slug: 'first-tier', name: 'First tier', active: true }
+            : { slug: 'last-tier', name: 'Last tier', active: true },
+        ],
+        meta: { pagination: pagination(pageNumber) },
+      };
+    });
+    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+
+      return {
+        labels: [
+          pageNumber === 1
+            ? { slug: 'first-label', name: 'First label' }
+            : { slug: 'last-label', name: 'Last label' },
+        ],
+        meta: { pagination: pagination(pageNumber) },
+      };
+    });
+
+    await renderPublishFlow();
+    await publishScreen.setting('email-recipients').click();
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    await expect.poll(() => labelsApi.requests.length).toBe(2);
+    await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
+    await page.getByLabelText('Specific people').click();
+    await expect.element(page.getByLabelText('First tier')).toBeInTheDocument();
+    await expect.element(page.getByLabelText('Last tier')).toBeInTheDocument();
+    await expect.element(page.getByLabelText('First label')).toBeInTheDocument();
+    await expect.element(page.getByLabelText('Last label')).toBeInTheDocument();
+    expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
+    expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
   it('gates the flow behind the TK reminder', async () => {
     await renderPublishFlow({ tkCount: 2 });
 
@@ -525,14 +579,70 @@ describe('Publish flow', () => {
       .toBe(false);
   });
 
-  it('does not strand the options step when refreshing limits fails', async () => {
+  it('blocks on an unreadable limit and retries it safely', async () => {
+    let attempt = 0;
+    const refreshSettings = vi.fn(() => {
+      attempt += 1;
+      return attempt === 1 ? Promise.reject(new Error('Settings are offline')) : Promise.resolve();
+    });
     await renderPublishFlow({
-      limits: { refreshSettings: () => Promise.reject(new Error('Settings are offline')) },
+      limits: { refreshSettings },
     });
 
+    await expect.element(publishScreen.limitsError()).toHaveTextContent('Settings are offline');
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await publishScreen.limitsError().getByRole('button', { name: 'Try again' }).click();
     await expect
       .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
       .toBe(false);
+    expect(refreshSettings).toHaveBeenCalledTimes(2);
+  });
+
+  it('completes once when React StrictMode replays effect cleanup', async () => {
+    const dispatch = completesWith(saved());
+    const onCompleted = vi.fn();
+    let releaseSettings: () => void = () => {};
+    const refreshSettings = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseSettings = resolve;
+        }),
+    );
+    const checkSendingLimit = vi.fn(() => Promise.resolve());
+    const checkPublishingLimit = vi.fn(() => Promise.resolve());
+
+    await render(
+      <StrictMode>
+        <TestWrapper>
+          <PublishFlowModal
+            dispatch={dispatch}
+            limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
+            post={draft()}
+            site={{ ...SITE, mailgunConfigured: false }}
+            timezone="Etc/UTC"
+            user={USER}
+            onClose={() => {}}
+            onCompleted={onCompleted}
+          />
+        </TestWrapper>
+      </StrictMode>,
+    );
+
+    await expect.poll(() => refreshSettings.mock.calls.length).toBe(1);
+    expect(checkPublishingLimit).toHaveBeenCalledTimes(1);
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    releaseSettings();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    expect(checkSendingLimit).toHaveBeenCalledTimes(1);
+    expect(checkPublishingLimit).toHaveBeenCalledTimes(1);
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(onCompleted).toHaveBeenCalledTimes(1);
   });
 
   it(
@@ -733,6 +843,30 @@ describe('Publish flow', () => {
       options: { emailOnly: false },
     });
   });
+
+  it.each([null, 'all'])(
+    'describes a historic %s segment without using the current default',
+    async (emailSegment) => {
+      await renderPublishFlow({
+        post: draft({
+          email: { id: EMAIL_ID, email_count: 12, opened_count: 0, status: 'submitted' },
+          emailSegment,
+        }),
+        site: {
+          ...SITE,
+          editorDefaultEmailRecipients: 'filter',
+          editorDefaultEmailRecipientsFilter: 'status:free',
+        },
+      });
+
+      await expect
+        .element(publishScreen.alreadySent())
+        .toHaveTextContent('Already sent to 12 subscribers');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('free');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('specific');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('none');
+    },
+  );
 });
 
 describe('Update flow', () => {
@@ -762,6 +896,34 @@ describe('Update flow', () => {
 
     expect(dispatch).toHaveBeenCalledWith({ kind: 'revert' });
     await expect.poll(() => onClose.mock.calls.length).toBe(1);
+  });
+
+  it('reverts once when React StrictMode replays effect cleanup', async () => {
+    const dispatch = completesWith(saved('draft'));
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+
+    await render(
+      <StrictMode>
+        <TestWrapper>
+          <UpdateFlowModal
+            dispatch={dispatch}
+            post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+            site={SITE}
+            timezone="Etc/UTC"
+            user={USER}
+            onClose={onClose}
+            onReverted={onReverted}
+          />
+        </TestWrapper>
+      </StrictMode>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect.poll(() => onClose.mock.calls.length).toBe(1);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(onReverted).toHaveBeenCalledTimes(1);
   });
 
   it('recovers when the revert dispatcher rejects unexpectedly', async () => {

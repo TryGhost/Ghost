@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   publicPreviewWarningDialog,
+  publishAlreadySent,
   publishBackToSettings,
   publishConfirmButton,
   publishCompleteNote,
@@ -11,6 +12,7 @@ import {
   publishFlowConfirm,
   publishFlowModal,
   publishFlowOptions,
+  publishLimitsError,
   publishRecipientFree,
   publishRetryEmailButton,
   publishRevertToDraft,
@@ -47,6 +49,8 @@ export const publishScreen = {
   confirmButton: () => page.getByTestId(publishConfirmButton),
   backToSettings: () => page.getByTestId(publishBackToSettings),
   confirmError: () => page.getByTestId(publishConfirmError),
+  limitsError: () => page.getByTestId(publishLimitsError),
+  alreadySent: () => page.getByTestId(publishAlreadySent),
   retryEmailButton: () => page.getByTestId(publishRetryEmailButton),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),

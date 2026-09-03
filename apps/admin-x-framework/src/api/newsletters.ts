@@ -67,10 +67,17 @@ export const useBrowseNewsletters = createInfiniteQuery<
   dataType,
   path: '/newsletters/',
   defaultSearchParams: { include: 'count.active_members,count.posts', limit: '50' },
-  defaultNextPageParams: (lastPage, otherParams) => ({
-    ...otherParams,
-    page: (lastPage.meta?.pagination.next || 1).toString(),
-  }),
+  defaultNextPageParams: (lastPage, otherParams) => {
+    const nextPage = lastPage.meta?.pagination.next;
+    if (!nextPage) {
+      return undefined;
+    }
+
+    return {
+      ...otherParams,
+      page: nextPage.toString(),
+    };
+  },
   returnData: (originalData) => {
     const { pages } = originalData as InfiniteData<NewslettersResponseType>;
     const newsletters = pages.flatMap((page) => page.newsletters);

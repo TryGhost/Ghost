@@ -14,7 +14,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { parseRecipientSegments } from './email-recipients-boundary';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
@@ -45,14 +45,47 @@ export function EmailRecipientsOptions({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
-  const { data: tiersData } = useBrowseTiers({
+  const tiersQuery = useBrowseTiers({
     defaultErrorHandler: false,
     searchParams: { filter: 'type:paid', limit: 'all' },
   });
-  const { data: labelsData } = useBrowseLabelsInfinite({
+  const labelsQuery = useBrowseLabelsInfinite({
     defaultErrorHandler: false,
     searchParams: { limit: 'all' },
   });
+  const {
+    data: labelsData,
+    fetchNextPage: fetchNextLabelPage,
+    hasNextPage: hasNextLabelPage,
+    isError: labelsError,
+    isFetchingNextPage: isFetchingNextLabelPage,
+  } = labelsQuery;
+  const {
+    data: tiersData,
+    fetchNextPage: fetchNextTierPage,
+    hasNextPage: hasNextTierPage,
+    isError: tiersError,
+    isFetchingNextPage: isFetchingNextTierPage,
+  } = tiersQuery;
+
+  // Core caps `limit=all`, so the response can still contain a next page.
+  // Exhaust both collections before exposing segments to avoid a partial list.
+  useEffect(() => {
+    if (hasNextLabelPage && !isFetchingNextLabelPage && !labelsError) {
+      void fetchNextLabelPage();
+    }
+  }, [fetchNextLabelPage, hasNextLabelPage, isFetchingNextLabelPage, labelsError]);
+
+  useEffect(() => {
+    if (hasNextTierPage && !isFetchingNextTierPage && !tiersError) {
+      void fetchNextTierPage();
+    }
+  }, [fetchNextTierPage, hasNextTierPage, isFetchingNextTierPage, tiersError]);
+
+  const labelsSettled =
+    !labelsQuery.isLoading && !isFetchingNextLabelPage && (!hasNextLabelPage || labelsError);
+  const tiersSettled =
+    !tiersQuery.isLoading && !isFetchingNextTierPage && (!hasNextTierPage || tiersError);
 
   const stripeBoundary = stripeBoundarySchema.safeParse({ settingsData, configData });
   const paidAvailable = stripeBoundary.success
@@ -73,7 +106,14 @@ export function EmailRecipientsOptions({
     : false;
 
   const segmentOptions = useMemo<SegmentOption[]>(() => {
-    const { tiers, labels } = parseRecipientSegments(tiersData, labelsData);
+    if (!labelsSettled || !tiersSettled) {
+      return [];
+    }
+
+    const { tiers, labels } = parseRecipientSegments(
+      tiersError ? undefined : tiersData,
+      labelsError ? undefined : labelsData,
+    );
     // A single paid tier adds nothing to a paid/free split, so Ember hides it.
     const tierOptions =
       tiers.length > 1
@@ -89,7 +129,7 @@ export function EmailRecipientsOptions({
         name: label.name,
       })),
     ];
-  }, [labelsData, tiersData]);
+  }, [labelsData, labelsError, labelsSettled, tiersData, tiersError, tiersSettled]);
 
   const newsletterRecipientFilter = state.newsletter
     ? getNewsletterRecipientFilter({
