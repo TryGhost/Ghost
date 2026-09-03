@@ -6,6 +6,7 @@ import { Metafield } from './models';
 import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { metafieldCodec } from './codec';
+import { assertDefinable } from './namespaces';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
 import { ADMIN, readableFields, type Audience } from './access';
 import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
@@ -133,15 +134,6 @@ export class MetafieldDefinitionsService {
     return namespace === CUSTOM_NAMESPACE;
   }
 
-  private assertDefinable(namespace: string): void {
-    if (!this.isStored(namespace)) {
-      throw new errors.ValidationError({
-        message: `Fields cannot be defined in the "${namespace}" namespace.`,
-        property: 'namespace',
-      });
-    }
-  }
-
   async browse(
     options: { namespace?: string; filter?: string } = {},
     audience: Audience = ADMIN,
@@ -192,7 +184,7 @@ export class MetafieldDefinitionsService {
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
   async add(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
-    this.assertDefinable(namespace);
+    assertDefinable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
     const parsed = AddFieldsInput.safeParse(input);
@@ -399,7 +391,7 @@ export class MetafieldDefinitionsService {
    * Returns every definition, archived included, matching what the request named.
    */
   async reorder(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
-    this.assertDefinable(namespace);
+    assertDefinable(namespace);
     const parsed = ReorderInput.safeParse(input);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
