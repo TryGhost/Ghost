@@ -115,6 +115,53 @@ const initVerificationTrigger = () => {
   });
 };
 
+const membersMigrationJobName = 'members-migrations';
+
+/**
+ * Runs the historical Stripe backfills once per site, retried only after a
+ * failed run.
+ *
+ * The `jobs` row named `members-migrations` is the only guard: any status other
+ * than `failed` means the run was already attempted and is skipped forever. The
+ * row is written after the run, so a boot that dies mid-way retries next time.
+ * The row is written even when Stripe is not configured, matching the job-based
+ * version: a site that connects Stripe later never runs these 2021-era backfills.
+ *
+ * @TODO: Delete the backfills, this runner and the `jobs` rows in the next major
+ *
+ * @param {import('../stripe')} stripeService
+ */
+async function runStripeMigrations(stripeService) {
+  const existingJob = await models.Job.findOne({ name: membersMigrationJobName });
+
+  if (existingJob && existingJob.get('status') !== 'failed') {
+    logging.info(`Stripe ${membersMigrationJobName} skipped because it has already run`);
+    return;
+  }
+
+  const startedAt = Date.now();
+  logging.info(`Stripe ${membersMigrationJobName} started`);
+
+  let status = 'finished';
+  try {
+    await stripeService.migrations.execute();
+    logging.info(`Stripe ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`);
+  } catch (err) {
+    status = 'failed';
+    logging.error(
+      err,
+      `Stripe ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
+    );
+  }
+
+  const attrs = { status, started_at: new Date(startedAt), finished_at: new Date() };
+  if (existingJob) {
+    await models.Job.edit(attrs, { id: existingJob.id });
+  } else {
+    await models.Job.add({ name: membersMigrationJobName, ...attrs });
+  }
+}
+
 module.exports = {
   async init() {
     const stripeService = require('../stripe');
@@ -182,39 +229,7 @@ module.exports = {
       values: metafields.values,
     });
 
-    if (!env?.startsWith('testing')) {
-      const membersMigrationJobName = 'members-migrations';
-      if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-        logging.info(`[Background Job] ${membersMigrationJobName} queued`);
-        jobsService.addOneOffJob({
-          name: membersMigrationJobName,
-          offloaded: false,
-          job: async () => {
-            const startedAt = Date.now();
-            logging.info(`[Background Job] ${membersMigrationJobName} started`);
-            try {
-              const result = await stripeService.migrations.execute();
-              logging.info(
-                `[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`,
-              );
-              return result;
-            } catch (err) {
-              logging.error(
-                err,
-                `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
-              );
-              throw err;
-            }
-          },
-        });
-
-        await jobsService.awaitOneOffCompletion(membersMigrationJobName);
-      } else {
-        logging.info(
-          `[Background Job] ${membersMigrationJobName} skipped because it has already run`,
-        );
-      }
-    }
+    await runStripeMigrations(stripeService);
   },
   contentGating: require('./content-gating'),
 
