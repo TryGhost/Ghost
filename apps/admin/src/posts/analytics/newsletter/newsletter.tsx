@@ -360,6 +360,7 @@ const Newsletter: React.FC = () => {
                 >
                   <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                     <KpiCardMoreButton
+                      disabled={isNewsletterDataHidden}
                       onClick={() => {
                         navigateToMembers(`emails.post_id:${postId}`);
                       }}
@@ -384,6 +385,7 @@ const Newsletter: React.FC = () => {
                   {emailTrackOpensEnabled && (
                     <KpiCard className="p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
+                        disabled={isNewsletterDataHidden}
                         onClick={() => {
                           navigateToMembers(`opened_emails.post_id:${postId}`);
                         }}
@@ -409,6 +411,7 @@ const Newsletter: React.FC = () => {
                   {emailTrackClicksEnabled && (
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
+                        disabled={isNewsletterDataHidden}
                         onClick={() => {
                           navigateToMembers(`clicked_links.post_id:${postId}`);
                         }}

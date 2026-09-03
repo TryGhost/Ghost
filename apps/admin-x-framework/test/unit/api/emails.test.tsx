@@ -32,13 +32,13 @@ describe('emails api', () => {
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-        const statusRequest = mock.calls.find(([url]) =>
-          String(url).includes('/emails/email-1/status/'),
+        const statusRequest = (mock.calls as Array<Parameters<typeof globalThis.fetch>>).find(
+          ([url]) => String(url).includes('/emails/email-1/status/'),
         );
         expect(statusRequest).toBeDefined();
         const [url, options] = statusRequest!;
         expect(new URL(url as string).pathname).toBe('/ghost/api/admin/emails/email-1/status/');
-        expect(options.method).toBe('GET');
+        expect(options?.method).toBe('GET');
         expect(result.current.data?.email_statuses[0]?.sending).toEqual({
           status: 'submitting',
           progress: {
@@ -47,6 +47,24 @@ describe('emails api', () => {
             estimated_seconds_remaining: 30,
           },
         });
+      },
+    );
+  });
+
+  it('rejects malformed email sending status responses', async () => {
+    await withMockFetch(
+      {
+        json: {},
+        headers: { 'content-type': 'application/json' },
+      },
+      async () => {
+        const { result } = renderHookWithProviders(() =>
+          useEmailSendingStatus('email-1', { defaultErrorHandler: false }),
+        );
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+
+        expect(result.current.data).toBeUndefined();
       },
     );
   });

@@ -70,9 +70,10 @@ const failureDetail = (
   error?: string | null,
 ) => {
   const { completed, total } = sending.progress;
+  const sent = sending.failed_during === 'submitting' ? completed : 0;
   const progress =
-    completed > 0
-      ? `${formatNumber(completed)} of ${formatNumber(total)} emails were sent.`
+    sent > 0
+      ? `${formatNumber(sent)} of ${formatNumber(total)} emails were sent.`
       : total > 0
         ? `None of the ${formatNumber(total)} emails were sent.`
         : 'No emails were sent.';
@@ -90,16 +91,18 @@ const EmailSendingStatusBanner = () => {
   }
 
   const isFailed = sending.status === 'failed';
+  const hasSentEmails = isFailed
+    ? sending.failed_during === 'submitting' && sending.progress.completed > 0
+    : false;
   const title = isFailed
-    ? sending.progress.completed > 0
+    ? hasSentEmails
       ? 'Some emails failed to send'
       : 'Emails failed to send'
     : sending.status === 'preparing'
       ? 'Preparing emails'
       : 'Sending emails';
   const detail = isFailed ? failureDetail(sending, post?.email?.error) : activeDetail(sending);
-  const retryLabel =
-    sending.progress.completed > 0 ? 'Send remaining emails' : 'Retry sending email';
+  const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
     <Stack

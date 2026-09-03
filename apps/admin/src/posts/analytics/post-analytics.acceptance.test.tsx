@@ -71,7 +71,7 @@ function seedPostAnalyticsWorld(
     stats: [{ date: daysAgo(1), mrr: 50000 }],
     totals: [{ currency: 'usd', mrr: 50000 }],
   });
-  fakeAdminEndpoint('GET', /^\/links\//, {
+  const linksApi = fakeAdminEndpoint('GET', /^\/links\//, {
     links: [
       {
         post_id: POST_ID,
@@ -94,6 +94,7 @@ function seedPostAnalyticsWorld(
   const topLocationsApi = fakeTinybirdPipe('api_top_locations', [{ location: 'US', visits: 200 }]);
   return {
     postsApi,
+    linksApi,
     topSourcesApi,
     topLocationsApi,
     kpisApi: fakeTinybirdPipe('api_kpis', [
@@ -138,7 +139,7 @@ describe('Post analytics overview', () => {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
     let postRequestCount = 0;
-    const { postsApi } = seedPostAnalyticsWorld(postOverrides, () => {
+    const { linksApi, postsApi } = seedPostAnalyticsWorld(postOverrides, () => {
       postRequestCount += 1;
       return [
         seededPost(
@@ -155,11 +156,60 @@ describe('Post analytics overview', () => {
         ),
       ];
     });
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), {
-      posts: [seededPost(postOverrides)],
+    let detailedPostRequestCount = 0;
+    const detailedPostsApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), () => {
+      detailedPostRequestCount += 1;
+      return {
+        posts: [
+          seededPost(
+            detailedPostRequestCount === 1
+              ? postOverrides
+              : {
+                  email: {
+                    id: EMAIL_ID,
+                    email_count: 1000,
+                    opened_count: 400,
+                    status: 'submitted',
+                  },
+                  count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
+                },
+          ),
+        ],
+      };
     });
-    fakeAdminStats.newsletterBasic([]);
-    fakeAdminStats.newsletterClicks([]);
+    let basicStatsRequestCount = 0;
+    const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, () => {
+      basicStatsRequestCount += 1;
+      return {
+        stats:
+          basicStatsRequestCount === 1
+            ? []
+            : [
+                {
+                  post_id: POST_ID,
+                  post_title: 'Attack of the Clones',
+                  send_date: `${daysAgo(10)}T10:00:00.000Z`,
+                  sent_to: 1000,
+                  total_opens: 400,
+                  open_rate: 0.4,
+                },
+              ],
+        meta: {},
+      };
+    });
+    const clickStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, () => {
+      return {
+        stats: [
+          {
+            post_id: POST_ID,
+            total_clicks: 60,
+            click_rate: 0.06,
+            email_count: 1000,
+          },
+        ],
+        meta: {},
+      };
+    });
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
@@ -197,10 +247,18 @@ describe('Post analytics overview', () => {
     await expect
       .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
       .toBeVisible();
+    await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeDisabled();
 
     await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(1);
     await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
+    await expect.poll(() => linksApi.requests.length).toBeGreaterThan(1);
+    await expect.element(page.getByText('1,000').first()).toBeVisible();
+    await expect.element(page.getByText('400').first()).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
   });
 
   it('moves a failed send and its retry action into the banner', async () => {
@@ -213,33 +271,7 @@ describe('Post analytics overview', () => {
         error: 'Mailgun rejected the batch.',
       },
     } as const;
-    let postRequestCount = 0;
-    seedPostAnalyticsWorld(postOverrides, () => {
-      postRequestCount += 1;
-      return [
-        seededPost(
-          postRequestCount === 1
-            ? postOverrides
-            : postRequestCount === 2
-              ? {
-                  email: {
-                    id: EMAIL_ID,
-                    email_count: 250,
-                    opened_count: 0,
-                    status: 'submitting',
-                  },
-                }
-              : {
-                  email: {
-                    id: EMAIL_ID,
-                    email_count: 1000,
-                    opened_count: 400,
-                    status: 'submitted',
-                  },
-                },
-        ),
-      ];
-    });
+    seedPostAnalyticsWorld(postOverrides);
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
@@ -287,6 +319,71 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
   });
 
+  it('refreshes the failure reason and does not count prepared recipients as sent', async () => {
+    const postOverrides = {
+      email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
+    } as const;
+    let postRequestCount = 0;
+    const { postsApi } = seedPostAnalyticsWorld(postOverrides, () => {
+      postRequestCount += 1;
+      return [
+        seededPost(
+          postRequestCount === 1
+            ? postOverrides
+            : {
+                email: {
+                  id: EMAIL_ID,
+                  email_count: 0,
+                  opened_count: 0,
+                  status: 'failed',
+                  error: 'Preparation failed.',
+                },
+              },
+        ),
+      ];
+    });
+    let statusRequestCount = 0;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
+      statusRequestCount += 1;
+      return {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending:
+              statusRequestCount === 1
+                ? {
+                    status: 'preparing',
+                    progress: { completed: 100, total: 1000, estimated_seconds_remaining: 30 },
+                  }
+                : {
+                    status: 'failed',
+                    failed_during: 'preparing',
+                    progress: {
+                      completed: 250,
+                      total: 1000,
+                      estimated_seconds_remaining: null,
+                    },
+                  },
+          },
+        ],
+      };
+    });
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText('Preparing emails')).toBeVisible();
+    await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(1);
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
+    await expect
+      .element(page.getByText(/None of the 1,000 emails were sent\. Preparation failed\./))
+      .toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Retry sending email' })).toBeVisible();
+  });
+
   it('falls back to the production analytics UI when the status endpoint is unavailable', async () => {
     seedPostAnalyticsWorld({
       email: { id: EMAIL_ID, email_count: 1000, opened_count: 400, status: 'submitting' },
@@ -309,7 +406,7 @@ describe('Post analytics overview', () => {
   it('applies the Admin 7 chrome on post analytics', async () => {
     seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { admin7PageChrome: true },
+      labs: { admin7PageChrome: true, improveSendingUI: false },
       boot: webAnalyticsBootOverrides(),
     });
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();

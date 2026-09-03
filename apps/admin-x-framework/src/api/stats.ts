@@ -229,8 +229,8 @@ const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
 const postReferrersDataType = 'PostReferrersResponseType';
 const newsletterStatsDataType = 'NewsletterStatsResponseType';
-const newsletterBasicStatsDataType = 'NewsletterBasicStatsResponseType';
-const newsletterClickStatsDataType = 'NewsletterClickStatsResponseType';
+export const newsletterBasicStatsDataType = 'NewsletterBasicStatsResponseType';
+export const newsletterClickStatsDataType = 'NewsletterClickStatsResponseType';
 const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType';
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';

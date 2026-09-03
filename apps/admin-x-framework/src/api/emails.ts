@@ -1,42 +1,57 @@
 import { createMutation, createQueryWithId } from '../utils/api/hooks';
 import { postsDataType } from './posts';
 import type { Email } from './content-types';
+import { z } from 'zod';
 
 export interface EmailsResponseType {
   emails: Email[];
 }
 
-export type EmailSendingPhase = 'preparing' | 'submitting';
+export const EmailSendingPhaseSchema = z.enum(['preparing', 'submitting']);
 
-export interface EmailSendingProgress {
-  completed: number;
-  total: number;
-  estimated_seconds_remaining: number | null;
-}
+export const EmailSendingProgressSchema = z.object({
+  completed: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  estimated_seconds_remaining: z.number().int().nonnegative().nullable(),
+});
 
-export type EmailSendingState =
-  | {
-      status: EmailSendingPhase | 'submitted';
-      progress: EmailSendingProgress;
-    }
-  | {
-      status: 'failed';
-      progress: EmailSendingProgress;
-      failed_during: EmailSendingPhase;
-    };
+export const EmailSendingStateSchema = z.discriminatedUnion('status', [
+  z.object({
+    status: EmailSendingPhaseSchema,
+    progress: EmailSendingProgressSchema,
+  }),
+  z.object({
+    status: z.literal('submitted'),
+    progress: EmailSendingProgressSchema,
+  }),
+  z.object({
+    status: z.literal('failed'),
+    progress: EmailSendingProgressSchema,
+    failed_during: EmailSendingPhaseSchema,
+  }),
+]);
 
-export interface EmailSendingStatus {
-  id: string;
-  sending: EmailSendingState;
-}
+export const EmailSendingStatusSchema = z.object({
+  id: z.string(),
+  sending: EmailSendingStateSchema,
+});
 
-export interface EmailStatusesResponseType {
-  email_statuses: EmailSendingStatus[];
-}
+export const EmailStatusesResponseSchema = z.object({
+  email_statuses: z.array(EmailSendingStatusSchema),
+});
+
+export type EmailSendingPhase = z.infer<typeof EmailSendingPhaseSchema>;
+export type EmailSendingProgress = z.infer<typeof EmailSendingProgressSchema>;
+export type EmailSendingState = z.infer<typeof EmailSendingStateSchema>;
+export type EmailSendingStatus = z.infer<typeof EmailSendingStatusSchema>;
+export type EmailStatusesResponseType = z.infer<typeof EmailStatusesResponseSchema>;
+
+const emailStatusesDataType = 'EmailStatusesResponseType';
 
 export const useEmailSendingStatus = createQueryWithId<EmailStatusesResponseType>({
-  dataType: 'EmailStatusesResponseType',
+  dataType: emailStatusesDataType,
   path: (id) => `/emails/${id}/status/`,
+  parseResponse: (data) => EmailStatusesResponseSchema.parse(data),
 });
 
 /**
