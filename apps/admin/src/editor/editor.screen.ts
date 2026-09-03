@@ -45,6 +45,8 @@ export const editorScreen = {
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),
+  /** The leave dialog as a raw selector, for DOM-level sampling a locator cannot do. */
+  leaveDialogSelector: `[data-testid="${editorLeaveDialog}"]`,
   stayInEditor: () =>
     page.getByTestId(editorLeaveDialog).getByRole('button', { name: stayInEditorButton }),
   leaveEditor: () =>

@@ -8,13 +8,17 @@ interface GuardedLocation {
 
 /**
  * Whether leaving now could lose content: the post diverges from the server, or
- * the engine still owes it a write that has not been acknowledged.
+ * the engine still owes it a write that has not been acknowledged. A re-auth
+ * freeze holds a captured command that no dirty content stands in for, so it
+ * counts as work of its own.
  */
 export function hasUnsavedWork(state: SaveEngineState, isDirty: boolean): boolean {
   if (isDirty) {
     return true;
   }
-  return state.kind === 'saving' || state.kind === 'pending-coalesced';
+  return (
+    state.kind === 'saving' || state.kind === 'pending-coalesced' || state.kind === 'reauth-pending'
+  );
 }
 
 /**

@@ -14,12 +14,16 @@ export interface EditorLeaveGuard {
 }
 
 /**
- * Stops a navigation from losing what the writer typed. Every blocked exit —
- * router link, back button, or a native hash anchor into an Ember-owned route —
- * is put to the save engine, which finishes or saves whatever is outstanding
- * and answers `proceed` (leaving loses nothing) or `confirm` (ask first).
- * The session's own URL replace after a create is not an exit and passes
- * silently.
+ * Stops a navigation from losing what the writer typed. In-router navigations
+ * and native `<a href="#/…">` anchors into Ember-owned routes are put to the
+ * save engine, which finishes or saves whatever is outstanding and answers
+ * `proceed` (leaving loses nothing) or `confirm` (ask first); a tab close or
+ * reload gets the browser's own prompt. The session's own URL replace after a
+ * create is not an exit and passes silently.
+ *
+ * Browser Back is not covered: the shared guard lets a POP through unless the
+ * entry it returns to was created by the router, and admin reaches the editor
+ * through a native hash anchor.
  */
 export function useEditorLeaveGuard(
   session: EditorSessionHandle,
@@ -27,13 +31,11 @@ export function useEditorLeaveGuard(
 ): EditorLeaveGuard {
   const sessionKey = useEditorSessionKey();
   const isDirty = session.isDirty();
-  const [isDecidingLeave, setIsDecidingLeave] = useState(false);
+  const [isConfirmingLeave, setIsConfirmingLeave] = useState(false);
 
   const guard = useUnsavedChangesGuard({
     when: hasUnsavedWork(session.state, isDirty),
     confirmUnloadWhen: isDirty,
-    // Keeps the dialog shut while the engine works out whether leaving is safe.
-    isSaving: isDecidingLeave,
     interceptNavigation: ({ currentLocation, nextLocation }) =>
       isCreatedIdUrlSwap(currentLocation, nextLocation, postType, sessionKey),
   });
@@ -58,29 +60,47 @@ export function useEditorLeaveGuard(
 
   const { isBlocked } = guard;
   const { leaveRequested } = session;
-  const isDecidedRef = useRef(false);
+  const isDecidingRef = useRef(false);
   useEffect(() => {
     if (!isBlocked) {
-      isDecidedRef.current = false;
+      isDecidingRef.current = false;
+      setIsConfirmingLeave(false);
       return;
     }
-    if (isDecidedRef.current) {
+    if (isDecidingRef.current) {
       return;
     }
-    isDecidedRef.current = true;
-    setIsDecidingLeave(true);
+    isDecidingRef.current = true;
     void leaveRequested().then((decision) => {
       if (!isMountedRef.current) {
         return;
       }
-      if (decision === 'proceed') {
-        // Releasing the block before `isDecidingLeave` drops; the other order
-        // paints the dialog for a frame on the way out.
-        guardRef.current.dialogProps.onConfirm();
+      if (decision === 'confirm') {
+        setIsConfirmingLeave(true);
+        return;
       }
-      setIsDecidingLeave(false);
+      guardRef.current.dialogProps.onConfirm();
     });
   }, [isBlocked, leaveRequested]);
 
-  return { dialogProps: guard.dialogProps };
+  // The dialog answers the engine's verdict rather than the block itself: a
+  // block is where the question starts, and most are settled without asking.
+  // Reading the hook's own `open` would paint one on every blocked commit.
+  const settle = guard.dialogProps;
+
+  return {
+    dialogProps: {
+      open: isConfirmingLeave,
+      onConfirm: () => {
+        setIsConfirmingLeave(false);
+        settle.onConfirm();
+      },
+      onOpenChange: (open: boolean) => {
+        if (!open) {
+          setIsConfirmingLeave(false);
+        }
+        settle.onOpenChange(open);
+      },
+    },
+  };
 }

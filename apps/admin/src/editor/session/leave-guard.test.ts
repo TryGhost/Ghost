@@ -29,6 +29,19 @@ describe('hasUnsavedWork', () => {
     ).toBe(true);
   });
 
+  it('guards a clean post whose command is frozen behind re-auth', () => {
+    expect(hasUnsavedWork({ kind: 'reauth-pending', intent: 'publish' }, false)).toBe(true);
+  });
+
+  it('leaves a failed save to the post it left dirty', () => {
+    const error = { kind: 'unknown' as const, message: 'Nope' };
+    // A failed save never discards its payload, so the post carries the guard.
+    expect(hasUnsavedWork({ kind: 'error', intent: 'autosave', error }, true)).toBe(true);
+    expect(hasUnsavedWork({ kind: 'conflict', intent: 'autosave', error }, true)).toBe(true);
+    expect(hasUnsavedWork({ kind: 'error', intent: 'autosave', error }, false)).toBe(false);
+    expect(hasUnsavedWork({ kind: 'conflict', intent: 'autosave', error }, false)).toBe(false);
+  });
+
   it('lets a settled clean post go', () => {
     expect(hasUnsavedWork({ kind: 'idle' }, false)).toBe(false);
     expect(hasUnsavedWork({ kind: 'debouncing' }, false)).toBe(false);

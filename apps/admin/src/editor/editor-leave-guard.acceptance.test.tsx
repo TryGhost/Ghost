@@ -77,6 +77,36 @@ async function typeIntoBody(text: string) {
   await userEvent.keyboard(`{End}${text}`);
 }
 
+/**
+ * Counts every insertion of the leave dialog into the document. A locator
+ * polls, so it cannot see a dialog that opens and closes inside one commit;
+ * the observer fires on the DOM write itself and misses no frame.
+ */
+function watchLeaveDialog(): () => number {
+  let insertions = 0;
+  const carriesDialog = (node: Node): boolean =>
+    node instanceof Element &&
+    (node.matches(editorScreen.leaveDialogSelector) ||
+      !!node.querySelector(editorScreen.leaveDialogSelector));
+  const count = (records: MutationRecord[]) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (carriesDialog(node)) {
+          insertions += 1;
+        }
+      }
+    }
+  };
+  const observer = new MutationObserver(count);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return () => {
+    count(observer.takeRecords());
+    observer.disconnect();
+    return insertions;
+  };
+}
+
 /** Opens the editor and leaves it with an edit the server has not seen. */
 async function openDirtyEditor(labs: RenderAdminAppOptions = FLAG_ON) {
   await renderAdminApp(`/editor/post/${POST_ID}`, labs);
@@ -97,11 +127,14 @@ describe('Post editor leave guard', () => {
     async () => {
       const saveApi = fakeEditablePost();
       await openDirtyEditor();
+      const dialogInsertions = watchLeaveDialog();
 
       await editorScreen.backLink('post').click();
 
       await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      // Not a single frame of it: the save on the way out is silent, and a
+      // prompt that flashes as the navigation lands is worse than none.
+      expect(dialogInsertions()).toBe(0);
       expect(saveApi.requests.length).toBe(1);
       // Leaving is the writer's last checkpoint, so it earns a revision.
       expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
@@ -206,6 +239,17 @@ describe('Post editor leave guard', () => {
       await expect.element(editorScreen.leaveDialog()).toBeVisible();
       expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
       expect(saveApi.requests.length).toBe(0);
+
+      // Cancelling drops the intercepted anchor, so the writer stays put and
+      // the next click on the same link asks again rather than going through.
+      await editorScreen.stayInEditor().click();
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+
+      await editorScreen.backLink('post').click();
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     },
     SLOW,
   );

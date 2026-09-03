@@ -312,6 +312,9 @@ export function createEditorSession({
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);
       }
+      // The engine moves dirtiness on its own too; without this the cache
+      // below could miss the flip after it and swallow a later notification.
+      dirtyChanged();
     },
     onListenerError: onError,
   });

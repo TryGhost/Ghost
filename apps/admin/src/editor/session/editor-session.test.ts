@@ -304,4 +304,69 @@ describe('createEditorSession', () => {
 
     expect(state.updates).toHaveLength(0);
   });
+
+  it('notifies subscribers once per dirtiness flip, not once per edit', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    session.patchLexical(body('Hello and more still'));
+    session.patchLexical(body('Hello and more still again'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('notifies subscribers when the pending baseline lands and settles the post', () => {
+    const { session } = harness({ record: record() });
+    const edited = buildLexicalParagraph('Hello and more');
+    session.patchLexical(JSON.parse(edited));
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    // Until the hidden editor reports, a diverged body has to be assumed dirty.
+    expect(session.isDirty()).toBe(true);
+
+    session.setBaseline(edited);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('reports a throwing subscriber instead of interrupting the edit', () => {
+    const onError = vi.fn();
+    const { session } = harness({ record: record(), onError });
+    session.setBaseline(record().lexical);
+    session.subscribe(() => {
+      throw new Error('listener blew up');
+    });
+
+    session.patchLexical(body('Hello and more'));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+  });
+
+  it('stops notifying an unsubscribed listener', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    const unsubscribe = session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
+  });
 });
