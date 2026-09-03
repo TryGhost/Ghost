@@ -22,4 +22,4 @@ export type {
 
 export { AUTOMATION_DESCRIPTIONS, getAutomation, mockAutomations } from './automations';
 export { metricSeries } from './metric-series';
-export { emptyScenarioId, getScenario } from './runs';
+export { emptyScenarioId, getRunData } from './runs';

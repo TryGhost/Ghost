@@ -5,7 +5,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   InputGroup,
   InputGroupAddon,
@@ -17,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import {
   FilterBar,
   GhAreaChart,
@@ -26,13 +25,13 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import type { AutomationRun, ExitReason } from '@/automations/proto/shared/mock';
-import type { LeftPanelProps } from './left-panel-types';
+import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
 import {
   CompletedGlyph,
   ExitedGlyph,
   InProgressGlyph,
 } from '@/automations/proto/shared/run-glyphs';
-import { SortHead, type SortState } from '@/automations/proto/float/sort-head';
+import { SortHead, type SortState } from '@/automations/proto/shared/sort-head';
 import {
   EXIT_REASONS,
   exitReasonLabel,
@@ -40,7 +39,7 @@ import {
   startedLabel,
 } from '@/automations/proto/shared/member-runs';
 import { toAreaData } from '@/automations/proto/shared/chart';
-import { useStickyList } from '@/automations/proto/float/use-sticky-list';
+import { useStickyList } from '@/automations/proto/shared/use-sticky-list';
 
 // The float concept's left pane: search + filters roll up into a sticky bar as
 // the cards scroll off, over a table of the members who've entered. The read of
@@ -126,26 +125,16 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onSelectMember,
   query,
   onQueryChange,
-  reserveToggle = false,
-  flat = false,
 }) => {
   const { automation, metrics, runs } = scenario;
   const [range, setRange] = useState('all');
-  // Phase 1: search starts collapsed to an icon (the timeframe earns the space
-  // more often); opening it takes over the header row, swapping out the title,
-  // rather than adding a second control the eye has to skip.
-  //
-  // Future never uses this — its search is mounted open — so the state is inert
-  // there rather than conditional. searchShown is the one thing the strip reads.
-  const [searchOpen, setSearchOpen] = useState(false);
-  // Exploration keeps the field open; phase 1 hides it behind the magnifier.
-  const searchShown = flat || searchOpen;
+  // Search is mounted open, directly above the table it narrows — there's no
+  // magnifier to press and nothing to collapse back into.
 
   // The pane's horizontal gutter. Every band in this column — the control strip,
   // the filter chips, the summary, the sticky bar and the table — has to use the
   // same one or the left edge goes ragged, so it's named once rather than typed
-  // five times. Both releases sit at 24px; Exploration was tried at 32 and came
-  // back, so the name stays even though the value no longer varies.
+  // five times. Tried at 32px and came back to 24.
   const gutter = 'px-6';
 
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
@@ -300,20 +289,16 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       <InputGroupAddon>
         <LucideIcon.Search />
       </InputGroupAddon>
-      {/* autoFocus in phase 1 only, and it's the mount that does it: there the
-                field appears because you pressed the magnifier, so focus is the point.
-                Exploration mounts it on load, where taking focus would be taking it
-                from wherever the reader was. */}
+      {/* No autoFocus: the field is mounted on load, where taking focus would be
+                taking it from wherever the reader was. */}
       <InputGroupInput
-        autoFocus={!flat}
         placeholder="Search members…"
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
       />
-      {/* Exploration only. Phase 1's close button clears on the way out; with no
-                close button to lean on, clearing belongs to the field — and only while
-                there's something to clear. */}
-      {flat && (query || SHOW_EXIT_FILTER) && (
+      {/* With no close button to lean on, clearing belongs to the field — and
+                only while there's something to clear. */}
+      {(query || SHOW_EXIT_FILTER) && (
         <InputGroupAddon align="inline-end">
           {query && (
             <InputGroupButton
@@ -380,173 +365,12 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 Docked header: there is no strip to borrow — the bar above already owns
                 that row — so the pane titles itself and keeps its controls on its own
                 baseline. Outside the scroll container either way, so they stay put. */}
-      {!flat && (
-        <Inline
-          align="center"
-          // Flat: no top padding. The strip used to sit under a bordered header
-          // that closed the space above it, so 16px read as the gap between two
-          // regions; with the border gone there's nothing for it to be a gap
-          // between and it reads as the page failing to start. The header's own
-          // vertical centring already leaves air above the field.
-          // No justify. It used to be 'between', which worked while the strip
-          // held exactly two children (whatever leads, then the controls). The
-          // toggle's placeholder makes three, and 'between' spread all three —
-          // parking the title in the middle of the pane. Whichever child leads
-          // grows instead (flex-1 below), which pins the controls right without
-          // the layout caring how many children there are.
-          className={cn('shrink-0 pb-3', gutter, flat ? 'pt-0' : 'pt-4')}
-          gap="sm"
-        >
-          {/* Phase 1 titles the pane: it's a region of its own beneath a bordered
-                    header, and the rule above it makes it a distinct thing that should
-                    say what it is. Future drops the title — under a flat header the pane
-                    heading became a third stacked heading in the top-left corner, after
-                    the screen's header and the canvas toggle, each restarting the page a
-                    little lower; and with nothing else in that column, naming it was
-                    restating context rather than adding any. */}
-          {/* An invisible twin of the pane toggle, holding its place. The real one
-                    is painted on the row outside this pane, so that collapsing takes the
-                    pane out from under a button that never moves; this reserves the
-                    footprint so whatever leads the strip starts clear of it.
-
-                    A sibling of both the title and the search field, not a child of the
-                    title's group. The toggle is still sitting there when search takes
-                    the strip over, so the space has to be held in BOTH states — nested
-                    inside the title it disappeared along with it, and the open search
-                    field ran straight under the button.
-
-                    The same component rather than a sized box, so the space can't drift
-                    from the thing standing in it. aria-hidden and out of the tab order —
-                    the real button carries both. */}
-          {reserveToggle && (
-            <Button
-              className="invisible -ml-2"
-              size="icon"
-              tabIndex={-1}
-              type="button"
-              variant="ghost"
-              aria-hidden
-            >
-              <LucideIcon.PanelLeft strokeWidth={2} />
-            </Button>
-          )}
-          {!flat && !searchOpen && (
-            <Inline align="center" className="min-w-0 flex-1" gap="sm">
-              {/* One stop below the automation name in the header (text-md
-                            to its text-lg): this names a region within that automation,
-                            so it reads as the level beneath it. */}
-              <Text size="md" weight="semibold">
-                Performance
-              </Text>
-            </Inline>
-          )}
-          {/* flex-1 + min-w-0, NOT w-full: w-full resolves against the whole
-                    strip, overflows it once the gap and buttons are counted, and flex
-                    resolves that by shrinking the siblings — so the icon buttons squash
-                    below 36px and appear to jump width as search opens. */}
-          {searchShown && searchField}
-          {/* Same 8px the header bar puts between its own buttons, so every
-                    button row on the screen is spaced alike. (These sat flush for a
-                    while, on the reasoning that each button's own padding was already
-                    separating them and a gap spaced them twice — matching the header
-                    won out.) */}
-          <Inline align="center" className="shrink-0" gap="sm">
-            {/* Phase 1's search toggle. Future has no equivalent — its field is
-                        always there, so there's nothing to open and nothing to close. */}
-            {!flat &&
-              (searchOpen ? (
-                <Button
-                  aria-label="Close search"
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    onQueryChange('');
-                    setSearchOpen(false);
-                  }}
-                >
-                  <LucideIcon.X strokeWidth={2} />
-                </Button>
-              ) : (
-                <Button
-                  aria-label="Search members"
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setSearchOpen(true)}
-                >
-                  <LucideIcon.Search strokeWidth={2} />
-                </Button>
-              ))}
-            {/* A plain filter button rather than a labelled timeframe control: the
-                        timeframe is one of several things we'll want to filter on, and this
-                        is the affordance the rest of Ghost already uses — the funnel from
-                        the members page filter bar, not a generic sliders icon, so the same
-                        action reads the same way everywhere it appears.
-
-                        One funnel, no active state: the icon names the action and
-                        nothing more. An applied filter is already stated — and made
-                        removable — by its chip in the row below, so tinting the button
-                        as well said the same thing twice in a place you can't act on. */}
-            <DropdownMenu>
-              {/* One funnel holding both the timeframe and the exit reason.
-                            Phase 1 doesn't split its filters by scope the way Exploration
-                            does — this strip is the only place it has for them, and a
-                            single funnel is the affordance the rest of Ghost uses. */}
-              <DropdownMenuTrigger asChild>
-                <Button aria-label="Filter" size="icon" type="button" variant="ghost">
-                  <LucideIcon.Funnel strokeWidth={2} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Entries</DropdownMenuLabel>
-                {/* Trailing check, not the radio bullet: Shade's active-option
-                                convention (the Filters pattern's option rows, SelectItem) puts
-                                a check at the end of the row. Opacity rather than conditional
-                                render so rows keep a stable width. */}
-                {RANGE_OPTIONS.map((option) => (
-                  <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
-                    {option.label}
-                    <LucideIcon.Check
-                      className={cn(
-                        'ms-auto text-primary',
-                        range === option.value ? 'opacity-100' : 'opacity-0',
-                      )}
-                    />
-                  </DropdownMenuItem>
-                ))}
-                {/* Exit reason lives here rather than as a fourth status
-                                card. The cards are lifecycle outcomes and stay three;
-                                this asks a different question — why someone left —
-                                and only of the ones who did. Selecting a reason is
-                                what "show me failures" means. */}
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
-                {EXIT_REASONS.map((reason) => (
-                  <DropdownMenuItem
-                    key={reason.id}
-                    onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}
-                  >
-                    {reason.label}
-                    <LucideIcon.Check
-                      className={cn(
-                        'ms-auto text-primary',
-                        exitFilter === reason.id ? 'opacity-100' : 'opacity-0',
-                      )}
-                    />
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </Inline>
-        </Inline>
-      )}
 
       {/* An applied filter gets its own row beneath the controls, the way the
                 members page does it — so what's narrowing the list is always visible
                 rather than hidden inside the button that set it. "All time" is the
                 default, so it isn't a filter and doesn't earn a row. */}
-      {((!flat && range !== 'all') || exitFilter) && (
+      {exitFilter && (
         <FilterBar className={cn('shrink-0 pb-3', gutter)}>
           {/* One child, not one per chip: FilterBar justifies between its
                         children so it can hold filters at the left and controls like
@@ -564,16 +388,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                             icon — so these now match the chips on members and
                             comments rather than sitting a size below them. The X
                             takes Button's base svg size for the same reason. */}
-            {/* Phase 1 only. Exploration's trigger already reads "Last 30
-                            days", so a chip repeating it below would be the same fact
-                            twice — and the chip row exists to surface filters you can't
-                            otherwise see. */}
-            {!flat && range !== 'all' && (
-              <Button type="button" variant="outline" onClick={() => setRange('all')}>
-                {rangeLabel}
-                <LucideIcon.X strokeWidth={2} />
-              </Button>
-            )}
             {exitFilter && (
               <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
                 {exitReasonLabel(exitFilter)}
@@ -631,7 +445,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                       </KpiCardHeaderLabel>
                       <KpiCardHeaderValue value={formatNumber(totalEntries)} />
                     </Stack>
-                    {flat && rangeMenu}
+                    {rangeMenu}
                   </Inline>
                   <GhAreaChart
                     className={`${CHART_HEIGHT} w-full`}
@@ -700,7 +514,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             className={cn(
               'sticky top-0 z-20',
               gutter,
-              flat ? 'bg-background' : 'bg-surface-elevated',
+              'bg-background',
               stuck && 'border-b border-border-default pb-4',
             )}
           >
@@ -760,7 +574,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                     status chips and stay reachable however far down the list you are —
                     searching a long table from a field that has scrolled away is the
                     thing this avoids. */}
-          {flat && <div className={cn('pb-3', gutter)}>{searchField}</div>}
+          <div className={cn('pb-3', gutter)}>{searchField}</div>
 
           {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
           <div className={cn('pb-6', gutter)}>

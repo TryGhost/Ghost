@@ -1,13 +1,18 @@
 import { createContext, useContext } from 'react';
 
-// Prototype-only variant switching. A "slot" is any swappable piece of the
-// proto (today: the float detail's left panel); each slot lists its variations
-// by id. What a variant id *means* is the slot owner's business — usually a
-// component registry beside the variant files — this module only tracks which
-// id is selected. New swappable elements later = new slots passed to the
-// provider; nothing here changes. Components (provider + flask switcher) live
-// in proto-variant-switcher.tsx — split so this module can export the hook and
-// helpers (react-refresh/only-export-components).
+// Prototype-only variant switching WITHIN a lane. A "slot" is any swappable
+// piece of one lane's screens; each slot lists its variations by id, and this
+// module only tracks which id is selected — what a variant id means is the slot
+// owner's business.
+//
+// The phase comparison this used to drive is now the lane split (see lanes.ts):
+// lanes are routes with their own files, not variants of one screen. What's left
+// here is for a comparison INSIDE a lane — two treatments of the same card, say —
+// which the lane switcher renders below the lane list when a lane provides them.
+//
+// Nothing provides slots today. Kept because the machinery is the cheap part and
+// re-deriving it costs more than carrying it; a lane opts in by wrapping its
+// screen in a provider over this context and passing its slots.
 
 export type ProtoVariantOption = { id: string; label: string };
 

@@ -1,13 +1,6 @@
-import type {
-  AutomationRun,
-  AutomationRunMetrics,
-  AutomationScenario,
-  EnrollmentPoint,
-  RunStep,
-} from './types';
+import type { AutomationRun, AutomationRunMetrics, EnrollmentPoint, RunStep } from './types';
 import {
   cancellationSurvey,
-  getAutomation,
   inactiveWinback,
   paidUpgradeNudge,
   welcomeSeries,
@@ -183,7 +176,25 @@ const welcomeRunsBase: AutomationRun[] = [
         occurred_at: '2026-07-12T09:05:00Z',
         detail: 'Waited 3 days',
       },
-      { action_id: 'act_tips_email', state: 'current', occurred_at: null, detail: 'Sends Jul 17' },
+      // The one run whose frontier sits on a SEND rather than a wait — the email
+      // is in flight: Ghost has submitted it and no delivery has come back yet.
+      //
+      // This used to read `occurred_at: null, detail: 'Sends Jul 17'`, which is a
+      // scheduled email, not a sending one — a member with a future send date is
+      // still waiting, and the marker belonged on the wait above. It made
+      // "sending" look like the ordinary state of an in-progress run when it's
+      // the opposite: submission to delivery is seconds, so at any given moment
+      // roughly nobody is here.
+      //
+      // Kept as a fixture anyway, at a deliberately unrealistic one-in-forty, so
+      // the state is reviewable at all. No detail: the card already says
+      // "Sending email", and there is nothing true to add until Mailgun answers.
+      {
+        action_id: 'act_tips_email',
+        state: 'current',
+        occurred_at: '2026-07-15T09:06:00Z',
+        detail: null,
+      },
       { action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null },
     ],
   },
@@ -644,14 +655,18 @@ function emptyMetrics(automationId: string): AutomationRunMetrics {
   };
 }
 
-/** The full scenario for an automation, or `undefined` if the id is unknown. */
-export function getScenario(id: string): AutomationScenario | undefined {
-  const automation = getAutomation(id);
-  if (!automation) {
-    return undefined;
-  }
-  const data = runData[id] ?? { metrics: emptyMetrics(id), runs: [] };
-  return { automation, metrics: data.metrics, runs: data.runs };
+/**
+ * The runs and metrics for an automation.
+ *
+ * Never undefined: an automation with no fixtures — a brand-new one you just
+ * created, or `cancellationSurvey` — gets a zeroed funnel and an empty run list,
+ * which is a designed state rather than a missing one. This used to return the
+ * whole scenario including the automation itself, but automations now come from
+ * the store (which can hold ones that were never fixtures), so this owns only the
+ * half that is still hand-authored.
+ */
+export function getRunData(id: string): { metrics: AutomationRunMetrics; runs: AutomationRun[] } {
+  return runData[id] ?? { metrics: emptyMetrics(id), runs: [] };
 }
 
 // Referenced so the empty-state scenario reads as intentional, not forgotten.

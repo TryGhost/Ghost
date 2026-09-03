@@ -4,10 +4,10 @@ import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
 
-// The screen's header. Two zones on one row: navigation and identity at the left —
-// back arrow, the pane toggle where a release has one, then the title and its
-// status — and the screen's actions at the right. Only the SURFACE differs by
-// release (see `flat`); the arrangement is shared.
+// PHASE 1 — the screen's header, docked: its own elevated surface with a rule
+// under it. Two zones on one row: navigation and identity at the left — back
+// arrow, then the title and its status — and the screen's actions at the right.
+// The arrangement is shared with the other lanes; only the surface differs.
 //
 // A centred "Automations / <name>" breadcrumb has now been tried here twice and
 // rejected twice, on the same ground both times: it puts the automation's name at
@@ -25,40 +25,27 @@ interface HeaderBarProps {
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // Drops the bar's own surface and its bottom rule so the header sits directly
-  // on the page. Used by the release whose canvas is an inset window: once the
-  // canvas is bounded, a bounded header above it makes two competing frames and
-  // the eye has to pick which one is the object.
-  flat?: boolean;
 }
 
-export const HeaderBar: React.FC<HeaderBarProps> = ({
-  title,
-  status,
-  onBack,
-  actions,
-  flat = false,
-}) => (
+export const HeaderBar: React.FC<HeaderBarProps> = ({ title, status, onBack, actions }) => (
   <header
     className={cn(
-      'relative z-30 flex h-16 shrink-0 items-center justify-between',
-      // Flat matches the pane's own 24px gutter, so the header's controls start on
-      // the same vertical as the column beneath them — and on the same one as the
-      // canvas HUD, which takes its 24px from the pane too. One line down the left
-      // of the screen rather than three.
-      flat ? 'px-6' : 'px-4',
-      // Docked: the header is its own elevated surface, separated from the
-      // content below by a rule. Flat: no fill and no rule, so the page
-      // background runs straight through it.
-      !flat && 'border-b border-border-default bg-surface-elevated',
+      'relative z-30 flex h-16 shrink-0 items-center justify-between px-6',
+      'border-b border-border-default bg-surface-elevated',
     )}
   >
     {/* Identity sits with navigation at the left rather than centred: the title
             is what you came here for, and the way back belongs beside it. min-w-0 so
             a long automation name truncates instead of pushing the actions off. */}
     <Inline align="center" className="min-w-0" gap="sm">
+      {/* -ml-2, as everywhere a leading ghost icon button meets the inset: the
+                box pulls back 8px so its 16px glyph lands optically on the 24px
+                column, instead of the box sitting on it and the glyph landing 10px
+                further in. The pane's own leading button does the same, which is
+                what puts the two on one line down the left of the screen. */}
       <Button
         aria-label="Back to automations"
+        className="-ml-2"
         size="icon"
         type="button"
         variant="ghost"

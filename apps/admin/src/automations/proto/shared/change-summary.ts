@@ -33,8 +33,12 @@ export interface ChangeEntry {
 interface ChangeSummaryInput {
   published: AutomationDetail;
   draft: AutomationDetail;
-  publishedTrigger: TriggerConfig;
-  draftTrigger: TriggerConfig;
+  // Nullable because a just-created automation has no trigger yet. Choosing the
+  // first one is a change like any other — it's the edit that makes the
+  // automation runnable, so it has to show up here or Save would stay disabled
+  // on the one screen where picking a trigger is the whole job.
+  publishedTrigger: TriggerConfig | null;
+  draftTrigger: TriggerConfig | null;
 }
 
 const emailLabel = (subject: string): string =>
@@ -61,6 +65,21 @@ export function changeSummary({
   draftTrigger,
 }: ChangeSummaryInput): ChangeEntry[] {
   const changes: ChangeEntry[] = [];
+
+  if (!draftTrigger) {
+    // Nothing chosen yet, and nothing can have been un-chosen — a saved trigger
+    // can be changed but not cleared. Fall through to the action diff.
+    return actionChanges({ published, draft });
+  }
+
+  if (!publishedTrigger) {
+    changes.push({
+      id: 'trigger-set',
+      kind: 'trigger',
+      label: `Trigger set to ${triggerLabel(draftTrigger)}`,
+    });
+    return [...changes, ...actionChanges({ published, draft })];
+  }
 
   if (publishedTrigger.type !== draftTrigger.type) {
     changes.push({
@@ -106,6 +125,16 @@ export function changeSummary({
       }),
     );
 
+  return [...changes, ...actionChanges({ published, draft })];
+}
+
+// The step-level half of the diff — added, removed and edited actions. Its own
+// function so the trigger cases above can return early and still report it.
+function actionChanges({
+  published,
+  draft,
+}: Pick<ChangeSummaryInput, 'published' | 'draft'>): ChangeEntry[] {
+  const changes: ChangeEntry[] = [];
   const publishedActions = orderActions(published);
   const draftActions = orderActions(draft);
   const publishedById = new Map(publishedActions.map((action) => [action.id, action]));

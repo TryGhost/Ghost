@@ -9,11 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
   EmptyIndicator,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
@@ -21,20 +16,16 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { getScenario } from '@/automations/proto/shared/mock';
-import { changeSummary } from './change-summary';
-import { PHASE_SLOT } from './phase-model';
+import { getRunData } from '@/automations/proto/shared/mock';
+import {
+  saveAutomation,
+  setAutomationStatus,
+  useProtoAutomation,
+} from '@/automations/proto/shared/store';
+import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { LeftPanel } from './left-panel';
-import {
-  ProtoVariantSwitcher,
-  ProtoVariantsProvider,
-} from '@/automations/proto/shared/proto-variant-switcher';
-import {
-  DEFAULT_TRIGGER_CONFIG,
-  type TriggerConfig,
-} from '@/automations/proto/shared/trigger-config';
-import { useProtoVariant } from '@/automations/proto/shared/proto-variants';
+import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
 import {
   CANVAS_HUD_BUTTON,
   CANVAS_SLOT_FILL,
@@ -43,30 +34,40 @@ import {
 import { EditCanvas } from '@/automations/proto/canvas/edit-canvas';
 import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
+import { lanePath } from '@/automations/proto/shared/lanes';
+import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
+
+// PHASE 1 — the first release. See shared/lanes for why each lane owns its own
+// copy of this screen.
+//
+// Editing works the way the shipping editor already works: changes are held
+// until Save or Publish, and leaving with unsaved work warns that it'll be lost.
+// The trigger is fixed once one has been saved. Chrome stays docked — header,
+// pane and canvas are three abutting surfaces separated by rules.
+//
+// Creating and deleting automations are NOT part of this release; those live in
+// the phase-2 lane.
+const LANE = 'phase-1' as const;
 
 type LiveStatus = 'active' | 'inactive';
-type SaveState = 'saved' | 'saving';
 
 // Turn-on / turn-off confirmations. Structure and weight come from the shipped
 // editor (plain AlertDialog, non-destructive confirm, same shape of sentence);
 // the vocabulary is the proto's, and deliberately narrower than what's shipped.
 //
-// The verb differs by release, which is why it's a prop rather than a string.
-// Future keeps one switch metaphor for the lifecycle — an automation is On or
-// Off, and you Turn it on or off — which leaves "publish" to mean exactly one
-// thing: pushing edits to an automation that's already on. Phase 1 matches the
-// shipping editor instead, where Publish is what takes a stopped automation
-// live. Either way the button and the dialog it opens have to say the same word.
+// Publish is the word throughout, matching the shipping editor, where Publish is
+// what takes a stopped automation live — the button and the dialog it opens have
+// to say the same thing. (The exploration lane uses an on/off switch metaphor
+// instead, which is why this used to be a prop.)
 const TurnOnAutomationDialog: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  verb: string;
-}> = ({ open, onOpenChange, onConfirm, verb }) => (
+}> = ({ open, onOpenChange, onConfirm }) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>{verb} automation?</AlertDialogTitle>
+        <AlertDialogTitle>Publish automation?</AlertDialogTitle>
         <AlertDialogDescription>
           Your automation will start running. Any member who meets the trigger will be enrolled
           automatically.
@@ -74,7 +75,7 @@ const TurnOnAutomationDialog: React.FC<{
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <Button onClick={onConfirm}>{verb}</Button>
+        <Button onClick={onConfirm}>Publish</Button>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -150,7 +151,18 @@ const AutomationFloat: React.FC = () => {
   const navigate = useNavigate();
   const toVersioned = useVersionLink();
 
-  const scenario = id ? getScenario(id) : undefined;
+  // The automation itself comes from the store, so one that was created in this
+  // session is as real as a seeded fixture. Runs and metrics stay hand-authored
+  // and keyed by id — a created automation has none, which is the empty state
+  // `cancellationSurvey` already designs for.
+  const record = useProtoAutomation(id);
+  const scenario = record
+    ? { automation: record.automation, ...getRunData(record.automation.id) }
+    : undefined;
+  // What Save last committed. The screen diffs against these rather than against
+  // anything it tracks itself.
+  const savedAutomation = record?.automation;
+  const savedTrigger = record?.trigger ?? null;
 
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
@@ -158,41 +170,43 @@ const AutomationFloat: React.FC = () => {
   // presentational column — it renders the field and reports typing, and nothing
   // about where the field lives is baked into where the value is kept.
   const [query, setQuery] = useState('');
-  const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
-  const [saveState, setSaveState] = useState<SaveState>('saved');
+  // Live status isn't screen state: starting and stopping take effect the moment
+  // they're confirmed, so they're written straight to the store rather than
+  // waiting on Save with the rest of the edits.
+  const liveStatus: LiveStatus = savedAutomation?.status ?? 'inactive';
   const [stopOpen, setStopOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
-  // Edits autosave into `draft`; `publishedDraft` is what the automation is
-  // actually running. Publishing promotes one to the other — the same draft vs
-  // published split posts already have, and what lets a live automation be
-  // edited safely without stopping it first.
+  // Edits are held here until Save commits them to the store, which is also why
+  // they're the one piece of state that ISN'T persisted: an unsaved draft is
+  // defined as the thing you haven't committed, and restoring one a week later
+  // would quietly contradict that. `null` means "nothing edited yet" — the saved
+  // version is being shown as-is.
+  //
+  // The screen is keyed by automation id (see AutomationFloatScreen), so this
+  // starts empty for each automation rather than needing to be reset.
   const [draft, setDraft] = useState<AutomationDetail | null>(null);
-  const [publishedDraft, setPublishedDraft] = useState<AutomationDetail | null>(null);
   // Trigger + exit criteria. Separate from `draft` because AutomationDetail carries no
-  // trigger config yet — the canvases take it as its own prop.
-  const [triggerConfig, setTriggerConfig] = useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
-  const [publishedTriggerConfig, setPublishedTriggerConfig] =
-    useState<TriggerConfig>(DEFAULT_TRIGGER_CONFIG);
+  // trigger config yet — the canvases take it as its own prop. `null` is the
+  // just-created state: nothing has been chosen to start this automation, and the
+  // canvas shows a picker rather than a flow.
+  const [triggerConfig, setTriggerConfig] = useState<TriggerConfig | null>(savedTrigger);
 
-  // Which release this screen is showing (see phase-model). Everything that
-  // differs between them reads from this one flag rather than its own slot.
-  const isPhaseOne = useProtoVariant(PHASE_SLOT) === 'phase-1';
-  // Phase 1 fixes the trigger once the automation exists.
-  const triggerLocked = isPhaseOne;
+  // The trigger is fixed once one has been saved — THIS LANE ONLY. Phase 2 makes
+  // it fully editable (per-tier triggers are the point there), so don't port this.
+  //
+  // An automation that arrived here without one (created in the phase-2 lane,
+  // which shares this store) can still have one chosen — a locked card with
+  // nothing in it would be a dead end.
+  const triggerLocked = savedTrigger !== null;
 
-  // Future flattens the screen's chrome: the header loses its rule and fill and
-  // the pane loses its border, leaving the canvas as the one bounded object —
-  // an inset window on an otherwise plain page. Phase 1 keeps the docked
-  // arrangement, where header, pane and canvas are three abutting slabs.
-  const flatChrome = !isPhaseOne;
   // The canvas is always editable, so hiding the pane is the user's call.
   const [paneCollapsed, setPaneCollapsed] = useState(false);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
   // and hooks can't run conditionally.
-  const publishedAutomation = publishedDraft ?? scenario?.automation;
+  const publishedAutomation = savedAutomation;
   const activeDraft = draft ?? publishedAutomation;
 
   // The diff is computed, not tracked. This used to be a `dirty` boolean flipped
@@ -210,39 +224,24 @@ const AutomationFloat: React.FC = () => {
       ? changeSummary({
           published: publishedAutomation,
           draft: activeDraft,
-          publishedTrigger: publishedTriggerConfig,
+          publishedTrigger: savedTrigger,
           draftTrigger: triggerConfig,
         })
       : [];
   const hasChanges = changes.length > 0;
 
-  // The same difference means different things in the two releases, which is most
-  // of what separates them.
-  //
-  // Phase 1: edits are held, not written. It's unsaved work that leaving would
-  // destroy — in either lifecycle state, since a stopped automation's edits are
-  // just as unsaved as a running one's.
-  const hasUnsavedChanges = isPhaseOne && hasChanges;
-  // Future: edits autosave, so it's saved-but-not-live. Only a running automation
-  // has something to diverge FROM — edits to a stopped one aren't "unpublished",
-  // since there's no live version they're failing to reach.
-  const hasUnpublishedChanges = !isPhaseOne && hasChanges && liveStatus === 'active';
-
-  // Leaving. Phase 1 can genuinely lose work, so the browser prompt fires on any
-  // unsaved edit. With autosave the work is safe, so that prompt is reserved for
-  // the one window where it isn't — a save still in flight — and the in-app
-  // dialog says what's actually at stake instead of threatening data loss it
-  // can't cause.
-  useConfirmUnload(isPhaseOne ? hasChanges : saveState === 'saving');
+  // Edits are held, not written, so any difference is unsaved work that leaving
+  // would destroy — in either lifecycle state, since a stopped automation's edits
+  // are just as unsaved as a running one's.
+  useConfirmUnload(hasChanges);
   const navigationBlocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      (hasUnsavedChanges || hasUnpublishedChanges) &&
-      currentLocation.pathname !== nextLocation.pathname,
+      hasChanges && currentLocation.pathname !== nextLocation.pathname,
   );
 
-  const goBack = () => navigate(toVersioned('/automations-proto/float'));
+  const goBack = () => navigate(toVersioned(lanePath(LANE)));
 
-  if (!scenario) {
+  if (!scenario || !record || !id) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background">
         <EmptyIndicator title="Automation not found" />
@@ -268,29 +267,18 @@ const AutomationFloat: React.FC = () => {
   // one thing that genuinely wants a read-only view. The crossfade between the
   // two canvases is what handles that.
   const showEditCanvas = !selectedRun;
+  // Nothing can go live without something to start it. This is the only gate the
+  // create flow adds: an automation with no trigger isn't half-configured, it's
+  // an automation that cannot run.
+  const canGoLive = triggerConfig !== null;
   const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 
-  // The fake autosave tick, which only runs in the release that has autosave — in
-  // phase 1 nothing is written until Save or Publish. Nothing here records that an
-  // edit happened: whether anything differs is read from the draft itself.
-  const markEdited = () => {
-    if (isPhaseOne) {
-      return;
-    }
-    setSaveState('saving');
-    window.setTimeout(() => setSaveState('saved'), 700);
-  };
+  // Nothing is written until Save or Publish, so an edit only has to be recorded.
+  // Whether anything actually differs is read back off the draft.
+  const handleDraftChange = (next: AutomationDetail) => setDraft(next);
 
-  const handleDraftChange = (next: AutomationDetail) => {
-    setDraft(next);
-    markEdited();
-  };
-
-  const handleTriggerConfigChange = (next: TriggerConfig) => {
-    setTriggerConfig(next);
-    markEdited();
-  };
+  const handleTriggerConfigChange = (next: TriggerConfig) => setTriggerConfig(next);
 
   // Start — take a stopped automation live. Read mode only now, so there's no
   // edit state to settle here. No confirm dialog: going live is low-friction and
@@ -298,8 +286,7 @@ const AutomationFloat: React.FC = () => {
   // friction lives on Stop and on publishing to something already running.
   // Whatever's in the draft becomes the running version.
   const promoteDraft = () => {
-    setPublishedDraft(draftFlow);
-    setPublishedTriggerConfig(triggerConfig);
+    saveAutomation(id, draftFlow, triggerConfig);
     setDraft(null);
   };
 
@@ -309,7 +296,7 @@ const AutomationFloat: React.FC = () => {
     // "publish" step to remember for something that was never running.
     setStartOpen(false);
     promoteDraft();
-    setLiveStatus('active');
+    setAutomationStatus(id, 'active');
     // Title only — the start-confirmation dialog already explained what
     // turning it on means, so the toast just confirms it happened.
     toast.success('Automation is on');
@@ -339,134 +326,44 @@ const AutomationFloat: React.FC = () => {
     setPublishOpen(true);
   };
 
-  // Discard reverts to what's published. An undo toast rather than a confirm
-  // dialog, matching the shipped header's discard.
-  const handleDiscard = () => {
-    const previousDraft = draft;
-    const previousTriggerConfig = triggerConfig;
-    setDraft(null);
-    setTriggerConfig(publishedTriggerConfig);
-    toast('Changes discarded', {
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          setDraft(previousDraft);
-          setTriggerConfig(previousTriggerConfig);
-        },
-      },
-    });
-  };
-
   const handleStop = () => {
     setStopOpen(false);
-    setLiveStatus('inactive');
+    setAutomationStatus(id, 'inactive');
   };
 
-  // What's in the draft that isn't live. Future only — phase 1 never shows a
-  // diff, since you just made the edits and haven't left the screen.
-  // The header's actions, which is where the two releases diverge most visibly.
+  // The header's actions, mirroring the shipping editor exactly (see
+  // automations/components/automation-header.tsx): off, Save sits alongside
+  // Publish, so committing work and going live stay separate decisions; on,
+  // Publish changes reports its own clean state by becoming a disabled
+  // "Published" rather than handing that job to a second control. That last part
+  // answers the review feedback directly — the button announces the state by what
+  // it offers, so nothing has to stand next to it saying "unpublished changes".
   //
-  // Phase 1 mirrors the shipping editor exactly (see automations/components/
-  // automation-header.tsx): off, Save sits alongside Publish, so committing work
-  // and going live stay separate decisions; on, Publish changes reports its own
-  // clean state by becoming a disabled "Published" rather than handing that job
-  // to a second control. That last part answers the review feedback directly —
-  // the button announces the state by what it offers, so nothing has to stand
-  // next to it saying "unpublished changes".
-  //
-  // Future keeps autosave's shape: nothing to save, so the only questions are
-  // what's live and what's in the draft.
-  //
-  // No save indicator in either. Autosave is meant to be unremarkable, and
-  // flickering "Saving…" on every keystroke draws the eye to plumbing rather
-  // than to anything the publisher can act on.
-  const chromeActions = isPhaseOne ? (
-    <>
-      {liveStatus === 'inactive' ? (
-        <>
-          {/* Nothing to save until something changes. Publish stays
-                        available either way — an unedited draft is still
-                        publishable, which is how the shipping editor behaves. */}
-          <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
-            Save
-          </Button>
-          <Button onClick={() => setStartOpen(true)}>Publish</Button>
-        </>
-      ) : (
-        <>
-          <Button variant="outline" onClick={() => setStopOpen(true)}>
-            Turn off
-          </Button>
-          <Button disabled={!hasChanges} onClick={handlePublishClick}>
-            {hasChanges ? 'Publish changes' : 'Published'}
-          </Button>
-        </>
-      )}
-    </>
-  ) : (
-    <>
-      {/* At most one visible action at a time, which is what four earlier
-                attempts kept failing at. Everything that isn't the moment's decision
-                moves into the ⋯: lifecycle, management, and undoing a draft.
-                Publishing is the only thing that earns the primary slot, and only
-                while there's something to publish.
-
-                Stopped, the primary is Turn on — the one thing you'd do with a
-                stopped automation — and a draft can't exist to compete with it,
-                since edits to something that isn't running have no live version to
-                diverge from. */}
-      {/* The ⋯ leads, the primary trails. Overflow menus sit to the LEFT of
-                the action they qualify everywhere else in the app, so a primary
-                appearing to the menu's left made this row read backwards. */}
-      {/* modal={false} so the canvas underneath stays live — same reason the
-                node menus and the option picker are non-modal. */}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button aria-label="Automation actions" size="icon" type="button" variant="ghost">
-            <LucideIcon.MoreHorizontal strokeWidth={2} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {liveStatus === 'active' && (
-            <DropdownMenuItem onClick={() => setStopOpen(true)}>
-              <LucideIcon.Power /> Turn off
-            </DropdownMenuItem>
-          )}
-          {/* Prototype stub — duplication has no design decision behind it
-                        yet, so this reports success without creating anything. */}
-          <DropdownMenuItem onClick={() => toast.success('Automation duplicated')}>
-            <LucideIcon.Copy /> Duplicate
-          </DropdownMenuItem>
-          {/* Dead link for now. A verb like everything else in this menu —
-                        every other row names something you do, and a lone noun read
-                        as a different kind of item. What it opens is where the
-                        automation's own configuration would live, including Delete,
-                        which wants room to warn about members mid-flow rather than a
-                        menu row that fires on click. */}
-          <DropdownMenuItem>
-            <LucideIcon.Settings /> Configure
-          </DropdownMenuItem>
-          {/* Discard sits last, in its own section. It's the one item here
-                        that destroys work, and a menu opens with the cursor at the
-                        top — leading with it would put the destructive option
-                        directly under the pointer. */}
-          {hasUnpublishedChanges && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={handleDiscard}
-              >
-                <LucideIcon.Undo2 /> Discard changes
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {hasUnpublishedChanges && <Button onClick={handlePublishClick}>Publish changes</Button>}
-      {liveStatus === 'inactive' && <Button onClick={() => setStartOpen(true)}>Turn on</Button>}
-    </>
-  );
+  // No save indicator. Flickering "Saving…" on every keystroke draws the eye to
+  // plumbing rather than to anything the publisher can act on.
+  const chromeActions =
+    liveStatus === 'inactive' ? (
+      <>
+        {/* Nothing to save until something changes. Publish stays available
+                either way — an unedited draft is still publishable, which is how
+                the shipping editor behaves. */}
+        <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
+          Save
+        </Button>
+        <Button disabled={!canGoLive} onClick={() => setStartOpen(true)}>
+          Publish
+        </Button>
+      </>
+    ) : (
+      <>
+        <Button variant="outline" onClick={() => setStopOpen(true)}>
+          Turn off
+        </Button>
+        <Button disabled={!hasChanges} onClick={handlePublishClick}>
+          {hasChanges ? 'Publish changes' : 'Published'}
+        </Button>
+      </>
+    );
 
   return (
     // flex-col in both variants: the docked header is a row above the pane and
@@ -479,7 +376,6 @@ const AutomationFloat: React.FC = () => {
                 is the back arrow, the title and its status, full stop. */}
       <HeaderBar
         actions={chromeActions}
-        flat={flatChrome}
         status={liveStatus}
         title={automation.name}
         onBack={goBack}
@@ -509,13 +405,9 @@ const AutomationFloat: React.FC = () => {
             // to itself the content would reflow as the pane narrowed, wrapping the
             // title and crushing the table for the length of the animation.
             'relative flex shrink-0 flex-col overflow-hidden transition-[width] duration-150 ease-out',
-            // Docked: a content panel flanking the canvas, so it takes the same
-            // step of the ladder as the right-hand analytics sheet. Flat: it
-            // stops being a panel at all — page content on the page's own
-            // background, with only its own px-6 holding it off the canvas
-            // window beside it. No rule, because there are no longer two
-            // surfaces meeting that would need one.
-            flatChrome ? 'bg-background' : 'border-r border-border-default bg-surface-elevated',
+            // A content panel flanking the canvas, so it takes the same step of
+            // the ladder as the right-hand analytics sheet.
+            'border-r border-border-default bg-surface-elevated',
             // border-r goes with the width: at w-0 a rule would still paint, a
             // stray hairline down the left of the canvas.
             paneHidden ? 'w-0 border-r-0' : 'w-[480px]',
@@ -528,9 +420,7 @@ const AutomationFloat: React.FC = () => {
                     aside narrows around it — see the note above. */}
           <div className="flex min-h-0 w-[480px] flex-1 flex-col">
             <LeftPanel
-              flat={flatChrome}
               query={query}
-              reserveToggle={isPhaseOne}
               scenario={scenario}
               selectedMemberId={selectedMemberId}
               onQueryChange={setQuery}
@@ -551,39 +441,10 @@ const AutomationFloat: React.FC = () => {
             // edge colour from here by inheritance, so the two releases can look
             // completely different without either canvas knowing which one it is.
             CANVAS_SLOT_FILL,
-            canvasTheme(isPhaseOne ? 'phase-1' : 'exploration', Boolean(selectedRun)),
-            // Flat chrome makes this the only bounded thing on screen, so it
-            // reads as an object: inset from the page, with a radius closing
-            // the shape.
-            //
-            // Right and bottom always, at 24px to match the gutters the pane and
-            // the HUD already use. The gap above is already paid for by the
-            // header's own height, so a margin there would stack a second gutter
-            // on a gutter that was already the right size.
-            //
-            // Collapsing the pane MAXIMISES the canvas: every margin and the radius
-            // go, and it fills everything under the header. Windowed, it keeps its
-            // 24px on the right and bottom while the pane's own gutter holds the
-            // left — a margin there too would double that gutter.
-            //
-            // The two states are meant to read as different modes rather than as the
-            // same window at two sizes, which is why the radius goes rather than
-            // just the margins: a rounded rectangle pinned to the screen edges reads
-            // as a window that failed to fit. Transitioned on the same 150ms as the
-            // pane's width so the edges move together.
-            //
-            // Margin rather than padding on the row, so collapsing the pane
-            // slides the window leftward to the page edge instead of dragging
-            // a gutter along with it.
-            //
-            // No border. The flow's own fill is what delimits the window now, and
-            // a rule as well was drawing the same edge twice at a scale where the
-            // radius already reads as a shape. Worth knowing what this costs in
-            // DARK: the flow fill and the page background are the same token
-            // there by design, so the only thing marking where the canvas ends is
-            // the dot pattern stopping.
-            flatChrome && 'transition-[margin] duration-150 ease-out',
-            flatChrome && (paneCollapsed ? 'm-0 rounded-none' : 'mr-6 mb-6 ml-0 rounded-2xl'),
+            canvasTheme('phase-1', Boolean(selectedRun)),
+            // Docked chrome: the canvas is one of three abutting surfaces, so it
+            // fills its column flush — no inset, no radius. The inset-window
+            // treatment belongs to the exploration lane.
           )}
         >
           {/* Both canvases stay mounted and crossfade on mode change. No remount
@@ -599,7 +460,7 @@ const AutomationFloat: React.FC = () => {
             <FlowCanvas
               automation={publishedFlow}
               selectedRun={selectedRun}
-              triggerConfig={publishedTriggerConfig}
+              triggerConfig={savedTrigger ?? undefined}
             />
           </div>
           {/* One top-left cluster, not two things at the same coordinates: the
@@ -607,11 +468,24 @@ const AutomationFloat: React.FC = () => {
                     the member button can both be present at once, so they sit in a row
                     and neither has to know about the other.
 
-                    top-6 left-6 is the HUD inset every floating thing on this canvas
-                    uses — 24px off every edge, matching CANVAS_HUD_INSET, which the zoom
-                    controls take in the opposite corner. */}
-          {(!isPhaseOne || (selectedRun && !showEditCanvas)) && (
-            <div className="absolute top-6 left-6 z-20">
+                    left-6 with the button pulled back 8px, and top-4: the horizontal
+                    inset is the 24px every column on this screen uses, and the vertical
+                    one is 16px because that is where the row beneath the header starts
+                    — the pane's strip is pt-4, and the invisible twin of the pane toggle
+                    that the "Performance" title aligns against sits at 16. This cluster
+                    was at top-6, which put it 8px below the toggle standing right beside
+                    it; both are size-9, so their centres missed by 8 and the corner read
+                    as broken.
+
+                    16 rather than 24 costs the symmetry with the zoom controls, which
+                    take CANVAS_HUD_INSET (24) in the opposite corner. Worth it here: this
+                    canvas is flush against the header and pane, so its top-left corner
+                    belongs to that horizontal band and has to line up with it. The
+                    exploration lane's canvas is a bounded window instead, inset from the
+                    page — nothing to line up with, so its cluster keeps the symmetric
+                    24. */}
+          {selectedRun && !showEditCanvas && (
+            <div className="absolute top-4 left-6 z-20">
               <Inline align="center" gap="sm">
                 {/* Phase 1's toggle is anchored to the row, not to this
                                 cluster — and once the pane collapses the canvas starts at
@@ -627,58 +501,7 @@ const AutomationFloat: React.FC = () => {
                                 Only while collapsed: with the pane open the toggle is
                                 480px away over the pane, and reserving space here would
                                 indent the member button against nothing. */}
-                {isPhaseOne && paneCollapsed && (
-                  <div className="-ml-2 size-9 shrink-0" aria-hidden />
-                )}
-                {/* Future's pane toggle, in both directions. It used to be
-                                two controls — one leading the pane's title to close it,
-                                one floating here to bring it back — which meant the way
-                                out and the way in lived in different places and the pane
-                                carried chrome ahead of its own heading.
-
-                                One button on the canvas instead: it stays put, and the
-                                pane stays a clean column of content. Phase 1 keeps its
-                                permanent toggle in the header bar and never renders this.
-
-                                Ghost, with no surface of its own: this is chrome for
-                                changing what the canvas occupies, not an object on the
-                                canvas, and an opaque fill here made it compete with the
-                                member button beside it.
-
-                                Maximise / minimise rather than a panel glyph. The same
-                                press still shows and hides the pane, but the pane is not
-                                what you're looking at when you reach for a control in
-                                the CANVAS's corner — from here the visible effect is the
-                                canvas taking the screen and giving it back. Phase 1's
-                                toggle sits on the seam between the two regions and keeps
-                                PanelLeft, because from there it genuinely reads as the
-                                panel's control.
-
-                                Future only. Phase 1's is anchored to the row instead
-                                (below) so it can hold still while the pane collapses;
-                                here the button belongs to the canvas and travels with
-                                it. */}
-                {!isPhaseOne && (
-                  // Sits on the 24px inset as a whole object. It was a bare
-                  // ghost button pulled back by -ml-2 to put its GLYPH on
-                  // the inset — right for a mark floating on the canvas,
-                  // wrong now that it has a surface of its own.
-                  <Button
-                    aria-label={paneCollapsed ? 'Restore canvas' : 'Maximise canvas'}
-                    aria-pressed={paneCollapsed}
-                    className={CANVAS_HUD_BUTTON}
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                    onClick={() => setPaneCollapsed(!paneCollapsed)}
-                  >
-                    {paneCollapsed ? (
-                      <LucideIcon.Minimize strokeWidth={2} />
-                    ) : (
-                      <LucideIcon.Maximize strokeWidth={2} />
-                    )}
-                  </Button>
-                )}
+                {paneCollapsed && <div className="-ml-2 size-9 shrink-0" aria-hidden />}
                 {/* Who you're looking at, and the way out, as one control:
                                 clicking the member's name closes their run. This replaced
                                 a bare X in the canvas's top-right, which said nothing
@@ -722,7 +545,6 @@ const AutomationFloat: React.FC = () => {
           >
             <EditCanvas
               draft={draftFlow}
-              inlineAnalytics={!isPhaseOne}
               triggerConfig={triggerConfig}
               triggerLocked={triggerLocked}
               onChange={handleDraftChange}
@@ -747,33 +569,30 @@ const AutomationFloat: React.FC = () => {
                 z-30 clears the pane's own sticky bars at z-20. The pane holds an
                 invisible twin of this button in flow (see reserveToggle) so the
                 Performance title starts where it would if this one were really there. */}
-        {isPhaseOne && (
-          <div className="absolute top-4 left-6 z-30">
-            <Button
-              aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
-              aria-pressed={!paneCollapsed}
-              // -ml-2, as everywhere else a ghost icon button meets the inset:
-              // the box pulls back so the glyph sits on 24px. Net effect is the
-              // box at 16px, which is also exactly where the pane's own leading
-              // button sits — so this still lands on the pixels the pane's
-              // button occupied, now for a stated reason rather than a
-              // coincidence of two different numbers.
-              className="-ml-2"
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setPaneCollapsed(!paneCollapsed)}
-            >
-              <LucideIcon.PanelLeft strokeWidth={2} />
-            </Button>
-          </div>
-        )}
+        <div className="absolute top-4 left-6 z-30">
+          <Button
+            aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
+            aria-pressed={!paneCollapsed}
+            // -ml-2, as everywhere else a ghost icon button meets the inset:
+            // the box pulls back so the glyph sits on 24px. Net effect is the
+            // box at 16px, which is also exactly where the pane's own leading
+            // button sits — so this still lands on the pixels the pane's
+            // button occupied, now for a stated reason rather than a
+            // coincidence of two different numbers.
+            className="-ml-2"
+            size="icon"
+            type="button"
+            variant="ghost"
+            onClick={() => setPaneCollapsed(!paneCollapsed)}
+          >
+            <LucideIcon.PanelLeft strokeWidth={2} />
+          </Button>
+        </div>
       </div>
 
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}
       <TurnOnAutomationDialog
         open={startOpen}
-        verb={isPhaseOne ? 'Publish' : 'Turn on'}
         onConfirm={handleStart}
         onOpenChange={setStartOpen}
       />
@@ -799,44 +618,38 @@ const AutomationFloat: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isPhaseOne ? 'Discard unsaved changes?' : 'Leave with unpublished changes?'}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              {isPhaseOne
-                ? 'Your changes will be lost if you leave this automation.'
-                : 'Your changes are saved, but they won’t affect this automation until you publish them.'}
+              Your changes will be lost if you leave this automation.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {/* Phase 1 can actually lose work, so it says so in the shipping
-                        editor's own words and colours the confirm destructive. With
-                        autosave nothing is lost by leaving, so the same dialog drops
-                        the red and just states where things stand. */}
+          {/* Work is genuinely lost here, so the dialog says so in the shipping
+                        editor's own words and colours the confirm destructive. */}
           <AlertDialogFooter>
-            <AlertDialogCancel>{isPhaseOne ? 'Keep working' : 'Keep editing'}</AlertDialogCancel>
-            <Button
-              variant={isPhaseOne ? 'destructive' : 'default'}
-              onClick={() => navigationBlocker.proceed?.()}
-            >
-              {isPhaseOne ? 'Discard changes' : 'Leave'}
+            <AlertDialogCancel>Keep working</AlertDialogCancel>
+            <Button variant="destructive" onClick={() => navigationBlocker.proceed?.()}>
+              Discard changes
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Prototype-only: the flask switcher for flipping design variations. */}
-      <ProtoVariantSwitcher />
+      {/* Prototype-only: which lane this is, and the way to the others. */}
+      <LaneSwitcher lane={LANE} />
     </div>
   );
 };
 
 // Provider wraps the whole screen (not just the panel) so future slots — node
 // styles, header treatments — can register without moving anything.
-const AutomationFloatScreen: React.FC = () => (
-  <ProtoVariantsProvider slots={[PHASE_SLOT]}>
-    <AutomationFloat />
-  </ProtoVariantsProvider>
-);
+const AutomationFloatScreen: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  // Keyed by id so every piece of unsaved state — the draft, the trigger being
+  // configured, the member in focus — belongs to one automation and starts clean
+  // on the next. Without it, React reuses the instance across a route change and
+  // the previous automation's draft would follow you to the new one.
+  return <AutomationFloat key={id} />;
+};
 
 export default AutomationFloatScreen;
 export const Component = AutomationFloatScreen;

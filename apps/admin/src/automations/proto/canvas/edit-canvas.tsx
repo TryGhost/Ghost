@@ -10,10 +10,8 @@ import {
   type Edge,
   EdgeLabelRenderer,
   type EdgeProps,
-  Handle,
   type Node,
   type NodeProps,
-  Position,
   ReactFlow,
   getSmoothStepPath,
 } from '@xyflow/react';
@@ -61,7 +59,6 @@ import {
   CANVAS_HUD_INSET,
   CANVAS_SLOT_FILL,
   EDGE_STROKE,
-  HIDDEN_HANDLE_STYLE,
   type StepKind,
   formatWait,
   orderActions,
@@ -74,7 +71,7 @@ import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailStatsFooter, EmailStatsInline } from './email-analytics';
 import { NODE_BODY_PADDING, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
-import { TriggerFieldsForm } from './trigger-config-form';
+import { TriggerEmptyState, TriggerFieldsForm } from './trigger-config-form';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
 // helpers here take 'email' | 'wait'.
@@ -140,6 +137,11 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
+  // A created automation with nothing chosen to start it. Its own flag rather
+  // than an absent triggerConfig, because the read canvas also passes no config
+  // and means something entirely different by it — "don't offer to edit this",
+  // not "this hasn't been answered".
+  triggerUnset?: boolean;
   // Which action this card is, so the email's link fixtures can be looked up.
   actionId?: string;
   // Future concept: an email's numbers live on the card as bars, with the top
@@ -172,6 +174,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
     }
   };
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
+  const triggerUnset = isTrigger && Boolean(d.triggerUnset);
   // Locked trigger: a lock where other cards put their overflow menu. A button,
   // not a static glyph — clicking it answers "why can't I change this?" in a
   // popover instead of leaving the disabled select to explain itself.
@@ -250,7 +253,9 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
           className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)}
           onClick={(e) => e.stopPropagation()}
         >
-          {configurable && d.onTriggerConfigChange ? (
+          {triggerUnset && d.onTriggerConfigChange ? (
+            <TriggerEmptyState onSelect={d.onTriggerConfigChange} />
+          ) : configurable && d.onTriggerConfigChange ? (
             <TriggerFieldsForm
               config={triggerConfig}
               locked={triggerLocked}
@@ -332,28 +337,27 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   );
 };
 
-type TailNodeData = { onPick: (type: StepPickerType) => void };
+// Where the flow ends, as a card like every other card — icon chip, title, and
+// nothing else, because there is nothing to configure about ending.
+//
+// The column used to finish on a dashed "add step" button, which left the flow
+// looking unterminated: a reader could see where it started and every step it
+// took, but the last thing on the canvas was an invitation rather than an
+// outcome, so "what happens after the last email?" had no answer on screen.
+//
+// Making it a NODE rather than a terminal pill is what fixes the interaction as
+// well as the picture. Adding a step now happens the same way everywhere — on the
+// connector between two cards — instead of being one gesture between steps and a
+// different one at the end. The tail button was the only place in the flow where
+// adding meant pressing a big dashed rectangle, and it was also the only place
+// you could not insert BEFORE the thing you were pointing at.
+const ExitNode: React.FC = () => (
+  <NodeCard>
+    <NodeHeader icon={LucideIcon.LogOut} title="Exit automation" />
+  </NodeCard>
+);
 
-const TailNode: React.FC<NodeProps> = ({ data }) => {
-  const { onPick } = data as TailNodeData;
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="flex w-[400px]">
-      <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-      <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
-        <button
-          aria-label="Add step"
-          className={`flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default ${CANVAS_SLOT_FILL} text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none`}
-          type="button"
-        >
-          <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
-        </button>
-      </AddStepPopover>
-    </div>
-  );
-};
-
-const nodeTypes = { step: StepNode, tail: TailNode };
+const nodeTypes = { step: StepNode, exit: ExitNode };
 
 type PlusEdgeData = { onPick: (type: StepPickerType) => void };
 
@@ -432,7 +436,10 @@ interface EditCanvasProps {
   onChange: (next: AutomationDetail) => void;
   // Trigger config lives with the screen (it isn't part of AutomationDetail yet).
   // Without a change handler the trigger renders as a read-only summary.
-  triggerConfig?: TriggerConfig;
+  //
+  // `null` is a created automation with nothing chosen yet: the canvas collapses
+  // to the trigger card alone until it's answered.
+  triggerConfig?: TriggerConfig | null;
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   triggerLocked?: boolean;
   inlineAnalytics?: boolean;
@@ -484,15 +491,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       : null;
 
   const { nodes, edges, contentBottom } = useMemo(() => {
+    // A created automation, before its trigger is chosen. The column is the
+    // trigger card and nothing else — no steps and no add-step button, because
+    // there's nothing yet for a step to hang off. `triggerConfig === undefined`
+    // is the read canvas passing none and means the opposite, so the check is
+    // explicitly against null.
+    const unset = triggerConfig === null;
+
     // The column, top to bottom: trigger, each action in flow order, then the
     // tail button. Order is the only thing the layout needs — heights come back
     // measured, so an email card growing an analytics block or a links list
     // moves the cards below it without anything here being told.
-    const { ys, bottom } = layout([
-      '__trigger__',
-      ...ordered.map((action) => action.id),
-      '__tail__',
-    ]);
+    const { ys, bottom } = layout(
+      unset ? ['__trigger__'] : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'],
+    );
 
     const built: Node[] = [];
     built.push({
@@ -504,14 +516,18 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         title: 'Trigger',
         subtitle: '',
         selected: false,
-        triggerConfig,
+        triggerConfig: triggerConfig ?? undefined,
         onTriggerConfigChange,
         triggerLocked,
+        triggerUnset: unset,
       },
       draggable: false,
       connectable: false,
       selectable: false,
     });
+    if (unset) {
+      return { nodes: built, edges: [] as Edge[], contentBottom: bottom };
+    }
     ordered.forEach((action, i) => {
       const isEmail = action.type === 'send_email';
       built.push({
@@ -558,14 +574,11 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         selectable: false,
       });
     });
-    const lastId = ordered.length > 0 ? ordered[ordered.length - 1].id : undefined;
     built.push({
-      id: '__tail__',
-      type: 'tail',
+      id: '__exit__',
+      type: 'exit',
       position: { x: 0, y: ys[ys.length - 1] },
-      data: {
-        onPick: (type: StepPickerType) => insert({ previousActionId: lastId }, toInsertKind(type)),
-      },
+      data: {},
       draggable: false,
       connectable: false,
       selectable: false,
@@ -576,25 +589,25 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     for (let i = 0; i < ids.length - 1; i++) {
       const source = ids[i];
       const target = ids[i + 1];
-      const toTail = target === '__tail__';
+      // Every connector carries a +, the one into Exit included — that edge is
+      // what replaced the tail button, and it appends rather than inserting
+      // before anything, since Exit is not an action to sit in front of.
+      const toExit = target === '__exit__';
       builtEdges.push({
         id: `${source}->${target}`,
         source,
         target,
-        type: toTail ? 'smoothstep' : 'plus',
-        style: toTail ? { stroke: EDGE_STROKE, strokeWidth: 1 } : undefined,
-        data: toTail
-          ? undefined
-          : {
-              onPick: (type: StepPickerType) =>
-                insert(
-                  {
-                    previousActionId: source === '__trigger__' ? undefined : source,
-                    nextActionId: target,
-                  },
-                  toInsertKind(type),
-                ),
-            },
+        type: 'plus',
+        data: {
+          onPick: (type: StepPickerType) =>
+            insert(
+              {
+                previousActionId: source === '__trigger__' ? undefined : source,
+                nextActionId: toExit ? undefined : target,
+              },
+              toInsertKind(type),
+            ),
+        },
       });
     }
     return { nodes: built, edges: builtEdges, contentBottom: bottom };

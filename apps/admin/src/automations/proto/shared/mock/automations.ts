@@ -5,8 +5,13 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 //
 // These are real AutomationDetail objects (same type the engineers build with).
 // Ids are readable here for design clarity; in real data they're 24-char
-// ObjectIds. Descriptions live in a slug-keyed map, mirroring the real feature
-// (they aren't part of the automation data model).
+// ObjectIds.
+//
+// Descriptions are a slug-keyed map here because these are fixtures and the API
+// type has no field for them. They SEED the store and are not read again — a
+// description is editable now (phase-2's settings dialog), so the record owns it
+// from first load. Which makes the field an ask for the real schema: the list
+// shows it, publishers write it, and AutomationDetail has nowhere to put it.
 // ---------------------------------------------------------------------------
 
 export const AUTOMATION_DESCRIPTIONS: Record<string, string> = {

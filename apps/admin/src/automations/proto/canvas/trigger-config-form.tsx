@@ -13,6 +13,7 @@ import {
   exitCriterion,
   reconcileCriteria,
   triggerLabel,
+  triggerConfigFor,
 } from '@/automations/proto/shared/trigger-config';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
 
@@ -63,6 +64,66 @@ const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(
   description: option.description,
 }));
 
+/**
+ * The trigger choice on its own: a control that reads as a select and opens the
+ * shared icon/title/description picker, so choosing what starts an automation
+ * and choosing what happens next are the same act in the same shape.
+ *
+ * Extracted from the form below because a brand-new automation needs exactly
+ * this and nothing else — there's no config to show until something has been
+ * picked, so its card is this control and a line of prompt.
+ */
+export const TriggerChoiceField: React.FC<{
+  value: TriggerType | null;
+  onSelect: (type: TriggerType) => void;
+  locked?: boolean;
+}> = ({ value, onSelect, locked = false }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <OptionPicker
+      align="start"
+      open={!locked && open}
+      options={TRIGGER_PICKER_OPTIONS}
+      value={value ?? undefined}
+      onOpenChange={setOpen}
+      onSelect={onSelect}
+    >
+      <Button
+        className="h-9 w-full justify-between px-3 font-normal"
+        disabled={locked}
+        type="button"
+        variant="outline"
+      >
+        {/* Unchosen reads as a placeholder, the same muted treatment a select
+                    gives one — the control shouldn't look like it already holds an
+                    answer when it doesn't. */}
+        <span className={cn(!value && 'text-muted-foreground')}>
+          {value ? triggerLabel({ type: value }) : 'Choose a trigger'}
+        </span>
+        <LucideIcon.ChevronDown className="opacity-50" />
+      </Button>
+    </OptionPicker>
+  );
+};
+
+/**
+ * The trigger card for an automation that has no trigger yet.
+ *
+ * Deliberately the only thing on the canvas until it's answered: an automation
+ * with nothing to start it has no flow to show, and offering "add a step" first
+ * would let someone build a sequence that can never run. One question, then the
+ * canvas opens up.
+ *
+ * The control alone, with no help text above it. A card headed "Trigger" holding
+ * one empty select that reads "Choose a trigger", as the only object on an
+ * otherwise empty canvas, is not a situation anyone needs a sentence to
+ * understand — and a line of prose the reader outgrows on their first automation
+ * stays there forever.
+ */
+export const TriggerEmptyState: React.FC<{ onSelect: (config: TriggerConfig) => void }> = ({
+  onSelect,
+}) => <TriggerChoiceField value={null} onSelect={(type) => onSelect(triggerConfigFor(type))} />;
+
 interface TriggerConfigFormProps {
   config: TriggerConfig;
   onChange: (next: TriggerConfig) => void;
@@ -79,7 +140,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
 }) => {
   const isPaid = config.type === 'paid_subscription_starts';
   const criteria = availableCriteria(config);
-  const [triggerPickerOpen, setTriggerPickerOpen] = useState(false);
 
   // Trigger and tier-scope changes rewrite which criteria exist, so they go
   // through reconcileCriteria rather than setting state directly.
@@ -132,24 +192,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 picker, so choosing a trigger and choosing a step are the same
                 act in the same shape. A plain select would have shown two labels
                 a beat apart in meaning with nothing to tell them apart. */}
-      <OptionPicker
-        align="start"
-        open={!locked && triggerPickerOpen}
-        options={TRIGGER_PICKER_OPTIONS}
-        value={config.type}
-        onOpenChange={setTriggerPickerOpen}
-        onSelect={changeType}
-      >
-        <Button
-          className="h-9 w-full justify-between px-3 font-normal"
-          disabled={locked}
-          type="button"
-          variant="outline"
-        >
-          {triggerLabel(config)}
-          <LucideIcon.ChevronDown className="opacity-50" />
-        </Button>
-      </OptionPicker>
+      <TriggerChoiceField locked={locked} value={config.type} onSelect={changeType} />
 
       {/* Only the paid trigger watches tiers at all — and locked, the
                 disclosed fields go entirely rather than rendering disabled. */}

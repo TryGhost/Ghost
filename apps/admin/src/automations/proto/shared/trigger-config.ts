@@ -109,12 +109,21 @@ export const availableCriteria = (config: TriggerConfig): ExitCriterion[] =>
 const defaultCriteria = (config: Pick<TriggerConfig, 'type' | 'tierScope'>): ExitCriterionId[] =>
   EXIT_CRITERIA.filter((criterion) => criterion.appliesTo(config)).map((criterion) => criterion.id);
 
-export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = {
-  type: 'member_subscribes',
+/**
+ * A fresh config for a trigger type, with every applicable exit criterion on.
+ *
+ * Used when a trigger is chosen for the first time — a created automation starts
+ * with no trigger at all, so there's nothing to merge into and the config is
+ * built from the choice.
+ */
+export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
+  type,
   tierScope: 'any',
   tierIds: [],
-  exitCriteria: defaultCriteria({ type: 'member_subscribes', tierScope: 'any' }),
-};
+  exitCriteria: defaultCriteria({ type, tierScope: 'any' }),
+});
+
+export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = triggerConfigFor('member_subscribes');
 
 // Changing the trigger shape changes which criteria exist. Drop the ones that no
 // longer apply and switch on any that just became available, so the set always
@@ -138,7 +147,9 @@ export const reconcileCriteria = (
   };
 };
 
-export const triggerLabel = (config: TriggerConfig): string =>
+// Takes just the type, so it can label a bare choice as readily as a full config
+// — the trigger picker shows a label before there's a config to show it from.
+export const triggerLabel = (config: Pick<TriggerConfig, 'type'>): string =>
   TRIGGER_OPTIONS.find((option) => option.value === config.type)?.label ?? TRIGGER_OPTIONS[0].label;
 
 // The trigger's title while reviewing a member's run, where every card narrates

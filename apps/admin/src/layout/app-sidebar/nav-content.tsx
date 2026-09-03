@@ -225,7 +225,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
           {showAutomations && automationsEnabled && (
             <NavMenuItem>
-              <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/float">
+              <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/phase-1">
                 <LucideIcon.FlaskConical />
                 <NavMenuItem.Label>Automations (Proto)</NavMenuItem.Label>
               </NavMenuItem.Link>

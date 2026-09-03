@@ -6,10 +6,8 @@ import {
   Background,
   BackgroundVariant,
   type Edge,
-  Handle,
   type Node,
   type NodeProps,
-  Position,
   ReactFlow,
 } from '@xyflow/react';
 import type {
@@ -31,7 +29,6 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import {
   CANVAS_HUD_INSET,
   EDGE_STROKE,
-  HIDDEN_HANDLE_STYLE,
   type StepKind,
   formatWait,
   orderActions,
@@ -42,13 +39,7 @@ import {
 } from './flow-utils';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailStatsFooter } from './email-analytics';
-import {
-  NODE_BODY_PADDING,
-  NODE_CARD_SURFACE,
-  NodeCard,
-  NodeHeader,
-  type NodeBorder,
-} from './flow-node-shell';
+import { NODE_BODY_PADDING, NodeCard, NodeHeader, type NodeBorder } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
 import {
   CompletedGlyph,
@@ -115,6 +106,28 @@ const STATE_CHIP: Partial<Record<RunStepState, { className: string; glyph: React
   current: { className: 'bg-blue/20 text-blue-600 dark:text-blue', glyph: InProgressGlyph },
 };
 
+// The only non-visual carrier of run state on this canvas.
+//
+// State reaches a sighted reader four ways: the chip's glyph, the card's border,
+// its opacity, and — until the titles went past-tense throughout — the tense of
+// the title itself. The first three are purely visual, and now that a reached
+// step and an unreached one can render the identical words ("Received email"),
+// the tense isn't telling them apart either. Without this line a screen reader
+// gets a column of cards with no way to hear where the member actually is.
+//
+// Read after the title, so a card announces as "Received email, not reached".
+const STATE_A11Y: Record<RunStepState, string> = {
+  done: 'Done',
+  current: 'In progress',
+  skipped: 'Not reached',
+  upcoming: 'Not reached',
+};
+
+const StateForScreenReaders: React.FC<{ focused: boolean; state?: RunStepState }> = ({
+  focused,
+  state,
+}) => (focused && state ? <span className="sr-only">{STATE_A11Y[state]}</span> : null);
+
 // CircleAlert wrapped to the ElementType shape the chip slot takes.
 function FailedGlyph({ className }: { className?: string }) {
   return <LucideIcon.CircleAlert className={cn('size-4 shrink-0', className)} strokeWidth={2} />;
@@ -149,30 +162,27 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
     );
   }
 
+  // Where the flow ends. A header-only card, the same shape as the event card
+  // above and as the edit canvas's Exit node — this was a rounded pill, which
+  // made the last thing in the column the one thing in the column that wasn't a
+  // card. The two canvases crossfade at the same position, so selecting a member
+  // visibly morphed a card into a pill.
+  //
+  // With no run in focus it's simply the end of the flow. With one, it reports
+  // that member's outcome and takes the run-state chip and border every other
+  // card takes — so the same card answers "where does this end" and "how did it
+  // end for them" without changing shape between the two.
   if (d.kind === 'terminal') {
-    const terminalBorder = current
-      ? 'border-blue'
-      : done
-        ? 'border-green'
-        : 'border-border-default';
-    // (Terminal already renders muted for an exited run — see terminalState.)
+    const chip = done ? STATE_CHIP.done : current ? STATE_CHIP.current : undefined;
     return (
-      <div
-        className={cn(
-          'flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium',
-          NODE_CARD_SURFACE,
-          terminalBorder,
-          muted && 'opacity-60',
-        )}
-      >
-        <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
-        {done && <CompletedGlyph className="text-green-600 dark:text-green" />}
-        <span
-          className={cn(done && 'text-green-600 dark:text-green', muted && 'text-muted-foreground')}
-        >
-          {d.title}
-        </span>
-      </div>
+      <NodeCard border={current ? 'current' : done ? 'done' : 'default'} muted={muted}>
+        <NodeHeader
+          chipClassName={chip?.className}
+          icon={chip?.glyph ?? LucideIcon.LogOut}
+          title={d.title}
+        />
+        <StateForScreenReaders focused={d.focused} state={d.state} />
+      </NodeCard>
     );
   }
 
@@ -192,26 +202,44 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
 
   // Single-line header (no overline) matching edit mode's one-line title.
   //
-  // Reviewing a run, every title narrates what this member did, with the tense
-  // tracking their position: past above where they are ("Received email",
-  // "Waited 7 days"), present at it ("Waiting 7 days"), and the plain
-  // member-perspective form below it ("Receive email" — cards the run hasn't
-  // reached describe the flow, not events). A failed delivery says "Sent
-  // email": the send did complete, and the failure event card below carries
-  // what came back. Without a run in focus the titles describe the flow you
-  // built ("Send email").
+  // Reviewing a run, every title narrates what this member did, and it does so in
+  // the PAST TENSE throughout — including on cards the run hasn't reached, which
+  // are dimmed and carry the neutral chip. Only a step they're standing on is
+  // present tense ("Waiting 3 days", "Sending email"), because that one genuinely
+  // is happening.
+  //
+  // Tense used to track position instead: "Received email" above them, "Receive
+  // email" below. That made one node three different words depending on where the
+  // member happened to be, so a run couldn't be scanned against the flow it came
+  // from — and it was saying a third time what the chip, the border and the
+  // dimming already say. State is state; the title is what the step IS.
+  //
+  // Both exceptions to the member's voice are the same exception: the card only
+  // says "Received" once receipt is established.
+  //
+  //   Sending email  the send is in flight — submitted, nothing back from the
+  //                  provider yet. Ghost's voice, because nobody has received
+  //                  anything. This state is real but brief: a run advances on
+  //                  submission rather than holding for a delivery webhook, so the
+  //                  frontier only sits on a send during the send itself (or in a
+  //                  flow that opens with one, or has two in a row). The runs list
+  //                  says "Sending email 2" for the same state — same word, same
+  //                  subject.
+  //   Sent email     the send completed and delivery failed. Ghost's voice for the
+  //                  same reason; the failure event card below carries what came
+  //                  back.
+  //
+  // Without a run in focus the titles describe the flow you built ("Send email").
   const label = isEmail
     ? !d.focused
       ? 'Send email'
-      : done
-        ? d.sentOnly
+      : current
+        ? 'Sending email'
+        : d.sentOnly
           ? 'Sent email'
           : 'Received email'
-        : current
-          ? 'Receiving email'
-          : 'Receive email'
     : d.kind === 'wait'
-      ? `${done ? 'Waited' : current ? 'Waiting' : 'Wait'} ${d.subtitle}`
+      ? `${current ? 'Waiting' : 'Waited'} ${d.subtitle}`
       : d.focused
         ? (d.reviewLabel ?? d.subtitle)
         : d.subtitle;
@@ -247,6 +275,7 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
         meta={meta}
         title={label}
       />
+      <StateForScreenReaders focused={d.focused} state={d.state} />
       {isEmail && (
         <div className={NODE_BODY_PADDING}>
           <EmailPreview subject={d.subtitle || 'Untitled'} />
@@ -414,8 +443,16 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
     });
 
     // Terminal marker.
-    const terminalLabel =
-      focused && selectedRun?.status === 'exited_early' ? 'Exited early' : 'Complete';
+    // Unfocused it names the flow's end, matching the edit canvas's Exit node —
+    // "Complete" with nobody in focus was reporting an outcome for a run that
+    // isn't being looked at.
+    //
+    // In focus it's "Completed", and that's the only thing it ever says. It used
+    // to read "Exited early" for a run that ended — which the event card directly
+    // above it had already said, in more detail and by name ("Unsubscribed"). The
+    // terminal is simply the card the run didn't reach, dimmed like every other
+    // card the run didn't reach, and the event card owns the outcome.
+    const terminalLabel = focused ? 'Completed' : 'Exit automation';
     const terminalState: FlowNodeData['state'] = !focused
       ? undefined
       : selectedRun?.status === 'completed'
