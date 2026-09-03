@@ -459,17 +459,75 @@ describe('members api', () => {
         const queryClient = createTestQueryClient();
 
         await withMockFetch(unauthorizedResponse, async () => {
-          renderHookWithProviders(
+          const { result } = renderHookWithProviders(
             () =>
               useMembersCount('status:free', { requestOptions: { sessionExpiryRedirect: false } }),
             { queryClient },
           );
 
-          await waitFor(() =>
-            expect(queryClient.getQueryState(currentUserQueryKey)?.status).toBe('error'),
-          );
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expect(result.current).toMatchObject({ count: null, isLoading: false });
+          expect(result.current.refetch).toBeTypeOf('function');
+          expect(queryClient.getQueryState(currentUserQueryKey)?.status).toBe('error');
           expect(window.location.replace).not.toHaveBeenCalled();
         });
+      });
+
+      it('retries both requests when stale user data lets them fail together', async () => {
+        const queryClient = createTestQueryClient();
+        queryClient.setQueryData(
+          currentUserQueryKey,
+          {
+            users: [
+              {
+                id: 'user-1',
+                name: 'Test User',
+                email: 'test@example.com',
+                roles: [{ id: 'role-1', name: 'Administrator' }],
+              },
+            ],
+          },
+          { updatedAt: 0 },
+        );
+        let expired = true;
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = vi.fn<typeof globalThis.fetch>((input) => {
+          const url = String(input);
+          const json = expired
+            ? unauthorizedResponse.json
+            : url.includes('/users/me/')
+              ? queryClient.getQueryData(currentUserQueryKey)
+              : membersResponse(23);
+
+          return Promise.resolve({
+            url,
+            json: () => Promise.resolve(json),
+            text: () => Promise.resolve(JSON.stringify(json)),
+            headers: new Headers({ 'content-type': 'application/json' }),
+            status: expired ? 401 : 200,
+            ok: !expired,
+          } as Response);
+        });
+
+        try {
+          const { result } = renderHookWithProviders(
+            () =>
+              useMembersCount('status:free', { requestOptions: { sessionExpiryRedirect: false } }),
+            { queryClient },
+          );
+
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expired = false;
+          await act(async () => {
+            await result.current.refetch();
+          });
+
+          await waitFor(() => expect(result.current.count).toBe(23));
+          expect(result.current.error).toBeNull();
+          expect(window.location.replace).not.toHaveBeenCalled();
+        } finally {
+          globalThis.fetch = originalFetch;
+        }
       });
 
       it('redirects on the current-user read when the caller passes no options', async () => {

@@ -95,8 +95,8 @@ export function PostPreviewModal({
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const newslettersEnabled = useNewslettersEnabled();
+  const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const membersEnabled =
     getSettingValue<boolean>(settingsData?.settings ?? [], 'members_enabled') === true;
   const emailAvailable =

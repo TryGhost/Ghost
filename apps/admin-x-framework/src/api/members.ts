@@ -209,7 +209,7 @@ export interface MembersCountResult {
   isFetching: boolean;
   /** Preserved for flows where an unreadable count must block a destructive action. */
   error: unknown;
-  /** Retries the count without forcing every descriptive count consumer to handle errors. */
+  /** Retries the failed current-user prerequisite and/or count request. */
   refetch: () => Promise<unknown>;
 }
 
@@ -236,7 +236,8 @@ export function useMembersCount(
   filter: string | null | undefined,
   { requestOptions }: MembersCountOptions = {},
 ): MembersCountResult {
-  const { data: currentUser } = useCurrentUser({ requestOptions });
+  const currentUserQuery = useCurrentUser({ requestOptions });
+  const { data: currentUser } = currentUserQuery;
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
   const enabled = canFetch && filter !== null && filter !== undefined;
 
@@ -248,6 +249,32 @@ export function useMembersCount(
     defaultErrorHandler: false,
     requestOptions,
   });
+
+  const refetchAfterCurrentUserError = async () => {
+    const refreshedUser = await currentUserQuery.refetch();
+
+    if (
+      refreshedUser.isSuccess &&
+      refreshedUser.data &&
+      canManageMembers(refreshedUser.data) &&
+      filter !== null &&
+      filter !== undefined
+    ) {
+      return result.refetch();
+    }
+
+    return refreshedUser;
+  };
+
+  if (currentUserQuery.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: currentUserQuery.isFetching,
+      error: currentUserQuery.error,
+      refetch: refetchAfterCurrentUserError,
+    };
+  }
 
   if (currentUser === undefined) {
     return {

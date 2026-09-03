@@ -1,7 +1,12 @@
 import { useMemo } from 'react';
 import { useBrowseConfig } from '../api/config';
 import { getSettingValues, useBrowseSettings } from '../api/settings';
+import type { RequestOptions } from '../utils/api/fetch-api';
 import { getGhostPaths } from '../utils/helpers';
+
+export interface PinturaConfigOptions {
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+}
 
 const parseOptionalString = (value: unknown): undefined | string => {
   if (value === null || typeof value === 'undefined') {
@@ -29,9 +34,12 @@ const resolveUrl = (url: string): string => {
  * and CSS loading — this hook only resolves the URLs from settings and host
  * config.
  */
-export function usePinturaConfig(): { jsUrl: string; cssUrl: string } | null {
-  const { data: configData } = useBrowseConfig();
-  const { data: settingsData } = useBrowseSettings();
+export function usePinturaConfig({ requestOptions }: PinturaConfigOptions = {}): {
+  jsUrl: string;
+  cssUrl: string;
+} | null {
+  const { data: configData } = useBrowseConfig({ requestOptions });
+  const { data: settingsData } = useBrowseSettings({ requestOptions });
 
   const config = configData?.config;
   const pinturaConfig = config?.pintura;
