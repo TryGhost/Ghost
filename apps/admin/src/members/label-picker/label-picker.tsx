@@ -8,9 +8,10 @@ import {
   CommandItem,
   CommandList,
 } from '@tryghost/shade/components';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 import { EditRow } from './edit-row';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { canCreateLabel } from './can-create-label';
 
 // What the list used to be capped at (max-h-64), and the least worth showing rather than
@@ -183,16 +184,20 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 // --- Selected labels as removable pills ---
 
 interface SelectedPillsProps {
+  isAdmin7Pill: boolean;
   labels: Label[];
   onToggle: (slug: string) => void;
 }
 
-const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => (
+const SelectedPills: React.FC<SelectedPillsProps> = ({ isAdmin7Pill, labels, onToggle }) => (
   <>
     {labels.map((label) => (
       <Badge
         key={label.id}
-        className="cursor-pointer gap-1 pr-1"
+        className={cn(
+          'cursor-pointer gap-1 pr-1',
+          isAdmin7Pill && 'h-6 rounded-full border-transparent bg-secondary px-2 pr-1.5 text-sm',
+        )}
         variant="outline"
         onClick={(e) => {
           e.stopPropagation();
@@ -267,6 +272,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -326,17 +332,23 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   return (
     <div ref={containerRef} className="relative">
       <div
-        className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-surface-elevated px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent"
+        className={cn(
+          'flex min-h-9 w-full cursor-text flex-wrap items-center rounded-md border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
+          isAdmin7Pill ? 'gap-1 p-1' : 'gap-1.5 px-3 py-1',
+        )}
         role="combobox"
         onClick={() => {
           inputRef.current?.focus();
           setOpen(true);
         }}
       >
-        <SelectedPills labels={selectedLabels} onToggle={onToggle} />
+        <SelectedPills isAdmin7Pill={isAdmin7Pill} labels={selectedLabels} onToggle={onToggle} />
         <input
           ref={inputRef}
-          className="min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground"
+          className={cn(
+            'min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
+            isAdmin7Pill && 'px-2',
+          )}
           placeholder={selectedLabels.length === 0 ? placeholder : ''}
           value={search}
           onChange={(e) => {
