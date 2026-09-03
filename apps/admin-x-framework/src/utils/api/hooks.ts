@@ -16,7 +16,7 @@ import useHandleError from '../../hooks/use-handle-error';
 import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
 import { useFramework } from '../../providers/framework-provider';
-import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
+import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
 export interface Meta {
   capabilities?: {
@@ -47,11 +47,13 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
+  /** Whether this query leaves an expired session for its caller to handle in place. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 };
 
 export const createQuery =
   <ResponseData>(options: QueryOptions<ResponseData>) =>
-  ({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
+  ({ searchParams, requestOptions, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
     UseQueryResult<ResponseData>,
     'data'
   > & { data: ResponseData | undefined } => {
@@ -64,7 +66,7 @@ export const createQuery =
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
+      queryFn: () => fetchApi(url, { ...options, ...requestOptions }),
     });
 
     const data = useMemo(
@@ -172,6 +174,8 @@ interface MutationOptions<ResponseData, Payload>
   headers?: Record<string, string>;
   body?: (payload: Payload) => FormData | object;
   searchParams?: (payload: Payload) => { [key: string]: string };
+  /** Per-payload transport options, merged over the ones declared on the hook. */
+  requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
     | { dataType: string | string[] }
     | {
@@ -198,7 +202,7 @@ const mutate = <ResponseData, Payload>({
   searchParams?: Record<string, string>;
   options: Omit<MutationOptions<ResponseData, Payload>, 'path'>;
 }) => {
-  const { defaultSearchParams, body, ...requestOptions } = options;
+  const { defaultSearchParams, body, requestOptions, ...staticOptions } = options;
   const url = apiUrl(path, searchParams || defaultSearchParams);
   const generatedBody = payload && body?.(payload);
 
@@ -211,7 +215,8 @@ const mutate = <ResponseData, Payload>({
 
   return fetchApi<ResponseData>(url, {
     body: requestBody,
-    ...requestOptions,
+    ...staticOptions,
+    ...(payload === undefined ? {} : requestOptions?.(payload)),
   });
 };
 

@@ -10,11 +10,6 @@ export interface Post extends PostBase {
   authors?: {
     name?: string;
   }[];
-  email?: {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-  } | null;
   newsletter?: {
     feedback_enabled?: boolean;
   } | null;

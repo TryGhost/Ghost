@@ -2,6 +2,7 @@ import { HttpResponse } from 'msw';
 import type { Action } from '@tryghost/admin-x-framework/api/actions';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
 import {
   activeThemeResponse,
   browseResponse,
@@ -312,6 +313,12 @@ export const fakePosts = defineResource<Post>({
  */
 export const fakePages = defineResource<Post>({
   resource: 'pages',
+  semantics: { kind: 'passthrough' },
+});
+
+/** Snippets list fake (passthrough): the editor browses this endpoint once on mount. */
+export const fakeSnippets = defineResource<Snippet>({
+  resource: 'snippets',
   semantics: { kind: 'passthrough' },
 });
 

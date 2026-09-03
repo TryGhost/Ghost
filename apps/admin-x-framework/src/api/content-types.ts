@@ -3,9 +3,11 @@
 type Override<Base, Changes> = Omit<Base, keyof Changes> & Changes;
 
 export type Email = {
+  id?: string;
   opened_count: number;
   email_count: number;
-  status?: string;
+  status?: 'pending' | 'submitting' | 'submitted' | 'failed';
+  error?: string | null;
   track_opens?: boolean;
   track_clicks?: boolean;
 };

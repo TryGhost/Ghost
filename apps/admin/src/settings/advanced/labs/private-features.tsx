@@ -66,6 +66,11 @@ const features: Feature[] = [
     flag: 'emailUniqueid',
   },
   {
+    title: 'Improve sending UI',
+    description: 'Enables improvements to email sending and delivery status for large email sends',
+    flag: 'improveSendingUI',
+  },
+  {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation',
@@ -104,12 +109,6 @@ const features: Feature[] = [
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
-  },
-  {
-    title: 'Gift subscription durations and delivery',
-    description:
-      'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
-    flag: 'giftSubCustomization',
   },
   {
     title: 'React posts & pages lists',

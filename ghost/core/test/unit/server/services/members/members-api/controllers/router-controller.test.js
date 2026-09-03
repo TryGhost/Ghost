@@ -84,7 +84,7 @@ describe('RouterController', function () {
       configured: true,
     };
     labsService = {
-      isSet: sinon.stub().callsFake((flag) => flag !== 'giftSubCustomization'),
+      isSet: sinon.stub().returns(true),
     };
     settingsCache = {
       get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz']),

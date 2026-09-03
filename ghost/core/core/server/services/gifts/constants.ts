@@ -1,6 +1,6 @@
 export const GIFT_EXPIRY_DAYS = 365;
 // How far ahead a delivery may be scheduled. Portal's picker carries its own
-// copy (GIFT_MAX_SCHEDULE_DAYS in beta-gift-page.tsx) since Portal ships
+// copy (GIFT_MAX_SCHEDULE_DAYS in gift-page.tsx) since Portal ships
 // separately — change them together.
 export const GIFT_MAX_SCHEDULE_DAYS = 365;
 // Site-local hour a scheduled delivery is sent at. Portal never derives

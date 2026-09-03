@@ -136,7 +136,7 @@ describe('Account Plan Page', () => {
 
   test('shows the signup gift promotion to free members choosing a plan', () => {
     const site = {
-      ...getSiteData({ labs: { giftSubCustomization: true } }),
+      ...getSiteData(),
       portal_signup_gift_promotion: true,
     };
     const member = getMemberData({ paid: false });
@@ -162,18 +162,14 @@ describe('Account Plan Page', () => {
     {
       label: 'the setting is disabled',
       site: {
-        ...getSiteData({ labs: { giftSubCustomization: true } }),
+        ...getSiteData(),
         portal_signup_gift_promotion: false,
       },
     },
     {
-      label: 'the feature flag is disabled',
-      site: { ...getSiteData(), portal_signup_gift_promotion: true },
-    },
-    {
       label: 'there is no giftable offering',
       site: {
-        ...getSiteData({ labs: { giftSubCustomization: true }, portalPlans: ['free'] }),
+        ...getSiteData({ portalPlans: ['free'] }),
         portal_signup_gift_promotion: true,
       },
     },
