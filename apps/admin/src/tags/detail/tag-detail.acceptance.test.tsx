@@ -63,10 +63,12 @@ describe('Tag detail (tagDetailsReact on)', () => {
   it('shows an internal badge after the name for internal tags', async () => {
     const t = tag({ name: '#News', slug: 'hash-news', visibility: 'internal' });
     fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+    await renderAdminApp(`/tags/${t.slug}`, {
+      labs: { ...FLAGS.labs, admin7Pill: true },
+    });
 
     await expect.element(tagDetailScreen.title()).toHaveTextContent('#News');
-    await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('INTERNAL');
+    await expect.element(tagDetailScreen.internalBadge()).toHaveTextContent('Internal');
   });
 
   it('shows metadata in Search, X card, and Facebook card tabs', async () => {
