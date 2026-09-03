@@ -6,10 +6,60 @@ const schema = require('../../../data/schema');
 
 // This wires up our model event system
 const events = require('../../../lib/common/events');
+const DatabaseInfo = require('../../../data/db/database-info');
 
 // Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
 let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
 let numberGenerator = 0;
+
+/**
+ * Lock the rows of the current query for update when the caller asked for it.
+ *
+ * Bookshelf fires `fetching` for eager-loaded relations with the same options as the
+ * parent fetch, and emits `SELECT DISTINCT` for those relation queries. Postgres rejects
+ * `FOR UPDATE` combined with `DISTINCT`, so skip the lock there: the target row was
+ * already locked explicitly by the crud plugin.
+ *
+ * @param {Object} options
+ */
+function lockQueryForUpdate(options) {
+  if (!options.forUpdate || !options.transacting || !options.query) {
+    return;
+  }
+
+  if (DatabaseInfo.isPostgres(options.transacting)) {
+    const isDistinct = (options.query._statements || []).some(
+      (statement) => statement.grouping === 'columns' && statement.distinct,
+    );
+    if (isDistinct) {
+      return;
+    }
+  }
+
+  options.query.forUpdate();
+}
+
+/**
+ * MySQL and SQLite treat NULL as the lowest value when sorting (first on ASC, last on
+ * DESC); Postgres treats it as the highest. Pin Postgres to the MySQL behaviour so, for
+ * example, drafts (NULL published_at) keep sorting last under `published_at desc`.
+ * Raw order clauses are left alone.
+ *
+ * @param {Object} options
+ */
+function applyMySQLNullOrdering(options) {
+  if (!options.query || !DatabaseInfo.isPostgres(options.query)) {
+    return;
+  }
+
+  for (const statement of options.query._statements || []) {
+    if (statement.grouping !== 'order' || statement.nulls || typeof statement.value !== 'string') {
+      continue;
+    }
+    statement.nulls =
+      String(statement.direction || 'asc').toLowerCase() === 'desc' ? 'last' : 'first';
+  }
+}
 
 module.exports = function (Bookshelf) {
   Bookshelf.Model = Bookshelf.Model.extend(
@@ -120,17 +170,15 @@ module.exports = function (Bookshelf) {
        * This avoids collisions and possible content override cases.
        */
       onFetching: function onFetching(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
-          options.query.forUpdate();
-        }
+        lockQueryForUpdate(options);
+        applyMySQLNullOrdering(options);
       },
 
       onFetchedCollection() {},
 
       onFetchingCollection: function onFetchingCollection(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
-          options.query.forUpdate();
-        }
+        lockQueryForUpdate(options);
+        applyMySQLNullOrdering(options);
       },
 
       onCreated(model, options) {

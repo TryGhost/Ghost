@@ -1,4 +1,6 @@
 const moment = require('moment-timezone');
+const { rawRows } = require('../../../data/db/sql-helpers');
+const DatabaseInfo = require('../../../data/db/database-info');
 
 const dateFormat = 'YYYY-MM-DD HH:mm:ss';
 class MembersStats {
@@ -19,7 +21,7 @@ class MembersStats {
    */
   async getTotalMembers() {
     const result = await this._db.knex.raw('SELECT COUNT(id) AS total FROM members');
-    return this._isSQLite ? result[0].total : result[0][0].total;
+    return rawRows(result)[0].total;
   }
 
   /**
@@ -43,7 +45,7 @@ class MembersStats {
       'SELECT COUNT(id) AS total FROM members WHERE created_at >= ?',
       [startOfRange],
     );
-    return this._isSQLite ? result[0].total : result[0][0].total;
+    return rawRows(result)[0].total;
   }
 
   /**
@@ -57,7 +59,7 @@ class MembersStats {
       'SELECT count(id) AS total FROM members WHERE created_at >= ?',
       [startOfToday],
     );
-    return this._isSQLite ? result[0].total : result[0][0].total;
+    return rawRows(result)[0].total;
   }
 
   /**
@@ -94,6 +96,22 @@ class MembersStats {
           }
         })
         .groupByRaw('DATE(created_at, ?)', [dateModifier]);
+    } else if (DatabaseInfo.isPostgres(this._db.knex)) {
+      // created_at is stored as naive UTC; shift it into the site timezone before truncating to a date
+      result = await this._db
+        .knex('members')
+        .select(
+          this._db.knex.raw(
+            "DATE(created_at + (? * interval '1 minute')) AS created_at, COUNT(*) AS count",
+            [tzOffsetMins],
+          ),
+        )
+        .where((builder) => {
+          if (days !== 'all-time') {
+            builder.whereRaw('created_at >= ?', [startOfRange]);
+          }
+        })
+        .groupByRaw("DATE(created_at + (? * interval '1 minute'))", [tzOffsetMins]);
     } else {
       const mins = Math.abs(tzOffsetMins) % 60;
       const hours = (Math.abs(tzOffsetMins) - mins) / 60;

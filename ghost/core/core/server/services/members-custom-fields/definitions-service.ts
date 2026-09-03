@@ -11,6 +11,8 @@ import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './
 import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordCustomFieldAction, type RequestContext } from './actions';
 
+const { isDuplicateEntryError } = require('../../data/db/sql-helpers');
+
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
 // turns that into parametrised WHERE clauses. Neither needs a Bookshelf model.
@@ -690,8 +692,7 @@ function batchContext(index: PropertyKey | undefined, requestedCount: number): s
 }
 
 function isUniqueConstraintViolation(error: unknown): boolean {
-  const code = (error as { code?: string })?.code;
-  return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
+  return isDuplicateEntryError(error);
 }
 
 // Apply a caller-supplied NQL filter to the definition query. A malformed filter

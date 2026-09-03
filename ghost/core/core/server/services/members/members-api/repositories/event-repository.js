@@ -680,15 +680,15 @@ module.exports = class EventRepository {
                 created_at,
                 ROW_NUMBER() OVER (PARTITION BY member_id ORDER BY created_at, id) AS rn
             FROM
-                PostClicks
+                post_clicks
         `;
 
     const mainQuery = `SELECT COUNT(DISTINCT redirect_id)
-                    FROM PostClicks AS inner_mce
-                    WHERE inner_mce.member_id = FirstClicks.member_id
+                    FROM post_clicks AS inner_mce
+                    WHERE inner_mce.member_id = first_clicks.member_id
                     AND inner_mce.redirect_id IN (
                         SELECT redirect_id
-                        FROM PostClicks
+                        FROM post_clicks
                     )`;
     options = {
       ...options,
@@ -712,18 +712,21 @@ module.exports = class EventRepository {
       // Note: we cannot do `count(distinct redirect_id) as count__clicks`, because we don't want the created_at filter to affect that count
       // For pagination to work correctly, we also need to return the id of the first event (or the minimum id if multiple events happend at the same time, but should be the first). Just MIN(id) won't work because that value changes if filter created_at < x is applied.
       selectRaw: `id, member_id, created_at, (${mainQuery}) as count__clicks`,
-      whereRaw: `rn = 1 ORDER BY created_at DESC, id DESC`,
+      whereRaw: `rn = 1`,
+      // Ordering must not live inside `whereRaw`: the pagination count query reuses the
+      // where clause and Postgres rejects ORDER BY on a non-aggregated column there.
+      autoOrder: 'created_at DESC, id DESC',
       cte: [
         {
-          name: `PostClicks`,
+          name: `post_clicks`,
           query: postClicksQuery,
         },
         {
-          name: `FirstClicks`,
+          name: `first_clicks`,
           query: firstClicksQuery,
         },
       ],
-      from: 'FirstClicks',
+      from: 'first_clicks',
       order: '',
     };
 

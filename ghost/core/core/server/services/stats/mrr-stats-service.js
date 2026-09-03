@@ -45,11 +45,11 @@ class MrrStatsService {
     const rows = await knex('members_paid_subscription_events')
       .select('currency')
       // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
-      // That is why we need the cast here (to have some consistency)
-      .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
+      // That is why we need the cast here (to have some consistency). CHAR(10) rather than CHAR: a bare CHAR is char(1) on Postgres.
+      .select(knex.raw('CAST(DATE(created_at) AS CHAR(10)) as date'))
       .select(knex.raw(`SUM(mrr_delta) as delta`))
       .where('created_at', '>=', startDate)
-      .groupByRaw('CAST(DATE(created_at) as CHAR), currency');
+      .groupByRaw('CAST(DATE(created_at) AS CHAR(10)), currency');
     return rows;
   }
 

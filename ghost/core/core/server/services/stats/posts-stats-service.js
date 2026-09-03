@@ -787,11 +787,11 @@ class PostsStatsService {
           this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
           this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
           this.knex.raw(
-            'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+            'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) * 1.0 / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
           ),
           this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
           this.knex.raw(
-            'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
+            'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) * 1.0 / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
           ),
         )
         .from('posts as p')
@@ -881,11 +881,11 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) * 1.0 / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
             this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) * 1.0 / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
             ),
           )
           .from('posts as p')
@@ -908,7 +908,7 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) * 1.0 / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
           )
           .from('posts as p')
@@ -972,7 +972,7 @@ class PostsStatsService {
         .groupBy('r.post_id')
         .select(
           this.knex.raw(
-            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
+            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) * 1.0 / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
           ),
         );
 
@@ -1010,7 +1010,7 @@ class PostsStatsService {
             this.select('*')
               .from('members as m')
               .whereRaw('m.id = mn.member_id')
-              .where('m.email_disabled', 1);
+              .whereRaw('m.email_disabled = TRUE');
           }),
 
         // Get daily deltas (optimized query)
@@ -1098,14 +1098,14 @@ class PostsStatsService {
     let deltasQuery = this.knex('members_subscribe_events as mse')
       .select(
         this.knex.raw(`DATE(mse.created_at) as date`),
-        this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
+        this.knex.raw(`SUM(CASE WHEN mse.subscribed = TRUE THEN 1 ELSE -1 END) as value`),
       )
       .where('mse.newsletter_id', newsletterId)
       .whereNotExists(function () {
         this.select('*')
           .from('members as m')
           .whereRaw('m.id = mse.member_id')
-          .where('m.email_disabled', 1);
+          .whereRaw('m.email_disabled = TRUE');
       })
       .groupByRaw('DATE(mse.created_at)')
       .orderBy('date', 'asc');

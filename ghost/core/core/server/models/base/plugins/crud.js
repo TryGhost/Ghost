@@ -2,10 +2,29 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 
 const tpl = require('@tryghost/tpl');
+const DatabaseInfo = require('../../../data/db/database-info');
+const { isUnknownColumnError } = require('../../../data/db/sql-helpers');
 
 const messages = {
   couldNotUnderstandRequest: 'Could not understand request.',
 };
+
+/**
+ * Bookshelf applies `options.lock` to eager-loaded relations as well as to the main
+ * query. Postgres rejects `FOR UPDATE` on the `SELECT DISTINCT` bookshelf emits for
+ * belongsToMany relations, so on Postgres we lock the target row explicitly instead.
+ *
+ * @param {import('bookshelf').Model} model - forged model carrying the lookup attributes
+ * @param {Object} options - must contain `transacting`
+ */
+async function applyRowLock(model, options) {
+  const attrs = model.attributes;
+  if (DatabaseInfo.isPostgres(options.transacting) && !_.isEmpty(attrs)) {
+    await options.transacting(model.tableName).where(attrs).forUpdate();
+    return;
+  }
+  options.lock = 'forUpdate';
+}
 
 // If user requested an excerpt we need to ensure plaintext and custom_excerpt is also included so we can include it when we query the database.
 const requiredForExcerpt = (requestedColumns) => {
@@ -217,7 +236,7 @@ module.exports = function (Bookshelf) {
        * @param {Object} [unfilteredOptions]
        * @return {Promise<Bookshelf['Model']>} Single Model
        */
-      findOne: function findOne(data, unfilteredOptions) {
+      findOne: async function findOne(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findOne');
         data = this.filterData(data);
         const model = this.forge(data);
@@ -236,12 +255,12 @@ module.exports = function (Bookshelf) {
         }
 
         if (options.transacting && options.forUpdate) {
-          options.lock = 'forUpdate';
+          await applyRowLock(model, options);
         }
 
         return model.fetch(options).catch((err) => {
           // CASE: SQL syntax is incorrect
-          if (err.errno === 1054 || err.errno === 1) {
+          if (isUnknownColumnError(err)) {
             throw new errors.BadRequestError({
               message: tpl(messages.couldNotUnderstandRequest),
               err,
@@ -281,7 +300,7 @@ module.exports = function (Bookshelf) {
         }
 
         if (options.transacting) {
-          options.lock = 'forUpdate';
+          await applyRowLock(model, options);
         }
 
         const object = await model.fetch(options);

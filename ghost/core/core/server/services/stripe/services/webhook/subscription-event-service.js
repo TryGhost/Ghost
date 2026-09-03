@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
+const { isDuplicateEntryError } = require('../../../../data/db/sql-helpers');
 
 /**
  * Handles `customer.subscription.*` webhook events
@@ -44,7 +45,7 @@ module.exports = class SubscriptionEventService {
           subscription,
         });
       } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+        if (!isDuplicateEntryError(err)) {
           throw err;
         }
         throw new errors.ConflictError({ err });

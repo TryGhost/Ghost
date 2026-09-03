@@ -53,7 +53,15 @@ const MemberClickEvent = ghostBookshelf.Model.extend(
     permittedOptions(methodName) {
       let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
       const validOptions = {
-        findPage: ['selectRaw', 'whereRaw', 'cte', 'from', 'useCTE', 'filterRelations'],
+        findPage: [
+          'selectRaw',
+          'whereRaw',
+          'cte',
+          'from',
+          'useCTE',
+          'filterRelations',
+          'autoOrder',
+        ],
       };
 
       if (validOptions[methodName]) {

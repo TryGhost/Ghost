@@ -2,6 +2,7 @@ import type { PostData } from './post-data';
 
 const { slugify } = require('@tryghost/string');
 const validator = require('@tryghost/validator');
+const { isDuplicateEntryError } = require('../../../data/db/sql-helpers');
 
 interface RelationModel {
   id: string;
@@ -214,11 +215,5 @@ function splitList(value?: string): Array<string | undefined> {
 }
 
 function isUniqueConstraintError(error: unknown): boolean {
-  const code =
-    typeof error === 'object' && error !== null && 'code' in error
-      ? (error as { code?: unknown }).code
-      : undefined;
-  return (
-    code === 'ER_DUP_ENTRY' || (typeof code === 'string' && code.startsWith('SQLITE_CONSTRAINT'))
-  );
+  return isDuplicateEntryError(error);
 }

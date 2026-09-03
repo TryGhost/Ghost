@@ -7,7 +7,7 @@ const slugFilterOrder = (table, filter) => {
     let bindings = [];
 
     orderSlugs.forEach((slug, index) => {
-      caseParts.push(`WHEN \`${table}\`.\`slug\` = ? THEN ?`);
+      caseParts.push(`WHEN ${table}.slug = ? THEN ?`);
       bindings.push(slug.trim(), index);
     });
 

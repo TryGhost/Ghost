@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const DomainEvents = require('@tryghost/domain-events');
 const RedirectEvent = require('./redirect-event');
 const { LinkRedirect } = require('./link-redirect');
+const { isDuplicateEntryError } = require('../../data/db/sql-helpers');
 
 /**
  * @typedef {object} ILinkRedirectRepository
@@ -20,8 +21,7 @@ const MEMBER_UUID_PLACEHOLDER = '%%{uuid}%%';
 //   Ghost uses UUID v4; this regex is not that strict
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const isUniqueConstraintError = (err) =>
-  err?.code === 'ER_DUP_ENTRY' || err?.code?.startsWith?.('SQLITE_CONSTRAINT');
+const isUniqueConstraintError = isDuplicateEntryError;
 
 class LinkRedirectsService {
   /** @type ILinkRedirectRepository */

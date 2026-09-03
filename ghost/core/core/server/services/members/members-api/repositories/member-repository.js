@@ -22,6 +22,7 @@ const {
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
 const labs = require('../../../../../shared/labs');
+const { isDuplicateEntryError } = require('../../../../data/db/sql-helpers');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -628,7 +629,7 @@ module.exports = class MemberRepository {
             { batch_id: options.batch_id },
           );
         } catch (err) {
-          if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+          if (!isDuplicateEntryError(err)) {
             throw err;
           }
           throw new errors.ConflictError({

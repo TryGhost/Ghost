@@ -38,7 +38,7 @@ module.exports = class PostLinkRepository {
 
     // Apply ordering
     itemCollection.query((qb) => {
-      qb.orderByRaw('`count__clicks` DESC, `to` DESC');
+      qb.orderByRaw('count__clicks DESC, ?? DESC', ['to']);
     });
 
     // Fetch the collection with the applied query modifications

@@ -284,7 +284,7 @@ Post = ghostBookshelf.Model.extend(
           };
         }
         return {
-          orderByRaw: `(select AVG(score) from \`members_feedback\` where posts.id = members_feedback.post_id) ${direction}`,
+          orderByRaw: `(select AVG(score) from members_feedback where posts.id = members_feedback.post_id) ${direction}`,
         };
       }
       if (field === 'email.open_rate' && withRelated && withRelated.indexOf('email') > -1) {

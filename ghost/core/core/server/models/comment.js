@@ -131,12 +131,15 @@ const Comment = ghostBookshelf.Model.extend(
         }
 
         if (options.pinnedFirst) {
+          // NULLs sort first on DESC in Postgres but last in MySQL/SQLite, so order
+          // explicitly on "has a pinned_at" before the timestamp itself.
           if (options.isAdmin) {
-            qb.orderBy('comments.pinned_at', 'DESC');
+            qb.orderByRaw('comments.pinned_at IS NULL, comments.pinned_at DESC');
           } else {
-            qb.orderByRaw('CASE WHEN comments.status = ? THEN comments.pinned_at END DESC', [
-              'published',
-            ]);
+            qb.orderByRaw(
+              'CASE WHEN comments.status = ? AND comments.pinned_at IS NOT NULL THEN 0 ELSE 1 END, CASE WHEN comments.status = ? THEN comments.pinned_at END DESC',
+              ['published', 'published'],
+            );
           }
         }
       });

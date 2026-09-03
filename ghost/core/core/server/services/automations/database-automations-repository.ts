@@ -1001,9 +1001,9 @@ async function isRunAutomationActive(
 
 async function selectExists(trx: Knex.Transaction, query: Knex.QueryBuilder): Promise<boolean> {
   const row = await trx
-    .select<{ exists: boolean | number | string }>(trx.raw('exists ? as `exists`', [query]))
+    .select<{ row_exists: boolean | number | string }>(trx.raw('exists ? as row_exists', [query]))
     .first();
-  return Boolean(Number(row?.exists));
+  return Boolean(Number(row?.row_exists));
 }
 
 /**

@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const { isDuplicateEntryError } = require('../../data/db/sql-helpers');
 
 const messages = {
   labelNotFound: 'Label not found.',
@@ -12,9 +13,7 @@ const ALLOWED_INCLUDES = ['count.members'];
 // SQLITE_CONSTRAINT covers more than unique violations, but schema validation
 // rejects null/oversize names before the database, so only the unique
 // constraint on name/slug can reach this catch
-const isUniqueConstraintViolation = (error) => {
-  return error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT';
-};
+const isUniqueConstraintViolation = isDuplicateEntryError;
 
 const handleDuplicateNameError = (error) => {
   if (isUniqueConstraintViolation(error)) {

@@ -108,7 +108,7 @@ export class Queries {
           continue;
         }
         const row = await knex(cursorSeed.tableName)
-          .select(knex.raw('MAX(??) as maxTimestamp', [columnName]))
+          .select(knex.raw('MAX(??) as ??', [columnName, 'maxTimestamp']))
           .first();
         timestamps.push(row.maxTimestamp);
       }
@@ -307,7 +307,7 @@ export class Queries {
   async aggregateMemberStats(memberId: string): Promise<void> {
     const { trackedEmailCount } =
       (await this.#knex('email_recipients')
-        .select(this.#knex.raw('COUNT(email_recipients.id) as trackedEmailCount'))
+        .select(this.#knex.raw('COUNT(email_recipients.id) as ??', ['trackedEmailCount']))
         .leftJoin('emails', 'email_recipients.email_id', 'emails.id')
         .where('email_recipients.member_id', memberId)
         .where('emails.track_opens', true)
@@ -349,7 +349,9 @@ export class Queries {
         this.#knex.raw(
           'SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count',
         ),
-        this.#knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count'),
+        this.#knex.raw(
+          'SUM(CASE WHEN emails.track_opens = TRUE THEN 1 ELSE 0 END) as tracked_count',
+        ),
       )
       .whereIn('email_recipients.member_id', memberIds)
       .groupBy('email_recipients.member_id');
@@ -414,14 +416,16 @@ export class Queries {
       ...memberIds,
     ];
 
-    // Execute batched update with CASE statements
+    // Execute batched update with CASE statements. The ELSE branches never match a row
+    // (the WHERE IN restricts to the listed ids) but give the CASE the column's type, which
+    // Postgres needs to coerce the untyped bound values.
     await this.#knex.raw(
       `
             UPDATE members
             SET
-                email_count = CASE id ${emailCountCases.join(' ')} END,
-                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
-                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
+                email_count = CASE id ${emailCountCases.join(' ')} ELSE email_count END,
+                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} ELSE email_opened_count END,
+                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} ELSE email_open_rate END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
         `,
       bindings,

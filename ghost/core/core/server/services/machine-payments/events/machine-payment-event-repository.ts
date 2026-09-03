@@ -11,14 +11,9 @@ type BookshelfModel = {
   findOne: (data: Record<string, unknown>) => Promise<BookshelfModelInstance | null | undefined>;
 };
 
-type UniqueConstraintError = {
-  code?: string;
-};
+const { isDuplicateEntryError } = require('../../../data/db/sql-helpers');
 
-const isUniqueConstraintError = (err: unknown): boolean => {
-  const code = (err as UniqueConstraintError)?.code;
-  return code === 'ER_DUP_ENTRY' || Boolean(code?.startsWith?.('SQLITE_CONSTRAINT'));
-};
+const isUniqueConstraintError = (err: unknown): boolean => isDuplicateEntryError(err);
 
 export class MachinePaymentEventRepository {
   #Model: BookshelfModel;

@@ -8,6 +8,7 @@ const { EmailBouncedEvent } = require('../email-service/events/email-bounced-eve
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
+const { isDuplicateEntryError } = require('../../data/db/sql-helpers');
 
 /**
  * @typedef {object} IMailgunAPIClient
@@ -137,7 +138,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
           created_at: event.timestamp,
         });
       } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+        if (!isDuplicateEntryError(err)) {
           logging.error(err);
           return;
         }

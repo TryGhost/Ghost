@@ -5,6 +5,7 @@ import type { Knex } from 'knex';
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const { csvCellsForFields } = require('@tryghost/custom-field-types/csv');
+const { groupConcat } = require('../../../../data/db/sql-helpers');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {
@@ -290,12 +291,12 @@ export default class MembersCSVExporter {
     const [tiers, labels, stripeCustomers, subscriptions, gifts, customFieldValuesMap] =
       await Promise.all([
         knex('members_products')
-          .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
+          .select('member_id', groupConcat(knex, 'product_id', 'tiers'))
           .whereIn('member_id', memberIds)
           .groupBy('member_id'),
 
         knex('members_labels')
-          .select('member_id', knex.raw('GROUP_CONCAT(label_id) as labels'))
+          .select('member_id', groupConcat(knex, 'label_id', 'labels'))
           .whereIn('member_id', memberIds)
           .groupBy('member_id'),
 

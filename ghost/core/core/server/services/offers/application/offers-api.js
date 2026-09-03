@@ -10,6 +10,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('offers:api');
+const { isDuplicateEntryError } = require('../../../data/db/sql-helpers');
 /** @import {PublicOfferDTO, OfferDTO} from './offer-mapper' */
 
 const messages = {
@@ -314,7 +315,7 @@ class OffersAPI {
       } catch (err) {
         // Handle race condition: another request may have created the offer
         // between the check and save. If so, return the existing offer.
-        if (err.code === 'ER_DUP_ENTRY' || err.code === 'SQLITE_CONSTRAINT') {
+        if (isDuplicateEntryError(err)) {
           const createdOffer = await this.repository.getByStripeCouponId(coupon.id, txOptions);
           if (createdOffer) {
             return OfferMapper.toDTO(createdOffer);

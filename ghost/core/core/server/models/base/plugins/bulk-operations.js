@@ -1,6 +1,21 @@
 const _ = require('lodash');
 const { byColumnValues, CHUNK_SIZE } = require('./bulk-filters');
 
+/**
+ * Runs `fn` inside a savepoint when a transaction is active. A failed statement aborts
+ * the whole transaction on Postgres, so the try-chunk-then-retry-rows pattern below
+ * needs each attempt isolated for the transaction to stay usable.
+ *
+ * @param {object} options
+ * @param {(options: object) => Promise<any>} fn
+ */
+async function attempt(options, fn) {
+  if (!options.transacting) {
+    return fn(options);
+  }
+  return options.transacting.transaction((savepoint) => fn({ ...options, transacting: savepoint }));
+}
+
 function createBulkOperation(singular, multiple) {
   return async function (knex, table, data, options) {
     const result = {
@@ -12,7 +27,7 @@ function createBulkOperation(singular, multiple) {
 
     for (const chunkedData of _.chunk(data, CHUNK_SIZE)) {
       try {
-        await multiple(knex, table, chunkedData, options);
+        await attempt(options, (opts) => multiple(knex, table, chunkedData, opts));
         result.successful += chunkedData.length;
       } catch (errToIgnore) {
         if (options.throwErrors) {
@@ -20,7 +35,7 @@ function createBulkOperation(singular, multiple) {
         }
         for (const singularData of chunkedData) {
           try {
-            await singular(knex, table, singularData, options);
+            await attempt(options, (opts) => singular(knex, table, singularData, opts));
             result.successful += 1;
           } catch (err) {
             err.errorDetails = singularData;

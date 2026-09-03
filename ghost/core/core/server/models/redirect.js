@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const { quoteIdentifier } = require('../data/db/sql-helpers');
 const urlUtils = require('../../shared/url-utils').default;
 
 const Redirect = ghostBookshelf.Model.extend(
@@ -29,10 +30,11 @@ const Redirect = ghostBookshelf.Model.extend(
   },
   {
     orderDefaultRaw(options) {
+      const to = quoteIdentifier(ghostBookshelf.knex, 'to');
       if (options.withRelated && options.withRelated.includes('count.clicks')) {
-        return '`count__clicks` DESC, `to` DESC';
+        return `count__clicks DESC, ${to} DESC`;
       }
-      return '`to` DESC';
+      return `${to} DESC`;
     },
 
     permittedOptions(methodName) {

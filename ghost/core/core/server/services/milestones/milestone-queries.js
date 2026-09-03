@@ -26,7 +26,7 @@ module.exports = class MilestoneQueries {
       .knex('members_paid_subscription_events as stripe')
       .select(
         this.#db.knex.raw(
-          'ROUND(SUM(stripe.mrr_delta) * 12) / 100 AS arr, stripe.currency as currency',
+          'ROUND(SUM(stripe.mrr_delta) * 12) / 100.0 AS arr, stripe.currency as currency',
         ),
       )
       .groupBy('stripe.currency');

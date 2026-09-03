@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const { isDuplicateEntryError } = require('../../data/db/sql-helpers');
 
 class NewsletterEmailEventStorage {
   #config;
@@ -227,7 +228,7 @@ class NewsletterEmailEventStorage {
       // Remove from Mailgun's suppression list so it doesn't affect other sites on the same domain
       await this.#emailSuppressionList.removeComplaint(event.email);
     } catch (err) {
-      if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+      if (!isDuplicateEntryError(err)) {
         logging.error(err);
       }
     }
@@ -346,7 +347,7 @@ class NewsletterEmailEventStorage {
 
     const sql = `
             UPDATE email_recipients
-            SET delivered_at = CASE id ${caseClauses} END
+            SET delivered_at = CASE id ${caseClauses} ELSE delivered_at END
             WHERE id IN (${recipientIds.map(() => '?').join(',')})
             AND delivered_at IS NULL
         `;
@@ -375,7 +376,7 @@ class NewsletterEmailEventStorage {
 
     const sql = `
             UPDATE email_recipients
-            SET opened_at = CASE id ${caseClauses} END
+            SET opened_at = CASE id ${caseClauses} ELSE opened_at END
             WHERE id IN (${recipientIds.map(() => '?').join(',')})
             AND opened_at IS NULL
         `;
@@ -404,7 +405,7 @@ class NewsletterEmailEventStorage {
 
     const sql = `
             UPDATE email_recipients
-            SET failed_at = CASE id ${caseClauses} END
+            SET failed_at = CASE id ${caseClauses} ELSE failed_at END
             WHERE id IN (${recipientIds.map(() => '?').join(',')})
             AND failed_at IS NULL
         `;

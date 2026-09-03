@@ -6,6 +6,7 @@ const {
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../lib/member-signup-contexts');
 const { collectedByPort } = require('../checkout/completed-session');
+const { isDuplicateEntryError } = require('../../../../data/db/sql-helpers');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -285,7 +286,7 @@ module.exports = class CheckoutSessionEventService {
           subscription: updatedSubscription,
         });
       } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+        if (!isDuplicateEntryError(err)) {
           throw err;
         }
         throw new errors.ConflictError({
@@ -312,7 +313,7 @@ module.exports = class CheckoutSessionEventService {
             subscription: updatedSubscription,
           });
         } catch (err) {
-          if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+          if (!isDuplicateEntryError(err)) {
             throw err;
           }
           throw new errors.ConflictError({
@@ -411,7 +412,7 @@ module.exports = class CheckoutSessionEventService {
             attribution,
           });
         } catch (err) {
-          if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+          if (!isDuplicateEntryError(err)) {
             throw err;
           }
           throw new errors.ConflictError({

@@ -4,6 +4,7 @@ const _ = require('lodash');
 const { chainTransformers } = require('@tryghost/mongo-utils');
 const config = require('../../shared/config');
 const { MemberCommentingCodec } = require('../services/members/commenting');
+const DatabaseInfo = require('../data/db/database-info');
 const {
   CUSTOM_FIELDS_RELATION,
   createCustomFieldsFilterTransformer,
@@ -612,12 +613,10 @@ const Member = ghostBookshelf.Model.extend(
     },
 
     searchQuery: function searchQuery(queryBuilder, query) {
+      // MySQL's default collation makes LIKE case-insensitive; Postgres needs ILIKE for that
+      const like = DatabaseInfo.isPostgres(queryBuilder) ? 'ilike' : 'like';
       queryBuilder.where(function () {
-        this.where('members.name', 'like', `%${query}%`).orWhere(
-          'members.email',
-          'like',
-          `%${query}%`,
-        );
+        this.where('members.name', like, `%${query}%`).orWhere('members.email', like, `%${query}%`);
       });
     },
 

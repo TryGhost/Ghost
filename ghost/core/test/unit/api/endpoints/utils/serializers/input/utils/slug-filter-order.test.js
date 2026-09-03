@@ -7,7 +7,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/slug-filter-order', func
 
     assert.equal(
       result.sql,
-      'CASE WHEN `tags`.`slug` = ? THEN ? WHEN `tags`.`slug` = ? THEN ? WHEN `tags`.`slug` = ? THEN ? END ASC',
+      'CASE WHEN tags.slug = ? THEN ? WHEN tags.slug = ? THEN ? WHEN tags.slug = ? THEN ? END ASC',
     );
     assert.deepEqual(result.bindings, ['kitchen-sink', 0, 'bacon', 1, 'chorizo', 2]);
   });
@@ -27,7 +27,7 @@ describe('Unit: endpoints/utils/serializers/input/utils/slug-filter-order', func
   it('handles single slug', function () {
     const result = slugFilterOrder('posts', 'slug:[only-one]');
 
-    assert.equal(result.sql, 'CASE WHEN `posts`.`slug` = ? THEN ? END ASC');
+    assert.equal(result.sql, 'CASE WHEN posts.slug = ? THEN ? END ASC');
     assert.deepEqual(result.bindings, ['only-one', 0]);
   });
 });

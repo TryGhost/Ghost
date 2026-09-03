@@ -1,5 +1,6 @@
 const { ValidationError } = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const { isForeignKeyError } = require('../../data/db/sql-helpers');
 
 const messages = {
   webhookAlreadyExists: 'Target URL has already been used for this event.',
@@ -33,12 +34,7 @@ class WebhooksService {
       return newWebhook;
     } catch (error) {
       // Handle foreign key constraint errors for non-existing integration_id in MySQL and SQLite engines
-      if (
-        error.errno === 1452 ||
-        (error.code === 'SQLITE_CONSTRAINT' &&
-          /FOREIGN KEY constraint failed/.test(error.message)) ||
-        error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY'
-      ) {
+      if (isForeignKeyError(error)) {
         throw new ValidationError({
           message: tpl(messages.nonExistingIntegrationIdProvided.message, {
             key: 'integration_id',
