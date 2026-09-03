@@ -22,7 +22,7 @@ const knexify = require('@tryghost/mongo-knex') as <T extends Knex.QueryBuilder>
   config: { tableName: string },
 ) => T;
 
-const TABLE = 'members_custom_fields';
+const TABLE = 'members_metafields';
 
 // Column limits come from the canonical schema — the same source the migration and
 // Bookshelf models read — so the service can never drift from the database. The

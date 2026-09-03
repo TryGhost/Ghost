@@ -15,12 +15,12 @@ import { activeFields } from './queries';
 import { canWrite, readableFields, type Audience } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
 
-const FIELDS_TABLE = 'members_custom_fields';
-const VALUES_TABLE = 'members_custom_field_values';
+const FIELDS_TABLE = 'members_metafields';
+const VALUES_TABLE = 'members_metafield_values';
 
 /**
  * From the canonical schema, the same source definitions-service reads, so no key a site
- * could hold is refused and this cannot drift from the `members_custom_fields.key` column.
+ * could hold is refused and this cannot drift from the `members_metafields.key` column.
  */
 const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE].key.maxlength;
 
@@ -103,7 +103,7 @@ export class CustomFieldValuesService {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const rows = await this.knex(VALUES_TABLE)
-      .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
+      .join(FIELDS_TABLE, `${VALUES_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
@@ -301,7 +301,7 @@ export class CustomFieldValuesService {
           ...set.map((leaf) => ({
             id: new ObjectID().toHexString(),
             member_id: memberId,
-            custom_field_key: field.key,
+            metafield_key: field.key,
             path: leaf.path,
             value_text: leaf.value_text,
             written_by_type: writtenBy.type,
@@ -315,7 +315,7 @@ export class CustomFieldValuesService {
       if (clearedKeys.length > 0) {
         await trx(VALUES_TABLE)
           .where('member_id', memberId)
-          .whereIn('custom_field_key', clearedKeys)
+          .whereIn('metafield_key', clearedKeys)
           .del();
       }
 
@@ -326,7 +326,7 @@ export class CustomFieldValuesService {
           .where((builder) => {
             for (const { fieldKey, paths } of clearedPaths) {
               builder.orWhere((pair) =>
-                pair.where('custom_field_key', fieldKey).whereIn('path', paths),
+                pair.where('metafield_key', fieldKey).whereIn('path', paths),
               );
             }
           })
@@ -341,7 +341,7 @@ export class CustomFieldValuesService {
           .insert(rows.slice(from, from + UPSERT_CHUNK))
           // Naming the columns rather than giving values takes each from the row
           // that lost the conflict, so every part updates to its own value.
-          .onConflict(['member_id', 'custom_field_key', 'path'])
+          .onConflict(['member_id', 'metafield_key', 'path'])
           // The writer is merged with the value, so a leaf names who wrote what
           // it currently holds rather than who wrote its first value.
           .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);

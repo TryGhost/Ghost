@@ -6,10 +6,10 @@ import { INTERNAL } from './access';
 import { DbBoundField, FIELD_STATUS } from './schema';
 import type { CustomFieldValuesService, PlannedWrite } from './values-service';
 
-const FIELDS_TABLE = 'members_custom_fields';
+const FIELDS_TABLE = 'members_metafields';
 
 const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
-const BINDINGS_TABLE = 'members_custom_field_bindings';
+const BINDINGS_TABLE = 'members_metafield_bindings';
 
 export interface BoundField {
   bindingId: string;
@@ -38,7 +38,7 @@ export class CustomFieldBindingsService {
     now: Date,
   ): Promise<string> {
     const existing = await db(BINDINGS_TABLE).where({ product_id: productId, port }).first();
-    if (existing?.custom_field_key === customFieldKey) {
+    if (existing?.metafield_key === customFieldKey) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
       return existing.id;
     }
@@ -51,7 +51,7 @@ export class CustomFieldBindingsService {
       id: bindingId,
       product_id: productId,
       port,
-      custom_field_key: customFieldKey,
+      metafield_key: customFieldKey,
       created_at: now,
       updated_at: now,
     });
@@ -124,7 +124,7 @@ export class CustomFieldBindingsService {
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(FIELDS_TABLE, `${BINDINGS_TABLE}.custom_field_key`, `${FIELDS_TABLE}.key`)
+      .join(FIELDS_TABLE, `${BINDINGS_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
       .where(`${BINDINGS_TABLE}.product_id`, productId)
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value

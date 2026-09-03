@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import { FIELD_STATUS } from './schema';
 
-const FIELDS_TABLE = 'members_custom_fields';
+const FIELDS_TABLE = 'members_metafields';
 
 // Archived fields must stay out of every read and write, and nothing in the database
 // enforces that — no constraint stops a value row referencing an archived field. A query

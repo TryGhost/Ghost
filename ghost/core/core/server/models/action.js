@@ -4,7 +4,7 @@ const ghostBookshelf = require('./base');
 // registry. Actions still need a read model for `include=resource` to recognise
 // their polymorphic resource type and load the current field definition.
 const MemberCustomFieldResource = ghostBookshelf.Model.extend({
-  tableName: 'members_custom_fields',
+  tableName: 'members_metafields',
 });
 
 const Action = ghostBookshelf.Model.extend(

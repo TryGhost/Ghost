@@ -75,8 +75,8 @@ describe('Member Custom Fields Admin API', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
@@ -677,7 +677,7 @@ describe('Member Custom Fields Admin API', function () {
     // reach this state — each create appends a distinct rank — so it is set up
     // directly, which is exactly what the migration does to a real site.
     async function asNeverReordered() {
-      await models.Base.knex('members_custom_fields').update({ sort_order: 0 });
+      await models.Base.knex('members_metafields').update({ sort_order: 0 });
     }
 
     it('falls back to creation order while every field holds the default rank', async function () {
@@ -1321,7 +1321,7 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, { [good.key]: 'Ghosts', [stale.key]: 'kept' });
 
       // Corrupt the stored field's type directly, past the service's immutability.
-      await models.Base.knex('members_custom_fields')
+      await models.Base.knex('members_metafields')
         .where('key', stale.key)
         .update({ type: 'no_longer_a_type' });
 
@@ -1485,10 +1485,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(await readValues(memberId), undefined);
       // The row survives archiving — only the definition was hidden, and the
       // value is still attached to it (restoring the field brings it back).
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.equal(rows.length, 1);
     });
 
@@ -1507,7 +1504,7 @@ describe('Member Custom Fields Admin API', function () {
 
       type WrittenRow = { path: string; written_by_type: string; written_by_id: string | null };
       const writersOf = async (): Promise<WrittenRow[]> =>
-        models.Base.knex('members_custom_field_values')
+        models.Base.knex('members_metafield_values')
           .where('member_id', memberId)
           .orderBy('path')
           .select('path', 'written_by_type', 'written_by_id');
@@ -1562,10 +1559,7 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
 
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.equal(rows.length, 0);
     });
 
@@ -1734,10 +1728,7 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent.delete(`members/${memberId}/`).expectStatus(204);
 
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.deepEqual(rows, []);
     });
 
@@ -2001,7 +1992,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(actions.length, 1);
       assert.equal(contextOf(actions[0]).key, field.key);
 
-      const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
+      const row = await models.Base.knex('members_metafields').where('key', field.key).first();
       assert.equal(actions[0].resource_id, row.id);
     });
 
