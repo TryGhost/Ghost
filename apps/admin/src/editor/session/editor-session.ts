@@ -3,6 +3,7 @@ import { createSlugMachine } from '@/editor/engine/slug-machine';
 import {
   DEFAULT_TITLE,
   createSaveEngine,
+  isCollisionToken,
   type PersistedIdentity,
   type PostStatus,
   type SaveCompletion,
@@ -85,9 +86,9 @@ export interface EditorSession {
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
   getLiveLexical: () => string | null;
-  recordRefetched: (record: EditorRecord) => void;
-  /** Replaces the whole document with the server's copy; the writer chose to discard theirs. */
-  recordReloaded: (record: EditorRecord) => void;
+  recordRefetched: (record: EditorRecord) => boolean;
+  /** Replaces the whole document when the server copy safely advances this session. */
+  recordReloaded: (record: EditorRecord) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   dispose: () => void;
@@ -323,28 +324,40 @@ export function createEditorSession({
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      if (identity.id !== next.id) {
-        return;
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
       }
       tracker.setSaved(next.id, projectionOf(next));
-      const updatedAt = next.updated_at ?? '';
-      if (isOlderToken(updatedAt, identity.updatedAt)) {
-        return;
-      }
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
+      return true;
     },
 
     // A document boundary, not a refetch: the tracker reloads, so the baseline
     // the hidden instance reported for the old document is discarded with it.
     recordReloaded: (next) => {
       // The read outlives a session the writer navigated away from.
-      if (disposed || identity.id !== next.id) {
-        return;
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
       }
-      identity = { id: next.id, updatedAt: next.updated_at ?? '' };
+      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+        return false;
+      }
+      identity = { id: next.id, updatedAt };
       status = next.status ?? 'draft';
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
@@ -352,7 +365,7 @@ export function createEditorSession({
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
-      engine.contentReloaded();
+      return true;
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),

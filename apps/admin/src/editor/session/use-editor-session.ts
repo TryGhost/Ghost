@@ -29,12 +29,7 @@ import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
-import {
-  createEditorSession,
-  isOlderToken,
-  type EditorSession,
-  type EditorWritePayload,
-} from './editor-session';
+import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
@@ -215,12 +210,11 @@ export function useEditorSession({
     if (!saved) {
       return;
     }
-    session.recordRefetched(saved);
-    // The screen's query and a reload both answer with the post; the newer
-    // collision token is the one the screen should describe.
-    setLoadedRecord((current) =>
-      isOlderToken(saved.updated_at ?? '', current?.updated_at ?? null) ? current : saved,
-    );
+    // The screen's query and a reload both answer with the post; only a valid,
+    // non-older collision token may replace what the screen describes.
+    if (session.recordRefetched(saved)) {
+      setLoadedRecord(saved);
+    }
   }, [saved, session]);
 
   // Its own request: a failed refetch of the screen's query replaces the editor.
@@ -245,7 +239,9 @@ export function useEditorSession({
       return 'gone';
     }
 
-    session.recordReloaded(fresh);
+    if (!session.recordReloaded(fresh)) {
+      return 'failed';
+    }
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setExcerpt(fresh.custom_excerpt ?? '');
     setInitialLexical(fresh.lexical ?? null);

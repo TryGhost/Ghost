@@ -198,8 +198,8 @@ export interface SaveEngine {
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
   reauthAbandoned(): void;
-  /** Leaves `conflict` once the caller has reloaded the document past the rejected `updated_at`. */
-  contentReloaded(): void;
+  /** Leaves `conflict` once the caller has a document past the rejected `updated_at`. */
+  contentReloaded(updatedAt?: string): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -332,6 +332,10 @@ function withRevision(command: SaveCommand, waiters: Waiter[]): SaveCommand {
 function toSaveError(cause: unknown): SaveError {
   const message = cause instanceof Error ? cause.message : 'Save failed';
   return { kind: 'unknown', message, cause };
+}
+
+export function isCollisionToken(value: string | null | undefined): value is string {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
 
 function sameState(a: SaveEngineState, b: SaveEngineState): boolean {
@@ -855,15 +859,21 @@ export function createSaveEngine<
     setState({ kind: 'error', intent: slot.command.kind, error });
   }
 
-  // The caller replaced the document from the server: a snapshot that no longer
-  // carries the rejected updated_at ends the halt the collision caused.
-  function contentReloaded(): void {
-    const snapshot = readSnapshot();
-    if (disposed || state.kind !== 'conflict' || !snapshot || isStale(snapshot)) {
-      return;
+  // A server document that no longer carries the rejected updated_at ends the
+  // halt the collision caused. A candidate lets the caller check before replacing it.
+  function contentReloaded(updatedAt?: string): boolean {
+    const candidate = updatedAt ?? readSnapshot()?.updatedAt;
+    if (
+      disposed ||
+      state.kind !== 'conflict' ||
+      !isCollisionToken(candidate) ||
+      (staleUpdatedAt !== null && candidate === staleUpdatedAt)
+    ) {
+      return false;
     }
     staleUpdatedAt = null;
     setState(deriveState({ keepHalt: false }));
+    return true;
   }
 
   function queueSettled(): Promise<void> {

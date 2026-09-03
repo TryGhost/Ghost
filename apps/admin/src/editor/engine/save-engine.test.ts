@@ -1415,6 +1415,38 @@ describe('createSaveEngine', () => {
       expect(second.snapshot).toMatchObject({ isDirty: false, updatedAt: server.updatedAt });
     });
 
+    it('only lifts a conflict for a non-empty replacement collision token', async () => {
+      const h = setup();
+      void h.engine.dispatch('explicit');
+      await h.fail(conflict);
+
+      h.patch({ updatedAt: null });
+      expect(h.engine.contentReloaded()).toBe(false);
+      expect(h.engine.getState()).toEqual({
+        kind: 'conflict',
+        intent: 'explicit',
+        error: conflict,
+      });
+
+      expect(h.engine.contentReloaded('not-a-date')).toBe(false);
+      expect(h.engine.getState()).toEqual({
+        kind: 'conflict',
+        intent: 'explicit',
+        error: conflict,
+      });
+
+      h.patch({ updatedAt: BASELINE });
+      expect(h.engine.contentReloaded()).toBe(false);
+      expect(h.engine.getState()).toEqual({
+        kind: 'conflict',
+        intent: 'explicit',
+        error: conflict,
+      });
+
+      expect(h.engine.contentReloaded(FUTURE)).toBe(true);
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
     it('drops queued background work on a conflict and keeps the content dirty', async () => {
       const h = setup();
       void h.engine.dispatch('explicit');

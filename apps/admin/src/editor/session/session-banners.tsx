@@ -46,12 +46,20 @@ function saveErrorMessage(error: SaveError): string {
 type ConflictBannerProps = Pick<
   SessionBannersProps,
   'hasUnsavedContent' | 'contentText' | 'onReload'
->;
+> & {
+  deleted?: boolean;
+};
 
-function ConflictBanner({ hasUnsavedContent, contentText, onReload }: ConflictBannerProps) {
+function ConflictBanner({
+  hasUnsavedContent,
+  contentText,
+  onReload,
+  deleted = false,
+}: ConflictBannerProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
-  const [gone, setGone] = useState(false);
+  const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
+  const gone = deleted || reloadFoundDeleted;
 
   const reload = async () => {
     setConfirming(false);
@@ -59,7 +67,7 @@ function ConflictBanner({ hasUnsavedContent, contentText, onReload }: ConflictBa
     const outcome = await onReload();
     setReloading(false);
     if (outcome === 'gone') {
-      setGone(true);
+      setReloadFoundDeleted(true);
     }
     if (outcome === 'failed') {
       toast.error('Couldn’t reload this post');
@@ -161,10 +169,11 @@ export function SessionBanners({
     );
   }
 
-  if (state.kind === 'conflict') {
+  if (state.kind === 'conflict' || state.kind === 'halted') {
     return (
       <ConflictBanner
         contentText={contentText}
+        deleted={state.kind === 'halted'}
         hasUnsavedContent={hasUnsavedContent}
         onReload={onReload}
       />
