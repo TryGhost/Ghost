@@ -10,7 +10,9 @@ import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
+import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
+import SendWebmentionsJob from '../mentions/send-webmentions-job';
 
 const updateCheck = require('../update-check');
 
@@ -31,6 +33,7 @@ interface RegisterJobHandlersDependencies {
   giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
   mentionsController: MentionController;
+  mentionsSendingService: MentionSendingService;
 }
 
 export default function registerJobHandlers({
@@ -39,6 +42,7 @@ export default function registerJobHandlers({
   giftService,
   mediaInliner,
   mentionsController,
+  mentionsSendingService,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -68,6 +72,14 @@ export default function registerJobHandlers({
     ProcessWebmentionJob,
     async (job) => {
       await mentionsController.processWebmention(job);
+    },
+    WEBMENTIONS_QUEUE,
+  );
+
+  jobsService.handle(
+    SendWebmentionsJob,
+    async (job) => {
+      await mentionsSendingService.sendWebmentions(job);
     },
     WEBMENTIONS_QUEUE,
   );

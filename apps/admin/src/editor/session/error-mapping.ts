@@ -3,6 +3,7 @@ import {
   HostLimitError,
   JSONError,
   MaintenanceError,
+  RequestEntityTooLargeError,
   ServerUnreachableError,
   SessionExpiredError,
   TimeoutError,
@@ -45,7 +46,9 @@ export function toSaveError(error: unknown, fallback: string): SaveError {
     ) {
       return 'transport';
     }
-    if (error instanceof ValidationError) {
+    // A payload the server refuses outright must suppress background saves the
+    // same way a validation failure does, or it retries on every edit.
+    if (error instanceof ValidationError || error instanceof RequestEntityTooLargeError) {
       return 'validation';
     }
     const code = status(error);

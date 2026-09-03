@@ -168,7 +168,7 @@ describe('MembersAPI', function () {
     sinon.assert.calledWithExactly(
       MemberBREADService.prototype.read.firstCall,
       { email: 'jamie@example.com' },
-      { withCustomFields: false },
+      { customFieldsFor: null },
     );
     sinon.assert.calledOnceWithExactly(memberLoginEvent.add, { member_id: 'member_1' });
     sinon.assert.calledOnceWithExactly(giftRedeem, {

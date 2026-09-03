@@ -172,10 +172,9 @@ describe('Members API member projection', function () {
 
       const { statusCode } = await signedOut.get('/api/member/');
 
-      // 204, and not by the route deciding so: resolving the session throws when
-      // there is none, and the handler's catch answers empty. Worth pinning
-      // because the deliberate no-session branch a few lines above it returns 200
-      // with a null body, and only one of the two is what anyone actually sees.
+      // The route decides this, rather than it falling out of a handler failing:
+      // reading who you are is the one place where not knowing is an ordinary
+      // answer, because a themed page asks on every view.
       assert.equal(statusCode, 204);
     });
 

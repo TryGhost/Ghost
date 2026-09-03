@@ -17,6 +17,7 @@ import {
   useEditSnippet,
 } from '@tryghost/admin-x-framework/api/snippets';
 import type { CardConfigSnippet, CardConfigSnippetInput } from './card-config';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 
 type PendingSnippetAction =
   | { kind: 'update'; snippet: Snippet; value: string }
@@ -32,7 +33,7 @@ export interface PostSnippets {
 // Snippets for the card menu plus the create/update/delete flows and their
 // confirmation dialogs
 export function usePostSnippets({ canManage }: { canManage: boolean }): PostSnippets {
-  const { data } = useBrowseSnippets();
+  const { data } = useBrowseSnippets({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const addSnippet = useAddSnippet();
   const editSnippet = useEditSnippet();
   const removeSnippet = useDeleteSnippet();

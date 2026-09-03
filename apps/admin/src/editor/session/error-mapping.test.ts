@@ -4,6 +4,7 @@ import {
   HostLimitError,
   JSONError,
   MaintenanceError,
+  RequestEntityTooLargeError,
   ServerUnreachableError,
   SessionExpiredError,
   TimeoutError,
@@ -38,6 +39,8 @@ function response(status: number): Response {
 
 describe('toSaveError', () => {
   it.each<[string, unknown, string]>([
+    // Core answers 409 for a collision, which no framework error class claims,
+    // so the code is read ahead of the status it arrives with.
     [
       'a collision',
       new JSONError(response(409), errorBody({ code: 'UPDATE_COLLISION' })),
@@ -56,6 +59,11 @@ describe('toSaveError', () => {
     ['a validation failure', new ValidationError(response(422), errorBody()), 'validation'],
     ['a missing post', new APIError(response(404)), 'not-found'],
     ['an unprocessable body', new JSONError(response(422), errorBody()), 'validation'],
+    [
+      'a payload the server refuses',
+      new RequestEntityTooLargeError(response(413), ''),
+      'validation',
+    ],
     ['a server error', new JSONError(response(500), errorBody()), 'unknown'],
     ['a thrown non-error', 'broken', 'unknown'],
   ])('maps %s', (_label, error, kind) => {
@@ -69,11 +77,5 @@ describe('toSaveError', () => {
   it('carries the cause for reporting', () => {
     const error = new ServerUnreachableError();
     expect(toSaveError(error, 'fallback').cause).toBe(error);
-  });
-
-  it('reads a collision ahead of the status it arrives with', () => {
-    // Core answers 409 for UPDATE_COLLISION, which no framework error class claims.
-    const collision = new JSONError(response(409), errorBody({ code: 'UPDATE_COLLISION' }));
-    expect(toSaveError(collision, 'fallback').kind).toBe('conflict');
   });
 });

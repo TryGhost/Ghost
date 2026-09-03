@@ -152,6 +152,15 @@ export class JobsService {
     await this.#backend.shutdown(options);
   }
 
+  // An in-process restart (test harness) re-runs handler registration on the
+  // same instance, so all registration state resets - handlers and queue
+  // declarations alike. The duplicate-type guard still holds within a boot.
+  clearHandlers(): void {
+    this.#registry.clear();
+    this.#queueByType.clear();
+    this.#queues.clear();
+  }
+
   #buildEnvelope(job: Job): JobEnvelope {
     return { type: this.#typeOf(job), payload: JSON.stringify(job) };
   }

@@ -162,13 +162,14 @@ whose commit failed reads `derived`.
 `createSlugMachine({generateSlug, onListenerError})` takes the generator port
 (`(text: string) => Promise<string>`) and an error sink for listener failures.
 
-| Call                    | Effect                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `loaded({slug, title})` | Document boundary. Resets the machine to the post, infers the settled mode, discards in-flight and waiting work from the previous post, notifies with a `null` proposal. |
-| `titleCommitted(title)` | The title was committed (blur). Resolves with a proposal; never rejects.                                                                                                 |
-| `slugEdited(input)`     | The slug input was committed. Resolves with a proposal; never rejects.                                                                                                   |
-| `getState()`            | Snapshot of the state above.                                                                                                                                             |
-| `subscribe(listener)`   | `listener(state, proposal)` on every state change, `proposal` being `null` when only `pending` changed or a post loaded. Returns an unsubscribe function.                |
+| Call                                        | Effect                                                                                                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `loaded({slug, title})`                     | Document boundary. Resets the machine to the post, infers the settled mode, discards in-flight and waiting work from the previous post, notifies with a `null` proposal. |
+| `saveAcknowledged(submitted, acknowledged)` | Compare-and-swaps server-normalized values without changing ownership or newer work; notifies a change with a `null` proposal.                                           |
+| `titleCommitted(title)`                     | The title was committed (blur). Resolves with a proposal; never rejects.                                                                                                 |
+| `slugEdited(input)`                         | The slug input was committed. Resolves with a proposal; never rejects.                                                                                                   |
+| `getState()`                                | Snapshot of the state above.                                                                                                                                             |
+| `subscribe(listener)`                       | `listener(state, proposal)` on every state change; acknowledgements, pending changes and loads have no proposal. Returns an unsubscribe function.                        |
 
 A listener that throws is reported to `onListenerError` and affects neither the
 transition nor the other listeners.
@@ -195,9 +196,10 @@ Proposals are `{slug, source}`:
 
 Every proposal except `stale` is delivered to subscribers with the state it
 produced. Subscribers are also notified with a `null` proposal when a request
-starts (`pending` becomes true) and when a post loads. A rejected manual edit is
-always reported (`reverted`, `empty-result`, or `error`) so the input can be
-reset to the kept slug instead of showing the rejected text.
+starts (`pending` becomes true), a post loads, or an acknowledgement resyncs a
+server-normalized value. A rejected manual edit is always reported (`reverted`,
+`empty-result`, or `error`) so the input can be reset to the kept slug instead
+of showing the rejected text.
 
 ### Rules
 
@@ -307,9 +309,24 @@ The wiring hook owns everything the three modules deliberately do not:
 - A blank title held in the live projection as the default title while the input
   stays empty, so a post persisted under that title does not read as permanently
   diverged from what the writer sees.
-- Routing query responses to `setSaved` and mutation responses to
+- Routing query responses to `setSaved` and save responses to
   `saveAcknowledged`, passing the projection the request submitted and the full
   record the server acknowledged.
+- Adopting into the live document any title or slug the save request wrote
+  itself — the default title for a blank one, the slug derived from the title —
+  and then whatever the server normalized them to. Both happen before the
+  acknowledgement is applied, and only where the writer has not typed past the
+  value since, which is the rule the rebase itself uses. Skip this and the
+  rebase keeps the superseded local value: the post reads as diverged from its
+  own saved state for the rest of the session. Adopting is not an edit, so it
+  must not move the version the request was built against.
+- Synchronizing server-normalized title and slug acknowledgements back into the
+  slug machine through its ownership-preserving acknowledgement transition, so
+  later saves do not resend a superseded value or freeze derived slug behavior.
+- Refusing to send an update with no collision token: without one the server
+  skips its concurrency check and the save overwrites whatever landed meanwhile.
+- Requesting without the transport's session-expiry redirect, so an expired
+  session is surfaced in place rather than navigating away from unsaved content.
 - Replacing the URL once a create acquires an id, with the screen keyed on the
   session so the swap does not remount the editor.
 - Deciding what a halted queue looks like: `reauth-pending` and `conflict` are
@@ -332,12 +349,14 @@ The wiring hook owns everything the three modules deliberately do not:
 - A fresh tracker per editing session, including a new one for each new-post session — two consecutive new posts share the null id, so a stale create acknowledgement from a previous session must never reach the current tracker.
 - Query data goes to `setSaved`, save responses to `saveAcknowledged`; never the reverse.
 - `revisionRestored` only after the restore has been saved.
-- Pass the snapshot the save request was built from as `submitted`.
+- Pass the editable projection the request submitted as `submitted`. The save snapshot is not that projection: it carries the identity, status and dirty bits the queue reasons about, and only the fields actually sent may act as the rebase base.
 
 ### Slug machine
 
 - Persistence. The machine does not save proposals; the caller persists
   `generated` and `manual` slugs.
+- `saveAcknowledged(submitted, acknowledged)` compare-and-swaps normalized
+  title and slug values without cancelling newer work or changing ownership.
 - The generator port. The machine passes trimmed text as typed, whether a title
   or a manual candidate. The port must send `encodeURIComponent(slugify(text))`
   to `GET /slugs/post/:name/:id` (raw text containing a character such as a

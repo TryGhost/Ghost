@@ -38,7 +38,12 @@ interface Harness {
   acknowledged: EditorRecord;
 }
 
-function harness(options: Partial<EditorSessionOptions> = {}) {
+interface HarnessHooks {
+  duringSave?: () => void;
+  acknowledge?: (record: EditorRecord, saveCount: number) => EditorRecord;
+}
+
+function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
   const state: Harness = {
     updates: [],
     creates: [],
@@ -54,8 +59,9 @@ function harness(options: Partial<EditorSessionOptions> = {}) {
     transport: {
       create: (payload) => {
         state.creates.push(payload);
+        hooks.duringSave?.();
         saveCount += 1;
-        state.acknowledged = record({
+        const next = record({
           ...state.acknowledged,
           id: 'created-id',
           title: payload.title as string,
@@ -63,12 +69,14 @@ function harness(options: Partial<EditorSessionOptions> = {}) {
           lexical: payload.lexical as string,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
+        state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
       update: (payload, writeOptions) => {
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
+        hooks.duringSave?.();
         saveCount += 1;
-        state.acknowledged = record({
+        const next = record({
           ...state.acknowledged,
           title: payload.title as string,
           slug: payload.slug as string,
@@ -76,6 +84,7 @@ function harness(options: Partial<EditorSessionOptions> = {}) {
           custom_excerpt: (payload.custom_excerpt ?? null) as string | null,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
+        state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
       generateSlug: (text) => Promise.resolve(slugify(text)),
@@ -90,11 +99,11 @@ describe('createEditorSession', () => {
   it('loads a post clean and dirties it on the first edit', () => {
     const { session } = harness({ record: record() });
 
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
 
     session.patchLexical(body('Hello and more'));
 
-    expect(session.isDirty()).toBe(true);
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
   it('submits the edited body and lands the post clean again', async () => {
@@ -115,7 +124,7 @@ describe('createEditorSession', () => {
       status: 'draft',
     });
     expect(state.updates[0].saveRevision).toBe(true);
-    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('sends the acknowledged collision token on the next save', async () => {
@@ -161,14 +170,118 @@ describe('createEditorSession', () => {
     expect(state.updates[1].payload.custom_excerpt).toBeNull();
   });
 
+  it('adopts a normalized generated slug and keeps following later titles', async () => {
+    const { session, state } = harness(
+      { record: record() },
+      {
+        acknowledge: (next, saveCount) =>
+          saveCount === 1 ? { ...next, slug: 'brand-new-name-2' } : next,
+      },
+    );
+
+    session.patchTitle('Brand New Name');
+    session.commitTitle('Brand New Name');
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload).toMatchObject({
+      title: 'Brand New Name',
+      slug: 'brand-new-name',
+    });
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
+    expect(session.getSaveSnapshot().slug).toBe('brand-new-name-2');
+
+    session.patchLexical(body('Edited after acknowledgement'));
+    await session.dispatchExplicit();
+    expect(state.updates[1].payload.slug).toBe('brand-new-name-2');
+
+    session.patchTitle('Another Name');
+    session.commitTitle('Another Name');
+    await session.dispatchExplicit();
+    expect(state.updates[2].payload.slug).toBe('another-name');
+  });
+
+  it('lands clean after a new post is saved under the default title', async () => {
+    const { session, state } = harness();
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+
+    expect(state.creates[0]).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
+  });
+
+  it('does not overwrite a title typed while the save was in flight', async () => {
+    const built = harness({}, { duringSave: () => built.session.patchTitle('Typed Later') });
+    const { session } = built;
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+
+    // The request carried the default title, but the writer moved past it.
+    expect(built.state.creates[0].title).toBe('(Untitled)');
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
+  });
+
+  it('leaves tags out of the payload so edits elsewhere survive', async () => {
+    const { session, state } = harness({
+      record: record({ tags: [{ id: 'tag1', name: 'News' }] }),
+    });
+
+    session.patchLexical(body('Edited'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload).not.toHaveProperty('tags');
+  });
+
+  it('refuses to update a post it has no collision token for', async () => {
+    const { session, state } = harness({ record: record({ updated_at: null }) });
+
+    session.patchLexical(body('Edited'));
+    const completion = await session.dispatchExplicit();
+
+    // Sending no token makes the server skip its collision check, so the save
+    // fails instead of overwriting whatever landed meanwhile.
+    expect(state.updates).toHaveLength(0);
+    expect(completion).toMatchObject({ kind: 'failed', error: { kind: 'unknown' } });
+  });
+
+  it('creates a post without a collision token', async () => {
+    const { session, state } = harness();
+
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+
+    expect(state.creates).toHaveLength(1);
+    expect(state.creates[0]).not.toHaveProperty('updated_at');
+  });
+
+  it('does not count adopting the request\u2019s own values as an edit', async () => {
+    const { session } = harness();
+
+    session.setBaseline(null);
+    session.patchLexical(body('First words'));
+    const before = session.getSaveSnapshot().version;
+    await session.dispatchExplicit();
+
+    // The save adopted a default title and a generated slug; neither is an edit.
+    expect(session.getSaveSnapshot().version).toBe(before);
+    expect(session.getSaveSnapshot().title).toBe('(Untitled)');
+    expect(session.getSaveSnapshot().slug).toBe('untitled');
+
+    session.patchTitle('A real title');
+    expect(session.getSaveSnapshot().version).toBeGreaterThan(before);
+  });
+
   it('gives each new post its own state', () => {
     const first = harness();
     const second = harness();
 
     first.session.patchLexical(body('Only mine'));
 
-    expect(first.session.isDirty()).toBe(true);
-    expect(second.session.isDirty()).toBe(false);
+    expect(first.session.getSaveSnapshot().isDirty).toBe(true);
+    expect(second.session.getSaveSnapshot().isDirty).toBe(false);
   });
 
   it('adopts a refetched record without re-baselining', () => {
@@ -179,7 +292,7 @@ describe('createEditorSession', () => {
     session.patchLexical(edited);
     session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
 
-    expect(session.isDirty()).toBe(true);
+    expect(session.getSaveSnapshot().isDirty).toBe(true);
   });
 
   it('stops saving once disposed', async () => {

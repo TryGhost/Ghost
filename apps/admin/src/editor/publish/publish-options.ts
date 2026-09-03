@@ -3,6 +3,7 @@ import {
   PAID_SEGMENT,
   getFullRecipientFilter,
   getNewsletterRecipientFilter,
+  normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type {
@@ -198,17 +199,6 @@ export function selectableNewsletters(
 /** The tier list spelled as a recipient filter; null when the post has no tiers. */
 export function tiersSegment(tiers: ReadonlyArray<{ slug: string }>): string | null {
   return tiers.map((tier) => `tier:${tier.slug}`).join(',') || null;
-}
-
-/** Expands the API's legacy segment sentinels into the filters used by the editor. */
-export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
-  if (filter === 'all') {
-    return EVERYONE_RECIPIENT_FILTER;
-  }
-  if (!filter || filter === 'none') {
-    return null;
-  }
-  return filter;
 }
 
 export function getDefaultRecipientFilter(

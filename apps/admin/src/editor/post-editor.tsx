@@ -5,13 +5,16 @@ import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig, PostType } from './card-config';
+import { FeatureImage } from './feature-image';
 import { KoenigPostEditor } from './koenig-post-editor';
 import { textHasTk } from './tk';
+import type { FeatureImageBinding } from './session/feature-image-binding';
 
 export interface PostEditorProps {
   postType: PostType;
   title: string;
   excerpt: string;
+  featureImage: FeatureImageBinding;
   /** Initial body; the editor owns its own state after mount. */
   initialLexical: string | null;
   cardConfig: PostCardConfig;
@@ -82,6 +85,7 @@ export function PostEditor({
   postType,
   title,
   excerpt,
+  featureImage,
   initialLexical,
   cardConfig,
   showExcerpt,
@@ -104,6 +108,7 @@ export function PostEditor({
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
   const [bodyTkCount, setBodyTkCount] = useState(0);
+  const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 
   useAutosize(titleRef, title);
   useAutosize(excerptRef, excerpt);
@@ -112,8 +117,10 @@ export function PostEditor({
   const excerptHasTk = showExcerpt && textHasTk(excerpt);
 
   useEffect(() => {
-    onTkCountChange?.((titleHasTk ? 1 : 0) + (excerptHasTk ? 1 : 0) + bodyTkCount);
-  }, [onTkCountChange, titleHasTk, excerptHasTk, bodyTkCount]);
+    onTkCountChange?.(
+      (titleHasTk ? 1 : 0) + (excerptHasTk ? 1 : 0) + bodyTkCount + featureImageTkCount,
+    );
+  }, [onTkCountChange, titleHasTk, excerptHasTk, bodyTkCount, featureImageTkCount]);
 
   const focusTitle = useCallback(() => {
     titleRef.current?.focus();
@@ -253,6 +260,19 @@ export function PostEditor({
           onMouseUp={focusEditorOnPaneClick}
         >
           <div className="relative mx-auto w-full max-w-[740px]">
+            <FeatureImage
+              alt={featureImage.featureImageAlt}
+              caption={featureImage.featureImageCaption}
+              cardConfig={cardConfig}
+              darkMode={darkMode}
+              image={featureImage.featureImage}
+              onAltChange={featureImage.onFeatureImageAltChange}
+              onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
+              onCaptionChange={featureImage.onFeatureImageCaptionChange}
+              onImageChange={featureImage.onFeatureImageChange}
+              onImageClear={featureImage.onFeatureImageClear}
+              onTkCountChange={setFeatureImageTkCount}
+            />
             {titleHasTk && <TkIndicator testId="tk-indicator" onClick={focusTitle} />}
             <textarea
               ref={titleRef}

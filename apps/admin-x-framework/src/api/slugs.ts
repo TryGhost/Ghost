@@ -12,13 +12,15 @@ export interface GenerateSlugParams {
   text: string;
   /** The record being edited, so its own current slug is not counted as a collision */
   id?: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
 }
 
 export const useGenerateSlug = () => {
   const fetchApi = useFetchApi();
 
   return useCallback(
-    async ({ type, text, id }: GenerateSlugParams): Promise<string> => {
+    async ({ type, text, id, sessionExpiryRedirect }: GenerateSlugParams): Promise<string> => {
       if (!text) {
         return '';
       }
@@ -26,7 +28,7 @@ export const useGenerateSlug = () => {
       // Slugified client-side first: raw reserved characters in the path (a newline as %0A) 404 at the CDN before reaching Ghost
       const name = encodeURIComponent(slugify(text));
       const path = id ? `/slugs/${type}/${name}/${id}/` : `/slugs/${type}/${name}/`;
-      const data = await fetchApi<SlugsResponseType>(apiUrl(path));
+      const data = await fetchApi<SlugsResponseType>(apiUrl(path), { sessionExpiryRedirect });
 
       return data.slugs[0].slug;
     },
