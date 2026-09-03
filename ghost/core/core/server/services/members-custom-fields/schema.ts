@@ -30,7 +30,7 @@ type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
  * action, and Stripe is not a person. `type` is the namespace that makes `id` resolvable —
- * `users`, `integrations`, `members_custom_field_bindings` — so the one writer that
+ * `users`, `integrations`, `members_metafield_bindings` — so the one writer that
  * resolves in no table is the one with no id to give.
  */
 export const WrittenBy = z.discriminatedUnion('type', [
@@ -49,7 +49,7 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 // carries it as a plain string.
 export const DbCustomFieldValue = z.object({
   id: z.string(),
-  custom_field_key: z.string(),
+  metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
   // Nullable like the column, though nothing here writes a null: a part with no value
@@ -83,7 +83,7 @@ export const DbCustomFieldBinding = z.object({
   id: z.string(),
   product_id: z.string(),
   port: z.string(),
-  custom_field_key: z.string(),
+  metafield_key: z.string(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -99,19 +99,19 @@ export const DbBoundField = z.object({
 
 declare module 'knex/types/tables' {
   interface Tables {
-    members_custom_fields: Knex.CompositeTableType<
+    members_metafields: Knex.CompositeTableType<
       CustomFieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
       Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'> & CustomFieldRank,
       Partial<CustomFieldRow>
     >;
-    members_custom_field_values: Knex.CompositeTableType<
+    members_metafield_values: Knex.CompositeTableType<
       CustomFieldValueRow,
       Omit<z.input<typeof DbCustomFieldValue>, 'updated_at'>,
       Partial<CustomFieldValueRow>
     >;
-    members_custom_field_bindings: Knex.CompositeTableType<
+    members_metafield_bindings: Knex.CompositeTableType<
       CustomFieldBindingRow,
       // `updated_at` is set on insert as well as update: a binding is a setting, and
       // "when was this last stated" is the same question whichever way it got there.

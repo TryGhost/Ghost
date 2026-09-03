@@ -8,7 +8,7 @@
 //   metafields.key:'custom.company'                     // has a value
 //   metafields.key:-'custom.shipping_address.country'   // that part is not set
 //
-// The values table holds one row per stored value: `custom_field_key`, `path`
+// The values table holds one row per stored value: `metafield_key`, `path`
 // (empty for a plain field, the part's name for one part of a composite) and
 // `value_text`. A filter addresses those columns directly, so each one becomes a
 // single $elemMatch over them — positive asserts a matching row exists, $not
@@ -101,7 +101,7 @@ export function createCustomFieldsFilterTransformer() {
   // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
   // by these matches", `$not` is "no leaf does".
   function buildElemMatch(target: LeafTarget, value: unknown, negate: boolean): QueryNode {
-    const match: QueryNode = { custom_field_key: target.key };
+    const match: QueryNode = { metafield_key: target.key };
     if (value !== undefined) {
       match.path = target.path ?? ROOT_PATH;
       match.value_text = value;
@@ -198,7 +198,7 @@ export function createCustomFieldsFilterTransformer() {
  * filter.
  */
 export const CUSTOM_FIELDS_RELATION = {
-  tableName: 'members_custom_field_values',
+  tableName: 'members_metafield_values',
   tableNameAs: RELATION,
   type: 'oneToOne',
   joinFrom: 'member_id',
