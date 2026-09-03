@@ -20,7 +20,9 @@ function getStoredFeatureFlagOverrides() {
 
 export function feature(name, options = {}) {
     let {user, onChange} = options;
-    let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`, 'router.currentURL'];
+    let watchedProps = user
+        ? [`accessibility.${name}`]
+        : [`config.${name}`, `labs.${name}`, '_featureFlagOverridesRevision'];
 
     return computed.apply(Ember, watchedProps.concat({
         get() {
@@ -57,7 +59,6 @@ export default class FeatureService extends Service {
     @service ghostPaths;
     @service lazyLoader;
     @service notifications;
-    @service router;
     @service session;
     @service settings;
     @service store;
@@ -102,6 +103,11 @@ export default class FeatureService extends Service {
     @feature('postsListReact') postsListReact;
     @feature('editorReact') editorReact;
     _user = null;
+    _featureFlagOverridesRevision = 0;
+
+    refreshFeatureFlagOverrides() {
+        this.incrementProperty('_featureFlagOverridesRevision');
+    }
 
     @computed('settings.labs')
     get labs() {

@@ -37,8 +37,13 @@ export interface RouterProviderProps {
 
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
   const { search } = useLocation();
+  const { onFeatureFlagOverridesChange } = useFramework();
   const enabledFlags = useMemo(() => syncFeatureFlagOverrides(search), [search]);
   const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
+
+  useEffect(() => {
+    return onFeatureFlagOverridesChange?.();
+  }, [enabledFlags, onFeatureFlagOverridesChange]);
 
   return (
     <FeatureFlagOverridesContext.Provider value={value}>

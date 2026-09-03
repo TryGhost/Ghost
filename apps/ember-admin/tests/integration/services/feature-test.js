@@ -108,7 +108,7 @@ describe('Integration: Service: feature', function () {
         });
     }
 
-    it('re-reads session overrides when the current route changes', async function () {
+    it('re-reads session overrides when requested by the state bridge', async function () {
         stubSettings(server, {testFlag: false});
         stubUser(server, {});
 
@@ -118,14 +118,12 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        sinon.stub(service.router, 'currentURL').get(() => '/editor/post/1');
-
         await service.fetch();
         expect(service.get('labs.testFlag')).to.be.false;
         expect(service.get('testFlag')).to.be.false;
 
         sessionStorage.setItem('ghost-admin:labs-overrides', JSON.stringify(['testFlag']));
-        service.router.notifyPropertyChange('currentURL');
+        service.refreshFeatureFlagOverrides();
 
         expect(service.get('testFlag')).to.be.true;
     });
