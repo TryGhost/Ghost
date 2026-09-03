@@ -3,7 +3,7 @@ import { PORT_FIELD } from '@tryghost/checkout';
 import {
   KEY_CHARACTERS,
   mintableKey,
-} from '../../../../../core/server/services/members-custom-fields/key';
+} from '../../../../../core/server/services/members-metafields/key';
 
 describe('Custom field key minting', function () {
   it('separates words with underscores', function () {

@@ -4,7 +4,7 @@ import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { INTERNAL } from './access';
 import { DbBoundField, FIELD_STATUS } from './schema';
-import type { CustomFieldValuesService, PlannedWrite } from './values-service';
+import type { MetafieldValuesService, PlannedWrite } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
 
@@ -21,11 +21,11 @@ export interface BoundField {
  * Where a source sends what it collected: a `port` is the name that source uses for a
  * thing, and the binding resolves it to one of the publisher's fields.
  */
-export class CustomFieldBindingsService {
+export class MetafieldBindingsService {
   private knex: Knex;
-  private values: CustomFieldValuesService;
+  private values: MetafieldValuesService;
 
-  constructor({ knex, values }: { knex: Knex; values: CustomFieldValuesService }) {
+  constructor({ knex, values }: { knex: Knex; values: MetafieldValuesService }) {
     this.knex = knex;
     this.values = values;
   }
@@ -34,11 +34,11 @@ export class CustomFieldBindingsService {
     db: Knex,
     productId: string,
     port: string,
-    customFieldKey: string,
+    metafieldKey: string,
     now: Date,
   ): Promise<string> {
     const existing = await db(BINDINGS_TABLE).where({ product_id: productId, port }).first();
-    if (existing?.metafield_key === customFieldKey) {
+    if (existing?.metafield_key === metafieldKey) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
       return existing.id;
     }
@@ -51,7 +51,7 @@ export class CustomFieldBindingsService {
       id: bindingId,
       product_id: productId,
       port,
-      metafield_key: customFieldKey,
+      metafield_key: metafieldKey,
       created_at: now,
       updated_at: now,
     });
@@ -94,10 +94,10 @@ export class CustomFieldBindingsService {
     } catch (err) {
       logging.warn(
         {
-          event: { name: 'members.custom_fields.collected_value_rejected' },
+          event: { name: 'members.metafields.collected_value_rejected' },
           err,
           memberId,
-          customFieldKey: into.key,
+          metafieldKey: into.key,
         },
         'A collected value could not be saved',
       );
@@ -111,13 +111,13 @@ export class CustomFieldBindingsService {
     } catch (err) {
       logging.error(
         {
-          event: { name: 'members.custom_fields.collected_value_write_failed' },
+          event: { name: 'members.metafields.collected_value_write_failed' },
           err,
           memberId,
-          customFieldKey: into.key,
+          metafieldKey: into.key,
           bindingId: into.bindingId,
         },
-        'Failed to store a collected custom field value',
+        'Failed to store a collected metafield value',
       );
     }
   }
@@ -145,7 +145,7 @@ export class CustomFieldBindingsService {
     if (!bound.success) {
       logging.warn(
         {
-          event: { name: 'members.custom_fields.binding_unreadable' },
+          event: { name: 'members.metafields.binding_unreadable' },
           err: bound.error,
           productId,
           port,

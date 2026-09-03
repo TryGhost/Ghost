@@ -12,7 +12,7 @@ export interface RequestContext {
 /**
  * Who is acting, read off an API frame's context.
  *
- * Here rather than in each endpoint, because two resources now record custom field history
+ * Here rather than in each endpoint, because two resources now record metafield history
  * and a second reading of the same shape is a second chance to disagree about it. An
  * integration and a user are both actors; a request that is neither — a webhook, a job —
  * has none, and the history says so rather than guessing.
@@ -44,7 +44,7 @@ const COMMANDS = {
   delete: 'deleted',
 } as const satisfies Record<string, 'added' | 'edited' | 'archived' | 'restored' | 'deleted'>;
 
-export type CustomFieldVerb = keyof typeof COMMANDS;
+export type MetafieldVerb = keyof typeof COMMANDS;
 
 // `details` is stored in the action's `context` column (Ghost's slot for "diffs,
 // meta").
@@ -55,20 +55,20 @@ export type CustomFieldVerb = keyof typeof COMMANDS;
 // is addressed publicly — its id never leaves the API.
 //
 // A reorder names no field: it carries the count and the word the feed reads it by.
-export type CustomFieldActionDetails =
+export type MetafieldActionDetails =
   | { primary_name: string; key: string; previous_name?: string }
   | { action_name: 'reordered'; count: number };
 
 // `subject` is the field's row id, or null for an act that belongs to no single field.
-export type RecordCustomFieldAction = (input: {
+export type RecordMetafieldAction = (input: {
   context: RequestContext;
-  verb: CustomFieldVerb;
+  verb: MetafieldVerb;
   subject: string | null;
-  details: CustomFieldActionDetails;
+  details: MetafieldActionDetails;
 }) => Promise<void>;
 
 // Best-effort action-log write: a failed action must never fail the command that triggered it.
-export async function recordCustomFieldAction({
+export async function recordMetafieldAction({
   Action,
   context,
   verb,
@@ -77,9 +77,9 @@ export async function recordCustomFieldAction({
 }: {
   Action: ActionRecorder;
   context: RequestContext;
-  verb: CustomFieldVerb;
+  verb: MetafieldVerb;
   subject: string | null;
-  details: CustomFieldActionDetails;
+  details: MetafieldActionDetails;
 }): Promise<void> {
   if (!context.actor) {
     return;
@@ -102,14 +102,14 @@ export async function recordCustomFieldAction({
   } catch (err) {
     logging.error(
       {
-        event: { name: 'members.custom_fields.action_log_failed' },
+        event: { name: 'members.metafields.action_log_failed' },
         err,
         verb,
         subject,
         actorType: context.actor.type,
         actorId: context.actor.id,
       },
-      'Failed to record a member custom field action',
+      'Failed to record a member metafield action',
     );
   }
 }

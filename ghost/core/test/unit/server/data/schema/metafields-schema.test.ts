@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { FIELD_TYPE_IDS } from '@tryghost/metafield-types';
-import { FIELD_STATUS } from '../../../../../core/server/services/members-custom-fields/schema';
+import { FIELD_STATUS } from '../../../../../core/server/services/members-metafields/schema';
 // @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
 

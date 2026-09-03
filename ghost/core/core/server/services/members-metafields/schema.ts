@@ -12,7 +12,7 @@ export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archi
 
 // The single source for the read projection and the knex table type below. `type` parses
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
-export const DbCustomField = z.object({
+export const DbMetafield = z.object({
   id: z.string(),
   key: z.string(),
   name: z.string(),
@@ -23,9 +23,9 @@ export const DbCustomField = z.object({
 });
 
 // Storage only: order is a fact about the list, so no read projection carries a rank.
-type CustomFieldRank = { sort_order: number };
+type MetafieldRank = { sort_order: number };
 
-type CustomFieldRow = z.infer<typeof DbCustomField> & CustomFieldRank;
+type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
@@ -47,7 +47,7 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
-export const DbCustomFieldValue = z.object({
+export const DbMetafieldValue = z.object({
   id: z.string(),
   metafield_key: z.string(),
   member_id: z.string(),
@@ -64,14 +64,14 @@ export const DbCustomFieldValue = z.object({
   updated_at: DbDate.nullable(),
 });
 
-type CustomFieldValueRow = z.infer<typeof DbCustomFieldValue>;
+type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
 // The field's key travels with the row so a value assembles without a second lookup.
 //
 // `type` takes no part in the assembly and is here as a gate: a value whose type has left
 // the catalog is one the definitions list no longer returns either, so failing to parse
 // is what drops it.
-export const DbCustomFieldLeaf = z.object({
+export const DbMetafieldLeaf = z.object({
   member_id: z.string(),
   key: z.string(),
   type: FieldTypeSchema,
@@ -79,7 +79,7 @@ export const DbCustomFieldLeaf = z.object({
   value_text: z.string(),
 });
 
-export const DbCustomFieldBinding = z.object({
+export const DbMetafieldBinding = z.object({
   id: z.string(),
   product_id: z.string(),
   port: z.string(),
@@ -88,7 +88,7 @@ export const DbCustomFieldBinding = z.object({
   updated_at: DbDate.nullable(),
 });
 
-type CustomFieldBindingRow = z.infer<typeof DbCustomFieldBinding>;
+type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
@@ -100,23 +100,23 @@ export const DbBoundField = z.object({
 declare module 'knex/types/tables' {
   interface Tables {
     members_metafields: Knex.CompositeTableType<
-      CustomFieldRow,
+      MetafieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'> & CustomFieldRank,
-      Partial<CustomFieldRow>
+      Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
+      Partial<MetafieldRow>
     >;
     members_metafield_values: Knex.CompositeTableType<
-      CustomFieldValueRow,
-      Omit<z.input<typeof DbCustomFieldValue>, 'updated_at'>,
-      Partial<CustomFieldValueRow>
+      MetafieldValueRow,
+      Omit<z.input<typeof DbMetafieldValue>, 'updated_at'>,
+      Partial<MetafieldValueRow>
     >;
     members_metafield_bindings: Knex.CompositeTableType<
-      CustomFieldBindingRow,
+      MetafieldBindingRow,
       // `updated_at` is set on insert as well as update: a binding is a setting, and
       // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbCustomFieldBinding>,
-      Partial<CustomFieldBindingRow>
+      z.input<typeof DbMetafieldBinding>,
+      Partial<MetafieldBindingRow>
     >;
   }
 }

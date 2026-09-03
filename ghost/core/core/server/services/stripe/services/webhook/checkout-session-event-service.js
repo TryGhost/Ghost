@@ -453,7 +453,7 @@ module.exports = class CheckoutSessionEventService {
 
   /**
    * This service knows how to read a completed Stripe session. It does not know, and must
-   * not know, which custom field any of those values belongs in — that is what a binding
+   * not know, which metafield any of those values belongs in — that is what a binding
    * decides, so no field key appears anywhere in this code.
    *
    * Nothing here may be fatal: a throw fails the webhook, which makes Stripe retry it and
@@ -493,7 +493,7 @@ module.exports = class CheckoutSessionEventService {
         return;
       }
 
-      await this.deps.customFieldBindings.writeCollected(
+      await this.deps.metafieldBindings.writeCollected(
         memberId,
         tierId,
         collectedByPort.parse(session),

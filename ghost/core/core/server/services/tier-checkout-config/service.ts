@@ -3,8 +3,8 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
-import { DbCustomField, FIELD_STATUS } from '../members-custom-fields/schema';
-import type { CustomField, RequestContext } from '../members-custom-fields';
+import { DbMetafield, FIELD_STATUS } from '../members-metafields/schema';
+import type { Metafield, RequestContext } from '../members-metafields';
 import {
   MAX_CHECKOUT_LABEL_LENGTH,
   PORT_FIELD,
@@ -38,7 +38,7 @@ import {
 } from './models';
 import { CheckoutConfigInput } from './serializers';
 
-type FieldRow = Pick<z.infer<typeof DbCustomField>, 'key' | 'name' | 'type' | 'status'>;
+type FieldRow = Pick<z.infer<typeof DbMetafield>, 'key' | 'name' | 'type' | 'status'>;
 
 type NewField = { key: string; name: string; type: FieldType };
 
@@ -76,9 +76,9 @@ export interface PortBinder {
 }
 
 export interface FieldMaker {
-  findByKey(key: string, options?: { executor?: Knex }): Promise<CustomField | null>;
-  addOne(wanted: NewField, options?: { executor?: Knex }): Promise<CustomField>;
-  recordCreated(context: RequestContext, fields: CustomField[]): Promise<void>;
+  findByKey(key: string, options?: { executor?: Knex }): Promise<Metafield | null>;
+  addOne(wanted: NewField, options?: { executor?: Knex }): Promise<Metafield>;
+  recordCreated(context: RequestContext, fields: Metafield[]): Promise<void>;
 }
 
 export class TierCheckoutConfigService {
@@ -161,7 +161,7 @@ export class TierCheckoutConfigService {
         await this.bindings.remove(trx, productId, port);
       }
 
-      const made: CustomField[] = [];
+      const made: Metafield[] = [];
       for (const wanted of plan.create) {
         made.push(await this.fields.addOne(wanted, { executor: trx }));
       }
@@ -321,7 +321,7 @@ async function assertTierExists(db: Knex, productId: string): Promise<void> {
  * a field meant that field. Being told now is better than finding out weeks later that
  * nothing was ever recorded.
  */
-function assertCollectableInto(port: StripePort, field: CustomField, valueType: FieldType): void {
+function assertCollectableInto(port: StripePort, field: Metafield, valueType: FieldType): void {
   if (field.status !== FIELD_STATUS.active) {
     throw new errors.ValidationError({
       message: 'An archived custom field cannot receive collected data. Restore it first.',
