@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation } from '@tryghost/admin-x-framework';
 import { useGenerateSlug } from '@tryghost/admin-x-framework/api/slugs';
 import {
   useAddPage,
@@ -60,6 +60,8 @@ export interface EditorSessionBinding {
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  /** The server ID acquired by this session's first create, if it began new. */
+  createdId: string | null;
   isDirty: () => boolean;
   patchFeatureImage: EditorSession['patchFeatureImage'];
   dispatchField: () => void;
@@ -87,8 +89,6 @@ export function useEditorSession({
   record,
   siteUrl,
 }: UseEditorSessionOptions): EditorSessionHandle {
-  const navigate = useNavigate();
-  const sessionKey = useEditorSessionKey();
   const generateSlug = useGenerateSlug();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
@@ -192,15 +192,6 @@ export function useEditorSession({
   }, [saved, session]);
 
   const isNew = !record;
-  useEffect(() => {
-    if (isNew && persistedId) {
-      navigate(`/editor/${postType}/${persistedId}`, {
-        replace: true,
-        state: { editorSession: sessionKey },
-      });
-    }
-  }, [isNew, persistedId, postType, navigate, sessionKey]);
-
   const onTitleChange = useCallback(
     (next: string) => {
       setTitle(next);
@@ -256,6 +247,7 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
+    createdId: isNew ? persistedId : null,
     isDirty: () => isDirty,
     patchFeatureImage: session.patchFeatureImage,
     dispatchField: session.dispatchField,

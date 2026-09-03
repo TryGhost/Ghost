@@ -72,6 +72,76 @@ function fakeEditablePost(overrides: Partial<SavedPost> = {}, { failSaves = fals
   return saveApi;
 }
 
+function fakeNewPost({ failUpdates = false } = {}) {
+  editorChrome();
+  fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+  let created = post({
+    id: NEW_POST_ID,
+    title: '(Untitled)',
+    slug: 'untitled',
+    status: 'draft',
+    updated_at: CREATED_AT,
+    published_at: null,
+    tags: [],
+  });
+  const createResponse = deferred<{ posts: SavedPost[] }>();
+  const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
+    return createResponse.promise;
+  });
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({ posts: [created] }));
+  const updateApi = fakeAdminEndpoint(
+    'PUT',
+    new RegExp(`^/posts/${NEW_POST_ID}/\\?`),
+    ({ body }) => {
+      if (failUpdates) {
+        return { errors: [{ type: 'InternalServerError', message: 'Something went wrong.' }] };
+      }
+      const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+      created = { ...created, ...submitted, updated_at: '2026-01-01T00:00:09.000Z' };
+      return { posts: [created] };
+    },
+    { status: failUpdates ? 500 : 200 },
+  );
+
+  return {
+    createApi,
+    updateApi,
+    resolveCreate: () => createResponse.resolve({ posts: [created] }),
+  };
+}
+
+function fakeDeferredCleanSave() {
+  editorChrome();
+  let current = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    tags: [],
+  });
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
+
+  const saveResponse = deferred<{ posts: SavedPost[] }>();
+  const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    current = { ...current, ...submitted, updated_at: '2026-01-01T00:00:01.000Z' };
+    return saveResponse.promise;
+  });
+
+  return {
+    saveApi,
+    resolveSave: () => saveResponse.resolve({ posts: [current] }),
+  };
+}
+
 async function typeIntoBody(text: string) {
   await editorScreen.body().click();
   await userEvent.keyboard(`{End}${text}`);
@@ -256,35 +326,7 @@ describe('Post editor leave guard', () => {
   it(
     'replaces the URL of a created post without asking to leave',
     async () => {
-      editorChrome();
-      fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
-      let created = post({
-        id: NEW_POST_ID,
-        title: '(Untitled)',
-        slug: 'untitled',
-        status: 'draft',
-        updated_at: CREATED_AT,
-        published_at: null,
-        tags: [],
-      });
-      const createResponse = deferred<{ posts: SavedPost[] }>();
-      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
-        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-        created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
-        return createResponse.promise;
-      });
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
-        posts: [created],
-      }));
-      const updateApi = fakeAdminEndpoint(
-        'PUT',
-        new RegExp(`^/posts/${NEW_POST_ID}/\\?`),
-        ({ body }) => {
-          const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-          created = { ...created, ...submitted, updated_at: '2026-01-01T00:00:09.000Z' };
-          return { posts: [created] };
-        },
-      );
+      const { createApi, updateApi, resolveCreate } = fakeNewPost();
 
       await renderAdminApp('/editor/post', FLAG_ON);
       await expect.element(editorScreen.body()).toBeVisible();
@@ -293,7 +335,7 @@ describe('Post editor leave guard', () => {
       await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
       // The URL swap lands on a post the writer has already moved past.
       await typeIntoBody(' and then some');
-      createResponse.resolve({ posts: [created] });
+      resolveCreate();
 
       await expect.poll(currentRoute, SAVE_POLL).toBe(`/editor/post/${NEW_POST_ID}`);
       await expect(editorScreen.leaveDialog()).toHaveCount(0);
@@ -305,7 +347,53 @@ describe('Post editor leave guard', () => {
   );
 
   it(
-    'arms the browser unload prompt only while the post is dirty',
+    'preserves a blocked exit when a create acquires its ID',
+    async () => {
+      const { createApi, resolveCreate } = fakeNewPost();
+
+      await renderAdminApp('/editor/post', FLAG_ON);
+      await expect.element(editorScreen.body()).toBeVisible();
+      await typeIntoBody('First words');
+      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+
+      await editorScreen.backLink('post').click();
+      expect(currentRoute()).toBe('/editor/post');
+
+      // The create acknowledgement wants to replace the URL, but the writer's
+      // already-blocked exit remains the destination that ultimately proceeds.
+      resolveCreate();
+      await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'applies a deferred created-post URL after the writer cancels the exit',
+    async () => {
+      const { createApi, resolveCreate } = fakeNewPost({ failUpdates: true });
+
+      await renderAdminApp('/editor/post', FLAG_ON);
+      await expect.element(editorScreen.body()).toBeVisible();
+      await typeIntoBody('First words');
+      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+      await typeIntoBody(' and then some');
+
+      await editorScreen.backLink('post').click();
+      resolveCreate();
+
+      await expect.element(editorScreen.leaveDialog(), SAVE_POLL).toBeVisible();
+      expect(currentRoute()).toBe('/editor/post');
+      await editorScreen.stayInEditor().click();
+
+      await expect.poll(currentRoute, SAVE_POLL).toBe(`/editor/post/${NEW_POST_ID}`);
+      await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    },
+    SLOW,
+  );
+
+  it(
+    'arms the browser unload prompt while unsaved work exists',
     async () => {
       fakeEditablePost();
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -316,6 +404,25 @@ describe('Post editor leave guard', () => {
       await typeIntoBody(' and more');
       await expect.poll(unsavedChangesGuarded).toBe(true);
 
+      await expect.poll(unsavedChangesGuarded, SAVE_POLL).toBe(false);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the browser unload prompt armed for a clean write in flight',
+    async () => {
+      const { saveApi, resolveSave } = fakeDeferredCleanSave();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+      expect(unsavedChangesGuarded()).toBe(false);
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+
+      resolveSave();
       await expect.poll(unsavedChangesGuarded, SAVE_POLL).toBe(false);
     },
     SLOW,
