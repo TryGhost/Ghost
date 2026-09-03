@@ -25,9 +25,86 @@ export default class TagRoute extends AuthenticatedRoute {
 
         // React owns this URL when the flag is on. Keep the Ember route from
         // loading and rendering a second tag editor behind the React screen.
-        if (this.feature.tagDetailsReact === true) {
-            transition.abort();
+        if (this.feature.tagDetailsReact !== true) {
+            return;
         }
+
+        transition.abort();
+
+        const reactRouteUrl = this._reactRouteUrl(transition);
+
+        // Ember and React share window.location.hash, and an aborted
+        // transition never reaches updateURL. A URL intent (cold load, hash
+        // change, React-driven navigation) already has the browser URL
+        // pointing here, so React renders and there is nothing to do. A named
+        // intent (the Cmd-K search modal's tag results) has no URL yet -
+        // without writing one the click is a silent no-op.
+        if (!transition.intent?.url) {
+            this._navigateToReactRoute(reactRouteUrl);
+        }
+
+        this._parkOnReactFallback(reactRouteUrl);
+    }
+
+    // Built by hand rather than with `router.urlFor`, whose output depends on
+    // the configured location. `transition.to.params` is only populated for a
+    // transition passing string params - one passing a tag model serializes
+    // too late to read here, so fall back to the list rather than a bad URL.
+    _reactRouteUrl(transition) {
+        const {name, params} = transition.to ?? {};
+
+        if (name === 'tag.new') {
+            return '/tags/new';
+        }
+        if (name === 'tag' && typeof params?.tag_slug === 'string') {
+            return `/tags/${encodeURIComponent(params.tag_slug)}`;
+        }
+
+        return '/tags';
+    }
+
+    // Aborting stops Ember rendering this screen, but it also leaves the
+    // router believing it is still on the route we came from. That desync is
+    // only invisible until you navigate back to the very same URL: Ember
+    // compares it against the route it thinks it is on, finds no difference,
+    // and runs no transition at all. Park on `react-fallback` - the empty
+    // catch-all Ember already uses for URLs React owns - to keep the router's
+    // state honest. The fallback must use the real tag path: parking on
+    // `tag` briefly sends React to an unknown URL, and restoring the hash
+    // with replaceState does not notify React Router. That leaves the browser
+    // showing React's 404 until the next reload.
+    // See PostsRoute#_parkOnReactFallback for the full rationale (replace
+    // semantics, the parked-path guard, and URL restoration).
+    _parkOnReactFallback(reactRouteUrl) {
+        const fallbackPath = reactRouteUrl.replace(/^\//, '');
+        const parkedPath = this.router.currentRouteName === 'react-fallback'
+            ? this.router.currentRoute?.params?.path
+            : null;
+
+        if (parkedPath === fallbackPath) {
+            return;
+        }
+
+        const url = window.location.hash;
+        const state = window.history.state;
+
+        this.router.replaceWith('react-fallback', fallbackPath)
+            .finally(() => this._restoreUrl(url, state));
+    }
+
+    // Parking writes the fallback route's own path, so the captured URL goes
+    // back afterwards. `replaceState`: no history entry, and no `hashchange`
+    // to re-enter routing. The captured history state goes back with it -
+    // react-router keeps `{usr, key, idx}` there, and parking would otherwise
+    // drop it on the URL-intent path where React created the entry.
+    _restoreUrl(url, state) {
+        window.history.replaceState(state, '', url);
+    }
+
+    // Seam so tests can assert the navigation without a real hash location -
+    // Ember acceptance tests run with `location: 'none'`.
+    _navigateToReactRoute(url) {
+        window.location.hash = url;
     }
 
     model(params) {
