@@ -28,7 +28,6 @@ export type EmailSendingStatus = z.infer<typeof EmailSendingStatus>;
 
 /** The email as the derivation reads it: its stored status, the recipient count it expects, and when the current attempt started. */
 export interface SendingEmail {
-  id: string;
   status: StoredSendingStatus;
   recipientCount: number;
   attemptStartedAt: Date | null;
@@ -43,24 +42,20 @@ export interface SendingBatch {
 
 type BatchSample = { recipientCount: number; timestamp: number };
 
-export function emailSendingStatusWhenSubmitted(email: {
-  id: string;
-  recipientCount: number;
-}): EmailSendingStatus {
-  const { recipientCount } = email;
-  return {
-    id: email.id,
-    sending: {
+export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[]): SendingStatus {
+  // Submitted is terminal: every batch was accepted, so the email's own recipient count is the
+  // answer and the batch aggregation below, which describes a send still in progress, does not apply.
+  if (email.status === 'submitted') {
+    return {
       status: 'submitted',
-      progress: { completed: recipientCount, total: recipientCount, estimatedSecondsRemaining: 0 },
-    },
-  };
-}
+      progress: {
+        completed: email.recipientCount,
+        total: email.recipientCount,
+        estimatedSecondsRemaining: 0,
+      },
+    };
+  }
 
-export function emailSendingStatusFromBatches(
-  email: SendingEmail,
-  batches: SendingBatch[],
-): EmailSendingStatus {
   const phase: SendingPhase = batches.some((batch) => batch.status !== 'pending')
     ? 'submitting'
     : 'preparing';
@@ -75,12 +70,9 @@ export function emailSendingStatusFromBatches(
 
   if (email.status === 'failed') {
     return {
-      id: email.id,
-      sending: {
-        status: 'failed',
-        progress: { completed, total, estimatedSecondsRemaining: null },
-        failedDuring: phase,
-      },
+      status: 'failed',
+      progress: { completed, total, estimatedSecondsRemaining: null },
+      failedDuring: phase,
     };
   }
 
@@ -92,18 +84,15 @@ export function emailSendingStatusFromBatches(
   }));
 
   return {
-    id: email.id,
-    sending: {
-      status: phase,
-      progress: {
-        completed,
-        total,
-        estimatedSecondsRemaining: estimateSecondsRemaining({
-          remaining,
-          samples,
-          attemptStartedAt,
-        }),
-      },
+    status: phase,
+    progress: {
+      completed,
+      total,
+      estimatedSecondsRemaining: estimateSecondsRemaining({
+        remaining,
+        samples,
+        attemptStartedAt,
+      }),
     },
   };
 }

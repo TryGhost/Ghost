@@ -1,12 +1,7 @@
 import type { Knex } from 'knex';
 import { camelKeys } from '../../lib/case-keys';
 import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
-import {
-  emailSendingStatusWhenSubmitted,
-  emailSendingStatusFromBatches,
-  type EmailSendingStatus,
-  type SendingBatch,
-} from './sending-status';
+import { buildSendingStatus, type EmailSendingStatus, type SendingBatch } from './sending-status';
 
 export type { EmailSendingStatus } from './sending-status';
 
@@ -28,23 +23,23 @@ export class SendingStatusService {
     }
 
     const email = DbEmailSendingRow.parse(row);
-    // Batch creation reconciles email_count to the recipient rows it built, so a submitted
-    // email's stored count is its recipient count without a query over email_recipients.
-    if (email.status === 'submitted') {
-      return emailSendingStatusWhenSubmitted({ id: email.id, recipientCount: email.email_count });
-    }
+    // A submitted email answers from its own count, and batch creation reconciles email_count
+    // to the recipient rows it built, so the batch query is skipped rather than run and ignored.
+    const batches = email.status === 'submitted' ? [] : await this.#batchesFor(emailId);
 
-    return emailSendingStatusFromBatches(
-      {
-        id: email.id,
-        status: email.status,
-        recipientCount: email.email_count,
-        // The sending job saves the email when it takes its status lock, so updated_at
-        // stands in for the attempt start that Ghost does not record.
-        attemptStartedAt: email.updated_at,
-      },
-      await this.#batchesFor(emailId),
-    );
+    return {
+      id: email.id,
+      sending: buildSendingStatus(
+        {
+          status: email.status,
+          recipientCount: email.email_count,
+          // The sending job saves the email when it takes its status lock, so updated_at
+          // stands in for the attempt start that Ghost does not record.
+          attemptStartedAt: email.updated_at,
+        },
+        batches,
+      ),
+    };
   }
 
   async #batchesFor(emailId: string): Promise<SendingBatch[]> {

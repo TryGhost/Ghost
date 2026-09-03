@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import {
-  emailSendingStatusWhenSubmitted,
-  emailSendingStatusFromBatches,
+  buildSendingStatus,
   type SendingBatch,
   type SendingEmail,
 } from '../../../../../core/server/services/email-service/sending-status';
@@ -17,7 +16,7 @@ function email({
   recipientCount: number;
   attemptStartedAt?: Date | null;
 }): SendingEmail {
-  return { id: 'email-id', status, recipientCount, attemptStartedAt };
+  return { status, recipientCount, attemptStartedAt };
 }
 
 function batch({
@@ -34,234 +33,211 @@ function batch({
   return { status, recipientCount, createdAt: at(createdAt), updatedAt: at(updatedAt) };
 }
 
-describe('sending status', function () {
-  describe('emailSendingStatusFromBatches', function () {
-    it('reports a pending email without batches as preparing', function () {
-      assert.deepEqual(
-        emailSendingStatusFromBatches(email({ status: 'pending', recipientCount: 100 }), []),
-        {
-          id: 'email-id',
-          sending: {
-            status: 'preparing',
-            progress: { completed: 0, total: 100, estimatedSecondsRemaining: null },
-          },
-        },
-      );
-    });
-
-    it('reports preparation progress and estimates from batch creation times', function () {
-      const batches = [
-        batch({ status: 'pending', createdAt: '12:00:00' }),
-        batch({ status: 'pending', createdAt: '12:00:10' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(email({ recipientCount: 100 }), batches).sending,
-        {
-          status: 'preparing',
-          progress: { completed: 20, total: 100, estimatedSecondsRemaining: 80 },
-        },
-      );
-    });
-
-    it('grows the total when more recipients are prepared than estimated', function () {
-      const batches = [
-        batch({ status: 'pending', createdAt: '12:00:00' }),
-        batch({ status: 'pending', createdAt: '12:00:10' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(email({ recipientCount: 15 }), batches).sending.progress,
-        {
-          completed: 20,
-          total: 20,
-          estimatedSecondsRemaining: 0,
-        },
-      );
-    });
-
-    it('excludes batches created before the current attempt from the preparing estimate', function () {
-      const batches = [
-        batch({ status: 'pending', createdAt: '12:00:00' }),
-        batch({ status: 'pending', createdAt: '12:00:10' }),
-      ];
-
-      const result = emailSendingStatusFromBatches(
-        email({ recipientCount: 30, attemptStartedAt: at('12:00:11') }),
-        batches,
-      );
-      assert.deepEqual(result.sending.progress, {
-        completed: 20,
-        total: 30,
-        estimatedSecondsRemaining: null,
-      });
-    });
-
-    it('reports submission progress and estimates from submitted batch updates', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
-        batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:20' }),
-        batch({ status: 'pending', createdAt: '12:00:20' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(
-          email({ recipientCount: 50, attemptStartedAt: at('12:01:00') }),
-          batches,
-        ),
-        {
-          id: 'email-id',
-          sending: {
-            status: 'submitting',
-            progress: { completed: 20, total: 30, estimatedSecondsRemaining: 10 },
-          },
-        },
-      );
-    });
-
-    it('excludes batches that failed during the current attempt from the remaining work', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
-        batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:10' }),
-        batch({ status: 'failed', createdAt: '12:00:20', updatedAt: '12:01:15' }),
-        batch({ status: 'pending', createdAt: '12:00:30' }),
-      ];
-
-      const result = emailSendingStatusFromBatches(
-        email({ recipientCount: 40, attemptStartedAt: at('12:00:30') }),
-        batches,
-      );
-      assert.deepEqual(result.sending.progress, {
-        completed: 20,
-        total: 40,
-        estimatedSecondsRemaining: 10,
-      });
-    });
-
-    it('reports no remaining time once only batches that failed during the attempt are left', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
-        batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:10' }),
-        batch({ status: 'failed', createdAt: '12:00:20', updatedAt: '12:01:15' }),
-      ];
-
-      const result = emailSendingStatusFromBatches(
-        email({ recipientCount: 30, attemptStartedAt: at('12:00:30') }),
-        batches,
-      );
-      assert.deepEqual(result.sending.progress, {
-        completed: 20,
-        total: 30,
-        estimatedSecondsRemaining: 0,
-      });
-    });
-
-    it('reports the phase and frozen progress for a failed send', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
-        batch({ status: 'failed', createdAt: '12:00:10', updatedAt: '12:01:20' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(
-          email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:01:20') }),
-          batches,
-        ).sending,
-        {
-          status: 'failed',
-          progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
-          failedDuring: 'submitting',
-        },
-      );
-    });
-
-    it('reports a failure during preparation when no batch started submitting', function () {
-      const batches = [batch({ status: 'pending', createdAt: '12:00:00' })];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(
-          email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:00:01') }),
-          batches,
-        ).sending,
-        {
-          status: 'failed',
-          progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
-          failedDuring: 'preparing',
-        },
-      );
-    });
-
-    it('keeps the frozen submission progress of a retried email while it waits for its job', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
-        batch({ status: 'failed', createdAt: '12:00:10', updatedAt: '12:01:20' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(
-          email({ status: 'pending', recipientCount: 20, attemptStartedAt: at('12:05:00') }),
-          batches,
-        ).sending,
-        {
-          status: 'submitting',
-          progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
-        },
-      );
-    });
-
-    it('excludes batches submitted before the current attempt from the submitting estimate', function () {
-      const batches = [
-        batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
-        batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:02:10' }),
-        batch({ status: 'pending', createdAt: '12:00:20' }),
-      ];
-
-      const result = emailSendingStatusFromBatches(
-        email({ recipientCount: 30, attemptStartedAt: at('12:02:00') }),
-        batches,
-      );
-      assert.equal(result.sending.progress.estimatedSecondsRemaining, null);
-    });
-
-    it('estimates without an attempt start when the email has never been saved', function () {
-      const batches = [
-        batch({ status: 'pending', createdAt: '12:00:00' }),
-        batch({ status: 'pending', createdAt: '12:00:10' }),
-      ];
-
-      const result = emailSendingStatusFromBatches(
-        email({ recipientCount: 30, attemptStartedAt: null }),
-        batches,
-      );
-      assert.equal(result.sending.progress.estimatedSecondsRemaining, 10);
-    });
-
-    it('ignores batches without recipients when estimating', function () {
-      const batches = [
-        batch({ status: 'pending', createdAt: '12:00:00', recipientCount: 0 }),
-        batch({ status: 'pending', createdAt: '12:00:10' }),
-      ];
-
-      assert.deepEqual(
-        emailSendingStatusFromBatches(email({ recipientCount: 30 }), batches).sending.progress,
-        {
-          completed: 10,
-          total: 30,
-          estimatedSecondsRemaining: null,
-        },
-      );
+describe('buildSendingStatus', function () {
+  it('reports a pending email without batches as preparing', function () {
+    assert.deepEqual(buildSendingStatus(email({ status: 'pending', recipientCount: 100 }), []), {
+      status: 'preparing',
+      progress: { completed: 0, total: 100, estimatedSecondsRemaining: null },
     });
   });
 
-  describe('emailSendingStatusWhenSubmitted', function () {
-    it('reports submitted sends as complete from their recipient count', function () {
-      assert.deepEqual(emailSendingStatusWhenSubmitted({ id: 'email-id', recipientCount: 10 }), {
-        id: 'email-id',
-        sending: {
-          status: 'submitted',
-          progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
-        },
-      });
+  it('reports preparation progress and estimates from batch creation times', function () {
+    const batches = [
+      batch({ status: 'pending', createdAt: '12:00:00' }),
+      batch({ status: 'pending', createdAt: '12:00:10' }),
+    ];
+
+    assert.deepEqual(buildSendingStatus(email({ recipientCount: 100 }), batches), {
+      status: 'preparing',
+      progress: { completed: 20, total: 100, estimatedSecondsRemaining: 80 },
     });
+  });
+
+  it('grows the total when more recipients are prepared than estimated', function () {
+    const batches = [
+      batch({ status: 'pending', createdAt: '12:00:00' }),
+      batch({ status: 'pending', createdAt: '12:00:10' }),
+    ];
+
+    assert.deepEqual(buildSendingStatus(email({ recipientCount: 15 }), batches).progress, {
+      completed: 20,
+      total: 20,
+      estimatedSecondsRemaining: 0,
+    });
+  });
+
+  it('excludes batches created before the current attempt from the preparing estimate', function () {
+    const batches = [
+      batch({ status: 'pending', createdAt: '12:00:00' }),
+      batch({ status: 'pending', createdAt: '12:00:10' }),
+    ];
+
+    const result = buildSendingStatus(
+      email({ recipientCount: 30, attemptStartedAt: at('12:00:11') }),
+      batches,
+    );
+    assert.deepEqual(result.progress, {
+      completed: 20,
+      total: 30,
+      estimatedSecondsRemaining: null,
+    });
+  });
+
+  it('reports submission progress and estimates from submitted batch updates', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
+      batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:20' }),
+      batch({ status: 'pending', createdAt: '12:00:20' }),
+    ];
+
+    assert.deepEqual(
+      buildSendingStatus(email({ recipientCount: 50, attemptStartedAt: at('12:01:00') }), batches),
+      {
+        status: 'submitting',
+        progress: { completed: 20, total: 30, estimatedSecondsRemaining: 10 },
+      },
+    );
+  });
+
+  it('excludes batches that failed during the current attempt from the remaining work', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
+      batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:10' }),
+      batch({ status: 'failed', createdAt: '12:00:20', updatedAt: '12:01:15' }),
+      batch({ status: 'pending', createdAt: '12:00:30' }),
+    ];
+
+    const result = buildSendingStatus(
+      email({ recipientCount: 40, attemptStartedAt: at('12:00:30') }),
+      batches,
+    );
+    assert.deepEqual(result.progress, {
+      completed: 20,
+      total: 40,
+      estimatedSecondsRemaining: 10,
+    });
+  });
+
+  it('reports no remaining time once only batches that failed during the attempt are left', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
+      batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:01:10' }),
+      batch({ status: 'failed', createdAt: '12:00:20', updatedAt: '12:01:15' }),
+    ];
+
+    const result = buildSendingStatus(
+      email({ recipientCount: 30, attemptStartedAt: at('12:00:30') }),
+      batches,
+    );
+    assert.deepEqual(result.progress, {
+      completed: 20,
+      total: 30,
+      estimatedSecondsRemaining: 0,
+    });
+  });
+
+  it('reports the phase and frozen progress for a failed send', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
+      batch({ status: 'failed', createdAt: '12:00:10', updatedAt: '12:01:20' }),
+    ];
+
+    assert.deepEqual(
+      buildSendingStatus(
+        email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:01:20') }),
+        batches,
+      ),
+      {
+        status: 'failed',
+        progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
+        failedDuring: 'submitting',
+      },
+    );
+  });
+
+  it('reports a failure during preparation when no batch started submitting', function () {
+    const batches = [batch({ status: 'pending', createdAt: '12:00:00' })];
+
+    assert.deepEqual(
+      buildSendingStatus(
+        email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:00:01') }),
+        batches,
+      ),
+      {
+        status: 'failed',
+        progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
+        failedDuring: 'preparing',
+      },
+    );
+  });
+
+  it('keeps the frozen submission progress of a retried email while it waits for its job', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
+      batch({ status: 'failed', createdAt: '12:00:10', updatedAt: '12:01:20' }),
+    ];
+
+    assert.deepEqual(
+      buildSendingStatus(
+        email({ status: 'pending', recipientCount: 20, attemptStartedAt: at('12:05:00') }),
+        batches,
+      ),
+      {
+        status: 'submitting',
+        progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
+      },
+    );
+  });
+
+  it('excludes batches submitted before the current attempt from the submitting estimate', function () {
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
+      batch({ status: 'submitted', createdAt: '12:00:10', updatedAt: '12:02:10' }),
+      batch({ status: 'pending', createdAt: '12:00:20' }),
+    ];
+
+    const result = buildSendingStatus(
+      email({ recipientCount: 30, attemptStartedAt: at('12:02:00') }),
+      batches,
+    );
+    assert.equal(result.progress.estimatedSecondsRemaining, null);
+  });
+
+  it('estimates without an attempt start when the email has never been saved', function () {
+    const batches = [
+      batch({ status: 'pending', createdAt: '12:00:00' }),
+      batch({ status: 'pending', createdAt: '12:00:10' }),
+    ];
+
+    const result = buildSendingStatus(
+      email({ recipientCount: 30, attemptStartedAt: null }),
+      batches,
+    );
+    assert.equal(result.progress.estimatedSecondsRemaining, 10);
+  });
+
+  it('ignores batches without recipients when estimating', function () {
+    const batches = [
+      batch({ status: 'pending', createdAt: '12:00:00', recipientCount: 0 }),
+      batch({ status: 'pending', createdAt: '12:00:10' }),
+    ];
+
+    assert.deepEqual(buildSendingStatus(email({ recipientCount: 30 }), batches).progress, {
+      completed: 10,
+      total: 30,
+      estimatedSecondsRemaining: null,
+    });
+  });
+
+  it('answers a submitted email from its recipient count without the batches', function () {
+    const batches = [batch({ status: 'submitted', createdAt: '12:00:00', recipientCount: 4 })];
+
+    assert.deepEqual(
+      buildSendingStatus(email({ status: 'submitted', recipientCount: 10 }), batches),
+      {
+        status: 'submitted',
+        progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
+      },
+    );
   });
 });
