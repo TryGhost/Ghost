@@ -30,11 +30,8 @@ import {
   type StripePort,
 } from '@tryghost/checkout';
 import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
-import {
-  type ErrorMessages,
-  useFeatureFlag,
-  useHandleError,
-} from '@tryghost/admin-x-framework/hooks';
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { type ErrorMessages, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { Text } from '@tryghost/shade/primitives';
 import {
   type MemberCustomField,
@@ -297,7 +294,7 @@ const TierCheckoutCollection = forwardRef<
   const { mutateAsync: editCheckoutConfig } = useEditTierCheckoutConfig();
   const handleError = useHandleError();
 
-  const canManageFields = useFeatureFlag('membersCustomFields');
+  const canManageFields = useCustomFieldsAvailable();
   const { data: fieldsData } = useBrowseMemberCustomFields({ enabled: canManageFields });
   const allFields = fieldsData ?? [];
   // What each collected value may be kept in is the server's rule, so it is read from the
