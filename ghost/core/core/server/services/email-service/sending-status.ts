@@ -13,18 +13,19 @@ export const SendingProgress = z.object({
 });
 export type SendingProgress = z.infer<typeof SendingProgress>;
 
-export const Sending = z.discriminatedUnion('status', [
+export const SendingStatus = z.discriminatedUnion('status', [
   z.object({ status: SendingPhase, progress: SendingProgress }),
   z.object({ status: z.literal('submitted'), progress: SendingProgress }),
   z.object({ status: z.literal('failed'), progress: SendingProgress, failedDuring: SendingPhase }),
 ]);
-export type Sending = z.infer<typeof Sending>;
+export type SendingStatus = z.infer<typeof SendingStatus>;
 
-export const EmailSendingStatus = z.object({
+/** One email's status; sending is its first facet, delivery joins it later. */
+export const EmailStatus = z.object({
   id: z.string(),
-  sending: Sending,
+  sending: SendingStatus,
 });
-export type EmailSendingStatus = z.infer<typeof EmailSendingStatus>;
+export type EmailStatus = z.infer<typeof EmailStatus>;
 
 /** The email as the derivation reads it: its stored status, the recipient count it expects, and when the current attempt started. */
 export interface SendingEmail {
@@ -42,14 +43,17 @@ export interface SendingBatch {
 
 type BatchSample = { recipientCount: number; timestamp: number };
 
-export function submittedSending(recipientCount: number): Sending {
+export function sendingStatusForSubmittedEmail(recipientCount: number): SendingStatus {
   return {
     status: 'submitted',
     progress: { completed: recipientCount, total: recipientCount, estimatedSecondsRemaining: 0 },
   };
 }
 
-export function openSending(email: SendingEmail, batches: SendingBatch[]): Sending {
+export function sendingStatusFromBatches(
+  email: SendingEmail,
+  batches: SendingBatch[],
+): SendingStatus {
   const phase: SendingPhase = batches.some((batch) => batch.status !== 'pending')
     ? 'submitting'
     : 'preparing';

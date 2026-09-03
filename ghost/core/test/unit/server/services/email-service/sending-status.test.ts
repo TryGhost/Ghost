@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {
-  openSending,
-  submittedSending,
+  sendingStatusForSubmittedEmail,
+  sendingStatusFromBatches,
   type SendingBatch,
   type SendingEmail,
 } from '../../../../../core/server/services/email-service/sending-status';
@@ -35,12 +35,15 @@ function batch({
 }
 
 describe('sending status', function () {
-  describe('openSending', function () {
+  describe('sendingStatusFromBatches', function () {
     it('reports a pending email without batches as preparing', function () {
-      assert.deepEqual(openSending(email({ status: 'pending', recipientCount: 100 }), []), {
-        status: 'preparing',
-        progress: { completed: 0, total: 100, estimatedSecondsRemaining: null },
-      });
+      assert.deepEqual(
+        sendingStatusFromBatches(email({ status: 'pending', recipientCount: 100 }), []),
+        {
+          status: 'preparing',
+          progress: { completed: 0, total: 100, estimatedSecondsRemaining: null },
+        },
+      );
     });
 
     it('reports preparation progress and estimates from batch creation times', function () {
@@ -49,7 +52,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:10' }),
       ];
 
-      assert.deepEqual(openSending(email({ recipientCount: 100 }), batches), {
+      assert.deepEqual(sendingStatusFromBatches(email({ recipientCount: 100 }), batches), {
         status: 'preparing',
         progress: { completed: 20, total: 100, estimatedSecondsRemaining: 80 },
       });
@@ -61,7 +64,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:10' }),
       ];
 
-      assert.deepEqual(openSending(email({ recipientCount: 15 }), batches).progress, {
+      assert.deepEqual(sendingStatusFromBatches(email({ recipientCount: 15 }), batches).progress, {
         completed: 20,
         total: 20,
         estimatedSecondsRemaining: 0,
@@ -74,7 +77,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:10' }),
       ];
 
-      const result = openSending(
+      const result = sendingStatusFromBatches(
         email({ recipientCount: 30, attemptStartedAt: at('12:00:11') }),
         batches,
       );
@@ -93,7 +96,10 @@ describe('sending status', function () {
       ];
 
       assert.deepEqual(
-        openSending(email({ recipientCount: 50, attemptStartedAt: at('12:01:00') }), batches),
+        sendingStatusFromBatches(
+          email({ recipientCount: 50, attemptStartedAt: at('12:01:00') }),
+          batches,
+        ),
         {
           status: 'submitting',
           progress: { completed: 20, total: 30, estimatedSecondsRemaining: 10 },
@@ -109,7 +115,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:30' }),
       ];
 
-      const result = openSending(
+      const result = sendingStatusFromBatches(
         email({ recipientCount: 40, attemptStartedAt: at('12:00:30') }),
         batches,
       );
@@ -127,7 +133,7 @@ describe('sending status', function () {
         batch({ status: 'failed', createdAt: '12:00:20', updatedAt: '12:01:15' }),
       ];
 
-      const result = openSending(
+      const result = sendingStatusFromBatches(
         email({ recipientCount: 30, attemptStartedAt: at('12:00:30') }),
         batches,
       );
@@ -145,7 +151,7 @@ describe('sending status', function () {
       ];
 
       assert.deepEqual(
-        openSending(
+        sendingStatusFromBatches(
           email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:01:20') }),
           batches,
         ),
@@ -161,7 +167,7 @@ describe('sending status', function () {
       const batches = [batch({ status: 'pending', createdAt: '12:00:00' })];
 
       assert.deepEqual(
-        openSending(
+        sendingStatusFromBatches(
           email({ status: 'failed', recipientCount: 20, attemptStartedAt: at('12:00:01') }),
           batches,
         ),
@@ -180,7 +186,7 @@ describe('sending status', function () {
       ];
 
       assert.deepEqual(
-        openSending(
+        sendingStatusFromBatches(
           email({ status: 'pending', recipientCount: 20, attemptStartedAt: at('12:05:00') }),
           batches,
         ),
@@ -198,7 +204,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:20' }),
       ];
 
-      const result = openSending(
+      const result = sendingStatusFromBatches(
         email({ recipientCount: 30, attemptStartedAt: at('12:02:00') }),
         batches,
       );
@@ -211,7 +217,10 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:10' }),
       ];
 
-      const result = openSending(email({ recipientCount: 30, attemptStartedAt: null }), batches);
+      const result = sendingStatusFromBatches(
+        email({ recipientCount: 30, attemptStartedAt: null }),
+        batches,
+      );
       assert.equal(result.progress.estimatedSecondsRemaining, 10);
     });
 
@@ -221,7 +230,7 @@ describe('sending status', function () {
         batch({ status: 'pending', createdAt: '12:00:10' }),
       ];
 
-      assert.deepEqual(openSending(email({ recipientCount: 30 }), batches).progress, {
+      assert.deepEqual(sendingStatusFromBatches(email({ recipientCount: 30 }), batches).progress, {
         completed: 10,
         total: 30,
         estimatedSecondsRemaining: null,
@@ -229,9 +238,9 @@ describe('sending status', function () {
     });
   });
 
-  describe('submittedSending', function () {
+  describe('sendingStatusForSubmittedEmail', function () {
     it('reports submitted sends as complete from their recipient count', function () {
-      assert.deepEqual(submittedSending(10), {
+      assert.deepEqual(sendingStatusForSubmittedEmail(10), {
         status: 'submitted',
         progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
       });

@@ -2,13 +2,13 @@ import type { Knex } from 'knex';
 import { camelKeys } from '../../lib/case-keys';
 import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
 import {
-  openSending,
-  submittedSending,
-  type EmailSendingStatus,
+  sendingStatusForSubmittedEmail,
+  sendingStatusFromBatches,
+  type EmailStatus,
   type SendingBatch,
 } from './sending-status';
 
-export type { EmailSendingStatus } from './sending-status';
+export type { EmailStatus } from './sending-status';
 
 export class SendingStatusService {
   #knex: Knex;
@@ -17,7 +17,7 @@ export class SendingStatusService {
     this.#knex = knex;
   }
 
-  async statusFor(emailId: string): Promise<EmailSendingStatus | null> {
+  async statusFor(emailId: string): Promise<EmailStatus | null> {
     const row = await this.#knex('emails')
       .select('id', 'status', 'email_count', 'updated_at')
       .where('id', emailId)
@@ -32,8 +32,8 @@ export class SendingStatusService {
     // email's stored count is its recipient count without a query over email_recipients.
     const sending =
       email.status === 'submitted'
-        ? submittedSending(email.email_count)
-        : openSending(
+        ? sendingStatusForSubmittedEmail(email.email_count)
+        : sendingStatusFromBatches(
             {
               status: email.status,
               recipientCount: email.email_count,

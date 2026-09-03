@@ -115,7 +115,7 @@ describe('SendingStatusService', function () {
     assert.equal(await service.statusFor('missing-email'), null);
   });
 
-  it('derives an open send from the email and its batches with their recipient counts', async function () {
+  it('derives the sending status of an unsubmitted email from its batches and their recipient counts', async function () {
     await addEmail({ status: 'submitting', emailCount: 50, updatedAt: '2026-09-02 12:01:00' });
     await addBatch({
       status: 'submitted',
