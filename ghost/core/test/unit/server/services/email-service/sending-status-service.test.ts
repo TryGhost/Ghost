@@ -115,59 +115,7 @@ describe('SendingStatusService', function () {
     assert.equal(await service.statusFor('missing-email'), null);
   });
 
-  it('reports a pending email as preparing', async function () {
-    await addEmail({ status: 'pending', emailCount: 100 });
-
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'preparing',
-        progress: { completed: 0, total: 100, estimated_seconds_remaining: null },
-      },
-    });
-  });
-
-  it('reports preparation progress and estimates from batch creation times', async function () {
-    await addEmail({ status: 'submitting', emailCount: 100 });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00' });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:10' });
-
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'preparing',
-        progress: { completed: 20, total: 100, estimated_seconds_remaining: 80 },
-      },
-    });
-  });
-
-  it('grows the total when more recipients are prepared than estimated', async function () {
-    await addEmail({ status: 'submitting', emailCount: 15 });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00' });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:10' });
-
-    const result = await service.statusFor('email-id');
-    assert.deepEqual(result?.sending.progress, {
-      completed: 20,
-      total: 20,
-      estimated_seconds_remaining: 0,
-    });
-  });
-
-  it('excludes batches created before the current attempt from the preparing estimate', async function () {
-    await addEmail({ status: 'submitting', emailCount: 30, updatedAt: '2026-09-02 12:00:11' });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00' });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:10' });
-
-    const result = await service.statusFor('email-id');
-    assert.deepEqual(result?.sending.progress, {
-      completed: 20,
-      total: 30,
-      estimated_seconds_remaining: null,
-    });
-  });
-
-  it('reports submission progress and estimates from submitted batch updates', async function () {
+  it('derives an open send from the email and its batches with their recipient counts', async function () {
     await addEmail({ status: 'submitting', emailCount: 50, updatedAt: '2026-09-02 12:01:00' });
     await addBatch({
       status: 'submitted',
@@ -179,142 +127,26 @@ describe('SendingStatusService', function () {
       createdAt: '2026-09-02 12:00:10',
       updatedAt: '2026-09-02 12:01:20',
     });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:20' });
+    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:20', recipientCount: 5 });
 
     assert.deepEqual(await service.statusFor('email-id'), {
       id: 'email-id',
       sending: {
         status: 'submitting',
-        progress: { completed: 20, total: 30, estimated_seconds_remaining: 10 },
+        progress: { completed: 20, total: 25, estimatedSecondsRemaining: 5 },
       },
     });
   });
 
-  it('excludes batches that failed during the current attempt from the remaining work', async function () {
-    await addEmail({ status: 'submitting', emailCount: 40, updatedAt: '2026-09-02 12:00:30' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:00',
-    });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:10',
-      updatedAt: '2026-09-02 12:01:10',
-    });
-    await addBatch({
-      status: 'failed',
-      createdAt: '2026-09-02 12:00:20',
-      updatedAt: '2026-09-02 12:01:15',
-    });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:30' });
-
-    const result = await service.statusFor('email-id');
-    assert.deepEqual(result?.sending.progress, {
-      completed: 20,
-      total: 40,
-      estimated_seconds_remaining: 10,
-    });
-  });
-
-  it('reports no remaining time once only batches that failed during the attempt are left', async function () {
-    await addEmail({ status: 'submitting', emailCount: 30, updatedAt: '2026-09-02 12:00:30' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:00',
-    });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:10',
-      updatedAt: '2026-09-02 12:01:10',
-    });
-    await addBatch({
-      status: 'failed',
-      createdAt: '2026-09-02 12:00:20',
-      updatedAt: '2026-09-02 12:01:15',
-    });
-
-    const result = await service.statusFor('email-id');
-    assert.deepEqual(result?.sending.progress, {
-      completed: 20,
-      total: 30,
-      estimated_seconds_remaining: 0,
-    });
-  });
-
-  it('reports the phase and frozen progress for a failed send', async function () {
-    await addEmail({ status: 'failed', emailCount: 20, updatedAt: '2026-09-02 12:01:20' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:10',
-    });
-    await addBatch({
-      status: 'failed',
-      createdAt: '2026-09-02 12:00:10',
-      updatedAt: '2026-09-02 12:01:20',
-    });
-
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'failed',
-        progress: { completed: 10, total: 20, estimated_seconds_remaining: null },
-        failed_during: 'submitting',
-      },
-    });
-  });
-
-  it('reports a failure during preparation when no batch started submitting', async function () {
-    await addEmail({ status: 'failed', emailCount: 20, updatedAt: '2026-09-02 12:00:01' });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00' });
-
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'failed',
-        progress: { completed: 10, total: 20, estimated_seconds_remaining: null },
-        failed_during: 'preparing',
-      },
-    });
-  });
-
-  it('keeps the frozen submission progress of a retried email while it waits for its job', async function () {
-    await addEmail({ status: 'pending', emailCount: 20, updatedAt: '2026-09-02 12:05:00' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:10',
-    });
-    await addBatch({
-      status: 'failed',
-      createdAt: '2026-09-02 12:00:10',
-      updatedAt: '2026-09-02 12:01:20',
-    });
-
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'submitting',
-        progress: { completed: 10, total: 20, estimated_seconds_remaining: null },
-      },
-    });
-  });
-
-  it('reports submitted sends as complete from their recipient count', async function () {
-    await addEmail({ status: 'submitted', emailCount: 0, updatedAt: '2026-09-02 12:01:00' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:00',
-    });
+  it('derives a submitted send from its recipient count', async function () {
+    await addEmail({ status: 'submitted', emailCount: 0 });
+    await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00' });
 
     assert.deepEqual(await service.statusFor('email-id'), {
       id: 'email-id',
       sending: {
         status: 'submitted',
-        progress: { completed: 10, total: 10, estimated_seconds_remaining: 0 },
+        progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
       },
     });
   });
@@ -328,7 +160,7 @@ describe('SendingStatusService', function () {
       id: 'email-id',
       sending: {
         status: 'preparing',
-        progress: { completed: 10, total: 10, estimated_seconds_remaining: 0 },
+        progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
       },
     });
 
@@ -337,39 +169,8 @@ describe('SendingStatusService', function () {
       id: 'email-id',
       sending: {
         status: 'submitted',
-        progress: { completed: 10, total: 10, estimated_seconds_remaining: 0 },
+        progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
       },
-    });
-  });
-
-  it('excludes batches submitted before the current attempt from the submitting estimate', async function () {
-    await addEmail({ status: 'submitting', emailCount: 30, updatedAt: '2026-09-02 12:02:00' });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:00',
-      updatedAt: '2026-09-02 12:01:00',
-    });
-    await addBatch({
-      status: 'submitted',
-      createdAt: '2026-09-02 12:00:10',
-      updatedAt: '2026-09-02 12:02:10',
-    });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:20' });
-
-    const result = await service.statusFor('email-id');
-    assert.equal(result?.sending.progress.estimated_seconds_remaining, null);
-  });
-
-  it('ignores batches without recipients when estimating', async function () {
-    await addEmail({ status: 'submitting', emailCount: 30 });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00', recipientCount: 0 });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:10' });
-
-    const result = await service.statusFor('email-id');
-    assert.deepEqual(result?.sending.progress, {
-      completed: 10,
-      total: 30,
-      estimated_seconds_remaining: null,
     });
   });
 });

@@ -1,11 +1,12 @@
 const batchMapper = require('./mappers/email-batches');
 const failureMapper = require('./mappers/email-failures');
+const {
+  toEmailStatusesResponse,
+} = require('../../../../../services/email-service/sending-status-serializers');
 
 module.exports = {
   sendingStatus(response, apiConfig, frame) {
-    frame.response = {
-      email_statuses: [response],
-    };
+    frame.response = toEmailStatusesResponse.parse(response);
   },
 
   browseBatches(response, apiConfig, frame) {

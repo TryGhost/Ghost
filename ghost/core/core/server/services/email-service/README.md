@@ -6,9 +6,10 @@ batches to the configured email provider. Domain terms live in
 
 ## Sending status
 
-`SendingStatusService` derives the sending status served by the Admin API's
-`emails/:id/status` endpoint on read, from the email row and its batches with
-their recipient counts. Submitted is terminal and the batch aggregation only
+The sending status served by the Admin API's `emails/:id/status` endpoint is
+derived on read. `sending-status.ts` owns the derivation from an email and its
+batches with their recipient counts; `SendingStatusService` reads those rows
+and `sending-status-serializers.ts` shapes the response. Submitted is terminal and the batch aggregation only
 describes an open outcome, so submitted emails answer with the email's
 recipient count as both completed and total. That also keeps reads of
 long-finished emails cheap. The endpoint is always available; Admin decides
