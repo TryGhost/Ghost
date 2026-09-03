@@ -97,7 +97,8 @@ export interface EditorSession {
   dispose: () => void;
 }
 
-function isOlder(candidate: string, held: string | null): boolean {
+/** Whether a record's collision token predates the one already held. */
+export function isOlderToken(candidate: string, held: string | null): boolean {
   if (!held) {
     return false;
   }
@@ -372,7 +373,7 @@ export function createEditorSession({
       }
       tracker.setSaved(next.id, projectionOf(next));
       const updatedAt = next.updated_at ?? '';
-      if (isOlder(updatedAt, identity.updatedAt)) {
+      if (isOlderToken(updatedAt, identity.updatedAt)) {
         dirtyChanged();
         return;
       }

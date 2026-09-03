@@ -134,7 +134,7 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
+          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
       </EditorHeader>

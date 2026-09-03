@@ -69,12 +69,13 @@ const mine = () =>
     feature_image: MY_IMAGE,
   });
 
-const theirs = () => ({
+const theirs = (overrides: Partial<ReturnType<typeof mine>> = {}) => ({
   ...mine(),
   title: 'Hello from someone else',
   lexical: buildLexicalParagraph('Their version of the body'),
   updated_at: THEIR_SAVE_AT,
   feature_image: THEIR_IMAGE,
+  ...overrides,
 });
 
 /**
@@ -265,14 +266,38 @@ describe('Post editor update collision', () => {
   );
 
   it(
-    'says the post is gone rather than losing the content behind a not-found screen',
+    'follows the status the other writer left the post in',
     async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+      readAnswers(200, {
+        posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
+      });
+
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+
+      // A stale chip would offer Draft for a post the next save publishes.
+      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
+    },
+    SLOW,
+  );
+
+  it.each<[string, () => EndpointCapture]>([
+    ['the read is a not-found', () => readFails(404)],
+    ['the read comes back empty', () => readAnswers(200, { posts: [] })],
+  ])(
+    'says the post is gone rather than losing the content when %s',
+    async (_label, missingReadOf) => {
       const copied = recordClipboard();
       const { saveApi } = fakeCollidingPost();
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await collide(saveApi);
 
-      const missingRead = readFails(404);
+      const missingRead = missingReadOf();
       await editorScreen.reloadAfterConflict().click();
       await editorScreen.confirmConflictReload().click();
 

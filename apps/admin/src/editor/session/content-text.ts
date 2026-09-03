@@ -41,6 +41,11 @@ const CARD_TEXT_PROPS: Record<string, readonly string[]> = {
 // The rest of those properties hold HTML the writer authored in a nested editor.
 const LITERAL_TEXT_PROPS = new Set(['code', 'markdown']);
 
+// Koenig replaces Lexical's heading and quote nodes with its own; a document
+// written before that, or by another editor, still carries the plain types.
+const HEADING_TYPES = new Set(['heading', 'extended-heading']);
+const QUOTE_TYPES = new Set(['quote', 'extended-quote', 'aside']);
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -56,7 +61,10 @@ function childrenOf(node: Record<string, unknown>): Record<string, unknown>[] {
 
 /** Reads an authored HTML fragment back as the text it renders to. */
 function htmlToText(html: string): string {
-  return new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
+  const { body } = new DOMParser().parseFromString(html, 'text/html');
+  // Script and style bodies are not text the reader ever sees.
+  body.querySelectorAll('script, style').forEach((element) => element.remove());
+  return body.textContent ?? '';
 }
 
 function inlineTextOf(nodes: Record<string, unknown>[]): string {
@@ -118,10 +126,10 @@ function blocksOf(node: Record<string, unknown>): string[] {
   if (!text) {
     return [];
   }
-  if (node.type === 'heading') {
+  if (typeof node.type === 'string' && HEADING_TYPES.has(node.type)) {
     return [`${HEADING_PREFIX[stringAt(node, 'tag') ?? ''] ?? ''}${text}`];
   }
-  if (node.type === 'quote') {
+  if (typeof node.type === 'string' && QUOTE_TYPES.has(node.type)) {
     return [`> ${text}`];
   }
   return [text];
