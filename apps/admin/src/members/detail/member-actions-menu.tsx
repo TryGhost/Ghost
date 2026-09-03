@@ -21,6 +21,7 @@ import {
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface MemberActionsMenuProps {
   member: Member;
@@ -41,6 +42,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
   member,
   allowLeaveWithUnsavedChanges,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const { data: currentUser } = useCurrentUser();
   const [showImpersonate, setShowImpersonate] = React.useState(false);
   const [showLogout, setShowLogout] = React.useState(false);
@@ -96,12 +98,14 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-impersonate"
             onSelect={() => setShowImpersonate(true)}
           >
+            {isAdmin7Pill && <LucideIcon.LogIn aria-hidden="true" />}
             Impersonate
           </DropdownMenuItem>
           <DropdownMenuItem
             data-testid="member-actions-logout"
             onSelect={() => setShowLogout(true)}
           >
+            {isAdmin7Pill && <LucideIcon.LogOut aria-hidden="true" />}
             Sign out of all devices
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -109,6 +113,12 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             disabled={commentingBusy}
             onSelect={() => void onCommentingSelect()}
           >
+            {isAdmin7Pill &&
+              (commentingDisabled ? (
+                <LucideIcon.MessageCircle aria-hidden="true" />
+              ) : (
+                <LucideIcon.MessageCircleOff aria-hidden="true" />
+              ))}
             {commentingLabel}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -117,6 +127,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-delete"
             onSelect={() => setShowDelete(true)}
           >
+            {isAdmin7Pill && <LucideIcon.Trash2 aria-hidden="true" />}
             Delete member
           </DropdownMenuItem>
         </DropdownMenuContent>
