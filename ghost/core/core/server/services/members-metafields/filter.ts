@@ -97,7 +97,7 @@ function parseLeafAddress(raw: unknown): LeafTarget {
   return { key: identity.key, path: identity.partPath };
 }
 
-export function createCustomFieldsFilterTransformer() {
+export function createMetafieldsFilterTransformer() {
   // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
   // by these matches", `$not` is "no leaf does".
   function buildElemMatch(target: LeafTarget, value: unknown, negate: boolean): QueryNode {
@@ -191,13 +191,13 @@ export function createCustomFieldsFilterTransformer() {
 }
 
 /**
- * The Member filter relation that exposes custom field values. A member has many leaf
+ * The Member filter relation that exposes metafield values. A member has many leaf
  * rows (one per field, or per part of a composite field), and a predicate asks whether
  * one of them matches, so this joins the values table on member_id and mongo-knex emits
  * it as a correlated `members.id IN (…)` subquery — composing with every other member
  * filter.
  */
-export const CUSTOM_FIELDS_RELATION = {
+export const METAFIELDS_RELATION = {
   tableName: 'members_metafield_values',
   tableNameAs: RELATION,
   type: 'oneToOne',

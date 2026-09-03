@@ -1,4 +1,4 @@
-import { actingContext, definitions } from '../../services/members-custom-fields';
+import { actingContext, definitions } from '../../services/members-metafields';
 
 const permissionsService = require('../../services/permissions');
 

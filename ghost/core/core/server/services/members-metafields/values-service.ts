@@ -10,7 +10,7 @@ import {
   formatIdentity,
   parseIdentity,
 } from '@tryghost/metafield-types/identity';
-import { DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS, type WrittenBy } from './schema';
+import { DbMetafieldLeaf, DbMetafieldValue, FIELD_STATUS, type WrittenBy } from './schema';
 import { activeFields } from './queries';
 import { canWrite, readableFields, type Audience } from './access';
 import { leavesToWrite, valuesFromLeaves, type StoredLeaf } from './storage';
@@ -36,7 +36,7 @@ const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE]
 const UPSERT_CHUNK = 400;
 
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
-type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
+type DbLeafRow = z.infer<typeof DbMetafieldValue>;
 
 const MAX_IDENTITY_LENGTH = MAX_KEY_LENGTH * 2 + 1;
 const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
@@ -62,7 +62,7 @@ export interface PlannedWrite {
  * because a value belongs to the member and a definition belongs to the site's settings,
  * which are different aggregates rather than different layers.
  */
-export class CustomFieldValuesService {
+export class MetafieldValuesService {
   private knex: Knex;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
@@ -118,16 +118,16 @@ export class CustomFieldValuesService {
     const leaves: StoredLeaf[] = [];
     for (const row of rows) {
       try {
-        leaves.push(DbCustomFieldLeaf.parse(row));
+        leaves.push(DbMetafieldLeaf.parse(row));
       } catch (err) {
         logging.warn(
           {
-            event: { name: 'members.custom_fields.value_unreadable' },
+            event: { name: 'members.metafields.value_unreadable' },
             err,
-            customFieldKey: row.key,
+            metafieldKey: row.key,
             path: row.path,
           },
-          'Skipping an unreadable custom field value',
+          'Skipping an unreadable metafield value',
         );
       }
     }

@@ -6,7 +6,7 @@ import {
   leavesToWrite,
   valueFromLeaves,
   valuesFromLeaves,
-} from '../../../../../core/server/services/members-custom-fields/storage';
+} from '../../../../../core/server/services/members-metafields/storage';
 
 // Every edge of the row model lives in these three functions, and they are pure, so this
 // is the one place a unit test is cheaper than driving the HTTP boundary. The behaviour

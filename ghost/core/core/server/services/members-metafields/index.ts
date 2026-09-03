@@ -1,10 +1,10 @@
-import { CustomFieldDefinitionsService } from './definitions-service';
-import { CustomFieldValuesService } from './values-service';
-import { CustomFieldBindingsService } from './bindings-service';
-import { recordCustomFieldAction, type RecordCustomFieldAction } from './actions';
+import { MetafieldDefinitionsService } from './definitions-service';
+import { MetafieldValuesService } from './values-service';
+import { MetafieldBindingsService } from './bindings-service';
+import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 
-export type { CustomField } from './models';
+export type { Metafield } from './models';
 export type { RequestContext } from './actions';
 export { actingContext } from './actions';
 export type { BoundField } from './bindings-service';
@@ -23,9 +23,9 @@ export { ADMIN, INTERNAL, MEMBERS, canWrite, readableFields, type Audience } fro
 // it needs — a value referencing its definition, not a boundary crossing.
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export let definitions: CustomFieldDefinitionsService | undefined;
-export let values: CustomFieldValuesService | undefined;
-export let bindings: CustomFieldBindingsService | undefined;
+export let definitions: MetafieldDefinitionsService | undefined;
+export let values: MetafieldValuesService | undefined;
+export let bindings: MetafieldBindingsService | undefined;
 
 export function init(): void {
   // The three are constructed together below, so checking all of them keeps the "all or
@@ -37,8 +37,8 @@ export function init(): void {
   const { knex } = require('../../data/db');
   const models = require('../../models');
 
-  const recordAction: RecordCustomFieldAction = ({ context, verb, subject, details }) =>
-    recordCustomFieldAction({ Action: models.Action, context, verb, subject, details });
+  const recordAction: RecordMetafieldAction = ({ context, verb, subject, details }) =>
+    recordMetafieldAction({ Action: models.Action, context, verb, subject, details });
 
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the
@@ -46,22 +46,20 @@ export function init(): void {
   // container holds no state across them.
   const config = require('../../../shared/config');
 
-  definitions = new CustomFieldDefinitionsService({
+  definitions = new MetafieldDefinitionsService({
     knex,
     recordAction,
-    getMaxDefinitions: () =>
-      resolveMaxDefinitions(config.get('members:customFields:maxDefinitions')),
+    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
   });
   // The values service reads the field definitions straight from the table, so
   // it needs knex and the same ceiling — no handle on the definitions service.
-  values = new CustomFieldValuesService({
+  values = new MetafieldValuesService({
     knex,
-    getMaxDefinitions: () =>
-      resolveMaxDefinitions(config.get('members:customFields:maxDefinitions')),
+    getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:metafields:maxDefinitions')),
   });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both
   // asks for both.
-  bindings = new CustomFieldBindingsService({ knex, values });
+  bindings = new MetafieldBindingsService({ knex, values });
 }

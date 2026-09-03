@@ -86,12 +86,12 @@ function stringifyLabels(labels: Array<string | Label>): string {
   return labels.map((label) => (typeof label === 'string' ? label : label.name)).join(',');
 }
 
-function customFieldCells(row: ImportErrorRow): Record<string, unknown> {
+function metafieldCells(row: ImportErrorRow): Record<string, unknown> {
   return Object.fromEntries(Object.entries(row).filter(([column]) => isMetafieldColumn(column)));
 }
 
 // Shape a failed import row into its fixed error-report cells, with the raw ORM message
-// rewritten into copy the member manager can act on. Custom field cells are merged on by
+// rewritten into copy the member manager can act on. Metafield cells are merged on by
 // buildErrorReport, which owns the dynamic column set.
 function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
   return {
@@ -119,9 +119,9 @@ function buildErrorReport(errors: ImportErrorRow[]): string {
   const memberColumns = Object.keys(toErrorReportRow(errors[0])).filter(
     (column) => column !== 'error',
   );
-  const customColumns = [...new Set(errors.flatMap((row) => Object.keys(customFieldCells(row))))];
+  const customColumns = [...new Set(errors.flatMap((row) => Object.keys(metafieldCells(row))))];
   const columns = [...memberColumns, ...customColumns, 'error'];
-  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...customFieldCells(row) }));
+  const rows = errors.map((row) => ({ ...toErrorReportRow(row), ...metafieldCells(row) }));
   return serialize(rows, { columns });
 }
 

@@ -23,7 +23,7 @@ const Ceiling = z
 // there is our bug rather than an operator's, and should fail loudly at boot
 // instead of quietly becoming the fallback for everything below.
 const shippedCeiling: number = Ceiling.parse(
-  require('../../../shared/config/defaults.json').members.customFields.maxDefinitions,
+  require('../../../shared/config/defaults.json').members.metafields.maxDefinitions,
 );
 
 // A higher layer can override the shipped value with anything. Something

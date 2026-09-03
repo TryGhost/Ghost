@@ -1,16 +1,16 @@
-import { toCustomFieldsResponse } from '../../../../../services/members-custom-fields/serializers';
-import type { CustomField } from '../../../../../services/members-custom-fields';
+import { toMetafieldsResponse } from '../../../../../services/members-metafields/serializers';
+import type { Metafield } from '../../../../../services/members-metafields';
 
 interface Frame {
   response?: unknown;
 }
 
-const serializeOne = (field: CustomField, _apiConfig: unknown, frame: Frame): void => {
-  frame.response = toCustomFieldsResponse.parse([field]);
+const serializeOne = (field: Metafield, _apiConfig: unknown, frame: Frame): void => {
+  frame.response = toMetafieldsResponse.parse([field]);
 };
 
-const serializeMany = (fields: CustomField[], _apiConfig: unknown, frame: Frame): void => {
-  frame.response = toCustomFieldsResponse.parse(fields);
+const serializeMany = (fields: Metafield[], _apiConfig: unknown, frame: Frame): void => {
+  frame.response = toMetafieldsResponse.parse(fields);
 };
 
 // The API framework loads this file with `require()`, so it exports CommonJS-style;

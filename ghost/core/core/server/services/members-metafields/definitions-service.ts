@@ -2,15 +2,15 @@ import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { CustomField } from './models';
+import { Metafield } from './models';
 import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { customFieldCodec } from './codec';
+import { metafieldCodec } from './codec';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
 import { ADMIN, readableFields, type Audience } from './access';
 import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
 import { KEY_CHARACTERS, mintableKey } from './key';
-import { type RecordCustomFieldAction, type RequestContext } from './actions';
+import { type RecordMetafieldAction, type RequestContext } from './actions';
 
 // The same NQL -> knex bridge Bookshelf's filter plugin uses, applied directly to
 // our raw-knex query: nql parses the `filter` string to a Mongo query, mongo-knex
@@ -96,9 +96,9 @@ const EditFieldInput = z.object({
   type: FieldTypeSchema.optional(),
 });
 
-export class CustomFieldDefinitionsService {
+export class MetafieldDefinitionsService {
   private knex: Knex;
-  private recordAction: RecordCustomFieldAction;
+  private recordAction: RecordMetafieldAction;
   private getMaxDefinitions: () => number;
 
   constructor({
@@ -107,7 +107,7 @@ export class CustomFieldDefinitionsService {
     getMaxDefinitions,
   }: {
     knex: Knex;
-    recordAction: RecordCustomFieldAction;
+    recordAction: RecordMetafieldAction;
     getMaxDefinitions: () => number;
   }) {
     this.knex = knex;
@@ -145,7 +145,7 @@ export class CustomFieldDefinitionsService {
   async browse(
     options: { namespace?: string; filter?: string } = {},
     audience: Audience = ADMIN,
-  ): Promise<CustomField[]> {
+  ): Promise<Metafield[]> {
     if (options.namespace !== undefined && !this.isStored(options.namespace)) {
       return [];
     }
@@ -168,12 +168,12 @@ export class CustomFieldDefinitionsService {
    * Typed off `activeFields` so the builder keeps the table's row type: every caller
    * hands over a query against the definitions table, whatever it has narrowed.
    */
-  private async list(query: DefinitionQuery): Promise<CustomField[]> {
+  private async list(query: DefinitionQuery): Promise<Metafield[]> {
     const rows = await inFieldOrder(query).select('*');
-    return rows.map((row) => z.decode(customFieldCodec, row));
+    return rows.map((row) => z.decode(metafieldCodec, row));
   }
 
-  async read(namespace: string, key: string): Promise<CustomField> {
+  async read(namespace: string, key: string): Promise<Metafield> {
     const [field] = this.isStored(namespace) ? await this.list(fieldByKey(this.knex, key)) : [];
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
@@ -191,7 +191,7 @@ export class CustomFieldDefinitionsService {
    * batch, so two items sharing a name are caught and two items deriving the same
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
-  async add(context: RequestContext, namespace: string, input: unknown): Promise<CustomField[]> {
+  async add(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
     this.assertDefinable(namespace);
     const requestedCount = Array.isArray(input) ? input.length : 0;
 
@@ -220,7 +220,7 @@ export class CustomFieldDefinitionsService {
       return base;
     });
 
-    let created: CustomField[];
+    let created: Metafield[];
     try {
       created = await this.knex.transaction(async (trx) => {
         await this.assertWithinLimit(trx, fields.length);
@@ -275,7 +275,7 @@ export class CustomFieldDefinitionsService {
   async addOne(
     wanted: { key: string; name: string; type: FieldType },
     { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<CustomField> {
+  ): Promise<Metafield> {
     // Before any database access, the way `add` mints before opening its transaction:
     // an unusable key is a payload problem worth reporting on its own terms.
     assertKeyUsable(wanted.key);
@@ -331,13 +331,13 @@ export class CustomFieldDefinitionsService {
   async findByKey(
     key: string,
     { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<CustomField | null> {
+  ): Promise<Metafield | null> {
     const row = await executor(TABLE).where('key', key).first();
-    return row ? z.decode(customFieldCodec, row) : null;
+    return row ? z.decode(metafieldCodec, row) : null;
   }
 
   /** The same entry `add` writes. Only the caller knows its transaction committed. */
-  async recordCreated(context: RequestContext, fields: CustomField[]): Promise<void> {
+  async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
     for (const field of fields) {
       await this.recordAction({
         context,
@@ -398,11 +398,7 @@ export class CustomFieldDefinitionsService {
    * fresh rank, so a move is well-defined even where every rank is still the default.
    * Returns every definition, archived included, matching what the request named.
    */
-  async reorder(
-    context: RequestContext,
-    namespace: string,
-    input: unknown,
-  ): Promise<CustomField[]> {
+  async reorder(context: RequestContext, namespace: string, input: unknown): Promise<Metafield[]> {
     this.assertDefinable(namespace);
     const parsed = ReorderInput.safeParse(input);
     if (!parsed.success) {
@@ -474,10 +470,10 @@ export class CustomFieldDefinitionsService {
   }
 
   /** Read back a batch in the order its keys were created, not the table's order. */
-  private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
+  private async readMany(db: Knex, keys: string[]): Promise<Metafield[]> {
     const rows = await db(TABLE).whereIn('key', keys).select('*');
     const byKey = new Map(rows.map((row) => [row.key, row]));
-    return keys.map((key) => z.decode(customFieldCodec, byKey.get(key)!));
+    return keys.map((key) => z.decode(metafieldCodec, byKey.get(key)!));
   }
 
   /**
@@ -540,7 +536,7 @@ export class CustomFieldDefinitionsService {
     namespace: string,
     key: string,
     input: unknown,
-  ): Promise<CustomField> {
+  ): Promise<Metafield> {
     if (!this.isStored(namespace)) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }

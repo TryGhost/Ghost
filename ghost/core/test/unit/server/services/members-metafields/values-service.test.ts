@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
-import { CustomFieldValuesService } from '../../../../../core/server/services/members-custom-fields/values-service';
+import { MetafieldValuesService } from '../../../../../core/server/services/members-metafields/values-service';
 
 // `namesValues` answers from the input alone, so it needs neither a database nor a
 // real ceiling to be exercised.
 const service = () =>
-  new CustomFieldValuesService({
+  new MetafieldValuesService({
     knex: {} as never,
     getMaxDefinitions: () => 100,
   });
 
-describe('CustomFieldValuesService', function () {
+describe('MetafieldValuesService', function () {
   describe('namesValues', function () {
     it('answers no for a body that carries no values', function () {
       // An absent key is not a malformed one: a request that says nothing about
