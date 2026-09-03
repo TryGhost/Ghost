@@ -47,10 +47,12 @@ export function EmailRecipientsOptions({
   });
   const tiersQuery = useBrowseTiers({
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: { filter: 'type:paid', limit: 'all' },
   });
   const labelsQuery = useBrowseLabelsInfinite({
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: { limit: 'all' },
   });
   const {

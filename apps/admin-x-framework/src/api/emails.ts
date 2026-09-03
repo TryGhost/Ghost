@@ -6,6 +6,12 @@ export interface EmailsResponseType {
   emails: Email[];
 }
 
+export interface RetryEmailPayload {
+  id: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
 /**
  * Retry a failed email send.
  *
@@ -13,9 +19,10 @@ export interface EmailsResponseType {
  * embedded on the post (the editor read contract includes `email`), so a
  * successful retry invalidates post queries to refresh that embedded copy.
  */
-export const useRetryEmail = createMutation<EmailsResponseType, string>({
+export const useRetryEmail = createMutation<EmailsResponseType, RetryEmailPayload>({
   method: 'PUT',
-  path: (id) => `/emails/${id}/retry/`,
+  path: ({ id }) => `/emails/${id}/retry/`,
   body: () => ({}),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType: postsDataType },
 });

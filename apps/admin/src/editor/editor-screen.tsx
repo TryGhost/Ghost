@@ -165,8 +165,10 @@ function EditorSurface({
   record?: EditorRecord;
   createdId?: string;
 }) {
-  const { data: currentUser } = useCurrentUser();
-  const showExcerpt = useFeatureFlag('editorExcerpt');
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const showExcerpt = useFeatureFlag('editorExcerpt', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
 
   const canManageSnippets =
     !!currentUser &&
@@ -255,7 +257,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
   const navigate = useNavigate();
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
