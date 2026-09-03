@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
 const _ = require('lodash');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const { settingsCache } = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
@@ -18,6 +17,7 @@ const {
   getDefaultNewsletter,
   retryEmail,
   waitForEmailStatus,
+  waitForNoActiveSends,
 } = require('../../../utils/batch-email-utils');
 const {
   setupEmailVerificationUtils,
@@ -147,7 +147,7 @@ describe('Batch sending tests', function () {
       { context: { internal: true } },
     );
     mockManager.restore();
-    await jobManager.allSettled();
+    await waitForNoActiveSends();
 
     // Drop any members a test created so they don't leak into later tests —
     // a leaked subscriber shifts recipient counts and cascades failures.
