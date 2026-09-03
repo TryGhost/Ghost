@@ -267,6 +267,27 @@ export const WithIcon: Story = {
   },
 };
 
+export const PillWithIcon: Story = {
+  args: {
+    shape: 'pill',
+    variant: 'outline',
+  },
+  render: (args) => (
+    <Button {...args}>
+      <Smile />
+      Add complimentary subscription
+    </Button>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use normal button sizes for pill actions that combine an icon with a visible text label.',
+      },
+    },
+  },
+};
+
 // States
 export const Disabled: Story = {
   args: {

@@ -31,6 +31,7 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -48,6 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -181,6 +183,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             'lg:hidden',
                             showMobileSearch && 'bg-secondary hover:bg-secondary',
                           )}
+                          size={isAdmin7Pill ? 'icon' : undefined}
                           variant="outline"
                           onClick={handleMobileSearchToggle}
                         >

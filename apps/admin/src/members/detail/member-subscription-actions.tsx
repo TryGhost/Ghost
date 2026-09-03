@@ -15,6 +15,7 @@ import {
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { MemberSubscription } from '@tryghost/admin-x-framework/api/members';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface MemberSubscriptionActionsProps {
   memberId: string;
@@ -36,6 +37,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
   memberId,
   subscription,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const editSubscription = useEditMemberSubscription();
   // Keep the trigger disabled until the invalidated members refetch lands so a
   // user can't fire the same action twice in the window between the mutation
@@ -66,7 +68,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
           aria-label="Subscription menu"
           data-testid="subscription-actions"
           disabled={busy}
-          size="sm"
+          size={isAdmin7Pill ? 'icon' : 'sm'}
           variant="outline"
         >
           {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}

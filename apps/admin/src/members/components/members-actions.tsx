@@ -18,6 +18,7 @@ import { type ImportResponse } from './bulk-action-modals/import-members/state';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberOperationParams } from '@/members/member-query-params';
 import { buildMembersUrl } from '@/members/member-route';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBulkDeleteMembers, useBulkEditMembers } from '@tryghost/admin-x-framework/api/members';
@@ -45,6 +46,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   showNewMember = true,
   onImportComplete,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const location = useLocation();
   const navigate = useNavigate();
   const isImportRoute = location.pathname === '/members/import';
@@ -245,7 +247,12 @@ const MembersActions: React.FC<MembersActionsProps> = ({
       {showMenu && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button data-testid="members-actions" variant="outline">
+            <Button
+              aria-label="More member actions"
+              data-testid="members-actions"
+              size={isAdmin7Pill ? 'icon' : undefined}
+              variant="outline"
+            >
               <LucideIcon.MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
