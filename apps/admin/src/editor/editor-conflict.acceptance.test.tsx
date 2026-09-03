@@ -338,6 +338,81 @@ describe('Post editor update collision', () => {
   );
 
   it(
+    'accepts a newer detail read that finishes before an older reload',
+    async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+
+      const afterSave = theirs({ updated_at: AFTER_SAVE_AT });
+      const pendingDetailRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+      const detailRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingDetailRead.promise);
+      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({ posts: [afterSave] }));
+
+      await typeIntoBody(' accepted first');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
+      await expect.poll(() => detailRead.requests.length, POLL).toBe(1);
+
+      const collisionSave = fakeAdminEndpoint(
+        'PUT',
+        READ_ROUTE,
+        {
+          errors: [
+            {
+              code: 'UPDATE_COLLISION',
+              type: 'UpdateCollisionError',
+              message: 'Saving failed! Someone else is editing this post.',
+            },
+          ],
+        },
+        { status: 409 },
+      );
+      await typeIntoBody(' then conflicted');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => collisionSave.requests.length, POLL).toBe(1);
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
+
+      const pendingReload = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+      const reloadRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingReload.promise);
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.poll(() => reloadRead.requests.length, POLL).toBe(1);
+
+      const newest = theirs({
+        title: 'Newest detail response',
+        updated_at: '2026-01-01T11:00:00.000Z',
+      });
+      pendingDetailRead.resolve({ posts: [newest] });
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      pendingReload.resolve({
+        posts: [
+          theirs({
+            title: 'Older reload response',
+            updated_at: '2026-01-01T10:30:00.000Z',
+          }),
+        ],
+      });
+
+      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Newest detail response');
+      await expect(editorScreen.conflictBanner()).toHaveCount(0);
+
+      window.location.hash = '#/posts';
+      await expect(editorScreen.titleInput()).toHaveCount(0);
+      window.location.hash = `#/editor/post/${POST_ID}`;
+
+      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Newest detail response');
+    },
+    SLOW,
+  );
+
+  it(
     'keeps the editor standing when the reload cannot read the post, and retries later',
     async () => {
       const { saveApi } = fakeCollidingPost();

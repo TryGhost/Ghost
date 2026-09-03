@@ -30,6 +30,7 @@ import {
 } from '@tryghost/admin-x-framework/api/post-contract';
 import {
   DEFAULT_TITLE,
+  isCollisionToken,
   type LeaveDecision,
   type SaveEngineState,
 } from '@/editor/engine/save-engine';
@@ -244,9 +245,25 @@ export function useEditorSession({
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
     }
 
-    const fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
+    let fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
     if (!fresh) {
       return 'gone';
+    }
+
+    // A normal detail refetch may have completed while this isolated reload was
+    // in flight. Never replace a version we already know is newer.
+    const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
+    const cached = postType === 'page' ? cachedData?.pages?.[0] : cachedData?.posts?.[0];
+    if (
+      cachedData &&
+      cached &&
+      cached.id === fresh.id &&
+      isCollisionToken(cached.updated_at) &&
+      isCollisionToken(fresh.updated_at) &&
+      Date.parse(cached.updated_at) > Date.parse(fresh.updated_at)
+    ) {
+      data = cachedData;
+      fresh = cached;
     }
 
     if (!session.recordReloaded(fresh)) {
