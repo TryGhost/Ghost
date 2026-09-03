@@ -2,8 +2,8 @@ import type { Knex } from 'knex';
 import { camelKeys } from '../../lib/case-keys';
 import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
 import {
-  sendingStatusForSubmittedEmail,
-  sendingStatusFromBatches,
+  emailSendingStatusWhenSubmitted,
+  emailSendingStatusFromBatches,
   type EmailSendingStatus,
   type SendingBatch,
 } from './sending-status';
@@ -31,10 +31,10 @@ export class SendingStatusService {
     // Batch creation reconciles email_count to the recipient rows it built, so a submitted
     // email's stored count is its recipient count without a query over email_recipients.
     if (email.status === 'submitted') {
-      return sendingStatusForSubmittedEmail({ id: email.id, recipientCount: email.email_count });
+      return emailSendingStatusWhenSubmitted({ id: email.id, recipientCount: email.email_count });
     }
 
-    return sendingStatusFromBatches(
+    return emailSendingStatusFromBatches(
       {
         id: email.id,
         status: email.status,

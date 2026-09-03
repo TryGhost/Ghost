@@ -43,7 +43,7 @@ export interface SendingBatch {
 
 type BatchSample = { recipientCount: number; timestamp: number };
 
-export function sendingStatusForSubmittedEmail(email: {
+export function emailSendingStatusWhenSubmitted(email: {
   id: string;
   recipientCount: number;
 }): EmailSendingStatus {
@@ -57,7 +57,7 @@ export function sendingStatusForSubmittedEmail(email: {
   };
 }
 
-export function sendingStatusFromBatches(
+export function emailSendingStatusFromBatches(
   email: SendingEmail,
   batches: SendingBatch[],
 ): EmailSendingStatus {
