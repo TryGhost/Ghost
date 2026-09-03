@@ -6,9 +6,21 @@ import classic from 'ember-classic-decorator';
 import {computed, set} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 
+const LABS_STORAGE_KEY = 'ghost-admin:labs-overrides';
+
+function getStoredFeatureFlagOverrides() {
+    try {
+        const storedFlags = JSON.parse(sessionStorage.getItem(LABS_STORAGE_KEY) || '[]');
+
+        return Array.isArray(storedFlags) ? storedFlags.filter(flag => typeof flag === 'string') : [];
+    } catch (e) {
+        return [];
+    }
+}
+
 export function feature(name, options = {}) {
     let {user, onChange} = options;
-    let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`];
+    let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`, 'router.currentURL'];
 
     return computed.apply(Ember, watchedProps.concat({
         get() {
@@ -16,6 +28,8 @@ export function feature(name, options = {}) {
 
             if (user) {
                 enabled = this.get(`accessibility.${name}`);
+            } else if (getStoredFeatureFlagOverrides().includes(name)) {
+                enabled = true;
             } else if (typeof this.get(`config.${name}`) === 'boolean') {
                 enabled = this.get(`config.${name}`);
             } else {
@@ -43,6 +57,7 @@ export default class FeatureService extends Service {
     @service ghostPaths;
     @service lazyLoader;
     @service notifications;
+    @service router;
     @service session;
     @service settings;
     @service store;
