@@ -304,6 +304,9 @@
       "openThroughput": {
         "enabled": false,
         "threshold": 500
+      },
+      "openedLag": {
+        "enabled": false
       }
     },
     "openedJobLagWarningMinutes": 30

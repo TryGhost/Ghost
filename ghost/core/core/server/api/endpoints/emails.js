@@ -116,7 +116,7 @@ const controller = {
       method: 'browse',
     },
     async query() {
-      return emailAnalytics.newsletters.service.getStatus();
+      return emailAnalytics.newsletters.service.getStatusWithLag();
     },
   },
 
