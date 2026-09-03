@@ -3,7 +3,6 @@ const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
 const { sendEmail, waitForEmailStatus } = require('../../../utils/batch-email-utils');
@@ -37,7 +36,6 @@ describe('Resume interrupted sends', function () {
   afterEach(async function () {
     await configUtils.restore();
     mockManager.restore();
-    await jobManager.allSettled();
   });
 
   afterAll(async function () {

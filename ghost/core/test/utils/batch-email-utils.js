@@ -18,6 +18,7 @@ let postCounter = 0;
 // does, so observing the row is enough to know the job finished — no coupling to
 // whichever job transport dispatched it.
 const TERMINAL_EMAIL_STATUSES = ['submitted', 'failed'];
+const NON_TERMINAL_EMAIL_STATUSES = ['pending', 'submitting'];
 
 /**
  * Waits until an email row reaches a terminal status.
@@ -52,6 +53,37 @@ async function waitForEmailStatus(emailId, { from } = {}) {
   );
 
   return email;
+}
+
+/**
+ * Waits until no newsletter send is in flight.
+ *
+ * `pending` and `submitting` are the only non-terminal email statuses, and both are
+ * written before the work they represent starts — so an empty result means no job is
+ * about to read members, batches or recipients. Asking the rows rather than a queue
+ * keeps this honest when the jobs backend runs work outside this process, where an
+ * empty local queue proves nothing.
+ *
+ * Use it before an `afterEach` destroys data a running send would touch.
+ */
+async function waitForNoActiveSends() {
+  let active = [];
+
+  try {
+    await vi.waitUntil(
+      async () => {
+        const result = await models.Email.findAll({
+          filter: `status:[${NON_TERMINAL_EMAIL_STATUSES.join(',')}]`,
+        });
+        active = result.models || result;
+        return active.length === 0;
+      },
+      { timeout: 8000, interval: 50 },
+    );
+  } catch (err) {
+    const stuck = active.map((email) => `${email.id}=${email.get('status')}`).join(', ');
+    throw new Error(`Timed out waiting for newsletter sends to finish: ${stuck}`);
+  }
 }
 
 async function createPublishedPostEmail(agent, settings = {}, email_recipient_filter) {
@@ -267,4 +299,5 @@ module.exports = {
   matchEmailSnapshot,
   getLastEmail,
   waitForEmailStatus,
+  waitForNoActiveSends,
 };
