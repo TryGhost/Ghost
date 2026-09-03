@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 describe('Sidebar navigation', () => {
-  it('keeps the shell hidden until Admin 7 eligibility is known', async () => {
+  it('applies the Admin 7 shell without waiting for Labs config', async () => {
     fakeTags([]);
     let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;
     const pendingConfig = new Promise<ReturnType<typeof configResponse>>((resolve) => {
@@ -71,14 +71,13 @@ describe('Sidebar navigation', () => {
       document.querySelector('[data-sidebar="sidebar"]')?.closest('.group\\/sidebar-wrapper');
     await expect.poll(getShell).toBeTruthy();
     const shell = getShell()!;
-    expect(shell).toHaveClass('invisible');
-
-    resolveConfig(configResponse({ labs: { admin7PageChrome: true } }));
-    await expect.poll(() => shell?.classList.contains('invisible')).toBe(false);
+    expect(shell).not.toHaveClass('invisible');
     expect(shell).toHaveClass('admin7');
+
+    resolveConfig(configResponse());
   });
 
-  it('shows the existing shell when Admin 7 config cannot be loaded', async () => {
+  it('applies the Admin 7 shell when config cannot be loaded', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', {
       boot: {
@@ -95,7 +94,7 @@ describe('Sidebar navigation', () => {
         ?.closest('[class~="group/sidebar-wrapper"]');
     await expect.poll(getShell).toBeTruthy();
     await expect.poll(() => getShell()?.classList.contains('invisible')).toBe(false);
-    expect(getShell()).not.toHaveClass('admin7');
+    expect(getShell()).toHaveClass('admin7');
   });
 
   it('uses default preferences when accessibility JSON is malformed', async () => {
@@ -103,10 +102,7 @@ describe('Sidebar navigation', () => {
     const me = currentUserResponse();
     me.users[0].accessibility = '{invalid json';
 
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
 
     const getShell = () =>
       document
@@ -125,10 +121,7 @@ describe('Sidebar navigation', () => {
       nightShift: 'light',
     });
 
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
@@ -141,10 +134,7 @@ describe('Sidebar navigation', () => {
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
 
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
 
     await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
@@ -153,7 +143,7 @@ describe('Sidebar navigation', () => {
 
   it('applies Admin 7 typography to legacy alert and notification portals', async () => {
     fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7PageChrome: true } });
+    await renderAdminApp('/tags');
     await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
 
     const shell = document.querySelector<HTMLElement>('.admin7')!;
@@ -195,14 +185,6 @@ describe('Sidebar navigation', () => {
       marker.setAttribute('data-react-admin-mounted', '');
       bridgeHost.appendChild(emberApp);
     }
-  });
-
-  it('keeps the existing sidebar treatment when Admin 7 page chrome is disabled', async () => {
-    fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7PageChrome: false } });
-
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    expect(document.querySelector('.admin7')).toBeNull();
   });
 
   it('renders the navigation for the current user', async () => {

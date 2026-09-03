@@ -131,7 +131,6 @@ describe('Post analytics overview', () => {
   it('applies the Admin 7 chrome on post analytics', async () => {
     seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { admin7PageChrome: true },
       boot: webAnalyticsBootOverrides(),
     });
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();

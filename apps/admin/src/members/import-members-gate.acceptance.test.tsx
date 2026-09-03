@@ -39,7 +39,7 @@ describe('Import members gate', () => {
   it.each([false, true])(
     'inherits portal typography in the import flow (redesigned: %s)',
     async (membersImportRedesign) => {
-      await openMappingStep({ admin7PageChrome: true, membersImportRedesign });
+      await openMappingStep({ membersImportRedesign });
       const modal = membersScreen.dialog();
       await expect.element(modal).toBeVisible();
       expect(modal.element().closest('#root')).toBeNull();

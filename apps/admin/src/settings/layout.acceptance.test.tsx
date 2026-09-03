@@ -14,58 +14,46 @@ import {
 import { settingsScreen } from './settings.screen';
 
 describe('Settings layout', () => {
-  it.each([true, false])(
-    'uses Admin 7 typography in Settings only when enabled (%s)',
-    async (enabled) => {
-      fakeSettingsScreens();
-      await renderAdminApp('/settings', { labs: { admin7PageChrome: enabled } });
+  it('uses Admin 7 typography in Settings without page chrome', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings');
 
-      await expect.element(settingsScreen.search()).toBeVisible();
-      const heading = page.getByRole('heading', { name: 'General settings', exact: true }).first();
-      const titleAndDescriptionEdit = settingsScreen
-        .titleAndDescription()
-        .getByRole('button', { name: 'Edit' });
-      await expect.element(titleAndDescriptionEdit).toBeVisible();
-      const elements = [
-        ...page.getByRole('heading', { name: 'General settings', exact: true }).elements(),
-        settingsScreen.search().element(),
-        titleAndDescriptionEdit.element(),
-      ];
-      for (const element of elements) {
-        await expect
-          .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
-          .toBe(enabled);
-      }
-      if (enabled) {
-        const headingFeatures = getComputedStyle(heading.element()).fontFeatureSettings;
-        const searchFeatures = getComputedStyle(
-          settingsScreen.search().element(),
-        ).fontFeatureSettings;
-        expect(headingFeatures).toContain('dlig');
-        expect(headingFeatures).toContain('cv05');
-        expect(searchFeatures).not.toContain('dlig');
-        expect(searchFeatures).not.toContain('cv05');
-      }
-      expect(document.querySelector('.admin7') !== null).toBe(enabled);
-      expect(
-        getComputedStyle(document.querySelector('#root > div')!).getPropertyValue(
-          '--content-width',
-        ),
-      ).toBe('');
-      expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
-      await expect.element(settingsScreen.sidebar()).toBeVisible();
-      await expect.element(settingsScreen.exitButton()).toBeVisible();
-    },
-  );
+    await expect.element(settingsScreen.search()).toBeVisible();
+    const heading = page.getByRole('heading', { name: 'General settings', exact: true }).first();
+    const titleAndDescriptionEdit = settingsScreen
+      .titleAndDescription()
+      .getByRole('button', { name: 'Edit' });
+    await expect.element(titleAndDescriptionEdit).toBeVisible();
+    const elements = [
+      ...page.getByRole('heading', { name: 'General settings', exact: true }).elements(),
+      settingsScreen.search().element(),
+      titleAndDescriptionEdit.element(),
+    ];
+    for (const element of elements) {
+      await expect
+        .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
+        .toBe(true);
+    }
+    const headingFeatures = getComputedStyle(heading.element()).fontFeatureSettings;
+    const searchFeatures = getComputedStyle(settingsScreen.search().element()).fontFeatureSettings;
+    expect(headingFeatures).toContain('dlig');
+    expect(headingFeatures).toContain('cv05');
+    expect(searchFeatures).not.toContain('dlig');
+    expect(searchFeatures).not.toContain('cv05');
+    expect(document.querySelector('.admin7')).not.toBeNull();
+    expect(
+      getComputedStyle(document.querySelector('#root > div')!).getPropertyValue('--content-width'),
+    ).toBe('');
+    expect(getComputedStyle(document.body).fontFamily).not.toContain('Inter Admin 7');
+    await expect.element(settingsScreen.sidebar()).toBeVisible();
+    await expect.element(settingsScreen.exitButton()).toBeVisible();
+  });
 
   it('uses Admin 7 typography without page chrome in dark mode', async () => {
     fakeSettingsScreens();
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
-    await renderAdminApp('/settings', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/settings', { boot: { browseMe: { response: me } } });
     await expect.element(settingsScreen.search()).toBeVisible();
     await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
     expect(getComputedStyle(settingsScreen.search().element()).fontFamily).toContain(
@@ -79,7 +67,7 @@ describe('Settings layout', () => {
 
   it('limits Settings typography to desktop without opting into page chrome', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings', { labs: { admin7PageChrome: true } });
+    await renderAdminApp('/settings');
     await expect.element(settingsScreen.search()).toBeVisible();
     const hasNewFont = () =>
       getComputedStyle(settingsScreen.search().element()).fontFamily.includes('Inter Admin 7');
@@ -148,7 +136,6 @@ describe('Settings layout', () => {
     fakeSettingsScreens();
     fakeTiers([tier({ name: 'Supporter' })]);
     await renderAdminApp('/settings/portal/edit', {
-      labs: { admin7PageChrome: true },
       boot: {
         browseSettings: {
           response: settingsResponse({

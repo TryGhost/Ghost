@@ -161,10 +161,7 @@ describe('Analytics overview', () => {
   it('uses Admin 7 typography in the portalled trend tooltip', async () => {
     seedAnalyticsWorld();
     seedTopPostsViews();
-    await renderAdminApp('/analytics', {
-      labs: { admin7PageChrome: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
     await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
     await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
@@ -179,10 +176,7 @@ describe('Analytics overview', () => {
   it('uses display font features only on Admin 7 headings', async () => {
     seedAnalyticsWorld();
     seedTopPostsViews();
-    await renderAdminApp('/analytics', {
-      labs: { admin7PageChrome: true },
-      boot: webAnalyticsBootOverrides(),
-    });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
 
     await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
     const heading = page.getByRole('heading', { name: 'Analytics' });

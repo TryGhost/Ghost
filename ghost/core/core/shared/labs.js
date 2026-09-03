@@ -46,7 +46,6 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'adminUIRefresh',
-  'admin7PageChrome',
   'tagsX',
   'emailUniqueid',
   'improveSendingUI',

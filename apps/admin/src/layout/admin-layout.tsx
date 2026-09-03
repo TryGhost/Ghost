@@ -15,7 +15,7 @@ const networkPageChrome = {
   contentGutter: 'var(--page-gutter)',
 };
 
-const admin7PageChromeClassName = [
+const pageChromeClassName = [
   'admin7:[&_.max-w-page]:max-w-(--content-width)',
   'admin7:[&_[data-list-page=list-page]]:px-(--page-gutter)',
   'admin7:[&_[data-detail-page=detail-page]]:px-(--page-gutter)',
@@ -94,7 +94,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <SidebarInset
         className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
       >
-        <main className={cn('flex-1', pageChromeEnabled && admin7PageChromeClassName)}>
+        <main className={cn('flex-1', pageChromeEnabled && pageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={pageChromeEnabled ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>
