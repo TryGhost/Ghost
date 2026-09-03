@@ -122,6 +122,7 @@ export function createEditorSession({
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
+  let disposed = false;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -338,7 +339,8 @@ export function createEditorSession({
     // A document boundary, not a refetch: the tracker reloads, so the baseline
     // the hidden instance reported for the old document is discarded with it.
     recordReloaded: (next) => {
-      if (identity.id !== next.id) {
+      // The read outlives a session the writer navigated away from.
+      if (disposed || identity.id !== next.id) {
         return;
       }
       identity = { id: next.id, updatedAt: next.updated_at ?? '' };
@@ -356,6 +358,7 @@ export function createEditorSession({
     reauthAbandoned: () => engine.reauthAbandoned(),
 
     dispose: () => {
+      disposed = true;
       engine.dispose();
       tracker.dispose();
     },

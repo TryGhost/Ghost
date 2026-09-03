@@ -383,6 +383,38 @@ describe('createEditorSession', () => {
     expect(session.getState().kind).toBe('conflict');
   });
 
+  it('follows the reloaded record when it derives the next slug', async () => {
+    const { session, state } = harness({ record: record() });
+
+    session.recordReloaded(
+      record({ title: 'Their title', slug: 'their-slug', updated_at: '2026-01-02T00:00:00.000Z' }),
+    );
+    session.patchLexical(body('Written on top of theirs'));
+    await session.dispatchExplicit();
+
+    // Reloaded title and slug agree, so the save keeps their slug rather than
+    // regenerating one from the title this session opened with.
+    expect(state.updates[0].payload.slug).toBe('their-slug');
+  });
+
+  it('moves the edit version when the document is replaced', () => {
+    const { session } = harness({ record: record() });
+    const before = session.getSaveSnapshot().version;
+
+    session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
+
+    expect(session.getSaveSnapshot().version).toBeGreaterThan(before);
+  });
+
+  it('ignores a reload that lands after the session was disposed', () => {
+    const { session } = harness({ record: record() });
+
+    session.dispose();
+    session.recordReloaded(record({ title: 'Their title' }));
+
+    expect(session.getSaveSnapshot().title).toBe('Hello');
+  });
+
   it('ignores a reload of a different post', () => {
     const { session } = harness({ record: record() });
 

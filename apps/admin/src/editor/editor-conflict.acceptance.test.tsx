@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -17,6 +17,9 @@ const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const THEIR_SAVE_AT = '2026-01-01T09:00:00.000Z';
+const MY_IMAGE = 'https://example.com/content/images/mine.jpg';
+const THEIR_IMAGE = 'https://example.com/content/images/theirs.jpg';
+const READ_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
 // The autosave debounce is 3s, so these journeys outlast the default timeout.
 const SLOW = 20_000;
@@ -45,19 +48,16 @@ function postIn(request: CapturedEndpointRequest | undefined): Record<string, un
   return body?.posts[0] ?? {};
 }
 
-/**
- * A post another writer moves on mid-session: every update is refused with the
- * collision the server raises for a stale `updated_at`, and from that moment
- * the read serves their version instead.
- */
-function fakeCollidingPost() {
-  fakeSnippets([]);
-  fakePosts([]);
-  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
-    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
-  }));
+function featureImageSrc(): string | null {
+  return editorScreen.featureImage().element().querySelector('img')?.getAttribute('src') ?? null;
+}
 
-  const mine = post({
+function toastWithText(text: string | RegExp) {
+  return page.getByText(text);
+}
+
+const mine = () =>
+  post({
     id: POST_ID,
     title: 'Hello from React',
     slug: 'hello-from-react',
@@ -66,22 +66,37 @@ function fakeCollidingPost() {
     updated_at: LOADED_AT,
     published_at: null,
     tags: [],
+    feature_image: MY_IMAGE,
   });
-  const theirs = {
-    ...mine,
-    title: 'Hello from someone else',
-    lexical: buildLexicalParagraph('Their version of the body'),
-    updated_at: THEIR_SAVE_AT,
-  };
-  let saves = 0;
 
-  const readApi = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({
-    posts: [saves === 0 ? mine : theirs],
+const theirs = () => ({
+  ...mine(),
+  title: 'Hello from someone else',
+  lexical: buildLexicalParagraph('Their version of the body'),
+  updated_at: THEIR_SAVE_AT,
+  feature_image: THEIR_IMAGE,
+});
+
+/**
+ * A post another writer moves on mid-session: every update is refused with the
+ * collision the server raises for a stale `updated_at`, and from the first
+ * refusal the read serves their version instead.
+ */
+function fakeCollidingPost() {
+  fakeSnippets([]);
+  fakePosts([]);
+  fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
+    slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
+  }));
+
+  let saves = 0;
+  const readApi = fakeAdminEndpoint('GET', READ_ROUTE, () => ({
+    posts: [saves === 0 ? mine() : theirs()],
   }));
 
   const saveApi = fakeAdminEndpoint(
     'PUT',
-    new RegExp(`^/posts/${POST_ID}/\\?`),
+    READ_ROUTE,
     () => {
       saves += 1;
       return {
@@ -100,6 +115,17 @@ function fakeCollidingPost() {
   return { readApi, saveApi };
 }
 
+/**
+ * A later handler for the same route wins, so the read's behaviour is changed
+ * by declaring the next one mid-test rather than by a flag the fake reads.
+ */
+function readAnswers(status: number, body: object) {
+  return fakeAdminEndpoint('GET', READ_ROUTE, body, { status });
+}
+
+const readFails = (status: number) =>
+  readAnswers(status, { errors: [{ type: 'InternalServerError', message: 'Boom' }] });
+
 async function typeIntoBody(text: string) {
   await editorScreen.body().click();
   await userEvent.keyboard(`{End}${text}`);
@@ -114,7 +140,8 @@ async function collide(saveApi: EndpointCapture) {
 
 /**
  * What the writer can do once the server has refused their save: take the other
- * writer's version, or keep their own words before they do.
+ * writer's version, or keep their own words before they do. A reload that fails
+ * must leave all of that standing rather than replacing the screen.
  */
 describe('Post editor update collision', () => {
   afterEach(() => {
@@ -147,12 +174,39 @@ describe('Post editor update collision', () => {
   );
 
   it(
+    'reloads without asking when only the refused save makes the post dirty',
+    async () => {
+      const { readApi, saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+      await editorScreen.titleInput().fill('Renamed by me');
+      await editorScreen.body().click();
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
+
+      // The writer puts the title back: nothing of theirs is left to discard,
+      // even though the refused save still counts the post as dirty.
+      await editorScreen.titleInput().fill('Hello from React');
+      const readsBefore = readApi.requests.length;
+
+      await editorScreen.reloadAfterConflict().click();
+
+      await expect.poll(() => readApi.requests.length, POLL).toBe(readsBefore + 1);
+      await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+    },
+    SLOW,
+  );
+
+  it(
     'replaces the post with the server copy and saves against its version next',
     async () => {
       const { readApi, saveApi } = fakeCollidingPost();
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await collide(saveApi);
       const readsBefore = readApi.requests.length;
+      expect(featureImageSrc()).toBe(MY_IMAGE);
 
       await editorScreen.reloadAfterConflict().click();
       await editorScreen.confirmConflictReload().click();
@@ -165,6 +219,7 @@ describe('Post editor update collision', () => {
         .element(editorScreen.body(), POLL)
         .toHaveTextContent('Their version of the body');
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+      await expect.poll(featureImageSrc, POLL).toBe(THEIR_IMAGE);
       await expect(editorScreen.conflictBanner()).toHaveCount(0);
 
       await typeIntoBody(' plus mine');
@@ -175,6 +230,64 @@ describe('Post editor update collision', () => {
         id: POST_ID,
         updated_at: THEIR_SAVE_AT,
       });
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the editor standing when the reload cannot read the post, and retries later',
+    async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      const failedRead = readFails(500);
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+
+      await expect.poll(() => failedRead.requests.length, POLL).toBe(1);
+      await expect.element(toastWithText('Couldn’t reload this post')).toBeVisible();
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
+      await expect(editorScreen.loadError()).toHaveCount(0);
+
+      const servingRead = readAnswers(200, { posts: [theirs()] });
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+
+      await expect.poll(() => servingRead.requests.length, POLL).toBe(1);
+      await expect
+        .element(editorScreen.body(), POLL)
+        .toHaveTextContent('Their version of the body');
+      await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'says the post is gone rather than losing the content behind a not-found screen',
+    async () => {
+      const copied = recordClipboard();
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      const missingRead = readFails(404);
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+
+      await expect.poll(() => missingRead.requests.length, POLL).toBe(1);
+      await expect
+        .element(editorScreen.conflictBanner())
+        .toHaveTextContent('This post has been deleted');
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+      await expect(editorScreen.notFound()).toHaveCount(0);
+
+      // The way out of a deleted post is the copy, so it has to still be there.
+      await editorScreen.copyConflictedContent().click();
+
+      await expect.poll(() => copied.length, POLL).toBe(1);
+      expect(copied[0]).toContain('Hello from React and more');
     },
     SLOW,
   );

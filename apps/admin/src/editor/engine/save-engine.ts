@@ -859,7 +859,7 @@ export function createSaveEngine<
   // carries the rejected updated_at ends the halt the collision caused.
   function contentReloaded(): void {
     const snapshot = readSnapshot();
-    if (state.kind !== 'conflict' || !snapshot || isStale(snapshot)) {
+    if (disposed || state.kind !== 'conflict' || !snapshot || isStale(snapshot)) {
       return;
     }
     staleUpdatedAt = null;

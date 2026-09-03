@@ -334,7 +334,11 @@ The wiring hook owns everything the three modules deliberately do not:
 - Reloading the document when the writer chooses the server's copy: the tracker
   is loaded afresh so the hidden instance's old baseline goes with it, the
   identity adopts the fresh collision token, the editor surface re-seeds both
-  Koenig instances, and the engine is told through `contentReloaded()`.
+  Koenig instances, and the engine is told through `contentReloaded()`. The read
+  is its own request, never a refetch of the query the screen rendered from: a
+  failing refetch puts that query into an error state and replaces the editor,
+  taking the unsaved content and the way to copy it out with it. A reload that
+  fails leaves the halt, the content and the banner exactly as they were.
 
 ### Save engine
 
