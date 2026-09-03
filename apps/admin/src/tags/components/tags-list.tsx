@@ -12,7 +12,8 @@ import {
   useInfiniteVirtualScroll,
   useVirtualListWindow,
 } from '@/shared/virtual-list';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 import { forwardRef, useRef } from 'react';
 import { AdminLink } from '@/shared/admin-link';
@@ -52,6 +53,7 @@ function TagsList({
   isFetchingNextPage?: boolean;
   fetchNextPage: () => void;
 }) {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
@@ -71,7 +73,7 @@ function TagsList({
             <TableHead className="w-auto px-4">Tag</TableHead>
             <TableHead className="w-1/5 px-4">Slug</TableHead>
             <TableHead className="w-1/5 px-4">No. of posts</TableHead>
-            <TableHead className="w-20 px-4"></TableHead>
+            {!isAdmin7Pill && <TableHead className="w-20 px-4"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody className="flex flex-col lg:table-row-group">
@@ -87,7 +89,12 @@ function TagsList({
               <TableRow
                 key={key}
                 {...props}
-                className="group grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0"
+                className={cn(
+                  'group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
+                  isAdmin7Pill
+                    ? 'grid-cols-1 md:grid-cols-[1fr_auto]'
+                    : 'grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem]',
+                )}
                 data-testid="tag-list-row"
               >
                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
@@ -116,17 +123,19 @@ function TagsList({
                     <span className="text-muted-foreground">0 posts</span>
                   )}
                 </TableCell>
-                <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                  <Button
-                    aria-hidden="true"
-                    className="opacity-0 transition-all group-hover:opacity-100"
-                    size="icon"
-                    tabIndex={-1}
-                    variant="outline"
-                  >
-                    <LucideIcon.Pencil />
-                  </Button>
-                </TableCell>
+                {!isAdmin7Pill && (
+                  <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                    <Button
+                      aria-hidden="true"
+                      className="opacity-0 transition-all group-hover:opacity-100"
+                      size="icon"
+                      tabIndex={-1}
+                      variant="outline"
+                    >
+                      <LucideIcon.Pencil />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}
