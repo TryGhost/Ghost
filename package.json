@@ -26,7 +26,7 @@
     "@tryghost/promise": "workspace:^",
     "@tryghost/tpl": "workspace:^",
     "@tryghost/validator": "workspace:^",
-    "lodash": "4.18.1"
+    "lodash": "^4.18.1"
   },
   "devDependencies": {
     "sinon": "catalog:"
