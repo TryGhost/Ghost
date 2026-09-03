@@ -6,6 +6,7 @@ import {
   editorExcerptInput,
   editorFeatureImage,
   editorFeatureImageCaption,
+  editorLeaveDialog,
   editorLoadError,
   editorReauthBanner,
   editorScheduleCountdown,
@@ -17,10 +18,12 @@ import {
   featureImageAltLabel,
   featureImageTkIndicator,
   featureImageUnsplashButton,
+  leaveEditorButton,
   pagesBackLink,
   postEditor,
   postsBackLink,
   removeFeatureImageButton,
+  stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
 } from '@tryghost/test-data/selectors/editor';
@@ -41,6 +44,11 @@ export const editorScreen = {
   status: () => page.getByTestId(editorStatus),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
+  leaveDialog: () => page.getByTestId(editorLeaveDialog),
+  stayInEditor: () =>
+    page.getByTestId(editorLeaveDialog).getByRole('button', { name: stayInEditorButton }),
+  leaveEditor: () =>
+    page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
   dismissReauth: () =>
     page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Dismiss' }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),

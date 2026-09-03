@@ -19,7 +19,11 @@ import type {
   EditContentData,
 } from '@tryghost/admin-x-framework/api/content-types';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
-import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine';
+import {
+  DEFAULT_TITLE,
+  type LeaveDecision,
+  type SaveEngineState,
+} from '@/editor/engine/save-engine';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
@@ -62,6 +66,8 @@ export interface EditorSessionHandle {
   dispatchExplicit: () => void;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
+  /** Resolves once nothing is in flight; `proceed` means leaving loses nothing. */
+  leaveRequested: () => Promise<LeaveDecision>;
 }
 
 export interface UseEditorSessionOptions {
@@ -163,6 +169,7 @@ export function useEditorSession({
   }, [session]);
 
   const state = useSyncExternalStore(session.subscribe, session.getState);
+  const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
 
   // The saved record: the same query key the screen loaded with, so an existing
   // post shares one cache entry and a created one starts observing its own.
@@ -249,11 +256,12 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
-    isDirty: () => session.getSaveSnapshot().isDirty,
+    isDirty: () => isDirty,
     patchFeatureImage: session.patchFeatureImage,
     dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,
+    leaveRequested: session.leaveRequested,
   };
 }
