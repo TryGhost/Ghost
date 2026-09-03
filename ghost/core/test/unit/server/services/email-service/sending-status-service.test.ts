@@ -23,7 +23,7 @@ describe('SendingStatusService', function () {
 
         return result.map((row) => {
           if (row && typeof row === 'object') {
-            for (const key of ['count', 'recipient_count']) {
+            for (const key of ['recipient_count']) {
               const value = Reflect.get(row, key);
               if (typeof value === 'number') {
                 Reflect.set(row, key, String(value));
@@ -138,9 +138,8 @@ describe('SendingStatusService', function () {
     });
   });
 
-  it('derives a submitted send from its recipient count', async function () {
-    await addEmail({ status: 'submitted', emailCount: 0 });
-    await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00' });
+  it('derives a submitted send from the stored email count without reading its batches', async function () {
+    await addEmail({ status: 'submitted', emailCount: 10 });
 
     assert.deepEqual(await service.statusFor('email-id'), {
       id: 'email-id',
@@ -160,15 +159,6 @@ describe('SendingStatusService', function () {
       id: 'email-id',
       sending: {
         status: 'preparing',
-        progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
-      },
-    });
-
-    await knex('emails').where('id', 'email-id').update({ status: 'submitted' });
-    assert.deepEqual(await service.statusFor('email-id'), {
-      id: 'email-id',
-      sending: {
-        status: 'submitted',
         progress: { completed: 10, total: 10, estimatedSecondsRemaining: 0 },
       },
     });

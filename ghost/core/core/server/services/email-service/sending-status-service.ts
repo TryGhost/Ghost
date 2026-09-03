@@ -1,6 +1,5 @@
 import type { Knex } from 'knex';
 import { camelKeys } from '../../lib/case-keys';
-import { DbCount } from '../../lib/db-types/count';
 import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
 import {
   openSending,
@@ -29,9 +28,11 @@ export class SendingStatusService {
     }
 
     const email = DbEmailSendingRow.parse(row);
+    // Batch creation reconciles email_count to the recipient rows it built, so a submitted
+    // email's stored count is its recipient count without a query over email_recipients.
     const sending =
       email.status === 'submitted'
-        ? submittedSending(await this.#recipientCountFor(emailId))
+        ? submittedSending(email.email_count)
         : openSending(
             {
               status: email.status,
@@ -57,13 +58,5 @@ export class SendingStatusService {
       .where('batch.email_id', emailId);
 
     return rows.map((batchRow) => camelKeys(DbBatchSendingRow.parse(batchRow)));
-  }
-
-  async #recipientCountFor(emailId: string): Promise<number> {
-    const [countRow] = await this.#knex('email_recipients')
-      .count({ count: '*' })
-      .where('email_id', emailId);
-
-    return DbCount.parse(countRow.count);
   }
 }

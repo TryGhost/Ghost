@@ -10,9 +10,10 @@ The sending status served by the Admin API's `emails/:id/status` endpoint is
 derived on read. `sending-status.ts` owns the derivation from an email and its
 batches with their recipient counts; `SendingStatusService` reads those rows
 and `sending-status-serializers.ts` shapes the response. Submitted is terminal and the batch aggregation only
-describes an open outcome, so submitted emails answer with the email's
-recipient count as both completed and total. That also keeps reads of
-long-finished emails cheap. The endpoint is always available; Admin decides
+describes an open outcome, so submitted emails answer with the email's stored
+`email_count` as both completed and total; batch creation reconciles that
+column to the recipient rows it built. That also keeps reads of long-finished
+emails cheap, with no query over the batches or recipients. The endpoint is always available; Admin decides
 whether to poll it while a send is active.
 
 The phase is read from the batches: an email is submitting once any batch has

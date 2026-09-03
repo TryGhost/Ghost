@@ -95,19 +95,27 @@ describe('Emails API', function () {
 
   it('Can read the sending status of a submitted email', async function () {
     const email = fixtureManager.get('emails', 0);
-    await agent
-      .get(`emails/${email.id}/status/`)
-      .expectStatus(200)
-      .matchBodySnapshot({
-        email_statuses: [{ id: anyObjectId }],
-      })
-      .matchHeaderSnapshot({
-        'content-version': anyContentVersion,
-        etag: anyEtag,
-      })
-      .expect(({ body }) => {
-        assert.equal(body.email_statuses[0].id, email.id);
-      });
+    // The fixture stores email_count 0 against its recipient rows; batch creation
+    // reconciles the column to those rows before an email can be submitted.
+    try {
+      await db.knex('emails').where('id', email.id).update({ email_count: 6 });
+
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          email_statuses: [{ id: anyObjectId }],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].id, email.id);
+        });
+    } finally {
+      await db.knex('emails').where('id', email.id).update({ email_count: email.email_count });
+    }
   });
 
   it('Can read the sending status of an email that is still submitting', async function () {
