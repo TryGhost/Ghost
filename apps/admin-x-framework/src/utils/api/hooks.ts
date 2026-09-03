@@ -38,6 +38,7 @@ interface QueryOptions<ResponseData> {
   headers?: Record<string, string>;
   defaultSearchParams?: Record<string, string>;
   permissions?: UserRoleType[];
+  parseResponse?: (data: unknown) => ResponseData;
   returnData?: (originalData: unknown) => ResponseData;
 }
 
@@ -66,7 +67,16 @@ export const createQuery =
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options, ...requestOptions }),
+      queryFn: async () => {
+        if (options.parseResponse) {
+          const data = await fetchApi<unknown>(url, {
+            headers: options.headers,
+            ...requestOptions,
+          });
+          return options.parseResponse(data);
+        }
+        return fetchApi<ResponseData>(url, { headers: options.headers, ...requestOptions });
+      },
     });
 
     const data = useMemo(
@@ -86,21 +96,24 @@ export const createQuery =
     };
   };
 
-type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
-  returnData: NonNullable<QueryOptions<ResponseData>['returnData']>;
+type InfiniteQueryOptions<ResponseData, PageData = ResponseData> = Omit<
+  QueryOptions<PageData>,
+  'returnData'
+> & {
+  returnData: (originalData: unknown) => ResponseData;
   defaultNextPageParams?: (
-    data: ResponseData,
+    data: PageData,
     params: Record<string, string>,
   ) => Record<string, string> | undefined;
 };
 
 type InfiniteQueryPageParam = Record<string, string> | undefined;
 
-type InfiniteQueryHookOptions<ResponseData> = Omit<
+type InfiniteQueryHookOptions<ResponseData, PageData = ResponseData> = Omit<
   UseInfiniteQueryOptions<
-    ResponseData,
+    PageData,
     Error,
-    InfiniteData<ResponseData, InfiniteQueryPageParam>,
+    InfiniteData<PageData, InfiniteQueryPageParam>,
     QueryKey,
     InfiniteQueryPageParam
   >,
@@ -108,15 +121,22 @@ type InfiniteQueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
+  /** Whether this query leaves an expired session for its caller to handle in place. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
   getNextPageParams?: (
-    data: ResponseData,
+    data: PageData,
     params: Record<string, string>,
   ) => Record<string, string> | undefined;
 };
 
 export const createInfiniteQuery =
-  <ResponseData>(options: InfiniteQueryOptions<ResponseData>) =>
-  ({ searchParams, getNextPageParams, ...query }: InfiniteQueryHookOptions<ResponseData> = {}) => {
+  <ResponseData, PageData = ResponseData>(options: InfiniteQueryOptions<ResponseData, PageData>) =>
+  ({
+    searchParams,
+    requestOptions,
+    getNextPageParams,
+    ...query
+  }: InfiniteQueryHookOptions<ResponseData, PageData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
     const hasPermission = usePermission(options.permissions);
@@ -124,9 +144,9 @@ export const createInfiniteQuery =
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<
-      ResponseData,
+      PageData,
       Error,
-      InfiniteData<ResponseData, InfiniteQueryPageParam>,
+      InfiniteData<PageData, InfiniteQueryPageParam>,
       QueryKey,
       InfiniteQueryPageParam
     >({
@@ -136,10 +156,17 @@ export const createInfiniteQuery =
         options.dataType,
         apiUrl(options.path, searchParams || options.defaultSearchParams),
       ],
-      queryFn: ({ pageParam }) =>
-        fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams), {
-          ...options,
-        }),
+      queryFn: async ({ pageParam }) => {
+        const url = apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams);
+        if (options.parseResponse) {
+          const data = await fetchApi<unknown>(url, {
+            headers: options.headers,
+            ...requestOptions,
+          });
+          return options.parseResponse(data);
+        }
+        return fetchApi<PageData>(url, { headers: options.headers, ...requestOptions });
+      },
       initialPageParam: undefined,
       getNextPageParam: (data) =>
         nextPageParams(data, searchParams || options.defaultSearchParams || {}),

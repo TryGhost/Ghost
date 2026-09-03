@@ -45,7 +45,16 @@ module.exports = createNonTransactionalMigration(
     await discardStoredValues(knex);
 
     if (!(await knex.schema.hasColumn(TABLE, 'path'))) {
-      await addColumn(TABLE, 'path', knex, undefined, { algorithm: 'auto' });
+      // Spec pinned rather than read from schema.js, the way `down` already pins its own:
+      // a later migration renames this table, and an unpinned spec resolves against a
+      // schema that no longer names it.
+      await addColumn(
+        TABLE,
+        'path',
+        knex,
+        { type: 'string', maxlength: 191, nullable: false, defaultTo: '' },
+        { algorithm: 'auto' },
+      );
     }
 
     // A later 6.58 migration re-keys this table onto `custom_field_key`, dropping

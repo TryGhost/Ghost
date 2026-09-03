@@ -8,7 +8,7 @@ const moment = require('moment');
 // the members service, so the members service is never without one. Fixtures build
 // it the same way, otherwise a test fails on a dependency the code is entitled to
 // assume rather than on the behaviour it is checking.
-const createCustomFieldValuesStub = () => ({
+const createMetafieldValuesStub = () => ({
   getValuesForMembers: sinon.stub().resolves(new Map()),
   unwrapWire: sinon.stub().callsFake((input) => input),
   namesValues: sinon.stub().returns(false),
@@ -16,7 +16,7 @@ const createCustomFieldValuesStub = () => ({
   applyWrite: sinon.stub().resolves(),
 });
 
-const createCustomFieldDefinitionsStub = (hasAnyActive = false) => ({
+const createMetafieldDefinitionsStub = (hasAnyActive = false) => ({
   hasAnyActive: sinon.stub().resolves(hasAnyActive),
 });
 
@@ -58,7 +58,7 @@ describe('MemberBreadService', function () {
     // Helper to create a properly mocked service
     function createService(
       memberRepositoryOverrides = {},
-      customFieldValues = createCustomFieldValuesStub(),
+      metafieldValues = createMetafieldValuesStub(),
     ) {
       const mockMemberModel = createMockMemberModel();
 
@@ -83,8 +83,8 @@ describe('MemberBreadService', function () {
         settingsHelpers: {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
-        customFieldValues,
-        customFieldDefinitions: createCustomFieldDefinitionsStub(),
+        metafieldValues,
+        metafieldDefinitions: createMetafieldDefinitionsStub(),
       });
 
       // Stub the read method to avoid having to mock all its dependencies
@@ -101,7 +101,7 @@ describe('MemberBreadService', function () {
         linkStripeCustomerStub,
         createStub,
         getSuppressionDataStub,
-        customFieldValues,
+        metafieldValues,
       };
     }
 
@@ -109,9 +109,9 @@ describe('MemberBreadService', function () {
       // Values can only be set on a later edit. The values service decides what
       // counts as naming them, so drive it directly rather than through a body
       // shape, which is the values service's own contract to test.
-      const customFieldValues = createCustomFieldValuesStub();
-      customFieldValues.namesValues.returns(true);
-      const { service, createStub } = createService({}, customFieldValues);
+      const metafieldValues = createMetafieldValuesStub();
+      metafieldValues.namesValues.returns(true);
+      const { service, createStub } = createService({}, metafieldValues);
 
       await assert.rejects(
         () =>
@@ -130,15 +130,15 @@ describe('MemberBreadService', function () {
     });
 
     it('creates a member when the body names no custom field values', async function () {
-      const { service, createStub, customFieldValues } = createService();
+      const { service, createStub, metafieldValues } = createService();
 
       await service.add({ email: 'test@example.com' }, {});
 
       assert.equal(createStub.calledOnce, true);
       // Asked unconditionally: the member data is handed over whether or not it
       // carries the key, and an absent one is the values service's to judge.
-      assert.equal(customFieldValues.namesValues.calledOnce, true);
-      assert.equal(customFieldValues.namesValues.firstCall.args[0], undefined);
+      assert.equal(metafieldValues.namesValues.calledOnce, true);
+      assert.equal(metafieldValues.namesValues.firstCall.args[0], undefined);
     });
 
     it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {
@@ -343,8 +343,8 @@ describe('MemberBreadService', function () {
         settingsHelpers: {
           createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe'),
         },
-        customFieldValues: createCustomFieldValuesStub(),
-        customFieldDefinitions: createCustomFieldDefinitionsStub(),
+        metafieldValues: createMetafieldValuesStub(),
+        metafieldDefinitions: createMetafieldDefinitionsStub(),
       });
 
       sinon.stub(service, 'read').resolves({ id: 'member_123' });
@@ -515,7 +515,7 @@ describe('MemberBreadService', function () {
       },
     };
 
-    const defaultCustomFieldValues = createCustomFieldValuesStub();
+    const defaultMetafieldValues = createMetafieldValuesStub();
 
     const getService = (options = {}) => {
       return new MemberBreadService({
@@ -530,9 +530,8 @@ describe('MemberBreadService', function () {
         nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
         offersAPI: options.offersAPI || defaultOffersAPI,
         giftService: options.giftService || defaultGiftService,
-        customFieldValues: options.customFieldValues || defaultCustomFieldValues,
-        customFieldDefinitions:
-          options.customFieldDefinitions || createCustomFieldDefinitionsStub(),
+        metafieldValues: options.metafieldValues || defaultMetafieldValues,
+        metafieldDefinitions: options.metafieldDefinitions || createMetafieldDefinitionsStub(),
       });
     };
 
@@ -579,20 +578,20 @@ describe('MemberBreadService', function () {
     });
 
     it('asks nothing about custom fields when the caller does not want them', async function () {
-      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
-      const customFieldValues = createCustomFieldValuesStub();
-      const memberBreadService = getService({ customFieldDefinitions, customFieldValues });
+      const metafieldDefinitions = createMetafieldDefinitionsStub(true);
+      const metafieldValues = createMetafieldValuesStub();
+      const memberBreadService = getService({ metafieldDefinitions, metafieldValues });
 
-      const member = await memberBreadService.read({ id: MEMBER_ID }, { customFieldsFor: null });
+      const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: null });
 
       assert.equal(Object.hasOwn(member, 'metafields'), false);
-      assert.equal(customFieldDefinitions.hasAnyActive.called, false);
-      assert.equal(customFieldValues.getValuesForMembers.called, false);
+      assert.equal(metafieldDefinitions.hasAnyActive.called, false);
+      assert.equal(metafieldValues.getValuesForMembers.called, false);
     });
 
     it('carries custom fields on a site that defines them', async function () {
-      const customFieldDefinitions = createCustomFieldDefinitionsStub(true);
-      const memberBreadService = getService({ customFieldDefinitions });
+      const metafieldDefinitions = createMetafieldDefinitionsStub(true);
+      const memberBreadService = getService({ metafieldDefinitions });
 
       const member = await memberBreadService.read({ id: MEMBER_ID });
 

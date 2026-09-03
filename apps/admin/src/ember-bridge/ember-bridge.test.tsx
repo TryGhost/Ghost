@@ -44,6 +44,7 @@ function createMockStateBridge(sidebarVisible = true) {
     onUpdate: vi.fn(),
     onInvalidate: vi.fn(),
     onDelete: vi.fn(),
+    refreshFeatureFlagOverrides: vi.fn(),
     isFeatureEnabled: vi.fn().mockReturnValue(false),
     on,
     off,
@@ -638,6 +639,22 @@ describe('theme bridge helpers', () => {
 });
 
 describe('emberMutationHandlers', () => {
+  test('waits for Ember to load before refreshing feature flag overrides', async () => {
+    vi.useFakeTimers();
+    const { emberMutationHandlers } = await import('./ember-bridge');
+
+    const stopWaiting = emberMutationHandlers.onFeatureFlagOverridesChange();
+    const mock = createMockStateBridge();
+    window.EmberBridge = { state: mock.stateBridge };
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(mock.stateBridge.refreshFeatureFlagOverrides).toHaveBeenCalledTimes(1);
+    stopWaiting();
+  });
+
   test('resolves the bridge at call time, not import time', async () => {
     // Import first, install the bridge after: forwarding must still work.
     const { emberMutationHandlers } = await import('./ember-bridge');

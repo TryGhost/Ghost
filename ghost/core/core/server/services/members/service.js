@@ -49,9 +49,9 @@ let membersApi;
 let verificationTrigger;
 
 const buildImporterDeps = ({ stripeAPIService }) => {
-  // Required here, not statically: boot builds the custom fields services before this
+  // Required here, not statically: boot builds the metafields services before this
   // one (the exporter below relies on the same).
-  const customFields = require('../members-custom-fields');
+  const metafields = require('../members-metafields');
   return {
     getTimezone: () => settingsCache.get('timezone'),
     // A getter rather than a value because the threshold is an operator
@@ -88,9 +88,9 @@ const buildImporterDeps = ({ stripeAPIService }) => {
     urlFor: urlUtils.urlFor.bind(urlUtils),
     stripeAPIService,
     productRepository: membersApi.productRepository,
-    customFields: {
-      definitions: customFields.definitions,
-      values: customFields.values,
+    metafields: {
+      definitions: metafields.definitions,
+      values: metafields.values,
     },
   };
 };
@@ -175,11 +175,11 @@ module.exports = {
       membersCSVImporter.importInline(request, verificationTrigger);
 
     // Constructed here rather than required statically: the exporter needs the
-    // custom fields services, which boot builds before this one.
-    const customFields = require('../members-custom-fields');
+    // metafields services, which boot builds before this one.
+    const metafields = require('../members-metafields');
     module.exports.export = makeExporter({
-      definitions: customFields.definitions,
-      values: customFields.values,
+      definitions: metafields.definitions,
+      values: metafields.values,
     });
 
     if (!env?.startsWith('testing')) {

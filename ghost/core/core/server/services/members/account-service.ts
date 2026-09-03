@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { MEMBERS } from '../members-custom-fields';
+import { MEMBERS } from '../members-metafields';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -54,7 +54,7 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-interface CustomFieldValues {
+interface MetafieldValues {
   unwrapWire(input: unknown): unknown;
   planWrite(values: unknown, audience: unknown): Promise<unknown[]>;
   applyWrite(
@@ -68,32 +68,32 @@ export interface MemberAccountServiceDeps {
   memberBREADService: MemberBreadService;
   members: MemberRepository;
   emailSuppressionList: EmailSuppressionList;
-  customFieldValues: CustomFieldValues;
+  metafieldValues: MetafieldValues;
 }
 
 export class MemberAccountService {
   #memberBREADService: MemberBreadService;
   #members: MemberRepository;
   #emailSuppressionList: EmailSuppressionList;
-  #customFieldValues: CustomFieldValues;
+  #metafieldValues: MetafieldValues;
 
   constructor({
     memberBREADService,
     members,
     emailSuppressionList,
-    customFieldValues,
+    metafieldValues,
   }: MemberAccountServiceDeps) {
     this.#memberBREADService = memberBREADService;
     this.#members = members;
     this.#emailSuppressionList = emailSuppressionList;
-    this.#customFieldValues = customFieldValues;
+    this.#metafieldValues = metafieldValues;
   }
 
   /** Everything a member is shown about themselves. */
   async read(memberId: string): Promise<Record<string, unknown> | null> {
     // As the member rather than as staff: how much of the extra fields a publisher
     // defines is answered depends on which side of Ghost is asking.
-    return this.#memberBREADService.read({ id: memberId }, { customFieldsFor: MEMBERS });
+    return this.#memberBREADService.read({ id: memberId }, { metafieldsFor: MEMBERS });
   }
 
   /** Apply what a member asked to change about themselves, and say what they now hold. */
@@ -102,11 +102,11 @@ export class MemberAccountService {
     // the whole request rather than leaving a member renamed with their answers
     // rejected. The write below reconciles subscriptions with Stripe and sends
     // events, none of which giving up halfway could undo.
-    const plannedCustomFields =
+    const plannedMetafields =
       data.metafields === undefined
         ? null
-        : await this.#customFieldValues.planWrite(
-            this.#customFieldValues.unwrapWire(data.metafields),
+        : await this.#metafieldValues.planWrite(
+            this.#metafieldValues.unwrapWire(data.metafields),
             MEMBERS,
           );
 
@@ -115,11 +115,11 @@ export class MemberAccountService {
       withRelated: WRITE_RELATIONS,
     });
 
-    if (plannedCustomFields) {
+    if (plannedMetafields) {
       // A member is recorded as the author of their own answers, and is the one
       // writer whose changes leave nothing in the staff action log: that log
       // records what staff did.
-      await this.#customFieldValues.applyWrite(memberId, plannedCustomFields, {
+      await this.#metafieldValues.applyWrite(memberId, plannedMetafields, {
         writtenBy: { type: 'member', id: memberId },
       });
     }

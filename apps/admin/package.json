@@ -33,12 +33,12 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
-    "@tryghost/custom-field-types": "workspace:*",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/kg-clean-basic-html": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
+    "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
@@ -169,7 +169,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/checkout",
-              "@tryghost/custom-field-types",
+              "@tryghost/metafield-types",
               "@tryghost/shade"
             ],
             "target": "build"
