@@ -8,6 +8,26 @@
 
 @custom-variant admin7 (&:where(.admin7, .admin7 *));
 
+@keyframes email-sending-arrow-rise {
+  from {
+    transform: translateY(115%);
+  }
+
+  to {
+    transform: translateY(-115%);
+  }
+}
+
+.email-sending-arrow-rise {
+  animation: email-sending-arrow-rise 1200ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .email-sending-arrow-rise {
+    animation: none;
+  }
+}
+
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */

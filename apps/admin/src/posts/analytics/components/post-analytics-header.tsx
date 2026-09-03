@@ -1,5 +1,6 @@
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
+import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -40,7 +41,6 @@ import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-con
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
 import {
-  hasBeenEmailed,
   isEmailOnly,
   isPublishedAndEmailed,
   isPublishedOnly,
@@ -55,6 +55,7 @@ import {
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -72,6 +73,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
+  const { hasNewsletterAnalytics } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
   const editorPath = `/editor/post/${postId}`;
   // Whether the editor needs a hash navigation depends on the `editorReact` flag.
@@ -119,7 +121,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
         tabs.push('Web');
       }
     }
-    if (hasBeenEmailed(post)) {
+    if (hasNewsletterAnalytics) {
       tabs.push('Newsletter');
     }
     // Only show Growth tab if member source tracking is enabled
@@ -128,7 +130,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
 
     return tabs;
-  }, [post, webAnalyticsEnabled, membersTrackSources]);
+  }, [post, webAnalyticsEnabled, membersTrackSources, hasNewsletterAnalytics]);
 
   const handleDeletePost = () => {
     if (!post) {
@@ -296,6 +298,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 </div>
               </div>
             )}
+            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

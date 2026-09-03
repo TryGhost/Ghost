@@ -1,5 +1,5 @@
 import { HttpResponse, http } from 'msw';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { test as baseTest, beforeEach, describe, expect, vi } from 'vitest';
 import { post, type Post } from '@tryghost/test-data';
 import type { QueryClient } from '@tanstack/react-query';
@@ -7,6 +7,20 @@ import type { SetupServer } from 'msw/node';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { usePostSuccessModal } from '@/posts/analytics/hooks/use-post-success-modal';
+
+const { mockUseFeatureFlag } = vi.hoisted(() => ({
+  mockUseFeatureFlag: vi.fn(),
+}));
+
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
+    '@tryghost/admin-x-framework/hooks',
+  );
+  return {
+    ...actual,
+    useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag) as boolean,
+  };
+});
 
 // Mock the shared analytics data hook (not HTTP)
 vi.mock('@/shared/analytics/use-analytics-data', () => ({
@@ -47,6 +61,7 @@ const test = baseTest.extend<{
 describe('usePostSuccessModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseFeatureFlag.mockReturnValue(false);
 
     // Default mocks
     mockUseAnalyticsData.mockReturnValue({
@@ -422,6 +437,48 @@ describe('usePostSuccessModal', () => {
       expect(publishedOnlyResult.current.modalProps?.emailOnly).toBeFalsy();
       expect(publishedOnlyResult.current.modalProps?.description).toBeTruthy();
     });
+  });
+
+  test('uses in-progress copy for a post and email when improved sending UI is enabled', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email: { email_count: 100, opened_count: 0 },
+        newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(
+      screen.getByText(/Your post was published on your site and is being sent to/),
+    ).toBeTruthy();
+  });
+
+  test('uses in-progress copy for an email-only send when improved sending UI is enabled', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email_only: true,
+        email: { email_count: 50, opened_count: 0 },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
   });
 
   test('handles loading state', ({ server, wrapper }) => {

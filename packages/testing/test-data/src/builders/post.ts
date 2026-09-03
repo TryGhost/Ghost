@@ -58,7 +58,9 @@ export interface Post {
   // before the setting changed keeps the flags it went out with, and that is
   // what decides whether the Opens/Clicks columns show.
   email?: {
+    id?: string;
     email_count: number;
+    error?: string | null;
     opened_count: number;
     status?: string;
     track_opens?: boolean;
