@@ -211,22 +211,22 @@ describe('Post analytics overview', () => {
       };
     });
     let statusRequestCount = 0;
+    let completeSending = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
       return {
         email_statuses: [
           {
             id: EMAIL_ID,
-            sending:
-              statusRequestCount === 1
-                ? {
-                    status: 'submitting',
-                    progress: { completed: 500, total: 1000, estimated_seconds_remaining: 30 },
-                  }
-                : {
-                    status: 'submitted',
-                    progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
-                  },
+            sending: !completeSending
+              ? {
+                  status: 'submitting',
+                  progress: { completed: 500, total: 1000, estimated_seconds_remaining: 30 },
+                }
+              : {
+                  status: 'submitted',
+                  progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
+                },
           },
         ],
       };
@@ -249,7 +249,11 @@ describe('Post analytics overview', () => {
       .toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeDisabled();
 
-    await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(1);
+    completeSending = true;
+    const pendingStatusRequestCount = statusRequestCount;
+    await expect
+      .poll(() => statusRequestCount, { timeout: 3500 })
+      .toBeGreaterThan(pendingStatusRequestCount);
     await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
@@ -388,7 +392,12 @@ describe('Post analytics overview', () => {
     seedPostAnalyticsWorld({
       email: { id: EMAIL_ID, email_count: 1000, opened_count: 400, status: 'submitting' },
     });
-    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, null, { status: 404 });
+    const statusApi = fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ message: 'Resource not found' }] },
+      { status: 404 },
+    );
 
     const app = await renderAdminApp(`/posts/analytics/${POST_ID}`, {
       labs: { improveSendingUI: true },
@@ -400,6 +409,7 @@ describe('Post analytics overview', () => {
       .element(page.getByText('This newsletter is still sending'))
       .not.toBeInTheDocument();
     await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
+    await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
   });
 
@@ -435,19 +445,6 @@ describe('Post analytics overview', () => {
 
   it('keeps the post context when switching to the web tab', async () => {
     const { kpisApi } = seedPostAnalyticsWorld();
-    // The browser runner can deliver a queued focus refetch from the preceding
-    // status-query scenarios after rotating their per-test handlers.
-    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
-      email_statuses: [
-        {
-          id: EMAIL_ID,
-          sending: {
-            status: 'submitted',
-            progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
-          },
-        },
-      ],
-    });
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
       labs: { improveSendingUI: false },
       boot: webAnalyticsBootOverrides(),
