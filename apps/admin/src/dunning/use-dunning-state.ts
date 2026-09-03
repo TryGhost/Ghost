@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useSubscriptionStatus } from '@/ember-bridge';
@@ -11,6 +11,8 @@ export interface DunningState {
   daysLeft: number;
   /** Escalated styling within the warning phase (last stretch before the lock). */
   urgent: boolean;
+  /** The locked takeover was closed by the user for this dunning episode. */
+  lockDismissed: boolean;
   paymentFailedAt: Date;
   suspendsAt: Date;
 }
@@ -20,7 +22,7 @@ export interface DunningState {
  * paymentFailedAt -> suspendsAt window has elapsed. Proportional rather than
  * an absolute day count so the same component fits any host's window length.
  */
-const LOCK_AT_FRACTION = 0.5;
+const LOCK_AT_FRACTION = 0.75;
 
 /** The warning banner escalates its styling past this fraction of the window. */
 const URGENT_AT_FRACTION = 0.25;
@@ -55,6 +57,44 @@ export function markPaymentAttempt(): void {
   } catch {
     // Without storage the grace period is simply not persisted.
   }
+}
+
+const LOCK_DISMISSED_KEY = 'ghost-dunning-lock-dismissed-for';
+
+const lockDismissListeners = new Set<() => void>();
+
+// Fallback when sessionStorage is unavailable, so dismissing still works for
+// the lifetime of the page.
+let inMemoryLockDismissedFor: string | null = null;
+
+function readLockDismissedFor(): string | null {
+  try {
+    return window.sessionStorage.getItem(LOCK_DISMISSED_KEY);
+  } catch {
+    return inMemoryLockDismissedFor;
+  }
+}
+
+function subscribeLockDismissed(listener: () => void): () => void {
+  lockDismissListeners.add(listener);
+  return () => {
+    lockDismissListeners.delete(listener);
+  };
+}
+
+/**
+ * Dismisses the locked takeover. Keyed by `paymentFailedAt` and scoped to the
+ * session, so a reload in a later session — or a new payment failure — brings
+ * the takeover back. The urgent warning banner stays up underneath.
+ */
+export function dismissLock(state: DunningState): void {
+  inMemoryLockDismissedFor = state.paymentFailedAt.toISOString();
+  try {
+    window.sessionStorage.setItem(LOCK_DISMISSED_KEY, inMemoryLockDismissedFor);
+  } catch {
+    // Storage can be unavailable; the in-memory fallback covers this page.
+  }
+  lockDismissListeners.forEach((listener) => listener());
 }
 
 function parseDate(value: string | undefined): Date | null {
@@ -94,6 +134,8 @@ export function useDunningState(): DunningState | null {
     return () => clearInterval(interval);
   }, []);
 
+  const lockDismissedFor = useSyncExternalStore(subscribeLockDismissed, readLockDismissedFor);
+
   if (!dunningWarningsEnabled) {
     return null;
   }
@@ -129,6 +171,7 @@ export function useDunningState(): DunningState | null {
     phase: elapsedFraction >= LOCK_AT_FRACTION ? 'locked' : 'warning',
     daysLeft,
     urgent: elapsedFraction >= URGENT_AT_FRACTION,
+    lockDismissed: lockDismissedFor === paymentFailedAt.toISOString(),
     paymentFailedAt,
     suspendsAt,
   };
