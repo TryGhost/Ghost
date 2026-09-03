@@ -12,7 +12,10 @@ describe('isAdmin7PillApprovedRoute', () => {
     { pathname: '/tags', expected: true },
     { pathname: '/tags/', expected: true },
     { pathname: '/tags/new', expected: false },
-    { pathname: '/tags/example', expected: false },
+    { pathname: '/tags/new/', expected: false },
+    { pathname: '/tags/example', expected: true },
+    { pathname: '/tags/example/', expected: true },
+    { pathname: '/tags/example/extra', expected: false },
     { pathname: '/editor', expected: false },
     { pathname: '/editor/post/example', expected: false },
   ])('returns $expected for $pathname', ({ pathname, expected }) => {
