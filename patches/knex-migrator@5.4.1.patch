@@ -1,0 +1,127 @@
+diff --git a/lib/database.js b/lib/database.js
+index 61e4fe2e5ea6a3ff9392d8a4f4e8488842664db9..65961c44a280ff6c82d2f4a79fef271ccf2bdb2d 100644
+--- a/lib/database.js
++++ b/lib/database.js
+@@ -33,6 +33,10 @@ exports.connect = function connect(options) {
+         delete options.connection.filename;
+     }
+ 
++    if (client === 'pg') {
++        delete options.connection.filename;
++    }
++
+     return knex(options);
+ };
+ 
+@@ -108,6 +112,33 @@ exports.createDatabaseIfNotExist = function createDatabaseIfNotExist(dbConfig) {
+     // @NOTE: Skip, because sqlite3 is a file based database.
+     if (DatabaseInfo.isSQLiteConfig(dbConfig)) {
+         return Promise.resolve();
++    } else if (dbConfig.client === 'pg') {
++        const pgConnection = exports.connect({
++            client: 'pg',
++            connection: Object.assign({}, dbConfig.connection, {database: 'postgres'})
++        });
++
++        debug('Create database', name);
++
++        return exports.ensureConnectionWorks(pgConnection)
++            .then(function () {
++                return pgConnection.raw('CREATE DATABASE "' + name + '";');
++            })
++            .catch(function (err) {
++                // CASE: DB exists (duplicate_database)
++                if (err.code === '42P04') {
++                    return Promise.resolve();
++                }
++
++                throw new errors.DatabaseError({
++                    message: err.message,
++                    err: err,
++                    code: 'DATABASE_CREATION_FAILED'
++                });
++            })
++            .finally(function () {
++                return pgConnection.destroy();
++            });
+     } else if (!DatabaseInfo.isMySQLConfig(dbConfig)) {
+         return Promise.reject(new errors.KnexMigrateError({
+             message: 'Database is not supported.'
+@@ -216,6 +247,16 @@ exports.drop = function drop(options) {
+                     return connection.raw('PRAGMA foreign_keys = ON;');
+                 }
+             });
++    } else if (connection.client.config.client === 'pg') {
++        // @NOTE: We are connected to the database itself, so drop and recreate the schema instead.
++        debug('Drop schema public: ' + dbConfig.connection.database);
++
++        return connection.raw('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
++            .catch(function (err) {
++                return Promise.reject(new errors.KnexMigrateError({
++                    err: err
++                }));
++            });
+     } else {
+         return Promise.reject(new errors.KnexMigrateError({
+             message: 'Database client not supported: ' + dbConfig.client
+diff --git a/lib/index.js b/lib/index.js
+index 293ee7a3815a0db59728a7f4b8fe17ccba87ed07..19915b075eaaf314b81e060ef0ea37ae7d47fc2b 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -481,7 +481,7 @@ KnexMigrator.prototype.reset = function reset(options) {
+             dbConfig: self.dbConfig
+         }).catch(function onRestError(err) {
+             // Database does not exist. MySql.
+-            if (err.errno === 1049) {
++            if (err.errno === 1049 || err.code === '3D000') {
+                 return Promise.resolve();
+             }
+ 
+@@ -521,7 +521,7 @@ KnexMigrator.prototype.reset = function reset(options) {
+             debug('Reset error: ' + err.message);
+ 
+             // CASE: Database does not exist. For MySql.
+-            if (err.errno === 1049) {
++            if (err.errno === 1049 || err.code === '3D000') {
+                 return Promise.resolve();
+             }
+ 
+@@ -604,7 +604,7 @@ KnexMigrator.prototype.isDatabaseOK = function isDatabaseOK() {
+         })
+         .catch(function (err) {
+             // CASE: database does not exist
+-            if (err.errno === 1049) {
++            if (err.errno === 1049 || err.code === '3D000') {
+                 throw new errors.DatabaseIsNotOkError({
+                     message: 'Please run `yarn knex-migrator init`',
+                     code: 'DB_NOT_INITIALISED'
+@@ -1199,7 +1199,7 @@ KnexMigrator.prototype._integrityCheck = async function _integrityCheck(options)
+         }
+ 
+         // CASE: database does not exist
+-        if (err.errno === 1049) {
++        if (err.errno === 1049 || err.code === '3D000') {
+             throw new errors.DatabaseIsNotOkError({
+                 message: 'Please run `yarn knex-migrator init`',
+                 code: 'DB_NOT_INITIALISED'
+@@ -1210,6 +1210,7 @@ KnexMigrator.prototype._integrityCheck = async function _integrityCheck(options)
+         if (
+             err.errno === 1
+             || err.errno === 1146
++            || err.code === '42P01'
+             || (err.code === 'SQLITE_ERROR' && /no such table: migrations/.test(err.message))
+         ) {
+             throw new errors.DatabaseIsNotOkError({
+diff --git a/migrations/add-primary-key-to-lock-table.js b/migrations/add-primary-key-to-lock-table.js
+index c0a73e84dac7537e4df6bbda64f46e2e0a8efbe1..9d8240e19061d22846f42f9fc293def9a883570b 100644
+--- a/migrations/add-primary-key-to-lock-table.js
++++ b/migrations/add-primary-key-to-lock-table.js
+@@ -37,7 +37,7 @@ function addPrimaryKey(tableName, columns, knex) {
+     return knex.schema.table(tableName, function (table) {
+         table.primary(columns);
+     }).catch((err) => {
+-        if (err.code === 'ER_MULTIPLE_PRI_KEY') {
++        if (err.code === 'ER_MULTIPLE_PRI_KEY' || err.code === '42P16') {
+             debug(`Primary key constraint for: ${columns} already exists for table: ${tableName}`);
+             return;
+         }

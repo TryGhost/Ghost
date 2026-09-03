@@ -341,3 +341,6 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+patchedDependencies:
+  '@tryghost/bookshelf-pagination@2.4.1': patches/@tryghost__bookshelf-pagination@2.4.1.patch
+  knex-migrator@5.4.1: patches/knex-migrator@5.4.1.patch

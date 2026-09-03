@@ -79,6 +79,26 @@ function configure(dbConfig) {
     }
   }
 
+  if (client === 'pg') {
+    const pgTypes = require('pg').types;
+    // Match mysql2 behaviour: numbers come back as numbers, not strings
+    pgTypes.setTypeParser(pgTypes.builtins.INT8, (val) => (val === null ? null : Number(val)));
+    pgTypes.setTypeParser(pgTypes.builtins.NUMERIC, (val) => (val === null ? null : Number(val)));
+    // Ghost stores naive UTC timestamps; parse `timestamp without time zone` as UTC
+    // (mirrors mysql2's `timezone: 'Z'`) instead of the server's local zone.
+    pgTypes.setTypeParser(pgTypes.builtins.TIMESTAMP, (val) =>
+      val === null ? null : new Date(val.replace(' ', 'T') + 'Z'),
+    );
+    // DATE() style columns as plain strings, not local Date objects
+    pgTypes.setTypeParser(pgTypes.builtins.DATE, (val) => val);
+
+    dbConfig.pool = Object.assign({}, dbConfig.pool, {
+      afterCreate(conn, cb) {
+        conn.query("SET TIME ZONE 'UTC'", (err) => cb(err, conn));
+      },
+    });
+  }
+
   return dbConfig;
 }
 

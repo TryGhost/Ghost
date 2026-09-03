@@ -67,10 +67,14 @@ function sanitizeDatabaseProperties(nconf: Provider): void {
     nconf.set('database:client', 'better-sqlite3');
   }
 
+  if (['postgres', 'postgresql'].includes(nconf.get('database:client'))) {
+    nconf.set('database:client', 'pg');
+  }
+
   const database = nconf.get('database');
   const client = nconf.get('database:client');
 
-  if (client === 'mysql2') {
+  if (client === 'mysql2' || client === 'pg') {
     delete database.connection.filename;
   } else {
     delete database.connection.host;

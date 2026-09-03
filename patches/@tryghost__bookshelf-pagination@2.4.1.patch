@@ -1,0 +1,13 @@
+diff --git a/lib/bookshelf-pagination.js b/lib/bookshelf-pagination.js
+index bee7b4d1edd1fc2034b96b7a1546a855a52db1d8..edc460bcf6d290c3b08f7625048ce1fc38e423cf 100644
+--- a/lib/bookshelf-pagination.js
++++ b/lib/bookshelf-pagination.js
+@@ -225,6 +225,8 @@ const pagination = function pagination(bookshelf) {
+                 }
+ 
+                 countQuery.clear('select');
++                // ORDER BY has no effect on a count and Postgres rejects it under count(*)
++                countQuery.clear('order');
+                 // Skipping distinct for simple queries where we know result rows are unique.
+                 // useBasicCount forces count(*) even for multi-table queries, for callers
+                 // that know their result set is unique.

@@ -44,6 +44,9 @@ function addTableColumn(
     } else {
       column = tableBuilder[columnSpec.type](columnName, 191);
     }
+  } else if (columnSpec.type === 'dateTime' && tableBuilder.client.config.client === 'pg') {
+    // Ghost stores naive UTC datetimes; avoid knex's default `timestamptz` on Postgres
+    column = tableBuilder.dateTime(columnName, { useTz: false });
   } else {
     column = tableBuilder[columnSpec.type](columnName);
   }
@@ -295,7 +298,7 @@ async function addIndex(tableName, columns, transaction = db.knex, options = {})
       logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
       return;
     }
-    if (err.code === 'ER_DUP_KEYNAME') {
+    if (err.code === 'ER_DUP_KEYNAME' || err.code === '42P07' || err.code === '42710') {
       logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
       return;
     }
@@ -322,7 +325,7 @@ async function dropIndex(tableName, columns, transaction = db.knex) {
       logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
       return;
     }
-    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY' || err.code === '42704') {
       logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
       return;
     }
@@ -354,7 +357,7 @@ async function addUnique(tableName, columns, transaction = db.knex, indexName) {
       logging.warn(`Constraint for '${columns}' already exists for table '${tableName}'`);
       return;
     }
-    if (err.code === 'ER_DUP_KEYNAME') {
+    if (err.code === 'ER_DUP_KEYNAME' || err.code === '42P07' || err.code === '42710') {
       logging.warn(`Constraint for '${columns}' already exists for table '${tableName}'`);
       return;
     }
@@ -383,7 +386,7 @@ async function dropUnique(tableName, columns, transaction = db.knex, indexName) 
       logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
       return;
     }
-    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY' || err.code === '42704') {
       logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
       return;
     }
@@ -572,7 +575,7 @@ async function dropForeign({
       }
     }
   } catch (err) {
-    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+    if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY' || err.code === '42704') {
       logging.warn(
         `Skipped dropping foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - does not exist`,
       );
@@ -737,6 +740,11 @@ async function getTables(transaction = db.knex) {
   } else if (client === 'mysql2') {
     const response = await transaction.raw("show full tables where Table_type = 'BASE TABLE'");
     return _.map(response[0], (entry) => _.values(entry)[0]);
+  } else if (client === 'pg') {
+    const response = await transaction.raw(
+      "select table_name from information_schema.tables where table_schema = current_schema() and table_type = 'BASE TABLE'",
+    );
+    return _.map(response.rows, 'table_name');
   }
 
   return Promise.reject(tpl(messages.noSupportForDatabase, { client: client }));
@@ -755,6 +763,12 @@ async function getIndexes(table, transaction = db.knex) {
   } else if (client === 'mysql2') {
     const response = await transaction.raw(`SHOW INDEXES from ${table}`);
     return _.flatten(_.map(response[0], 'Key_name'));
+  } else if (client === 'pg') {
+    const response = await transaction.raw(
+      'select indexname from pg_indexes where schemaname = current_schema() and tablename = ?',
+      [table],
+    );
+    return _.map(response.rows, 'indexname');
   }
 
   return Promise.reject(tpl(messages.noSupportForDatabase, { client: client }));
@@ -771,6 +785,12 @@ async function getColumns(table, transaction = db.knex) {
   } else if (DatabaseInfo.isMySQL(transaction)) {
     const response = await transaction.raw(`SHOW COLUMNS from ${table}`);
     return _.flatten(_.map(response[0], 'Field'));
+  } else if (transaction.client.config.client === 'pg') {
+    const response = await transaction.raw(
+      'select column_name from information_schema.columns where table_schema = current_schema() and table_name = ?',
+      [table],
+    );
+    return _.map(response.rows, 'column_name');
   }
 
   return Promise.reject(

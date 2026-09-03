@@ -691,6 +691,10 @@ packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
 pnpmfileChecksum: sha256-qqNuypA2kX16OHjG3pLjbOVjA/Gsi92LRvE/r6+Nehs=
 
+patchedDependencies:
+  '@tryghost/bookshelf-pagination@2.4.1': 6912f5259724396eef2133ffae35924546fae8f088ac60b90ad671307d8d42d1
+  knex-migrator@5.4.1: 542ae918312a314e6120647535543e63217c730238120ead1ed36bca8f7eb959
+
 importers:
 
   .:
@@ -2375,7 +2379,7 @@ importers:
         version: 2.3.8(supports-color@10.2.2)
       '@tryghost/brute-knex':
         specifier: 'catalog:'
-        version: 3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
@@ -2537,10 +2541,10 @@ importers:
         version: 1.20.6(supports-color@10.2.2)
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
+        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2)
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)))(supports-color@10.2.2)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2693,10 +2697,10 @@ importers:
         version: 9.1.0(encoding@0.1.13)
       knex:
         specifier: 2.4.2
-        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
-        version: 5.4.1(@types/node@22.20.1)(bluebird@3.7.2)(supports-color@10.2.2)
+        version: 5.4.1(patch_hash=542ae918312a314e6120647535543e63217c730238120ead1ed36bca8f7eb959)(@types/node@22.20.1)(bluebird@3.7.2)(pg@8.23.0)(supports-color@10.2.2)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -2784,6 +2788,12 @@ importers:
       path-match:
         specifier: 1.2.4
         version: 1.2.4
+      pg:
+        specifier: 8.23.0
+        version: 8.23.0
+      pg-query-stream:
+        specifier: 4.10.0
+        version: 4.10.0(pg@8.23.0)
       probability-distributions:
         specifier: 0.9.1
         version: 0.9.1
@@ -2853,7 +2863,7 @@ importers:
         version: 2.1.0
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 1.2.9(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -19080,6 +19090,12 @@ packages:
     resolution: {integrity: sha512-vtjFuJI+oYKGb9p/x/LUsu9h36DTUzNfrveGzzwilKIupshpjyDUBM6V+isHl9MBlH9cnVe5Iu0MzpgscwCxyA==}
     engines: {node: '>= 0.10.0'}
 
+  pg-cloudflare@1.4.0:
+    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
+
+  pg-connection-string@2.14.0:
+    resolution: {integrity: sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==}
+
   pg-connection-string@2.4.0:
     resolution: {integrity: sha512-3iBXuv7XKvxeMrIgym7njT+HlZkwZqqGX4Bu9cci8xHZNT+Um1gWKqCsAzcC0d95rcKMU5WBg6YRUcHyV0HZKQ==}
 
@@ -19088,6 +19104,44 @@ packages:
 
   pg-connection-string@2.6.2:
     resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
+
+  pg-cursor@2.22.0:
+    resolution: {integrity: sha512-knzXLKqarTjOvb3qDSW0JiGsazmxwEKXrqHfWRte7XUsOYccQRafn3BLnQobWwInkzFJSyOej8y8cQRh2z3kGw==}
+    peerDependencies:
+      pg: ^8
+
+  pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+
+  pg-pool@3.14.0:
+    resolution: {integrity: sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==}
+    peerDependencies:
+      pg: '>=8.0'
+
+  pg-protocol@1.16.0:
+    resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
+
+  pg-query-stream@4.10.0:
+    resolution: {integrity: sha512-w4h/zgnjI5mIEkK9Bufeo+V4EsHp4lTt9HD8f4Zqt3kYMb30bn/2iLq/UyZb4MMxhZO78Lr6kBLyfGsqq4H7Fw==}
+    peerDependencies:
+      pg: ^8
+
+  pg-types@2.2.0:
+    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
+    engines: {node: '>=4'}
+
+  pg@8.23.0:
+    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
 
   picocolors@0.2.1:
     resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
@@ -19788,6 +19842,22 @@ packages:
   postcss@8.5.26:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
+
+  postgres-array@2.0.0:
+    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
+    engines: {node: '>=4'}
+
+  postgres-bytea@1.0.1:
+    resolution: {integrity: sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-date@1.0.7:
+    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-interval@1.2.0:
+    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
+    engines: {node: '>=0.10.0'}
 
   preact@10.29.8:
     resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
@@ -29077,7 +29147,7 @@ snapshots:
     dependencies:
       lodash: 4.18.1
 
-  '@tryghost/bookshelf-pagination@2.4.1':
+  '@tryghost/bookshelf-pagination@2.4.1(patch_hash=6912f5259724396eef2133ffae35924546fae8f088ac60b90ad671307d8d42d1)':
     dependencies:
       '@tryghost/errors': 3.3.9
       '@tryghost/tpl': 2.3.7
@@ -29092,7 +29162,7 @@ snapshots:
       '@tryghost/bookshelf-has-posts': 2.4.7(supports-color@10.2.2)
       '@tryghost/bookshelf-include-count': 2.3.7(supports-color@10.2.2)
       '@tryghost/bookshelf-order': 2.3.7
-      '@tryghost/bookshelf-pagination': 2.4.1
+      '@tryghost/bookshelf-pagination': 2.4.1(patch_hash=6912f5259724396eef2133ffae35924546fae8f088ac60b90ad671307d8d42d1)
       '@tryghost/bookshelf-search': 2.3.7
       '@tryghost/bookshelf-transaction-events': 2.3.7
     transitivePeerDependencies:
@@ -29102,10 +29172,10 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.3.7': {}
 
-  '@tryghost/brute-knex@3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)':
+  '@tryghost/brute-knex@3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)':
     dependencies:
       express-brute: 1.0.1(express@4.22.2(supports-color@10.2.2))
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
     transitivePeerDependencies:
       - better-sqlite3
       - express
@@ -29626,12 +29696,12 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 26.0.0
 
-  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)':
+  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.25
-      knex: 0.21.21(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 0.21.21(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
     transitivePeerDependencies:
       - mssql
       - mysql
@@ -32348,22 +32418,22 @@ snapshots:
       fast-safe-stringify: 2.1.1
       individual: 3.0.0
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)))(supports-color@10.2.2):
     dependencies:
       '@tryghost/debug': 0.1.40(supports-color@10.2.2)
       '@tryghost/errors': 3.3.9
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
+      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)):
+  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -40187,7 +40257,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@5.4.1(@types/node@22.20.1)(bluebird@3.7.2)(supports-color@10.2.2):
+  knex-migrator@5.4.1(patch_hash=542ae918312a314e6120647535543e63217c730238120ead1ed36bca8f7eb959)(@types/node@22.20.1)(bluebird@3.7.2)(pg@8.23.0)(supports-color@10.2.2):
     dependencies:
       '@tryghost/database-info': 0.3.35
       '@tryghost/errors': 3.3.9
@@ -40196,7 +40266,7 @@ snapshots:
       commander: 5.1.0
       compare-ver: 2.0.2
       debug: 4.4.3(supports-color@10.2.2)
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2)
       lodash: 4.18.1
       moment: 2.30.1
       mysql2: 3.22.5(@types/node@22.20.1)
@@ -40215,7 +40285,7 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.21.21(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2):
+  knex@0.21.21(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2):
     dependencies:
       colorette: 1.2.1
       commander: 6.2.1
@@ -40231,10 +40301,11 @@ snapshots:
       v8flags: 3.2.0
     optionalDependencies:
       mysql2: 3.22.5(@types/node@22.20.1)
+      pg: 8.23.0
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2):
+  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(pg@8.23.0)(supports-color@10.2.2):
     dependencies:
       colorette: 2.0.19
       commander: 9.5.0
@@ -40253,6 +40324,7 @@ snapshots:
     optionalDependencies:
       better-sqlite3: 12.11.1
       mysql2: 3.22.5(@types/node@22.20.1)
+      pg: 8.23.0
     transitivePeerDependencies:
       - supports-color
 
@@ -43049,11 +43121,55 @@ snapshots:
       - '@babel/core'
       - supports-color
 
+  pg-cloudflare@1.4.0:
+    optional: true
+
+  pg-connection-string@2.14.0: {}
+
   pg-connection-string@2.4.0: {}
 
   pg-connection-string@2.5.0: {}
 
   pg-connection-string@2.6.2: {}
+
+  pg-cursor@2.22.0(pg@8.23.0):
+    dependencies:
+      pg: 8.23.0
+
+  pg-int8@1.0.1: {}
+
+  pg-pool@3.14.0(pg@8.23.0):
+    dependencies:
+      pg: 8.23.0
+
+  pg-protocol@1.16.0: {}
+
+  pg-query-stream@4.10.0(pg@8.23.0):
+    dependencies:
+      pg: 8.23.0
+      pg-cursor: 2.22.0(pg@8.23.0)
+
+  pg-types@2.2.0:
+    dependencies:
+      pg-int8: 1.0.1
+      postgres-array: 2.0.0
+      postgres-bytea: 1.0.1
+      postgres-date: 1.0.7
+      postgres-interval: 1.2.0
+
+  pg@8.23.0:
+    dependencies:
+      pg-connection-string: 2.14.0
+      pg-pool: 3.14.0(pg@8.23.0)
+      pg-protocol: 1.16.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.4.0
+
+  pgpass@1.0.5:
+    dependencies:
+      split2: 4.2.0
 
   picocolors@0.2.1: {}
 
@@ -43806,6 +43922,16 @@ snapshots:
       nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  postgres-array@2.0.0: {}
+
+  postgres-bytea@1.0.1: {}
+
+  postgres-date@1.0.7: {}
+
+  postgres-interval@1.2.0:
+    dependencies:
+      xtend: 4.0.2
 
   preact@10.29.8: {}
 
