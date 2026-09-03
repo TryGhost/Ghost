@@ -1041,7 +1041,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      // Keep in sync with FIELD_TYPE_IDS in @tryghost/custom-field-types,
+      // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
         isIn: [['short_text', 'long_text', 'address']],

@@ -1,15 +1,15 @@
-# @tryghost/custom-field-types
+# @tryghost/metafield-types
 
-Shared catalog of member custom field types: storage routing and value validation, consumed by Ghost core and admin
+Shared catalog of member metafield types: storage routing and value validation, consumed by Ghost core and admin
 
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the repo root:
 
 ```bash
-pnpm --filter @tryghost/custom-field-types build   # compile to build/ with tsc (ESM)
-pnpm --filter @tryghost/custom-field-types test    # type-check + unit tests
-pnpm --filter @tryghost/custom-field-types dev     # rebuild on change
+pnpm --filter @tryghost/metafield-types build   # compile to build/ with tsc (ESM)
+pnpm --filter @tryghost/metafield-types test    # type-check + unit tests
+pnpm --filter @tryghost/metafield-types dev     # rebuild on change
 ```
 
 In-monorepo consumers resolve this package via the `source` export condition

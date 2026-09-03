@@ -2,7 +2,7 @@ import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import type { FieldType } from '@tryghost/custom-field-types';
+import type { FieldType } from '@tryghost/metafield-types';
 import { DbCustomField, FIELD_STATUS } from '../members-custom-fields/schema';
 import type { CustomField, RequestContext } from '../members-custom-fields';
 import {

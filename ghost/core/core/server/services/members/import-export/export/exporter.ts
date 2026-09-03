@@ -4,7 +4,7 @@ import type { Knex } from 'knex';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { csvCellsForFields } = require('@tryghost/custom-field-types/csv');
+const { csvCellsForFields } = require('@tryghost/metafield-types/csv');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {

@@ -28,7 +28,7 @@ module.exports = addTable('members_custom_field_values', {
     cascadeDelete: true,
   },
   // Exactly one value column is populated per row, chosen by the field type's
-  // storage type in @tryghost/custom-field-types. Splitting text from json
+  // storage type in @tryghost/metafield-types. Splitting text from json
   // keeps text-backed values directly queryable rather than behind a JSON
   // extraction, which is what filtering will need.
   //

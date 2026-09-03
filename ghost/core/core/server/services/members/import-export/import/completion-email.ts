@@ -1,6 +1,6 @@
 import { serialize } from '../csv';
 import renderImportEmail, { headingFor, type ImportEmailSummary } from './email-template';
-import { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
+import { isMetafieldColumn } from '@tryghost/metafield-types/csv';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 
 // The finished import as the email reads it: how many imported and which rows
@@ -87,7 +87,7 @@ function stringifyLabels(labels: Array<string | Label>): string {
 }
 
 function customFieldCells(row: ImportErrorRow): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(row).filter(([column]) => isCustomFieldColumn(column)));
+  return Object.fromEntries(Object.entries(row).filter(([column]) => isMetafieldColumn(column)));
 }
 
 // Shape a failed import row into its fixed error-report cells, with the raw ORM message

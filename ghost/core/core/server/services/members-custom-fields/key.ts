@@ -1,4 +1,4 @@
-import { IDENTITY_SEGMENT } from '@tryghost/custom-field-types/identity';
+import { IDENTITY_SEGMENT } from '@tryghost/metafield-types/identity';
 // Neither package ships types.
 const { stripInvisibleChars } = require('@tryghost/string') as {
   stripInvisibleChars(input: string): string;

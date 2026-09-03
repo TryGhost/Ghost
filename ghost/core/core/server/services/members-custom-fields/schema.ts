@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
