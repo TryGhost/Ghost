@@ -8,6 +8,16 @@
 
 @custom-variant admin7 (&:where(.admin7, .admin7 *));
 
+@keyframes email-sending-arrow-rise {
+  from {
+    transform: translateY(115%);
+  }
+
+  to {
+    transform: translateY(-115%);
+  }
+}
+
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
@@ -93,6 +103,7 @@
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
+  --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;
