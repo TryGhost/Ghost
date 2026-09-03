@@ -67,6 +67,24 @@ describe('email previews api', () => {
     );
   });
 
+  it('rejects an invalid email preview response', async () => {
+    await withMockFetch(
+      {
+        json: {
+          email_previews: null,
+          users: [{ id: 'user-1', roles: [] }],
+        },
+        headers: { 'content-type': 'application/json' },
+      },
+      async () => {
+        const { result } = renderHookWithProviders(() => useEmailPreview('post-1'));
+
+        await waitFor(() => expect(result.current.isError).toBe(true));
+        expect(result.current.data).toBeUndefined();
+      },
+    );
+  });
+
   it('sends a test email with the audience and newsletter in the body', async () => {
     await withMockFetch({ status: 204 }, async (mock) => {
       const { result } = renderHookWithProviders(() => useSendTestEmail());
