@@ -188,13 +188,13 @@ describe('syncTableToTinybird', () => {
         type: 'automation_runs',
         site_uuid: SITE_UUID,
         id,
-        updated_at: '2026-03-01 11:50:00',
+        updated_at: '2026-03-01T11:50:00.000Z',
         payload: {
           site_uuid: SITE_UUID,
           id,
           automation_id: 'automation-1',
-          created_at: '2026-03-01 11:50:00',
-          updated_at: '2026-03-01 11:50:00',
+          created_at: '2026-03-01T11:50:00.000Z',
+          updated_at: '2026-03-01T11:50:00.000Z',
         },
       },
     ]);
@@ -202,6 +202,9 @@ describe('syncTableToTinybird', () => {
 
   it('identifies automation run step payloads by their source table', async () => {
     const updatedAt = minutesBeforeNow(10);
+    const readyAt = minutesBeforeNow(9);
+    const startedAt = minutesBeforeNow(8);
+    const finishedAt = minutesBeforeNow(7);
     const id = ObjectId().toHexString();
     await knex('automation_run_steps').insert({
       id,
@@ -209,9 +212,9 @@ describe('syncTableToTinybird', () => {
       automation_action_revision_id: 'revision-1',
       status: 'completed',
       step_attempts: 1,
-      ready_at: null,
-      started_at: null,
-      finished_at: null,
+      ready_at: toDatabaseDate(readyAt),
+      started_at: toDatabaseDate(startedAt),
+      finished_at: toDatabaseDate(finishedAt),
       created_at: toDatabaseDate(updatedAt),
       updated_at: toDatabaseDate(updatedAt),
     });
@@ -219,6 +222,23 @@ describe('syncTableToTinybird', () => {
     await syncSteps();
 
     assert.equal(received[0].lines[0].type, 'automation_run_steps');
+    assert.equal(received[0].lines[0].updated_at, updatedAt.toISOString());
+    assert.deepEqual(
+      {
+        ready_at: received[0].lines[0].payload.ready_at,
+        started_at: received[0].lines[0].payload.started_at,
+        finished_at: received[0].lines[0].payload.finished_at,
+        created_at: received[0].lines[0].payload.created_at,
+        updated_at: received[0].lines[0].payload.updated_at,
+      },
+      {
+        ready_at: readyAt.toISOString(),
+        started_at: startedAt.toISOString(),
+        finished_at: finishedAt.toISOString(),
+        created_at: updatedAt.toISOString(),
+        updated_at: updatedAt.toISOString(),
+      },
+    );
   });
 
   it('never sends member identity columns', async () => {

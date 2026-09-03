@@ -116,7 +116,7 @@ It runs every 20 seconds when Tinybird is configured, sending only rows updated 
 watermark stored in the `tinybird_syncs` table. Set `backgroundJobs.tinybirdSync` to `false` in config
 to turn the job off.
 Each NDJSON event includes a `type` field identifying its source table as either `automation_runs`
-or `automation_run_steps`.
+or `automation_run_steps`. Timestamp fields in the event payload use ISO 8601 UTC formatting.
 
 To force a full backfill, for example after pointing Ghost at a different Tinybird workspace or
 truncating the data sources, delete the matching rows from `tinybird_syncs`; the next run starts from

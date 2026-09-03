@@ -1,6 +1,6 @@
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
-import { toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
 
 const errors = require('@tryghost/errors');
 
@@ -62,18 +62,20 @@ interface Cursor {
   id: string;
 }
 
-const serializeValue = (value: unknown): unknown =>
-  value instanceof Date ? toDatabaseDate(value) : value;
+const serializeValue = (key: string, value: unknown): unknown =>
+  key.endsWith('_at') && value !== null && value !== undefined
+    ? fromDatabaseDate(value as DatabaseDate).toISOString()
+    : value;
 
 const toEventLine = (row: Row, siteUuid: string, type: string): string => {
   const payload = Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [key, serializeValue(value)]),
+    Object.entries(row).map(([key, value]) => [key, serializeValue(key, value)]),
   );
   return JSON.stringify({
     type,
     site_uuid: siteUuid,
     id: row.id,
-    updated_at: toDatabaseDate(row.updated_at),
+    updated_at: fromDatabaseDate(row.updated_at).toISOString(),
     payload: { ...payload, site_uuid: siteUuid },
   });
 };
