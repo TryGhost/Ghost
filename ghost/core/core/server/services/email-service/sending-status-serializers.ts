@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { snakeKeys } from '../../lib/case-keys';
-import { EmailStatus } from './sending-status';
+import { EmailSendingStatus } from './sending-status';
 
 const SendingPhaseResource = z.enum(['preparing', 'submitting']);
 
@@ -21,7 +21,7 @@ const EmailStatusResource = z.object({
 
 const EmailStatusesResponse = z.object({ email_statuses: z.array(EmailStatusResource) });
 
-export const toEmailStatusesResponse = EmailStatus.transform(
+export const toEmailStatusesResponse = EmailSendingStatus.transform(
   ({ id, sending }): z.input<typeof EmailStatusesResponse> => ({
     email_statuses: [
       {

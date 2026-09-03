@@ -13,22 +13,23 @@ export const SendingProgress = z.object({
 });
 export type SendingProgress = z.infer<typeof SendingProgress>;
 
-export const SendingStatus = z.discriminatedUnion('status', [
-  z.object({ status: SendingPhase, progress: SendingProgress }),
-  z.object({ status: z.literal('submitted'), progress: SendingProgress }),
-  z.object({ status: z.literal('failed'), progress: SendingProgress, failedDuring: SendingPhase }),
-]);
-export type SendingStatus = z.infer<typeof SendingStatus>;
-
-/** One email's status; sending is its first facet, delivery joins it later. */
-export const EmailStatus = z.object({
+export const EmailSendingStatus = z.object({
   id: z.string(),
-  sending: SendingStatus,
+  sending: z.discriminatedUnion('status', [
+    z.object({ status: SendingPhase, progress: SendingProgress }),
+    z.object({ status: z.literal('submitted'), progress: SendingProgress }),
+    z.object({
+      status: z.literal('failed'),
+      progress: SendingProgress,
+      failedDuring: SendingPhase,
+    }),
+  ]),
 });
-export type EmailStatus = z.infer<typeof EmailStatus>;
+export type EmailSendingStatus = z.infer<typeof EmailSendingStatus>;
 
 /** The email as the derivation reads it: its stored status, the recipient count it expects, and when the current attempt started. */
 export interface SendingEmail {
+  id: string;
   status: StoredSendingStatus;
   recipientCount: number;
   attemptStartedAt: Date | null;
@@ -43,17 +44,24 @@ export interface SendingBatch {
 
 type BatchSample = { recipientCount: number; timestamp: number };
 
-export function sendingStatusForSubmittedEmail(recipientCount: number): SendingStatus {
+export function sendingStatusForSubmittedEmail(email: {
+  id: string;
+  recipientCount: number;
+}): EmailSendingStatus {
+  const { recipientCount } = email;
   return {
-    status: 'submitted',
-    progress: { completed: recipientCount, total: recipientCount, estimatedSecondsRemaining: 0 },
+    id: email.id,
+    sending: {
+      status: 'submitted',
+      progress: { completed: recipientCount, total: recipientCount, estimatedSecondsRemaining: 0 },
+    },
   };
 }
 
 export function sendingStatusFromBatches(
   email: SendingEmail,
   batches: SendingBatch[],
-): SendingStatus {
+): EmailSendingStatus {
   const phase: SendingPhase = batches.some((batch) => batch.status !== 'pending')
     ? 'submitting'
     : 'preparing';
@@ -68,9 +76,12 @@ export function sendingStatusFromBatches(
 
   if (email.status === 'failed') {
     return {
-      status: 'failed',
-      progress: { completed, total, estimatedSecondsRemaining: null },
-      failedDuring: phase,
+      id: email.id,
+      sending: {
+        status: 'failed',
+        progress: { completed, total, estimatedSecondsRemaining: null },
+        failedDuring: phase,
+      },
     };
   }
 
@@ -82,15 +93,18 @@ export function sendingStatusFromBatches(
   }));
 
   return {
-    status: phase,
-    progress: {
-      completed,
-      total,
-      estimatedSecondsRemaining: estimateSecondsRemaining({
-        remaining,
-        samples,
-        attemptStartedAt,
-      }),
+    id: email.id,
+    sending: {
+      status: phase,
+      progress: {
+        completed,
+        total,
+        estimatedSecondsRemaining: estimateSecondsRemaining({
+          remaining,
+          samples,
+          attemptStartedAt,
+        }),
+      },
     },
   };
 }

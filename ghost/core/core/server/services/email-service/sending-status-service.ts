@@ -4,11 +4,11 @@ import { DbBatchSendingRow, DbEmailSendingRow } from './sending-status-schema';
 import {
   sendingStatusForSubmittedEmail,
   sendingStatusFromBatches,
-  type EmailStatus,
+  type EmailSendingStatus,
   type SendingBatch,
 } from './sending-status';
 
-export type { EmailStatus } from './sending-status';
+export type { EmailSendingStatus } from './sending-status';
 
 export class SendingStatusService {
   #knex: Knex;
@@ -17,7 +17,7 @@ export class SendingStatusService {
     this.#knex = knex;
   }
 
-  async statusFor(emailId: string): Promise<EmailStatus | null> {
+  async statusFor(emailId: string): Promise<EmailSendingStatus | null> {
     const row = await this.#knex('emails')
       .select('id', 'status', 'email_count', 'updated_at')
       .where('id', emailId)
@@ -30,21 +30,21 @@ export class SendingStatusService {
     const email = DbEmailSendingRow.parse(row);
     // Batch creation reconciles email_count to the recipient rows it built, so a submitted
     // email's stored count is its recipient count without a query over email_recipients.
-    const sending =
-      email.status === 'submitted'
-        ? sendingStatusForSubmittedEmail(email.email_count)
-        : sendingStatusFromBatches(
-            {
-              status: email.status,
-              recipientCount: email.email_count,
-              // The sending job saves the email when it takes its status lock, so updated_at
-              // stands in for the attempt start that Ghost does not record.
-              attemptStartedAt: email.updated_at,
-            },
-            await this.#batchesFor(emailId),
-          );
+    if (email.status === 'submitted') {
+      return sendingStatusForSubmittedEmail({ id: email.id, recipientCount: email.email_count });
+    }
 
-    return { id: email.id, sending };
+    return sendingStatusFromBatches(
+      {
+        id: email.id,
+        status: email.status,
+        recipientCount: email.email_count,
+        // The sending job saves the email when it takes its status lock, so updated_at
+        // stands in for the attempt start that Ghost does not record.
+        attemptStartedAt: email.updated_at,
+      },
+      await this.#batchesFor(emailId),
+    );
   }
 
   async #batchesFor(emailId: string): Promise<SendingBatch[]> {
