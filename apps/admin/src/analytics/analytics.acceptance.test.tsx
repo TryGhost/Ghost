@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -156,47 +155,6 @@ describe('Analytics overview', () => {
 
     // The header's active-visitors probe (Tinybird) resolved.
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
-  });
-
-  it('uses Admin 7 typography in the portalled trend tooltip', async () => {
-    seedAnalyticsWorld();
-    seedTopPostsViews();
-    await renderAdminApp('/analytics', {
-      labs: { admin7PageChrome: true },
-      boot: webAnalyticsBootOverrides(),
-    });
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
-    await analyticsScreen.membersCard().getByTestId('kpi-card-header-diff').hover();
-    const tooltip = page.getByRole('tooltip');
-    await expect.element(tooltip).toHaveTextContent(/trending/);
-    expect(tooltip.element().closest('#root')).toBeNull();
-    await expect
-      .poll(() => getComputedStyle(tooltip.element()).fontFamily)
-      .toContain('Inter Admin 7');
-  });
-
-  it('uses display font features only on Admin 7 headings', async () => {
-    seedAnalyticsWorld();
-    seedTopPostsViews();
-    await renderAdminApp('/analytics', {
-      labs: { admin7PageChrome: true },
-      boot: webAnalyticsBootOverrides(),
-    });
-
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    const heading = page.getByRole('heading', { name: 'Analytics' });
-    await expect.element(heading).toBeVisible();
-    const headingFeatures = getComputedStyle(heading.element()).fontFeatureSettings;
-    const smallTextFeatures = getComputedStyle(
-      analyticsScreen.activeVisitors().element(),
-    ).fontFeatureSettings;
-    expect(headingFeatures).toContain('dlig');
-    expect(headingFeatures).toContain('cv05');
-    expect(smallTextFeatures).toContain('zero');
-    expect(smallTextFeatures).toContain('ss01');
-    expect(smallTextFeatures).not.toContain('dlig');
-    expect(smallTextFeatures).not.toContain('cv05');
   });
 
   it('re-queries Tinybird when the date range changes', async () => {

@@ -32,18 +32,6 @@ describe('Labs Service', function () {
     await configUtils.restore();
   });
 
-  it('keeps page chrome opt-in and respects an explicit rollback override', function () {
-    const getStub = sinon.stub(settingsCache, 'get');
-    getStub.withArgs('labs').returns({});
-    assert.equal(labs.isSet('admin7PageChrome'), false);
-
-    getStub.withArgs('labs').returns({ admin7PageChrome: true });
-    assert.equal(labs.isSet('admin7PageChrome'), true);
-
-    configUtils.set('labs', { admin7PageChrome: false });
-    assert.equal(labs.isSet('admin7PageChrome'), false);
-  });
-
   it('can getAll, even if empty with enabled members', function () {
     assert.deepEqual(
       labs.getAll(),

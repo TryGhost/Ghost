@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 describe('Sidebar navigation', () => {
-  it('keeps the shell hidden until Admin 7 eligibility is known', async () => {
+  it('renders navigation without waiting for Labs config', async () => {
     fakeTags([]);
     let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;
     const pendingConfig = new Promise<ReturnType<typeof configResponse>>((resolve) => {
@@ -67,18 +67,12 @@ describe('Sidebar navigation', () => {
       boot: { browseConfig: { response: () => pendingConfig } },
     });
 
-    const getShell = () =>
-      document.querySelector('[data-sidebar="sidebar"]')?.closest('.group\\/sidebar-wrapper');
-    await expect.poll(getShell).toBeTruthy();
-    const shell = getShell()!;
-    expect(shell).toHaveClass('invisible');
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
 
-    resolveConfig(configResponse({ labs: { admin7PageChrome: true } }));
-    await expect.poll(() => shell?.classList.contains('invisible')).toBe(false);
-    expect(shell).toHaveClass('admin7');
+    resolveConfig(configResponse());
   });
 
-  it('shows the existing shell when Admin 7 config cannot be loaded', async () => {
+  it('renders navigation when config cannot be loaded', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', {
       boot: {
@@ -89,35 +83,20 @@ describe('Sidebar navigation', () => {
       },
     });
 
-    const getShell = () =>
-      document
-        .querySelector('[data-sidebar="sidebar"]')
-        ?.closest('[class~="group/sidebar-wrapper"]');
-    await expect.poll(getShell).toBeTruthy();
-    await expect.poll(() => getShell()?.classList.contains('invisible')).toBe(false);
-    expect(getShell()).not.toHaveClass('admin7');
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
   });
 
-  it('uses default preferences when accessibility JSON is malformed', async () => {
+  it('renders navigation when accessibility JSON is malformed', async () => {
     fakeTags([]);
     const me = currentUserResponse();
     me.users[0].accessibility = '{invalid json';
 
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
 
-    const getShell = () =>
-      document
-        .querySelector('[data-sidebar="sidebar"]')
-        ?.closest('[class~="group/sidebar-wrapper"]');
-    await expect.poll(getShell).toBeTruthy();
-    await expect.poll(() => getShell()?.classList.contains('invisible')).toBe(false);
-    expect(getShell()).toHaveClass('admin7');
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
   });
 
-  it('uses the static Admin 7 shell without reading the saved menu visibility', async () => {
+  it('uses the static shell without reading the saved menu visibility', async () => {
     fakeTags([]);
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({
@@ -125,58 +104,10 @@ describe('Sidebar navigation', () => {
       nightShift: 'light',
     });
 
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-    expect(document.querySelector('[data-state="collapsed"]')).toBeNull();
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
-  });
-
-  it('applies the Admin 7 page chrome in dark mode', async () => {
-    fakeTags([]);
-    const me = currentUserResponse();
-    me.users[0].accessibility = JSON.stringify({ nightShift: 'dark' });
-
-    await renderAdminApp('/tags', {
-      labs: { admin7PageChrome: true },
-      boot: { browseMe: { response: me } },
-    });
-
-    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
-    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-    expect(document.querySelector('[data-sidebar="sidebar"]')).not.toBeNull();
-  });
-
-  it('applies Admin 7 typography to legacy alert and notification portals', async () => {
-    fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7PageChrome: true } });
-    await expect.poll(() => document.querySelector('.admin7')).not.toBeNull();
-
-    const shell = document.querySelector<HTMLElement>('.admin7')!;
-    const createdHosts: HTMLElement[] = [];
-    const hosts = ['ember-alerts-wormhole', 'ember-notifications-wormhole'].map((id) => {
-      const existing = document.getElementById(id);
-      if (existing) {
-        return existing;
-      }
-      const host = document.createElement('div');
-      host.id = id;
-      document.body.appendChild(host);
-      createdHosts.push(host);
-      return host;
-    });
-
-    try {
-      for (const host of hosts) {
-        expect(getComputedStyle(host).fontFamily).toBe(getComputedStyle(shell).fontFamily);
-      }
-    } finally {
-      createdHosts.forEach((host) => host.remove());
-    }
   });
 
   it('keeps the boot loader visible until React commits its mount marker', async () => {
@@ -195,14 +126,6 @@ describe('Sidebar navigation', () => {
       marker.setAttribute('data-react-admin-mounted', '');
       bridgeHost.appendChild(emberApp);
     }
-  });
-
-  it('keeps the existing sidebar treatment when Admin 7 page chrome is disabled', async () => {
-    fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7PageChrome: false } });
-
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    expect(document.querySelector('.admin7')).toBeNull();
   });
 
   it('renders the navigation for the current user', async () => {
