@@ -246,6 +246,98 @@ describe('Post editor update collision', () => {
   );
 
   it(
+    'keeps the accepted server copy in the editor query cache',
+    async () => {
+      const { readApi, saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+      const readsAfterReload = readApi.requests.length;
+
+      window.location.hash = '#/posts';
+      await expect(editorScreen.titleInput()).toHaveCount(0);
+      window.location.hash = `#/editor/post/${POST_ID}`;
+
+      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Hello from someone else');
+      expect(readApi.requests.length).toBe(readsAfterReload);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps an older in-flight read from replacing the accepted cache',
+    async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+
+      const beforeLatest = theirs({
+        title: 'Server copy before latest',
+        updated_at: AFTER_SAVE_AT,
+      });
+      const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
+      const staleRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingRead.promise);
+      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
+        posts: [beforeLatest],
+      }));
+
+      await typeIntoBody(' accepted first');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
+      await expect.poll(() => staleRead.requests.length, POLL).toBe(1);
+
+      const collisionSave = fakeAdminEndpoint(
+        'PUT',
+        READ_ROUTE,
+        {
+          errors: [
+            {
+              code: 'UPDATE_COLLISION',
+              type: 'UpdateCollisionError',
+              message: 'Saving failed! Someone else is editing this post.',
+            },
+          ],
+        },
+        { status: 409 },
+      );
+      await typeIntoBody(' then conflicted');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => collisionSave.requests.length, POLL).toBe(1);
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
+
+      const latest = theirs({
+        title: 'Latest server copy',
+        updated_at: '2026-01-01T11:00:00.000Z',
+      });
+      readAnswers(200, { posts: [latest] });
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.titleInput()).toHaveValue('Latest server copy');
+
+      // The network work cannot be aborted by this fake, so let its older value
+      // arrive after the accepted reload. React Query must ignore it.
+      pendingRead.resolve({ posts: [beforeLatest] });
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+      window.location.hash = '#/posts';
+      await expect(editorScreen.titleInput()).toHaveCount(0);
+      window.location.hash = `#/editor/post/${POST_ID}`;
+
+      await expect.element(editorScreen.titleInput(), POLL).toHaveValue('Latest server copy');
+    },
+    SLOW,
+  );
+
+  it(
     'keeps the editor standing when the reload cannot read the post, and retries later',
     async () => {
       const { saveApi } = fakeCollidingPost();
