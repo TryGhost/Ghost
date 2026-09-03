@@ -1,0 +1,43 @@
+# Spike: run the development stack against Postgres instead of MySQL.
+#
+#   pnpm dev:postgres
+#
+# Ghost connects with database__client=pg. The MySQL container is disabled by
+# putting it behind a profile so it never starts.
+services:
+  mysql:
+    profiles:
+      - mysql
+
+  postgres:
+    image: postgres:16
+    container_name: ghost-dev-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-ghost_dev}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U root -d ${POSTGRES_DATABASE:-ghost_dev}']
+      interval: 1s
+      retries: 120
+
+  ghost-dev:
+    environment:
+      database__client: pg
+      database__connection__host: postgres
+      database__connection__port: 5432
+      database__connection__user: root
+      database__connection__password: ${POSTGRES_PASSWORD:-root}
+      database__connection__database: ${POSTGRES_DATABASE:-ghost_dev}
+    depends_on:
+      mysql:
+        required: false
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
