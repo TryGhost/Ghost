@@ -71,6 +71,24 @@
   font-variation-settings: inherit;
 }
 
+/* These components are visually headings but do not all use heading elements.
+   Keep the display alternates scoped to their title text in Admin 7. */
+:where(
+    .admin7,
+    body.react-admin:has(> #root .admin7)
+      > :is(
+        .shade.shade-admin,
+        #ember-basic-dropdown-wormhole,
+        #ember-modal-wormhole,
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
+      )
+  )
+  :where(.admin7-heading-features, .gh-publish-title) {
+  font-feature-settings: var(--heading-font-feature-settings);
+}
+
 /* Site custom-font families for the settings font pickers. The font-* utilities
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
