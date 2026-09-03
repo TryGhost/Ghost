@@ -208,12 +208,16 @@ describe('Post preview modal', () => {
     await renderPreviewModal({ onBeforeOpen });
 
     await expect.element(previewScreen.modal()).toBeVisible();
-    expect(onBeforeOpen).toHaveBeenCalled();
+    await expect.poll(() => onBeforeOpen.mock.calls.length).toBe(1);
+    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
     expect(frames.stop()).toEqual([]);
 
     releaseSave();
 
     await expect.element(previewScreen.browserFrame()).toBeVisible();
+    await expect.element(previewScreen.copyLinkButton()).toBeEnabled();
+    await expect.element(previewScreen.openInNewTabLink()).toBeVisible();
   });
 
   it('saves first when the caller only passes a save on the opening render', async () => {
@@ -231,7 +235,7 @@ describe('Post preview modal', () => {
     await page.getByRole('button', { name: 'Open preview' }).click();
 
     await expect.element(previewScreen.modal()).toBeVisible();
-    await expect.poll(() => onBeforeOpen.mock.calls.length).toBeGreaterThan(0);
+    await expect.poll(() => onBeforeOpen.mock.calls.length).toBe(1);
     expect(frames.stop()).toEqual([]);
 
     releaseSave();
@@ -249,11 +253,28 @@ describe('Post preview modal', () => {
 
     await expect.element(previewScreen.saveFailed()).toBeVisible();
     await expect(previewScreen.browserFrame()).toHaveCount(0);
+    await expect.element(previewScreen.copyLinkButton()).toBeDisabled();
+    await expect(previewScreen.openInNewTabLink()).toHaveCount(0);
+    expect(onBeforeOpen).toHaveBeenCalledTimes(1);
 
     saveFails = false;
     await previewScreen.retryButton().click();
 
     await expect.element(previewScreen.browserFrame()).toBeVisible();
+    expect(onBeforeOpen).toHaveBeenCalledTimes(2);
+  });
+
+  it('offers a retry when saving throws synchronously', async () => {
+    fakePreviewWorld();
+    const onBeforeOpen = vi.fn(() => {
+      throw new Error('Save failed');
+    });
+
+    await renderPreviewModal({ onBeforeOpen });
+
+    await expect.element(previewScreen.saveFailed()).toBeVisible();
+    await expect(previewScreen.browserFrame()).toHaveCount(0);
+    expect(onBeforeOpen).toHaveBeenCalledTimes(1);
   });
 
   it('closes the preview', async () => {
@@ -433,6 +454,95 @@ describe('Post preview modal', () => {
       .toMatchObject({ newsletter: 'retired-letter' });
   });
 
+  it('blocks email actions while the post newsletter is being looked up', async () => {
+    installBootOverrides({ browseConfig: { response: configWithMailgun() } });
+    const archived = newsletter({
+      name: 'Retired letter',
+      slug: 'retired-letter',
+      status: 'archived',
+    });
+    fakePreviewWorld();
+    let releaseLookup = () => {};
+    const lookupApi = fakeAdminEndpoint(
+      'GET',
+      /^\/newsletters\/\?.*filter=slug(?:%3A|:)retired-letter/,
+      () =>
+        new Promise((resolve) => {
+          releaseLookup = () =>
+            resolve({
+              newsletters: [archived],
+              meta: {
+                pagination: {
+                  page: 1,
+                  limit: 1,
+                  pages: 1,
+                  total: 1,
+                  next: null,
+                  prev: null,
+                },
+              },
+            });
+        }),
+    );
+    const previewApi = fakeEmailPreview();
+    const sendApi = fakeTestEmailSend();
+    await renderPreviewModal({ newsletterSlug: 'retired-letter' });
+
+    await previewScreen.emailTab().click();
+    await expect.poll(() => lookupApi.requests.length).toBe(1);
+
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    expect(previewApi.requests).toHaveLength(0);
+    expect(sendApi.requests).toHaveLength(0);
+
+    releaseLookup();
+
+    await expect.element(previewScreen.testEmailButton()).toBeEnabled();
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+  });
+
+  it('reports and retries a failed active-newsletter lookup', async () => {
+    fakePreviewWorld();
+    const lookupApi = fakeAdminEndpoint(
+      'GET',
+      /^\/newsletters\/\?.*filter=status(?:%3A|:)active/,
+      { errors: [{ message: 'Could not load newsletters' }] },
+      { status: 500 },
+    );
+    const previewApi = fakeEmailPreview();
+    await renderPreviewModal();
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    expect(previewApi.requests).toHaveLength(0);
+
+    await previewScreen.retryButton().click();
+    await expect.poll(() => lookupApi.requests.length).toBe(2);
+  });
+
+  it('reports and retries a failed post-newsletter lookup', async () => {
+    fakePreviewWorld();
+    const lookupApi = fakeAdminEndpoint(
+      'GET',
+      /^\/newsletters\/\?.*filter=slug(?:%3A|:)retired-letter/,
+      { errors: [{ message: 'Could not load newsletter' }] },
+      { status: 500 },
+    );
+    const previewApi = fakeEmailPreview();
+    await renderPreviewModal({ newsletterSlug: 'retired-letter' });
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    expect(previewApi.requests).toHaveLength(0);
+
+    await previewScreen.retryButton().click();
+    await expect.poll(() => lookupApi.requests.length).toBe(2);
+  });
+
   it('cannot send when the post’s newsletter has been deleted', async () => {
     installBootOverrides({ browseConfig: { response: configWithMailgun() } });
     fakeTiers([]);
@@ -441,7 +551,7 @@ describe('Post preview modal', () => {
         ? []
         : [newsletter({ name: 'Weekly digest', slug: 'weekly-digest' })],
     );
-    fakeEmailPreview();
+    const previewApi = fakeEmailPreview();
     const sendApi = fakeTestEmailSend();
     await renderPreviewModal({ newsletterSlug: 'deleted-letter' });
 
@@ -450,10 +560,43 @@ describe('Post preview modal', () => {
     await expect.element(previewScreen.newsletterMissing()).toBeVisible();
     await expect(previewScreen.emailFrom()).toHaveCount(0);
 
-    await previewScreen.testEmailButton().click();
-
-    await expect.element(previewScreen.sendTestEmailButton()).toBeDisabled();
+    await expect.element(previewScreen.testEmailButton()).toBeDisabled();
+    await expect(previewScreen.sendTestEmailButton()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
     expect(sendApi.requests).toHaveLength(0);
+  });
+
+  it('refreshes the email preview after saving and reopening', async () => {
+    fakePreviewWorld();
+    let subject = 'Original subject';
+    const previewApi = fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/email_previews/posts/${POST_ID}/`),
+      () => ({
+        email_previews: [
+          {
+            html: '<html><head></head><body>Hello from the email</body></html>',
+            plaintext: 'Hello from the email',
+            subject,
+          },
+        ],
+      }),
+    );
+    const onBeforeOpen = vi.fn(() => Promise.resolve());
+    await renderInApp(<DirtyGatedPreview onBeforeOpen={onBeforeOpen} />);
+
+    await page.getByRole('button', { name: 'Open preview' }).click();
+    await previewScreen.emailTab().click();
+    await expect.element(previewScreen.emailSubject()).toHaveTextContent('Original subject');
+    expect(previewApi.requests).toHaveLength(1);
+
+    await previewScreen.closeButton().click();
+    subject = 'Updated subject';
+    await page.getByRole('button', { name: 'Open preview' }).click();
+
+    await expect.element(previewScreen.emailSubject()).toHaveTextContent('Updated subject');
+    expect(previewApi.requests).toHaveLength(2);
+    expect(onBeforeOpen).toHaveBeenCalledTimes(2);
   });
 
   it('sends a test email to the current user for the selected audience', async () => {
@@ -537,6 +680,33 @@ describe('Post preview modal', () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Contributor' })];
     installBootOverrides({ browseMe: { response: me } });
+    fakePreviewWorld();
+    await renderPreviewModal();
+
+    await expect.element(previewScreen.browserFrame()).toBeVisible();
+    await expect(previewScreen.emailTab()).toHaveCount(0);
+  });
+
+  it('lets an author preview email without offering a test send', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Author' })];
+    installBootOverrides({ browseMe: { response: me } });
+    fakePreviewWorld();
+    fakeEmailPreview();
+    await renderPreviewModal();
+
+    await previewScreen.emailTab().click();
+
+    await expect.element(previewScreen.emailFrame()).toBeVisible();
+    await expect(previewScreen.testEmailButton()).toHaveCount(0);
+  });
+
+  it('has no email preview when members are disabled', async () => {
+    installBootOverrides({
+      browseSettings: {
+        response: settingsResponse({ settings: { members_enabled: false } }),
+      },
+    });
     fakePreviewWorld();
     await renderPreviewModal();
 

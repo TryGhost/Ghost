@@ -28,13 +28,19 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import {
+  isAdminUser,
+  isContributorUser,
+  isEditorUser,
+  isOwnerUser,
+} from '@tryghost/admin-x-framework/api/users';
 
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
 import {
@@ -99,16 +105,27 @@ export function PostPreviewModal({
     Boolean(newslettersEnabled) &&
     !!currentUser &&
     !isContributorUser(currentUser);
+  const testEmailAvailable =
+    !!currentUser &&
+    (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
 
   const { data: tiersData } = useBrowseTiers({
     searchParams: { filter: 'type:paid', limit: 'all' },
-    enabled: open && paidMembersEnabled === true,
+    enabled: open && prepareState === 'ready' && paidMembersEnabled === true,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
 
-  const { data: newslettersData } = useBrowseNewsletters({
+  const {
+    data: newslettersData,
+    isError: activeNewslettersError,
+    isFetching: activeNewslettersFetching,
+    refetch: refetchActiveNewsletters,
+  } = useBrowseNewsletters({
     searchParams: { filter: 'status:active', limit: 'all' },
-    enabled: open && emailAvailable,
+    enabled: open && prepareState === 'ready' && emailAvailable,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    staleTime: 0,
   });
   const activeNewsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
 
@@ -116,32 +133,48 @@ export function PostPreviewModal({
   // even once it has left the active list.
   const postNewsletterMissing =
     Boolean(newslettersData) &&
+    !activeNewslettersError &&
+    !activeNewslettersFetching &&
     Boolean(newsletterSlug) &&
     !activeNewsletters.some((newsletter) => newsletter.slug === newsletterSlug);
-  const { data: postNewsletterData } = useBrowseNewsletters({
+  const {
+    data: postNewsletterData,
+    isError: postNewsletterError,
+    isFetching: postNewsletterFetching,
+    refetch: refetchPostNewsletter,
+  } = useBrowseNewsletters({
     searchParams: { filter: `slug:${newsletterSlug ?? ''}`, limit: '1' },
-    enabled: open && emailAvailable && postNewsletterMissing,
+    enabled: open && prepareState === 'ready' && emailAvailable && postNewsletterMissing,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    staleTime: 0,
   });
   const postNewsletter =
     postNewsletterMissing && postNewsletterData
       ? postNewsletterData.newsletters.find((newsletter) => newsletter.slug === newsletterSlug)
       : undefined;
   const postNewsletterDeleted =
-    postNewsletterMissing && Boolean(postNewsletterData) && !postNewsletter;
+    postNewsletterMissing && !postNewsletterError && Boolean(postNewsletterData) && !postNewsletter;
+  const newsletterLookupError =
+    activeNewslettersError || (postNewsletterMissing && postNewsletterError);
+  const newsletterLookupPending =
+    (emailAvailable &&
+      (activeNewslettersFetching || (!newslettersData && !activeNewslettersError))) ||
+    (postNewsletterMissing &&
+      (postNewsletterFetching || (!postNewsletterData && !postNewsletterError)));
   const newsletters = useMemo(
     () => (postNewsletter ? [postNewsletter, ...activeNewsletters] : activeNewsletters),
     [activeNewsletters, postNewsletter],
   );
 
   const beforeOpen = useRef(onBeforeOpen);
-  useEffect(() => {
-    beforeOpen.current = onBeforeOpen;
-  });
+  const preparePromise = useRef<Promise<void> | null>(null);
+  beforeOpen.current = onBeforeOpen;
 
   // Opening must not render a preview of the unsaved post, so the state moves
   // during render rather than in an effect that runs after that first commit.
   if (open !== wasOpen) {
     setWasOpen(open);
+    preparePromise.current = null;
     setPrepareState(open && onBeforeOpen ? 'preparing' : 'ready');
   }
 
@@ -156,8 +189,10 @@ export function PostPreviewModal({
       return;
     }
 
+    const promise =
+      preparePromise.current ?? (preparePromise.current = Promise.resolve().then(prepare));
     let cancelled = false;
-    void prepare().then(
+    void promise.then(
       () => {
         if (!cancelled) {
           setPrepareState('ready');
@@ -206,8 +241,18 @@ export function PostPreviewModal({
   // list, because that is the newsletter its email would be rendered for.
   const selectedNewsletterSlug = pickedNewsletterSlug ?? newsletterSlug ?? newsletters[0]?.slug;
 
+  const retryNewsletterLookup = () => {
+    if (activeNewslettersError) {
+      void refetchActiveNewsletters();
+    }
+    if (postNewsletterError) {
+      void refetchPostNewsletter();
+    }
+  };
+
   const audience: PreviewAudience = { segment, tierSlug };
   const audienceUrl = browserPreviewUrl(previewUrl, audience);
+  const previewActionsAvailable = prepareState === 'ready' && Boolean(audienceUrl);
   const showSegmentSelect = format === 'browser' || segmentOptions.length > 1;
   const showTierSelect = segment === 'tier' && tiers.length > 0;
   const showEmail = format === 'email' && emailAvailable;
@@ -317,13 +362,13 @@ export function PostPreviewModal({
           <Inline gap="sm">
             <Button
               aria-label="Copy preview link"
-              disabled={!audienceUrl}
+              disabled={!previewActionsAvailable}
               variant="outline"
               onClick={() => void copyPreviewLink()}
             >
               <LucideIcon.Link />
             </Button>
-            {audienceUrl ? (
+            {previewActionsAvailable ? (
               <Button variant="outline" asChild>
                 <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
                   <LucideIcon.ExternalLink />
@@ -347,7 +392,13 @@ export function PostPreviewModal({
           ) : prepareState === 'failed' ? (
             <EmptyIndicator
               actions={
-                <Button variant="outline" onClick={() => setPrepareState('preparing')}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    preparePromise.current = null;
+                    setPrepareState('preparing');
+                  }}
+                >
                   Retry
                 </Button>
               }
@@ -361,13 +412,17 @@ export function PostPreviewModal({
           ) : showEmail ? (
             <EmailPreview
               audience={audience}
+              canSendTestEmail={testEmailAvailable}
               device={device}
+              newsletterLookupError={newsletterLookupError}
+              newsletterLookupPending={newsletterLookupPending}
               newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
               newsletters={newsletters}
               newsletterSlug={selectedNewsletterSlug}
               postId={postId}
               tierName={selectedTier?.name}
               onNewsletterChange={setPickedNewsletterSlug}
+              onRetryNewsletterLookup={retryNewsletterLookup}
             />
           ) : (
             <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />

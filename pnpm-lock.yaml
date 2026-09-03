@@ -1157,6 +1157,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*

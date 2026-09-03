@@ -1,71 +1,96 @@
 import { InfiniteData } from '@tanstack/react-query';
 import { Meta, createInfiniteQuery, createMutation } from '../utils/api/hooks';
 import { insertToQueryCache, updateQueryCache } from '../utils/api/update-queries';
+import { z } from 'zod';
 
-export type Newsletter = {
-  id: string;
-  uuid: string;
-  name: string;
-  description: string | null;
-  feedback_enabled: boolean;
-  slug: string;
-  sender_name: string | null;
-  sender_email: string | null;
-  sender_reply_to: string;
-  status: string;
-  visibility: string;
-  subscribe_on_signup: boolean;
-  sort_order: number;
-  header_image: string | null;
-  show_header_icon: boolean;
-  show_header_title: boolean;
-  title_font_category: string;
-  title_font_weight: string;
-  title_alignment: string;
-  show_excerpt: boolean;
-  show_feature_image: boolean;
-  body_font_category: string;
-  footer_content: string | null;
-  show_badge: boolean;
-  show_header_name: boolean;
-  show_post_title_section: boolean;
-  show_comment_cta: boolean;
-  show_share_button: boolean;
-  show_subscription_details: boolean;
-  show_latest_posts: boolean;
-  background_color: string;
-  header_background_color: string;
-  button_color: string | null;
-  link_color: string | null;
-  post_title_color: string | null;
-  section_title_color: string | null;
-  divider_color: string | null;
-  button_corners: string | null;
-  button_style: string | null;
-  image_corners: string | null;
-  link_style: string | null;
-  divider_style: string | null;
-  created_at: string;
-  updated_at: string;
-  count?: {
-    posts?: number;
-    active_members?: number;
-  };
-};
+export const NewsletterSchema = z.object({
+  id: z.string(),
+  uuid: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  feedback_enabled: z.boolean(),
+  slug: z.string(),
+  sender_name: z.string().nullable(),
+  sender_email: z.string().nullable(),
+  sender_reply_to: z.string(),
+  status: z.string(),
+  visibility: z.string(),
+  subscribe_on_signup: z.boolean(),
+  sort_order: z.number(),
+  header_image: z.string().nullable(),
+  show_header_icon: z.boolean(),
+  show_header_title: z.boolean(),
+  title_font_category: z.string(),
+  title_font_weight: z.string(),
+  title_alignment: z.string(),
+  show_excerpt: z.boolean(),
+  show_feature_image: z.boolean(),
+  body_font_category: z.string(),
+  footer_content: z.string().nullable(),
+  show_badge: z.boolean(),
+  show_header_name: z.boolean(),
+  show_post_title_section: z.boolean(),
+  show_comment_cta: z.boolean(),
+  show_share_button: z.boolean(),
+  show_subscription_details: z.boolean(),
+  show_latest_posts: z.boolean(),
+  background_color: z.string(),
+  header_background_color: z.string(),
+  button_color: z.string().nullable(),
+  link_color: z.string().nullable(),
+  post_title_color: z.string().nullable(),
+  section_title_color: z.string().nullable(),
+  divider_color: z.string().nullable(),
+  button_corners: z.string().nullable(),
+  button_style: z.string().nullable(),
+  image_corners: z.string().nullable(),
+  link_style: z.string().nullable(),
+  // Older and current Core versions may omit this design setting.
+  divider_style: z.string().nullish(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  count: z
+    .object({
+      posts: z.number().optional(),
+      active_members: z.number().optional(),
+    })
+    .optional(),
+});
 
-export interface NewslettersResponseType {
-  meta?: Meta;
-  newsletters: Newsletter[];
-}
+const NewslettersMetaSchema = z.object({
+  capabilities: z
+    .object({
+      dislikes: z.boolean().optional(),
+    })
+    .optional(),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.union([z.number(), z.literal('all')]),
+    pages: z.number(),
+    total: z.number(),
+    next: z.number().nullable(),
+    prev: z.number().nullable(),
+  }),
+});
+
+export const NewslettersResponseSchema = z.object({
+  meta: NewslettersMetaSchema.optional(),
+  newsletters: z.array(NewsletterSchema),
+});
+
+export type Newsletter = z.infer<typeof NewsletterSchema>;
+export type NewslettersResponseType = z.infer<typeof NewslettersResponseSchema>;
 
 const dataType = 'NewslettersResponseType';
 export const newslettersDataType = dataType;
 
 export const useBrowseNewsletters = createInfiniteQuery<
-  NewslettersResponseType & { isEnd: boolean }
+  NewslettersResponseType & { isEnd: boolean },
+  NewslettersResponseType
 >({
   dataType,
   path: '/newsletters/',
+  parseResponse: (data) => NewslettersResponseSchema.parse(data),
   defaultSearchParams: { include: 'count.active_members,count.posts', limit: '50' },
   defaultNextPageParams: (lastPage, otherParams) => ({
     ...otherParams,

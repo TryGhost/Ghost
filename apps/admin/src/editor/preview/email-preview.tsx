@@ -1,4 +1,6 @@
 import {
+  Button,
+  EmptyIndicator,
   LoadingIndicator,
   PreviewChrome,
   Select,
@@ -8,10 +10,12 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
 import type { Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
 
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { SendTestEmail } from './send-test-email';
 import {
   audienceDescription,
@@ -53,31 +57,44 @@ interface EmailPreviewProps {
   audience: PreviewAudience;
   /** The selected tier's name, for the test-email audience description. */
   tierName?: string;
+  canSendTestEmail: boolean;
   device: PreviewDevice;
   newsletters: Newsletter[];
   newsletterSlug?: string;
+  /** Refreshing either newsletter query failed, so cached newsletter data is unsafe to use. */
+  newsletterLookupError?: boolean;
+  /** The active or post newsletter is still being refreshed from the server. */
+  newsletterLookupPending?: boolean;
   /** The post's newsletter was looked up and no longer exists. */
   newsletterMissing?: boolean;
   onNewsletterChange: (slug: string) => void;
+  onRetryNewsletterLookup: () => void;
 }
 
 export function EmailPreview({
   postId,
   audience,
   tierName,
+  canSendTestEmail,
   device,
   newsletters,
   newsletterSlug,
+  newsletterLookupError = false,
+  newsletterLookupPending = false,
   newsletterMissing = false,
   onNewsletterChange,
+  onRetryNewsletterLookup,
 }: EmailPreviewProps) {
   const { data: settingsData } = useBrowseSettings();
   const [defaultEmailAddress] = getSettingValues<string>(settingsData?.settings ?? [], [
     'default_email_address',
   ]);
-  const { data, isLoading } = useEmailPreview(postId, {
+  const { data, isError, isFetching, refetch } = useEmailPreview(postId, {
     ...emailPreviewAudience(audience),
+    enabled: !newsletterLookupError && !newsletterLookupPending && !newsletterMissing,
     newsletter: newsletterSlug,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    staleTime: 0,
   });
 
   const preview = data?.email_previews[0];
@@ -92,7 +109,13 @@ export function EmailPreview({
         <Stack className="border-b border-border-default p-4" gap="md">
           <Inline gap="lg" justify="between">
             <Inline className="min-w-0" gap="md">
-              {newsletterMissing ? (
+              {newsletterLookupPending ? (
+                <LoadingIndicator size="sm" />
+              ) : newsletterLookupError ? (
+                <p className="min-w-0 truncate text-sm text-muted-foreground">
+                  Couldn’t load newsletters
+                </p>
+              ) : newsletterMissing ? (
                 <p
                   className="min-w-0 truncate text-sm text-muted-foreground"
                   data-testid="post-preview-newsletter-missing"
@@ -126,25 +149,62 @@ export function EmailPreview({
                 </>
               )}
             </Inline>
-            <SendTestEmail
-              audience={audience}
-              audienceLabel={audienceDescription(audience, tierName)}
-              disabled={newsletterMissing}
-              newsletterSlug={newsletterSlug}
-              postId={postId}
-            />
+            {canSendTestEmail && (
+              <SendTestEmail
+                audience={audience}
+                audienceLabel={audienceDescription(audience, tierName)}
+                disabled={newsletterLookupError || newsletterLookupPending || newsletterMissing}
+                newsletterSlug={newsletterSlug}
+                postId={postId}
+              />
+            )}
           </Inline>
           <Inline className="min-w-0" gap="md">
             <span className="shrink-0 text-sm text-muted-foreground">Subject</span>
             <p className="min-w-0 truncate text-sm" data-testid="post-preview-email-subject">
-              {preview?.subject}
+              {!isFetching && preview?.subject}
             </p>
           </Inline>
         </Stack>
-        {isLoading ? (
+        {newsletterLookupPending || isFetching ? (
           <Inline className="grow" gap="none" justify="center">
             <LoadingIndicator size="md" />
           </Inline>
+        ) : newsletterLookupError ? (
+          <EmptyIndicator
+            actions={
+              <Button variant="outline" onClick={onRetryNewsletterLookup}>
+                Retry
+              </Button>
+            }
+            className="grow justify-center"
+            data-testid="post-preview-newsletters-error"
+            description="The newsletters could not be loaded."
+            title="Couldn’t load newsletters"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : isError ? (
+          <EmptyIndicator
+            actions={
+              <Button variant="outline" onClick={() => void refetch()}>
+                Retry
+              </Button>
+            }
+            className="grow justify-center"
+            description="The email preview could not be loaded."
+            title="Couldn’t load the email preview"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : newsletterMissing ? (
+          <EmptyIndicator
+            className="grow justify-center"
+            description="Choose an active newsletter before sending this post."
+            title="Newsletter unavailable"
+          >
+            <LucideIcon.MailWarning />
+          </EmptyIndicator>
         ) : (
           <iframe
             className="min-h-0 grow border-0"
