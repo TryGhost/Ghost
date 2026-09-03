@@ -1,4 +1,14 @@
+import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import { contentToText, lexicalToText } from './content-text';
+
+/** A document as Koenig serializes it, recorded from a headless load. */
+function koenigDocument(name: string): string {
+  const found = OLD_SCHEMA_CORPUS.find((entry) => entry.name === name);
+  if (!found) {
+    throw new Error(`missing fixture ${name}`);
+  }
+  return JSON.stringify(found.after);
+}
 
 function doc(...children: unknown[]): string {
   return JSON.stringify({ root: { type: 'root', children } });
@@ -20,6 +30,15 @@ describe('lexicalToText', () => {
     expect(lexicalToText(doc(paragraph('Hello ', 'there')))).toBe('Hello there');
   });
 
+  it('leaves out the script and style bodies of an html card', () => {
+    const card = {
+      type: 'html',
+      html: '<p>Visible</p><script>alert(1)</script><style>p { color: red }</style>',
+    };
+
+    expect(lexicalToText(doc(card))).toBe('Visible');
+  });
+
   it('keeps a soft line break inside a block', () => {
     const block = {
       type: 'paragraph',
@@ -33,11 +52,22 @@ describe('lexicalToText', () => {
     expect(lexicalToText(doc(block))).toBe('One\nTwo');
   });
 
+  // Koenig replaces Lexical's heading and quote nodes with its own, so this
+  // reads the types it actually serializes rather than hand-built ones.
   it('marks headings and quotes the way markdown does', () => {
+    expect(lexicalToText(koenigDocument('legacy-heading-quote-nodes'))).toBe(
+      '## Heading two\n\n> A quotation\n\nBody',
+    );
+  });
+
+  it('still marks the plain heading and quote types another editor can write', () => {
     const heading = { type: 'heading', tag: 'h2', children: [{ type: 'text', text: 'Title' }] };
     const quote = { type: 'quote', children: [{ type: 'text', text: 'Said so' }] };
+    const aside = { type: 'aside', children: [{ type: 'text', text: 'On the side' }] };
 
-    expect(lexicalToText(doc(heading, quote))).toBe('## Title\n\n> Said so');
+    expect(lexicalToText(doc(heading, quote, aside))).toBe(
+      '## Title\n\n> Said so\n\n> On the side',
+    );
   });
 
   it('numbers an ordered list and bullets an unordered one', () => {

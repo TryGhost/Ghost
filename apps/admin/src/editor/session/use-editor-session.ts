@@ -29,7 +29,12 @@ import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
-import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
+import {
+  createEditorSession,
+  isOlderToken,
+  type EditorSession,
+  type EditorWritePayload,
+} from './editor-session';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
@@ -207,18 +212,18 @@ export function useEditorSession({
   const saved = postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
 
   useEffect(() => {
-    if (saved) {
-      session.recordRefetched(saved);
+    if (!saved) {
+      return;
     }
+    session.recordRefetched(saved);
+    // The screen's query and a reload both answer with the post; the newer
+    // collision token is the one the screen should describe.
+    setLoadedRecord((current) =>
+      isOlderToken(saved.updated_at ?? '', current?.updated_at ?? null) ? current : saved,
+    );
   }, [saved, session]);
 
-  /**
-   * The writer chose the server's copy over their own. The read is its own
-   * request rather than a refetch of the query the screen rendered from: a
-   * failing refetch would put that query into an error state and replace the
-   * whole editor -- with the unsaved content, the banner and its copy-out
-   * escape hatch -- with a load error.
-   */
+  // Its own request: a failed refetch of the screen's query replaces the editor.
   const reload = useCallback(async (): Promise<ReloadOutcome> => {
     if (!persistedId) {
       return 'failed';
