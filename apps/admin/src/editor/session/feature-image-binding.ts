@@ -82,6 +82,8 @@ export function normalizeCaptionHtml(html: string | null | undefined): string {
 export function useFeatureImageBinding(
   port: FeatureImagePort,
   record?: EditorRecord,
+  /** Moves when the document is replaced from the server; re-reads the record. */
+  contentKey: number = 0,
 ): FeatureImageBinding {
   const session = useRef(port);
   session.current = port;
@@ -89,8 +91,16 @@ export function useFeatureImageBinding(
   const [featureImage, setFeatureImage] = useState(record?.feature_image ?? null);
   const [featureImageAlt, setFeatureImageAlt] = useState(record?.feature_image_alt ?? null);
   const [caption, setCaption] = useState(record?.feature_image_caption ?? null);
+  const [loadedKey, setLoadedKey] = useState(contentKey);
   const captionRef = useRef(caption);
   captionRef.current = caption;
+
+  if (loadedKey !== contentKey) {
+    setLoadedKey(contentKey);
+    setFeatureImage(record?.feature_image ?? null);
+    setFeatureImageAlt(record?.feature_image_alt ?? null);
+    setCaption(record?.feature_image_caption ?? null);
+  }
 
   const onFeatureImageChange = useCallback((url: string) => {
     setFeatureImage(url);

@@ -26,6 +26,7 @@ import {
 } from '@/editor/engine/save-engine';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
+import { contentToText } from './content-text';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
@@ -62,7 +63,17 @@ export interface EditorSessionHandle {
   state: SaveEngineState;
   /** The server ID acquired by this session's first create, if it began new. */
   createdId: string | null;
+  /** Moves when a reload replaces the document; keys the editor surface so both Koenig instances re-seed. */
+  contentKey: number;
+  /** The record the session is loaded at, replaced by a reload. */
+  loadedRecord?: EditorRecord;
   isDirty: () => boolean;
+  /** Whether a reload would discard the writer's own work, as opposed to only a failed save. */
+  hasUnsavedContent: () => boolean;
+  /** The unsaved title and body as plain text, for the writer to keep. */
+  contentText: () => string;
+  /** Replaces the document with the server's copy; false when the read failed. */
+  reload: () => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
   dispatchField: () => void;
   dispatchExplicit: () => void;
@@ -100,7 +111,9 @@ export function useEditorSession({
     record?.title === DEFAULT_TITLE ? '' : (record?.title ?? ''),
   );
   const [excerpt, setExcerpt] = useState(() => record?.custom_excerpt ?? '');
-  const [initialLexical] = useState(() => record?.lexical ?? null);
+  const [initialLexical, setInitialLexical] = useState(() => record?.lexical ?? null);
+  const [loadedRecord, setLoadedRecord] = useState(record);
+  const [contentKey, setContentKey] = useState(0);
 
   const transport = useRef({ addPost, editPost, addPage, editPage, generateSlug, postType });
   useEffect(() => {
@@ -191,6 +204,34 @@ export function useEditorSession({
     }
   }, [saved, session]);
 
+  const refetchPost = postQuery.refetch;
+  const refetchPage = pageQuery.refetch;
+
+  // The writer chose the server's copy over their own: read it through the
+  // editor's request options and reopen the session on it.
+  const reload = useCallback(async (): Promise<boolean> => {
+    const fresh: EditorRecord | undefined =
+      postType === 'page'
+        ? (await refetchPage()).data?.pages[0]
+        : (await refetchPost()).data?.posts[0];
+    if (!fresh) {
+      return false;
+    }
+
+    session.recordReloaded(fresh);
+    setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
+    setExcerpt(fresh.custom_excerpt ?? '');
+    setInitialLexical(fresh.lexical ?? null);
+    setLoadedRecord(fresh);
+    setContentKey((key) => key + 1);
+    return true;
+  }, [postType, refetchPage, refetchPost, session]);
+
+  const contentText = useCallback(
+    () => contentToText(title, session.getLiveLexical()),
+    [session, title],
+  );
+
   const isNew = !record;
   const onTitleChange = useCallback(
     (next: string) => {
@@ -249,6 +290,11 @@ export function useEditorSession({
     state,
     createdId: isNew ? persistedId : null,
     isDirty: () => isDirty,
+    contentKey,
+    loadedRecord,
+    hasUnsavedContent: session.hasUnsavedContent,
+    contentText,
+    reload,
     patchFeatureImage: session.patchFeatureImage,
     dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),

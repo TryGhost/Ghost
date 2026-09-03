@@ -124,7 +124,7 @@ function EditorContent({
   snippetDialog,
 }: EditorContentProps) {
   const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
-  const featureImage = useFeatureImageBinding(session, record);
+  const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
 
   useSaveShortcut(session.dispatchExplicit);
@@ -139,13 +139,17 @@ function EditorContent({
         />
       </EditorHeader>
       <SessionBanners
+        contentText={session.contentText}
+        hasUnsavedContent={session.hasUnsavedContent}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
+        onReload={session.reload}
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
       <div className="min-h-0 flex-1">
         <PostEditor
+          key={session.contentKey}
           {...session.bind}
           autofocusTitle={!record}
           cardConfig={cardConfig}
