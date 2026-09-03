@@ -63,7 +63,7 @@ const AutomationsListSkeleton: React.FC = () => {
     <Table
       aria-busy="true"
       aria-label="Automations"
-      className="flex table-fixed flex-col lg:table"
+      className="flex table-auto flex-col lg:table"
       data-testid="automations-list-loading"
     >
       <TableBody className="flex flex-col lg:table-row-group">
@@ -111,7 +111,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
   return (
     <Table
       aria-label="Automations"
-      className={cn('flex table-fixed flex-col lg:table', !showRunAnalytics && 'border-t')}
+      className={cn('flex table-auto flex-col lg:table', !showRunAnalytics && 'border-t')}
       data-testid="automations-list"
     >
       {showRunAnalytics && (
