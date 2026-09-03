@@ -5,7 +5,10 @@ import { DbDate } from '../../lib/db-types/date';
 const ETA_BATCH_WINDOW = 20;
 
 const StoredStatus = z.enum(['pending', 'submitting', 'submitted', 'failed']);
-const DbCount = z.number().int().nonnegative();
+const DbCount = z.preprocess(
+  (value) => (typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value),
+  z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+);
 
 const EmailRow = z.object({
   id: z.string(),

@@ -6,14 +6,33 @@ describe('SendingStatusService', function () {
   let knex: Knex;
   let service: SendingStatusService;
   let batchCount: number;
+  let aggregateCountsAsStrings: boolean;
 
   beforeEach(async function () {
+    aggregateCountsAsStrings = false;
     knex = createKnex({
       client: 'better-sqlite3',
       connection: {
         filename: ':memory:',
       },
       useNullAsDefault: true,
+      postProcessResponse(result) {
+        if (!aggregateCountsAsStrings || !Array.isArray(result)) {
+          return result;
+        }
+
+        return result.map((row) => {
+          if (row && typeof row === 'object') {
+            for (const key of ['count', 'recipient_count']) {
+              const value = Reflect.get(row, key);
+              if (typeof value === 'number') {
+                Reflect.set(row, key, String(value));
+              }
+            }
+          }
+          return row;
+        });
+      },
     });
 
     await knex.schema.createTable('emails', (table) => {
@@ -291,6 +310,29 @@ describe('SendingStatusService', function () {
       updatedAt: '2026-09-02 12:01:00',
     });
 
+    assert.deepEqual(await service.statusFor('email-id'), {
+      id: 'email-id',
+      sending: {
+        status: 'submitted',
+        progress: { completed: 10, total: 10, estimated_seconds_remaining: 0 },
+      },
+    });
+  });
+
+  it('accepts aggregate counts returned as decimal strings', async function () {
+    await addEmail({ status: 'submitting', emailCount: 10 });
+    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:00' });
+    aggregateCountsAsStrings = true;
+
+    assert.deepEqual(await service.statusFor('email-id'), {
+      id: 'email-id',
+      sending: {
+        status: 'preparing',
+        progress: { completed: 10, total: 10, estimated_seconds_remaining: 0 },
+      },
+    });
+
+    await knex('emails').where('id', 'email-id').update({ status: 'submitted' });
     assert.deepEqual(await service.statusFor('email-id'), {
       id: 'email-id',
       sending: {
