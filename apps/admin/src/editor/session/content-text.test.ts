@@ -39,6 +39,43 @@ describe('lexicalToText', () => {
     expect(lexicalToText(doc(card))).toBe('Visible');
   });
 
+  it('preserves block and line-break boundaries in an html card', () => {
+    const card = {
+      type: 'html',
+      html: '<p>First</p><p>Second<br>Third</p>',
+    };
+
+    expect(lexicalToText(doc(card))).toBe('First\nSecond\nThird');
+  });
+
+  it('preserves the boundary between inline and block HTML', () => {
+    const card = {
+      type: 'html',
+      html: '<span>First</span><p>Second</p>Third<div>Fourth</div>',
+    };
+
+    expect(lexicalToText(doc(card))).toBe('First\nSecond\nThird\nFourth');
+  });
+
+  it('preserves preformatted whitespace in an html card', () => {
+    const card = {
+      type: 'html',
+      html: '<pre>  first\n    second</pre>',
+    };
+
+    expect(lexicalToText(doc(card))).toBe('  first\n    second');
+  });
+
+  it('preserves block and line-break boundaries in nested card HTML', () => {
+    const card = {
+      type: 'toggle',
+      heading: '<p>Question</p>',
+      content: '<div>First</div><div>Second<br>Third</div>',
+    };
+
+    expect(lexicalToText(doc(card))).toBe('Question\nFirst\nSecond\nThird');
+  });
+
   it('keeps a soft line break inside a block', () => {
     const block = {
       type: 'paragraph',
@@ -163,6 +200,24 @@ describe('lexicalToText', () => {
     ['video', { type: 'video', src: 'a.mp4', caption: 'Video caption' }, 'Video caption'],
   ])('keeps the text a %s card holds', (_type, card, expected) => {
     expect(lexicalToText(doc(card))).toBe(expected);
+  });
+
+  it('does not interpret literal bookmark and file text as HTML', () => {
+    const bookmark = {
+      type: 'bookmark',
+      title: 'Use <draft>marker</draft>',
+      description: 'Keep &copy; literal',
+      url: 'https://example.com/<draft>',
+    };
+    const file = {
+      type: 'file',
+      fileTitle: 'Notes <draft>only</draft>',
+      fileCaption: 'R&D &copy;',
+    };
+
+    expect(lexicalToText(doc(bookmark, file))).toBe(
+      'Use <draft>marker</draft>\nKeep &copy; literal\nhttps://example.com/<draft>\n\nNotes <draft>only</draft>\nR&D &copy;',
+    );
   });
 
   it('leaves out card properties the editor does not count as text', () => {

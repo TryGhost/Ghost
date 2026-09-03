@@ -38,8 +38,69 @@ const CARD_TEXT_PROPS: Record<string, readonly string[]> = {
   video: ['caption'],
 };
 
-// The rest of those properties hold HTML the writer authored in a nested editor.
-const LITERAL_TEXT_PROPS = new Set(['code', 'markdown']);
+// Properties backed by a nested editor (plus the raw HTML card) serialize HTML.
+// Everything else is literal text: treating unknown properties as markup can
+// silently remove tag-like text the writer authored.
+const HTML_TEXT_PROPS = new Set([
+  'bookmark.caption',
+  'call-to-action.textValue',
+  'callout.calloutText',
+  'codeblock.caption',
+  'embed.caption',
+  'gallery.caption',
+  'header.header',
+  'header.subheader',
+  'html.html',
+  'image.caption',
+  'product.productTitle',
+  'product.productDescription',
+  'signup.disclaimer',
+  'signup.header',
+  'signup.subheader',
+  'toggle.heading',
+  'toggle.content',
+  'video.caption',
+]);
+
+const HTML_BLOCK_TAGS = new Set([
+  'ADDRESS',
+  'ARTICLE',
+  'ASIDE',
+  'BLOCKQUOTE',
+  'DD',
+  'DIV',
+  'DL',
+  'DT',
+  'FIELDSET',
+  'FIGCAPTION',
+  'FIGURE',
+  'FOOTER',
+  'FORM',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'HEADER',
+  'LI',
+  'MAIN',
+  'NAV',
+  'OL',
+  'P',
+  'PRE',
+  'SECTION',
+  'TABLE',
+  'TBODY',
+  'TD',
+  'TFOOT',
+  'TH',
+  'THEAD',
+  'TR',
+  'UL',
+]);
+const HTML_BLOCK_BREAK = '\uE000';
+const HTML_LINE_BREAK = '\uE001';
 
 // Koenig replaces Lexical's heading and quote nodes with its own; a document
 // written before that, or by another editor, still carries the plain types.
@@ -59,12 +120,57 @@ function childrenOf(node: Record<string, unknown>): Record<string, unknown>[] {
   return Array.isArray(node.children) ? node.children.filter(isRecord) : [];
 }
 
+function isHtmlBlock(node: ChildNode | null): boolean {
+  return node?.nodeType === Node.ELEMENT_NODE && HTML_BLOCK_TAGS.has((node as Element).tagName);
+}
+
+function renderedTextOf(node: Node, preserveWhitespace = false): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent ?? '';
+    if (preserveWhitespace) {
+      return text;
+    }
+    if (!text.trim() && (isHtmlBlock(node.previousSibling) || isHtmlBlock(node.nextSibling))) {
+      return '';
+    }
+    return text.replace(/\s+/g, ' ');
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return '';
+  }
+
+  const element = node as Element;
+  if (element.matches('script, style, template')) {
+    return '';
+  }
+  if (element.tagName === 'BR') {
+    return HTML_LINE_BREAK;
+  }
+
+  const text = [...element.childNodes]
+    .map((child) => renderedTextOf(child, preserveWhitespace || element.tagName === 'PRE'))
+    .join('');
+  if (!HTML_BLOCK_TAGS.has(element.tagName) || !text) {
+    return text;
+  }
+
+  const trimmedStart = text.replace(/^ +/, '');
+  const trimmedEnd = text.replace(/ +$/, '');
+  const startsWithBreak =
+    trimmedStart.startsWith(HTML_BLOCK_BREAK) || trimmedStart.startsWith(HTML_LINE_BREAK);
+  const endsWithBreak =
+    trimmedEnd.endsWith(HTML_BLOCK_BREAK) || trimmedEnd.endsWith(HTML_LINE_BREAK);
+  return `${startsWithBreak ? '' : HTML_BLOCK_BREAK}${text}${endsWithBreak ? '' : HTML_BLOCK_BREAK}`;
+}
+
 /** Reads an authored HTML fragment back as the text it renders to. */
 function htmlToText(html: string): string {
   const { body } = new DOMParser().parseFromString(html, 'text/html');
-  // Script and style bodies are not text the reader ever sees.
-  body.querySelectorAll('script, style').forEach((element) => element.remove());
-  return body.textContent ?? '';
+  return renderedTextOf(body)
+    .replace(new RegExp(`${HTML_BLOCK_BREAK}(?: *${HTML_BLOCK_BREAK})+`, 'g'), HTML_BLOCK_BREAK)
+    .replace(new RegExp(`^ *${HTML_BLOCK_BREAK}|${HTML_BLOCK_BREAK} *$`, 'g'), '')
+    .replace(new RegExp(` *${HTML_BLOCK_BREAK} *`, 'g'), '\n')
+    .replace(new RegExp(HTML_LINE_BREAK, 'g'), '\n');
 }
 
 function inlineTextOf(nodes: Record<string, unknown>[]): string {
@@ -83,13 +189,14 @@ function inlineText(node: Record<string, unknown>): string {
 }
 
 function cardText(node: Record<string, unknown>, props: readonly string[]): string[] {
+  const type = stringAt(node, 'type');
   const lines = props
     .map((prop) => {
       const value = stringAt(node, prop);
       if (!value) {
         return '';
       }
-      return LITERAL_TEXT_PROPS.has(prop) ? value : htmlToText(value);
+      return type && HTML_TEXT_PROPS.has(`${type}.${prop}`) ? htmlToText(value) : value;
     })
     .filter(Boolean);
 

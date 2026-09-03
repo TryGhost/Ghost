@@ -134,6 +134,14 @@ describe('SessionBanners', () => {
     expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
   });
 
+  it('keeps the deleted-post copy escape visible after saving halts', () => {
+    renderBanners({ kind: 'halted' });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('This post has been deleted');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+  });
+
   it('copies the unsaved content to the clipboard', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });

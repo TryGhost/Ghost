@@ -57,17 +57,17 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 
 ### Errors and states
 
-| Error kind                      | State                                                                                                                                                                     | Exit                                                                                                        |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                                   |
-| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                        |
-| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                        |
-| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded()` on a snapshot whose `updatedAt` no longer matches the rejected one |
-| `validation`                    | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                                                              |
-| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                              |
-| `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                   |
+| Error kind                      | State                                                                                                                                                                     | Exit                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                                  |
+| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                       |
+| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                       |
+| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt)` with a candidate that no longer matches the rejected one |
+| `validation`                    | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, or an explicit save                                                                             |
+| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, or an explicit save                                                                             |
+| `transport` / `unknown`         | `error`, no suppression                                                                                                                                                   | next save                                                                                                  |
 
-`error` and `conflict` persist until a save actually starts; timers arming or a dropped save do not clear them. `contentReloaded()` is the caller's way to say the whole document has been replaced from the server: it lifts the collision halt when the snapshot has moved past the rejected `updated_at`, and does nothing otherwise. Other states: `idle`, `debouncing`, `saving`, `pending-coalesced`, `disposed`.
+`error` and `conflict` persist until a save actually starts; timers arming or a dropped save do not clear them. `contentReloaded(updatedAt)` lets the caller validate a server document before replacing local content: it lifts the collision halt when the candidate is a valid timestamp that has moved past the rejected `updated_at`, and returns false otherwise. With no argument it checks the current snapshot. Other states: `idle`, `debouncing`, `saving`, `pending-coalesced`, `disposed`.
 
 ### Re-auth
 
@@ -334,7 +334,8 @@ The wiring hook owns everything the three modules deliberately do not:
 - Reloading the document when the writer chooses the server's copy: the tracker
   is loaded afresh so the hidden instance's old baseline goes with it, the
   identity adopts the fresh collision token, the editor surface re-seeds both
-  Koenig instances, and the engine is told through `contentReloaded()`. The read
+  Koenig instances, and the engine validates the candidate through
+  `contentReloaded(updatedAt)` before any of those replacements happen. The read
   is its own request, never a refetch of the query the screen rendered from: a
   failing refetch puts that query into an error state and replaces the editor,
   taking the unsaved content and the way to copy it out with it. A reload that
