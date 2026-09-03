@@ -193,11 +193,15 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 ## Requests
 
-Every request the flow owns carries the shared editor `EDITOR_REQUEST_OPTIONS`, which opts it out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, and the email retry. An expired session is left to surface where the user is — as an unreadable count that falls back to descriptive copy, a note on the complete step, or an error on the email-error step.
+Every request the flow makes carries the shared editor `EDITOR_REQUEST_OPTIONS`, which opts it out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, the current-user read those counts depend on, and the email retry. An expired session is left to surface where the user is — as an unreadable count, a note on the complete step, or an error on the email-error step.
 
 The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
-The one request left redirect-capable is `useCurrentUser`, which every screen shares as a boot read rather than the flow owning it — including the copy `useMembersCount` makes to decide whether the role may count members at all. Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
+The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. So every editor component reading a shared key — the status line's recipient count and settings read included — has to opt out too, or a refetch it initiates can still navigate away mid-edit.
+
+An unreadable recipient count renders descriptive copy ("all members") rather than a number: `useMembersCount` resolves a failed request to `null`, never to `0`, because an audience that could not be counted is not an audience of none. A 401 on the tier or label queries is quieter — those segments simply do not appear in the recipient list, leaving the free/paid split. That is pre-existing behaviour and is not surfaced to the user.
+
+Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
 
 ## Update flow
 

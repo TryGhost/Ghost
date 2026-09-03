@@ -214,10 +214,7 @@ export interface MembersCountResult {
 }
 
 export interface MembersCountOptions {
-  /**
-   * Transport options for the count request. `useCurrentUser` is a shared boot
-   * query rather than this hook's own, so it keeps the framework defaults.
-   */
+  /** Transport options for both requests this hook makes: the count and the current user. */
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 }
 
@@ -226,18 +223,20 @@ export interface MembersCountOptions {
  * `members-count-cache` service + `members-count-fetcher` resource: a browse
  * request with `limit=1` reading `meta.pagination.total`, cached per-filter
  * for 60 seconds. As in Ember, roles that cannot manage members get
- * `count: null` without a request, a nullish filter counts as 0 without a
- * request, and request errors resolve to 0 with no error toast. While the
- * current user is still loading the result has `count: null` and
- * `isLoading: true`, so callers can tell it apart from a role that cannot
- * browse members. The request error and retry are also exposed for callers
- * such as publish limits that cannot safely treat an unreadable count as zero.
+ * `count: null` without a request and a nullish filter counts as 0 without a
+ * request. A failed request resolves to `count: null` with no error toast —
+ * an unreadable count is not a count of zero, and callers render descriptive
+ * copy for `null` rather than claiming an audience of none. While the current
+ * user is still loading the result has `count: null` and `isLoading: true`,
+ * so callers can tell it apart from a role that cannot browse members. The
+ * request error and retry are also exposed for callers such as publish limits
+ * that cannot safely treat an unreadable count as zero.
  */
 export function useMembersCount(
   filter: string | null | undefined,
   { requestOptions }: MembersCountOptions = {},
 ): MembersCountResult {
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser } = useCurrentUser({ requestOptions });
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
   const enabled = canFetch && filter !== null && filter !== undefined;
 
@@ -260,13 +259,23 @@ export function useMembersCount(
     };
   }
 
-  if (!enabled || result.isError) {
+  if (!enabled) {
     return {
       count: canFetch ? 0 : null,
       isLoading: false,
-      isFetching: enabled && result.isFetching,
-      error: enabled ? result.error : null,
-      refetch: enabled ? result.refetch : noOpMembersCountRefetch,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (result.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: result.isFetching,
+      error: result.error,
+      refetch: result.refetch,
     };
   }
 

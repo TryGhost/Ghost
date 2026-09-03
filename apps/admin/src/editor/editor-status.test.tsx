@@ -21,6 +21,10 @@ describe('RecipientCount', () => {
     render(<RecipientCount filter={filter} segment="status:free,status:-free" />);
 
     expect(screen.getByText('all members')).toBeInTheDocument();
-    expect(mocks.useMembersCount).toHaveBeenCalledWith(filter);
+    // The status line shares its count key with the publish flow, so its own
+    // refetches have to opt out of the session-expiry redirect too.
+    expect(mocks.useMembersCount).toHaveBeenCalledWith(filter, {
+      requestOptions: { sessionExpiryRedirect: false },
+    });
   });
 });

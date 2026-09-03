@@ -171,8 +171,7 @@ export function usePublishInputs(): PublishInputs {
     isFetchingNextNewsletterPage,
     newslettersError,
   ]);
-  // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
-  const currentUserQuery = useCurrentUser();
+  const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   // Site-wide total, the way Ember's publish options read it.
   const {
     count: memberCount,

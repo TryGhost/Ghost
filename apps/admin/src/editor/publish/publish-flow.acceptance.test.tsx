@@ -822,6 +822,63 @@ describe('Publish flow', () => {
     SLOW,
   );
 
+  it(
+    'stays on the step when the current-user read expires mid-flow',
+    async () => {
+      // Each step mounts its own recipient-count observer, which re-reads the
+      // current user - so the session can expire on a request the flow makes
+      // only because the writer moved between steps.
+      let reads = 0;
+      const userApi = fakeAdminEndpoint('GET', /^\/users\/me\//, () => {
+        reads += 1;
+        return reads === 1
+          ? { users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }] }
+          : SESSION_EXPIRED;
+      });
+      await renderPublishFlow();
+
+      await expect.element(publishScreen.options()).toBeInTheDocument();
+      await publishScreen.continueButton().click();
+
+      await expect.element(publishScreen.confirm()).toBeInTheDocument();
+      await expect.poll(() => userApi.requests.length).toBeGreaterThan(1);
+      await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    },
+    SLOW,
+  );
+
+  it(
+    'never claims an audience of none when the count expires',
+    async () => {
+      fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
+      const { onCompleted } = await renderPublishFlow();
+
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Email only').click();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      // An unreadable count is not a count of zero.
+      await expect
+        .element(publishScreen.complete())
+        .toHaveTextContent('was sent to all subscribers');
+      await expect.element(publishScreen.complete()).not.toHaveTextContent('0 subscribers');
+      expect(onCompleted).toHaveBeenCalledTimes(1);
+    },
+    SLOW,
+  );
+
+  it('opens the flow when the recipient queries expire', async () => {
+    fakeAdminEndpoint('GET', /^\/newsletters\/\?/, SESSION_EXPIRED, { status: 401 });
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, SESSION_EXPIRED, { status: 401 });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, SESSION_EXPIRED, { status: 401 });
+    await renderPublishFlow();
+
+    // The newsletter list is an input the machine needs, so the flow reports
+    // the failure in place rather than rendering options built on nothing.
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
   it('reports a retry failure when the failed email has no id', async () => {
     await renderPublishFlow({
       post: draft({
@@ -909,6 +966,37 @@ describe('Publish flow', () => {
 describe('Update flow', () => {
   beforeEach(() => {
     fakeMemberCounts(20);
+  });
+
+  it('describes a scheduled send in place when its count expires', async () => {
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
+    const { pathname } = window.location;
+
+    await render(
+      <TestWrapper>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </TestWrapper>,
+    );
+
+    // An unreadable count drops the number rather than reporting none.
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers');
+    await expect.element(publishScreen.updateFlow()).not.toHaveTextContent('0 subscribers');
+    expect(window.location.pathname).toBe(pathname);
   });
 
   it('reverts a published post to a draft', async () => {
