@@ -176,6 +176,29 @@ describe('Analytics overview', () => {
       .toContain('Inter Admin 7');
   });
 
+  it('uses display font features only on Admin 7 headings', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', {
+      labs: { admin7PageChrome: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+    const heading = page.getByRole('heading', { name: 'Analytics' });
+    await expect.element(heading).toBeVisible();
+    const headingFeatures = getComputedStyle(heading.element()).fontFeatureSettings;
+    const smallTextFeatures = getComputedStyle(
+      analyticsScreen.activeVisitors().element(),
+    ).fontFeatureSettings;
+    expect(headingFeatures).toContain('dlig');
+    expect(headingFeatures).toContain('cv05');
+    expect(smallTextFeatures).toContain('zero');
+    expect(smallTextFeatures).toContain('ss01');
+    expect(smallTextFeatures).not.toContain('dlig');
+    expect(smallTextFeatures).not.toContain('cv05');
+  });
+
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
     seedTopPostsViews();
