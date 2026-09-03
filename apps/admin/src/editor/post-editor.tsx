@@ -280,7 +280,7 @@ export function PostEditor({
               autoFocus={autofocusTitle}
               className={cn(
                 fieldClassName,
-                'mb-4 text-4xl leading-tight font-bold tracking-tight text-foreground placeholder:font-bold placeholder:text-muted-foreground',
+                'admin7-heading-features mb-4 text-4xl leading-tight font-bold tracking-tight text-foreground placeholder:font-bold placeholder:text-muted-foreground',
               )}
               data-testid="editor-title-input"
               placeholder={`${capitalize(postType)} title`}
