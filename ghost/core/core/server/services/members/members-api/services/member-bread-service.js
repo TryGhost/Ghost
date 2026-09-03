@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const { ADMIN } = require('../../../members-custom-fields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -102,12 +103,12 @@ module.exports = class MemberBREADService {
    * @param {string[]} memberIds
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
-  async fetchCustomFieldValues(memberIds) {
+  async fetchCustomFieldValues(memberIds, audience) {
     if (!(await this.customFieldDefinitions.hasAnyActive())) {
       return null;
     }
 
-    return this.customFieldValues.getValuesForMembers(memberIds);
+    return this.customFieldValues.getValuesForMembers(memberIds, audience);
   }
 
   /**
@@ -384,13 +385,15 @@ module.exports = class MemberBREADService {
   /**
    * @param {object} data
    * @param {object} [options]
-   * @param {boolean} [options.withCustomFields] Pass false to leave custom field values
-   *   off the result. Ghost calls this method to identify a signed-in reader on every page
-   *   view of a themed site, and that caller renders the member through a fixed list of
-   *   fields that has never included custom ones. Fetching them there costs two database
-   *   queries per page view whose results are then thrown away.
+   * @param {import('../../../members-custom-fields').Audience | null} [options.customFieldsFor]
+   *   Who the extra fields a publisher defined are being read for, or null to leave them
+   *   off entirely. Null is not the same as "nobody may see them": it means this caller
+   *   never shows them, so fetching them is two database queries whose results are thrown
+   *   away. Ghost identifies a signed-in reader on every page view of a themed site
+   *   through this method, and that caller renders a member through a fixed list of
+   *   fields which has never included these.
    */
-  async read(data, { withCustomFields = true, ...options } = {}) {
+  async read(data, { customFieldsFor = ADMIN, ...options } = {}) {
     const defaultWithRelated = [
       'labels',
       'stripeSubscriptions',
@@ -451,8 +454,8 @@ module.exports = class MemberBREADService {
     const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
     member.unsubscribe_url = unsubscribeUrl;
 
-    if (withCustomFields) {
-      const customFields = await this.fetchCustomFieldValues([member.id]);
+    if (customFieldsFor) {
+      const customFields = await this.fetchCustomFieldValues([member.id], customFieldsFor);
       if (customFields) {
         member.metafields = customFields.get(member.id) ?? {};
       }
@@ -574,7 +577,7 @@ module.exports = class MemberBREADService {
     // plan to apply once below, so the values aren't resolved and validated
     // twice.
     const plannedCustomFields = writeCustomFields
-      ? await this.customFieldValues.planWrite(customFields)
+      ? await this.customFieldValues.planWrite(customFields, ADMIN)
       : null;
 
     let model;
@@ -792,7 +795,10 @@ module.exports = class MemberBREADService {
     // One query for the whole page, not one per member. `null` when the flag
     // is off or the caller didn't ask — the same truthiness guard read uses.
     const customFieldsByMember = options.includeCustomFields
-      ? await this.fetchCustomFieldValues(page.data.map((model) => model.id))
+      ? await this.fetchCustomFieldValues(
+          page.data.map((model) => model.id),
+          ADMIN,
+        )
       : null;
 
     const data = page.data.map((model, index) => {

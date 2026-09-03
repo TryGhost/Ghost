@@ -690,12 +690,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
+    assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
       giftService: gifts.service,
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
+      mentionsSendingService: mentionsService.sendingService,
     });
     await jobsService.start();
     debug('End: Register job handlers');
