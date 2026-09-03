@@ -521,6 +521,7 @@ module.exports = function apiRoutes() {
   // ## Emails
   router.get('/emails', mw.authAdminApi, http(api.emails.browse));
   router.get('/emails/:id', mw.authAdminApi, http(api.emails.read));
+  router.get('/emails/:id/status', mw.authAdminApi, http(api.emails.sendingStatus));
   router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
   router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
   router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));

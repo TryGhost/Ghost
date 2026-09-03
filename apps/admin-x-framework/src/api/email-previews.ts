@@ -1,14 +1,18 @@
 import { createMutation, createQueryWithId } from '../utils/api/hooks';
+import { z } from 'zod';
 
-export type EmailPreview = {
-  html: string;
-  plaintext: string;
-  subject: string;
-};
+export const EmailPreviewSchema = z.object({
+  html: z.string(),
+  plaintext: z.string(),
+  subject: z.string(),
+});
 
-export interface EmailPreviewResponseType {
-  email_previews: EmailPreview[];
-}
+export const EmailPreviewResponseSchema = z.object({
+  email_previews: z.array(EmailPreviewSchema).min(1),
+});
+
+export type EmailPreview = z.infer<typeof EmailPreviewSchema>;
+export type EmailPreviewResponseType = z.infer<typeof EmailPreviewResponseSchema>;
 
 export interface EmailPreviewParams {
   memberStatus?: 'free' | 'paid';
@@ -23,6 +27,7 @@ const dataType = 'EmailPreviewResponseType';
 const useEmailPreviewQuery = createQueryWithId<EmailPreviewResponseType>({
   dataType,
   path: (id) => `/email_previews/posts/${id}/`,
+  parseResponse: (data) => EmailPreviewResponseSchema.parse(data),
 });
 
 export const useEmailPreview = (
@@ -57,6 +62,7 @@ export interface SendTestEmailPayload {
 /** Sends a test email for a post. Responds 204 with no body. */
 export const useSendTestEmail = createMutation<unknown, SendTestEmailPayload>({
   method: 'POST',
+  sessionExpiryRedirect: false,
   path: ({ postId }) => `/email_previews/posts/${postId}/`,
   body: ({ emails, memberStatus, memberTier, newsletter }) => ({
     emails,

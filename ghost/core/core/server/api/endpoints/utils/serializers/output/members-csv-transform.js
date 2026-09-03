@@ -14,7 +14,7 @@ const { toExportCsvRow } = require('../../../../../services/members/import-expor
  * @returns {Transform} Transform stream that converts objects to CSV
  */
 function createCSVTransform() {
-  // Locked in from the first row rather than declared up front: custom fields
+  // Locked in from the first row rather than declared up front: metafields
   // add a column per site, so the column set isn't known until a row arrives.
   // Every row carries the same keys, so the first is representative.
   let fields = null;

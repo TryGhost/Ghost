@@ -80,7 +80,7 @@
   "members": {
     "contentApiAccess": [],
     "paymentProcessors": [],
-    "customFields": {
+    "metafields": {
       "maxDefinitions": 100
     },
     "importer": {

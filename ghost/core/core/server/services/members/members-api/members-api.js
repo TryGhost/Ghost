@@ -7,7 +7,7 @@ const PaymentsService = require('./services/payments-service');
 const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
-const customFields = require('../../members-custom-fields');
+const metafields = require('../../members-metafields');
 const { MemberAccountService } = require('../account-service');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
@@ -72,8 +72,8 @@ module.exports = function MembersAPI({
   commentsService,
   emailAddressService,
   giftService,
-  customFieldValues,
-  customFieldDefinitions,
+  metafieldValues,
+  metafieldDefinitions,
 }) {
   const tokenService = new TokenService({
     privateKey,
@@ -155,8 +155,8 @@ module.exports = function MembersAPI({
     nextPaymentCalculator,
     commentsService,
     giftService,
-    customFieldValues,
-    customFieldDefinitions,
+    metafieldValues,
+    metafieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();
@@ -358,14 +358,14 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email }, { customFieldsFor: null });
+    return memberBREADService.read({ email }, { metafieldsFor: null });
   }
 
   const account = new MemberAccountService({
     memberBREADService,
     members: users,
     emailSuppressionList,
-    customFieldValues: customFields.values,
+    metafieldValues: metafields.values,
   });
 
   async function getMemberIdentity(transientId) {
@@ -378,7 +378,7 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId }, { customFieldsFor: null });
+    return memberBREADService.read({ transient_id: transientId }, { metafieldsFor: null });
   }
 
   async function cycleTransientId(memberId) {

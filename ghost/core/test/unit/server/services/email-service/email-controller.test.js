@@ -583,4 +583,46 @@ describe('Email Controller', function () {
       assert.equal(result.get('status'), 'failed');
     });
   });
+
+  describe('getSendingStatus', function () {
+    it('throws if email not found', async function () {
+      const sendingStatusService = {
+        statusFor: sinon.stub().resolves(null),
+      };
+      const controller = new EmailController({}, { models: {}, sendingStatusService });
+
+      await assert.rejects(
+        controller.getSendingStatus({
+          options: {},
+          data: {
+            id: '123',
+          },
+        }),
+        /Email not found/,
+      );
+    });
+
+    it('returns the status from the sending status service', async function () {
+      const expectedStatus = {
+        id: '123',
+        sending: {
+          status: 'preparing',
+        },
+      };
+      const sendingStatusService = {
+        statusFor: sinon.stub().resolves(expectedStatus),
+      };
+      const controller = new EmailController({}, { models: {}, sendingStatusService });
+
+      const result = await controller.getSendingStatus({
+        options: {},
+        data: {
+          id: '123',
+        },
+      });
+
+      assert.deepEqual(result, expectedStatus);
+      sinon.assert.calledOnceWithExactly(sendingStatusService.statusFor, '123');
+    });
+  });
 });

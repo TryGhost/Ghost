@@ -5,9 +5,9 @@ const { chainTransformers } = require('@tryghost/mongo-utils');
 const config = require('../../shared/config');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const {
-  CUSTOM_FIELDS_RELATION,
-  createCustomFieldsFilterTransformer,
-} = require('../services/members-custom-fields/filter');
+  METAFIELDS_RELATION,
+  createMetafieldsFilterTransformer,
+} = require('../services/members-metafields/filter');
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 
@@ -195,8 +195,8 @@ const Member = ghostBookshelf.Model.extend(
     // getFilteredCollectionQuery. Chaining the metafield filter transformer here covers them
     // all without any call site wiring it.
     applyDefaultAndCustomFilters(options) {
-      if (options.filter && options.filter.includes(`${CUSTOM_FIELDS_RELATION.tableNameAs}.`)) {
-        const transformer = createCustomFieldsFilterTransformer();
+      if (options.filter && options.filter.includes(`${METAFIELDS_RELATION.tableNameAs}.`)) {
+        const transformer = createMetafieldsFilterTransformer();
         options.mongoTransformer = options.mongoTransformer
           ? chainTransformers(options.mongoTransformer, transformer)
           : transformer;
@@ -206,7 +206,7 @@ const Member = ghostBookshelf.Model.extend(
 
     filterRelations() {
       return {
-        metafields: CUSTOM_FIELDS_RELATION,
+        metafields: METAFIELDS_RELATION,
         labels: {
           tableName: 'labels',
           type: 'manyToMany',

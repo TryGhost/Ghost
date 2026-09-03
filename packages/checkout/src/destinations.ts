@@ -1,4 +1,4 @@
-import type { FieldType } from '@tryghost/custom-field-types';
+import type { FieldType } from '@tryghost/metafield-types';
 import type { StripePort } from './field-ports.ts';
 
 /**

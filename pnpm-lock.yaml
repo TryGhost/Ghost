@@ -897,9 +897,6 @@ importers:
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.20
-      '@tryghost/custom-field-types':
-        specifier: workspace:*
-        version: link:../../packages/custom-field-types
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.11
@@ -915,6 +912,9 @@ importers:
       '@tryghost/koenig-lexical':
         specifier: workspace:*
         version: link:../../koenig/koenig-lexical
+      '@tryghost/metafield-types':
+        specifier: workspace:*
+        version: link:../../packages/metafield-types
       '@tryghost/nql':
         specifier: 0.13.4
         version: 0.13.4(supports-color@10.2.2)
@@ -1127,12 +1127,12 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@18.3.1)
-      '@tryghost/custom-field-types':
-        specifier: workspace:*
-        version: link:../../packages/custom-field-types
       '@tryghost/limit-service':
         specifier: 'catalog:'
         version: 1.5.6
+      '@tryghost/metafield-types':
+        specifier: workspace:*
+        version: link:../../packages/metafield-types
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../../packages/nql-string
@@ -1157,6 +1157,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -2271,15 +2274,15 @@ importers:
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../packages/checkout
-      '@tryghost/custom-field-types':
-        specifier: workspace:*
-        version: link:../packages/custom-field-types
       '@tryghost/debug':
         specifier: 'catalog:'
         version: 2.3.12(supports-color@10.2.2)
       '@tryghost/logging':
         specifier: 5.4.3
         version: 5.4.3(supports-color@10.2.2)
+      '@tryghost/metafield-types':
+        specifier: workspace:*
+        version: link:../packages/metafield-types
       '@tryghost/test-data':
         specifier: workspace:*
         version: link:../packages/testing/test-data
@@ -2397,9 +2400,6 @@ importers:
       '@tryghost/config-url-helpers':
         specifier: 1.0.27
         version: 1.0.27
-      '@tryghost/custom-field-types':
-        specifier: workspace:*
-        version: link:../../packages/custom-field-types
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.11
@@ -2460,6 +2460,9 @@ importers:
       '@tryghost/logging':
         specifier: 5.4.3
         version: 5.4.3(supports-color@10.2.2)
+      '@tryghost/metafield-types':
+        specifier: workspace:*
+        version: link:../../packages/metafield-types
       '@tryghost/metrics':
         specifier: 'catalog:'
         version: 3.5.3(supports-color@10.2.2)
@@ -4166,43 +4169,9 @@ importers:
 
   packages/checkout:
     dependencies:
-      '@tryghost/custom-field-types':
+      '@tryghost/metafield-types':
         specifier: workspace:*
-        version: link:../custom-field-types
-    devDependencies:
-      '@internal/cfg-eslint':
-        specifier: workspace:*
-        version: link:../../configs/eslint
-      '@internal/cfg-typescript':
-        specifier: workspace:*
-        version: link:../../configs/typescript
-      '@internal/cfg-vitest':
-        specifier: workspace:*
-        version: link:../../configs/vitest
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.20.1
-      '@typescript/native':
-        specifier: 'catalog:'
-        version: typescript@7.0.2
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
-
-  packages/custom-field-types:
-    dependencies:
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
+        version: link:../metafield-types
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4262,6 +4231,40 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/metafield-types:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
   packages/nql-string:
     devDependencies:
