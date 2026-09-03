@@ -78,6 +78,13 @@ export default class PostsRoute extends AuthenticatedRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
+        // The editor stays active while Ember resolves the list model, so its
+        // deactivate hook has not cleared full-screen mode when the posts/pages
+        // loading template first renders. Restore normal chrome at the start of
+        // the transition so the React shell keeps its sidebar visible throughout
+        // the loading state. PagesRoute inherits this hook.
+        this.ui.set('isFullScreen', false);
+
         // Strictly boolean, matching the tag route: a non-boolean labs value
         // must not hand the route to React.
         if (this.feature.postsListReact !== true) {
@@ -85,13 +92,6 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         transition.abort();
-
-        // Aborting means the route we came FROM never deactivates, so any UI
-        // state its teardown would have cleared stays set. The editor's
-        // `deactivate` clears full-screen mode, and the React shell reads that
-        // to decide whether to show the sidebar - so without this, returning
-        // from the editor leaves you looking at a sidebar-less screen.
-        this.ui.set('isFullScreen', false);
 
         // Ember and React share window.location.hash, and an aborted
         // transition never reaches updateURL - so a navigation Ember itself
