@@ -68,6 +68,8 @@ export interface EditorSession {
   getState: () => SaveEngineState;
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
+  /** Dirty for a reason other than the failed save itself: work a reload would discard. */
+  hasUnsavedContent: () => boolean;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
   patchFeatureImage: (
@@ -82,7 +84,10 @@ export interface EditorSession {
   dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
+  getLiveLexical: () => string | null;
   recordRefetched: (record: EditorRecord) => void;
+  /** Replaces the whole document with the server's copy; the writer chose to discard theirs. */
+  recordReloaded: (record: EditorRecord) => void;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   dispose: () => void;
@@ -292,6 +297,8 @@ export function createEditorSession({
     getState: () => engine.getState(),
     subscribe: (listener) => engine.subscribe(listener),
     getSaveSnapshot: getSnapshot,
+    hasUnsavedContent: () =>
+      tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
@@ -311,6 +318,7 @@ export function createEditorSession({
     dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
       if (identity.id !== next.id) {
@@ -325,6 +333,23 @@ export function createEditorSession({
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
+    },
+
+    // A document boundary, not a refetch: the tracker reloads, so the baseline
+    // the hidden instance reported for the old document is discarded with it.
+    recordReloaded: (next) => {
+      if (identity.id !== next.id) {
+        return;
+      }
+      identity = { id: next.id, updatedAt: next.updated_at ?? '' };
+      status = next.status ?? 'draft';
+      publishedAt = next.published_at ?? null;
+      latestRevision = latestRevisionOf(next);
+      live = projectionOf(next);
+      version += 1;
+      tracker.load(identity.id, live);
+      machine.loaded({ slug: live.slug, title: live.title });
+      engine.contentReloaded();
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),

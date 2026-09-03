@@ -198,6 +198,8 @@ export interface SaveEngine {
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
   reauthAbandoned(): void;
+  /** Leaves `conflict` once the caller has reloaded the document past the rejected `updated_at`. */
+  contentReloaded(): void;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -400,7 +402,7 @@ export function createSaveEngine<
   }
 
   // Errors persist until a save actually starts; timers arming or dropping do not clear them.
-  function deriveState(): SaveEngineState {
+  function deriveState({ keepHalt = true } = {}): SaveEngineState {
     if (frozen || isTerminal() || disposed) {
       return state;
     }
@@ -413,7 +415,7 @@ export function createSaveEngine<
           }
         : { kind: 'saving', intent: inFlight.command.kind };
     }
-    if (state.kind === 'error' || state.kind === 'conflict') {
+    if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
       return state;
     }
     if (debounce || timedCycle) {
@@ -853,6 +855,17 @@ export function createSaveEngine<
     setState({ kind: 'error', intent: slot.command.kind, error });
   }
 
+  // The caller replaced the document from the server: a snapshot that no longer
+  // carries the rejected updated_at ends the halt the collision caused.
+  function contentReloaded(): void {
+    const snapshot = readSnapshot();
+    if (state.kind !== 'conflict' || !snapshot || isStale(snapshot)) {
+      return;
+    }
+    staleUpdatedAt = null;
+    setState(deriveState({ keepHalt: false }));
+  }
+
   function queueSettled(): Promise<void> {
     return new Promise<void>((resolve) => {
       const check = () => {
@@ -951,6 +964,7 @@ export function createSaveEngine<
     subscribe,
     reauthSucceeded,
     reauthAbandoned,
+    contentReloaded,
     leaveRequested,
     dispose,
   };
