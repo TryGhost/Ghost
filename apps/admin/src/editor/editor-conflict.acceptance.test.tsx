@@ -17,6 +17,7 @@ const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const THEIR_SAVE_AT = '2026-01-01T09:00:00.000Z';
+const AFTER_SAVE_AT = '2026-01-01T10:00:00.000Z';
 const MY_IMAGE = 'https://example.com/content/images/mine.jpg';
 const THEIR_IMAGE = 'https://example.com/content/images/theirs.jpg';
 const READ_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
@@ -281,6 +282,44 @@ describe('Post editor update collision', () => {
       await editorScreen.confirmConflictReload().click();
 
       // A stale chip would offer Draft for a post the next save publishes.
+      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the reloaded status when a later read answers with the copy it replaced',
+    async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await collide(saveApi);
+
+      readAnswers(200, {
+        posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
+      });
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
+
+      // The save lands and invalidates the screen's query, whose refetch answers
+      // with the draft the reload replaced. A read older than what the editor
+      // holds must not roll the post back to it.
+      const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({
+        posts: [
+          theirs({
+            status: 'published',
+            published_at: THEIR_SAVE_AT,
+            updated_at: AFTER_SAVE_AT,
+          }),
+        ],
+      }));
+      const staleRead = readAnswers(200, { posts: [mine()] });
+
+      await typeIntoBody(' plus mine');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect.poll(() => acceptedSave.requests.length, POLL).toBe(1);
+      await expect.poll(() => staleRead.requests.length, POLL).toBeGreaterThan(0);
       await expect.element(editorScreen.status(), POLL).toHaveTextContent('Published');
     },
     SLOW,
