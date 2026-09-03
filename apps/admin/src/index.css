@@ -25,11 +25,30 @@
     'Inter Admin 7', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   --font-family: var(--font-sans);
-  --font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
+  --font-feature-settings: 'zero' 1, 'ss01' 1;
+  --heading-font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
   font-family: var(--font-sans);
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 14;
   font-feature-settings: var(--font-feature-settings);
+}
+
+/* Display alternates feel crowded at small sizes, so reserve them for
+   semantic headings across both Admin screens and Settings overlays. */
+:where(
+    .admin7,
+    body.react-admin:has(> #root .admin7)
+      > :is(
+        .shade.shade-admin,
+        #ember-basic-dropdown-wormhole,
+        #ember-modal-wormhole,
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
+      )
+  )
+  :where(h1, h2, h3, h4, h5, h6) {
+  font-feature-settings: var(--heading-font-feature-settings);
 }
 
 /* Browser form-control defaults can reset these inherited font properties.

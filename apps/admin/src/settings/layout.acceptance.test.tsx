@@ -21,6 +21,7 @@ describe('Settings layout', () => {
       await renderAdminApp('/settings', { labs: { admin7PageChrome: enabled } });
 
       await expect.element(settingsScreen.search()).toBeVisible();
+      const heading = page.getByRole('heading', { name: 'General settings', exact: true }).first();
       const titleAndDescriptionEdit = settingsScreen
         .titleAndDescription()
         .getByRole('button', { name: 'Edit' });
@@ -34,6 +35,16 @@ describe('Settings layout', () => {
         await expect
           .poll(() => getComputedStyle(element).fontFamily.includes('Inter Admin 7'))
           .toBe(enabled);
+      }
+      if (enabled) {
+        const headingFeatures = getComputedStyle(heading.element()).fontFeatureSettings;
+        const searchFeatures = getComputedStyle(
+          settingsScreen.search().element(),
+        ).fontFeatureSettings;
+        expect(headingFeatures).toContain('dlig');
+        expect(headingFeatures).toContain('cv05');
+        expect(searchFeatures).not.toContain('dlig');
+        expect(searchFeatures).not.toContain('cv05');
       }
       expect(document.querySelector('.admin7') !== null).toBe(enabled);
       expect(
