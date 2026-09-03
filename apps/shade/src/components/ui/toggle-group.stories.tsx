@@ -223,6 +223,43 @@ export const ButtonSized: Story = {
   },
 };
 
+const PillButtonSizedComponent = () => {
+  const [value, setValue] = useState<string>('public');
+
+  return (
+    <ToggleGroup
+      shape="pill"
+      size="button"
+      type="single"
+      value={value}
+      onValueChange={(newValue) => {
+        if (newValue) {
+          setValue(newValue);
+        }
+      }}
+    >
+      <ToggleGroupItem aria-label="Public tags" value="public">
+        Public tags
+      </ToggleGroupItem>
+      <ToggleGroupItem aria-label="Internal tags" value="internal">
+        Internal tags
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
+};
+
+export const PillButtonSized: Story = {
+  render: () => <PillButtonSizedComponent />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the pill shape for button-sized navigation choices in interfaces with fully rounded controls.',
+      },
+    },
+  },
+};
+
 const NoSelectionComponent = () => {
   const [value, setValue] = useState<string>('');
 
