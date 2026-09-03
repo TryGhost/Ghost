@@ -4,7 +4,7 @@ SQL >
     SELECT
         site_uuid,
         id,
-        updated_at,
+        parseDateTimeBestEffort(updated_at) AS updated_at,
         getSubcolumn(payload_json, 'automation_run_id') AS automation_run_id,
         getSubcolumn(payload_json, 'status') AS status
     FROM automation_run_step_events

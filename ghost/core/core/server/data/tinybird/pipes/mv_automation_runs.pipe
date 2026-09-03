@@ -4,9 +4,9 @@ SQL >
     SELECT
         site_uuid,
         id,
-        updated_at,
+        parseDateTimeBestEffort(updated_at) AS updated_at,
         getSubcolumn(payload_json, 'automation_id') AS automation_id,
-        toDateTime(getSubcolumn(payload_json, 'created_at')) AS created_at
+        parseDateTimeBestEffort(getSubcolumn(payload_json, 'created_at')) AS created_at
     FROM automation_run_events
 
 TYPE MATERIALIZED
