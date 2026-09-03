@@ -7,6 +7,17 @@ export interface EmailsResponseType {
   emails: Email[];
 }
 
+export const EmailBatchStatusSchema = z.enum(['pending', 'submitting', 'submitted', 'failed']);
+
+export const EmailBatchSchema = z.object({
+  id: z.string(),
+  status: EmailBatchStatusSchema,
+});
+
+export const EmailBatchesResponseSchema = z.object({
+  batches: z.array(EmailBatchSchema),
+});
+
 export const EmailSendingPhaseSchema = z.enum(['preparing', 'submitting']);
 
 export const EmailSendingProgressSchema = z.object({
@@ -45,8 +56,17 @@ export type EmailSendingProgress = z.infer<typeof EmailSendingProgressSchema>;
 export type EmailSendingState = z.infer<typeof EmailSendingStateSchema>;
 export type EmailSendingStatus = z.infer<typeof EmailSendingStatusSchema>;
 export type EmailStatusesResponseType = z.infer<typeof EmailStatusesResponseSchema>;
+export type EmailBatch = z.infer<typeof EmailBatchSchema>;
+export type EmailBatchesResponseType = z.infer<typeof EmailBatchesResponseSchema>;
 
 const emailStatusesDataType = 'EmailStatusesResponseType';
+const emailBatchesDataType = 'EmailBatchesResponseType';
+
+export const useBrowseEmailBatches = createQueryWithId<EmailBatchesResponseType>({
+  dataType: emailBatchesDataType,
+  path: (id) => `/emails/${id}/batches/`,
+  parseResponse: (data) => EmailBatchesResponseSchema.parse(data),
+});
 
 export const useEmailSendingStatus = createQueryWithId<EmailStatusesResponseType>({
   dataType: emailStatusesDataType,

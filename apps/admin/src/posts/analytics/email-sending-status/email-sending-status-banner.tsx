@@ -83,7 +83,8 @@ const failureDetail = (
 
 const EmailSendingStatusBanner = () => {
   const { post } = usePostAnalytics();
-  const { status, isRetrying, retrySending } = useEmailSendingStatusContext();
+  const { status, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
+    useEmailSendingStatusContext();
   const sending = status?.sending;
 
   if (!sending || sending.status === 'submitted') {
@@ -92,7 +93,9 @@ const EmailSendingStatusBanner = () => {
 
   const isFailed = sending.status === 'failed';
   const hasSentEmails = isFailed
-    ? sending.failed_during === 'submitting' && sending.progress.completed > 0
+    ? !hasUnknownDeliveryOutcome &&
+      sending.failed_during === 'submitting' &&
+      sending.progress.completed > 0
     : false;
   const title = isFailed
     ? hasSentEmails
@@ -101,7 +104,11 @@ const EmailSendingStatusBanner = () => {
     : sending.status === 'preparing'
       ? 'Preparing emails'
       : 'Sending emails';
-  const detail = isFailed ? failureDetail(sending, post?.email?.error) : activeDetail(sending);
+  const detail = isFailed
+    ? hasUnknownDeliveryOutcome
+      ? 'Something went wrong while sending this email.'
+      : failureDetail(sending, post?.email?.error)
+    : activeDetail(sending);
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
@@ -126,7 +133,7 @@ const EmailSendingStatusBanner = () => {
             )}
           </Text>
         </Inline>
-        {isFailed && (
+        {isFailed && !hasUnknownDeliveryOutcome && (
           <Button
             className="shrink-0"
             disabled={isRetrying}

@@ -46,6 +46,12 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
+function fakeSubmittingBatches(batches: Array<{ id: string; status: string }> = []) {
+  return fakeAdminEndpoint('GET', new RegExp(`^/emails/${EMAIL_ID}/batches/(?:\\?|$)`), {
+    batches,
+  });
+}
+
 /**
  * The world every post-analytics tab reads: the routed post, its growth
  * stats (referrers/growth/mrr feed both the overview and the growth tab),
@@ -276,6 +282,7 @@ describe('Post analytics overview', () => {
       },
     } as const;
     seedPostAnalyticsWorld(postOverrides);
+    fakeSubmittingBatches();
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
@@ -323,6 +330,57 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByTestId('email-sending-status-banner')).not.toBeInTheDocument();
   });
 
+  it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {
+    seedPostAnalyticsWorld({
+      email: {
+        id: EMAIL_ID,
+        email_count: 250,
+        opened_count: 0,
+        status: 'failed',
+        error: 'An error occurred, and your newsletter was only partially sent.',
+      },
+    });
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            failed_during: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+    const batchesApi = fakeSubmittingBatches([{ id: 'batch-1', status: 'submitting' }]);
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
+    await expect
+      .element(page.getByText('Something went wrong while sending this email.'))
+      .toBeVisible();
+    await expect.element(page.getByText(/only partially sent/)).not.toBeInTheDocument();
+    await expect
+      .element(
+        page
+          .getByTestId('email-sending-status-banner')
+          .getByRole('button', { name: /send|retry/i }),
+      )
+      .not.toBeInTheDocument();
+    await expect
+      .poll(() =>
+        new URL(batchesApi.lastRequest?.url ?? 'http://localhost').searchParams.get('filter'),
+      )
+      .toBe('status:submitting');
+    const batchRequestUrl = new URL(batchesApi.lastRequest!.url);
+    expect(batchRequestUrl.searchParams.get('fields')).toBe('id,status');
+    expect(batchRequestUrl.searchParams.get('limit')).toBe('1');
+  });
+
   it('refreshes the failure reason and does not count prepared recipients as sent', async () => {
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
@@ -346,6 +404,7 @@ describe('Post analytics overview', () => {
         ),
       ];
     });
+    fakeSubmittingBatches();
     let statusRequestCount = 0;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
       statusRequestCount += 1;
