@@ -22,9 +22,27 @@ export class EmailAnalyticsServiceWrapper {
   #fetching = false;
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
+  #lagFirstDetectedAt?: Date;
+  #peakLagMinutes = 0;
 
   get #logPrefix(): string {
     return `[EmailAnalytics:${this.#logName}]`;
+  }
+
+  #metricName(suffix: string): string {
+    return this.#logName === 'newsletters'
+      ? `email-analytics-${suffix}`
+      : `email-${this.#logName}-analytics-${suffix}`;
+  }
+
+  #getMetrics(): Pick<GhostMetrics, 'metric'> {
+    const result = this.#metrics;
+    if (!result) {
+      throw new errors.InternalServerError({
+        message: 'EmailAnalyticsServiceWrapper is not initialized with metrics',
+      });
+    }
+    return result;
   }
 
   get #backgroundJobName(): string {
@@ -174,18 +192,7 @@ export class EmailAnalyticsServiceWrapper {
       const openThroughputThreshold =
         config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
       if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
-        const metricName =
-          this.#logName === 'newsletters'
-            ? 'email-analytics-open-throughput'
-            : `email-${this.#logName}-analytics-open-throughput`;
-
-        const metrics = this.#metrics;
-        if (!metrics) {
-          throw new errors.InternalServerError({
-            message: 'EmailAnalyticsServiceWrapper is not initialized with metrics',
-          });
-        }
-        metrics.metric(metricName, {
+        this.#getMetrics().metric(this.#metricName('open-throughput'), {
           value: throughput,
           events: eventCount,
           duration: totalDurationMs,
@@ -194,22 +201,69 @@ export class EmailAnalyticsServiceWrapper {
     }
   }
 
+  // Reports how far behind the opened-events cursor is, warning on every cycle while
+  // behind and logging a single recovery line once the lag drops back under the threshold.
+  // lagMinutes comes pre-rounded to one decimal from the service.
+  // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
+  //  - Ghost or Mailgun outages
+  //  - Lack of actual email activity
+  #reportOpenedEventsLag(lagMinutes: number, config: Pick<ConfigInstance, 'get'>): void {
+    if (config.get('emailAnalytics:metrics:openedLag:enabled')) {
+      this.#getMetrics().metric(this.#metricName('opened-lag'), { value: lagMinutes });
+    }
+
+    const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
+    if (!lagThreshold) {
+      return;
+    }
+
+    if (lagMinutes > lagThreshold) {
+      // Duration is measured from the cycle where we first saw the threshold crossed
+      // (one fetch-cycle granularity), and the state is in-memory, so it resets on restart.
+      this.#lagFirstDetectedAt = this.#lagFirstDetectedAt ?? new Date();
+      this.#peakLagMinutes = Math.max(this.#peakLagMinutes, lagMinutes);
+      logging.warn(
+        {
+          system: {
+            event: 'analytics.lagging',
+            job_type: this.#backgroundJobName,
+            task: 'latest-opened',
+            lag_minutes: lagMinutes,
+            lag_threshold_minutes: lagThreshold,
+          },
+        },
+        `${this.#logPrefix} Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`,
+      );
+    } else if (this.#lagFirstDetectedAt) {
+      const behindDurationMs = Date.now() - this.#lagFirstDetectedAt.getTime();
+      logging.info(
+        {
+          system: {
+            event: 'analytics.caught_up',
+            job_type: this.#backgroundJobName,
+            task: 'latest-opened',
+            lag_minutes: lagMinutes,
+            behind_duration_ms: behindDurationMs,
+            peak_lag_minutes: this.#peakLagMinutes,
+          },
+        },
+        `${this.#logPrefix} Opened events processing caught up after ${(behindDurationMs / 60000).toFixed(1)} minutes behind (peak lag: ${this.#peakLagMinutes.toFixed(1)} minutes)`,
+      );
+      this.#lagFirstDetectedAt = undefined;
+      this.#peakLagMinutes = 0;
+    }
+  }
+
   async fetchLatestOpenedEvents({
     maxEvents = Infinity,
   }: { maxEvents?: number } = {}): Promise<number> {
     const config = this.#getConfig();
 
-    const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
-    const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
-    const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
-
-    // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
-    //  - Ghost or Mailgun outages
-    //  - Lack of actual email activity
-    if (lagThreshold && lagMinutes > lagThreshold) {
-      logging.warn(
-        `${this.#logPrefix} Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`,
-      );
+    // null means there's no cursor yet (no events processed and nothing to seed from),
+    // so there's no real lag to report.
+    const lagMinutes = await this.service.getOpenedEventsLagMinutes();
+    if (lagMinutes !== null) {
+      this.#reportOpenedEventsLag(lagMinutes, config);
     }
 
     const fetchStartedAt = Date.now();

@@ -106,6 +106,46 @@ describe('EmailAnalyticsService', function () {
       assert.equal(result.scheduled.jobName, 'custom-scheduled');
     });
 
+    it('returns per-pipeline lag from the persisted cursors without mutating internal state', async function () {
+      const now = Date.now();
+      const getLastEventTimestamp = sinon
+        .stub()
+        .callsFake(async (_jobName: string, events: string[]) =>
+          events.includes('opened') ? new Date(now - 45 * 60000) : new Date(now - 10 * 60000),
+        );
+      const service = createService({
+        queries: {
+          getLastEventTimestamp,
+        },
+      });
+
+      const result = await service.getStatusWithLag();
+
+      assert.equal(result.latestOpened.lagMinutes, 45);
+      assert.equal(result.latest.lagMinutes, 10);
+      // The missing cursor deliberately trails now, so its age is not reported as lag
+      assert.equal('lagMinutes' in result.missing, false);
+      assert.equal('lagMinutes' in result.scheduled, false);
+      assert.equal('lagMinutes' in service.getStatus().latest, false);
+      // Read-only path: it must never seed jobs rows
+      for (const call of getLastEventTimestamp.getCalls()) {
+        assert.deepEqual(call.args[3], { createJobIfMissing: false });
+      }
+    });
+
+    it('returns null lag instead of a fabricated fallback when a pipeline has no cursor yet', async function () {
+      const service = createService({
+        queries: {
+          getLastEventTimestamp: sinon.stub().resolves(null),
+        },
+      });
+
+      const result = await service.getStatusWithLag();
+
+      assert.equal(result.latestOpened.lagMinutes, null);
+      assert.equal(result.latest.lagMinutes, null);
+    });
+
     it('uses custom scheduled job name for persistence', async function () {
       const setJobMetadata = sinon.stub().resolves();
       const service = createService({
@@ -169,6 +209,7 @@ describe('EmailAnalyticsService', function () {
         JOB_NAMES.latestNonOpened,
         ['delivered', 'failed'],
         cursorSeed,
+        { createJobIfMissing: true },
       );
     });
 
@@ -211,6 +252,7 @@ describe('EmailAnalyticsService', function () {
         JOB_NAMES.latestOpened,
         ['opened'],
         NEWSLETTER_CURSOR_SEED,
+        { createJobIfMissing: true },
       );
     });
 
@@ -223,6 +265,38 @@ describe('EmailAnalyticsService', function () {
 
       const result = await service.getLastOpenedEventTimestamp();
       assert.deepEqual(result, new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
+    });
+  });
+
+  describe('getOpenedEventsLagMinutes', function () {
+    it('returns the rounded lag without seeding jobs rows', async function () {
+      const getLastEventTimestamp = sinon.stub().resolves(new Date(Date.now() - 45.55 * 60000));
+      const service = createService({
+        queries: {
+          getLastEventTimestamp,
+        },
+      });
+
+      const result = await service.getOpenedEventsLagMinutes();
+
+      assert.equal(result, 45.6);
+      sinon.assert.calledOnceWithExactly(
+        getLastEventTimestamp,
+        JOB_NAMES.latestOpened,
+        ['opened'],
+        NEWSLETTER_CURSOR_SEED,
+        { createJobIfMissing: false },
+      );
+    });
+
+    it('returns null when there is no cursor yet', async function () {
+      const service = createService({
+        queries: {
+          getLastEventTimestamp: sinon.stub().resolves(null),
+        },
+      });
+
+      assert.equal(await service.getOpenedEventsLagMinutes(), null);
     });
   });
 
