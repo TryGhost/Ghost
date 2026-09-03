@@ -1,7 +1,7 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
-const approvedRoutePatterns = [/^\/members\/?$/];
+const approvedRoutePatterns = [/^\/members\/?$/, /^\/members\/import\/?$/];
 const editorRoutePattern = /^\/editor(?:\/|$)/;
 
 export function isAdmin7PillApprovedRoute(pathname: string): boolean {

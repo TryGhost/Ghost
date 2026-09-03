@@ -3,6 +3,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { useShade } from '@/providers/shade-provider';
 import { SHADE_APP_NAMESPACES } from '@/shade-app';
 
 const AlertDialog = AlertDialogPrimitive.Root;
@@ -88,21 +89,39 @@ AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayNam
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action ref={ref} className={cn(buttonVariants(), className)} {...props} />
-));
+>(({ className, ...props }, ref) => {
+  const { controlShape } = useShade();
+
+  return (
+    <AlertDialogPrimitive.Action
+      ref={ref}
+      className={cn(buttonVariants({ shape: controlShape }), className)}
+      {...props}
+      data-control-shape={controlShape}
+    />
+  );
+});
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Cancel
-    ref={ref}
-    className={cn(buttonVariants({ variant: 'outline' }), 'mt-2 sm:mt-0', className)}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const { controlShape } = useShade();
+
+  return (
+    <AlertDialogPrimitive.Cancel
+      ref={ref}
+      className={cn(
+        buttonVariants({ shape: controlShape, variant: 'outline' }),
+        'mt-2 sm:mt-0',
+        className,
+      )}
+      {...props}
+      data-control-shape={controlShape}
+    />
+  );
+});
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;
 
 export {
