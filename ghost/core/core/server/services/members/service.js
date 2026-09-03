@@ -126,6 +126,9 @@ const membersMigrationJobName = 'members-migrations';
  * row is written after the run, so a boot that dies mid-way retries next time.
  * The row is written even when Stripe is not configured, matching the job-based
  * version: a site that connects Stripe later never runs these 2021-era backfills.
+ * Two processes booting a site with no row will both run the backfills, where the
+ * job-based version claimed the row first. Accepted: every site that has booted
+ * since Ghost 5.6 has the row, and the backfills do nothing without Stripe.
  *
  * @TODO: Delete the backfills, this runner and the `jobs` rows in the next major
  *
@@ -157,8 +160,18 @@ async function runStripeMigrations(stripeService) {
   const attrs = { status, started_at: new Date(startedAt), finished_at: new Date() };
   if (existingJob) {
     await models.Job.edit(attrs, { id: existingJob.id });
-  } else {
+    return;
+  }
+
+  try {
     await models.Job.add({ name: membersMigrationJobName, ...attrs });
+  } catch (err) {
+    // Two processes booting a site with no row yet both get here, and the unique
+    // index on jobs.name rejects the second insert. The row exists, so move on.
+    if (!(await models.Job.findOne({ name: membersMigrationJobName }))) {
+      throw err;
+    }
+    logging.warn(`Stripe ${membersMigrationJobName} row was already written by another process`);
   }
 }
 

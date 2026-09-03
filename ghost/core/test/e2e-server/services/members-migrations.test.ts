@@ -3,6 +3,7 @@ import sinon from 'sinon';
 
 const logging = require('@tryghost/logging');
 const { agentProvider } = require('../../utils/e2e-framework');
+const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const jobsService = require('../../../core/server/services/jobs');
 const membersService = require('../../../core/server/services/members');
@@ -33,12 +34,11 @@ describe('Members migrations on boot', function () {
     let jobId: string;
 
     beforeEach(async function () {
+      const attrs = { status: 'finished', started_at: STALE, finished_at: STALE };
       const job = await models.Job.findOne({ name: JOB_NAME });
-      jobId = job.id;
-      await models.Job.edit(
-        { status: 'finished', started_at: STALE, finished_at: STALE },
-        { id: jobId },
-      );
+      jobId = job
+        ? (await models.Job.edit(attrs, { id: job.id })).id
+        : (await models.Job.add({ name: JOB_NAME, ...attrs })).id;
     });
 
     it('skips the migrations and writes nothing when the row already exists', async function () {
@@ -92,6 +92,45 @@ describe('Members migrations on boot', function () {
       assert.equal(after.get('status'), 'failed');
       assert.ok(after.get('started_at') > STALE, 'expected the failed run to rewrite the row');
       assert.ok(after.get('finished_at') >= after.get('started_at'));
+    });
+
+    it('keeps booting when another process writes the row first', async function () {
+      await db.knex('jobs').where({ name: JOB_NAME }).del();
+      sinon.stub(stripeService.migrations, 'execute').resolves();
+      const add: sinon.SinonStub = sinon.stub(models.Job, 'add').callsFake(async function (
+        this: unknown,
+        ...args: unknown[]
+      ) {
+        // The other process inserts the row first, then our own insert hits the
+        // unique index on jobs.name. The runner never inspects the error itself:
+        // any failed insert with a row present takes the warn path.
+        await add.wrappedMethod.apply(this, args);
+        return add.wrappedMethod.apply(this, args);
+      });
+      const loggingWarn = sinon.stub(logging, 'warn');
+
+      await membersService.init();
+
+      sinon.assert.calledOnce(add);
+      sinon.assert.calledWithMatch(loggingWarn, /row was already written by another process/);
+
+      const rows = await db.knex('jobs').where({ name: JOB_NAME });
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].status, 'finished');
+    });
+
+    it('fails boot when the insert fails and no other process wrote the row', async function () {
+      await db.knex('jobs').where({ name: JOB_NAME }).del();
+      const execute = sinon.stub(stripeService.migrations, 'execute').resolves();
+      sinon.stub(models.Job, 'add').rejects(new Error('insert exploded'));
+      const loggingWarn = sinon.stub(logging, 'warn');
+
+      await assert.rejects(membersService.init(), { message: 'insert exploded' });
+
+      sinon.assert.calledOnce(execute);
+      sinon.assert.notCalled(loggingWarn);
+      const rows = await db.knex('jobs').where({ name: JOB_NAME });
+      assert.equal(rows.length, 0);
     });
   });
 });
