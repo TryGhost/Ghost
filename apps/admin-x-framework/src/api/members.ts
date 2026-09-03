@@ -195,6 +195,7 @@ export function useMemberCount() {
 // The Ember members-count-cache's TTL; the framework default staleTime (5min)
 // is too stale for publish-flow recipient counts.
 const MEMBERS_COUNT_STALE_TIME = 60 * 1000;
+const noOpMembersCountRefetch = () => Promise.resolve();
 
 const useBrowseMembersCountQuery = createQuery<MembersResponseType>({
   dataType,
@@ -205,6 +206,11 @@ export interface MembersCountResult {
   /** `null` while loading and for roles that cannot browse members. */
   count: number | null;
   isLoading: boolean;
+  isFetching: boolean;
+  /** Preserved for flows where an unreadable count must block a destructive action. */
+  error: unknown;
+  /** Retries the count without forcing every descriptive count consumer to handle errors. */
+  refetch: () => Promise<unknown>;
 }
 
 /**
@@ -214,8 +220,10 @@ export interface MembersCountResult {
  * for 60 seconds. As in Ember, roles that cannot manage members get
  * `count: null` without a request, a nullish filter counts as 0 without a
  * request, and request errors resolve to 0 with no error toast. While the
- * current user is still loading the result is `{count: null, isLoading: true}`
- * so callers can tell it apart from a role that cannot browse members.
+ * current user is still loading the result has `count: null` and
+ * `isLoading: true`, so callers can tell it apart from a role that cannot
+ * browse members. The request error and retry are also exposed for callers
+ * such as publish limits that cannot safely treat an unreadable count as zero.
  */
 export function useMembersCount(filter: string | null | undefined): MembersCountResult {
   const { data: currentUser } = useCurrentUser();
@@ -231,16 +239,31 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
   });
 
   if (currentUser === undefined) {
-    return { count: null, isLoading: true };
+    return {
+      count: null,
+      isLoading: true,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
   }
 
   if (!enabled || result.isError) {
-    return { count: canFetch ? 0 : null, isLoading: false };
+    return {
+      count: canFetch ? 0 : null,
+      isLoading: false,
+      isFetching: enabled && result.isFetching,
+      error: enabled ? result.error : null,
+      refetch: enabled ? result.refetch : noOpMembersCountRefetch,
+    };
   }
 
   return {
     count: result.data?.meta?.pagination.total ?? null,
     isLoading: result.isLoading,
+    isFetching: result.isFetching,
+    error: result.error,
+    refetch: result.refetch,
   };
 }
 

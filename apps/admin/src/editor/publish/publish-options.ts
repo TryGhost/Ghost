@@ -561,7 +561,7 @@ export function createPublishOptions({
       emailBlock = null;
       publishBlock = null;
 
-      await Promise.all([runSendingCheck(), runPublishingCheck()]);
+      const [sendingResult] = await Promise.allSettled([runSendingCheck(), runPublishingCheck()]);
 
       // A block that lands after the user picked an email type still demotes that pick.
       if (!publishTypeTouched || emailDisabled()) {
@@ -570,6 +570,12 @@ export function createPublishOptions({
           emailDisabled: emailDisabled(),
         });
         initial = { ...initial, publishType };
+      }
+
+      // A settings refresh failure remains observable to callers, but only after
+      // the publishing check has settled so no late block can race the UI ready.
+      if (sendingResult.status === 'rejected') {
+        throw sendingResult.reason;
       }
 
       return { emailBlock, publishBlock };
