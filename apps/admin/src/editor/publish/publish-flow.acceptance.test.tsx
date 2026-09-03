@@ -4,6 +4,7 @@ import { render } from 'vitest-browser-react';
 import { StrictMode } from 'react';
 
 import { fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import { publishRecipientFree } from '@tryghost/test-data/selectors/editor';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 import '@/index.css';
 
@@ -828,20 +829,20 @@ describe('Publish flow', () => {
       // Each step mounts its own recipient-count observer, which re-reads the
       // current user - so the session can expire on a request the flow makes
       // only because the writer moved between steps.
-      let reads = 0;
-      const userApi = fakeAdminEndpoint('GET', /^\/users\/me\//, () => {
-        reads += 1;
-        return reads === 1
-          ? { users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }] }
-          : SESSION_EXPIRED;
+      const signedIn = fakeAdminEndpoint('GET', /^\/users\/me\//, {
+        users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }],
       });
       await renderPublishFlow();
 
       await expect.element(publishScreen.options()).toBeInTheDocument();
+      await expect.poll(() => signedIn.requests.length).toBeGreaterThan(0);
+
+      // The session expires while the modal sits open.
+      const expired = fakeAdminEndpoint('GET', /^\/users\/me\//, SESSION_EXPIRED, { status: 401 });
       await publishScreen.continueButton().click();
 
       await expect.element(publishScreen.confirm()).toBeInTheDocument();
-      await expect.poll(() => userApi.requests.length).toBeGreaterThan(1);
+      await expect.poll(() => expired.requests.length).toBeGreaterThan(0);
       await expect.element(publishScreen.confirm()).toBeInTheDocument();
     },
     SLOW,
@@ -868,15 +869,20 @@ describe('Publish flow', () => {
     SLOW,
   );
 
-  it('opens the flow when the recipient queries expire', async () => {
-    fakeAdminEndpoint('GET', /^\/newsletters\/\?/, SESSION_EXPIRED, { status: 401 });
-    fakeAdminEndpoint('GET', /^\/tiers\/\?/, SESSION_EXPIRED, { status: 401 });
-    fakeAdminEndpoint('GET', /^\/labels\/\?/, SESSION_EXPIRED, { status: 401 });
+  it('keeps the recipient picker usable when its segment queries expire', async () => {
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, SESSION_EXPIRED, { status: 401 });
+    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, SESSION_EXPIRED, { status: 401 });
     await renderPublishFlow();
 
-    // The newsletter list is an input the machine needs, so the flow reports
-    // the failure in place rather than rendering options built on nothing.
-    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await publishScreen.setting('email-recipients').click();
+    await expect.poll(() => tiersApi.requests.length).toBeGreaterThan(0);
+    await expect.poll(() => labelsApi.requests.length).toBeGreaterThan(0);
+
+    // Neither query can name a segment, so the picker drops "Specific people"
+    // and offers the free/paid split alone — quietly, as it does for any
+    // failed segment lookup.
+    await expect.element(page.getByTestId(publishRecipientFree)).toBeInTheDocument();
+    await expect(page.getByText('Specific people')).toHaveCount(0);
   });
 
   it('reports a retry failure when the failed email has no id', async () => {
@@ -969,7 +975,9 @@ describe('Update flow', () => {
   });
 
   it('describes a scheduled send in place when its count expires', async () => {
-    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
+    const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
+      status: 401,
+    });
     const { pathname } = window.location;
 
     await render(
@@ -992,6 +1000,7 @@ describe('Update flow', () => {
     );
 
     // An unreadable count drops the number rather than reporting none.
+    await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
     await expect
       .element(publishScreen.updateFlowConfirmation())
       .toHaveTextContent('published and sent to subscribers');

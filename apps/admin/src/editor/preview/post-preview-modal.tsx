@@ -93,8 +93,8 @@ export function PostPreviewModal({
   const [wasOpen, setWasOpen] = useState(open);
 
   const handleError = useHandleError();
-  const { data: currentUser } = useCurrentUser();
-  const { data: settingsData } = useBrowseSettings();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const paidMembersEnabled = usePaidMembersEnabled();
   const newslettersEnabled = useNewslettersEnabled();
   const membersEnabled =

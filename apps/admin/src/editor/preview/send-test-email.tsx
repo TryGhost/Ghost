@@ -16,6 +16,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSendTestEmail } from '@tryghost/admin-x-framework/api/email-previews';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 import { emailPreviewAudience, type PreviewAudience } from './preview-url';
 
@@ -35,9 +36,9 @@ export function SendTestEmail({
   newsletterSlug,
   disabled = false,
 }: SendTestEmailProps) {
-  const { data: currentUser } = useCurrentUser();
-  const { data: configData } = useBrowseConfig();
-  const { data: settingsData } = useBrowseSettings();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { mutateAsync: sendTestEmail, isPending } = useSendTestEmail();
   const handleError = useHandleError();
   const [editedAddress, setEditedAddress] = useState<string | null>(null);
