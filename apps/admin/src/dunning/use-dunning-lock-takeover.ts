@@ -7,7 +7,8 @@ import { isBillingRoute, isDataExportRoute } from './is-billing-route';
  * Whether the dunning locked takeover is in effect for the current route:
  * the overlay is showing and the surrounding chrome (sidebar) should read as
  * disabled. Stands down on the billing and export routes so their content
- * stays usable.
+ * stays usable, and once the user has dismissed the takeover — the urgent
+ * warning banner carries the message from there.
  */
 export function useDunningLockTakeover(): boolean {
   const { data: currentUser } = useCurrentUser();
@@ -17,6 +18,7 @@ export function useDunningLockTakeover(): boolean {
   return Boolean(
     state &&
     state.phase === 'locked' &&
+    !state.lockDismissed &&
     currentUser &&
     !isBillingRoute(location.pathname) &&
     !isDataExportRoute(location.pathname),
