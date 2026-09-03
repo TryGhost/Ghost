@@ -1,6 +1,9 @@
 import * as Sentry from '@sentry/react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
+import { APIError } from '@tryghost/admin-x-framework/errors';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGenerateSlug } from '@tryghost/admin-x-framework/api/slugs';
 import {
   useAddPage,
@@ -18,7 +21,10 @@ import type {
   CreateContentData,
   EditContentData,
 } from '@tryghost/admin-x-framework/api/content-types';
-import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
+import {
+  buildPostEditorReadParams,
+  type PostWriteOptions,
+} from '@tryghost/admin-x-framework/api/post-contract';
 import {
   DEFAULT_TITLE,
   type LeaveDecision,
@@ -30,6 +36,14 @@ import { contentToText } from './content-text';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+
+/** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
+export type ReloadOutcome = 'reloaded' | 'gone' | 'failed';
+
+interface EditorReadResponse {
+  posts?: EditorRecord[];
+  pages?: EditorRecord[];
+}
 
 interface EditorSessionLocationState {
   editorSession?: string;
@@ -72,8 +86,8 @@ export interface EditorSessionHandle {
   hasUnsavedContent: () => boolean;
   /** The unsaved title and body as plain text, for the writer to keep. */
   contentText: () => string;
-  /** Replaces the document with the server's copy; false when the read failed. */
-  reload: () => Promise<boolean>;
+  /** Replaces the document with the server's copy, or says why it could not. */
+  reload: () => Promise<ReloadOutcome>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
   dispatchField: () => void;
   dispatchExplicit: () => void;
@@ -100,6 +114,7 @@ export function useEditorSession({
   record,
   siteUrl,
 }: UseEditorSessionOptions): EditorSessionHandle {
+  const fetchApi = useFetchApi();
   const generateSlug = useGenerateSlug();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
@@ -204,18 +219,32 @@ export function useEditorSession({
     }
   }, [saved, session]);
 
-  const refetchPost = postQuery.refetch;
-  const refetchPage = pageQuery.refetch;
+  /**
+   * The writer chose the server's copy over their own. The read is its own
+   * request rather than a refetch of the query the screen rendered from: a
+   * failing refetch would put that query into an error state and replace the
+   * whole editor -- with the unsaved content, the banner and its copy-out
+   * escape hatch -- with a load error.
+   */
+  const reload = useCallback(async (): Promise<ReloadOutcome> => {
+    if (!persistedId) {
+      return 'failed';
+    }
 
-  // The writer chose the server's copy over their own: read it through the
-  // editor's request options and reopen the session on it.
-  const reload = useCallback(async (): Promise<boolean> => {
-    const fresh: EditorRecord | undefined =
-      postType === 'page'
-        ? (await refetchPage()).data?.pages[0]
-        : (await refetchPost()).data?.posts[0];
+    let fresh: EditorRecord | undefined;
+    try {
+      const path = postType === 'page' ? `/pages/${persistedId}/` : `/posts/${persistedId}/`;
+      const data = await fetchApi<EditorReadResponse>(
+        apiUrl(path, buildPostEditorReadParams()),
+        EDITOR_REQUEST_OPTIONS,
+      );
+      fresh = postType === 'page' ? data.pages?.[0] : data.posts?.[0];
+    } catch (error) {
+      return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
+    }
+
     if (!fresh) {
-      return false;
+      return 'gone';
     }
 
     session.recordReloaded(fresh);
@@ -224,8 +253,8 @@ export function useEditorSession({
     setInitialLexical(fresh.lexical ?? null);
     setLoadedRecord(fresh);
     setContentKey((key) => key + 1);
-    return true;
-  }, [postType, refetchPage, refetchPost, session]);
+    return 'reloaded';
+  }, [fetchApi, persistedId, postType, session]);
 
   const contentText = useCallback(
     () => contentToText(title, session.getLiveLexical()),

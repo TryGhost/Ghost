@@ -14,10 +14,13 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { SaveError, SaveEngineState } from '@/editor/engine/save-engine';
+import type { ReloadOutcome } from './use-editor-session';
 
 const SESSION_EXPIRED = 'Your session expired. Sign in again in a new tab, then retry.';
 const CONFLICT =
   'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
+const GONE =
+  'This post has been deleted. Copy your content and paste it into a new post to keep it.';
 
 export interface SessionBannersProps {
   state: SaveEngineState;
@@ -26,7 +29,7 @@ export interface SessionBannersProps {
   onRetryReauth: () => void;
   onDismissReauth: () => void;
   onRetrySave: () => void;
-  onReload: () => Promise<boolean>;
+  onReload: () => Promise<ReloadOutcome>;
 }
 
 function saveErrorMessage(error: SaveError): string {
@@ -48,13 +51,17 @@ type ConflictBannerProps = Pick<
 function ConflictBanner({ hasUnsavedContent, contentText, onReload }: ConflictBannerProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
+  const [gone, setGone] = useState(false);
 
   const reload = async () => {
     setConfirming(false);
     setReloading(true);
-    const reloaded = await onReload();
+    const outcome = await onReload();
     setReloading(false);
-    if (!reloaded) {
+    if (outcome === 'gone') {
+      setGone(true);
+    }
+    if (outcome === 'failed') {
       toast.error('Couldn’t reload this post');
     }
   };
@@ -78,15 +85,17 @@ function ConflictBanner({ hasUnsavedContent, contentText, onReload }: ConflictBa
         variant="destructive"
       >
         <Inline align="center" gap="sm">
-          <Text>{CONFLICT}</Text>
-          <Button
-            disabled={reloading}
-            size="sm"
-            variant="outline"
-            onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
-          >
-            Reload
-          </Button>
+          <Text>{gone ? GONE : CONFLICT}</Text>
+          {!gone && (
+            <Button
+              disabled={reloading}
+              size="sm"
+              variant="outline"
+              onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
+            >
+              Reload
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={() => void copyContent()}>
             Copy content
           </Button>

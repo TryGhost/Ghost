@@ -2,13 +2,14 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { toast } from 'sonner';
 import type { SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 import { SessionBanners } from './session-banners';
+import type { ReloadOutcome } from './use-editor-session';
 
 const noop = () => undefined;
 
 interface BannerOverrides {
   hasUnsavedContent?: () => boolean;
   contentText?: () => string;
-  onReload?: () => Promise<boolean>;
+  onReload?: () => Promise<ReloadOutcome>;
 }
 
 function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) {
@@ -18,7 +19,7 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
       state={state}
       onDismissReauth={noop}
-      onReload={overrides.onReload ?? (() => Promise.resolve(true))}
+      onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
       onRetryReauth={noop}
       onRetrySave={noop}
     />,
@@ -78,7 +79,7 @@ describe('SessionBanners', () => {
   });
 
   it('reloads without asking when nothing local is unsaved', () => {
-    const onReload = vi.fn(() => Promise.resolve(true));
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
     renderBanners(CONFLICT, { hasUnsavedContent: () => false, onReload });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
@@ -88,7 +89,7 @@ describe('SessionBanners', () => {
   });
 
   it('confirms before a reload discards local edits, and cancelling reloads nothing', async () => {
-    const onReload = vi.fn(() => Promise.resolve(true));
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
     renderBanners(CONFLICT, { hasUnsavedContent: () => true, onReload });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
@@ -102,7 +103,7 @@ describe('SessionBanners', () => {
   });
 
   it('reloads once the discard is confirmed', async () => {
-    const onReload = vi.fn(() => Promise.resolve(true));
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
     renderBanners(CONFLICT, { hasUnsavedContent: () => true, onReload });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
@@ -111,13 +112,26 @@ describe('SessionBanners', () => {
     expect(onReload).toHaveBeenCalledTimes(1);
   });
 
-  it('says so when the reload could not read the post', async () => {
+  it('says so when the reload could not read the post, and keeps the way out', async () => {
     const error = vi.spyOn(toast, 'error').mockReturnValue('');
-    renderBanners(CONFLICT, { onReload: () => Promise.resolve(false) });
+    renderBanners(CONFLICT, { onReload: () => Promise.resolve('failed') });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
 
     await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t reload this post'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeVisible();
+  });
+
+  it('says the post is gone when the reload found nothing, and still offers the copy', async () => {
+    renderBanners(CONFLICT, { onReload: () => Promise.resolve('gone') });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    expect(await screen.findByText(/This post has been deleted/)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
   });
 
   it('copies the unsaved content to the clipboard', async () => {
