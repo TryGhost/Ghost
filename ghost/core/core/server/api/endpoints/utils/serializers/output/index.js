@@ -20,6 +20,10 @@ module.exports = {
     return require('./member-commenting');
   },
 
+  get members_account() {
+    return require('./members-account');
+  },
+
   get authentication() {
     return require('./authentication');
   },
@@ -76,8 +80,8 @@ module.exports = {
     return require('./members');
   },
 
-  get members_custom_fields() {
-    return require('./member-custom-fields');
+  get members_metafields() {
+    return require('./member-metafields');
   },
 
   get tiers() {

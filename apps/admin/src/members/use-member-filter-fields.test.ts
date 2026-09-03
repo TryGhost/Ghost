@@ -261,10 +261,14 @@ describe('useMemberFilterFields', () => {
   it('gives each defined custom field its own named entry', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
-        customFieldsEnabled: true,
         customFields: [
-          { key: 'shipping_address', name: 'Shipping address', type: 'address' },
-          { key: 'job_title', name: 'Job title', type: 'short_text' },
+          {
+            namespace: 'custom',
+            key: 'shipping_address',
+            name: 'Shipping address',
+            type: 'address',
+          },
+          { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' },
         ],
         siteTimezone: 'UTC',
       }),
@@ -274,15 +278,14 @@ describe('useMemberFilterFields', () => {
       result.current.find((group) => group.group === 'Custom fields')?.fields ?? [];
 
     expect(customFields.map((field) => ({ key: field.key, label: field.label }))).toEqual([
-      { key: 'custom_fields.shipping_address', label: 'Shipping address' },
-      { key: 'custom_fields.job_title', label: 'Job title' },
+      { key: 'metafields.custom.shipping_address', label: 'Shipping address' },
+      { key: 'metafields.custom.job_title', label: 'Job title' },
     ]);
   });
 
   it('omits the custom fields group when no fields are defined', () => {
     const { result } = renderHook(() =>
       useMemberFilterFields({
-        customFieldsEnabled: true,
         customFields: [],
         siteTimezone: 'UTC',
       }),
@@ -291,14 +294,8 @@ describe('useMemberFilterFields', () => {
     expect(result.current.map((group) => group.group)).not.toContain('Custom fields');
   });
 
-  it('omits the custom fields group when the flag is off', () => {
-    const { result } = renderHook(() =>
-      useMemberFilterFields({
-        customFieldsEnabled: false,
-        customFields: [{ key: 'job_title', name: 'Job title', type: 'short_text' }],
-        siteTimezone: 'UTC',
-      }),
-    );
+  it('omits the custom fields group when none are passed at all', () => {
+    const { result } = renderHook(() => useMemberFilterFields({ siteTimezone: 'UTC' }));
 
     expect(result.current.map((group) => group.group)).not.toContain('Custom fields');
   });

@@ -117,7 +117,7 @@ function AboutModal() {
         <Separator />
         <div className="flex flex-col gap-1.5">
           <a
-            className="flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400"
+            className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-gray-400"
             href="https://docs.ghost.org/"
             rel="noopener noreferrer"
             target="_blank"
@@ -125,7 +125,7 @@ function AboutModal() {
             <LucideIcon.BookOpen className="size-4" /> User documentation
           </a>
           <a
-            className="flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400"
+            className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-gray-400"
             href="https://forum.ghost.org/"
             rel="noopener noreferrer"
             target="_blank"
@@ -133,7 +133,7 @@ function AboutModal() {
             <LucideIcon.CircleHelp className="size-4" /> Get help with Ghost
           </a>
           <a
-            className="flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400"
+            className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-gray-400"
             href="https://docs.ghost.org/contributing/"
             rel="noopener noreferrer"
             target="_blank"

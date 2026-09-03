@@ -214,11 +214,11 @@ describe('useUserPreferences', () => {
       });
     });
 
-    queryTest('errors when invalid JSON', async ({ setup }) => {
+    queryTest('uses defaults when accessibility contains invalid JSON', async ({ setup }) => {
       const result = await setup({ accessibility: '{invalid json' });
 
-      expect(result.current.isError).toBe(true);
-      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.isError).toBe(false);
+      expect(result.current.data).toEqual(fixtures.defaults);
     });
 
     queryTest('gracefully handles invalid schema values', async ({ setup }) => {

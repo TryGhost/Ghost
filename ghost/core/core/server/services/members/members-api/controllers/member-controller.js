@@ -146,6 +146,17 @@ module.exports = class MemberController {
 
       if (tierId && cadence) {
         const tier = await this._tiersService.api.read(tierId);
+
+        if (!tier) {
+          res.writeHead(404);
+          return res.end('Not Found.');
+        }
+
+        if (tier.status !== 'active') {
+          res.writeHead(403);
+          return res.end('Tier is archived.');
+        }
+
         const stripePrice = await this._paymentsService.getPriceForTierCadence(tier, cadence);
 
         await this._memberRepository.updateSubscription({

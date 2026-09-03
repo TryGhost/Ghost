@@ -33,8 +33,10 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
+    "@tryghost/custom-field-types": "workspace:*",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
+    "@tryghost/kg-clean-basic-html": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
     "@tryghost/nql": "catalog:",
@@ -50,6 +52,7 @@
     "i18n-iso-countries": "7.14.0",
     "jszip": "3.10.1",
     "lucide-react": "catalog:",
+    "microdiff": "catalog:",
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
@@ -166,6 +169,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/checkout",
+              "@tryghost/custom-field-types",
               "@tryghost/shade"
             ],
             "target": "build"

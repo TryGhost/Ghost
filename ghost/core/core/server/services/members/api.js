@@ -274,6 +274,7 @@ function createApiInstance(config) {
     // two together in boot order. Custom fields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     customFieldValues: customFieldsService.values,
+    customFieldDefinitions: customFieldsService.definitions,
   });
 
   return membersApiInstance;

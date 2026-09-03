@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
-import { fakeMembers, label, member, renderAdminApp, tier } from '@test-utils/acceptance';
+import {
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeMemberCustomFields,
+  fakeMembers,
+  label,
+  member,
+  renderAdminApp,
+  tier,
+} from '@test-utils/acceptance';
 import { membersScreen } from './members.screen';
 
 describe('Members list', () => {
@@ -73,6 +83,84 @@ describe('Members list', () => {
     await expect(membersApi).toHaveSentFilter(`tier_id:[${silver.id}]`);
     await expect(membersScreen.memberRows()).toHaveCount(1);
     await expect.element(membersScreen.link('Silver Member')).toBeVisible();
+  });
+
+  it('builds a custom field filter without losing the page to the hydration gate', async () => {
+    const fieldsApi = fakeMemberCustomFields([
+      {
+        namespace: 'custom',
+        key: 'employer',
+        name: 'Employer',
+        type: 'short_text',
+        status: 'active',
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+
+    // The filter bar fetches the archived-inclusive catalog up front: it is the query the
+    // hydration gate waits on once a filter names a custom field, so it must be answered
+    // before a field can be picked — a cold cache here unmounts the page to a spinner on
+    // the first keystroke of the value.
+    await expect(fieldsApi).toHaveSentFilter('status:[active,archived]');
+
+    await membersScreen.openFilterField('Employer');
+    const valueInput = page.getByRole('textbox', { name: 'Employer value' });
+    await valueInput.fill('Acme');
+
+    // Still here: typing the value must not unmount the filter UI.
+    await expect.element(valueInput).toBeVisible();
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.key:'custom.employer'+metafields.value:~'Acme')",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+
+    // Every catalog browse this flow made was the archived-inclusive one the gate shares.
+    expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
+      fieldsApi.requests.map(() => 'status:[active,archived]'),
+    );
+  });
+
+  // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
+  // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
+  // the filter bar between its two placements, and each one asks for the definitions; the
+  // failed answer has to hold across that, or every swap asks again, the answer flips the
+  // page's field catalog, and the URL is rewritten in a loop that never settles.
+  it('adds a filter against a Core without the definitions endpoint', async () => {
+    const membersApi = fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Alice Alpha' })]
+        : [member({ name: 'Alice Alpha' }), member({ name: 'Bob Beta' })],
+    );
+    // After fakeMembers, which serves an empty definitions list on behalf of specs that never
+    // mention custom fields: a handler registered later wins.
+    const definitionsApi = fakeAdminEndpoint(
+      'GET',
+      /^\/members\/metafields\/custom\/(\?|$)/,
+      { errors: [{ type: 'NotFoundError', message: 'Resource not found error.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+    const requestsBeforeFilter = definitionsApi.requests.length;
+
+    await membersScreen.addFilter('Name', 'Alice');
+
+    await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    // The loop asks again roughly every round trip, so a short pause is enough to catch it.
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 500);
+    });
+    expect(definitionsApi.requests.length).toBe(requestsBeforeFilter);
+    expect(currentRoute()).toMatch(/^\/members\?filter=/);
   });
 
   it('builds a name filter through the filters UI', async () => {

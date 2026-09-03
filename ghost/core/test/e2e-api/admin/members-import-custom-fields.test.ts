@@ -20,11 +20,13 @@ describe('Members import — custom fields', function () {
 
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string): Promise<string> {
-    const res = await (request.post(localUtils.API.getApiQuery('members/custom_fields/')) as any)
+    const res = await (
+      request.post(localUtils.API.getApiQuery('members/metafields/custom/')) as any
+    )
       .set('Origin', config.get('url'))
-      .send({ members_custom_fields: [{ name, type }] })
+      .send({ members_metafields: [{ name, type }] })
       .expect(201);
-    return res.body.members_custom_fields[0].key;
+    return res.body.members_metafields[0].key;
   }
 
   // Upload a CSV built inline. `mapping` is the header -> target map the mapping step
@@ -54,7 +56,7 @@ describe('Members import — custom fields', function () {
     const res = await (
       request.get(
         localUtils.API.getApiQuery(
-          `members/?search=${encodeURIComponent(email)}&include=custom_fields`,
+          `members/?search=${encodeURIComponent(email)}&include=metafields`,
         ),
       ) as any
     )
@@ -90,6 +92,10 @@ describe('Members import — custom fields', function () {
     mockManager.restore();
     await models.Base.knex('members_custom_field_values').del();
     await models.Base.knex('members_custom_fields').del();
+    // Every test file in this suite runs against one shared database, so a member left behind
+    // here changes counts and listings that later files assert on. The imported members have
+    // to go, not just their field values.
+    await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
       .del();
@@ -100,12 +106,12 @@ describe('Members import — custom fields', function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-auto@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
+    const res = await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], 'Bex');
+    assert.equal(member.metafields?.custom?.[key], 'Bex');
   });
 
   // A blank cell must not wipe an existing value: it means "no data for this row", the
@@ -114,15 +120,15 @@ describe('Members import — custom fields', function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-blank-keeps@example.com';
 
-    await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
-    assert.equal((await findMember(email)).custom_fields?.[key], 'Bex');
+    await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`);
+    assert.equal((await findMember(email)).metafields?.custom?.[key], 'Bex');
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},\n`);
+    const res = await importCSV(`email,metafields.custom.${key}\n${email},\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'the blank cell did not clear the value',
     );
@@ -134,37 +140,28 @@ describe('Members import — custom fields', function () {
 
     const res = await importCSV(`Email Address,Preferred Name\n${email},Bex\n`, {
       'Email Address': 'email',
-      'Preferred Name': `custom_fields.${key}`,
+      'Preferred Name': `metafields.custom.${key}`,
     });
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], 'Bex');
+    assert.equal(member.metafields?.custom?.[key], 'Bex');
   });
 
-  // The mapping step's deselected column. It has to name the column with an empty target
-  // rather than omit it: an omitted column carries through under its own header, and a
-  // custom_fields.* header is exactly what the importer reads a value from — so omitting
-  // it would import the very column the publisher switched off.
-  //
-  // What these two prove is that the API accepts an empty mapping value and that nothing is
-  // written for the column. They do not prove the parser *drops* it — before the change it
-  // renamed the column to the empty string instead, which nothing downstream reads either.
-  // That distinction is pinned where it is observable, in csv/parse.test.ts.
   it('imports nothing from a namespaced column the mapping empties', async function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-deselected@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},Bex\n`, {
+    const res = await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`, {
       email: 'email',
-      [`custom_fields.${key}`]: '',
+      [`metafields.custom.${key}`]: '',
     });
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1, 'the member still imports, without that column');
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], undefined);
+    assert.equal(member.metafields?.custom?.[key], undefined);
     assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
   });
 
@@ -175,9 +172,12 @@ describe('Members import — custom fields', function () {
     const email = 'cf-deselected-mapped@example.com';
     const csv = `Email Address,Preferred Name\n${email},Bex\n`;
 
-    await importCSV(csv, { 'Email Address': 'email', 'Preferred Name': `custom_fields.${key}` });
+    await importCSV(csv, {
+      'Email Address': 'email',
+      'Preferred Name': `metafields.custom.${key}`,
+    });
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'the column imports while it is mapped',
     );
@@ -190,7 +190,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.equal(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       'Bex',
       'and stops once it is emptied',
     );
@@ -201,7 +201,7 @@ describe('Members import — custom fields', function () {
     const email = 'cf-address@example.com';
 
     const csv = [
-      `email,custom_fields.${key}.line1,custom_fields.${key}.city,custom_fields.${key}.postal_code,custom_fields.${key}.country`,
+      `email,metafields.custom.${key}.line1,metafields.custom.${key}.city,metafields.custom.${key}.postal_code,metafields.custom.${key}.country`,
       `${email},1 High Street,London,E1 6AN,GB`,
       '',
     ].join('\n');
@@ -211,7 +211,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.deepEqual(member.custom_fields?.[key], {
+    assert.deepEqual(member.metafields?.custom?.[key], {
       line1: '1 High Street',
       city: 'London',
       postal_code: 'E1 6AN',
@@ -225,12 +225,12 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-partial-address@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}.city\n${email},London\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.city\n${email},London\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.deepEqual(member.custom_fields?.[key], { city: 'London' });
+    assert.deepEqual(member.metafields?.custom?.[key], { city: 'London' });
   });
 
   // The sub-field equivalent of the blank-cell rule above: a sub-field is a field, so a
@@ -240,23 +240,23 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address-merge@example.com';
     const columns = ['line1', 'city', 'postal_code', 'country']
-      .map((sub) => `custom_fields.${key}.${sub}`)
+      .map((sub) => `metafields.custom.${key}.${sub}`)
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,E1 6AN,GB\n`);
-    assert.deepEqual((await findMember(email)).custom_fields?.[key], {
+    assert.deepEqual((await findMember(email)).metafields?.custom?.[key], {
       line1: '1 High Street',
       city: 'London',
       postal_code: 'E1 6AN',
       country: 'GB',
     });
 
-    const res = await importCSV(`email,custom_fields.${key}.line1\n${email},2 Low Street\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.line1\n${email},2 Low Street\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.deepEqual(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       { line1: '2 Low Street', city: 'London', postal_code: 'E1 6AN', country: 'GB' },
       'the columns the file did not carry kept their stored values',
     );
@@ -270,7 +270,7 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address-blank-cell@example.com';
     const columns = ['line1', 'city', 'postal_code', 'country']
-      .map((sub) => `custom_fields.${key}.${sub}`)
+      .map((sub) => `metafields.custom.${key}.${sub}`)
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,E1 6AN,GB\n`);
@@ -284,7 +284,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.imported, 1);
 
     assert.deepEqual(
-      (await findMember(email)).custom_fields?.[key],
+      (await findMember(email)).metafields?.custom?.[key],
       { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', postal_code: 'E1 6AN', country: 'HK' },
       'the blanked cell left the stored postal code alone',
     );
@@ -296,11 +296,11 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-country-case@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}.country\n${email},gb\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.country\n${email},gb\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
-    assert.deepEqual((await findMember(email)).custom_fields?.[key], { country: 'GB' });
+    assert.deepEqual((await findMember(email)).metafields?.custom?.[key], { country: 'GB' });
   });
 
   // A stray space is not data. Read as a value it would make this address all-whitespace,
@@ -309,12 +309,12 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address-space@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}.city\n${email},"   "\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.city\n${email},"   "\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], undefined, 'the whitespace cell set no address');
+    assert.equal(member.metafields?.custom?.[key], undefined, 'the whitespace cell set no address');
   });
 
   // The parts of an address are rows, so an import that names one column touches one
@@ -325,7 +325,7 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-leaf-rows@example.com';
     const columns = ['line1', 'city', 'country']
-      .map((sub) => `custom_fields.${key}.${sub}`)
+      .map((sub) => `metafields.custom.${key}.${sub}`)
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,GB\n`);
@@ -335,7 +335,7 @@ describe('Members import — custom fields', function () {
       { path: 'line1', value_text: '1 High Street' },
     ]);
 
-    await importCSV(`email,custom_fields.${key}.city\n${email},Bristol\n`);
+    await importCSV(`email,metafields.custom.${key}.city\n${email},Bristol\n`);
     assert.deepEqual(
       await storedLeaves(email),
       [
@@ -352,14 +352,14 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-bad-address@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.country\n${email},IRL\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 0);
     assert.equal(res.body.meta.stats.invalid.length, 1);
     // Read next to a spreadsheet, so it names the column down to the sub-field.
     assert.equal(
       res.body.meta.stats.invalid[0].error,
-      `custom_fields.${key}.country: Enter a 2-letter country code, like US.`,
+      `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`,
     );
 
     assert.equal(await findMember(email), undefined, 'the failed row created no member');
@@ -370,11 +370,11 @@ describe('Members import — custom fields', function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-reason-list@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
+    const res = await importCSV(`email,metafields.custom.${key}.country\n${email},IRL\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.invalid.length, 1);
 
-    const reason = `custom_fields.${key}.country: Enter a 2-letter country code, like US.`;
+    const reason = `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`;
     assert.deepEqual(res.body.meta.stats.invalid[0].errors, [reason]);
     assert.equal(res.body.meta.stats.invalid[0].error, reason);
   });
@@ -383,13 +383,13 @@ describe('Members import — custom fields', function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-too-long@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},${'x'.repeat(256)}\n`);
+    const res = await importCSV(`email,metafields.custom.${key}\n${email},${'x'.repeat(256)}\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 0);
     assert.equal(res.body.meta.stats.invalid.length, 1);
     assert.equal(
       res.body.meta.stats.invalid[0].error,
-      `custom_fields.${key}: Use 255 characters or fewer.`,
+      `metafields.custom.${key}: Use 255 characters or fewer.`,
     );
 
     assert.equal(await findMember(email), undefined);
@@ -400,7 +400,7 @@ describe('Members import — custom fields', function () {
     await createField('Nickname', 'short_text');
     const email = 'cf-unknown-col@example.com';
 
-    const res = await importCSV(`email,custom_fields.does_not_exist\n${email},anything\n`);
+    const res = await importCSV(`email,metafields.custom.does_not_exist\n${email},anything\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
     assert.equal(res.body.meta.stats.invalid.length, 0);
@@ -408,14 +408,10 @@ describe('Members import — custom fields', function () {
     assert.notEqual(await findMember(email), undefined);
   });
 
-  // Off, no field is active, so even a column for a defined field is dropped like any
-  // unknown one -- the value is never written.
-  it('ignores custom field columns when the feature is disabled', async function () {
-    const key = await createField('Nickname', 'short_text');
-    mockManager.mockLabsDisabled('membersCustomFields');
-    const email = 'cf-flag-off@example.com';
+  it('ignores custom field columns on a site that defines none', async function () {
+    const email = 'cf-no-fields@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},Bex\n`);
+    const res = await importCSV(`email,metafields.custom.nickname\n${email},Bex\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
     assert.equal(res.body.meta.stats.invalid.length, 0);
@@ -425,11 +421,7 @@ describe('Members import — custom fields', function () {
       'member_id',
       member.id,
     );
-    assert.equal(
-      values.length,
-      0,
-      'no value written for a defined field while the feature was off',
-    );
+    assert.equal(values.length, 0, 'no value written for a column naming no defined field');
   });
 
   // The export guards a leading =/+/-/@ with an apostrophe; the import strips it, so the
@@ -438,12 +430,12 @@ describe('Members import — custom fields', function () {
     const key = await createField('Nickname', 'short_text');
     const email = 'cf-formula@example.com';
 
-    const res = await importCSV(`email,custom_fields.${key}\n${email},'=SUM(A1:A9)\n`);
+    const res = await importCSV(`email,metafields.custom.${key}\n${email},'=SUM(A1:A9)\n`);
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 1);
 
     const member = await findMember(email);
-    assert.equal(member.custom_fields?.[key], '=SUM(A1:A9)');
+    assert.equal(member.metafields?.custom?.[key], '=SUM(A1:A9)');
   });
 
   // Recorded at the moment of the write because it cannot be reconstructed afterwards.
@@ -451,7 +443,7 @@ describe('Members import — custom fields', function () {
   it('records that the import wrote each value', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-import-source@example.com';
-    const columns = ['line1', 'city'].map((sub) => `custom_fields.${key}.${sub}`).join(',');
+    const columns = ['line1', 'city'].map((sub) => `metafields.custom.${key}.${sub}`).join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London\n`);
 

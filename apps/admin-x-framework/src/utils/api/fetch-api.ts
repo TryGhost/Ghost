@@ -23,6 +23,8 @@ export interface RequestOptions {
   retry?: boolean;
   /** Resolve the raw response body instead of parsing it as JSON/text */
   responseType?: ResponseType;
+  /** False leaves the caller to handle `SessionExpiredError` instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
   onUploadProgress?: (progress: number) => void;
 }
 
@@ -172,6 +174,7 @@ export const useFetchApi = () => {
         timeout,
         retry = true,
         responseType,
+        sessionExpiryRedirect = true,
         onUploadProgress,
       }: RequestOptions = {},
     ): Promise<ResponseData> => {
@@ -265,7 +268,9 @@ export const useFetchApi = () => {
             }
 
             if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
-              redirectOnSessionExpiry();
+              if (sessionExpiryRedirect) {
+                redirectOnSessionExpiry();
+              }
               throw new SessionExpiredError(error.response!, error.data, { cause: error });
             }
 

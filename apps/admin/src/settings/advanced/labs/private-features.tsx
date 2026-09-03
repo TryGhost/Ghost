@@ -45,6 +45,11 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
+    title: 'Admin 7 page chrome',
+    description: 'Enable the new Admin page chrome on desktop in light mode.',
+    flag: 'admin7PageChrome',
+  },
+  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -54,6 +59,11 @@ const features: Feature[] = [
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
+  },
+  {
+    title: 'Improve sending UI',
+    description: 'Enables improvements to email sending and delivery status for large email sends',
+    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -74,8 +84,15 @@ const features: Feature[] = [
   },
   {
     title: 'Member custom fields',
-    description: 'Let admins create and manage custom field definitions for members',
+    description:
+      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
     flag: 'membersCustomFields',
+  },
+  {
+    title: 'Stripe checkout collection',
+    description:
+      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+    flag: 'stripeCheckoutCollection',
   },
   {
     title: 'Members import redesign',
@@ -89,16 +106,16 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'Gift subscription durations and delivery',
-    description:
-      'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
-    flag: 'giftSubCustomization',
-  },
-  {
     title: 'React posts & pages lists',
     description:
       'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
     flag: 'postsListReact',
+  },
+  {
+    title: 'React editor',
+    description:
+      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
+    flag: 'editorReact',
   },
   {
     title: 'Self-serve archives',

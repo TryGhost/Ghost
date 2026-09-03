@@ -364,7 +364,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
         {group !== key && (
           <span>
             {' '}
-            <code className="mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white">
+            <code className="mb-1 bg-white text-gray-800 dark:bg-gray-900 dark:text-white">
               ({key})
             </code>
           </span>
@@ -390,7 +390,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
       return <>{action.resource?.title || action.resource?.name || action.context?.primary_name}</>;
     }
   } else {
-    return <span className="text-grey-500">(unknown)</span>;
+    return <span className="text-gray-500">(unknown)</span>;
   }
 };
 

@@ -19,7 +19,7 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * mapping step both auto-detecting an exported column and taking a hand-picked target.
  *
  * Behind two flags: membersImportRedesign serves the mapping step this drives, and
- * membersCustomFields is what puts custom fields into it.
+ * membersCustomFields is what lets the test define the fields in Settings.
  */
 usePerTestIsolation();
 
@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await membersPage.openActionsMenu();
     const { content } = await membersPage.exportMembers();
 
-    const customColumn = content.match(/custom_fields\.[a-z0-9_-]+/)?.[0];
+    const customColumn = content.match(/metafields\.custom\.[a-z0-9_-]+/)?.[0];
     expect(customColumn, 'export carries a custom field column').toBeTruthy();
     expect(content).toContain('Gold');
 

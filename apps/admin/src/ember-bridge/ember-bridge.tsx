@@ -105,6 +105,7 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   member: 'MembersResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
+  snippet: 'SnippetsResponseType',
 };
 
 /**

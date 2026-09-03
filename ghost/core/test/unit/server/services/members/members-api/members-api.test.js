@@ -165,9 +165,11 @@ describe('MembersAPI', function () {
       undefined,
     );
     sinon.assert.calledTwice(MemberBREADService.prototype.read);
-    sinon.assert.calledWithExactly(MemberBREADService.prototype.read.firstCall, {
-      email: 'jamie@example.com',
-    });
+    sinon.assert.calledWithExactly(
+      MemberBREADService.prototype.read.firstCall,
+      { email: 'jamie@example.com' },
+      { customFieldsFor: null },
+    );
     sinon.assert.calledOnceWithExactly(memberLoginEvent.add, { member_id: 'member_1' });
     sinon.assert.calledOnceWithExactly(giftRedeem, {
       token: 'gift-token-123',

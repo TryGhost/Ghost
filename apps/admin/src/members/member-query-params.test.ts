@@ -176,12 +176,17 @@ describe('a subscription column reads the resolved current_subscription', () => 
 
 describe('custom field columns', () => {
   const customFields = [
-    { key: 'job_title', name: 'Job title', type: 'short_text' as const },
-    { key: 'shipping_address', name: 'Shipping address', type: 'address' as const },
+    { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' as const },
+    {
+      namespace: 'custom',
+      key: 'shipping_address',
+      name: 'Shipping address',
+      type: 'address' as const,
+    },
   ];
 
   const filterOn = (key: string): FilterPredicate[] => [
-    { id: '1', field: `custom_fields.${key}`, operator: 'contains', values: ['x'] },
+    { id: '1', field: `metafields.custom.${key}`, operator: 'contains', values: ['x'] },
   ];
 
   it('names one column per field filtered on, from the field itself', () => {
@@ -190,7 +195,7 @@ describe('custom field columns', () => {
         key,
         label,
       })),
-    ).toEqual([{ key: 'custom_fields.job_title', label: 'Job title' }]);
+    ).toEqual([{ key: 'metafields.custom.job_title', label: 'Job title' }]);
   });
 
   // The template resolves to one shared definition for every custom field, so two
@@ -199,8 +204,8 @@ describe('custom field columns', () => {
     const filters = [...filterOn('job_title'), ...filterOn('shipping_address')];
 
     expect(getMemberActiveColumns(filters, { customFields }).map((column) => column.key)).toEqual([
-      'custom_fields.job_title',
-      'custom_fields.shipping_address',
+      'metafields.custom.job_title',
+      'metafields.custom.shipping_address',
     ]);
   });
 
@@ -217,37 +222,41 @@ describe('custom field columns', () => {
     expect(
       buildMemberListSearchParams({ filters: filterOn('job_title'), nql: 'x', search: '' })
         ?.include,
-    ).toBe('labels,tiers,custom_fields');
+    ).toBe('labels,tiers,metafields');
   });
 
   it('reads a scalar value by key', () => {
-    const m = member({ custom_fields: { job_title: 'Editor' } });
+    const m = member({ metafields: { custom: { job_title: 'Editor' } } });
 
-    expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toEqual({
+    expect(columnFor('metafields.custom.job_title', { customFields }).getValue(m, 'UTC')).toEqual({
       text: 'Editor',
     });
   });
 
   it('reads a composite value as one line', () => {
     const m = member({
-      custom_fields: {
-        shipping_address: {
-          line1: '1 Main St',
-          city: 'Berlin',
-          postal_code: '10115',
-          country: 'DE',
+      metafields: {
+        custom: {
+          shipping_address: {
+            line1: '1 Main St',
+            city: 'Berlin',
+            postal_code: '10115',
+            country: 'DE',
+          },
         },
       },
     });
 
     expect(
-      columnFor('custom_fields.shipping_address', { customFields }).getValue(m, 'UTC'),
+      columnFor('metafields.custom.shipping_address', { customFields }).getValue(m, 'UTC'),
     ).toEqual({ text: '1 Main St, Berlin, 10115, DE' });
   });
 
   it('returns null when the member has no value', () => {
-    const m = member({ custom_fields: {} });
+    const m = member({ metafields: { custom: {} } });
 
-    expect(columnFor('custom_fields.job_title', { customFields }).getValue(m, 'UTC')).toBeNull();
+    expect(
+      columnFor('metafields.custom.job_title', { customFields }).getValue(m, 'UTC'),
+    ).toBeNull();
   });
 });

@@ -161,7 +161,7 @@ class PaymentsService {
    */
   async getCheckoutConfigForTier(tier) {
     const checkoutConfig = this.tiersService?.checkout;
-    if (!this.labsService?.isSet('membersCustomFields') || !checkoutConfig) {
+    if (!this.labsService?.isSet('stripeCheckoutCollection') || !checkoutConfig) {
       return undefined;
     }
     try {

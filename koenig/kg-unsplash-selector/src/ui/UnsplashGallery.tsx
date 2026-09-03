@@ -34,7 +34,7 @@ const UnsplashGalleryLoading: React.FC = () => {
       className="absolute inset-y-0 left-0 flex w-full items-center justify-center overflow-hidden pb-[8vh]"
       data-kg-loader
     >
-      <div className="animate-spin before:bg-grey-800 dark:before:bg-grey-400 relative inline-block size-[50px] rounded-full border border-black/10 before:z-10 before:mt-[7px] before:block before:size-[7px] before:rounded-full dark:border-white/10"></div>
+      <div className="animate-spin relative inline-block size-[50px] rounded-full border border-black/10 before:z-10 before:mt-[7px] before:block before:size-[7px] before:rounded-full before:bg-gray-800 dark:border-white/10 dark:before:bg-gray-400"></div>
     </div>
   );
 };

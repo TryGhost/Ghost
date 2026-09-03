@@ -55,9 +55,13 @@ Nx can run a target for one workspace from the repository root:
 
 ```bash
 pnpm nx test <project-name>
+pnpm nx test:types <project-name>
 pnpm nx test:unit <project-name>
 pnpm nx test:acceptance <project-name>
 ```
+
+Run all package typechecks with `pnpm test:types`. CI runs this as a dedicated
+affected-project task, separately from unit tests.
 
 Check the workspace's `package.json` or list its Nx targets when you are unsure
 which targets it provides:
@@ -99,7 +103,8 @@ cd ghost/core
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
-Ghost Core's database-backed suites use SQLite by default locally. Tests for
+Ghost Core's database-backed suites use MySQL locally and in CI. Start the
+development services with `pnpm dev` before running them locally. Tests for
 optional Redis and object-storage adapters skip when their services are not
 available; start the relevant development services when you need to exercise
 those adapters.

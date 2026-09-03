@@ -10,6 +10,7 @@ import {
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // Both flags: the redesigned dialog is what this file exercises, and custom fields are what it
 // exercises it for. They are separate switches — the redesign ships without custom fields.
@@ -31,26 +32,28 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 // Every browse of the field list, whether or not it carries a status filter: the members
 // screen behind this modal asks for archived fields too, and an exact-path fake would
 // leave that request unhandled.
-const customFieldsBrowsePath = new RegExp('^/members/custom_fields/(\\?|$)');
+const customFieldsBrowsePath = new RegExp('^/members/metafields/custom/(\\?|$)');
 
-const EXPORTED_CSV = 'email,custom_fields.nickname\nada@example.com,Countess\n';
+const EXPORTED_CSV = 'email,metafields.custom.nickname\nada@example.com,Countess\n';
 
 /**
  * The world the import modal reads: no custom fields defined yet, a create that mints a
  * key from the name the way the service does, and a browse reflecting what has been
  * created, so the picker behaves as it would against a real site.
  */
-function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = []) {
-  const fields: Array<Record<string, unknown>> = [...definedFields];
+function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
+  const fields: MemberCustomField[] = [...definedFields];
   fakeMembers([member({ name: 'Ada Lovelace' })]);
   const browseApi = fakeMemberCustomFields(() => fields);
   const uploadApi = fakeAdminEndpoint('POST', '/members/upload/', {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
-  const createApi = fakeAdminEndpoint('POST', '/members/custom_fields/', ({ body }) => {
-    const [input] = (body as { members_custom_fields: Array<{ name: string; type: string }> })
-      .members_custom_fields;
-    const field = {
+  const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', ({ body }) => {
+    const [input] = (
+      body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
+    ).members_metafields;
+    const field: MemberCustomField = {
+      namespace: 'custom',
       key: input.name.trim().toLowerCase().replace(/\s+/g, '-'),
       name: input.name.trim(),
       type: input.type,
@@ -59,16 +62,17 @@ function fakeCustomFieldsWorld(definedFields: Array<Record<string, unknown>> = [
       updated_at: null,
     };
     fields.push(field);
-    return { members_custom_fields: [field] };
+    return { members_metafields: [field] };
   });
   return { browseApi, createApi, uploadApi };
 }
 
 /** A field the site has already defined, for proving what an import does and does not offer. */
-const NICKNAME_FIELD = {
+const NICKNAME_FIELD: MemberCustomField = {
+  namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',
-  type: 'text',
+  type: 'short_text',
   status: 'active',
   created_at: '2026-08-05T00:00:00.000Z',
   updated_at: null,
@@ -130,7 +134,7 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ name: 'Nickname', type: 'short_text' }],
+        members_metafields: [{ name: 'Nickname', type: 'short_text' }],
       });
 
     // The row carries the new field immediately, from the create response: the browse query
@@ -199,7 +203,7 @@ describe('Import members custom fields', () => {
         email: 'email',
         name: 'name',
         nickname: '',
-        city: 'custom_fields.name',
+        city: 'metafields.custom.name',
         postcode: '',
       });
   });
@@ -280,7 +284,7 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_custom_fields: [{ name: 'Shipping address', type: 'address' }],
+        members_metafields: [{ name: 'Shipping address', type: 'address' }],
       });
 
     // The form is gone and its row's picker is open in its place, showing that field's
@@ -301,7 +305,7 @@ describe('Import members custom fields', () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
       'POST',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -331,7 +335,7 @@ describe('Import members custom fields', () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
       'POST',
-      '/members/custom_fields/',
+      '/members/metafields/custom/',
       {
         errors: [
           {
@@ -365,7 +369,7 @@ describe('Import members custom fields', () => {
     // A 2xx the client cannot use: an older bundle against a newer server, a proxy that
     // reshapes the envelope. The field is created either way, so the form must not claim
     // otherwise and send them to create a second one.
-    fakeAdminEndpoint('POST', '/members/custom_fields/', { members_custom_fields: [] });
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', { members_metafields: [] });
     await renderAdminApp('/members', FLAGS);
     await openMappingStep();
 
@@ -378,9 +382,9 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
-  // Leaving a column out of the mapping is how the importer is told to carry it through
-  // under its own header, which for a custom_fields.* column means importing it. So a
-  // deselected column has to be named with an empty target, not omitted.
+  // The importer treats a column the mapping never mentions as "carry it through under its
+  // own header", which for a custom-field column means importing it. A column the publisher
+  // switched off has to be named with an empty target, not left out.
   it('names every column it is not importing rather than omitting it', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);
@@ -652,9 +656,11 @@ describe('Import members custom fields', () => {
 
     // A Ghost export re-imported where its field no longer exists: nothing matches, so it
     // starts out of the import with nothing chosen for it.
-    await importToggle('custom_fields.nickname').click();
-    await expect.element(fieldSelect('custom_fields.nickname')).toHaveTextContent('Select field');
-    await fieldSelect('custom_fields.nickname').click();
+    await importToggle('metafields.custom.nickname').click();
+    await expect
+      .element(fieldSelect('metafields.custom.nickname'))
+      .toHaveTextContent('Select field');
+    await fieldSelect('metafields.custom.nickname').click();
 
     // Both kinds are reachable from the one list, without choosing between them first.
     // Exact, or "Email" also matches "Subscribed to emails".
@@ -761,11 +767,8 @@ describe('Import members custom fields', () => {
     await expect.element(importMembersScreen.leaveConfirmationText()).toBeVisible();
   });
 
-  // The redesigned dialog ships on its own flag, ahead of custom fields. Off, it has to be a
-  // plain mapping of columns onto the member fields Ghost already has, with nothing about
-  // custom fields anywhere in it — including on a site that has some defined.
-  describe('with custom fields off', () => {
-    it('offers no custom field, and no way to make one', async () => {
+  describe('without field management', () => {
+    it('offers the defined fields, but no way to make another', async () => {
       const { browseApi } = fakeCustomFieldsWorld([NICKNAME_FIELD]);
       await renderAdminApp('/members', WITHOUT_CUSTOM_FIELDS);
       await openMappingStep();
@@ -775,13 +778,10 @@ describe('Import members custom fields', () => {
 
       // Exact, or "Email" also matches "Subscribed to emails".
       await expect.element(importMembersScreen.option('Email', { exact: true })).toBeVisible();
-      await expect.element(importMembersScreen.option('Nickname')).not.toBeInTheDocument();
+      await expect.element(importMembersScreen.option('Nickname')).toBeVisible();
       await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
 
-      // Not merely unrendered: the definitions are never asked for. That query also gates the
-      // first parse of the file, so leaving it enabled and unanswerable would hold the mapping
-      // step on a spinner — which reaching the table above already rules out.
-      expect(browseApi.requests).toHaveLength(0);
+      expect(browseApi.requests.length).toBeGreaterThan(0);
     });
 
     it('says no field matches a search rather than offering to make one', async () => {

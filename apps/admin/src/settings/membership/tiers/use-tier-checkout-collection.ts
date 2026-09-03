@@ -8,8 +8,8 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 /**
  * The gate and the data for a tier's checkout collection, in one place.
  *
- * With the membersCustomFields flag or Stripe off, nothing is fetched and the tier modal
- * renders exactly as it did before. The card itself additionally needs a paid tier —
+ * With the stripeCheckoutCollection flag or Stripe off, nothing is fetched and the tier
+ * modal renders exactly as it did before. The card itself additionally needs a paid tier —
  * saved, or in the middle of being created.
  * When the card is due, `isReady` lets the modal defer its first paint until the
  * configuration is loaded — the same rule it already applies to the tier itself — so the
@@ -27,13 +27,14 @@ export const useTierCheckoutCollection = (
   tier: Tier | undefined,
   { creating = false }: { creating?: boolean } = {},
 ) => {
-  const hasCustomFields = useFeatureFlag('membersCustomFields');
+  const hasCheckoutCollection = useFeatureFlag('stripeCheckoutCollection');
   const { config: globalConfig, settings } = useGlobalData();
 
   // The read is tier-independent — one browse covers every tier — so it hangs only on
   // the feature being on. That lets the tiers list warm it before any modal opens, and
   // means a free-tier or new-tier modal costs at most one cached request.
-  const fetchWanted = hasCustomFields && checkStripeEnabled(settings || [], globalConfig || {});
+  const fetchWanted =
+    hasCheckoutCollection && checkStripeEnabled(settings || [], globalConfig || {});
   const { data, error, isError, isFetching } = useBrowseTiersCheckoutConfig({
     enabled: fetchWanted,
     defaultErrorHandler: false,

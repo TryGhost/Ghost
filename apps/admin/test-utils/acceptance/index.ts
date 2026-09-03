@@ -21,6 +21,7 @@ export {
   fakePostsListScreen,
   fakeRoles,
   fakeSettingsScreens,
+  fakeSnippets,
   fakeTags,
   fakeThemes,
   fakeThemeUpload,

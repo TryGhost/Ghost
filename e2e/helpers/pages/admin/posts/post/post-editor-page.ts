@@ -28,6 +28,25 @@ class SettingsMenu extends BasePage {
   }
 }
 
+class ReAuthenticateModal extends BasePage {
+  readonly modal: Locator;
+  readonly passwordInput: Locator;
+  readonly signInButton: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    this.modal = page.locator('[data-test-modal="re-authenticate"]');
+    this.passwordInput = this.modal.getByLabel('Your password');
+    this.signInButton = this.modal.getByRole('button', { name: /Sign in/ });
+  }
+
+  async signIn(password: string): Promise<void> {
+    await this.passwordInput.fill(password);
+    await this.signInButton.click();
+  }
+}
+
 class PublishFlow extends BasePage {
   readonly publishButton: Locator;
   readonly publishTypeSetting: Locator;
@@ -144,6 +163,7 @@ export class PostEditorPage extends AdminPage {
   readonly backButton: Locator;
 
   readonly settingsMenu: SettingsMenu;
+  readonly reauthenticateModal: ReAuthenticateModal;
 
   constructor(page: Page) {
     super(page);
@@ -164,6 +184,20 @@ export class PostEditorPage extends AdminPage {
     this.backButton = page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
+    this.reauthenticateModal = new ReAuthenticateModal(page);
+  }
+
+  /**
+   * The id of the post currently open in the editor. Waits for the URL to
+   * carry an id first: a new draft only gets one after its first save.
+   */
+  async getPostId(): Promise<string> {
+    await this.page.waitForURL(/#\/editor\/post\/[0-9a-f]{24}/);
+    const match = this.page.url().match(/#\/editor\/post\/([0-9a-f]{24})/);
+    if (!match) {
+      throw new Error(`No post id in editor URL: ${this.page.url()}`);
+    }
+    return match[1];
   }
 
   async gotoPost(postId: string): Promise<void> {
@@ -201,6 +235,10 @@ export class PostEditorPage extends AdminPage {
 
   async appendToBody(text: string): Promise<void> {
     await this.lexicalEditor.click();
+    // The click can land the caret mid-content; select all and collapse the
+    // selection so the text is genuinely appended at the end
+    await this.page.keyboard.press('ControlOrMeta+a');
+    await this.page.keyboard.press('ArrowRight');
     await this.page.keyboard.type(text);
   }
 

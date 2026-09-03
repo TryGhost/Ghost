@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
+const logging = require('@tryghost/logging');
 
 const configUtils = require('../../../../utils/config-utils');
 
@@ -39,6 +40,7 @@ describe('Stripe - config', function () {
 
   afterEach(async function () {
     configUtils.set(ignoreCustomerConfigKey, null);
+    configUtils.set('stripeWebhookUrl', null);
     await configUtils.restore();
   });
 
@@ -77,6 +79,89 @@ describe('Stripe - config', function () {
     assertExists(config.checkoutSetupSessionSuccessUrl);
     assertExists(config.checkoutSetupSessionCancelUrl);
     assertExists(config.billingPortalReturnUrl);
+  });
+
+  describe('webhook mode', function () {
+    let webhookSecretEnv;
+
+    beforeEach(function () {
+      webhookSecretEnv = process.env.WEBHOOK_SECRET;
+      delete process.env.WEBHOOK_SECRET;
+      sinon.stub(logging, 'warn');
+    });
+
+    afterEach(function () {
+      sinon.restore();
+      if (webhookSecretEnv === undefined) {
+        delete process.env.WEBHOOK_SECRET;
+      } else {
+        process.env.WEBHOOK_SECRET = webhookSecretEnv;
+      }
+    });
+
+    function getWebhookConfig() {
+      return getConfig({
+        settingsHelpers: createSettingsHelpersMock(),
+        config: configUtils.config,
+        urlUtils: createUrlUtilsMock(),
+      });
+    }
+
+    it('Falls back to a placeholder secret outside production', function () {
+      configUtils.set({ env: 'development' });
+
+      const config = getWebhookConfig();
+
+      assert.equal(config.webhookSecret, 'DEFAULT_WEBHOOK_SECRET');
+      assert.equal(config.ephemeralWebhook, false);
+      sinon.assert.calledOnce(logging.warn);
+    });
+
+    it('Uses the WEBHOOK_SECRET environment variable outside production', function () {
+      configUtils.set({ env: 'development' });
+      process.env.WEBHOOK_SECRET = 'whsec_from_stripe_listen';
+
+      const config = getWebhookConfig();
+
+      assert.equal(config.webhookSecret, 'whsec_from_stripe_listen');
+      assert.equal(config.ephemeralWebhook, false);
+    });
+
+    it('Registers an ephemeral remote webhook outside production when opted in', function () {
+      configUtils.set({ env: 'development', stripeRemoteWebhooks: true });
+      process.env.WEBHOOK_SECRET = 'whsec_from_stripe_listen';
+
+      const config = getWebhookConfig();
+
+      assert.equal(config.webhookSecret, undefined);
+      assert.equal(config.ephemeralWebhook, true);
+      sinon.assert.notCalled(logging.warn);
+    });
+
+    it('Never treats a production webhook as ephemeral', function () {
+      configUtils.set({ env: 'production', stripeRemoteWebhooks: true });
+
+      const config = getWebhookConfig();
+
+      assert.equal(config.webhookSecret, undefined);
+      assert.equal(config.ephemeralWebhook, false);
+    });
+  });
+
+  it('Lets config point the webhook handler at another origin', function () {
+    configUtils.set({
+      url: 'http://site.com/subdir',
+      stripeWebhookUrl: 'https://tunnel.example/members/webhooks/stripe/',
+    });
+
+    const config = getConfig({
+      settingsHelpers: createSettingsHelpersMock(),
+      config: configUtils.config,
+      urlUtils: createUrlUtilsMock(),
+    });
+
+    assert.equal(config.webhookHandlerUrl, 'https://tunnel.example/members/webhooks/stripe/');
+    assert.equal(config.siteUrl, 'http://site.com/subdir/');
   });
 
   it('Parses Stripe webhook customer ignore list from config', function () {

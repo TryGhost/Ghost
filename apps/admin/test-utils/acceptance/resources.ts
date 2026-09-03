@@ -1,6 +1,8 @@
 import { HttpResponse } from 'msw';
 import type { Action } from '@tryghost/admin-x-framework/api/actions';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
 import {
   activeThemeResponse,
   browseResponse,
@@ -66,7 +68,11 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
-  /** Envelope key when it differs from the path segment (e.g. 'members/custom_fields' → members_custom_fields). */
+  /**
+   * The key the response object is wrapped in, where it is not just the path segment.
+   * Ghost's Admin API usually matches the two ('tags' → `{ tags: [] }`), but not always:
+   * `members/metafields/custom/` returns `{ members_metafields: [] }`.
+   */
   envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
@@ -255,11 +261,27 @@ const membersResource = defineResource<Member>({
  * with `fakeAdminEndpoint`. A spec observing the list grow across a create
  * declares that growth itself via the function form (`() => fields`).
  */
-export const fakeMemberCustomFields = defineResource({
-  resource: 'members/custom_fields',
-  envelopeKey: 'members_custom_fields',
+const memberCustomFieldsResource = defineResource<MemberCustomField>({
+  resource: 'members/metafields/custom',
+  envelopeKey: 'members_metafields',
   semantics: { kind: 'passthrough' },
 });
+
+// Whether a spec declared its own definitions. `fakeMembers` serves an empty list on
+// behalf of the many specs that never mention custom fields, and handlers registered
+// later win, so seeding unconditionally would silently replace a list the spec had
+// already declared — and its capture would then never see a request.
+let memberCustomFieldsDeclared = false;
+
+export const fakeMemberCustomFields: typeof memberCustomFieldsResource = (respondWith) => {
+  memberCustomFieldsDeclared = true;
+  return memberCustomFieldsResource(respondWith);
+};
+
+/** Called by the harness between tests, alongside the fake API reset. */
+export function resetDeclaredResources(): void {
+  memberCustomFieldsDeclared = false;
+}
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({
@@ -291,6 +313,12 @@ export const fakePosts = defineResource<Post>({
  */
 export const fakePages = defineResource<Post>({
   resource: 'pages',
+  semantics: { kind: 'passthrough' },
+});
+
+/** Snippets list fake (passthrough): the editor browses this endpoint once on mount. */
+export const fakeSnippets = defineResource<Snippet>({
+  resource: 'snippets',
   semantics: { kind: 'passthrough' },
 });
 
@@ -327,7 +355,14 @@ export interface FakeMembersOptions {
  * Members list fake (passthrough): serves the declared members and captures
  * every browse request for outgoing-NQL assertions. Also serves the page's
  * filter-bar lookups — labels from the declared members plus
- * `options.labels`, tiers from `options.tiers`; offers/newsletters empty.
+ * `options.labels`, tiers from `options.tiers`; offers, newsletters and custom
+ * field definitions empty.
+ *
+ * Every members screen asks the server which custom fields the publisher has defined,
+ * because that list is what decides whether custom fields appear in the filter bar at all.
+ * This harness fails any test that makes a request nothing has stubbed, so an empty list is
+ * stubbed here on behalf of the many specs that have nothing to do with custom fields. A
+ * spec that wants some calls `fakeMemberCustomFields` after this one.
  */
 export function fakeMembers(
   members: RespondWith<Member>,
@@ -340,6 +375,9 @@ export function fakeMembers(
   fakeTiers(tiers);
   fakeOffers([]);
   newslettersResource([]);
+  if (!memberCustomFieldsDeclared) {
+    memberCustomFieldsResource([]);
+  }
   return membersResource(members);
 }
 
@@ -492,7 +530,13 @@ export function fakeEditSettings(): EditSettingsCapture {
     requests.push(body);
 
     const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
-    const response: SettingsResponse = settingsResponse({ settings: overrides });
+    // The fixture accepts Labs separately; otherwise it overwrites the saved
+    // JSON with defaults and a feature toggle immediately appears unchecked.
+    const labs =
+      typeof overrides.labs === 'string'
+        ? (JSON.parse(overrides.labs) as Record<string, boolean>)
+        : undefined;
+    const response: SettingsResponse = settingsResponse({ settings: overrides, labs });
     return HttpResponse.json(response);
   });
 

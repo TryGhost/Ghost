@@ -58,6 +58,13 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 }
 
 async function assertMemberEvents({ eventType, memberId, asserts }) {
+  // These rows are not written by the request under test. Ghost dispatches the member
+  // and subscription events once the transaction that created them has committed, and a
+  // subscriber then writes a row for each one. That write is still running when the
+  // response reaches us, so read the rows only once every dispatched event has been
+  // handled.
+  await DomainEvents.allSettled();
+
   const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
   for (let i = 0; i < asserts.length; i++) {
     assertObjectMatches(events[i], asserts[i]);
@@ -1310,11 +1317,6 @@ describe('Members API', function () {
       assert.equal(member.status, 'paid', 'The member should be "paid"');
       assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-      mockManager.assert.sentEmail({
-        subject: '🙌 Thank you for signing up to Ghost!',
-        to: 'checkout-webhook-test@email.com',
-      });
-
       // Check whether MRR and status has been set
       await assertSubscription(member.subscriptions[0].id, {
         subscription_id: subscription.id,
@@ -1357,10 +1359,20 @@ describe('Members API', function () {
         ],
       });
 
-      // Wait for the dispatched events (because this happens async)
+      // Neither of these emails is sent by the webhook request itself. The staff
+      // notification comes from a subscriber to a domain event that is only dispatched
+      // once the member transaction has committed, and the member's own signup email is
+      // started by the webhook handler without being awaited. Both can therefore still
+      // be in flight when the request returns, and nothing decides which of the two is
+      // sent first, so wait for each on its own rather than reading them in send order.
       await DomainEvents.allSettled();
 
-      mockManager.assert.sentEmail({
+      await mockManager.assert.sentEmailEventually({
+        subject: '🙌 Thank you for signing up to Ghost!',
+        to: 'checkout-webhook-test@email.com',
+      });
+
+      await mockManager.assert.sentEmailEventually({
         subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
         to: 'jbloggs@example.com',
       });
@@ -1377,9 +1389,10 @@ describe('Members API', function () {
 
       async function createField(name, type) {
         const { body } = await adminAgent
-          .post('/members/custom_fields/')
-          .body({ members_custom_fields: [{ name, type }] });
-        return body.members_custom_fields[0].key;
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [{ name, type }] })
+          .expectStatus(201);
+        return body.members_metafields[0].key;
       }
 
       async function sendCheckoutWebhook(email, sessionExtras) {
@@ -1483,12 +1496,12 @@ describe('Members API', function () {
           customer_details: { tax_ids: [{ type: 'gb_vat', value: 'GB123456789' }] },
         });
 
-        assert.equal(member.custom_fields[fieldKeys.question], 'Large');
+        assert.equal(member.metafields.custom[fieldKeys.question], 'Large');
         // Stripe returns the recipient beside the address and Ghost keeps them
         // apart, so each lands in the field the publisher chose for it.
-        assert.equal(member.custom_fields[fieldKeys.recipient], 'Bex Jones, c/o Acme Ltd');
+        assert.equal(member.metafields.custom[fieldKeys.recipient], 'Bex Jones, c/o Acme Ltd');
         // Stripe's address parts are exactly ours, so nothing is transformed.
-        assert.deepEqual(member.custom_fields[fieldKeys.address], {
+        assert.deepEqual(member.metafields.custom[fieldKeys.address], {
           line1: '1 High Street',
           city: 'London',
           postal_code: 'E1 6AN',
@@ -1496,7 +1509,7 @@ describe('Members API', function () {
         });
         // Asked for on the page and kept by Stripe against the customer it invoices.
         // Ghost never copies one into a publisher's field, so there is nothing here for it.
-        assert.equal(member.custom_fields[fieldKeys.vat], undefined);
+        assert.equal(member.metafields.custom[fieldKeys.vat], undefined);
       });
 
       // Turning collection off has to stop the collecting, and Stripe keeps returning
@@ -1520,7 +1533,7 @@ describe('Members API', function () {
           customer_details: { phone: '+447700900123' },
         });
 
-        assert.equal(member.custom_fields[phone], '+447700900123');
+        assert.equal(member.metafields.custom[phone], '+447700900123');
       });
 
       // The member has already paid by the time this runs, so losing an answer must never
@@ -1535,7 +1548,7 @@ describe('Members API', function () {
 
         assert.ok(member, 'the member was still created');
         assert.deepEqual(
-          member.custom_fields,
+          member.metafields.custom,
           {},
           'nothing was collected, and nothing else was disturbed',
         );
@@ -1583,11 +1596,11 @@ describe('Members API', function () {
         });
 
         assert.equal(
-          member.custom_fields[fieldKeys.recipient],
+          member.metafields.custom[fieldKeys.recipient],
           undefined,
           'no recipient name was kept',
         );
-        assert.equal(member.custom_fields[fieldKeys.address], undefined, 'no address was kept');
+        assert.equal(member.metafields.custom[fieldKeys.address], undefined, 'no address was kept');
       });
 
       // The acceptance criterion this whole thing turns on: a value Stripe collected
@@ -1656,7 +1669,7 @@ describe('Members API', function () {
           shipping: { name: 'Collected by Stripe', address: { country: 'GB' } },
         });
 
-        assert.equal(member.custom_fields[fieldKeys.recipient], 'Collected by Stripe');
+        assert.equal(member.metafields.custom[fieldKeys.recipient], 'Collected by Stripe');
       });
 
       // A value the member gave us for free must never fail the webhook: a throw makes
@@ -1674,23 +1687,75 @@ describe('Members API', function () {
 
         assert.equal(member.status, 'paid');
         assert.equal(
-          member.custom_fields[fieldKeys.question],
+          member.metafields.custom[fieldKeys.question],
           'Large',
           'the answer beside it was kept',
         );
         assert.equal(
-          member.custom_fields[fieldKeys.recipient],
+          member.metafields.custom[fieldKeys.recipient],
           'Ada Lovelace',
           'and so was the other half of what Stripe returned together',
         );
-        assert.equal(member.custom_fields[fieldKeys.address], undefined);
+        assert.equal(member.metafields.custom[fieldKeys.address], undefined);
       });
 
       it('leaves the member alone when the checkout collected nothing', async function () {
         const member = await sendCheckoutWebhook('checkout-collected-nothing@email.com', {});
 
         assert.equal(member.status, 'paid');
-        assert.deepEqual(member.custom_fields, {});
+        assert.deepEqual(member.metafields.custom, {});
+      });
+
+      // A checkout session can be started with nothing but an email address, and typing
+      // an email is not proof of owning it. The tests above all write onto the member
+      // the webhook itself created, which is safe: that record holds nothing the buyer
+      // didn't supply. A record that existed before the checkout is only written when
+      // the session was started by a signed-in member.
+      it('does not write onto a member that existed before an unverified checkout', async function () {
+        const email = 'checkout-collected-preexisting@email.com';
+        const { body: created } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+        await adminAgent
+          .put(`/members/${created.members[0].id}/`)
+          .body({ members: [{ metafields: { custom: { [fieldKeys.question]: 'Small' } } }] })
+          .expectStatus(200);
+
+        const member = await sendCheckoutWebhook(email, {
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+          shipping: {
+            name: 'Someone Else',
+            address: { line1: '1 High Street', country: 'GB' },
+          },
+        });
+
+        assert.equal(member.status, 'paid', 'the payment work still happened');
+        assert.equal(
+          member.metafields.custom[fieldKeys.question],
+          'Small',
+          'the stored answer was not overwritten',
+        );
+        assert.equal(member.metafields.custom[fieldKeys.recipient], undefined);
+        assert.equal(member.metafields.custom[fieldKeys.address], undefined);
+      });
+
+      it('writes onto an existing member when the checkout was started signed in', async function () {
+        const email = 'checkout-collected-signed-in@email.com';
+        await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+
+        const member = await sendCheckoutWebhook(email, {
+          metadata: {
+            ghostTierId: (await getPaidProduct()).id,
+            ghostSignupContext: 'already_authenticated',
+          },
+          custom_fields: [{ key: fieldKeys.question, type: 'text', text: { value: 'Large' } }],
+        });
+
+        assert.equal(member.metafields.custom[fieldKeys.question], 'Large');
       });
     });
 

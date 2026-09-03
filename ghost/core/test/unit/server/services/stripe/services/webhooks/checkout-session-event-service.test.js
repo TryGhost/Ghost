@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
@@ -1155,6 +1156,94 @@ describe('CheckoutSessionEventService', function () {
         await service.handleSubscriptionEvent(session);
 
         sinon.assert.notCalled(sendSignupEmail);
+      });
+    });
+
+    // A checkout session can be created for any email address without proof the buyer
+    // owns it, so what gates the write is whether the target record predates the
+    // checkout, and whether the session was started by a signed-in member.
+    describe('collected fields writeback', function () {
+      let labsService;
+      let customFieldBindings;
+
+      beforeEach(function () {
+        labsService = { isSet: sinon.stub().returns(true) };
+        customFieldBindings = { writeCollected: sinon.stub().resolves() };
+        service = createService({ labsService, customFieldBindings });
+        session.metadata.ghostTierId = 'tier_123';
+        api.getCustomer.resolves(customer);
+        sinon.stub(logging, 'warn');
+        sinon.stub(logging, 'error');
+      });
+
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('writes onto the member this event created, even unverified', async function () {
+        memberRepository.get.resolves(null);
+        session.metadata.ghostSignupContext = 'needs_magic_link_email';
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnce(customFieldBindings.writeCollected);
+        sinon.assert.calledWith(
+          customFieldBindings.writeCollected,
+          'created_member',
+          'tier_123',
+          sinon.match.array,
+        );
+      });
+
+      it('does not write onto a member that existed before an unverified checkout', async function () {
+        memberRepository.get.resolves(member);
+        session.metadata.ghostSignupContext = 'needs_magic_link_email';
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.notCalled(customFieldBindings.writeCollected);
+      });
+
+      it('treats a session carrying no signup context as unverified', async function () {
+        memberRepository.get.resolves(member);
+        delete session.metadata.ghostSignupContext;
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.notCalled(customFieldBindings.writeCollected);
+      });
+
+      it('writes onto an existing member when the checkout was started signed in', async function () {
+        memberRepository.get.resolves(member);
+        session.metadata.ghostSignupContext = 'already_authenticated';
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnce(customFieldBindings.writeCollected);
+        sinon.assert.calledWith(
+          customFieldBindings.writeCollected,
+          'member_123',
+          'tier_123',
+          sinon.match.array,
+        );
+      });
+
+      it('does not write when the session names no tier', async function () {
+        memberRepository.get.resolves(null);
+        delete session.metadata.ghostTierId;
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.notCalled(customFieldBindings.writeCollected);
+      });
+
+      it('does not fail the webhook when the write is rejected', async function () {
+        memberRepository.get.resolves(null);
+        customFieldBindings.writeCollected.rejects(new Error('storage broke'));
+
+        await service.handleSubscriptionEvent(session);
+
+        sinon.assert.calledOnce(customFieldBindings.writeCollected);
       });
     });
   });

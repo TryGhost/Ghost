@@ -60,7 +60,7 @@ describe('Portal settings', () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings', { labs: { giftSubCustomization: true } });
+    await renderAdminApp('/settings');
 
     const modal = await openPortal();
     const preview = modal.getByTestId('portal-preview');
@@ -91,37 +91,6 @@ describe('Portal settings', () => {
       { key: 'portal_signup_gift_promotion', value: false },
       { key: 'portal_account_gift_promotion', value: false },
     ]);
-  });
-
-  it('hides gift promotion settings when the feature flag is disabled', async () => {
-    fakeSettingsScreens();
-    fakeTiers([freeTier]);
-    await renderAdminApp('/settings');
-
-    const modal = await openPortal();
-    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
-
-    await modal.getByRole('tab', { name: 'Account page' }).last().click();
-    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
-  });
-
-  it('hides gift promotion settings when the backend does not provide them', async () => {
-    fakeSettingsScreens();
-    fakeTiers([freeTier]);
-    const settings = settingsResponse({ labs: { giftSubCustomization: true } });
-    settings.settings = settings.settings.filter(
-      ({ key }) => !['portal_signup_gift_promotion', 'portal_account_gift_promotion'].includes(key),
-    );
-    await renderAdminApp('/settings', {
-      labs: { giftSubCustomization: true },
-      boot: { browseSettings: { response: settings } },
-    });
-
-    const modal = await openPortal();
-    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
-
-    await modal.getByRole('tab', { name: 'Account page' }).last().click();
-    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
   });
 
   it('shows the free tier option when Stripe is disconnected', async () => {

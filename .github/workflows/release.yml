@@ -62,16 +62,9 @@ jobs:
       # Ghost only and can't authenticate against Casper/Source over SSH
       - run: git submodule update --init
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        env:
-          FORCE_COLOR: 0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Set up Git
         run: |
