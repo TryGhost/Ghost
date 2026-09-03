@@ -42,8 +42,9 @@ export function lockedHeadline(daysLeft: number): string {
 
 export function lockedMessage(state: DunningState, isOwner: boolean): string {
   const failedOn = formatDeadline(state.paymentFailedAt);
+  const deadline = formatDeadline(state.suspendsAt);
   if (isOwner) {
-    return `Your last payment failed on ${failedOn} and reminders have gone unanswered. Pay the outstanding invoice to keep publishing.`;
+    return `Your last payment failed on ${failedOn} and reminders have gone unanswered. Pay the outstanding invoice before ${deadline} to avoid suspension.`;
   }
-  return `The last payment failed on ${failedOn} and reminders have gone unanswered. Remind the site owner to pay the outstanding invoice to keep publishing.`;
+  return `The last payment failed on ${failedOn} and reminders have gone unanswered. Remind the site owner to pay the outstanding invoice before ${deadline} to avoid suspension.`;
 }

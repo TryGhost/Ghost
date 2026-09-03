@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { DunningBanner } from './dunning-banner';
@@ -49,6 +49,7 @@ const NOW = new Date('2026-09-10T12:00:00Z');
 
 const ownerUser = {
   id: 'owner-id',
+  name: 'Aileen',
   email: 'owner@example.com',
   roles: [{ name: 'Owner' }],
 };
@@ -114,28 +115,14 @@ describe('dunning UI', () => {
       );
     });
 
-    test('shows staff an Email the owner link instead', () => {
+    test('shows staff the remind-the-owner copy without any CTA', () => {
       mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
 
       render(<DunningBanner />);
 
       expect(screen.getByText('This site’s payment failed.')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Email the owner' })).toHaveAttribute(
-        'href',
-        'mailto:owner@example.com',
-      );
-      expect(screen.queryByRole('link', { name: 'Pay now' })).not.toBeInTheDocument();
-    });
-
-    test('degrades to no CTA when staff cannot resolve the owner', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
-      mockUseCurrentUser.mockReturnValue({ data: editorUser });
-      mockUseBrowseUsers.mockReturnValue({ data: undefined });
-
-      render(<DunningBanner />);
-
-      expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
+      expect(screen.getByText(/Remind the site owner/)).toBeInTheDocument();
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
 
@@ -149,7 +136,7 @@ describe('dunning UI', () => {
     });
 
     test('renders nothing once the locked phase starts', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(15));
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
 
       render(<DunningBanner />);
 
@@ -167,12 +154,12 @@ describe('dunning UI', () => {
     });
 
     test('takes over for the owner in the locked phase', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(14));
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
 
       render(<DunningOverlay />);
 
-      expect(screen.getByText('Your site will be suspended in 14 days')).toBeInTheDocument();
-      expect(screen.getByText('Your site is still online for readers.')).toBeInTheDocument();
+      expect(screen.getByText('Your site will be suspended in 6 days')).toBeInTheDocument();
+      expect(screen.getByText(/avoid suspension/)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute(
         'href',
         '#/pro/update-card',
@@ -184,7 +171,7 @@ describe('dunning UI', () => {
     });
 
     test('stands down on the export route so the data download stays reachable', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(14));
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
       mockUseLocation.mockReturnValue({ pathname: '/settings/migration' });
 
       render(<DunningOverlay />);
@@ -192,23 +179,31 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
     });
 
-    test('gives staff the owner email instead of a payment link', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(14));
+    test('shows staff the owner card instead of a payment link', () => {
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
       mockUseCurrentUser.mockReturnValue({ data: editorUser });
 
       render(<DunningOverlay />);
 
-      expect(screen.getByRole('link', { name: 'Email the owner' })).toHaveAttribute(
-        'href',
-        'mailto:owner@example.com',
-      );
+      expect(screen.getByText('Aileen (Owner)')).toBeInTheDocument();
       expect(screen.getByText('owner@example.com')).toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'Pay now' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: 'Download my data' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    });
+
+    test('degrades to copy only when staff cannot resolve the owner', () => {
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      mockUseCurrentUser.mockReturnValue({ data: editorUser });
+      mockUseBrowseUsers.mockReturnValue({ data: undefined });
+
+      render(<DunningOverlay />);
+
+      expect(screen.getByTestId('dunning-overlay')).toBeInTheDocument();
+      expect(screen.getByText(/Remind the site owner/)).toBeInTheDocument();
+      expect(screen.queryByText(/\(Owner\)/)).not.toBeInTheDocument();
     });
 
     test('stands down on the billing route so the user can pay', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(14));
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
       mockUseLocation.mockReturnValue({ pathname: '/pro' });
 
       render(<DunningOverlay />);
@@ -216,8 +211,28 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
     });
 
+    test('dismissing drops back to the urgent warning banner', () => {
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+
+      render(
+        <>
+          <DunningOverlay />
+          <DunningBanner />
+        </>,
+      );
+
+      expect(screen.getByTestId('dunning-overlay')).toBeInTheDocument();
+      expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
+      expect(screen.getByText('Action needed: payment failed.')).toBeInTheDocument();
+    });
+
     test('shows the imminent headline when the suspension date has passed', () => {
-      mockUseBrowseConfig.mockReturnValue(configWithDunning(29));
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(30));
 
       render(<DunningOverlay />);
 

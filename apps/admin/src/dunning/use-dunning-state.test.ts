@@ -1,7 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { PAYMENT_GRACE_MS, markPaymentAttempt, useDunningState } from './use-dunning-state';
+import {
+  PAYMENT_GRACE_MS,
+  dismissLock,
+  markPaymentAttempt,
+  useDunningState,
+} from './use-dunning-state';
 
 const { mockUseBrowseConfig, mockUseSubscriptionStatus } = vi.hoisted(() => ({
   mockUseBrowseConfig: vi.fn(),
@@ -19,7 +24,10 @@ vi.mock('@/ember-bridge', () => ({
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-09-10T12:00:00Z');
 
-const withDunning = (dunning?: Record<string, unknown>, labs = { dunningWarnings: true }) => ({
+const withDunning = (
+  dunning?: Record<string, unknown>,
+  labs: Record<string, boolean> = { dunningWarnings: true },
+) => ({
   data: {
     config: {
       labs,
@@ -109,12 +117,20 @@ describe('useDunningState', () => {
     expect(result.current).toMatchObject({ phase: 'warning', urgent: true });
   });
 
-  test('locks for the second half of the window', () => {
+  test('stays in the urgent warning phase through the middle of the window', () => {
     mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(14)));
 
     const { result } = renderHook(() => useDunningState());
 
-    expect(result.current).toMatchObject({ phase: 'locked', daysLeft: 14 });
+    expect(result.current).toMatchObject({ phase: 'warning', urgent: true, daysLeft: 14 });
+  });
+
+  test('locks for the last quarter of the window', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+
+    const { result } = renderHook(() => useDunningState());
+
+    expect(result.current).toMatchObject({ phase: 'locked', daysLeft: 6 });
   });
 
   test('stays locked with zero days left when suspendsAt has passed', () => {
@@ -139,6 +155,35 @@ describe('useDunningState', () => {
     const { result } = renderHook(() => useDunningState());
 
     expect(result.current).not.toBeNull();
+  });
+
+  test('records a lock dismissal for the current episode', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+
+    const { result } = renderHook(() => useDunningState());
+    expect(result.current).toMatchObject({ phase: 'locked', lockDismissed: false });
+
+    act(() => {
+      dismissLock(result.current!);
+    });
+
+    expect(result.current).toMatchObject({ phase: 'locked', lockDismissed: true });
+  });
+
+  test('a new payment failure resets the lock dismissal', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
+
+    const { result, rerender } = renderHook(() => useDunningState());
+    act(() => {
+      dismissLock(result.current!);
+    });
+    expect(result.current).toMatchObject({ lockDismissed: true });
+
+    // A later episode carries a different paymentFailedAt.
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(23)));
+    rerender();
+
+    expect(result.current).toMatchObject({ lockDismissed: false });
   });
 
   test('stands down during the payment grace period, then returns', () => {

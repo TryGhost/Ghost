@@ -4,22 +4,24 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useDunningState, markPaymentAttempt } from './use-dunning-state';
-import { useOwnerUser } from './use-owner-user';
 import { PAY_URL, bannerMessage, bannerTitle } from './dunning-copy';
 import { isBillingRoute } from './is-billing-route';
 
 /**
- * Top-of-content warning strip for the dunning warning phase. Renders nothing
- * outside that phase, on the billing route itself, or for hosts that don't
- * inject a dunning state.
+ * Top-of-content warning strip for the dunning warning phase — and for the
+ * locked phase once the user has dismissed the full-page takeover, so the
+ * urgent warning stays in view. Renders nothing otherwise, on the billing
+ * route itself, or for hosts that don't inject a dunning state.
  */
 export function DunningBanner() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
   const location = useLocation();
-  const owner = useOwnerUser();
 
-  if (!state || state.phase !== 'warning' || !currentUser || isBillingRoute(location.pathname)) {
+  const visible =
+    state && (state.phase === 'warning' || (state.phase === 'locked' && state.lockDismissed));
+
+  if (!visible || !currentUser || isBillingRoute(location.pathname)) {
     return null;
   }
 
@@ -48,18 +50,12 @@ export function DunningBanner() {
           {bannerMessage(state, isOwner)}
         </span>
       </div>
-      {isOwner ? (
+      {isOwner && (
         <Button size="sm" asChild>
           <a href={PAY_URL} onClick={markPaymentAttempt}>
             Pay now
           </a>
         </Button>
-      ) : (
-        owner?.email && (
-          <Button size="sm" variant="outline" asChild>
-            <a href={`mailto:${owner.email}`}>Email the owner</a>
-          </Button>
-        )
       )}
     </div>
   );
