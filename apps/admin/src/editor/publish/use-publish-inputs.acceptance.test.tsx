@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderHook } from 'vitest-browser-react';
 
-import { fakeAdminEndpoint } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, newsletter } from '@test-utils/acceptance';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 
 import { usePublishInputs } from '@/editor/publish/use-publish-inputs';
@@ -15,13 +15,14 @@ const pagination = (pageNumber = 1, pages = 1) => ({
   prev: pageNumber > 1 ? pageNumber - 1 : null,
 });
 
-const newsletter = (slug: string) => ({
-  slug,
-  name: slug,
-  status: 'active',
-  visibility: 'members',
-  sort_order: 0,
-});
+const publishNewsletter = (slug: string) =>
+  newsletter({
+    slug,
+    name: slug,
+    status: 'active',
+    visibility: 'members',
+    sort_order: 0,
+  });
 
 function fakeBoundaryInputs() {
   const settings = fakeAdminEndpoint('GET', /^\/settings\/\?/, {
@@ -43,7 +44,7 @@ function fakeBoundaryInputs() {
 
 function fakeNewsletters() {
   return fakeAdminEndpoint('GET', /^\/newsletters\/\?/, {
-    newsletters: [newsletter('weekly')],
+    newsletters: [publishNewsletter('weekly')],
     meta: { pagination: pagination() },
   });
 }
@@ -110,7 +111,7 @@ describe('usePublishInputs', () => {
       }
 
       return {
-        newsletters: [newsletter(pageNumber === 1 ? 'first' : 'last')],
+        newsletters: [publishNewsletter(pageNumber === 1 ? 'first' : 'last')],
         meta: { pagination: pagination(pageNumber, 2) },
       };
     });
