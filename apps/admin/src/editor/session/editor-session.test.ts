@@ -41,6 +41,8 @@ interface Harness {
 interface HarnessHooks {
   duringSave?: () => void;
   acknowledge?: (record: EditorRecord, saveCount: number) => EditorRecord;
+  /** Answers an update with nothing, which the session reports as a failed save. */
+  failSave?: (saveCount: number) => boolean;
 }
 
 function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
@@ -76,6 +78,9 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
         hooks.duringSave?.();
         saveCount += 1;
+        if (hooks.failSave?.(saveCount)) {
+          return Promise.resolve(undefined);
+        }
         const next = record({
           ...state.acknowledged,
           title: payload.title as string,
@@ -352,6 +357,27 @@ describe('createEditorSession', () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     expect(session.isDirty()).toBe(true);
+  });
+
+  it('notifies subscribers when a retry settles what a failed save left dirty', async () => {
+    let saveFails = true;
+    const { session } = harness({ record: record() }, { failSave: () => saveFails });
+    session.setBaseline(record().lexical);
+    session.patchLexical(body('Hello and more'));
+    const seen: boolean[] = [];
+    session.subscribe(() => seen.push(session.isDirty()));
+
+    await session.dispatchExplicit();
+
+    // A failed save keeps the post dirty and recoverable.
+    expect(session.isDirty()).toBe(true);
+    expect(seen).toContain(true);
+
+    saveFails = false;
+    await session.dispatchExplicit();
+
+    expect(session.isDirty()).toBe(false);
+    expect(seen.at(-1)).toBe(false);
   });
 
   it('stops notifying an unsubscribed listener', () => {

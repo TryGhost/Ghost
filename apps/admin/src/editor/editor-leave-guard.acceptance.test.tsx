@@ -132,8 +132,7 @@ describe('Post editor leave guard', () => {
       await editorScreen.backLink('post').click();
 
       await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-      // Not a single frame of it: the save on the way out is silent, and a
-      // prompt that flashes as the navigation lands is worse than none.
+      // Not a single frame of it: the save on the way out is silent.
       expect(dialogInsertions()).toBe(0);
       expect(saveApi.requests.length).toBe(1);
       // Leaving is the writer's last checkpoint, so it earns a revision.

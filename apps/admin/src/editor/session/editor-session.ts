@@ -312,8 +312,8 @@ export function createEditorSession({
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);
       }
-      // The engine moves dirtiness on its own too; without this the cache
-      // below could miss the flip after it and swallow a later notification.
+      // A save error moves dirtiness without going through a patch, so
+      // `lastDirty` is refreshed here rather than left to catch up.
       dirtyChanged();
     },
     onListenerError: onError,

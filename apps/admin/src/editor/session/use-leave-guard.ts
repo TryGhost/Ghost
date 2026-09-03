@@ -83,9 +83,7 @@ export function useEditorLeaveGuard(
     });
   }, [isBlocked, leaveRequested]);
 
-  // The dialog answers the engine's verdict rather than the block itself: a
-  // block is where the question starts, and most are settled without asking.
-  // Reading the hook's own `open` would paint one on every blocked commit.
+  // Reading the hook's own `open` would paint a dialog on every blocked commit.
   const settle = guard.dialogProps;
 
   return {
