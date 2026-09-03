@@ -45,11 +45,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
-  },
-  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',

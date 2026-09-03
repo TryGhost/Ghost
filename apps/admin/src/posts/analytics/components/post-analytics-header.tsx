@@ -155,13 +155,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
 
   return (
     <>
-      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background admin7:-mx-(--page-gutter)">
+      <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
-          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0 admin7:px-(--page-gutter) admin7:pt-[28px]!"
+          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
           data-header="header"
         >
           <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col justify-between md:flex-row md:items-center admin7:flex-wrap">
+            <div className="flex w-full flex-col flex-wrap justify-between md:flex-row md:items-center">
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
