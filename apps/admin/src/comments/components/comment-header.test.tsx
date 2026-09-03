@@ -2,6 +2,10 @@ import { CommentHeader } from './comment-header';
 import { TooltipProvider } from '@tryghost/shade/components';
 import { fireEvent, render, screen } from '@testing-library/react';
 
+vi.mock('@/layout/use-admin7-pill', () => ({
+  useAdmin7Pill: () => ({ enabled: false }),
+}));
+
 // CommentHeader renders tooltips that expect a TooltipProvider ancestor,
 // which is supplied once at the comments-list level in the app.
 const renderWithProvider = (ui: React.ReactElement) =>

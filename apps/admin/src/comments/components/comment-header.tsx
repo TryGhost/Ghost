@@ -8,6 +8,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatTimestamp } from '@tryghost/shade/utils';
 import type { MouseEvent } from 'react';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -35,11 +36,6 @@ interface CommentHeaderProps {
   className?: string;
 }
 
-const pinnedButtonClassName = cn(
-  badgeVariants({ variant: 'warning' }),
-  'gap-1 hover:bg-state-warning/30',
-);
-
 export function CommentHeader({
   memberName,
   memberId,
@@ -53,6 +49,14 @@ export function CommentHeader({
   onUnpinClick,
   className,
 }: CommentHeaderProps) {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const pinnedButtonClassName = cn(
+    badgeVariants({
+      shape: isAdmin7Pill ? 'pill' : undefined,
+      variant: 'warning',
+    }),
+    'gap-1 hover:bg-state-warning/30',
+  );
   const handleUnpinClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onUnpinClick?.();
@@ -116,7 +120,11 @@ export function CommentHeader({
           </>
         )}
       </div>
-      {isHidden && <Badge variant="secondary">Hidden</Badge>}
+      {isHidden && (
+        <Badge shape={isAdmin7Pill ? 'pill' : undefined} variant="secondary">
+          Hidden
+        </Badge>
+      )}
       {isPinned &&
         (onUnpinClick ? (
           <button
@@ -139,7 +147,7 @@ export function CommentHeader({
             </span>
           </button>
         ) : (
-          <Badge className="gap-1" variant="warning">
+          <Badge className="gap-1" shape={isAdmin7Pill ? 'pill' : undefined} variant="warning">
             <LucideIcon.Pin className="size-3" />
             Pinned
           </Badge>

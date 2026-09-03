@@ -18,12 +18,14 @@ import {
 } from '@tryghost/admin-x-framework/api/members';
 import { Link } from '@tryghost/admin-x-framework';
 import { useState } from 'react';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface CommentMenuProps {
   comment: Comment;
 }
 
 export function CommentMenu({ comment }: CommentMenuProps) {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const { mutate: disableCommenting } = useDisableMemberCommenting();
   const { mutate: enableCommenting } = useEnableMemberCommenting();
   const { mutate: pinComment } = usePinComment();
@@ -58,8 +60,9 @@ export function CommentMenu({ comment }: CommentMenuProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+            aria-label="Comment actions"
             className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
-            size="sm"
+            size={isAdmin7Pill ? 'icon' : 'sm'}
             variant="ghost"
           >
             <LucideIcon.Ellipsis />

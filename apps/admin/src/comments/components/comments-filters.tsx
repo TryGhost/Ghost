@@ -5,6 +5,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface CommentsFiltersProps {
   filters: Filter[];
@@ -17,6 +18,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
   const filterFields = useCommentFilterFields({
@@ -31,6 +33,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   const outlinedClearButton = useConsolidatedFilterUI ? (
     <Button
       className="sm:absolute sm:top-0 sm:right-0"
+      size={isAdmin7Pill ? 'sm' : undefined}
       type="button"
       variant="outline"
       onClick={() => onFiltersChange([])}
@@ -43,6 +46,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     <Filters
       addButtonClassName={cn(
         hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
+        isAdmin7Pill &&
+          (hasFilters ? 'aspect-square !px-0' : 'h-(--control-height) text-base! [&_svg]:size-4'),
       )}
       addButtonIcon={
         useConsolidatedFilterUI ? (
