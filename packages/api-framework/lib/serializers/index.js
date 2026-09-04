@@ -1,13 +1,13 @@
 module.exports = {
-    get handle() {
-        return require('./handle');
-    },
+  get handle() {
+    return require('./handle');
+  },
 
-    get input() {
-        return require('./input');
-    },
+  get input() {
+    return require('./input');
+  },
 
-    get output() {
-        return require('./output');
-    },
+  get output() {
+    return require('./output');
+  },
 };

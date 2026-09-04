@@ -15,68 +15,68 @@ const errors = require('@tryghost/errors');
  * @param {import('@tryghost/api-framework').Frame} frame
  */
 module.exports.input = (apiConfig, apiSerializers, frame) => {
-    debug('input');
+  debug('input');
 
-    const tasks = [];
-    const sharedSerializers = require('./input');
+  const tasks = [];
+  const sharedSerializers = require('./input');
 
-    if (!apiConfig) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiConfig) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    if (!apiSerializers) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiSerializers) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    // ##### SHARED ALL SERIALIZATION
+  // ##### SHARED ALL SERIALIZATION
 
+  tasks.push(function serializeAllShared() {
+    return sharedSerializers.all.all(apiConfig, frame);
+  });
+
+  if (sharedSerializers.all[apiConfig.method]) {
     tasks.push(function serializeAllShared() {
-        return sharedSerializers.all.all(apiConfig, frame);
+      return sharedSerializers.all[apiConfig.method](apiConfig, frame);
     });
+  }
 
-    if (sharedSerializers.all[apiConfig.method]) {
-        tasks.push(function serializeAllShared() {
-            return sharedSerializers.all[apiConfig.method](apiConfig, frame);
-        });
+  // ##### API VERSION RESOURCE SERIALIZATION
+
+  if (apiSerializers.all) {
+    tasks.push(function serializeOptionsShared() {
+      return apiSerializers.all(apiConfig, frame);
+    });
+  }
+
+  if (apiSerializers[apiConfig.docName]) {
+    if (apiSerializers[apiConfig.docName].all) {
+      tasks.push(function serializeOptionsShared() {
+        return apiSerializers[apiConfig.docName].all(apiConfig, frame);
+      });
     }
 
-    // ##### API VERSION RESOURCE SERIALIZATION
-
-    if (apiSerializers.all) {
-        tasks.push(function serializeOptionsShared() {
-            return apiSerializers.all(apiConfig, frame);
-        });
+    if (apiSerializers[apiConfig.docName][apiConfig.method]) {
+      tasks.push(function serializeOptionsShared() {
+        return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, frame);
+      });
     }
+  }
 
-    if (apiSerializers[apiConfig.docName]) {
-        if (apiSerializers[apiConfig.docName].all) {
-            tasks.push(function serializeOptionsShared() {
-                return apiSerializers[apiConfig.docName].all(apiConfig, frame);
-            });
-        }
-
-        if (apiSerializers[apiConfig.docName][apiConfig.method]) {
-            tasks.push(function serializeOptionsShared() {
-                return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, frame);
-            });
-        }
-    }
-
-    debug(tasks);
-    return sequence(tasks);
+  debug(tasks);
+  return sequence(tasks);
 };
 
 const getBestMatchSerializer = function (apiSerializers, docName, method) {
-    if (apiSerializers[docName]?.[method]) {
-        debug(`Calling ${docName}.${method}`);
-        return apiSerializers[docName][method].bind(apiSerializers[docName]);
-    } else if (apiSerializers[docName]?.all) {
-        debug(`Calling ${docName}.all`);
-        return apiSerializers[docName].all.bind(apiSerializers[docName]);
-    }
+  if (apiSerializers[docName]?.[method]) {
+    debug(`Calling ${docName}.${method}`);
+    return apiSerializers[docName][method].bind(apiSerializers[docName]);
+  } else if (apiSerializers[docName]?.all) {
+    debug(`Calling ${docName}.all`);
+    return apiSerializers[docName].all.bind(apiSerializers[docName]);
+  }
 
-    debug(`Returning as-is`);
-    return false;
+  debug(`Returning as-is`);
+  return false;
 };
 
 /**
@@ -93,51 +93,51 @@ const getBestMatchSerializer = function (apiSerializers, docName, method) {
  * @param {import('@tryghost/api-framework').Frame} frame
  */
 module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
-    debug('output');
+  debug('output');
 
-    const tasks = [];
+  const tasks = [];
 
-    if (!apiConfig) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiConfig) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    if (!apiSerializers) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiSerializers) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    // ##### API VERSION RESOURCE SERIALIZATION
+  // ##### API VERSION RESOURCE SERIALIZATION
 
-    if (apiSerializers.all?.before) {
-        tasks.push(function allSerializeBefore() {
-            return apiSerializers.all.before(response, apiConfig, frame);
-        });
-    }
+  if (apiSerializers.all?.before) {
+    tasks.push(function allSerializeBefore() {
+      return apiSerializers.all.before(response, apiConfig, frame);
+    });
+  }
 
-    const customSerializer = getBestMatchSerializer(
-        apiSerializers,
-        apiConfig.docName,
-        apiConfig.method,
-    );
-    const defaultSerializer = getBestMatchSerializer(apiSerializers, 'default', apiConfig.method);
+  const customSerializer = getBestMatchSerializer(
+    apiSerializers,
+    apiConfig.docName,
+    apiConfig.method,
+  );
+  const defaultSerializer = getBestMatchSerializer(apiSerializers, 'default', apiConfig.method);
 
-    if (customSerializer) {
-        // CASE: custom serializer exists
-        tasks.push(function doCustomSerializer() {
-            return customSerializer(response, apiConfig, frame);
-        });
-    } else if (defaultSerializer) {
-        // CASE: Fall back to default serializer
-        tasks.push(function doDefaultSerializer() {
-            return defaultSerializer(response, apiConfig, frame);
-        });
-    }
+  if (customSerializer) {
+    // CASE: custom serializer exists
+    tasks.push(function doCustomSerializer() {
+      return customSerializer(response, apiConfig, frame);
+    });
+  } else if (defaultSerializer) {
+    // CASE: Fall back to default serializer
+    tasks.push(function doDefaultSerializer() {
+      return defaultSerializer(response, apiConfig, frame);
+    });
+  }
 
-    if (apiSerializers.all?.after) {
-        tasks.push(function allSerializeAfter() {
-            return apiSerializers.all.after(apiConfig, frame);
-        });
-    }
+  if (apiSerializers.all?.after) {
+    tasks.push(function allSerializeAfter() {
+      return apiSerializers.all.after(apiConfig, frame);
+    });
+  }
 
-    debug(tasks);
-    return sequence(tasks);
+  debug(tasks);
+  return sequence(tasks);
 };

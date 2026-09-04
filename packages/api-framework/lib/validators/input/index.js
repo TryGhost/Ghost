@@ -1,5 +1,5 @@
 module.exports = {
-    get all() {
-        return require('./all');
-    },
+  get all() {
+    return require('./all');
+  },
 };
