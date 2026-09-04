@@ -210,10 +210,11 @@ describe('Email Service', function () {
       const newsletter = createModel({
         status: 'archived',
       });
-      await assert.rejects(
-        service.checkCanSendEmail(newsletter, 'all'),
-        /Cannot send email to archived newsletters/,
-      );
+      await assert.rejects(service.checkCanSendEmail(newsletter, 'all'), (err) => {
+        assert.equal(err.message, 'Cannot send email to archived newsletters');
+        assert.equal(err.code, 'NEWSLETTER_ARCHIVED');
+        return true;
+      });
     });
 
     it('Throws if over member limit', async function () {

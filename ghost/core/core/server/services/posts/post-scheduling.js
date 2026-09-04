@@ -4,6 +4,9 @@ const moment = require('moment');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 const api = require('../../api').endpoints;
+const logging = require('@tryghost/logging');
+const { NEWSLETTER_ARCHIVED } = require('../email-service/error-codes');
+const { POST_UNSCHEDULE_API_DATA } = require('./unschedule');
 
 const messages = {
   jobPublishInThePast: 'Use the force flag to publish a post in the past.',
@@ -68,10 +71,42 @@ exports.publish = async (resourceType, id, force, options) => {
     },
   ];
 
-  const editResult = await api[resourceType].edit(
-    editedResource,
-    _.pick(options, ['context', 'id', 'transacting', 'forUpdate']),
-  );
+  let editResult;
+  try {
+    editResult = await api[resourceType].edit(
+      editedResource,
+      _.pick(options, ['context', 'id', 'transacting', 'forUpdate']),
+    );
+  } catch (err) {
+    const isNewsletterArchivedError =
+      resourceType === 'posts' &&
+      err &&
+      typeof err === 'object' &&
+      'code' in err &&
+      err.code === NEWSLETTER_ARCHIVED;
+    if (isNewsletterArchivedError) {
+      await api[resourceType].edit(
+        {
+          [resourceType]: [
+            {
+              ...POST_UNSCHEDULE_API_DATA,
+              updated_at: moment(preScheduledResource.updated_at).toISOString(true),
+            },
+          ],
+        },
+        _.pick(options, ['context', 'id', 'transacting', 'forUpdate']),
+      );
+      logging.warn(
+        {
+          postId: id,
+          newsletterId: preScheduledResource.newsletter?.id,
+          code: err.code,
+        },
+        'Scheduled post moved to draft because its newsletter is archived',
+      );
+    }
+    throw err;
+  }
   const scheduledResource = editResult[resourceType][0];
 
   return { scheduledResource, preScheduledResource };
