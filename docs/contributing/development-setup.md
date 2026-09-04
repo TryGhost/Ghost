@@ -156,6 +156,34 @@ the one production receives; the command warns about this at startup and Ghost
 logs an error when a mismatched event arrives. Use it only when the payload
 shape does not matter.
 
+### Test a paid membership
+
+Start `pnpm dev:stripe`, then connect a Stripe test-mode account in Ghost Admin
+under **Settings → Tiers**. Ghost registers the temporary webhook endpoint when
+the connection settings are saved. Follow the development log's instruction to
+restart if registration could not happen during the first connection. The
+default command does not use `stripe login` or the locally installed Stripe
+CLI.
+
+Sign up for a paid membership through the local site's Portal using a
+[Stripe test card](https://docs.stripe.com/testing), such as
+`4242 4242 4242 4242` with any future expiry date and any three-digit CVC. Never
+use a real card. Confirm that the member becomes paid in Admin and that the
+corresponding webhook appears in the Ghost development logs.
+
+When using the `--listen` fallback, `STRIPE_SECRET_KEY` must be a test-mode key
+for the same Stripe account connected to Ghost.
+
+Automated browser tests must use the E2E suite's fake Stripe service rather than
+a real account. Enable it with `test.use({stripeEnabled: true})`; this gives the
+test an isolated Ghost environment, fake Checkout page, Stripe test service,
+and signed webhook delivery. See the
+[E2E Stripe fixture guide](../../e2e/README.md#stripe-fixtures) and existing
+Stripe-backed tests for the current helpers and examples.
+
+For the implementation behind Stripe Connect, tier creation, and subscription
+checkout, see [Stripe flows](../codebase/stripe-flows.md).
+
 ## Data and email
 
 After creating the local owner account, populate a development site with stable
