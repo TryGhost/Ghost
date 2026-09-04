@@ -156,6 +156,12 @@ gh pr view <pr-number> --repo TryGhost/Ghost \
 Resolve real failures and base conflicts without flattening the subtree merge.
 Verify the graph again after any branch update.
 
+The PR title must begin `[Don't merge]`, and the first paragraph of its body
+must state that the normal squash and rebase controls must not be used. Include
+the guarded merge command with the actual PR number and source split tip in the
+body. Keep those protections in place through review and green CI so a reviewer
+cannot accidentally apply Ghost's normal merge policy.
+
 ## Use the guarded merge operation
 
 The merge must retain both the subtree topology and the import branch as the
@@ -171,6 +177,12 @@ An authorized admin should run:
     <source-split-tip> \
     --confirm
 ```
+
+The agent's handoff must substitute the real PR number and source split tip and
+show `--dry-run` first, followed by `--confirm`; placeholders are not an
+acceptable final handoff. The user should run the command from the Ghost
+repository root. Do not use GitHub's normal squash/rebase buttons or manually
+remove the `[Don't merge]` prefix before running it.
 
 Use `--dry-run` instead of `--confirm` for read-only preflight. The script:
 

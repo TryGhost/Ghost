@@ -151,6 +151,12 @@ in the handoff. Keep mechanical formatting in a focused integration commit so
 the subtree commit remains an exact history import and reviewers can distinguish
 format-only changes from behavioral adaptation.
 
+Open the history-import PR with a title beginning `[Don't merge]`. Put a
+prominent warning at the top of its body that squash and rebase merges destroy
+the imported ancestry and that the PR must only be merged with the guarded
+history script below. Do not remove the prefix or warning merely because CI is
+green: they remain until the authorized user performs the exceptional merge.
+
 For a pilot or first use, include a structured gap report in the handoff:
 
 - `Observed`: the exact failure or ambiguity and the command/state that exposed it;
@@ -182,6 +188,14 @@ An agent without admin authority should provide that exact handoff rather than
 attempting a workaround. The script performs preflight checks, records and
 temporarily changes the setting, uses the correct merge form, restores the
 setting, and verifies the resulting history.
+
+Every merge-checkpoint handoff must repeat the warning and render a directly
+copyable command containing the actual PR number and recorded source split tip;
+do not leave placeholders for the user to infer. Also provide the read-only
+`--dry-run` form first. Explicitly say not to use GitHub's normal squash/rebase
+buttons and not to remove `[Don't merge]` manually. The skill must never merge
+the PR unless the user separately authorizes that administrative action after
+seeing these instructions.
 
 Afterward, independently fetch `main` and confirm the source split tip is an
 ancestor before starting source-repository cleanup.
