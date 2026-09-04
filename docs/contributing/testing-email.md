@@ -1,6 +1,6 @@
 # Receiving and Testing Emails
 
-## Local email
+## Use Mailpit by default
 
 The normal development environment starts Mailpit with Ghost. Run:
 
@@ -8,18 +8,50 @@ The normal development environment starts Mailpit with Ghost. Run:
 pnpm dev
 ```
 
-Emails sent by the development site are captured at
+Transactional emails sent by the development site are captured at
 [http://localhost:8025](http://localhost:8025) rather than delivered. The Docker
 development configuration connects Ghost to Mailpit automatically.
 
-## Testing with Mailgun
+Use Mailpit for ordinary local work. It is quick, keeps test messages on your
+machine, and does not require provider credentials. It does not exercise the
+Mailgun API used for newsletters and other bulk email.
 
-For testing transactional email delivery, configure Ghost's `mail` setting with
-an SMTP provider. For testing newsletter delivery, configure the separate
-Mailgun settings used by Ghost's bulk email service. Mailgun sandbox domains
-only send to recipients that have been added and verified in Mailgun.
+## Test with Mailgun
 
-Keep credentials in your local configuration and do not commit them.
+Use the Mailgun development variant when the provider interaction is part of
+the behaviour you need to test. It routes transactional, newsletter, and
+automation email through the Mailgun API:
 
-Most development does not need real delivery. Use Mailpit unless the behavior
-being tested depends on the external provider.
+```bash
+pnpm dev:mailgun
+```
+
+Copy [`.env.example`](../../.env.example) to `.env` and provide a test Mailgun
+domain and API key. The example also documents the optional sender and the
+different API URLs required by EU domains. Never commit `.env` or provider
+credentials.
+
+If you use a Mailgun sandbox domain, add and verify each intended recipient in
+Mailgun before testing delivery.
+
+This sends real email through an external service. Use test addresses and the
+smallest useful recipient list. Return to `pnpm dev` when provider behaviour is
+not under test.
+
+## Automated tests
+
+Automated tests must not call the real Mailgun API. Browser E2E tests can enable
+the suite's fake Mailgun service:
+
+```ts
+test.use({mailgunEnabled: true});
+```
+
+The fake service records Mailgun requests and forwards rendered messages to
+Mailpit, where tests can inspect them with the existing email fixture. See the
+[E2E workspace README](../../e2e/README.md) and existing newsletter-send tests
+for the current fixtures and examples.
+
+Ghost Core tests should use the existing Mailgun stubs and email test utilities
+instead of provider credentials. Start with the [testing guide](testing.md) to
+choose the suite closest to the behaviour being changed.

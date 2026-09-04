@@ -114,6 +114,7 @@ environment and adds the listed tooling:
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
 | `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; requires Tailscale, see below            |
+| `pnpm dev:mailgun`         | Transactional, newsletter, and automation email through the Mailgun API                       |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
