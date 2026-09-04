@@ -1,12 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import {
-  PAYMENT_GRACE_MS,
-  dismissLock,
-  markPaymentAttempt,
-  useDunningState,
-} from './use-dunning-state';
+import { dismissLock, useDunningState } from './use-dunning-state';
 
 const { mockUseBrowseConfig, mockUseSubscriptionStatus } = vi.hoisted(() => ({
   mockUseBrowseConfig: vi.fn(),
@@ -186,17 +181,14 @@ describe('useDunningState', () => {
     expect(result.current).toMatchObject({ lockDismissed: false });
   });
 
-  test('stands down during the payment grace period, then returns', () => {
-    markPaymentAttempt();
+  test('keeps reporting state after a dismissal so the warning banner stays up', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
 
     const { result } = renderHook(() => useDunningState());
-    expect(result.current).toBeNull();
-
-    vi.setSystemTime(new Date(NOW.getTime() + PAYMENT_GRACE_MS + 60_000));
     act(() => {
-      vi.advanceTimersByTime(60_000); // fire the hook's minute tick
+      dismissLock(result.current!);
     });
 
-    expect(result.current).not.toBeNull();
+    expect(result.current).toMatchObject({ phase: 'locked', urgent: true, lockDismissed: true });
   });
 });

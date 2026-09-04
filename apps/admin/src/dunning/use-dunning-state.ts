@@ -11,7 +11,7 @@ export interface DunningState {
   daysLeft: number;
   /** Escalated styling within the warning phase (last stretch before the lock). */
   urgent: boolean;
-  /** The locked takeover was closed by the user for this dunning episode. */
+  /** The locked takeover was stood down this session (closed, or a Pay now CTA followed). */
   lockDismissed: boolean;
   paymentFailedAt: Date;
   suspendsAt: Date;
@@ -26,38 +26,6 @@ const LOCK_AT_FRACTION = 0.75;
 
 /** The warning banner escalates its styling past this fraction of the window. */
 const URGENT_AT_FRACTION = 0.25;
-
-/**
- * After clicking "Pay now" the dunning UI stands down for this long, so a
- * user who just paid is not chased by a stale warning while the payment
- * webhooks and the config rewrite catch up.
- */
-export const PAYMENT_GRACE_MS = 10 * 60 * 1000;
-
-const GRACE_STORAGE_KEY = 'ghost-dunning-grace-until';
-
-function readGraceUntil(): number {
-  try {
-    const raw = window.sessionStorage.getItem(GRACE_STORAGE_KEY);
-    const value = raw === null ? NaN : Number(raw);
-    return Number.isFinite(value) ? value : 0;
-  } catch {
-    // Storage can be unavailable (private mode, blocked); no grace then.
-    return 0;
-  }
-}
-
-/**
- * Marks a payment attempt, starting the grace period. Called when the user
- * follows the "Pay now" CTA.
- */
-export function markPaymentAttempt(): void {
-  try {
-    window.sessionStorage.setItem(GRACE_STORAGE_KEY, String(Date.now() + PAYMENT_GRACE_MS));
-  } catch {
-    // Without storage the grace period is simply not persisted.
-  }
-}
 
 const LOCK_DISMISSED_KEY = 'ghost-dunning-lock-dismissed-for';
 
@@ -83,9 +51,12 @@ function subscribeLockDismissed(listener: () => void): () => void {
 }
 
 /**
- * Dismisses the locked takeover. Keyed by `paymentFailedAt` and scoped to the
- * session, so a reload in a later session — or a new payment failure — brings
- * the takeover back. The urgent warning banner stays up underneath.
+ * Stands the locked takeover down for this session. Called when the user
+ * closes the takeover and when they follow a "Pay now" CTA — either way
+ * they've seen the message, so the urgent warning banner carries it from
+ * there instead of the full page re-asserting itself. Keyed by
+ * `paymentFailedAt` and scoped to the session, so a later session — or a new
+ * payment failure — brings the takeover back.
  */
 export function dismissLock(state: DunningState): void {
   inMemoryLockDismissedFor = state.paymentFailedAt.toISOString();
@@ -111,9 +82,9 @@ function parseDate(value: string | undefined): Date | null {
  *
  * Returns `null` when there is nothing to show: no dunning block, a malformed
  * one (the /config/ response isn't runtime-validated, so guard against a
- * misconfigured host config), a live subscription that has become active (the
- * billing app reports payment over the Ember bridge before the server config
- * catches up), or a recent "Pay now" click still within the grace period.
+ * misconfigured host config), or a live subscription that has become active
+ * (the billing app reports payment over the Ember bridge before the server
+ * config catches up).
  *
  * The phase is computed client-side from the position within the
  * paymentFailedAt -> suspendsAt window so no config rewrite is needed for the
@@ -156,10 +127,6 @@ export function useDunningState(): DunningState | null {
   // The billing app reported a live, active subscription: payment went
   // through, only the restart-scoped config is stale.
   if (subscriptionStatus?.subscription?.status === 'active') {
-    return null;
-  }
-
-  if (now < readGraceUntil()) {
     return null;
   }
 
