@@ -90,11 +90,11 @@ export interface User {
 }
 
 export interface GhostConfig {
-  hostSettings__billing__enabled?: string;
-  hostSettings__billing__url?: string;
-  hostSettings__forceUpgrade?: string;
-  hostSettings__limits__customIntegrations__disabled?: string;
-  hostSettings__limits__customIntegrations__error?: string;
+  // Any hostSettings path, spelled the way the environment does: double underscores for
+  // nesting, so `hostSettings__limits__staff__max`. Open rather than enumerated, because a
+  // limit is just configuration and a test wanting a new one should not also need a new
+  // field here.
+  [key: `hostSettings__${string}`]: string | undefined;
 }
 
 export interface GhostInstanceFixture {
