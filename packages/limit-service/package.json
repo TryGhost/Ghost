@@ -1,39 +1,66 @@
 {
-    "name": "@tryghost/limit-service",
-    "version": "0.0.0",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/TryGhost/Ghost.git",
-        "directory": "packages/limit-service"
-    },
-    "author": "Ghost Foundation",
-    "license": "MIT",
-    "main": "index.js",
-    "exports": "./index.js",
-    "scripts": {
-        "dev": "echo \"Implement me!\"",
-        "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-        "lint": "eslint . --ext .js --cache",
-        "posttest": "yarn lint"
-    },
-    "files": [
-        "index.js",
-        "lib"
-    ],
-    "devDependencies": {
-        "c8": "12.0.0",
-        "mocha": "11.8.0",
-        "should": "13.2.3",
-        "sinon": "22.1.0"
-    },
-    "dependencies": {
-        "@tryghost/errors": "2.2.1",
-        "lodash": "4.18.1",
-        "luxon": "3.7.2"
-    },
-    "private": true,
-    "ghostPackage": {
-        "goldenPath": "migration",
-        "reason": "Imported verbatim from TryGhost/SDK at af752ec. Still CommonJS with mocha tests, and still contains Ghost's database queries. Modernised in the change that follows this one."
+  "name": "@tryghost/limit-service",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Decides whether a site's host allows something, given the limits it configured",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "packages/limit-service"
+  },
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
     }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/errors": "catalog:",
+    "lodash": "catalog:",
+    "luxon": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/lodash": "catalog:",
+    "@types/luxon": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
+  }
 }

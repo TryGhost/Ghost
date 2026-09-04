@@ -316,21 +316,22 @@ describe('Host limits', function () {
     });
   });
 
-  // The two below are the behaviours worth pinning before anything moves, because both are
-  // load-bearing and neither is written down anywhere. They are also the two the follow-up
-  // refactor deliberately changes, so a diff to these tests is the signal that it did.
   describe('limits it cannot build', function () {
-    it('loses every other limit along with the one it cannot build', async function () {
-      // An allowlist limit with an empty list cannot be built, and building stops there:
-      // the limits configured alongside it never load either. A site is then unlimited in
-      // ways nobody asked for, and the only trace is a warning in the log.
+    it('keeps every other limit when one cannot be built', async function () {
+      // An allowlist limit with an empty list cannot be built. It is now reported and
+      // skipped on its own, where before it stopped the loading and took every limit
+      // configured alongside it, leaving a site unlimited in ways nobody asked for.
       await hostLimits.setHostLimits({
         customThemes: { allowlist: [] },
         limitStripeConnect: { disabled: true },
       });
 
       assert.equal(limits.isLimited('customThemes'), false);
-      assert.equal(limits.isLimited('limitStripeConnect'), false);
+      assert.equal(limits.isDisabled('limitStripeConnect'), true);
+      assert.equal(
+        limits.problems.some((problem) => problem.limit === 'customThemes'),
+        true,
+      );
     });
 
     it('keeps a site serving rather than failing to start', async function () {
@@ -339,46 +340,69 @@ describe('Host limits', function () {
       await agent.get('config/').expectStatus(200);
     });
 
-    it('registers a periodic limit whose start date cannot be read', async function () {
-      // It counts from that date, so an unreadable one leaves the limit counting against
-      // nothing while reporting itself as applied.
+    it('refuses a periodic limit whose start date cannot be read', async function () {
+      // A period has to start somewhere. An unreadable date used to leave the limit
+      // registered and counting against nothing, which reads as working and is not.
       await hostLimits.setHostLimits(
         { emails: { maxPeriodic: 1 } },
         { subscription: { start: 'not a date' } },
       );
 
-      assert.equal(limits.isLimited('emails'), true);
+      assert.equal(limits.isLimited('emails'), false);
+      assert.equal(
+        limits.problems.some((problem) => problem.limit === 'emails'),
+        true,
+      );
     });
   });
 
   describe('the package Ghost is built against', function () {
-    it('exports something a caller can construct directly', function () {
+    it('exports a service a caller can construct directly', function () {
       // Two places construct the service themselves rather than using Ghost's, so the shape
-      // of the export is part of what a change to this package must not break.
-      const exported = require('@tryghost/limit-service');
+      // of the export is part of what a change to this package must not break. It is a
+      // module now rather than the class itself, which is why those two were updated.
+      const { LimitService } = require('@tryghost/limit-service');
 
-      assert.equal(typeof exported, 'function');
-      assert.doesNotThrow(() => new exported());
+      assert.equal(typeof LimitService, 'function');
+      assert.doesNotThrow(() => new LimitService());
     });
   });
 
   describe('limits it does not recognise', function () {
-    it('ignores a limit name the code has never heard of, leaving the feature available', async function () {
+    it('applies a limit name this build has never heard of', async function () {
+      // A host can switch a feature off before the release that knows the name ships. The
+      // limit loads and answers; nothing asks about it until code does, so it is inert
+      // until then rather than rejected up front.
       await hostLimits.setHostLimits({ aLimitNobodyShipped: { disabled: true } });
 
-      assert.equal(limits.isLimited('aLimitNobodyShipped'), false);
+      assert.equal(limits.isLimited('aLimitNobodyShipped'), true);
+      assert.equal(limits.isDisabled('aLimitNobodyShipped'), true);
     });
 
-    it('drops a known limit written in another case, leaving the site unlimited', async function () {
+    it('applies a known limit however the host spelled it', async function () {
       await hostLimits.setHostLimits({ limit_stripe_connect: { disabled: true } });
       stubStripeToken();
 
-      // The name is matched camelCased but its settings are read under the original key, so
-      // the limit loads with nothing in it and the site is not actually limited.
       await agent
         .put('settings/')
         .body({ settings: [{ key: 'stripe_connect_integration_token', value: 'token' }] })
-        .expectStatus(200);
+        .expectStatus(403);
+    });
+
+    it('says so, and keeps every other limit, when one cannot be applied', async function () {
+      // A periodic limit with no billing period to count from used to take down every limit
+      // loaded after it. Now it is reported and skipped on its own.
+      await hostLimits.setHostLimits({
+        emails: { maxPeriodic: 1 },
+        limitStripeConnect: { disabled: true },
+      });
+
+      assert.equal(limits.isLimited('emails'), false);
+      assert.equal(limits.isDisabled('limitStripeConnect'), true);
+      assert.equal(
+        limits.problems.some((problem) => problem.limit === 'emails'),
+        true,
+      );
     });
   });
 });
