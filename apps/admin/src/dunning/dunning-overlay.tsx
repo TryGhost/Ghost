@@ -4,7 +4,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { useDunningState, dismissLock } from './use-dunning-state';
+import { useDunningState, dismissLock, dismissLockQuietly } from './use-dunning-state';
 import { useDunningLockTakeover } from './use-dunning-lock-takeover';
 import { useOwnerUser } from './use-owner-user';
 import { EXPORT_URL, PAY_URL, lockedHeadline, lockedMessage } from './dunning-copy';
@@ -83,7 +83,7 @@ export function DunningOverlay() {
         {isOwner ? (
           <Inline align="center" className="mt-4" gap="md">
             <Button size="lg" asChild>
-              <a href={PAY_URL} onClick={() => dismissLock(state)}>
+              <a href={PAY_URL} onClick={() => dismissLockQuietly(state)}>
                 Pay now
               </a>
             </Button>
