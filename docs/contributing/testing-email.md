@@ -31,6 +31,9 @@ domain and API key. The example also documents the optional sender and the
 different API URLs required by EU domains. Never commit `.env` or provider
 credentials.
 
+The development variant supplies Ghost's Mailgun configuration for you. Do not
+add SMTP credentials or Mailgun settings to `config.local.json`.
+
 If you use a Mailgun sandbox domain, add and verify each intended recipient in
 Mailgun before testing delivery.
 
@@ -49,8 +52,9 @@ test.use({mailgunEnabled: true});
 
 The fake service records Mailgun requests and forwards rendered messages to
 Mailpit, where tests can inspect them with the existing email fixture. See the
-[E2E workspace README](../../e2e/README.md) and existing newsletter-send tests
-for the current fixtures and examples.
+[E2E workspace README](../../e2e/README.md) and the
+[newsletter-send test](../../e2e/tests/admin/posts/newsletter-send.test.ts) for
+the current fixtures and an example.
 
 Ghost Core tests should use the existing Mailgun stubs and email test utilities
 instead of provider credentials. Start with the [testing guide](testing.md) to

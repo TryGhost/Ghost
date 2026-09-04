@@ -47,7 +47,7 @@ pnpm dev:stripe --listen
 This uses `stripe listen` in Docker and requires `STRIPE_SECRET_KEY` in the
 environment or a local `.env` file. The key must be a test-mode key for the same
 Stripe account connected to Ghost. The command does not require a local Stripe
-CLI installation or `stripe login`.
+CLI installation or `stripe login`. Never commit `.env` or Stripe credentials.
 
 Stripe CLI renders events at the account's default API version rather than the
 version Ghost pins. The command warns about this difference, and Ghost logs an
@@ -63,8 +63,8 @@ error when it receives a mismatched event.
 3. Sign up for a paid membership through the local site's Portal using a
    [Stripe test card](https://docs.stripe.com/testing), such as
    `4242 4242 4242 4242` with any future expiry date and any three-digit CVC.
-4. Confirm that the member becomes paid in Admin and that the webhook appears
-   in the Ghost development logs.
+4. Confirm that the member becomes paid in Admin. This verifies that Ghost
+   received and processed the webhook.
 
 ## Automated tests
 
@@ -77,8 +77,9 @@ test.use({stripeEnabled: true});
 
 This gives the test an isolated Ghost environment, fake Checkout page, Stripe
 test service, and signed webhook delivery. See the
-[E2E Stripe fixture guide](../../e2e/README.md#stripe-fixtures) and existing
-Stripe-backed tests for the current helpers and examples.
+[E2E Stripe fixture guide](../../e2e/README.md#stripe-fixtures) and the
+[subscription lifecycle test](../../e2e/tests/public/stripe-webhook-subscription-lifecycle.test.ts)
+for the current helpers and an example.
 
 For the implementation behind Stripe Connect, tier creation, and subscription
 checkout, see [Stripe flows](../codebase/stripe-flows.md).
