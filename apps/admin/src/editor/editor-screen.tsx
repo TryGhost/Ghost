@@ -3,6 +3,7 @@ import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
@@ -33,6 +34,7 @@ import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
@@ -123,6 +125,7 @@ function EditorContent({
 }: EditorContentProps) {
   const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
   const featureImage = useFeatureImageBinding(session, record);
+  const leaveGuard = useEditorLeaveGuard(session, postType);
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -152,6 +155,7 @@ function EditorContent({
         />
       </div>
       {snippetDialog}
+      <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
     </Stack>
   );
 }

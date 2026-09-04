@@ -31,6 +31,7 @@ export const postPreviewUnavailable = 'post-preview-unavailable';
 export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewSaveFailed = 'post-preview-save-failed';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
+export const editorLeaveDialog = 'editor-leave-dialog';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -91,3 +92,5 @@ export const featureImageAltLabel = 'Alt text for feature image';
 export const featureImageUnsplashButton = 'Select feature image from Unsplash';
 export const removeFeatureImageButton = 'Remove feature image';
 export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';
+export const stayInEditorButton = 'Stay';
+export const leaveEditorButton = 'Leave';
