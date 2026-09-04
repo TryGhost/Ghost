@@ -9,9 +9,10 @@ Move a package from another TryGhost repository into Ghost without losing its
 history or creating a period where neither repository owns it. Keep migration
 mechanics separate from Ghost's lifetime package standards.
 
-When handing this workflow to a human operator, link
-[`README.md`](README.md), which explains the two-step import and guarded merge
-in human-facing terms.
+The contributor workflow is documented in
+[`docs/contributing/internal-package-migrations.md`](../../../docs/contributing/internal-package-migrations.md).
+Keep that guide aligned when this skill changes its outputs or human
+checkpoints.
 
 ## Authority boundaries
 

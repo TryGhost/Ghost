@@ -97,6 +97,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Error handling](practices/error-handling.md)
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
+- [Internal package migrations](contributing/internal-package-migrations.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
