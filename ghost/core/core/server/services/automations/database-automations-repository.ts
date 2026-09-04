@@ -62,12 +62,6 @@ interface AutomationRow {
   updated_at: DatabaseDate;
 }
 
-interface AutomationBrowseRow extends AutomationRow {
-  last_run_created_at: DatabaseDate | null;
-  total_run_count: string | number | null;
-  in_progress_run_count: string | number | null;
-}
-
 interface ActionRow {
   id: string;
   type: 'wait' | 'send_email';
@@ -1070,32 +1064,9 @@ async function loadAutomationBySlug(
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
-  const inProgressRuns = trx('automation_run_steps')
-    .distinct('automation_run_id')
-    .where('status', 'pending')
-    .as('in_progress_runs');
-  const runStats = trx('automation_runs')
-    .select('automation_runs.automation_id')
-    .max({ last_run_created_at: 'automation_runs.created_at' })
-    .count({ total_run_count: '*' })
-    .count({ in_progress_run_count: 'in_progress_runs.automation_run_id' })
-    .leftJoin(inProgressRuns, 'automation_runs.id', 'in_progress_runs.automation_run_id')
-    .groupBy('automation_runs.automation_id')
-    .as('run_stats');
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
-    .select(
-      'automations.id',
-      'automations.slug',
-      'automations.name',
-      'automations.status',
-      'automations.created_at',
-      'automations.updated_at',
-      'run_stats.last_run_created_at',
-      'run_stats.total_run_count',
-      'run_stats.in_progress_run_count',
-    )
-    .leftJoin(runStats, 'automations.id', 'run_stats.automation_id')
+    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
     .orderBy('automations.name');
 }
 
@@ -1494,17 +1465,8 @@ function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
   };
 }
 
-function buildAutomationBrowseResult(automation: AutomationBrowseRow): AutomationBrowseResult {
-  return {
-    ...buildAutomationSummary(automation),
-    stats: {
-      last_run_created_at: automation.last_run_created_at
-        ? fromDatabaseDate(automation.last_run_created_at)
-        : null,
-      total_run_count: Number(automation.total_run_count ?? 0),
-      in_progress_run_count: Number(automation.in_progress_run_count ?? 0),
-    },
-  };
+function buildAutomationBrowseResult(automation: AutomationRow): AutomationBrowseResult {
+  return buildAutomationSummary(automation);
 }
 
 function serializeDate(date: DatabaseDate) {
