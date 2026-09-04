@@ -41,6 +41,13 @@ remote branch is gone.
 Before importing, record and compare the destination `HEAD` and `origin/main`;
 they must match. Recheck the first parent immediately after the subtree commit.
 
+Initialize a fresh Ghost worktree with `pnpm run setup`, not `pnpm setup`.
+`pnpm setup` is a pnpm CLI command that configures pnpm's global home and may
+edit shell startup files; the explicit `run` is required to invoke Ghost's
+package script. Before continuing, confirm the command installed the workspace,
+initialized the submodules and configured the repository-local blame ignore
+file as described by Ghost's root `setup` script.
+
 ## Confirm this workflow applies
 
 Before changing either repository, record the source repository, its default
@@ -120,7 +127,13 @@ its destination state:
 
 Document temporary named-catalog entries for the modernization follow-up. Never
 inline dependency versions; Ghost's strict catalog policy still applies. Do not
-import additional packages implicitly.
+import additional packages implicitly. After `pnpm install`, inspect the
+lockfile's resolved override and package snapshot entries for every translated
+dependency. Repository-wide pnpm overrides take precedence over catalog
+references without changing the dependency declaration in `package.json`; if a
+global override changes an imported package's required version, add the
+narrowest package-scoped override that preserves the source release and record
+why it is needed.
 
 If the package is legacy JavaScript or CommonJS, read
 [`references/legacy-integration.md`](references/legacy-integration.md)
@@ -132,8 +145,11 @@ history crosses into the source repository before opening the PR.
 Before opening the PR, also verify the source split is reachable from the branch
 tip, the consumer resolves the workspace package through its production import
 path, package lint and tests pass through Nx, relevant consumer tests pass, the
-full build passes, and the Ghost archive contains the internal package. Record
-the exact commit IDs and commands in the handoff.
+repository formatting check passes, the full build passes, and the Ghost
+archive contains the internal package. Record the exact commit IDs and commands
+in the handoff. Keep mechanical formatting in a focused integration commit so
+the subtree commit remains an exact history import and reviewers can distinguish
+format-only changes from behavioral adaptation.
 
 For a pilot or first use, include a structured gap report in the handoff:
 
