@@ -45,6 +45,50 @@ When a regression crosses several layers, prefer a focused test at the lowest
 layer that proves the fix. Add a broader acceptance or browser E2E test when the
 integration between layers is itself the behavior being protected.
 
+## Write Useful Tests
+
+- Test observable behaviour rather than private implementation details. A
+  refactor that preserves behaviour should not require unrelated test changes.
+- Use the smallest test boundary that provides confidence. Unit tests should
+  not boot Ghost or use a database; use an integration or server E2E test when
+  the database, HTTP boundary, or interaction between modules is the behaviour.
+- Set up only the data relevant to the scenario. Prefer existing fixtures and
+  factories over large shared datasets or dependencies on another test.
+- Never call a real external service from an automated test. Use the suite's
+  existing fake service, mock, or request interceptor and make its expectations
+  specific enough to catch the wrong method, path, payload, or request count.
+- Keep time, randomness, environment, and ordering deterministic. Restore
+  modified globals, timers, mocks, configuration, and singleton state.
+- Assert the result a user or caller depends on, including important side
+  effects. Avoid assertions that merely repeat how the implementation works.
+
+Snapshot tests are useful for stable, structured output, but a generated
+snapshot is not proof that the output is correct. Review every changed snapshot
+before committing it and add focused assertions for behaviour that should be
+obvious to a reader.
+
+## Coverage
+
+Coverage helps find code that a test never exercises; it does not replace
+meaningful assertions. Ghost Core uses Vitest's V8 coverage provider. CI applies
+separate thresholds to the integration and server E2E lanes and uploads their
+reports, together with Admin coverage, to Codecov. The current thresholds and
+excluded files live in the relevant Vitest configuration rather than in this
+guide.
+
+Do not work towards an assumed repository-wide percentage. Add the tests needed
+to protect the changed behaviour and treat an unexpected coverage reduction as
+a prompt to inspect what is missing.
+
+To inspect Ghost Core unit coverage locally, run:
+
+```bash
+cd ghost/core
+pnpm test:unit --coverage
+```
+
+The HTML report is written to `ghost/core/coverage/index.html`.
+
 For physical-device testing and URL configurations such as HTTPS,
 subdirectories, or a separate Admin origin, see
 [Testing development URLs and devices](testing-development-urls.md).
@@ -139,6 +183,44 @@ Use `pnpm test:e2e:debug` for Ghost E2E debug logs. See the
 isolation, fixtures, and debugging, and
 [Writing Browser E2E Tests](e2e-testing.md) for test conventions, selectors,
 and Page Objects.
+
+## Diagnose Flaky Tests
+
+A test is flaky when the same code and inputs can produce different results.
+Do not assume a passing retry means the test is harmless: the nondeterminism can
+come from application code as well as the test.
+
+Common causes include:
+
+- state shared between tests through a database, file, port, global, mock, or
+  singleton;
+- tests that depend on execution order or data created by another test;
+- fixed delays and assertions that run before an asynchronous operation has
+  reached an observable state;
+- uncontrolled time, randomness, timezone, network access, or external
+  services;
+- parallel tests competing for the same resource; and
+- a race or other nondeterminism in the application code itself.
+
+1. Re-run the smallest affected file or test, then run its containing group to
+   check for leaked state or order dependence.
+2. Read the first failure rather than relying on a later retry. Browser E2E
+   tests have retries disabled and retain a Playwright trace on failure.
+3. Reproduce with the same concurrency, timezone, service availability, and
+   isolation mode as the failing environment where those factors are relevant.
+4. Replace fixed delays with an observable state change. Use fake clocks for
+   time-dependent code and explicit fixtures for random or environment-derived
+   values.
+5. Check that each test owns its data and restores mocks, timers, globals, and
+   configuration. Cleanup belongs in suite hooks that still run when an
+   assertion fails.
+6. Fix the underlying race or isolation failure. Do not add a retry or increase
+   a timeout unless the operation is genuinely allowed to take longer.
+
+For browser failures, use `pnpm test:e2e --debug`, the retained Playwright trace,
+or the preserved-environment workflow in the E2E documentation. Ember Admin
+tests can temporarily use `await this.pauseTest()` as described in its README.
+Remove debugging changes before committing.
 
 ## Run Ember Admin Tests
 
