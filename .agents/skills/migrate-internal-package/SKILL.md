@@ -41,12 +41,12 @@ remote branch is gone.
 Before importing, record and compare the destination `HEAD` and `origin/main`;
 they must match. Recheck the first parent immediately after the subtree commit.
 
-Initialize a fresh Ghost worktree with `pnpm run setup`, not `pnpm setup`.
+Initialize a fresh Ghost worktree with `pnpm bootstrap`, not `pnpm setup`.
 `pnpm setup` is a pnpm CLI command that configures pnpm's global home and may
-edit shell startup files; the explicit `run` is required to invoke Ghost's
-package script. Before continuing, confirm the command installed the workspace,
-initialized the submodules and configured the repository-local blame ignore
-file as described by Ghost's root `setup` script.
+edit shell startup files; it does not invoke Ghost's repository bootstrap.
+Before continuing, confirm the command installed the workspace, initialized the
+submodules and configured the repository-local blame ignore file as described
+by Ghost's root `bootstrap` script.
 
 ## Confirm this workflow applies
 
