@@ -231,6 +231,32 @@ describe('dunning UI', () => {
       expect(screen.getByText('Action needed: payment failed.')).toBeInTheDocument();
     });
 
+    test('the continue link dismisses like the cross', () => {
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+
+      render(<DunningOverlay />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Continue to my dashboard' }));
+
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+    });
+
+    test('following Pay now suppresses the takeover but keeps the banner', () => {
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+
+      render(
+        <>
+          <DunningOverlay />
+          <DunningBanner />
+        </>,
+      );
+
+      fireEvent.click(screen.getByRole('link', { name: 'Pay now' }));
+
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
+    });
+
     test('shows the imminent headline when the suspension date has passed', () => {
       mockUseBrowseConfig.mockReturnValue(configWithDunning(30));
 
