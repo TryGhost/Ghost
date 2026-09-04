@@ -329,6 +329,38 @@ describe('Post editor saving', () => {
   );
 
   it(
+    'reports a status the post reached elsewhere once a save refetches it',
+    async () => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+
+      // A later handler for the same route wins: from here the read answers
+      // with the post as someone else has just published it.
+      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+        posts: [
+          post({
+            id: POST_ID,
+            title: 'Hello from React',
+            slug: 'hello-from-react',
+            status: 'published',
+            lexical: buildLexicalParagraph('Hello from React'),
+            updated_at: '2026-01-01T00:01:00.000Z',
+            published_at: '2026-01-01T00:01:00.000Z',
+            tags: [],
+          }),
+        ],
+      });
+      await typeIntoBody(' and more');
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+
+      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Published');
+    },
+    SLOW,
+  );
+
+  it(
     'leaves tags alone when it saves',
     async () => {
       const saveApi = fakeSavablePost({ tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] });

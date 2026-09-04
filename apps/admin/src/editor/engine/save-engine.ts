@@ -198,6 +198,8 @@ export interface SaveEngine {
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
   reauthAbandoned(): void;
+  /** Leaves `conflict` once the caller has a document past the rejected `updated_at`. */
+  contentReloaded(updatedAt?: string): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -332,6 +334,10 @@ function toSaveError(cause: unknown): SaveError {
   return { kind: 'unknown', message, cause };
 }
 
+export function isCollisionToken(value: string | null | undefined): value is string {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
 function sameState(a: SaveEngineState, b: SaveEngineState): boolean {
   if (a.kind !== b.kind) {
     return false;
@@ -400,7 +406,7 @@ export function createSaveEngine<
   }
 
   // Errors persist until a save actually starts; timers arming or dropping do not clear them.
-  function deriveState(): SaveEngineState {
+  function deriveState({ keepHalt = true } = {}): SaveEngineState {
     if (frozen || isTerminal() || disposed) {
       return state;
     }
@@ -413,7 +419,7 @@ export function createSaveEngine<
           }
         : { kind: 'saving', intent: inFlight.command.kind };
     }
-    if (state.kind === 'error' || state.kind === 'conflict') {
+    if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
       return state;
     }
     if (debounce || timedCycle) {
@@ -853,6 +859,23 @@ export function createSaveEngine<
     setState({ kind: 'error', intent: slot.command.kind, error });
   }
 
+  // A server document that no longer carries the rejected updated_at ends the
+  // halt the collision caused. A candidate lets the caller check before replacing it.
+  function contentReloaded(updatedAt?: string): boolean {
+    const candidate = updatedAt ?? readSnapshot()?.updatedAt;
+    if (
+      disposed ||
+      state.kind !== 'conflict' ||
+      !isCollisionToken(candidate) ||
+      (staleUpdatedAt !== null && candidate === staleUpdatedAt)
+    ) {
+      return false;
+    }
+    staleUpdatedAt = null;
+    setState(deriveState({ keepHalt: false }));
+    return true;
+  }
+
   function queueSettled(): Promise<void> {
     return new Promise<void>((resolve) => {
       const check = () => {
@@ -951,6 +974,7 @@ export function createSaveEngine<
     subscribe,
     reauthSucceeded,
     reauthAbandoned,
+    contentReloaded,
     leaveRequested,
     dispose,
   };

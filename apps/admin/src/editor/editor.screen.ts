@@ -1,8 +1,13 @@
 import { page } from 'vitest/browser';
 import {
   addFeatureImageLabel,
+  conflictCancelReloadButton,
+  conflictCopyContentButton,
+  conflictDiscardAndReloadButton,
+  conflictReloadButton,
   editorBody,
   editorConflictBanner,
+  editorConflictReloadConfirm,
   editorExcerptInput,
   editorFeatureImage,
   editorFeatureImageCaption,
@@ -38,6 +43,19 @@ export const editorScreen = {
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
+  reloadAfterConflict: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictReloadButton }),
+  copyConflictedContent: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictCopyContentButton }),
+  conflictReloadConfirm: () => page.getByTestId(editorConflictReloadConfirm),
+  confirmConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictDiscardAndReloadButton }),
+  cancelConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
