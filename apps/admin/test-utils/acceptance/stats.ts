@@ -14,6 +14,7 @@ import {
   topPostViewsStat,
 } from '@tryghost/test-data';
 import type {
+  CommentsOverviewResponseType,
   MemberCountHistoryResponseType,
   MrrHistoryResponseType,
   NewsletterBasicStatsResponseType,
@@ -189,5 +190,37 @@ export const fakeAdminStats = {
       meta: {},
     } satisfies NewsletterClickStatsResponseType;
     return fakeAdminEndpoint('GET', endpoint('/stats/newsletter-click-stats/'), response);
+  },
+
+  commentsOverview(
+    overview: CommentsOverviewResponseType['stats'][number] = {
+      totals: { comments: 0, commenters: 0, reported: 0 },
+      previous_totals: { comments: 0, commenters: 0, reported: 0 },
+      series: [],
+      series_aggregation: 'day',
+      top_posts: [],
+      top_members: [],
+    },
+    { status = 200 }: { status?: number } = {},
+  ): EndpointCapture {
+    const response =
+      status === 200
+        ? ({ stats: [overview] } satisfies CommentsOverviewResponseType)
+        : {
+            errors: [
+              {
+                message: 'Resource not found',
+                type: 'NotFoundError',
+                context: null,
+                details: null,
+                ghostErrorCode: null,
+                help: '',
+                id: 'comments-overview-missing',
+                property: null,
+                code: null,
+              },
+            ],
+          };
+    return fakeAdminEndpoint('GET', /^\/stats\/comments\/(?:\?|$)/, response, { status });
   },
 };
