@@ -50,22 +50,36 @@ function subscribeLockDismissed(listener: () => void): () => void {
   };
 }
 
-/**
- * Stands the locked takeover down for this session. Called when the user
- * closes the takeover and when they follow a "Pay now" CTA — either way
- * they've seen the message, so the urgent warning banner carries it from
- * there instead of the full page re-asserting itself. Keyed by
- * `paymentFailedAt` and scoped to the session, so a later session — or a new
- * payment failure — brings the takeover back.
- */
-export function dismissLock(state: DunningState): void {
+function writeLockDismissedFor(state: DunningState): void {
   inMemoryLockDismissedFor = state.paymentFailedAt.toISOString();
   try {
     window.sessionStorage.setItem(LOCK_DISMISSED_KEY, inMemoryLockDismissedFor);
   } catch {
     // Storage can be unavailable; the in-memory fallback covers this page.
   }
+}
+
+/**
+ * Stands the locked takeover down for this session, swapping it out for the
+ * urgent warning banner right away. Keyed by `paymentFailedAt` and scoped to
+ * the session, so a later session — or a new payment failure — brings the
+ * takeover back.
+ */
+export function dismissLock(state: DunningState): void {
+  writeLockDismissedFor(state);
   lockDismissListeners.forEach((listener) => listener());
+}
+
+/**
+ * The "Pay now" variant of dismissLock: records the suppression without
+ * forcing an immediate re-render. The click is followed by navigation to the
+ * billing route, where the takeover and banner stand down anyway — an eager
+ * swap would flash the underlying screen with the warning banner for a frame
+ * before the route change lands. useSyncExternalStore re-reads its snapshot
+ * on every render, so the route change itself picks the stored value up.
+ */
+export function dismissLockQuietly(state: DunningState): void {
+  writeLockDismissedFor(state);
 }
 
 function parseDate(value: string | undefined): Date | null {

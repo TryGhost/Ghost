@@ -231,10 +231,10 @@ describe('dunning UI', () => {
       expect(screen.getByText('Action needed: payment failed.')).toBeInTheDocument();
     });
 
-    test('following Pay now suppresses the takeover but keeps the banner', () => {
+    test('following Pay now suppresses the takeover without a pre-navigation flash', () => {
       mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
 
-      render(
+      const view = render(
         <>
           <DunningOverlay />
           <DunningBanner />
@@ -243,6 +243,30 @@ describe('dunning UI', () => {
 
       fireEvent.click(screen.getByRole('link', { name: 'Pay now' }));
 
+      // Nothing swaps before the route change: the takeover holds the screen
+      // until the billing route takes over.
+      expect(screen.getByTestId('dunning-overlay')).toBeInTheDocument();
+      expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
+
+      // On the billing route both stand down as usual.
+      mockUseLocation.mockReturnValue({ pathname: '/pro/update-card' });
+      view.rerender(
+        <>
+          <DunningOverlay />
+          <DunningBanner />
+        </>,
+      );
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+
+      // Leaving billing again, the recorded suppression kicks in: the banner
+      // carries the message and the takeover stays away.
+      mockUseLocation.mockReturnValue({ pathname: '/analytics' });
+      view.rerender(
+        <>
+          <DunningOverlay />
+          <DunningBanner />
+        </>,
+      );
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
       expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
     });
