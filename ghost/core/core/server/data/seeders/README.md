@@ -2,7 +2,7 @@
 
 The development data generator populates related Ghost tables in dependency
 order. Its CLI entry point is `node index.js generate-data`; contributors
-normally use the root `pnpm reset:data*` commands described in the
+normally use the root `reset:data` scripts described in the
 [test-data guide](../../../../../../docs/contributing/test-data.md).
 
 ## How It Works
@@ -12,10 +12,10 @@ default quantity and any dependencies that are not represented by schema
 foreign keys. The generator adds schema and declared dependencies, sorts the
 tables, generates their records, and calls each importer's `finalise()` method.
 
-A numeric seed resets Faker for every table. This keeps a table's generated
-values stable when another table is added or omitted. Use the provided Faker
-instances and random-data helpers rather than `Math.random()` so seeded runs
-remain repeatable.
+A numeric seed resets Faker for every table. This keeps Faker-generated values
+stable when another table is added or omitted. Time-dependent fields may still
+vary between runs. Use the provided Faker instances and random-data helpers
+rather than `Math.random()` so seeded values remain repeatable.
 
 ## Add or Change an Importer
 

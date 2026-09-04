@@ -71,10 +71,10 @@ obvious to a reader.
 
 Coverage helps find code that a test never exercises; it does not replace
 meaningful assertions. Ghost Core uses Vitest's V8 coverage provider. CI applies
-separate thresholds to the integration and server E2E lanes and uploads their
-reports, together with Admin coverage, to Codecov. The current thresholds and
-excluded files live in the relevant Vitest configuration rather than in this
-guide.
+separate Vitest thresholds to the integration and server E2E lanes, then uploads
+both under Codecov's single `e2e-tests` project alongside Admin coverage. The
+Vitest configuration contains the lane thresholds, provider, and excluded files;
+`.github/codecov.yml` contains Codecov's project threshold.
 
 Do not work towards an assumed repository-wide percentage. Add the tests needed
 to protect the changed behaviour and treat an unexpected coverage reduction as

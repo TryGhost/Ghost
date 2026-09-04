@@ -54,9 +54,12 @@ the request body when it is part of the contract. When a path contains a dynamic
 value, constrain the matcher to the expected path and value format rather than
 using a catch-all expression. Use `.times()` when the number of requests matters.
 Avoid `.persist()` unless the behaviour genuinely makes an open-ended number of
-calls; persistent interceptors can hide unexpected requests. Restore
-interceptors after the test, and use Nock's pending mocks to diagnose an
-expectation that was never met.
+calls; persistent interceptors can hide unexpected requests. Use
+`nock.cleanAll()` to remove direct Nock interceptors after the test, or
+`mockManager.restore()` when resetting framework-managed state. Do not use
+`nock.restore()` for cleanup: it disables interception and requires
+`nock.activate()` before Nock can intercept another request. Use Nock's pending
+mocks to diagnose an expectation that was never met.
 
 ## Snapshots
 
