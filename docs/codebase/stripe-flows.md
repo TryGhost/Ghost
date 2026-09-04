@@ -38,4 +38,4 @@ The checkout and tier price flows are implemented by
 [`payments-service.js`](../../ghost/core/core/server/services/members/members-api/services/payments-service.js).
 
 For manual and automated development workflows, see
-[Testing Stripe locally](../contributing/development-setup.md#stripe-webhooks).
+[Testing Stripe locally](../contributing/testing-stripe.md).

@@ -113,8 +113,8 @@ environment and adds the listed tooling:
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
 | `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
-| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; requires Tailscale, see below            |
-| `pnpm dev:mailgun`         | Transactional, newsletter, and automation email through the Mailgun API                       |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)  |
+| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                   |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
@@ -123,66 +123,6 @@ optional integration. Never commit credentials or the local `.env` file.
 To open Ghost on a phone or another computer, or to exercise HTTPS,
 subdirectory, and separate-Admin URL behaviour, see
 [Testing development URLs and devices](testing-development-urls.md).
-
-### Stripe webhooks
-
-`pnpm dev:stripe` runs the webhook path production runs. It publishes Ghost's
-webhook route, and nothing else, through
-[Tailscale Funnel](https://tailscale.com/kb/1223/funnel), and Ghost registers a
-pinned webhook endpoint at that address once Stripe is connected in Admin, then
-deletes it on shutdown.
-The site and Admin stay on `localhost`, so hot reload and the rest of the
-development environment work as usual. Use it when the shape of a webhook
-payload matters, for example when reading new fields from a checkout session.
-Ghost logs an error whenever an event arrives rendered at a different API
-version from the one it pins, in any environment.
-
-The webhook route is reachable from the internet while the command runs; every
-request to it must carry a valid Stripe signature. The tunnel is a child
-process of the command and ends with it, including on Ctrl-C. Only a forced
-kill of the command can leave the tunnel running, and even then it does not
-survive a restart of Tailscale or the machine.
-
-Funnel needs Tailscale 1.52 or newer with MagicDNS, HTTPS certificates and
-Funnel enabled for your tailnet and node. The command reports when Tailscale is
-missing, not signed in, or has no MagicDNS name; for the other requirements it
-shows Tailscale's own error.
-
-`pnpm dev:stripe --listen` forwards events with `stripe listen` instead, which
-needs `STRIPE_SECRET_KEY` in the environment or a local `.env` file but no
-Tailscale. The CLI renders every event at your Stripe account's default API
-version, which cannot be pinned, so an event can carry a different shape from
-the one production receives; the command warns about this at startup and Ghost
-logs an error when a mismatched event arrives. Use it only when the payload
-shape does not matter.
-
-### Test a paid membership
-
-Start `pnpm dev:stripe`, then connect a Stripe test-mode account in Ghost Admin
-under **Settings → Tiers**. Ghost registers the temporary webhook endpoint when
-the connection settings are saved. Follow the development log's instruction to
-restart if registration could not happen during the first connection. The
-default command does not use `stripe login` or the locally installed Stripe
-CLI.
-
-Sign up for a paid membership through the local site's Portal using a
-[Stripe test card](https://docs.stripe.com/testing), such as
-`4242 4242 4242 4242` with any future expiry date and any three-digit CVC. Never
-use a real card. Confirm that the member becomes paid in Admin and that the
-corresponding webhook appears in the Ghost development logs.
-
-When using the `--listen` fallback, `STRIPE_SECRET_KEY` must be a test-mode key
-for the same Stripe account connected to Ghost.
-
-Automated browser tests must use the E2E suite's fake Stripe service rather than
-a real account. Enable it with `test.use({stripeEnabled: true})`; this gives the
-test an isolated Ghost environment, fake Checkout page, Stripe test service,
-and signed webhook delivery. See the
-[E2E Stripe fixture guide](../../e2e/README.md#stripe-fixtures) and existing
-Stripe-backed tests for the current helpers and examples.
-
-For the implementation behind Stripe Connect, tier creation, and subscription
-checkout, see [Stripe flows](../codebase/stripe-flows.md).
 
 ## Data and email
 
@@ -206,7 +146,8 @@ pnpm migrate:db
 ```
 
 Development email is captured by Mailpit rather than delivered. Open
-[http://localhost:8025](http://localhost:8025) to inspect messages.
+[http://localhost:8025](http://localhost:8025) to inspect messages. For Mailgun
+delivery and automated-test workflows, see [Email testing](testing-email.md).
 
 ## Updating and recovering
 
