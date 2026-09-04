@@ -1,0 +1,39 @@
+{
+    "name": "@tryghost/limit-service",
+    "version": "0.0.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TryGhost/Ghost.git",
+        "directory": "packages/limit-service"
+    },
+    "author": "Ghost Foundation",
+    "license": "MIT",
+    "main": "index.js",
+    "exports": "./index.js",
+    "scripts": {
+        "dev": "echo \"Implement me!\"",
+        "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+        "lint": "eslint . --ext .js --cache",
+        "posttest": "yarn lint"
+    },
+    "files": [
+        "index.js",
+        "lib"
+    ],
+    "devDependencies": {
+        "c8": "12.0.0",
+        "mocha": "11.8.0",
+        "should": "13.2.3",
+        "sinon": "22.1.0"
+    },
+    "dependencies": {
+        "@tryghost/errors": "2.2.1",
+        "lodash": "4.18.1",
+        "luxon": "3.7.2"
+    },
+    "private": true,
+    "ghostPackage": {
+        "goldenPath": "migration",
+        "reason": "Imported verbatim from TryGhost/SDK at af752ec. Still CommonJS with mocha tests, and still contains Ghost's database queries. Modernised in the change that follows this one."
+    }
+}
