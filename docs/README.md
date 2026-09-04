@@ -13,7 +13,7 @@ installed:
 git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-pnpm setup
+pnpm bootstrap
 pnpm dev
 ```
 
