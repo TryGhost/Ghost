@@ -3052,7 +3052,7 @@ Object {
     opacity: 0.92;
 }</style><script async src=\\"https://js.stripe.com/v3/\\"></script>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/announcement-bar@~1.1/umd/announcement-bar.min.js\\" data-announcement-bar=\\"http://127.0.0.1:2369/\\" data-api-url=\\"http://127.0.0.1:2369/members/api/announcement/\\" crossorigin=\\"anonymous\\"></script>
+    <style id=\\"gh-announcement-bar-styles\\">[[ANNOUNCEMENT_BAR]]</style><script type=\\"application/json\\" id=\\"gh-announcement-bar-data\\">[[ANNOUNCEMENT_BAR]]</script><script id=\\"gh-announcement-bar-script\\">[[ANNOUNCEMENT_BAR]]</script>
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }

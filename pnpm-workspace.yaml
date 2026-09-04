@@ -336,7 +336,6 @@ versioning:
     - ghost
     - ghost-admin
     # ignore public apps since they're deployed outside pnpm's changelog versioning
-    - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'
     - '@tryghost/portal'

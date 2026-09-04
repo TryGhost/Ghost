@@ -1980,7 +1980,6 @@ jobs:
             apps/comments-ui/umd \
             apps/sodo-search/umd \
             apps/signup-form/umd \
-            apps/announcement-bar/umd \
             apps/admin-toolbar/umd
           ls -lh e2e-public-apps.tar.gz
 

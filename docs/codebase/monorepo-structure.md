@@ -28,9 +28,8 @@ service before changing it.
 - `ember-admin/` is the legacy Ember Admin application. Routes are moving from
   Ember to React over time.
 - `activitypub/` is a React application included in Admin.
-- `portal/`, `comments-ui/`, `signup-form/`, `sodo-search/`,
-  `announcement-bar/`, and `admin-toolbar/` are public apps published to npm
-  and loaded through the CDN.
+- `portal/`, `comments-ui/`, `signup-form/`, `sodo-search/`, and
+  `admin-toolbar/` are public apps published to npm and loaded through the CDN.
 - `shade/` is the current Admin design system.
 - `admin-x-framework/` provides shared Admin API hooks, routing, and utilities.
 
