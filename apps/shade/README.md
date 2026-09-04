@@ -58,7 +58,7 @@ root:
 
 ```bash
 corepack enable pnpm
-pnpm setup
+pnpm bootstrap
 ```
 
 After setup, run the package commands below from `apps/shade` or with
