@@ -114,14 +114,14 @@ catalogs:
       specifier: 6.20.3
       version: 6.20.3
     '@codemirror/commands':
-      specifier: 6.10.4
-      version: 6.10.4
+      specifier: 6.11.0
+      version: 6.11.0
     '@codemirror/lang-css':
       specifier: 6.3.1
       version: 6.3.1
     '@codemirror/lang-html':
-      specifier: 6.4.11
-      version: 6.4.11
+      specifier: 6.4.12
+      version: 6.4.12
     '@codemirror/lang-javascript':
       specifier: 6.2.5
       version: 6.2.5
@@ -129,8 +129,8 @@ catalogs:
       specifier: 6.0.2
       version: 6.0.2
     '@codemirror/lang-markdown':
-      specifier: 6.5.1
-      version: 6.5.1
+      specifier: 6.5.2
+      version: 6.5.2
     '@codemirror/lang-yaml':
       specifier: 6.1.3
       version: 6.1.3
@@ -138,17 +138,17 @@ catalogs:
       specifier: 6.12.4
       version: 6.12.4
     '@codemirror/search':
-      specifier: 6.7.1
-      version: 6.7.1
+      specifier: 6.7.2
+      version: 6.7.2
     '@codemirror/state':
-      specifier: 6.7.1
-      version: 6.7.1
+      specifier: 6.7.2
+      version: 6.7.2
     '@codemirror/theme-one-dark':
       specifier: 6.1.3
       version: 6.1.3
     '@codemirror/view':
-      specifier: 6.43.6
-      version: 6.43.6
+      specifier: 6.43.10
+      version: 6.43.10
     '@dnd-kit/core':
       specifier: 6.3.1
       version: 6.3.1
@@ -692,8 +692,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
-pnpmfileChecksum: sha256-qqNuypA2kX16OHjG3pLjbOVjA/Gsi92LRvE/r6+Nehs=
-
 importers:
 
   .:
@@ -848,7 +846,7 @@ importers:
         version: 6.3.1
       '@codemirror/lang-html':
         specifier: 'catalog:'
-        version: 6.4.11
+        version: 6.4.12
       '@codemirror/lang-javascript':
         specifier: 'catalog:'
         version: 6.2.5
@@ -857,16 +855,16 @@ importers:
         version: 6.0.2
       '@codemirror/lang-markdown':
         specifier: 'catalog:'
-        version: 6.5.1
+        version: 6.5.2
       '@codemirror/lang-yaml':
         specifier: 'catalog:'
         version: 6.1.3
       '@codemirror/search':
         specifier: 'catalog:'
-        version: 6.7.1
+        version: 6.7.2
       '@codemirror/state':
         specifier: 'catalog:'
-        version: 6.7.1
+        version: 6.7.2
       '@codemirror/theme-one-dark':
         specifier: 'catalog:'
         version: 6.1.3
@@ -935,7 +933,7 @@ importers:
         version: 1.0.0
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.10)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@xyflow/react':
         specifier: 12.11.2
         version: 12.11.2(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1541,7 +1539,7 @@ importers:
         version: 3.0.1(supports-color@10.2.2)
       ember-cli:
         specifier: 3.24.0
-        version: 3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(supports-color@10.2.2)
+        version: 3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2)
       ember-cli-app-version:
         specifier: 5.0.0
         version: 5.0.0(supports-color@10.2.2)
@@ -1556,7 +1554,7 @@ importers:
         version: 1.0.3(supports-color@10.2.2)
       ember-cli-dependency-checker:
         specifier: 3.3.2
-        version: 3.3.2(ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(supports-color@10.2.2))
+        version: 3.3.2(ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2))
       ember-cli-deprecation-workflow:
         specifier: 2.2.0
         version: 2.2.0(supports-color@10.2.2)
@@ -1766,7 +1764,7 @@ importers:
         version: 4.0.1(chai@4.5.0)(sinon@22.0.0)
       testem:
         specifier: 3.19.1
-        version: 3.19.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 3.19.1(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2)
       tracked-built-ins:
         specifier: 3.4.0
         version: 3.4.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -1851,7 +1849,7 @@ importers:
     dependencies:
       '@codemirror/state':
         specifier: 'catalog:'
-        version: 6.7.1
+        version: 6.7.2
       '@dnd-kit/core':
         specifier: 'catalog:'
         version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1935,7 +1933,7 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.10)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -2390,7 +2388,7 @@ importers:
         version: 2.3.12(supports-color@10.2.2)
       '@tryghost/brute-knex':
         specifier: 'catalog:'
-        version: 3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
@@ -2483,7 +2481,7 @@ importers:
         version: 1.0.6
       '@tryghost/nodemailer':
         specifier: 2.3.12
-        version: 2.3.12(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 2.3.12(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1)(supports-color@10.2.2)
       '@tryghost/nql':
         specifier: 0.13.4
         version: 0.13.4(supports-color@10.2.2)
@@ -2540,10 +2538,10 @@ importers:
         version: 2.12.0
       '@x402/evm':
         specifier: 'catalog:'
-        version: 2.12.0
+        version: 2.12.0(@typescript/typescript6@6.0.2)
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.12.0(hono@4.12.18)
+        version: 2.12.0(@typescript/typescript6@6.0.2)(hono@4.12.18)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2552,10 +2550,10 @@ importers:
         version: 1.20.6(supports-color@10.2.2)
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
+        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2)
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)))(supports-color@10.2.2)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2708,7 +2706,7 @@ importers:
         version: 9.1.0(encoding@0.1.13)
       knex:
         specifier: 2.4.2
-        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       knex-migrator:
         specifier: 'catalog:'
         version: 5.4.1(@types/node@22.20.1)(bluebird@3.7.2)(supports-color@10.2.2)
@@ -2768,7 +2766,7 @@ importers:
         version: 0.5.45
       mppx:
         specifier: 'catalog:'
-        version: 0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11)
+        version: 0.6.20(@typescript/typescript6@6.0.2)(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3))
       multer:
         specifier: 2.2.0
         version: 2.2.0
@@ -2868,7 +2866,7 @@ importers:
         version: 2.3.12
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+        version: 1.2.9(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -3621,13 +3619,13 @@ importers:
         version: 6.20.3
       '@codemirror/commands':
         specifier: 'catalog:'
-        version: 6.10.4
+        version: 6.11.0
       '@codemirror/lang-css':
         specifier: 'catalog:'
         version: 6.3.1
       '@codemirror/lang-html':
         specifier: 'catalog:'
-        version: 6.4.11
+        version: 6.4.12
       '@codemirror/lang-javascript':
         specifier: 'catalog:'
         version: 6.2.5
@@ -3636,7 +3634,7 @@ importers:
         version: 6.12.4
       '@codemirror/view':
         specifier: 'catalog:'
-        version: 6.43.6
+        version: 6.43.10
       '@emoji-mart/data':
         specifier: 1.2.1
         version: 1.2.1
@@ -3753,10 +3751,10 @@ importers:
         version: typescript@7.0.2
       '@uiw/codemirror-extensions-basic-setup':
         specifier: 'catalog:'
-        version: 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)
+        version: 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.0)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/view@6.43.10)
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.10)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.0.3(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -5290,11 +5288,17 @@ packages:
   '@codemirror/commands@6.10.4':
     resolution: {integrity: sha512-Ryk9y9T0FFVF0cUGhAknveAyUOl/A1qReTFi+qPKtOh2Z9F4AUBz3XOrYD4ZEgZirdugVzHvd/2/Wcwy5OliTg==}
 
+  '@codemirror/commands@6.11.0':
+    resolution: {integrity: sha512-/K4Rl5BN0OtTiPWmJCdqODu38XnDMsDxKY5rgrPnCkutPTJf2wVbkoixLfealF5Kwse/s8P8M5jAiURiwSwnFA==}
+
   '@codemirror/lang-css@6.3.1':
     resolution: {integrity: sha512-kr5fwBGiGtmz6l0LSJIbno9QrifNMUusivHbnA1H6Dmqy4HZFte3UAICix1VuKo0lMPKQr2rqB+0BkKi/S3Ejg==}
 
   '@codemirror/lang-html@6.4.11':
     resolution: {integrity: sha512-9NsXp7Nwp891pQchI7gPdTwBuSuT3K65NGTHWHNJ55HjYcHLllr0rbIZNdOzas9ztc1EUVBlHou85FFZS4BNnw==}
+
+  '@codemirror/lang-html@6.4.12':
+    resolution: {integrity: sha512-pw2ReWKUqSkbvh76RAT4NYxiogRu+PWkR2ukAwO9uOgrm8uipkzjtKKtNpyeAQwHOqxEeSvAXZ6vr3AfyB9y/w==}
 
   '@codemirror/lang-javascript@6.2.5':
     resolution: {integrity: sha512-zD4e5mS+50htS7F+TYjBPsiIFGanfVqg4HyUz6WNFikgOPf2BgKlx+TQedI1w6n/IqRBVBbBWmGFdLB/7uxO4A==}
@@ -5302,8 +5306,8 @@ packages:
   '@codemirror/lang-json@6.0.2':
     resolution: {integrity: sha512-x2OtO+AvwEHrEwR0FyyPtfDUiloG3rnVTSZV1W8UteaLL8/MajQd8DpvUb2YVzC+/T18aSDv0H9mu+xw0EStoQ==}
 
-  '@codemirror/lang-markdown@6.5.1':
-    resolution: {integrity: sha512-6re5avCNfyRMIoi3XNjbEfQM1vTeVD3JS3g/Fyegyso/eoANFM71Cyvbb66LDyYtQLMEcRFlzioywCqDo9SlLA==}
+  '@codemirror/lang-markdown@6.5.2':
+    resolution: {integrity: sha512-AwBOdkWYuA//WcM0xO5PfHPUcmz/O2i5o0Nsg1U69SII/loCJlFI1Romd9xp2HYb1kYJRGZotyqRghuHH5n8Kw==}
 
   '@codemirror/lang-yaml@6.1.3':
     resolution: {integrity: sha512-AZ8DJBuXGVHybpBQhmZtgew5//4hv3tdkXnr3vDmOUMJRuB6vn/uuwtmTOTlqEaQFg3hQSVeA90NmvIQyUV6FQ==}
@@ -5317,11 +5321,20 @@ packages:
   '@codemirror/search@6.7.1':
     resolution: {integrity: sha512-uMe5UO6PamJtSHrXhhHOzSX3ReWtiJrva6GnPMwSOrZtiExb5X5eExhr2OUZQVvdxPsKpY3Ro2mFbQadpPWmHA==}
 
+  '@codemirror/search@6.7.2':
+    resolution: {integrity: sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==}
+
   '@codemirror/state@6.7.1':
     resolution: {integrity: sha512-9QzNDgE4EYDnAHfrTlR2lwiPciiOymLtwKK+8yHQzCc7GXhAP9xdEbEJFy2IWB1j9UGUl9BsgMmTo/ImA02T7A==}
 
+  '@codemirror/state@6.7.2':
+    resolution: {integrity: sha512-U3RiPX62Wl/Gx4ftQ7UxLlloSfsFTQqKa+7vFBYteZGCzkp6oBqcsD7iSwniWRGobCAmDcwZSY+Six3+3ztdfg==}
+
   '@codemirror/theme-one-dark@6.1.3':
     resolution: {integrity: sha512-NzBdIvEJmx6fjeremiGp3t/okrLPYT0d9orIc7AFun8oZcRk58aejkqhv6spnz4MLAevrKNPMQYXEWMg4s+sKA==}
+
+  '@codemirror/view@6.43.10':
+    resolution: {integrity: sha512-vVWLvd4fKWYN/pMcwUrg6dWeublxmSz+V+52ZjW3h64IVN9cRUYLk5Km4JDT9vifxAFfDtNOIFxKYENthcolJQ==}
 
   '@codemirror/view@6.43.6':
     resolution: {integrity: sha512-EVunGSYN1wz1p75WY1s3Xg7t3i8Yol0kGZGizNdX9BUFgMFILYVe8/u6EVpo7Ff5PwbZuILb4QAq7IZoKzIEQA==}
@@ -10742,9 +10755,25 @@ packages:
 
   abitype@1.2.3:
     resolution: {integrity: sha512-Ofer5QUnuUdTFsBRwARMoWKOH1ND5ehwYhJ3OJ/BQO+StkwQjHw0XyVh4vDttzHB7QOFhPHa/o413PJ82gU/Tg==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+      zod: ^3.22.0 || ^4.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      zod:
+        optional: true
 
   abitype@1.3.0:
     resolution: {integrity: sha512-fk6Te+bojIFrMvMZrnOO+SxCB+RUksTGOzq/60ZRvs1L+BVzvi2bqt9L3W/17ZLdZsyM1FuYf65P5nlmoiH1Bg==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+      zod: ^3.22.0 || ^4.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      zod:
+        optional: true
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -12698,6 +12727,152 @@ packages:
   consolidate@1.0.4:
     resolution: {integrity: sha512-RuZ3xnqEDsxiwaoIkqVeeK3gg9qxw7+YKYX2tKhLs1eukVKMgSr4VYI3iYFsRHi4TloHYDlugrz3kvkjs3nynA==}
     engines: {node: '>=14'}
+    peerDependencies:
+      '@babel/core': ^7.22.5
+      arc-templates: ^0.5.3
+      atpl: '>=0.7.6'
+      bracket-template: ^1.1.5
+      coffee-script: ^1.12.7
+      dot: ^1.1.3
+      dust: ^0.3.0
+      dustjs-helpers: ^1.7.4
+      dustjs-linkedin: ^2.7.5
+      eco: ^1.1.0-rc-3
+      ect: ^0.5.9
+      ejs: ^3.1.5
+      haml-coffee: ^1.14.1
+      hamlet: ^0.3.3
+      hamljs: ^0.6.2
+      handlebars: ^4.7.9
+      hogan.js: ^3.0.2
+      htmling: ^0.0.8
+      jazz: ^0.0.18
+      jqtpl: ~1.1.0
+      just: ^0.1.8
+      liquid-node: ^3.0.1
+      liquor: ^0.0.5
+      lodash: ^4.18.0
+      mote: ^0.2.0
+      mustache: ^4.0.1
+      nunjucks: ^3.2.2
+      plates: ~0.4.11
+      pug: ^3.0.0
+      qejs: ^3.0.5
+      ractive: ^1.3.12
+      react: '>=16.13.1'
+      react-dom: '>=16.13.1'
+      slm: ^2.0.0
+      swig: ^1.4.2
+      swig-templates: ^2.0.3
+      teacup: ^2.0.0
+      templayed: '>=0.2.3'
+      then-pug: '*'
+      tinyliquid: ^0.2.34
+      toffee: ^0.3.6
+      twig: ^1.15.2
+      twing: ^5.0.2
+      underscore: ^1.12.1
+      vash: ^0.13.0
+      velocityjs: ^2.0.1
+      walrus: ^0.10.1
+      whiskers: ^0.4.0
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      arc-templates:
+        optional: true
+      atpl:
+        optional: true
+      bracket-template:
+        optional: true
+      coffee-script:
+        optional: true
+      dot:
+        optional: true
+      dust:
+        optional: true
+      dustjs-helpers:
+        optional: true
+      dustjs-linkedin:
+        optional: true
+      eco:
+        optional: true
+      ect:
+        optional: true
+      ejs:
+        optional: true
+      haml-coffee:
+        optional: true
+      hamlet:
+        optional: true
+      hamljs:
+        optional: true
+      handlebars:
+        optional: true
+      hogan.js:
+        optional: true
+      htmling:
+        optional: true
+      jazz:
+        optional: true
+      jqtpl:
+        optional: true
+      just:
+        optional: true
+      liquid-node:
+        optional: true
+      liquor:
+        optional: true
+      lodash:
+        optional: true
+      mote:
+        optional: true
+      mustache:
+        optional: true
+      nunjucks:
+        optional: true
+      plates:
+        optional: true
+      pug:
+        optional: true
+      qejs:
+        optional: true
+      ractive:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      slm:
+        optional: true
+      swig:
+        optional: true
+      swig-templates:
+        optional: true
+      teacup:
+        optional: true
+      templayed:
+        optional: true
+      then-pug:
+        optional: true
+      tinyliquid:
+        optional: true
+      toffee:
+        optional: true
+      twig:
+        optional: true
+      twing:
+        optional: true
+      underscore:
+        optional: true
+      vash:
+        optional: true
+      velocityjs:
+        optional: true
+      walrus:
+        optional: true
+      whiskers:
+        optional: true
 
   constants-browserify@1.0.0:
     resolution: {integrity: sha512-xFxOwqIzR/e1k1gLiWEophSCMqXcwVHIH7akf7b/vxcUeGunlj3hvZaaqxwHsTgn+IndtkQJgSztIDWeumWJDQ==}
@@ -16949,6 +17124,7 @@ packages:
       mysql: ^2.18.1
       mysql2: ^2.1.0
       pg: ^8.3.0
+      sqlite3: ^5.0.0
     peerDependenciesMeta:
       mssql:
         optional: true
@@ -16957,6 +17133,8 @@ packages:
       mysql2:
         optional: true
       pg:
+        optional: true
+      sqlite3:
         optional: true
 
   knex@2.4.2:
@@ -16969,6 +17147,7 @@ packages:
       mysql2: '*'
       pg: '*'
       pg-native: '*'
+      sqlite3: '*'
       tedious: '*'
     peerDependenciesMeta:
       better-sqlite3:
@@ -16980,6 +17159,8 @@ packages:
       pg:
         optional: true
       pg-native:
+        optional: true
+      sqlite3:
         optional: true
       tedious:
         optional: true
@@ -16994,6 +17175,7 @@ packages:
       mysql2: '*'
       pg: '*'
       pg-native: '*'
+      sqlite3: '*'
       tedious: '*'
     peerDependenciesMeta:
       better-sqlite3:
@@ -17005,6 +17187,8 @@ packages:
       pg:
         optional: true
       pg-native:
+        optional: true
+      sqlite3:
         optional: true
       tedious:
         optional: true
@@ -18858,9 +19042,19 @@ packages:
 
   ox@0.14.20:
     resolution: {integrity: sha512-rby38C3nDn8eQkf29Zgw4hkCZJ64Qqi0zRPWL8ENUQ7JVuoITqrVtwWQgM/He19SCMUEc7hS/Sjw0jIOSLJhOw==}
+    peerDependencies:
+      typescript: '>=5.4.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   ox@0.14.33:
     resolution: {integrity: sha512-rooA/4o7bBof4Ge2VH/eovfNPb/AEEYyrNj03wggc55g5HZD8Pjs/OeWhttgjic3dDcqn0r29bDuvQEdTiUemQ==}
+    peerDependencies:
+      typescript: '>=5.4.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   oxc-parser@0.127.0:
     resolution: {integrity: sha512-bkgD4qHlN7WxLdX8bLXdaU54TtQtAIg/ZBAfm0aje/mo3MRDo3P0hZSgr4U7O3xfX+fQmR5AP04JS/TGcZLcFA==}
@@ -22665,6 +22859,11 @@ packages:
 
   viem@2.55.11:
     resolution: {integrity: sha512-RR5MwtdUnFfqw6ZGoFptizywyLOkLuhTL7UafoP3Irf2upXpANakQkLgGqY4H7A7+8JBxjUs6lElGF5zuGjMEw==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   vinyl-contents@2.0.0:
     resolution: {integrity: sha512-cHq6NnGyi2pZ7xwdHSW1v4Jfnho4TEGtxZHw01cmnc8+i7jgR6bRnED/LbrKan/Q7CvVLbnvA5OepnhbpjBZ5Q==}
@@ -24560,11 +24759,18 @@ snapshots:
   '@codemirror/autocomplete@6.20.3':
     dependencies:
       '@codemirror/language': 6.12.4
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/view': 6.43.6
       '@lezer/common': 1.5.2
 
   '@codemirror/commands@6.10.4':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.43.6
+      '@lezer/common': 1.5.2
+
+  '@codemirror/commands@6.11.0':
     dependencies:
       '@codemirror/language': 6.12.4
       '@codemirror/state': 6.7.1
@@ -24575,11 +24781,23 @@ snapshots:
     dependencies:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/language': 6.12.4
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@lezer/common': 1.5.2
       '@lezer/css': 1.3.3
 
   '@codemirror/lang-html@6.4.11':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/lang-css': 6.3.1
+      '@codemirror/lang-javascript': 6.2.5
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.1
+      '@codemirror/view': 6.43.6
+      '@lezer/common': 1.5.2
+      '@lezer/css': 1.3.3
+      '@lezer/html': 1.3.13
+
+  '@codemirror/lang-html@6.4.12':
     dependencies:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/lang-css': 6.3.1
@@ -24596,7 +24814,7 @@ snapshots:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/language': 6.12.4
       '@codemirror/lint': 6.9.7
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/view': 6.43.6
       '@lezer/common': 1.5.2
       '@lezer/javascript': 1.5.4
@@ -24606,7 +24824,7 @@ snapshots:
       '@codemirror/language': 6.12.4
       '@lezer/json': 1.0.3
 
-  '@codemirror/lang-markdown@6.5.1':
+  '@codemirror/lang-markdown@6.5.2':
     dependencies:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/lang-html': 6.4.11
@@ -24620,7 +24838,7 @@ snapshots:
     dependencies:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/language': 6.12.4
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@lezer/common': 1.5.2
       '@lezer/highlight': 1.2.3
       '@lezer/lr': 1.4.10
@@ -24628,7 +24846,7 @@ snapshots:
 
   '@codemirror/language@6.12.4':
     dependencies:
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/view': 6.43.6
       '@lezer/common': 1.5.2
       '@lezer/highlight': 1.2.3
@@ -24637,7 +24855,7 @@ snapshots:
 
   '@codemirror/lint@6.9.7':
     dependencies:
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/view': 6.43.6
       crelt: 1.0.6
 
@@ -24647,16 +24865,33 @@ snapshots:
       '@codemirror/view': 6.43.6
       crelt: 1.0.6
 
+  '@codemirror/search@6.7.2':
+    dependencies:
+      '@codemirror/state': 6.7.1
+      '@codemirror/view': 6.43.6
+      crelt: 1.0.6
+
   '@codemirror/state@6.7.1':
+    dependencies:
+      '@marijn/find-cluster-break': 1.0.2
+
+  '@codemirror/state@6.7.2':
     dependencies:
       '@marijn/find-cluster-break': 1.0.2
 
   '@codemirror/theme-one-dark@6.1.3':
     dependencies:
       '@codemirror/language': 6.12.4
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/view': 6.43.6
       '@lezer/highlight': 1.2.3
+
+  '@codemirror/view@6.43.10':
+    dependencies:
+      '@codemirror/state': 6.7.1
+      crelt: 1.0.6
+      style-mod: 4.1.3
+      w3c-keyname: 2.2.8
 
   '@codemirror/view@6.43.6':
     dependencies:
@@ -28451,11 +28686,11 @@ snapshots:
       '@noble/hashes': 1.8.0
       apg-js: 4.4.0
 
-  '@signinwithethereum/siwe@4.2.0(viem@2.55.11)':
+  '@signinwithethereum/siwe@4.2.0(viem@2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3))':
     dependencies:
       '@signinwithethereum/siwe-parser': 4.2.0
     optionalDependencies:
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3)
 
   '@simple-dom/document@1.4.0':
     dependencies:
@@ -29392,10 +29627,10 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.3.12': {}
 
-  '@tryghost/brute-knex@3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)':
+  '@tryghost/brute-knex@3.2.2(better-sqlite3@12.11.1)(express@4.22.2(supports-color@10.2.2))(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       express-brute: 1.0.1(express@4.22.2(supports-color@10.2.2))
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
     transitivePeerDependencies:
       - better-sqlite3
       - express
@@ -29403,6 +29638,7 @@ snapshots:
       - mysql2
       - pg
       - pg-native
+      - sqlite3
       - supports-color
       - tedious
 
@@ -29654,17 +29890,65 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@2.3.12(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@tryghost/nodemailer@2.3.12(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1)(supports-color@10.2.2)':
     dependencies:
       '@aws-sdk/client-sesv2': 3.1121.0
       '@tryghost/errors': 3.3.12
       '@tryghost/tpl': 2.3.12
       nodemailer: 9.0.6
-      nodemailer-mailgun-transport: 2.1.5(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+      nodemailer-mailgun-transport: 2.1.5(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1)(supports-color@10.2.2)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
+      - '@babel/core'
+      - arc-templates
+      - atpl
+      - bracket-template
+      - coffee-script
       - debug
+      - dot
+      - dust
+      - dustjs-helpers
+      - dustjs-linkedin
+      - eco
+      - ect
+      - ejs
+      - haml-coffee
+      - hamlet
+      - hamljs
+      - handlebars
+      - hogan.js
+      - htmling
+      - jazz
+      - jqtpl
+      - just
+      - liquid-node
+      - liquor
+      - lodash
+      - mote
+      - mustache
+      - nunjucks
+      - plates
+      - pug
+      - qejs
+      - ractive
+      - react
+      - react-dom
+      - slm
       - supports-color
+      - swig
+      - swig-templates
+      - teacup
+      - templayed
+      - then-pug
+      - tinyliquid
+      - toffee
+      - twig
+      - twing
+      - underscore
+      - vash
+      - velocityjs
+      - walrus
+      - whiskers
 
   '@tryghost/nql-lang@0.7.0':
     dependencies:
@@ -29869,17 +30153,18 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 26.0.0
 
-  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)':
+  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.25
-      knex: 0.21.21(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 0.21.21(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
     transitivePeerDependencies:
       - mssql
       - mysql
       - mysql2
       - pg
+      - sqlite3
       - supports-color
 
   '@types/broccoli-plugin@1.3.0': {}
@@ -30748,24 +31033,34 @@ snapshots:
     dependencies:
       '@typescript/old': typescript@6.0.3
 
-  '@uiw/codemirror-extensions-basic-setup@4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)':
+  '@uiw/codemirror-extensions-basic-setup@4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/view@6.43.10)':
     dependencies:
       '@codemirror/autocomplete': 6.20.3
       '@codemirror/commands': 6.10.4
       '@codemirror/language': 6.12.4
       '@codemirror/lint': 6.9.7
-      '@codemirror/search': 6.7.1
-      '@codemirror/state': 6.7.1
-      '@codemirror/view': 6.43.6
+      '@codemirror/search': 6.7.2
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.43.10
 
-  '@uiw/react-codemirror@4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@uiw/codemirror-extensions-basic-setup@4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.0)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/view@6.43.10)':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/commands': 6.11.0
+      '@codemirror/language': 6.12.4
+      '@codemirror/lint': 6.9.7
+      '@codemirror/search': 6.7.2
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.43.10
+
+  '@uiw/react-codemirror@4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.10)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@codemirror/commands': 6.10.4
-      '@codemirror/state': 6.7.1
+      '@codemirror/state': 6.7.2
       '@codemirror/theme-one-dark': 6.1.3
-      '@codemirror/view': 6.43.6
-      '@uiw/codemirror-extensions-basic-setup': 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)
+      '@codemirror/view': 6.43.10
+      '@uiw/codemirror-extensions-basic-setup': 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.2)(@codemirror/view@6.43.10)
       codemirror: 6.0.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -31223,39 +31518,42 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@x402/evm@2.12.0':
+  '@x402/evm@2.12.0(@typescript/typescript6@6.0.2)':
     dependencies:
       '@x402/core': 2.12.0
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)(zod@3.25.76)
       zod: 3.25.76
     transitivePeerDependencies:
       - bufferutil
+      - typescript
       - utf-8-validate
 
-  '@x402/extensions@2.12.0':
+  '@x402/extensions@2.12.0(@typescript/typescript6@6.0.2)':
     dependencies:
       '@noble/curves': 1.9.7
       '@scure/base': 1.2.6
-      '@signinwithethereum/siwe': 4.2.0(viem@2.55.11)
+      '@signinwithethereum/siwe': 4.2.0(viem@2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3))
       '@x402/core': 2.12.0
       ajv: 8.20.0
       jose: 5.10.0
       tweetnacl: 1.0.3
-      viem: 2.55.11
+      viem: 2.55.11(@typescript/typescript6@6.0.2)(zod@3.25.76)
       zod: 3.25.76
     transitivePeerDependencies:
       - bufferutil
       - ethers
+      - typescript
       - utf-8-validate
 
-  '@x402/hono@2.12.0(hono@4.12.18)':
+  '@x402/hono@2.12.0(@typescript/typescript6@6.0.2)(hono@4.12.18)':
     dependencies:
       '@x402/core': 2.12.0
-      '@x402/extensions': 2.12.0
+      '@x402/extensions': 2.12.0(@typescript/typescript6@6.0.2)
       hono: 4.12.18
     transitivePeerDependencies:
       - bufferutil
       - ethers
+      - typescript
       - utf-8-validate
 
   '@xmldom/xmldom@0.9.10': {}
@@ -31303,9 +31601,25 @@ snapshots:
 
   abbrev@5.0.0: {}
 
-  abitype@1.2.3: {}
+  abitype@1.2.3(@typescript/typescript6@6.0.2)(zod@3.25.76):
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+      zod: 3.25.76
 
-  abitype@1.3.0: {}
+  abitype@1.2.3(@typescript/typescript6@6.0.2)(zod@4.4.3):
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+      zod: 4.4.3
+
+  abitype@1.3.0(@typescript/typescript6@6.0.2)(zod@3.25.76):
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+      zod: 3.25.76
+
+  abitype@1.3.0(@typescript/typescript6@6.0.2)(zod@4.4.3):
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+      zod: 4.4.3
 
   abort-controller@3.0.0:
     dependencies:
@@ -32591,22 +32905,22 @@ snapshots:
       fast-safe-stringify: 2.1.1
       individual: 3.0.0
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)))(supports-color@10.2.2):
     dependencies:
       '@tryghost/debug': 0.1.40(supports-color@10.2.2)
       '@tryghost/errors': 3.3.12
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
+      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)):
+  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -34064,7 +34378,19 @@ snapshots:
       ora: 3.4.0
       through2: 3.0.2
 
-  consolidate@1.0.4: {}
+  consolidate@1.0.4(@babel/core@7.29.7(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1):
+    optionalDependencies:
+      '@babel/core': 7.29.7(supports-color@10.2.2)
+      handlebars: 4.7.9
+      lodash: 4.18.1
+
+  consolidate@1.0.4(@babel/core@7.29.7(supports-color@10.2.2))(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    optionalDependencies:
+      '@babel/core': 7.29.7(supports-color@10.2.2)
+      lodash: 4.18.1
+      mustache: 4.2.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   constants-browserify@1.0.0: {}
 
@@ -35360,10 +35686,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(supports-color@10.2.2)):
+  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(supports-color@10.2.2)
+      ember-cli: 3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2)
       find-yarn-workspace-root: 1.2.1
       is-git-url: 1.0.0
       resolve: 1.22.12
@@ -35696,7 +36022,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(supports-color@10.2.2):
+  ember-cli@3.24.0(debug@4.4.3(supports-color@10.2.2))(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2):
     dependencies:
       '@babel/core': 7.29.7(supports-color@10.2.2)
       '@babel/plugin-transform-modules-amd': 7.29.7(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
@@ -35781,7 +36107,7 @@ snapshots:
       sort-package-json: 1.57.0
       symlink-or-copy: 1.3.1
       temp: 0.9.4
-      testem: 3.19.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+      testem: 3.19.1(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2)
       tiny-lr: 2.0.0(supports-color@10.2.2)
       tree-sync: 2.1.0(supports-color@10.2.2)
       uuid: 8.3.2
@@ -35790,11 +36116,56 @@ snapshots:
       workerpool: 6.5.1
       yam: 1.0.0
     transitivePeerDependencies:
+      - arc-templates
+      - atpl
+      - bracket-template
       - bufferutil
+      - coffee-script
       - debug
+      - dot
+      - dust
+      - dustjs-helpers
+      - dustjs-linkedin
+      - eco
+      - ect
+      - ejs
       - encoding
+      - haml-coffee
+      - hamlet
+      - hamljs
+      - handlebars
+      - hogan.js
+      - htmling
+      - jazz
+      - jqtpl
+      - just
+      - liquid-node
+      - liquor
+      - mote
+      - nunjucks
+      - plates
+      - pug
+      - qejs
+      - ractive
+      - react
+      - react-dom
+      - slm
       - supports-color
+      - swig
+      - swig-templates
+      - teacup
+      - templayed
+      - then-pug
+      - tinyliquid
+      - toffee
+      - twig
+      - twing
+      - underscore
       - utf-8-validate
+      - vash
+      - velocityjs
+      - walrus
+      - whiskers
 
   ember-compatibility-helpers@1.2.7(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
@@ -40545,7 +40916,7 @@ snapshots:
       commander: 5.1.0
       compare-ver: 2.0.2
       debug: 4.4.3(supports-color@10.2.2)
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2)
       lodash: 4.18.1
       moment: 2.30.1
       mysql2: 3.22.5(@types/node@22.20.1)
@@ -40564,7 +40935,7 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.21.21(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2):
+  knex@0.21.21(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       colorette: 1.2.1
       commander: 6.2.1
@@ -40580,10 +40951,11 @@ snapshots:
       v8flags: 3.2.0
     optionalDependencies:
       mysql2: 3.22.5(@types/node@22.20.1)
+      sqlite3: 5.1.7(bluebird@3.7.2)(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2):
+  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(sqlite3@5.1.7(bluebird@3.7.2)(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
       colorette: 2.0.19
       commander: 9.5.0
@@ -40602,6 +40974,7 @@ snapshots:
     optionalDependencies:
       better-sqlite3: 12.11.1
       mysql2: 3.22.5(@types/node@22.20.1)
+      sqlite3: 5.1.7(bluebird@3.7.2)(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -42169,15 +42542,17 @@ snapshots:
       rimraf: 2.7.1
       run-queue: 1.0.3
 
-  mppx@0.6.20(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11):
+  mppx@0.6.20(@typescript/typescript6@6.0.2)(express@4.22.2(supports-color@10.2.2))(hono@4.12.18)(viem@2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3)):
     dependencies:
       incur: 0.4.26
-      ox: 0.14.20
-      viem: 2.55.11
+      ox: 0.14.20(@typescript/typescript6@6.0.2)(zod@4.4.3)
+      viem: 2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3)
       zod: 4.4.3
     optionalDependencies:
       express: 4.22.2(supports-color@10.2.2)
       hono: 4.12.18
+    transitivePeerDependencies:
+      - typescript
 
   mrmime@2.0.1: {}
 
@@ -42525,14 +42900,62 @@ snapshots:
 
   node@runtime:22.23.1: {}
 
-  nodemailer-mailgun-transport@2.1.5(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2):
+  nodemailer-mailgun-transport@2.1.5(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1)(supports-color@10.2.2):
     dependencies:
-      consolidate: 1.0.4
+      consolidate: 1.0.4(@babel/core@7.29.7(supports-color@10.2.2))(handlebars@4.7.9)(lodash@4.18.1)
       form-data: 4.0.6
       mailgun.js: 8.2.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
     transitivePeerDependencies:
+      - '@babel/core'
+      - arc-templates
+      - atpl
+      - bracket-template
+      - coffee-script
       - debug
+      - dot
+      - dust
+      - dustjs-helpers
+      - dustjs-linkedin
+      - eco
+      - ect
+      - ejs
+      - haml-coffee
+      - hamlet
+      - hamljs
+      - handlebars
+      - hogan.js
+      - htmling
+      - jazz
+      - jqtpl
+      - just
+      - liquid-node
+      - liquor
+      - lodash
+      - mote
+      - mustache
+      - nunjucks
+      - plates
+      - pug
+      - qejs
+      - ractive
+      - react
+      - react-dom
+      - slm
       - supports-color
+      - swig
+      - swig-templates
+      - teacup
+      - templayed
+      - then-pug
+      - tinyliquid
+      - toffee
+      - twig
+      - twing
+      - underscore
+      - vash
+      - velocityjs
+      - walrus
+      - whiskers
 
   nodemailer-stub-transport@1.1.0: {}
 
@@ -42998,7 +43421,7 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
-  ox@0.14.20:
+  ox@0.14.20(@typescript/typescript6@6.0.2)(zod@4.4.3):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
@@ -43006,10 +43429,14 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.3.0
+      abitype: 1.3.0(@typescript/typescript6@6.0.2)(zod@4.4.3)
       eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - zod
 
-  ox@0.14.33:
+  ox@0.14.33(@typescript/typescript6@6.0.2)(zod@3.25.76):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
@@ -43017,8 +43444,27 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.3.0
+      abitype: 1.3.0(@typescript/typescript6@6.0.2)(zod@3.25.76)
       eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - zod
+
+  ox@0.14.33(@typescript/typescript6@6.0.2)(zod@4.4.3):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.1
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.3.0(@typescript/typescript6@6.0.2)(zod@4.4.3)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - zod
 
   oxc-parser@0.127.0:
     dependencies:
@@ -46701,14 +47147,14 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.5
 
-  testem@3.19.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2):
+  testem@3.19.1(@babel/core@7.29.7(supports-color@10.2.2))(debug@4.4.3(supports-color@10.2.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.2.2):
     dependencies:
       '@xmldom/xmldom': 0.9.10
       backbone: 1.6.1
       charm: 1.0.2
       commander: 2.20.3
       compression: 1.8.1(supports-color@10.2.2)
-      consolidate: 1.0.4
+      consolidate: 1.0.4(@babel/core@7.29.7(supports-color@10.2.2))(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       execa: 9.6.1
       express: 4.22.2(supports-color@10.2.2)
       fireworm: 0.7.2
@@ -46728,10 +47174,56 @@ snapshots:
       tap-parser: 7.0.0
       tmp: 0.2.7
     transitivePeerDependencies:
+      - '@babel/core'
+      - arc-templates
+      - atpl
+      - bracket-template
       - bufferutil
+      - coffee-script
       - debug
+      - dot
+      - dust
+      - dustjs-helpers
+      - dustjs-linkedin
+      - eco
+      - ect
+      - ejs
+      - haml-coffee
+      - hamlet
+      - hamljs
+      - handlebars
+      - hogan.js
+      - htmling
+      - jazz
+      - jqtpl
+      - just
+      - liquid-node
+      - liquor
+      - mote
+      - nunjucks
+      - plates
+      - pug
+      - qejs
+      - ractive
+      - react
+      - react-dom
+      - slm
       - supports-color
+      - swig
+      - swig-templates
+      - teacup
+      - templayed
+      - then-pug
+      - tinyliquid
+      - toffee
+      - twig
+      - twing
+      - underscore
       - utf-8-validate
+      - vash
+      - velocityjs
+      - walrus
+      - whiskers
 
   text-decoder@1.2.7:
     dependencies:
@@ -47618,19 +48110,39 @@ snapshots:
 
   video-extensions@2.0.0: {}
 
-  viem@2.55.11:
+  viem@2.55.11(@typescript/typescript6@6.0.2)(zod@3.25.76):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.2.3
+      abitype: 1.2.3(@typescript/typescript6@6.0.2)(zod@3.25.76)
       isows: 1.0.7(ws@8.21.0)
-      ox: 0.14.33
+      ox: 0.14.33(@typescript/typescript6@6.0.2)(zod@3.25.76)
       ws: 8.21.0
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+      - zod
+
+  viem@2.55.11(@typescript/typescript6@6.0.2)(zod@4.4.3):
+    dependencies:
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.2.3(@typescript/typescript6@6.0.2)(zod@4.4.3)
+      isows: 1.0.7(ws@8.21.0)
+      ox: 0.14.33(@typescript/typescript6@6.0.2)(zod@4.4.3)
+      ws: 8.21.0
+    optionalDependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
 
   vinyl-contents@2.0.0:
     dependencies:
