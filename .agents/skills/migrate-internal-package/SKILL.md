@@ -22,6 +22,9 @@ Explain every cross-repository or administrative action before it happens.
 - If the user says "tell me how, I do it", provide the command and wait.
 - Require explicit authorization before changing repository settings, merging a
   PR, deprecating npm versions, or force-pushing.
+- Never run the history import's `--confirm` operation. That command is the
+  deliberate human administrator checkpoint because it temporarily changes a
+  Ghost repository setting and merges the exceptional PR.
 - Never ask for, display, or store credentials or OTPs.
 
 ## Work in isolated checkouts
@@ -178,8 +181,10 @@ method:
 - squash merge discards the imported ancestry;
 - rebase merge cannot preserve the subtree merge topology.
 
-Make CI green, then stop at the merge checkpoint. If the merge-commit option is
-disabled, an authorized org admin should run:
+Make CI green and run the guarded script with `--dry-run` as part of the
+automated preparation. Resolve preflight failures that are within the import's
+scope. Once it passes, stop and ask a human Ghost repository administrator to
+run this command from the Ghost repository root:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
@@ -189,21 +194,22 @@ disabled, an authorized org admin should run:
     --confirm
 ```
 
-An agent without admin authority should provide that exact handoff rather than
-attempting a workaround. The script performs preflight checks, records and
-temporarily changes the setting, uses the correct merge form, restores the
-setting, and verifies the resulting history.
+The script repeats the preflight, records and temporarily changes the merge
+setting, uses the correct merge form, restores the setting, and verifies the
+resulting history. The skill must not run this command on the administrator's
+behalf, even if its current GitHub session appears to have sufficient access.
 
 Every merge-checkpoint handoff must repeat the warning and render a directly
-copyable command containing the actual PR number and recorded source split tip;
-do not leave placeholders for the user to infer. Also provide the read-only
-`--dry-run` form first. Explicitly say not to use GitHub's normal squash/rebase
-buttons and not to remove `[Don't merge]` manually. The skill must never merge
-the PR unless the user separately authorizes that administrative action after
-seeing these instructions.
+copyable `--confirm` command containing the actual PR number and recorded source
+split tip; do not leave placeholders for the administrator to infer. Include
+the successful dry-run evidence and explain that the command temporarily
+enables merge commits, merges the pinned PR head, restores the original setting
+and verifies the ancestry. Explicitly say not to use GitHub's normal
+squash/rebase buttons and not to remove `[Don't merge]` manually.
 
-Afterward, independently fetch `main` and confirm the source split tip is an
-ancestor before starting source-repository cleanup.
+Wait for the administrator to report that the command completed. Afterward,
+independently fetch `main` and confirm the source split tip is an ancestor, then
+continue the automated source-repository cleanup and modernization workflow.
 
 ## 3. Remove the package from the source repository
 

@@ -36,9 +36,9 @@ switches Ghost consumers to `workspace:*`, marks the package private, maps its
 dependencies into the Ghost workspace and verifies the real production package
 path and release archive.
 
-## Import and merge the package
+## Run the migration
 
-### 1. Review the prepared import PR
+### 1. Let the skill prepare the import
 
 The skill extracts the package-only history and imports it with an unsquashed
 Git subtree merge. The resulting Ghost PR must:
@@ -46,33 +46,23 @@ Git subtree merge. The resulting Ghost PR must:
 - have a title beginning `[Don't merge]`;
 - warn against using GitHub's normal merge controls;
 - record the full source split SHA and subtree commit SHA;
-- include ready-to-run `--dry-run` and `--confirm` commands with no placeholders;
+- include a ready-to-run `--confirm` command with no placeholders;
 - have green CI before reaching the merge checkpoint.
 
 `[Don't merge]` means that the PR must not use Ghost's normal squash or rebase
 merge. Keep the prefix in place until the guarded command performs the
 history-preserving merge.
 
-### 2. Run the guarded merge
+The skill also runs the guarded merge script in read-only mode. This verifies
+the PR state, CI, reviewed head, repository setting and imported ancestry
+without changing GitHub. It resolves preparation failures where possible and
+includes the successful preflight evidence in its handoff.
 
-The PR contains commands populated with its actual PR number and source split
-SHA. Run the read-only preflight from the Ghost repository root first:
+### 2. Ask a repository administrator to merge it
 
-```bash
-.agents/skills/migrate-internal-package/scripts/merge-history-pr \
-    TryGhost/Ghost \
-    <pr-number> \
-    <full-source-split-sha> \
-    --dry-run
-```
-
-Check that it reports the expected repository, PR head and source split SHA. It
-also confirms that CI is green, the PR is mergeable, and the source history is
-reachable from the PR branch. The dry run does not change settings or merge the
-PR.
-
-If the output is correct, authorize the merge and run the command provided in
-the PR:
+The skill stops at the only manual checkpoint and asks a Ghost repository
+administrator to run the command provided in the PR from the Ghost repository
+root:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
@@ -87,15 +77,20 @@ commits if required, merges with the reviewed PR head pinned, restores the
 original setting, and verifies that the resulting commit has two parents and
 still contains the imported ancestry.
 
+This operation requires repository administration permission because Ghost
+normally has merge commits disabled. It is intentionally performed by a human
+administrator rather than by the skill.
+
 Do not substitute a manual `gh pr merge`, GitHub squash merge, rebase merge, or
 merge queue. If the script reports a protection or permission failure, resolve
 that specific blocker rather than bypassing it.
 
-## Complete the migration
+### 3. Let the skill complete the migration
 
-After the guarded merge, ask the skill to continue. It fetches Ghost `main` and
-confirms that the recorded source split SHA is an ancestor before removing
-anything from the source repository. It then prepares the remaining work:
+After the administrator reports that the command completed, ask the skill to
+continue. It fetches Ghost `main` and confirms that the recorded source split
+SHA is an ancestor before removing anything from the source repository. It then
+automates or prepares the remaining work:
 
 1. Remove the package and its publishing configuration from the source
    repository in a normal PR.
@@ -110,8 +105,9 @@ package.
 
 ## If the merge cannot proceed
 
-- If CI changes the PR head, rerun `--dry-run`; the script pins the merge to the
-  current reviewed head.
+- If CI or another commit changes the PR head, ask the skill to rerun its
+  preflight and produce a new handoff; the script pins the merge to the current
+  reviewed head.
 - If the source split SHA is missing or ambiguous, ask the skill to verify the
   subtree topology and update the PR instructions. Do not infer it.
 - If the repository merge setting cannot be restored, restore its original

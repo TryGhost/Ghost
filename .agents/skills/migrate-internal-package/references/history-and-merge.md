@@ -168,7 +168,17 @@ The merge must retain both the subtree topology and the import branch as the
 second parent of GitHub's merge commit. Do not manually reproduce the
 repository-setting sequence from prose.
 
-An authorized admin should run:
+The agent runs the read-only preflight while preparing the import:
+
+```bash
+.agents/skills/migrate-internal-package/scripts/merge-history-pr \
+    TryGhost/Ghost \
+    <pr-number> \
+    <source-split-tip> \
+    --dry-run
+```
+
+Once it passes, a human Ghost repository administrator—not the agent—runs:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
@@ -178,13 +188,13 @@ An authorized admin should run:
     --confirm
 ```
 
-The agent's handoff must substitute the real PR number and source split tip and
-show `--dry-run` first, followed by `--confirm`; placeholders are not an
-acceptable final handoff. The user should run the command from the Ghost
-repository root. Do not use GitHub's normal squash/rebase buttons or manually
-remove the `[Don't merge]` prefix before running it.
+The handoff must substitute the real PR number and source split tip; placeholders
+are not acceptable. Include the successful dry-run result so the administrator
+can verify the expected PR head and ancestry before running the command. Do not
+use GitHub's normal squash/rebase buttons or manually remove the `[Don't merge]`
+prefix.
 
-Use `--dry-run` instead of `--confirm` for read-only preflight. The script:
+The script:
 
 1. verifies authentication, PR state, checks and imported-history reachability;
 2. records the current `allow_merge_commit` setting;

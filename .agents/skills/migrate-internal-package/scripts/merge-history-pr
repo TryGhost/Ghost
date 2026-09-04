@@ -12,8 +12,9 @@ Safely merge a Ghost history-import PR with a merge commit. The script records
 the repository's merge-commit setting, enables it only when needed, restores it
 on every exit path, and verifies that SOURCE_SPLIT_TIP remains reachable.
 
---dry-run  Run read-only preflight checks without changing or merging anything.
---confirm  Confirm explicit authorization to change settings and merge the PR.
+--dry-run  Agent preflight; no settings are changed and no merge is performed.
+--confirm  Human administrator checkpoint; temporarily enable merge commits,
+           merge the PR, restore the setting, and verify the imported history.
 EOF
 }
 
@@ -80,6 +81,10 @@ if [[ $mode == --dry-run ]]; then
     printf 'Dry run complete; no settings changed and no merge performed.\n'
     exit 0
 fi
+
+is_admin=$(gh api "repos/$repo" --jq '.permissions.admin')
+[[ $is_admin == true ]] ||
+    fail "--confirm requires a human operator with repository administration permission"
 
 setting_changed=false
 
