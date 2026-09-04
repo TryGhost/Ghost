@@ -136,7 +136,8 @@ pnpm reset:data
 This clears the development database while preserving the owner, then creates
 1,000 members and 100 posts. Use `pnpm reset:data:empty` for an empty site. Both
 commands are destructive and require the Docker development environment to be
-running.
+running. See [Working with test data](test-data.md) for larger and custom
+datasets.
 
 When developing a database migration, apply pending migrations to the running
 development database with:

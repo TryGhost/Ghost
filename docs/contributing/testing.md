@@ -95,6 +95,7 @@ subdirectories, or a separate Admin origin, see
 
 For provider-backed development and the test doubles used by browser tests, see
 [Email testing](testing-email.md) and [Stripe testing](testing-stripe.md).
+For repeatable local datasets, see [Working with test data](test-data.md).
 
 ## Run Focused Tests
 
