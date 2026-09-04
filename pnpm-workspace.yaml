@@ -227,6 +227,14 @@ catalog:
   '@tryghost/validator': 3.2.12
 
 catalogs:
+  # Temporary exact versions for the api-framework migration. Reassess when the
+  # package is modernized to the internal TypeScript and ESM golden path.
+  api-framework-migration:
+    '@tryghost/debug': 2.3.13
+    '@tryghost/errors': 3.3.13
+    '@tryghost/promise': 2.3.13
+    '@tryghost/tpl': 2.3.13
+    '@tryghost/validator': 3.2.13
   react17:
     react: 17.0.2
     react-dom: 17.0.2
@@ -238,6 +246,9 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
+  # Preserve api-framework's source-workspace version during migration despite
+  # the repository-wide @tryghost/errors override below.
+  '@tryghost/api-framework>@tryghost/errors': 'catalog:api-framework-migration'
   # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
