@@ -196,7 +196,12 @@ export default tseslint.config([
   // Keep assertions in test files and Playwright-specific helpers.
   {
     files: ['**/*.ts', '**/*.mjs'],
-    ignores: ['tests/**/*.ts', 'helpers/playwright/**/*.ts', 'visual-regression/**/*.ts'],
+    ignores: [
+      'tests/**/*.ts',
+      'helpers/playwright/**/*.ts',
+      'visual-regression/**/*.ts',
+      'smoke/**/*.ts',
+    ],
     rules: {
       'no-restricted-syntax': [
         'error',
