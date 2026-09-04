@@ -6,6 +6,10 @@ releases. Use the `migrate-internal-package` skill to preserve the package's Git
 history, integrate it into the Ghost workspace and coordinate the cleanup work
 across repositories.
 
+Any contributor can run the skill. Repository administration permission is not
+needed for preparing the import or completing the follow-up work; it is needed
+only for the short merge checkpoint described below.
+
 Start the skill from the Ghost repository with the source package URL:
 
 ```text
@@ -60,8 +64,9 @@ includes the successful preflight evidence in its handoff.
 
 ### 2. Ask a repository administrator to merge it
 
-The skill stops at the only manual checkpoint and asks a Ghost repository
-administrator to run the command provided in the PR from the Ghost repository
+The skill stops at the only manual checkpoint and gives the contributor a
+complete handoff for one of the Ghost repository administrators. The
+administrator runs the command provided in the PR from the Ghost repository
 root:
 
 ```bash
@@ -87,10 +92,10 @@ that specific blocker rather than bypassing it.
 
 ### 3. Let the skill complete the migration
 
-After the administrator reports that the command completed, ask the skill to
-continue. It fetches Ghost `main` and confirms that the recorded source split
-SHA is an ancestor before removing anything from the source repository. It then
-automates or prepares the remaining work:
+After the administrator reports that the command completed, the contributor
+asks the skill to continue. It fetches Ghost `main` and confirms that the
+recorded source split SHA is an ancestor before removing anything from the
+source repository. It then automates or prepares the remaining work:
 
 1. Remove the package and its publishing configuration from the source
    repository in a normal PR.

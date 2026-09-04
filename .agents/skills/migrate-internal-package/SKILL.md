@@ -9,6 +9,12 @@ Move a package from another TryGhost repository into Ghost without losing its
 history or creating a period where neither repository owns it. Keep migration
 mechanics separate from Ghost's lifetime package standards.
 
+Any contributor can run this skill. Do not require repository administration
+permission for the audit, import, PR preparation, CI, read-only preflight,
+post-merge verification or follow-up work. Administration is required only at
+the exceptional merge checkpoint, which is handed to one of the small set of
+Ghost repository administrators.
+
 The contributor workflow is documented in
 [`docs/contributing/internal-package-migrations.md`](../../../docs/contributing/internal-package-migrations.md).
 Keep that guide aligned when this skill changes its outputs or human
@@ -194,7 +200,7 @@ run this command from the Ghost repository root:
     --confirm
 ```
 
-The script repeats the preflight, records and temporarily changes the merge
+The human administrator's script repeats the preflight, records and temporarily changes the merge
 setting, uses the correct merge form, restores the setting, and verifies the
 resulting history. The skill must not run this command on the administrator's
 behalf, even if its current GitHub session appears to have sufficient access.
