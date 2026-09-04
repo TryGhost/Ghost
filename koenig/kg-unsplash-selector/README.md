@@ -26,7 +26,7 @@ standalone dev server uses.
 
 This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
 and resolves through the pnpm workspace — there is no linking or per-package
-install step. Run `pnpm setup` in the monorepo root, then work in
+install step. Run `pnpm bootstrap` in the monorepo root, then work in
 `koenig/kg-unsplash-selector`.
 
 Run `pnpm dev` to start a standalone development server, which renders the

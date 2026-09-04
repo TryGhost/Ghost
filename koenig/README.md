@@ -53,7 +53,7 @@ from Mobiledoc. Avoid new work here.
 
 ## Development
 
-There is no linking or per-package install step — run `pnpm setup` once from
+There is no linking or per-package install step — run `pnpm bootstrap` once from
 the monorepo root and everything resolves through the workspace.
 
 ### Working on the editor (koenig-lexical)

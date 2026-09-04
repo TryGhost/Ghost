@@ -27,7 +27,7 @@
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
+    "bootstrap": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
     "migrate:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator migrate",
     "rollback:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator rollback",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
