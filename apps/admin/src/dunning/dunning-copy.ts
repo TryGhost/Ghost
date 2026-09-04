@@ -25,7 +25,7 @@ export function bannerMessage(state: DunningState, isOwner: boolean): string {
   const deadline = formatDeadline(state.suspendsAt);
   const remaining = daysLeftLabel(state.daysLeft);
   if (isOwner) {
-    return `Update your payment details by ${deadline} to avoid suspension — ${remaining} left.`;
+    return `Update your payment details by ${deadline} to avoid suspension (${remaining} left).`;
   }
   return `Remind the site owner to pay the outstanding invoice before ${deadline} to avoid suspension (${remaining} left).`;
 }
