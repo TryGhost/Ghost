@@ -49,6 +49,9 @@ For physical-device testing and URL configurations such as HTTPS,
 subdirectories, or a separate Admin origin, see
 [Testing development URLs and devices](testing-development-urls.md).
 
+For provider-backed development and the test doubles used by browser tests, see
+[Email testing](testing-email.md) and [Stripe testing](testing-stripe.md).
+
 ## Run Focused Tests
 
 Nx can run a target for one workspace from the repository root:

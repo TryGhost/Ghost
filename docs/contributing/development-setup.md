@@ -113,7 +113,8 @@ environment and adds the listed tooling:
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
 | `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
-| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; requires Tailscale, see below            |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)  |
+| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                   |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
@@ -122,38 +123,6 @@ optional integration. Never commit credentials or the local `.env` file.
 To open Ghost on a phone or another computer, or to exercise HTTPS,
 subdirectory, and separate-Admin URL behaviour, see
 [Testing development URLs and devices](testing-development-urls.md).
-
-### Stripe webhooks
-
-`pnpm dev:stripe` runs the webhook path production runs. It publishes Ghost's
-webhook route, and nothing else, through
-[Tailscale Funnel](https://tailscale.com/kb/1223/funnel), and Ghost registers a
-pinned webhook endpoint at that address once Stripe is connected in Admin, then
-deletes it on shutdown.
-The site and Admin stay on `localhost`, so hot reload and the rest of the
-development environment work as usual. Use it when the shape of a webhook
-payload matters, for example when reading new fields from a checkout session.
-Ghost logs an error whenever an event arrives rendered at a different API
-version from the one it pins, in any environment.
-
-The webhook route is reachable from the internet while the command runs; every
-request to it must carry a valid Stripe signature. The tunnel is a child
-process of the command and ends with it, including on Ctrl-C. Only a forced
-kill of the command can leave the tunnel running, and even then it does not
-survive a restart of Tailscale or the machine.
-
-Funnel needs Tailscale 1.52 or newer with MagicDNS, HTTPS certificates and
-Funnel enabled for your tailnet and node. The command reports when Tailscale is
-missing, not signed in, or has no MagicDNS name; for the other requirements it
-shows Tailscale's own error.
-
-`pnpm dev:stripe --listen` forwards events with `stripe listen` instead, which
-needs `STRIPE_SECRET_KEY` in the environment or a local `.env` file but no
-Tailscale. The CLI renders every event at your Stripe account's default API
-version, which cannot be pinned, so an event can carry a different shape from
-the one production receives; the command warns about this at startup and Ghost
-logs an error when a mismatched event arrives. Use it only when the payload
-shape does not matter.
 
 ## Data and email
 
@@ -177,7 +146,8 @@ pnpm migrate:db
 ```
 
 Development email is captured by Mailpit rather than delivered. Open
-[http://localhost:8025](http://localhost:8025) to inspect messages.
+[http://localhost:8025](http://localhost:8025) to inspect messages. For Mailgun
+delivery and automated-test workflows, see [Email testing](testing-email.md).
 
 ## Updating and recovering
 
