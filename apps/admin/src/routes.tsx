@@ -31,6 +31,7 @@ import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './posts/api';
 import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
 import { lazyTagsScreen } from './tags/api';
+import { type SidebarRouteHandle } from './layout/sidebar-visibility';
 import {
   canManageAutomations,
   canManageMembers,
@@ -185,12 +186,17 @@ const appRoutes: RouteObject[] = [
     // route aborts its transition, so the editor route never deactivates,
     // and a second visit is a model change on an already-active route where
     // `activate()` does not run again. The sidebar came back from the second
-    // post onwards. Deciding it from the route handle makes React the
-    // authority, removes the cross-implementation handshake, and applies to
-    // both sides of the flag.
+    // post onwards. The route handle therefore stays authoritative whenever
+    // React owns either side of the navigation. When both the editor and list
+    // are Ember-owned, it yields to Ember so the sidebar can return as soon as
+    // the list transition starts, before React's URL match leaves /editor/*.
     path: '/editor/*',
     Component: EditorGate,
-    handle: { ...emberFallbackHandle, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    handle: {
+      ...emberFallbackHandle,
+      allowEmberSidebarControl: true,
+      hideAdminSidebar: true,
+    } satisfies SidebarRouteHandle,
   },
   // Ember-handled routes
   ...emberFallbackRoutes,
