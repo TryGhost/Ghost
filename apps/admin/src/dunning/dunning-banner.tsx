@@ -3,7 +3,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useLocation } from '@tryghost/admin-x-framework';
-import { useDunningState, dismissLock } from './use-dunning-state';
+import { useDunningState, dismissLockQuietly } from './use-dunning-state';
 import { PAY_URL, bannerMessage, bannerTitle } from './dunning-copy';
 import { isBillingRoute } from './is-billing-route';
 
@@ -54,7 +54,7 @@ export function DunningBanner() {
         <Button size="sm" asChild>
           {/* Following the CTA counts as seeing the message: the locked
               takeover stays suppressed for the session, the banner stays. */}
-          <a href={PAY_URL} onClick={() => dismissLock(state)}>
+          <a href={PAY_URL} onClick={() => dismissLockQuietly(state)}>
             Pay now
           </a>
         </Button>
