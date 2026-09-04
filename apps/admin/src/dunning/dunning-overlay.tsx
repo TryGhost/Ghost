@@ -94,9 +94,6 @@ export function DunningOverlay() {
         ) : (
           owner && <OwnerCard owner={owner} />
         )}
-        <Button className="text-muted-foreground" variant="link" onClick={() => dismissLock(state)}>
-          Continue to my dashboard
-        </Button>
       </Stack>
     </div>
   );
