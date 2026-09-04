@@ -156,13 +156,29 @@ gh pr view <pr-number> --repo TryGhost/Ghost \
 Resolve real failures and base conflicts without flattening the subtree merge.
 Verify the graph again after any branch update.
 
+The PR title must begin `[Don't merge]`, and the first paragraph of its body
+must state that the normal squash and rebase controls must not be used. Include
+the guarded merge command with the actual PR number and source split tip in the
+body. Keep those protections in place through review and green CI so a reviewer
+cannot accidentally apply Ghost's normal merge policy.
+
 ## Use the guarded merge operation
 
 The merge must retain both the subtree topology and the import branch as the
 second parent of GitHub's merge commit. Do not manually reproduce the
 repository-setting sequence from prose.
 
-An authorized admin should run:
+The agent runs the read-only preflight while preparing the import:
+
+```bash
+.agents/skills/migrate-internal-package/scripts/merge-history-pr \
+    TryGhost/Ghost \
+    <pr-number> \
+    <source-split-tip> \
+    --dry-run
+```
+
+Once it passes, a human Ghost repository administrator—not the agent—runs:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
@@ -172,7 +188,13 @@ An authorized admin should run:
     --confirm
 ```
 
-Use `--dry-run` instead of `--confirm` for read-only preflight. The script:
+The handoff must substitute the real PR number and source split tip; placeholders
+are not acceptable. Include the successful dry-run result so the administrator
+can verify the expected PR head and ancestry before running the command. Do not
+use GitHub's normal squash/rebase buttons or manually remove the `[Don't merge]`
+prefix.
+
+The script:
 
 1. verifies authentication, PR state, checks and imported-history reachability;
 2. records the current `allow_merge_commit` setting;

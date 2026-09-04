@@ -85,7 +85,34 @@ not also Ghost workspaces. For each dependency:
 4. Stop if no published or destination-workspace dependency can satisfy it.
 
 Record temporary named-catalog entries in the PR and reassess them during
-modernization.
+modernization. After installation, verify the versions actually resolved in
+`pnpm-lock.yaml`; `overrides` take precedence over both default and named
+catalogs. If a repository-wide override changes the imported package's source
+version, preserve it with a package-scoped override such as:
+
+```yaml
+overrides:
+  '@tryghost/imported-package>@tryghost/dependency': 'catalog:migration-catalog'
+```
+
+Keep the existing global override for other consumers and explain the scoped
+exception next to it. Checking only `package.json` is insufficient because its
+catalog reference remains unchanged when pnpm applies an override.
+
+## Formatting
+
+An exact subtree import may not satisfy Ghost's current formatter. Do not alter
+the subtree commit: run the repository formatter against the imported package
+afterward and commit purely mechanical output separately from behavioral
+integration changes. Verify the focused path and the repository gate:
+
+```bash
+pnpm exec oxfmt --check packages/<package>
+pnpm format:check
+```
+
+If formatting changes files, rerun package lint and tests afterward. Do not mix
+opportunistic cleanup or modernization into the format-only commit.
 
 ## Verification
 
@@ -94,6 +121,7 @@ Run the package through its Nx surface and exercise a real consumer:
 ```bash
 pnpm nx run @tryghost/<package>:lint
 pnpm nx run @tryghost/<package>:test
+pnpm format:check
 pnpm build
 ```
 
