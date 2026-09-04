@@ -21,6 +21,10 @@ Start with:
 - Run `pnpm setup` before other commands in a fresh checkout or worktree.
 - Use `pnpm check` as the default full validation command. Browser E2E and Ember
   Admin tests run separately; follow the testing guide.
+- For Ghost Core type-only validation from the repository root, run
+  `CI=true pnpm typecheck:core`.
+  The target builds workspace dependencies without emitting Core JavaScript;
+  `ghost:build:tsc` is a production packaging target that emits beside source.
 - Read the nearest `AGENTS.md`, `CLAUDE.md`, and README before changing a package
   or subsystem. More specific guidance overrides this file.
 - When committing, load and follow `.agents/skills/commit/SKILL.md`.
