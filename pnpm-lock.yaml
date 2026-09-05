@@ -459,8 +459,8 @@ catalogs:
       specifier: 4.12.18
       version: 4.12.18
     js-yaml:
-      specifier: 4.3.0
-      version: 4.3.0
+      specifier: 4.3.1
+      version: 4.3.1
     jsdom:
       specifier: 30.0.1
       version: 30.0.1
@@ -2693,7 +2693,7 @@ importers:
         version: 5.4.3
       js-yaml:
         specifier: 'catalog:'
-        version: 4.3.0
+        version: 4.3.1
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
@@ -4380,7 +4380,7 @@ importers:
         version: 10.0.1
       js-yaml:
         specifier: 'catalog:'
-        version: 4.3.0
+        version: 4.3.1
       picomatch:
         specifier: 4.0.5
         version: 4.0.5
