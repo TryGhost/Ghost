@@ -326,6 +326,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: @tiptap/core@3.30.4
+  - "@tiptap/core@3.30.4"
 
 # configuration for pnpm's changeset functionality
 versioning:
