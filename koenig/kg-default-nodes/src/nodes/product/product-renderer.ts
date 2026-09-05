@@ -4,6 +4,7 @@ import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
+import {escapeHtml} from '../../utils/escape-html.js';
 
 interface ProductNodeData {
     productStarRating: number;
@@ -19,6 +20,7 @@ interface ProductTemplateBaseData {
     productImageSrc: string;
     productImageWidth: number | null;
     productImageHeight: number | null;
+    productImageAlt: string;
     productTitle: string;
     productDescription: string;
     productRatingEnabled: boolean;
@@ -86,7 +88,7 @@ export function cardTemplate({data}: {data: ProductTemplateData; feature?: Expor
         `
         <div class="kg-card kg-product-card">
             <div class="kg-product-card-container">
-                ${data.productImageSrc ? `<img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} class="kg-product-card-image" loading="lazy" />` : ''}
+                ${data.productImageSrc ? `<img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} alt="${escapeHtml(data.productImageAlt)}" class="kg-product-card-image" loading="lazy" />` : ''}
                 <div class="kg-product-card-title-container">
                     <h4 class="kg-product-card-title">${data.productTitle}</h4>
                 </div>
@@ -139,7 +141,7 @@ export function emailCardTemplate({data}: {data: ProductTemplateData; feature?: 
                         ${data.productImageSrc ? `
                             <tr>
                                 <td class="kg-product-image" align="center">
-                                    <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} border="0"/>
+                                    <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} alt="${escapeHtml(data.productImageAlt)}" border="0"/>
                                 </td>
                             </tr>
                         ` : ''}

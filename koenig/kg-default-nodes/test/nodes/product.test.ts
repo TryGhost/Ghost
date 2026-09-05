@@ -255,7 +255,7 @@ describe('ProductNode', function () {
             const element = result.element as HTMLElement;
 
             assertPrettifiesTo(element.outerHTML, `
-                <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span></div><div class="kg-product-card-description">This product is ok</div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>
+                <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" alt="" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"></path></svg></span></div><div class="kg-product-card-description">This product is ok</div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>
             `);
         }));
 
@@ -280,8 +280,50 @@ describe('ProductNode', function () {
             const element = result.element as HTMLElement;
 
             assertPrettifiesTo(element.outerHTML, `
-                <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td class="kg-product-card-container"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td class="kg-product-image" align="center"><img src="https://example.com/images/ok.jpg" border="0"></td></tr><tr><td valign="top"><h4 class="kg-product-title">Product title!</h4></td></tr><tr class="kg-product-rating"><td valign="top"><img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0"></td></tr><tr><td class="kg-product-description-wrapper">This product is ok</td></tr><tr><td class="kg-product-button-wrapper"><table class="btn" border="0" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" width="100%"><a href="https://example.com/product/ok">Click me</a></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>
+                <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td class="kg-product-card-container"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td class="kg-product-image" align="center"><img src="https://example.com/images/ok.jpg" alt="" border="0"></td></tr><tr><td valign="top"><h4 class="kg-product-title">Product title!</h4></td></tr><tr class="kg-product-rating"><td valign="top"><img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0"></td></tr><tr><td class="kg-product-description-wrapper">This product is ok</td></tr><tr><td class="kg-product-button-wrapper"><table class="btn" border="0" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" width="100%"><a href="https://example.com/product/ok">Click me</a></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>
             `);
+        }));
+
+        it('renders image alt text', editorTest(function () {
+            const productNode = $createProductNode({
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageAlt: 'A camera on a wooden table',
+                productTitle: 'Product title!'
+            });
+            const result = productNode.exportDOM(editor, exportOptions);
+            const element = result.element as HTMLElement;
+            const img = element.querySelector('img.kg-product-card-image')!;
+
+            expect(img.getAttribute('alt')).toBe('A camera on a wooden table');
+        }));
+
+        it('escapes image alt text', editorTest(function () {
+            const productNode = $createProductNode({
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageAlt: 'Fits "most" cameras & lenses',
+                productTitle: 'Product title!'
+            });
+            const result = productNode.exportDOM(editor, exportOptions);
+            const element = result.element as HTMLElement;
+            const img = element.querySelector('img.kg-product-card-image')!;
+
+            // unescaped quotes would truncate the attribute when the HTML is parsed
+            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & lenses');
+            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; lenses"');
+        }));
+
+        it('renders escaped image alt text in email', editorTest(function () {
+            const productNode = $createProductNode({
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageAlt: 'Fits "most" cameras & lenses',
+                productTitle: 'Product title!'
+            });
+            const result = productNode.exportDOM(editor, {...exportOptions, target: 'email'});
+            const element = result.element as HTMLElement;
+            const img = element.querySelector('td.kg-product-image img')!;
+
+            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & lenses');
+            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; lenses"');
         }));
     });
 
