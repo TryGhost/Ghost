@@ -1022,6 +1022,7 @@ describe('HTMLtoLexical', function () {
                         src="__GHOST_URL__/content/images/2023/10/CleanShot-2023-07-19-at-12.57.37@2x.png"
                         width="724"
                         height="76"
+                        alt="product image"
                         class="kg-product-card-image"
                         loading="lazy"
                     />
@@ -1215,6 +1216,34 @@ describe('HTMLtoLexical', function () {
         'header',
         'signup',
       ]);
+    });
+
+    it('keeps product card image alt text', function () {
+      const html = `
+            <div class="kg-card kg-product-card">
+                <div class="kg-product-card-container">
+                    <img
+                        src="https://example.com/images/camera.jpg"
+                        width="724"
+                        height="76"
+                        alt="A camera on a wooden table"
+                        class="kg-product-card-image"
+                        loading="lazy"
+                    />
+                    <div class="kg-product-card-title-container">
+                        <h4 class="kg-product-card-title">Product title</h4>
+                    </div>
+                    <div class="kg-product-card-description">Product description</div>
+                </div>
+            </div>
+            `;
+
+      const lexical = htmlToLexical(html, options);
+      const [product] = lexical.root.children;
+
+      assert.equal(product.type, 'product');
+      assert.equal(product.productImageSrc, 'https://example.com/images/camera.jpg');
+      assert.equal(product.productImageAlt, 'A camera on a wooden table');
     });
   });
 
