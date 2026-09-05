@@ -30,6 +30,7 @@ describe('ProductNode', function () {
         expect(productNode.productImageSrc).toBe(data.productImageSrc);
         expect(productNode.productImageWidth!).toBe(data.productImageWidth);
         expect(productNode.productImageHeight!).toBe(data.productImageHeight);
+        expect(productNode.productImageAlt).toBe(data.productImageAlt);
         expect(productNode.productTitle).toBe(data.productTitle);
         expect(productNode.productDescription).toBe(data.productDescription);
         expect(productNode.productRatingEnabled).toBe(true);
@@ -46,6 +47,7 @@ describe('ProductNode', function () {
             productImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
             productImageWidth: 200,
             productImageHeight: 100,
+            productImageAlt: 'A camera on a wooden table',
             productTitle: 'This is a <b>title</b>',
             productDescription: 'This is a <b>description</b>',
             productRatingEnabled: true,
@@ -85,6 +87,10 @@ describe('ProductNode', function () {
             expect(productNode.productImageHeight).toBe(null);
             productNode.productImageHeight = 700;
             expect(productNode.productImageHeight).toBe(700);
+
+            expect(productNode.productImageAlt).toBe('');
+            productNode.productImageAlt = 'A camera on a wooden table';
+            expect(productNode.productImageAlt).toBe('A camera on a wooden table');
 
             expect(productNode.productTitle).toBe('');
             productNode.productTitle = 'Title';
@@ -184,6 +190,7 @@ describe('ProductNode', function () {
                 productImageSrc: dataset.productImageSrc,
                 productImageWidth: dataset.productImageWidth,
                 productImageHeight: dataset.productImageHeight,
+                productImageAlt: dataset.productImageAlt,
                 productTitle: dataset.productTitle,
                 productDescription: dataset.productDescription,
                 productRatingEnabled: dataset.productRatingEnabled,
