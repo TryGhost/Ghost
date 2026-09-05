@@ -2438,6 +2438,67 @@ describe('mobiledocToLexical', function () {
       );
     });
 
+    it('keeps product card image alt text', function () {
+      const result = mobiledocToLexical(
+        JSON.stringify({
+          version: MOBILEDOC_VERSION,
+          ghostVersion: GHOST_VERSION,
+          atoms: [],
+          cards: [
+            [
+              'product',
+              {
+                version: 1,
+                productImageSrc: 'https://example.com/images/camera.jpg',
+                productImageWidth: 724,
+                productImageHeight: 76,
+                productImageAlt: 'A camera on a wooden table',
+                productTitle: 'Camera',
+                productDescription: 'A nice camera',
+                productRatingEnabled: false,
+                productStarRating: 5,
+                productButtonEnabled: false,
+                productButton: '',
+                productUrl: '',
+              },
+            ],
+          ],
+          markups: [],
+          sections: [[10, 0]],
+        }),
+      );
+
+      assert.equal(
+        result,
+        JSON.stringify({
+          root: {
+            children: [
+              {
+                type: 'product',
+                version: 1,
+                productImageSrc: 'https://example.com/images/camera.jpg',
+                productImageWidth: 724,
+                productImageHeight: 76,
+                productImageAlt: 'A camera on a wooden table',
+                productTitle: 'Camera',
+                productDescription: 'A nice camera',
+                productRatingEnabled: false,
+                productStarRating: 5,
+                productButtonEnabled: false,
+                productButton: '',
+                productUrl: '',
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        }),
+      );
+    });
+
     it('renames cards', function () {
       const result = mobiledocToLexical(
         JSON.stringify({

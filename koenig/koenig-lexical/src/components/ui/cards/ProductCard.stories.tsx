@@ -143,5 +143,6 @@ Populated.args = {
     buttonUrl: 'https://ghost.org/',
     rating: 4,
     imgMimeTypes: ['image/*'],
-    imgSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg'
+    imgSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
+    imgAlt: 'Fujifilm X100V camera on a wooden table'
 };
