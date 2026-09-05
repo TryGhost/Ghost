@@ -300,7 +300,7 @@ describe('ProductNode', function () {
         it('escapes image alt text', editorTest(function () {
             const productNode = $createProductNode({
                 productImageSrc: 'https://example.com/images/ok.jpg',
-                productImageAlt: 'Fits "most" cameras & lenses',
+                productImageAlt: 'Fits "most" cameras & <lenses>',
                 productTitle: 'Product title!'
             });
             const result = productNode.exportDOM(editor, exportOptions);
@@ -308,22 +308,22 @@ describe('ProductNode', function () {
             const img = element.querySelector('img.kg-product-card-image')!;
 
             // unescaped quotes would truncate the attribute when the HTML is parsed
-            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & lenses');
-            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; lenses"');
+            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & <lenses>');
+            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; ');
         }));
 
         it('renders escaped image alt text in email', editorTest(function () {
             const productNode = $createProductNode({
                 productImageSrc: 'https://example.com/images/ok.jpg',
-                productImageAlt: 'Fits "most" cameras & lenses',
+                productImageAlt: 'Fits "most" cameras & <lenses>',
                 productTitle: 'Product title!'
             });
             const result = productNode.exportDOM(editor, {...exportOptions, target: 'email'});
             const element = result.element as HTMLElement;
             const img = element.querySelector('td.kg-product-image img')!;
 
-            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & lenses');
-            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; lenses"');
+            expect(img.getAttribute('alt')).toBe('Fits "most" cameras & <lenses>');
+            expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; ');
         }));
     });
 
@@ -339,6 +339,7 @@ describe('ProductNode', function () {
             expect($isProductNode(productNode)).toBe(true);
 
             expect(productNode.productImageSrc).toBe('https://example.com/images/ok.jpg');
+            expect(productNode.productImageAlt).toBe('');
             expect(productNode.productTitle).toBe('Product title!');
             expect(productNode.productDescription).toBe('This product is ok');
             expect(productNode.productRatingEnabled).toBe(true);
@@ -416,6 +417,22 @@ describe('ProductNode', function () {
             expect(productNode.productImageSrc).toBe('https://example.com/images/ok.jpg');
             expect(productNode.productImageWidth).toBe(null);
             expect(productNode.productImageHeight).toBe(null);
+        }));
+
+        it('parses product card image alt text', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; &lt;lenses&gt;" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-description">This product is ok</div></div></div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
+            expect(nodes.length).toBe(1);
+
+            const productNode = nodes[0] as ProductNode;
+            expect($isProductNode(productNode)).toBe(true);
+
+            expect(productNode.productImageSrc).toBe('https://example.com/images/ok.jpg');
+            expect(productNode.productImageAlt).toBe('Fits "most" cameras & <lenses>');
+            expect(productNode.productImageWidth!).toBe(200);
+            expect(productNode.productImageHeight!).toBe(100);
         }));
 
         it('handles arbitrary whitespace in button content', editorTest(function () {
