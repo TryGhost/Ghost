@@ -312,6 +312,14 @@ module.exports = {
     return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
   },
 
+  get membersAccount() {
+    return apiFramework.pipeline(require('./members-account'), localUtils, 'members');
+  },
+
+  get memberMetafieldsMembers() {
+    return apiFramework.pipeline(require('./member-metafields-members'), localUtils, 'members');
+  },
+
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
   },

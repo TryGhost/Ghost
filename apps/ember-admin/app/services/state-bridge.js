@@ -19,6 +19,7 @@ const emberDataTypeMapping = {
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
+    SnippetsResponseType: {type: 'snippet'},
     TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
@@ -58,6 +59,14 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @action
     triggerFeatureFlagsChange() {
         this.trigger('featureFlagsChange');
+    }
+
+    @action
+    refreshFeatureFlagOverrides() {
+        this.feature.refreshFeatureFlagOverrides();
+        // React route ownership subscribes to this event so it can re-read
+        // Ember's invalidated value. It does not write overrides back.
+        this.triggerFeatureFlagsChange();
     }
 
     constructor() {

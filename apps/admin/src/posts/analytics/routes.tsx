@@ -5,14 +5,21 @@ import { type RouteObject, lazyComponent } from '@tryghost/admin-x-framework';
 // lazy composes the provider around the screen so neither chunk loads before
 // the route is visited. `lazy:` is preserved for per-view code-splitting.
 export const lazyPostAnalyticsRoot = async () => {
-  const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([
+  const [
+    { default: PostAnalyticsProvider },
+    { default: EmailSendingStatusProvider },
+    { default: PostAnalytics },
+  ] = await Promise.all([
     import('./providers/post-analytics-provider'),
+    import('./email-sending-status/email-sending-status-provider'),
     import('./post-analytics'),
   ]);
   return {
     element: (
       <PostAnalyticsProvider>
-        <PostAnalytics />
+        <EmailSendingStatusProvider>
+          <PostAnalytics />
+        </EmailSendingStatusProvider>
       </PostAnalyticsProvider>
     ),
   };

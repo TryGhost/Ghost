@@ -39,8 +39,10 @@ export type useBulkEditLinksParameters = {
   editedUrl: string;
 };
 
+export const linksDataType = 'LinkResponseType';
+
 export const useTopLinks = createQuery<LinkResponseType>({
-  dataType: 'LinkResponseType',
+  dataType: linksDataType,
   path: '/links/',
 });
 

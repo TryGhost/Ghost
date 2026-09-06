@@ -16,7 +16,9 @@ import {
   useMemberActivityFeed,
   useMemberCount,
   useMemberLogout,
+  useMembersCount,
   useRemoveMemberEmailSuppression,
+  membersCountString,
 } from '../../../src/api/members';
 import type {
   MemberActivityEvent,
@@ -308,6 +310,188 @@ describe('members api', () => {
 
       expect(result.current).toBeUndefined();
       expect(mockFetch.calls).toHaveLength(0);
+    });
+  });
+
+  describe('useMembersCount', () => {
+    it('fetches the count for a filter via a limit=1 browse request', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch(
+        {
+          json: membersResponse(4289),
+        },
+        async (mockFetch) => {
+          const { result } = renderHookWithProviders(
+            () => useMembersCount('status:free,label:vip'),
+            { queryClient },
+          );
+
+          await waitFor(() => {
+            expect(result.current.count).toBe(4289);
+          });
+
+          expect(result.current.isLoading).toBe(false);
+
+          const url = new URL(mockFetch.calls[0][0].toString());
+          expect(url.pathname).toBe('/ghost/api/admin/members/');
+          expect(url.searchParams.get('filter')).toBe('status:free,label:vip');
+          expect(url.searchParams.get('order')).toBe('id');
+          expect(url.searchParams.get('limit')).toBe('1');
+          expect(url.searchParams.get('page')).toBe('1');
+        },
+      );
+    });
+
+    it('reports loading while the current user is unresolved', () => {
+      const queryClient = createTestQueryClient();
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn(() => new Promise<Response>(() => {})) as typeof globalThis.fetch;
+
+      try {
+        const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+          queryClient,
+        });
+
+        expect(result.current).toMatchObject({ count: null, isLoading: true, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('returns a null count without fetching for roles that cannot manage members', async () => {
+      const queryClient = createQueryClientWithCurrentUser([{ id: 'role-1', name: 'Editor' }]);
+
+      await withMockFetch({}, async (mockFetch) => {
+        const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+          queryClient,
+        });
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        expect(result.current).toMatchObject({ count: null, isLoading: false, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
+        await act(async () => {
+          await result.current.refetch();
+        });
+        expect(mockFetch.calls).toHaveLength(0);
+      });
+    });
+
+    it('counts a nullish filter as 0 without fetching', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch({}, async (mockFetch) => {
+        const { result } = renderHookWithProviders(() => useMembersCount(null), { queryClient });
+
+        await act(async () => {
+          await Promise.resolve();
+        });
+
+        expect(result.current).toMatchObject({ count: 0, isLoading: false, error: null });
+        expect(result.current.refetch).toBeTypeOf('function');
+        await act(async () => {
+          await result.current.refetch();
+        });
+        expect(mockFetch.calls).toHaveLength(0);
+      });
+    });
+
+    it('resolves request errors to a count of 0 while preserving retry state', async () => {
+      const queryClient = createQueryClientWithCurrentUser([
+        { id: 'role-1', name: 'Administrator' },
+      ]);
+
+      await withMockFetch(
+        { json: { errors: [{ message: 'Nope' }] }, status: 500, ok: false },
+        async () => {
+          const { result } = renderHookWithProviders(() => useMembersCount('status:free'), {
+            queryClient,
+          });
+
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expect(result.current).toMatchObject({ count: 0, isLoading: false });
+          expect(result.current.refetch).toBeTypeOf('function');
+        },
+      );
+    });
+  });
+
+  describe('membersCountString', () => {
+    it('pluralizes counts per recipient type', () => {
+      expect(membersCountString('status:free', { count: 1 })).toBe('1 free member');
+      expect(membersCountString('status:free', { count: 0 })).toBe('0 free members');
+      expect(membersCountString('status:-free', { count: 5 })).toBe('5 paid members');
+      expect(membersCountString('status:free,status:-free', { count: 2 })).toBe('2 members');
+      expect(membersCountString('label:vip', { count: 3 })).toBe('3 members');
+      expect(membersCountString('status:free,label:vip', { count: 3 })).toBe('3 members');
+    });
+
+    it('formats large counts with the locale separator', () => {
+      expect(membersCountString('status:free,status:-free', { count: 12345 })).toBe(
+        `${(12345).toLocaleString()} members`,
+      );
+    });
+
+    it('falls back to descriptive copy when no count was fetched', () => {
+      expect(membersCountString('status:free')).toBe('all free members');
+      expect(membersCountString('status:-free')).toBe('all paid members');
+      expect(membersCountString('status:free,status:-free')).toBe('all members');
+      expect(membersCountString('')).toBe('all members');
+      expect(membersCountString('label:vip')).toBe('a custom members segment');
+    });
+
+    it('falls back to descriptive copy for a null count from useMembersCount', () => {
+      // null is useMembersCount's "role cannot browse members" value; it must
+      // never render as a zero count.
+      expect(membersCountString('status:free', { count: null })).toBe('all free members');
+      expect(membersCountString('label:vip', { count: null })).toBe('a custom members segment');
+    });
+
+    it('switches to subscriber copy and strips the newsletter scope when there are multiple newsletters', () => {
+      const newsletter = {
+        name: 'Weekly',
+        recipientFilter: 'newsletters.slug:weekly+email_disabled:0',
+      };
+      const fullFilter = `${newsletter.recipientFilter}+(status:free)`;
+
+      expect(
+        membersCountString(fullFilter, {
+          newsletter,
+          hasMultipleNewsletters: true,
+        }),
+      ).toBe('all free subscribers of Weekly');
+
+      expect(
+        membersCountString(fullFilter, {
+          count: 9,
+          newsletter,
+          hasMultipleNewsletters: true,
+        }),
+      ).toBe('9 free subscribers of Weekly');
+    });
+
+    it('keeps member copy for a single newsletter', () => {
+      const newsletter = {
+        name: 'Weekly',
+        recipientFilter: 'newsletters.slug:weekly+email_disabled:0',
+      };
+      const fullFilter = `${newsletter.recipientFilter}+(status:free)`;
+
+      expect(
+        membersCountString(fullFilter, {
+          count: 9,
+          newsletter,
+          hasMultipleNewsletters: false,
+        }),
+      ).toBe('9 free members');
     });
   });
 

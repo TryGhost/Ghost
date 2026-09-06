@@ -16,8 +16,12 @@ import type { Post } from '@tryghost/admin-x-framework/api/posts';
 import type { PostBucket, PostFilterContext, PostListParams } from '@/posts/list/post-query-params';
 import type { PostResource } from '@/posts/list/post-resource';
 
-/** A row in the list. Pages are posts with a different `displayName`. */
-export type PostListItem = Post | Page;
+/**
+ * A row in the shared list. Page API records never contain email data, but the
+ * resource-neutral rendering helpers need those properties to be addressable.
+ */
+export type PostListItem = (Post | Page) &
+  Partial<Pick<Post, 'count' | 'email' | 'email_only' | 'email_segment' | 'newsletter'>>;
 
 export interface UsePostsListOptions {
   resource: PostResource;

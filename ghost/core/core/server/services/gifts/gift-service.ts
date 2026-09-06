@@ -191,9 +191,6 @@ interface GiftServiceDeps {
     getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
     createSession(data: GiftCheckoutSession): Promise<{ id: string; url: string }>;
   };
-  labsService: {
-    isSet(flag: string): boolean;
-  };
   settingsCache: {
     get(key: string): unknown;
   };
@@ -332,24 +329,8 @@ export class GiftService {
   }
 
   async startCheckout(input: StartGiftCheckoutInput): Promise<{ url: string }> {
-    const customizationEnabled = this.deps.labsService.isSet('giftSubCustomization');
-    const populatedDeliveryFields = [
-      input.recipientEmail,
-      input.recipientName,
-      input.buyerName,
-      input.personalMessage,
-      input.deliveryDate,
-    ].some((value) => value !== undefined && value !== null && value !== '');
-
-    if (!customizationEnabled && (input.deliveryMethod === 'email' || populatedDeliveryFields)) {
-      throw new errors.BadRequestError({
-        message: 'Bad Request.',
-        context: 'Gift email delivery is not available',
-      });
-    }
-
     const parsedBuyerEmail = CheckoutBuyerEmailSchema.safeParse(input.buyer.email);
-    if (customizationEnabled && !parsedBuyerEmail.success) {
+    if (!parsedBuyerEmail.success) {
       throw new errors.BadRequestError({
         message: 'Bad Request.',
         context: `Invalid gift buyer email: ${parsedBuyerEmail.error.issues[0].message}`,
@@ -357,20 +338,14 @@ export class GiftService {
     }
     const buyerEmail = parsedBuyerEmail.success ? parsedBuyerEmail.data : input.buyer.email;
 
-    const parsedDelivery = GiftCheckoutDeliverySchema.safeParse(
-      customizationEnabled
-        ? {
-            deliveryMethod: input.deliveryMethod ?? 'link',
-            recipientEmail: input.recipientEmail,
-            recipientName: input.recipientName,
-            buyerName: input.buyerName,
-            personalMessage: input.personalMessage,
-            deliveryDate: input.deliveryDate,
-          }
-        : {
-            deliveryMethod: 'link',
-          },
-    );
+    const parsedDelivery = GiftCheckoutDeliverySchema.safeParse({
+      deliveryMethod: input.deliveryMethod ?? 'link',
+      recipientEmail: input.recipientEmail,
+      recipientName: input.recipientName,
+      buyerName: input.buyerName,
+      personalMessage: input.personalMessage,
+      deliveryDate: input.deliveryDate,
+    });
 
     if (!parsedDelivery.success) {
       const issue = parsedDelivery.error.issues[0];
@@ -397,24 +372,7 @@ export class GiftService {
       });
     }
 
-    let resolvedDuration: ResolvedGiftDuration | null = null;
-    let cadence: GiftCadence;
-
-    if (customizationEnabled) {
-      resolvedDuration = resolveGiftDuration(input);
-      cadence = resolvedDuration.cadence;
-    } else {
-      if (input.cadence !== 'month' && input.cadence !== 'year') {
-        const receivedCadence = input.cadence ? `"${input.cadence}"` : input.cadence;
-
-        throw new errors.BadRequestError({
-          message: 'Bad Request.',
-          context: `Expected cadence to be "month" or "year", received ${receivedCadence}`,
-        });
-      }
-
-      cadence = input.cadence;
-    }
+    const resolvedDuration: ResolvedGiftDuration = resolveGiftDuration(input);
 
     let tier: Tier | null;
     try {
@@ -437,22 +395,15 @@ export class GiftService {
       });
     }
 
-    let duration = 1;
-    let totalMonths: number | undefined;
-    let amount = tier.getPrice(cadence);
-
-    if (resolvedDuration) {
-      const plan = validateGiftCheckoutOffer({
-        tier,
-        portalPlans: this.deps.settingsCache.get('portal_plans'),
-        offer: resolvedDuration,
-      });
-
-      cadence = plan.cadence;
-      duration = plan.duration;
-      totalMonths = plan.totalMonths;
-      amount = plan.amount;
-    }
+    const plan = validateGiftCheckoutOffer({
+      tier,
+      portalPlans: this.deps.settingsCache.get('portal_plans'),
+      offer: resolvedDuration,
+    });
+    const cadence = plan.cadence;
+    const duration = plan.duration;
+    const totalMonths = plan.totalMonths;
+    const amount = plan.amount;
 
     const tierId = typeof tier.id === 'string' ? tier.id : tier.id.toHexString();
     const token = this.generateToken();

@@ -88,7 +88,8 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
     analytics: { webAnalytics, membersTrackSources },
   });
   const shouldGoToEditor = postDestination.startsWith('/editor/');
-  // Editor destinations are still Ember-owned and need a hash navigation.
+  // Editor destinations need a hash navigation while Ember serves them
+  // (the `editorReact` flag decides which side does).
   const destinationIsEmberOwned = useIsEmberOwnedRoute(postDestination);
 
   return (

@@ -27,7 +27,7 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-const GA_FEATURES = ['automationAnalytics', 'giftSubCustomization', 'tagDetailsReact'];
+const GA_FEATURES = ['automationAnalytics', 'tagDetailsReact'];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -49,6 +49,7 @@ const PRIVATE_FEATURES = [
   'admin7PageChrome',
   'tagsX',
   'emailUniqueid',
+  'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
@@ -59,6 +60,7 @@ const PRIVATE_FEATURES = [
   'selfServeArchives',
   'machinePayments',
   'postsListReact',
+  'editorReact',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

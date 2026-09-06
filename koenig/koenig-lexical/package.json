@@ -21,7 +21,8 @@
     ".": {
       "import": "./dist/koenig-lexical.js",
       "require": "./dist/koenig-lexical.umd.js"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
   "scripts": {
     "dev": "concurrently \"vite --host --force\" \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",

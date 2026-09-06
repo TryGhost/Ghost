@@ -20,9 +20,9 @@ export interface FeedbackResponseType {
   feedback: FeedbackItem[];
 }
 
-const dataType = 'FeedbackResponseType';
+export const feedbackDataType = 'FeedbackResponseType';
 
 export const usePostFeedbackQuery = createQueryWithId<FeedbackResponseType>({
-  dataType,
+  dataType: feedbackDataType,
   path: (id) => `/feedback/${id}/`,
 });

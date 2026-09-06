@@ -8,6 +8,16 @@
 
 @custom-variant admin7 (&:where(.admin7, .admin7 *));
 
+@keyframes email-sending-arrow-rise {
+  from {
+    transform: translateY(115%);
+  }
+
+  to {
+    transform: translateY(-115%);
+  }
+}
+
 /* The shell owns rollout eligibility. Admin overlays mount beside #root, so
    mirror typography into Shade portals and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
@@ -25,11 +35,30 @@
     'Inter Admin 7', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   --font-family: var(--font-sans);
-  --font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
+  --font-feature-settings: 'zero' 1, 'ss01' 1;
+  --heading-font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
   font-family: var(--font-sans);
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 14;
   font-feature-settings: var(--font-feature-settings);
+}
+
+/* Display alternates feel crowded at small sizes, so reserve them for
+   semantic headings across both Admin screens and Settings overlays. */
+:where(
+    .admin7,
+    body.react-admin:has(> #root .admin7)
+      > :is(
+        .shade.shade-admin,
+        #ember-basic-dropdown-wormhole,
+        #ember-modal-wormhole,
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
+      )
+  )
+  :where(h1, h2, h3, h4, h5, h6) {
+  font-feature-settings: var(--heading-font-feature-settings);
 }
 
 /* Browser form-control defaults can reset these inherited font properties.
@@ -52,10 +81,29 @@
   font-variation-settings: inherit;
 }
 
+/* These components are visually headings but do not all use heading elements.
+   Keep the display alternates scoped to their title text in Admin 7. */
+:where(
+    .admin7,
+    body.react-admin:has(> #root .admin7)
+      > :is(
+        .shade.shade-admin,
+        #ember-basic-dropdown-wormhole,
+        #ember-modal-wormhole,
+        #ember-liquid-wormhole,
+        #ember-alerts-wormhole,
+        #ember-notifications-wormhole
+      )
+  )
+  :is(.admin7-heading-features, .gh-publish-title) {
+  font-feature-settings: var(--heading-font-feature-settings);
+}
+
 /* Site custom-font families for the settings font pickers. The font-* utilities
    must be generated in this Tailwind lane; the font files themselves load with
    settings/custom-fonts.css in the settings chunk. */
 @theme {
+  --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;

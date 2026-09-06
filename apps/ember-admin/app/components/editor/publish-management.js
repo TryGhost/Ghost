@@ -256,9 +256,10 @@ export default class PublishManagement extends Component {
         // perform any post-save cleanup for the editor
         yield this.args.afterPublish(result);
 
-        // if emailed, wait until it has been submitted so we can show a failure message if needed
         if (willEmailImmediately && this.publishOptions.post.email) {
-            yield this.confirmEmailTask.perform();
+            if (!this.feature.improveSendingUI) {
+                yield this.confirmEmailTask.perform();
+            }
         }
 
         return result;

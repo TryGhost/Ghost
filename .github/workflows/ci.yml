@@ -241,6 +241,7 @@ jobs:
           if [[ "${{ env.IS_TAG }}" != 'true' && "${{ steps.changed.outputs.any-code }}" != 'true' ]]; then
             echo 'affected_projects=[]' >> "$GITHUB_OUTPUT"
             echo 'affected_projects_str=' >> "$GITHUB_OUTPUT"
+            echo 'typecheck_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
             echo 'affected_playwright_projects=[]' >> "$GITHUB_OUTPUT"
@@ -260,6 +261,9 @@ jobs:
           # string list for use in run-many commands
           AFFECTED_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
           echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
+          TYPECHECK_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --withTarget test:types --sep=, | tr -d '\n')
+          echo "typecheck_projects_str=$TYPECHECK_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
           if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
@@ -296,6 +300,7 @@ jobs:
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      typecheck_projects_str: ${{ steps.affected.outputs.typecheck_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
@@ -554,8 +559,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
-          # --force for the same reason as job_unit-tests: better-sqlite3 is an
-          # optionalDependency and boot uses it for the development database.
+          # better-sqlite3 is an optionalDependency that pnpm may skip when
+          # restoring from a cached store, and boot needs it for the
+          # development database.
           install-args: --force
 
       - name: Install hyperfine
@@ -693,11 +699,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
-          # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
-          # installing/linking it when restoring from a cached store. --force
-          # ensures all optional deps are installed regardless.
-          # (ghost core's test:unit job requires better-sqlite3)
-          install-args: --force
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -741,6 +745,33 @@ jobs:
             git diff
             exit 1
           fi
+
+      - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_typecheck:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
+    name: Typecheck
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1000
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+
+      - name: Typecheck projects
+        run: pnpm nx run-many -t test:types -p "${{ needs.job_setup.outputs.typecheck_projects_str }}"
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
 
       - uses: tryghost/actions/actions/slack-build@12da0671df2e249a65c467340262e6c4251d9565 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -796,6 +827,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -900,6 +934,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           trust-lockfile: 'true'
+          # Without --no-runtime, pnpm links the devEngines Node and every
+          # leg of this matrix runs that same version.
+          install-args: --no-runtime
 
       - name: Set env vars (MySQL)
         run: |
@@ -1061,16 +1098,33 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_ghost-cli:
-    name: Ghost-CLI tests
+    name: Ghost-CLI tests (${{ matrix.scenario }}, Node ${{ matrix.node }})
     needs: [job_setup, job_pack]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Clean install boots this build end to end, so it runs on every Node
+        # line `engines` claims — the same list the unit / legacy / acceptance
+        # matrices use. Boot is the only place runtime-only breakage shows up:
+        # a require/import race, a removed API. The suites that stop at module
+        # level can all pass while Ghost fails to start.
+        scenario: [clean-install]
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+        include:
+          # Upgrading from the newest Ghost on npm only works on the Node
+          # version that release's `engines` declared, so this leg tracks the
+          # default rather than the full list. It can join the matrix above
+          # once a published release supports the newer line.
+          - scenario: latest-release
+            node: ${{ needs.job_setup.outputs.node_version }}
     steps:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         env:
           FORCE_COLOR: 0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node }}
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
@@ -1092,10 +1146,11 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ghost-cli-debug-logs
+          name: ghost-cli-debug-logs-${{ matrix.scenario }}-${{ matrix.node }}
           path: /home/runner/.ghost/logs/
 
       - name: Clean Install
+        if: matrix.scenario == 'clean-install'
         run: |
           DIR=$(mktemp -d)
           ghost install local -d "$DIR" --archive "$(pwd)/ghost.tgz"
@@ -1104,6 +1159,7 @@ jobs:
           ghost stop -d "$DIR"
 
       - name: Latest Release
+        if: matrix.scenario == 'latest-release'
         # --force skips Ghost-CLI's version comparison between the archive and
         # the installed release. Without it this step is coupled to how far the
         # branch has drifted from main: a PR branched before the last release
@@ -2285,6 +2341,7 @@ jobs:
         job_docker,
         job_ghost-cli,
         job_admin-tests,
+        job_typecheck,
         job_unit-tests,
         job_acceptance-tests,
         job_legacy-tests,
@@ -2308,7 +2365,7 @@ jobs:
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
   publish_public_apps:
-    needs: [job_setup, job_lint, job_unit-tests, job_build_e2e_public_apps]
+    needs: [job_setup, job_lint, job_typecheck, job_unit-tests, job_build_e2e_public_apps]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     # Serialize per-app publishes so two quick main merges can't both compute the
@@ -2319,11 +2376,13 @@ jobs:
       group: publish-public-app-${{ matrix.package_name }}
       cancel-in-progress: false
     if: |
-      github.event_name != 'pull_request'
+      always()
+      && github.event_name != 'pull_request'
       && github.repository == 'TryGhost/Ghost'
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_setup.result == 'success'
       && needs.job_lint.result == 'success'
+      && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
       && needs.job_build_e2e_public_apps.result == 'success'
       && needs.job_setup.outputs.publish_public_apps_matrix != '[]'

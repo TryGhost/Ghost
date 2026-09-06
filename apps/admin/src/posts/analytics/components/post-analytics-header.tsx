@@ -1,5 +1,6 @@
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
+import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -35,13 +36,12 @@ import {
   formatNumber,
 } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
 import {
-  hasBeenEmailed,
   isEmailOnly,
-  isPublishedAndEmailed,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
@@ -54,6 +54,7 @@ import {
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -71,9 +72,17 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
+  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
+  const editorPath = `/editor/post/${postId}`;
+  // Whether the editor needs a hash navigation depends on the `editorReact` flag.
+  const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
+  const isPublishedPost = post?.status === 'published';
+  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
+  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
+  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -115,7 +124,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
         tabs.push('Web');
       }
     }
-    if (hasBeenEmailed(post)) {
+    if (hasNewsletterAnalytics) {
       tabs.push('Newsletter');
     }
     // Only show Growth tab if member source tracking is enabled
@@ -124,7 +133,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
 
     return tabs;
-  }, [post, webAnalyticsEnabled, membersTrackSources]);
+  }, [post, webAnalyticsEnabled, membersTrackSources, hasNewsletterAnalytics]);
 
   const handleDeletePost = () => {
     if (!post) {
@@ -203,7 +212,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         canShareAsGift={canManageGiftLink}
                         description=""
                         faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image}
+                        featureImageURL={post?.feature_image ?? undefined}
                         giftAccessLabel={giftAccessLabel(post?.visibility)}
                         open={isShareOpen}
                         postExcerpt={post?.excerpt || ''}
@@ -238,7 +247,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              navigate(`/editor/post/${postId}`, { crossApp: true });
+                              navigate(editorPath, { crossApp: editorIsEmberOwned });
                             }}
                           >
                             <LucideIcon.Pen />
@@ -283,15 +292,16 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
                       {isEmailOnly(post) &&
                         `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedOnly(post) &&
+                      {showPublishedOnSite &&
                         `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedAndEmailed(post) &&
+                      {showPublishedAndSent &&
                         `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}
                 </div>
               </div>
             )}
+            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

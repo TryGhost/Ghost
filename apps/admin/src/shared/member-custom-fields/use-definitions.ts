@@ -12,11 +12,18 @@ import {
  * custom fields, the member page shows no custom fields section, a filtered column falls
  * back to an unnamed header, and the import dialog maps onto Ghost's built-in member
  * fields alone. None of that is what the publisher came to the screen to do.
+ *
+ * A failed fetch is held for the life of the cache entry rather than retried whenever
+ * another consumer mounts. A retry in flight reports neither data nor an error, so every
+ * consumer would watch the definitions vanish and return on each mount. On the members
+ * page that swing rebuilt the field catalog, rewrote the URL, remounted the filter bar and
+ * retried again, without end. One attempt per visit settles it.
  */
+const quietlyDegrading = { defaultErrorHandler: false, retryOnMount: false } as const;
+
 export const useCustomFieldDefinitions: typeof useBrowseMemberCustomFields = (options) =>
-  useBrowseMemberCustomFields({ ...options, defaultErrorHandler: false });
+  useBrowseMemberCustomFields({ ...options, ...quietlyDegrading });
 
 /** As above, and also lists fields the publisher has archived. */
 export const useCustomFieldDefinitionsIncludingArchived: typeof useBrowseMemberCustomFieldsIncludingArchived =
-  (options) =>
-    useBrowseMemberCustomFieldsIncludingArchived({ ...options, defaultErrorHandler: false });
+  (options) => useBrowseMemberCustomFieldsIncludingArchived({ ...options, ...quietlyDegrading });

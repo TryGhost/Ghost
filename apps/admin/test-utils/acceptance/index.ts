@@ -21,6 +21,7 @@ export {
   fakePostsListScreen,
   fakeRoles,
   fakeSettingsScreens,
+  fakeSnippets,
   fakeTags,
   fakeThemes,
   fakeThemeUpload,
@@ -53,6 +54,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
+export { unsavedChangesGuarded } from './unsaved-changes-guard';
 
 // Test-data re-exports, so a spec needs a single import surface.
 export {
