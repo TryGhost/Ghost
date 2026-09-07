@@ -334,6 +334,21 @@ describe('syncTableToTinybird', () => {
     assert.equal(await watermark(), '2026-03-01 11:55:00');
   });
 
+  it('stops at maxRows and resumes from there on the next run', async () => {
+    for (let i = 0; i < 5; i++) {
+      await insertRun(minutesBeforeNow(10), { id: `run-${i}` });
+    }
+
+    assert.equal(await sync({ batchSize: 2, maxRows: 3 }), 3);
+    assert.deepEqual(receivedIds(), ['run-0', 'run-1', 'run-2']);
+    assert.equal(received.length, 2);
+    assert.equal(await watermarkId(), 'run-2');
+
+    received = [];
+    assert.equal(await sync({ batchSize: 2, maxRows: 3 }), 2);
+    assert.deepEqual(receivedIds(), ['run-3', 'run-4']);
+  });
+
   it('splits a batch into multiple requests when it exceeds the payload size in bytes', async () => {
     // 1000 characters but 2000 bytes: measured by string length, three lines would fit.
     const twoByteCharacters = 'ü'.repeat(1000);
