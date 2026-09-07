@@ -9,12 +9,19 @@ export type PostPreviewImplementation = 'ember' | 'react';
 
 class PreviewFrame {
   protected readonly page: Page;
+  private readonly implementation: PostPreviewImplementation;
 
-  constructor(page: Page) {
+  constructor(page: Page, implementation: PostPreviewImplementation) {
     this.page = page;
+    this.implementation = implementation;
   }
 
   protected async waitForEscapeScriptToBeReady(): Promise<void> {
+    // Only Ember injects the Escape handler into the preview document.
+    if (this.implementation === 'react') {
+      return;
+    }
+
     await this.page.waitForFunction(
       () => {
         const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
@@ -31,6 +38,7 @@ class PreviewFrame {
           return false;
         }
       },
+      undefined,
       { timeout: 5000 },
     );
   }
@@ -45,7 +53,7 @@ export class EmailPreviewFrame extends PreviewFrame {
     page: Page,
     { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
   ) {
-    super(page);
+    super(page, implementation);
     // Both implementations title the iframe "Email preview"; React also marks it.
     const selector =
       implementation === 'react'
@@ -72,7 +80,7 @@ export class DesktopPreviewFrame extends PreviewFrame {
     page: Page,
     { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
   ) {
-    super(page);
+    super(page, implementation);
     // React renders one preview iframe and changes the chrome around it; Ember
     // titles a separate iframe per device.
     const selector =

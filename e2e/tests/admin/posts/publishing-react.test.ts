@@ -181,6 +181,7 @@ test.describe('Ghost Admin - Publishing (React)', () => {
     const preview = editor.previewModal.desktopPreview;
     // The frame is rendered only once the save the preview waited on has landed
     await expect(preview.frameElement).toBeVisible();
+    await preview.waitForPreviewModalFrame();
 
     const post = await readPost(page, created.id);
     expect(post.lexical).toContain(addition);
