@@ -122,7 +122,7 @@ export interface ChangeTracker {
   dispose(): void;
 }
 
-type ProjectionKey = keyof EditablePostProjection;
+export type ProjectionKey = keyof EditablePostProjection;
 
 const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'title',
@@ -220,6 +220,26 @@ function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): stri
   return (related ?? []).map((entry) => entry.id ?? '');
 }
 
+/**
+ * The dirty-check compare for one field, minus `lexical`, whose semantic form
+ * needs the site url the tracker was built with.
+ */
+export function sameFieldValue(key: ProjectionKey, a: unknown, b: unknown): boolean {
+  if (key === 'tags') {
+    return dequal(
+      tagNames(a as ReadonlyArray<PostTagLike>),
+      tagNames(b as ReadonlyArray<PostTagLike>),
+    );
+  }
+  if (RELATION_KEYS.has(key)) {
+    return dequal(
+      relationIds(a as ReadonlyArray<PostRelationLike>),
+      relationIds(b as ReadonlyArray<PostRelationLike>),
+    );
+  }
+  return dequal(a, b);
+}
+
 function isOlderToken(candidate: string | null, held: string | null): boolean {
   if (candidate === null || held === null) {
     return false;
@@ -252,19 +272,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         return false;
       }
     }
-    if (key === 'tags') {
-      return dequal(
-        tagNames(a as ReadonlyArray<PostTagLike>),
-        tagNames(b as ReadonlyArray<PostTagLike>),
-      );
-    }
-    if (RELATION_KEYS.has(key)) {
-      return dequal(
-        relationIds(a as ReadonlyArray<PostRelationLike>),
-        relationIds(b as ReadonlyArray<PostRelationLike>),
-      );
-    }
-    return dequal(a, b);
+    return sameFieldValue(key, a, b);
   }
 
   function isCurrent(id: PostId): boolean {
