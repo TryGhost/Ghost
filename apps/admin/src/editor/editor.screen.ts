@@ -16,6 +16,7 @@ import {
   editorLoadError,
   editorPreviewButton,
   editorPublishButton,
+  editorPublishInputsError,
   editorSaveButton,
   editorUnpublishButton,
   editorUnscheduleButton,
@@ -81,6 +82,9 @@ export const editorScreen = {
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnpublishButton }),
   unscheduleButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnscheduleButton }),
+  publishInputsError: () => page.getByTestId(editorPublishInputsError),
+  retryPublishInputs: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),

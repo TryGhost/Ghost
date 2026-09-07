@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  browseResponse,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeNewsletters,
@@ -18,6 +19,7 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { publishScreen } from '@/editor/publish/publish.screen';
@@ -156,6 +158,33 @@ function fakeSavablePost(
   return saveApi;
 }
 
+/**
+ * The Ember half of the state bridge, which the app reads to invalidate the
+ * React Query cache when Ember saves a model (src/ember-bridge/ember-bridge.tsx).
+ * Returns a function that reports one such save.
+ */
+function installEmberBridge(): (modelName: string) => void {
+  const handlers = new Set<(event: EmberDataChangeEvent) => void>();
+  const state = {
+    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => {
+      if (event === 'emberDataChange') {
+        handlers.add(callback);
+      }
+    },
+    off: (_event: string, callback: (event: EmberDataChangeEvent) => void) => {
+      handlers.delete(callback);
+    },
+    sidebarVisible: true,
+    getRouteUrl: (routeName: string) => routeName,
+    isRouteActive: () => false,
+  };
+  window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
+
+  return (modelName: string) => {
+    handlers.forEach((handler) => handler({ operation: 'update', modelName, id: '1', data: null }));
+  };
+}
+
 /** The current user with one role, for the role matrix the header renders. */
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
@@ -178,6 +207,7 @@ async function publishThroughFlow() {
 afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
   localStorage.removeItem('ghost-last-scheduled-post');
+  delete window.EmberBridge;
 });
 
 /**
@@ -363,6 +393,10 @@ describe('Editor header actions', () => {
       await userEvent.keyboard('{Meta>}p{/Meta}');
       await expect.element(previewScreen.modal()).toBeVisible();
 
+      // A flow opened under the preview is unreachable, so the chord does nothing here.
+      await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+      await expect(publishScreen.options()).toHaveCount(0);
+
       await userEvent.keyboard('{Meta>}p{/Meta}');
       await expect(previewScreen.modal()).toHaveCount(0);
     },
@@ -442,6 +476,81 @@ describe('Editor header actions', () => {
       await expect.element(publishScreen.complete()).toBeVisible();
       expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
       expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the open publish flow and its choices while an input refetches',
+    async () => {
+      publishChrome();
+      const refetched = deferred<void>();
+      let newsletterReads = 0;
+      // Registered after publishChrome's newsletters fake, so this one answers.
+      fakeAdminEndpoint('GET', /^\/newsletters\//, async () => {
+        newsletterReads += 1;
+        if (newsletterReads > 1) {
+          await refetched.promise;
+        }
+        return browseResponse(
+          'newsletters',
+          [newsletter({ slug: 'weekly', name: 'Weekly', status: 'active' })],
+          { limit: 'all' },
+        );
+      });
+      const saveApi = fakeSavablePost();
+      const emberSaved = installEmberBridge();
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Publish only').click();
+
+      // Ember saving a newsletter invalidates the input the flow was built from.
+      emberSaved('newsletter');
+      await expect.poll(() => newsletterReads).toBe(2);
+      await expect.element(publishScreen.options()).toBeVisible();
+
+      refetched.resolve();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      // A remounted flow would default back to publishing and emailing.
+      await expect.element(publishScreen.complete()).toBeVisible();
+      expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
+    },
+    SLOW,
+  );
+
+  it(
+    'offers a retry when the publish inputs fail to load',
+    async () => {
+      publishChrome();
+      fakeSavablePost();
+      fakeAdminEndpoint(
+        'GET',
+        /^\/newsletters\//,
+        { errors: [{ type: 'InternalServerError', message: 'Newsletters are unavailable.' }] },
+        { status: 500 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
+      await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
+      await expect.element(editorScreen.publishButton()).toBeDisabled();
+
+      // The retry re-reads the same endpoint, which now answers.
+      fakeAdminEndpoint(
+        'GET',
+        /^\/newsletters\//,
+        browseResponse('newsletters', [], {
+          limit: 'all',
+        }),
+      );
+      await editorScreen.retryPublishInputs().click();
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await expect(editorScreen.publishInputsError()).toHaveCount(0);
     },
     SLOW,
   );

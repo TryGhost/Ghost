@@ -34,6 +34,7 @@ export const postPreviewSaveFailed = 'post-preview-save-failed';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
 export const editorLeaveDialog = 'editor-leave-dialog';
 export const editorHeaderActions = 'editor-header-actions';
+export const editorPublishInputsError = 'editor-publish-inputs-error';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
