@@ -199,8 +199,8 @@ describe('Publish flow', () => {
   it(
     'holds the confirm button through the email poll so the publish cannot be dispatched twice',
     async () => {
-      // Two polls, so the flow is still waiting when the assertions run.
-      fakeEmailPolling({ status: 'pending' }, { status: 'submitted' });
+      const email = { status: 'pending' };
+      fakeEmailPolling(email);
       const { dispatch } = await renderPublishFlow();
 
       await publishScreen.continueButton().click();
@@ -216,6 +216,8 @@ describe('Publish flow', () => {
         .toBe(true);
       expect(dispatch).toHaveBeenCalledTimes(1);
 
+      // Keep polling pending until the running button has been observed.
+      email.status = 'submitted';
       await expect.element(publishScreen.complete()).toBeInTheDocument();
       expect(dispatch).toHaveBeenCalledTimes(1);
     },

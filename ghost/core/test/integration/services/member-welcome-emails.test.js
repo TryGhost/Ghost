@@ -35,7 +35,7 @@ describe('Member Welcome Emails Integration', function () {
   beforeAll(async function () {
     await testUtils.setup('default')();
     membersService = require('../../../core/server/services/members');
-    membersService.init();
+    await membersService.init();
     defaultEmailDesignSettingId = await db
       .knex('email_design_settings')
       .where('slug', 'default-automated-email')

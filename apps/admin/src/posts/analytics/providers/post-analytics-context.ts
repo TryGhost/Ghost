@@ -32,6 +32,7 @@ export type PostAnalyticsContextType = {
   postId: string;
   post: Post | undefined;
   isPostLoading: boolean;
+  refetchPost: () => Promise<void>;
   range: number;
   setRange: (value: number) => void;
 };

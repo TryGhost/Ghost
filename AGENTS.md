@@ -11,6 +11,7 @@ Start with:
 - [Writing codebase documentation](docs/contributing/documentation.md)
 - [Testing](docs/contributing/testing.md)
 - [Shipping](docs/contributing/shipping.md)
+- [Codebase direction](docs/codebase/direction.md)
 - [Monorepo structure](docs/codebase/monorepo-structure.md)
 
 ## Required workflow

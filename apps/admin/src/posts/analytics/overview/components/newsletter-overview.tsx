@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import {
   BarChartLoadingIndicator,
   Button,
@@ -28,6 +29,7 @@ import { type Post } from '@tryghost/admin-x-framework/api/posts';
 import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/utils/link-helpers';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -42,6 +44,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
 }) => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const { isNewsletterDataHidden } = useEmailSendingStatusContext();
 
   // Calculate stats from post data
   const stats = useMemo(() => {
@@ -108,16 +111,18 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
             Newsletter performance
           </CardTitle>
         </CardHeader>
-        <Button
-          className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            navigate(`/posts/analytics/${postId}/newsletter`);
-          }}
-        >
-          View more
-        </Button>
+        {!isNewsletterDataHidden && (
+          <Button
+            className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              navigate(`/posts/analytics/${postId}/newsletter`);
+            }}
+          >
+            View more
+          </Button>
+        )}
       </div>
       {isNewsletterStatsLoading ? (
         <CardContent>
@@ -126,111 +131,117 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           </div>
         </CardContent>
       ) : (
-        <CardContent className={`${fullWidth && 'grid grid-cols-2'}`}>
-          <div className={`${fullWidth && 'border-r pr-6'}`}>
-            <div className="grid grid-cols-2 gap-6">
-              <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
-                <div className="flex grow flex-col gap-1.5 border-none pb-0">
-                  <KpiCardHeaderLabel color="var(--chart-blue)">Open rate</KpiCardHeaderLabel>
-                  <KpiCardHeaderValue
-                    // diffDirection={'up'}
-                    // diffTooltip={'Better than the average'}
-                    // diffValue={1.45}
-                    value={formatPercentage(stats.openedRate)}
-                  />
-                </div>
-              </KpiCardHeader>
-              <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
-                <div className="flex grow flex-col gap-1.5 border-none pb-0">
-                  <KpiCardHeaderLabel color="var(--chart-teal)">Click rate</KpiCardHeaderLabel>
-                  <KpiCardHeaderValue
-                    // diffDirection={'up'}
-                    // diffTooltip={'Better than the average'}
-                    // diffValue={1.45}
-                    value={formatPercentage(stats.clickedRate)}
-                  />
-                </div>
-              </KpiCardHeader>
-            </div>
-            {!fullWidth && <Separator />}
-            <div className="mx-auto my-6 h-[240px]">
-              <NewsletterRadialChart
-                className="pointer-events-none aspect-square h-[240px]"
-                config={commonChartConfig}
-                data={commonChartData}
-                tooltip={false}
-              />
-            </div>
-          </div>
-
-          <div className={`${fullWidth && 'pl-6'}`}>
-            {!fullWidth && <Separator />}
-            <div className={fullWidth ? '' : 'pt-3'}>
-              <div
-                className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}
-              >
-                <span className="font-medium text-muted-foreground">
-                  Top clicked links in this email
-                </span>
-                <HTable>Members</HTable>
+        <CardContent>
+          <PendingSendEmpty
+            className={`${fullWidth && 'grid grid-cols-2'}`}
+            description="Opens and clicks will appear once every email has been sent"
+            title="This newsletter is still sending"
+          >
+            <div className={`${fullWidth && 'border-r pr-6'}`}>
+              <div className="grid grid-cols-2 gap-6">
+                <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
+                  <div className="flex grow flex-col gap-1.5 border-none pb-0">
+                    <KpiCardHeaderLabel color="var(--chart-blue)">Open rate</KpiCardHeaderLabel>
+                    <KpiCardHeaderValue
+                      // diffDirection={'up'}
+                      // diffTooltip={'Better than the average'}
+                      // diffValue={1.45}
+                      value={formatPercentage(stats.openedRate)}
+                    />
+                  </div>
+                </KpiCardHeader>
+                <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
+                  <div className="flex grow flex-col gap-1.5 border-none pb-0">
+                    <KpiCardHeaderLabel color="var(--chart-teal)">Click rate</KpiCardHeaderLabel>
+                    <KpiCardHeaderValue
+                      // diffDirection={'up'}
+                      // diffTooltip={'Better than the average'}
+                      // diffValue={1.45}
+                      value={formatPercentage(stats.clickedRate)}
+                    />
+                  </div>
+                </KpiCardHeader>
               </div>
-
-              {topLinks.length > 0 ? (
-                <DataList className="">
-                  <DataListBody>
-                    {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
-                      const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
-                      return (
-                        <DataListRow key={link.link.link_id}>
-                          <DataListBar
-                            style={{
-                              width: `${percentage ? Math.round(percentage * 100) : 0}%`,
-                            }}
-                          />
-                          <DataListItemContent>
-                            <div className="flex items-center space-x-2 overflow-hidden">
-                              <LucideIcon.Link
-                                className="shrink-0 text-muted-foreground"
-                                size={16}
-                                strokeWidth={1.5}
-                              />
-                              <a
-                                className="block truncate font-medium hover:underline"
-                                href={link.link.to}
-                                rel="noreferrer"
-                                target="_blank"
-                                title={link.link.to}
-                              >
-                                {cleanTrackedUrl(link.link.to, true)}
-                              </a>
-                            </div>
-                          </DataListItemContent>
-                          <DataListItemValue>
-                            <DataListItemValueAbs>
-                              {formatNumber(link.count || 0)}
-                            </DataListItemValueAbs>
-                            <DataListItemValuePerc>
-                              {formatPercentage(percentage)}
-                            </DataListItemValuePerc>
-                          </DataListItemValue>
-                        </DataListRow>
-                      );
-                    })}
-                  </DataListBody>
-                </DataList>
-              ) : (
-                <div className="py-20 text-center text-sm text-gray-700">
-                  You have no links in your post.
-                </div>
-              )}
+              {!fullWidth && <Separator />}
+              <div className="mx-auto my-6 h-[240px]">
+                <NewsletterRadialChart
+                  className="pointer-events-none aspect-square h-[240px]"
+                  config={commonChartConfig}
+                  data={commonChartData}
+                  tooltip={false}
+                />
+              </div>
             </div>
-          </div>
-          {/* <Button variant='outline' onClick={() => {
+
+            <div className={`${fullWidth && 'pl-6'}`}>
+              {!fullWidth && <Separator />}
+              <div className={fullWidth ? '' : 'pt-3'}>
+                <div
+                  className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}
+                >
+                  <span className="font-medium text-muted-foreground">
+                    Top clicked links in this email
+                  </span>
+                  <HTable>Members</HTable>
+                </div>
+
+                {topLinks.length > 0 ? (
+                  <DataList className="">
+                    <DataListBody>
+                      {topLinks.slice(0, fullWidth ? 10 : 5).map((link) => {
+                        const percentage = stats.clicked > 0 ? link.count / stats.clicked : 0;
+                        return (
+                          <DataListRow key={link.link.link_id}>
+                            <DataListBar
+                              style={{
+                                width: `${percentage ? Math.round(percentage * 100) : 0}%`,
+                              }}
+                            />
+                            <DataListItemContent>
+                              <div className="flex items-center space-x-2 overflow-hidden">
+                                <LucideIcon.Link
+                                  className="shrink-0 text-muted-foreground"
+                                  size={16}
+                                  strokeWidth={1.5}
+                                />
+                                <a
+                                  className="block truncate font-medium hover:underline"
+                                  href={link.link.to}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                  title={link.link.to}
+                                >
+                                  {cleanTrackedUrl(link.link.to, true)}
+                                </a>
+                              </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                              <DataListItemValueAbs>
+                                {formatNumber(link.count || 0)}
+                              </DataListItemValueAbs>
+                              <DataListItemValuePerc>
+                                {formatPercentage(percentage)}
+                              </DataListItemValuePerc>
+                            </DataListItemValue>
+                          </DataListRow>
+                        );
+                      })}
+                    </DataListBody>
+                  </DataList>
+                ) : (
+                  <div className="py-20 text-center text-sm text-gray-700">
+                    You have no links in your post.
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* <Button variant='outline' onClick={() => {
                         navigate(`/posts/analytics/${postId}/newsletter`);
                     }}>
                         View all
                         <LucideIcon.ArrowRight />
                     </Button> */}
+          </PendingSendEmpty>
         </CardContent>
       )}
     </Card>
