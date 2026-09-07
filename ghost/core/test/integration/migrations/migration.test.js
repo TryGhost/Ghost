@@ -52,6 +52,69 @@ describe('Migrations', function () {
       });
     });
 
+    it('preserves legacy email accounting as unknown through migration and rollback', async function () {
+      const migration = require('../../../core/server/data/migrations/versions/6.63/2026-09-07-13-39-34-add-email-recipient-accounting');
+      const options = { connection: db.knex };
+      const fields = {
+        emails: [
+          'preflight_email_count',
+          'candidate_count',
+          'preparation_excluded_count',
+          'prepared_at',
+        ],
+        email_batches: ['recipient_count', 'submission_excluded_count', 'submitted_count'],
+      };
+
+      await migration.down(options);
+      await migration.down(options);
+      const emailId = '123456789012345678901234';
+      const batchId = '123456789012345678901235';
+      await db.knex('emails').insert({
+        id: emailId,
+        post_id: '123456789012345678901236',
+        uuid: '12345678-1234-1234-1234-123456789012',
+        recipient_filter: 'all',
+        email_count: 12,
+        status: 'pending',
+        created_at: new Date(),
+        submitted_at: new Date(),
+      });
+      await db.knex('email_batches').insert({
+        id: batchId,
+        email_id: emailId,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      await migration.up(options);
+      await migration.up(options);
+      for (const [table, columns] of Object.entries(fields)) {
+        const row = await db
+          .knex(table)
+          .where({ id: table === 'emails' ? emailId : batchId })
+          .first();
+        const info = await db.knex(table).columnInfo();
+        for (const column of columns) {
+          assert.equal(row[column], null);
+          assert.equal(info[column].nullable, true);
+        }
+        assert.equal(row.status, 'pending');
+      }
+      assert.equal((await db.knex('emails').where({ id: emailId }).first()).email_count, 12);
+
+      await migration.down(options);
+      for (const [table, columns] of Object.entries(fields)) {
+        for (const column of columns) {
+          assert.equal(await db.knex.schema.hasColumn(table, column), false);
+        }
+      }
+      await migration.up(options);
+      assert.equal(
+        (await db.knex('emails').where({ id: emailId }).first()).preflight_email_count,
+        null,
+      );
+    });
+
     it('should have idempotent migrations', async function () {
       // Delete all knowledge that we've run migrations so we can run them again
       await db.knex('migrations').whereILike('version', `${currentMajor}.%`).del();
