@@ -38,7 +38,6 @@ describe('Users service', function () {
       const findAll = () => Promise.resolve({ models: users });
 
       return new Users({
-        dbBackup: { backup: sinon.stub().resolves() },
         models: {
           Base: { transaction: (cb) => cb('fake_transaction') },
           User: { findAll },
@@ -134,9 +133,6 @@ describe('Users service', function () {
 
     function createMockOptions({ userPostIds, alreadyTaggedPostIds, insertedRows, addActions }) {
       return {
-        dbBackup: {
-          backup: sinon.mock().resolves('backup/path/file.json'),
-        },
         models: {
           Base: {
             knex: (tableName) => {

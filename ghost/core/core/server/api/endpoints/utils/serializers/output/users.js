@@ -6,16 +6,6 @@ const messages = {
 };
 
 module.exports = {
-  destroy(filename, apiConfig, frame) {
-    debug('destroy');
-
-    frame.response = {
-      meta: {
-        filename: filename,
-      },
-    };
-  },
-
   changePassword(models, apiConfig, frame) {
     debug('changePassword');
 
