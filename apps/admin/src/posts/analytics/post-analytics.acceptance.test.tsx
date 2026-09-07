@@ -254,7 +254,9 @@ describe('Post analytics overview', () => {
     await expect
       .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
       .toBeVisible();
-    await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeDisabled();
+    await expect
+      .element(page.getByRole('button', { name: /View members/ }).first())
+      .not.toBeInTheDocument();
 
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
