@@ -1,4 +1,5 @@
 import Feedback from './components/feedback';
+import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import KpiCard, {
   KpiCardContent,
   KpiCardLabel,
@@ -47,13 +48,14 @@ import {
 import { type Post, usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { buildMembersUrl } from '@/members/api';
 import { getLinkById } from '@/posts/analytics/utils/link-helpers';
-import { hasBeenEmailed, useNavigate } from '@tryghost/admin-x-framework';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { toast } from 'sonner';
 import { useBulkEditLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-framework/api/settings';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -105,20 +107,21 @@ const Newsletter: React.FC = () => {
   const { chartSize } = useResponsiveChartSize();
   const emailTrackClicksEnabled = useEmailTrackClicks();
   const emailTrackOpensEnabled = useEmailTrackOpens();
+  const { hasNewsletterAnalytics, isNewsletterDataHidden, isStatusLoading } =
+    useEmailSendingStatusContext();
 
   // Use shared post data from context
   const { post, isPostLoading, postId } = usePostAnalytics();
   const navigateToMembers = (filter: string) => navigate(buildMembersUrl({ filter }));
   const typedPost = post as Post;
-  // Use the utility function from admin-x-framework
-  const showNewsletterSection = hasBeenEmailed(typedPost);
+  const showNewsletterSection = hasNewsletterAnalytics;
 
   useEffect(() => {
     // Redirect to overview if the post wasn't sent as a newsletter
-    if (!isPostLoading && !showNewsletterSection) {
+    if (!isPostLoading && !isStatusLoading && !showNewsletterSection) {
       navigate(`/posts/analytics/${postId}`);
     }
-  }, [navigate, postId, isPostLoading, showNewsletterSection]);
+  }, [navigate, postId, isPostLoading, isStatusLoading, showNewsletterSection]);
 
   const {
     stats,
@@ -241,7 +244,9 @@ const Newsletter: React.FC = () => {
     }
   }, [editingLinkId, editedUrl, topLinks]);
 
-  const isLoading = isNewsletterStatsLoading || isPostLoading;
+  const isLoading = isNewsletterStatsLoading || isPostLoading || isStatusLoading;
+  const showClicksCard = emailTrackClicksEnabled && !isNewsletterDataHidden;
+  const noValue = <span className="font-normal text-muted-foreground">&ndash;</span>;
 
   // "Sent" Chart
   const sentChartData: NewsletterRadialChartData[] = [
@@ -336,9 +341,9 @@ const Newsletter: React.FC = () => {
       <PostAnalyticsHeader currentTab="Newsletter" />
       <PostAnalyticsContent>
         <div
-          className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && emailTrackClicksEnabled && 'lg:grid-cols-2'}`}
+          className={`grid grid-cols-1 gap-6 ${shouldShowFeedback && showClicksCard && 'lg:grid-cols-2'}`}
         >
-          <Card className={shouldShowFeedback && emailTrackClicksEnabled ? 'lg:col-span-2' : ''}>
+          <Card className={shouldShowFeedback && showClicksCard ? 'lg:col-span-2' : ''}>
             <CardHeader className="hidden">
               <CardTitle>Newsletters</CardTitle>
               <CardDescription>How did this post perform</CardDescription>
@@ -349,9 +354,12 @@ const Newsletter: React.FC = () => {
               </CardContent>
             ) : (
               <CardContent className="p-0">
-                <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
+                <div
+                  className={`grid ${chartHeaderClass} items-stretch border-b ${isNewsletterDataHidden ? 'pointer-events-none opacity-40' : ''}`}
+                >
                   <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                     <KpiCardMoreButton
+                      disabled={isNewsletterDataHidden}
                       onClick={() => {
                         navigateToMembers(`emails.post_id:${postId}`);
                       }}
@@ -368,7 +376,7 @@ const Newsletter: React.FC = () => {
                     </KpiCardLabel>
                     <KpiCardContent>
                       <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                        {formatNumber(stats.sent)}
+                        {isNewsletterDataHidden ? noValue : formatNumber(stats.sent)}
                       </KpiCardValue>
                     </KpiCardContent>
                   </KpiCard>
@@ -376,6 +384,7 @@ const Newsletter: React.FC = () => {
                   {emailTrackOpensEnabled && (
                     <KpiCard className="p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
+                        disabled={isNewsletterDataHidden}
                         onClick={() => {
                           navigateToMembers(`opened_emails.post_id:${postId}`);
                         }}
@@ -392,7 +401,7 @@ const Newsletter: React.FC = () => {
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.opened)}
+                          {isNewsletterDataHidden ? noValue : formatNumber(stats.opened)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
@@ -401,6 +410,7 @@ const Newsletter: React.FC = () => {
                   {emailTrackClicksEnabled && (
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
                       <KpiCardMoreButton
+                        disabled={isNewsletterDataHidden}
                         onClick={() => {
                           navigateToMembers(`clicked_links.post_id:${postId}`);
                         }}
@@ -417,78 +427,83 @@ const Newsletter: React.FC = () => {
                       </KpiCardLabel>
                       <KpiCardContent>
                         <KpiCardValue className="text-xl leading-none sm:text-2xl md:text-[2.6rem]">
-                          {formatNumber(stats.clicked)}
+                          {isNewsletterDataHidden ? noValue : formatNumber(stats.clicked)}
                         </KpiCardValue>
                       </KpiCardContent>
                     </KpiCard>
                   )}
                 </div>
-                <div
-                  className={`$ mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
+                <PendingSendEmpty
+                  description="Sends, opens and clicks will appear once every email has been sent"
+                  title="This newsletter is still sending"
                 >
                   <div
-                    className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
+                    className={`mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}
                   >
-                    <NewsletterRadialChart
-                      className={chartClass}
-                      config={sentChartConfig}
-                      data={sentChartData}
-                      percentageLabel="Sent"
-                      percentageValue={formatPercentage(1)}
-                      size={chartSize}
-                      tooltip={false}
-                    />
-                    {(emailTrackOpensEnabled || emailTrackClicksEnabled) && <FunnelArrow />}
-                  </div>
-
-                  {emailTrackOpensEnabled && (
                     <div
-                      className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}
+                      className={`relative border-r-0 px-6 ${(emailTrackOpensEnabled || emailTrackClicksEnabled) && 'md:border-r'}`}
                     >
-                      <BlockTooltip
-                        avgValue={formatPercentage(averageStats.openedRate)}
-                        dataColor="var(--chart-blue)"
-                        value={formatPercentage(stats.openedRate)}
-                      />
                       <NewsletterRadialChart
                         className={chartClass}
-                        config={openedChartConfig}
-                        data={openedChartData}
-                        percentageLabel="Open rate"
-                        percentageValue={formatPercentage(stats.openedRate)}
+                        config={sentChartConfig}
+                        data={sentChartData}
+                        percentageLabel="Sent"
+                        percentageValue={formatPercentage(1)}
                         size={chartSize}
                         tooltip={false}
                       />
-                      {emailTrackClicksEnabled && <FunnelArrow />}
+                      {(emailTrackOpensEnabled || emailTrackClicksEnabled) && <FunnelArrow />}
                     </div>
-                  )}
 
-                  {emailTrackClicksEnabled && (
-                    <div className="group/block relative px-6 transition-all hover:bg-muted/25">
-                      <BlockTooltip
-                        avgValue={formatPercentage(averageStats.clickedRate)}
-                        dataColor="var(--chart-teal)"
-                        value={formatPercentage(stats.clickedRate)}
-                      />
-                      <NewsletterRadialChart
-                        className={chartClass}
-                        config={clickedChartConfig}
-                        data={clickedChartData}
-                        percentageLabel="Click rate"
-                        percentageValue={formatPercentage(stats.clickedRate)}
-                        size={chartSize}
-                        tooltip={false}
-                      />
-                    </div>
-                  )}
-                </div>
+                    {emailTrackOpensEnabled && (
+                      <div
+                        className={`group/block relative border-r-0 px-6 transition-all hover:bg-muted/25 ${emailTrackClicksEnabled && 'md:border-r'}`}
+                      >
+                        <BlockTooltip
+                          avgValue={formatPercentage(averageStats.openedRate)}
+                          dataColor="var(--chart-blue)"
+                          value={formatPercentage(stats.openedRate)}
+                        />
+                        <NewsletterRadialChart
+                          className={chartClass}
+                          config={openedChartConfig}
+                          data={openedChartData}
+                          percentageLabel="Open rate"
+                          percentageValue={formatPercentage(stats.openedRate)}
+                          size={chartSize}
+                          tooltip={false}
+                        />
+                        {emailTrackClicksEnabled && <FunnelArrow />}
+                      </div>
+                    )}
+
+                    {emailTrackClicksEnabled && (
+                      <div className="group/block relative px-6 transition-all hover:bg-muted/25">
+                        <BlockTooltip
+                          avgValue={formatPercentage(averageStats.clickedRate)}
+                          dataColor="var(--chart-teal)"
+                          value={formatPercentage(stats.clickedRate)}
+                        />
+                        <NewsletterRadialChart
+                          className={chartClass}
+                          config={clickedChartConfig}
+                          data={clickedChartData}
+                          percentageLabel="Click rate"
+                          percentageValue={formatPercentage(stats.clickedRate)}
+                          size={chartSize}
+                          tooltip={false}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </PendingSendEmpty>
               </CardContent>
             )}
           </Card>
 
           {shouldShowFeedback && <Feedback feedbackStats={feedbackStats} />}
 
-          {emailTrackClicksEnabled && (
+          {showClicksCard && (
             <Card className="group/datalist overflow-hidden">
               <div className="flex items-center justify-between p-6">
                 <CardHeader className="p-0">

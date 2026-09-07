@@ -76,6 +76,7 @@ adding translatable product copy, see the
 
 Codebase guides explain how the main systems fit together:
 
+- [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
@@ -98,6 +99,8 @@ Practice and contributor guides explain how to make and verify changes:
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Performance testing](contributing/performance-testing.md)
+- [Stripe testing](contributing/testing-stripe.md)
+- [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 
 Reference guides provide tables and other information to look up while working
