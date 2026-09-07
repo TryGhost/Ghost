@@ -8,7 +8,14 @@ import { z } from 'zod';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
-const settingValueSchema = z.union([z.string(), z.boolean(), z.number(), z.null()]);
+// Core's `all_blocked_email_domains` is array-valued, so a scalar-only union rejects a real response.
+const settingValueSchema = z.union([
+  z.string(),
+  z.boolean(),
+  z.number(),
+  z.null(),
+  z.array(z.string()),
+]);
 const settingSchema = z.looseObject({ key: z.string(), value: settingValueSchema });
 const defaultRecipientsSchema = z.enum(['disabled', 'visibility', 'filter']);
 const newsletterSchema = z
