@@ -3,6 +3,8 @@ import { createSlugMachine } from '@/editor/engine/slug-machine';
 import {
   DEFAULT_TITLE,
   createSaveEngine,
+  isCollisionToken,
+  type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
   type SaveCompletion,
@@ -66,8 +68,12 @@ export interface EditorSessionOptions {
 
 export interface EditorSession {
   getState: () => SaveEngineState;
+  /** Notified on engine state changes and whenever the post's dirtiness flips. */
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
+  isDirty: () => boolean;
+  /** Dirty for a reason other than the failed save itself: work a reload would discard. */
+  hasUnsavedContent: () => boolean;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
   patchFeatureImage: (
@@ -82,13 +88,18 @@ export interface EditorSession {
   dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
-  recordRefetched: (record: EditorRecord) => void;
+  getLiveLexical: () => string | null;
+  recordRefetched: (record: EditorRecord) => boolean;
+  /** Replaces the whole document when the server copy safely advances this session. */
+  recordReloaded: (record: EditorRecord) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
+  leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
 }
 
-function isOlder(candidate: string, held: string | null): boolean {
+/** Whether a record's collision token predates the one already held. */
+export function isOlderToken(candidate: string, held: string | null): boolean {
   if (!held) {
     return false;
   }
@@ -117,6 +128,7 @@ export function createEditorSession({
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
+  let disposed = false;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -129,10 +141,31 @@ export function createEditorSession({
 
   const slug = createSlugPort(machine);
 
+  // The engine reports its own state, but an edit the engine drops (a
+  // published post never autosaves) still changes whether the post is dirty.
+  const dirtyListeners = new Set<() => void>();
+  let lastDirty: boolean;
+
+  function dirtyChanged(): void {
+    const next = getSnapshot().isDirty;
+    if (next === lastDirty) {
+      return;
+    }
+    lastDirty = next;
+    for (const listener of dirtyListeners) {
+      try {
+        listener();
+      } catch (error) {
+        onError(error);
+      }
+    }
+  }
+
   function patchLive(patch: EditablePostPatch): void {
     live = { ...live, ...patch };
     version += 1;
     tracker.setLive(identity.id, patch);
+    dirtyChanged();
   }
 
   // A save writes a title and slug the writer never typed: the request's own
@@ -165,6 +198,8 @@ export function createEditorSession({
       version,
     });
   }
+
+  lastDirty = getSnapshot().isDirty;
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
@@ -272,6 +307,7 @@ export function createEditorSession({
     if (created) {
       onIdAcquired(result.id);
     }
+    dirtyChanged();
   }
 
   const engine = createSaveEngine<EditorSaveSnapshot, PreparedSave, EditorSaveResult>({
@@ -284,14 +320,27 @@ export function createEditorSession({
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);
       }
+      // A save error moves dirtiness without going through a patch, so
+      // `lastDirty` is refreshed here rather than left to catch up.
+      dirtyChanged();
     },
     onListenerError: onError,
   });
 
   return {
     getState: () => engine.getState(),
-    subscribe: (listener) => engine.subscribe(listener),
+    subscribe: (listener) => {
+      const stopEngine = engine.subscribe(listener);
+      dirtyListeners.add(listener);
+      return () => {
+        stopEngine();
+        dirtyListeners.delete(listener);
+      };
+    },
     getSaveSnapshot: getSnapshot,
+    isDirty: () => getSnapshot().isDirty,
+    hasUnsavedContent: () =>
+      tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
@@ -299,8 +348,14 @@ export function createEditorSession({
     patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
     patchFeatureImage: (patch) => patchLive(patch),
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
-    setBaseline: (lexical) => tracker.setBaseline(identity.id, lexical),
-    baselineFailed: (error) => tracker.baselineFailed(identity.id, error),
+    setBaseline: (lexical) => {
+      tracker.setBaseline(identity.id, lexical);
+      dirtyChanged();
+    },
+    baselineFailed: (error) => {
+      tracker.baselineFailed(identity.id, error);
+      dirtyChanged();
+    },
 
     // Only a draft's title drives the slug; a published URL must not move.
     commitTitle: (title) => {
@@ -311,26 +366,61 @@ export function createEditorSession({
     dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      if (identity.id !== next.id) {
-        return;
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
       }
       tracker.setSaved(next.id, projectionOf(next));
-      const updatedAt = next.updated_at ?? '';
-      if (isOlder(updatedAt, identity.updatedAt)) {
-        return;
-      }
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
+      dirtyChanged();
+      return true;
+    },
+
+    // A document boundary, not a refetch: the tracker reloads, so the baseline
+    // the hidden instance reported for the old document is discarded with it.
+    recordReloaded: (next) => {
+      // The read outlives a session the writer navigated away from.
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
+      }
+      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+        return false;
+      }
+      identity = { id: next.id, updatedAt };
+      status = next.status ?? 'draft';
+      publishedAt = next.published_at ?? null;
+      latestRevision = latestRevisionOf(next);
+      live = projectionOf(next);
+      version += 1;
+      tracker.load(identity.id, live);
+      machine.loaded({ slug: live.slug, title: live.title });
+      dirtyChanged();
+      return true;
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),
     reauthAbandoned: () => engine.reauthAbandoned(),
+    leaveRequested: () => engine.leaveRequested(),
 
     dispose: () => {
+      disposed = true;
       engine.dispose();
       tracker.dispose();
     },

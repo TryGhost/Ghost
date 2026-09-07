@@ -6,6 +6,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useState } from 'react';
 import {
   publishAlreadySent,
@@ -56,7 +57,9 @@ function capitalize(value: string): string {
 }
 
 function RecipientsRowTitle({ state }: { state: PublishOptionsState }) {
-  const { count } = useMembersCount(state.fullRecipientFilter);
+  const { count } = useMembersCount(state.fullRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
 
   if (!state.recipientFilter) {
     return <>Not sent as newsletter</>;

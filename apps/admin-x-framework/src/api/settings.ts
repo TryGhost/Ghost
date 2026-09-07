@@ -1,4 +1,5 @@
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import type { RequestOptions } from '../utils/api/fetch-api';
 import { Config } from './config';
 
 // Types
@@ -138,21 +139,25 @@ export function isSettingReadOnly(
 // while the settings query has no data (the TanStack `data` contract), so
 // callers can tell "not loaded yet" from a settled `false`.
 
-function useSettings(): Setting[] | undefined {
-  const { data } = useBrowseSettings();
+export interface SettingsSelectorOptions {
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+}
+
+function useSettings({ requestOptions }: SettingsSelectorOptions = {}): Setting[] | undefined {
+  const { data } = useBrowseSettings({ requestOptions });
   return data?.settings;
 }
 
-export function usePaidMembersEnabled(): boolean | undefined {
-  const settings = useSettings();
+export function usePaidMembersEnabled(options?: SettingsSelectorOptions): boolean | undefined {
+  const settings = useSettings(options);
   if (!settings) {
     return undefined;
   }
   return getSettingValue<boolean>(settings, 'paid_members_enabled') ?? false;
 }
 
-export function useNewslettersEnabled(): boolean | undefined {
-  const settings = useSettings();
+export function useNewslettersEnabled(options?: SettingsSelectorOptions): boolean | undefined {
+  const settings = useSettings(options);
   if (!settings) {
     return undefined;
   }

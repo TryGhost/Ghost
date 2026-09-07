@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
@@ -30,6 +31,24 @@ function record(overrides: Partial<EditorRecord> = {}): EditorRecord {
   };
 }
 
+function updateCollision(): JSONError {
+  return new JSONError(new Response(null, { status: 409 }), {
+    errors: [
+      {
+        code: 'UPDATE_COLLISION',
+        context: null,
+        details: null,
+        ghostErrorCode: null,
+        help: '',
+        id: 'id',
+        message: 'Saving failed! Someone else is editing this post.',
+        property: null,
+        type: 'UpdateCollisionError',
+      },
+    ],
+  });
+}
+
 interface Harness {
   updates: Array<{ payload: EditorWritePayload; saveRevision?: boolean }>;
   creates: EditorWritePayload[];
@@ -41,6 +60,9 @@ interface Harness {
 interface HarnessHooks {
   duringSave?: () => void;
   acknowledge?: (record: EditorRecord, saveCount: number) => EditorRecord;
+  /** Answers an update with nothing, which the session reports as a failed save. */
+  failSave?: (saveCount: number) => boolean;
+  failUpdateWith?: Error;
 }
 
 function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
@@ -75,7 +97,13 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
       update: (payload, writeOptions) => {
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
         hooks.duringSave?.();
+        if (hooks.failUpdateWith) {
+          return Promise.reject(hooks.failUpdateWith);
+        }
         saveCount += 1;
+        if (hooks.failSave?.(saveCount)) {
+          return Promise.resolve(undefined);
+        }
         const next = record({
           ...state.acknowledged,
           title: payload.title as string,
@@ -290,9 +318,223 @@ describe('createEditorSession', () => {
 
     session.setBaseline(record().lexical);
     session.patchLexical(edited);
-    session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
+    const accepted = session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
 
+    expect(accepted).toBe(true);
     expect(session.getSaveSnapshot().isDirty).toBe(true);
+  });
+
+  it.each([
+    ['has no collision token', null],
+    ['has a malformed collision token', 'not-a-date'],
+    ['is older', '2025-12-31T23:59:59.000Z'],
+  ])('ignores a refetched record that %s', (_label, updatedAt) => {
+    const { session } = harness({ record: record() });
+    session.patchTitle('My title');
+
+    const accepted = session.recordRefetched(
+      record({ title: 'Stale title', status: 'published', updated_at: updatedAt }),
+    );
+
+    expect(accepted).toBe(false);
+    expect(session.getSaveSnapshot()).toMatchObject({
+      title: 'My title',
+      status: 'draft',
+      updatedAt: LOADED_AT,
+    });
+  });
+
+  it('ignores a refetch that lands after the session was disposed', () => {
+    const { session } = harness({ record: record() });
+    session.dispose();
+
+    const accepted = session.recordRefetched(
+      record({ status: 'published', updated_at: '2026-01-02T00:00:00.000Z' }),
+    );
+
+    expect(accepted).toBe(false);
+    expect(session.getSaveSnapshot()).toMatchObject({
+      status: 'draft',
+      updatedAt: LOADED_AT,
+    });
+  });
+
+  it('replaces the document when the writer reloads it', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+    const reloaded = record({
+      title: 'Their title',
+      lexical: buildLexicalParagraph('Their words'),
+      updated_at: '2026-01-02T00:00:00.000Z',
+    });
+
+    session.setBaseline(record().lexical);
+    session.patchLexical(body('Unsaved edit'));
+    await session.dispatchExplicit();
+    expect(session.recordReloaded(reloaded)).toBe(true);
+    session.setBaseline(reloaded.lexical);
+
+    const snapshot = session.getSaveSnapshot();
+    expect(snapshot.isDirty).toBe(false);
+    expect(snapshot.title).toBe('Their title');
+    expect(snapshot.updatedAt).toBe('2026-01-02T00:00:00.000Z');
+    expect(session.getLiveLexical()).toBe(reloaded.lexical);
+  });
+
+  it('notifies leave-guard subscribers when a reload clears unsaved work', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+    session.patchTitle('My unsaved title');
+    await session.dispatchExplicit();
+    expect(session.isDirty()).toBe(true);
+    const seen: boolean[] = [];
+    session.subscribe(() => seen.push(session.isDirty()));
+
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+
+    expect(session.isDirty()).toBe(false);
+    expect(seen.at(-1)).toBe(false);
+    expect(await session.leaveRequested()).toBe('proceed');
+  });
+
+  it('sends the reloaded collision token on the next save', async () => {
+    const { session, state } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+    session.patchLexical(body('Written on top of theirs'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[1].payload.updated_at).toBe('2026-01-02T00:00:00.000Z');
+  });
+
+  it('leaves the conflict state once the document has been reloaded', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+    expect(session.getState().kind).toBe('conflict');
+
+    const accepted = session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
+
+    expect(accepted).toBe(true);
+    expect(session.getState().kind).toBe('idle');
+  });
+
+  it('keeps the conflict while the reload brings back the token the server rejected', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+
+    const accepted = session.recordReloaded(
+      record({
+        title: 'Their title',
+        lexical: buildLexicalParagraph('Their words'),
+        updated_at: LOADED_AT,
+      }),
+    );
+
+    expect(accepted).toBe(false);
+    expect(session.getState().kind).toBe('conflict');
+    expect(session.getSaveSnapshot().title).toBe('Hello');
+    expect(session.getLiveLexical()).toBe(JSON.stringify(body('Mine')));
+  });
+
+  it('accepts a reload at a token a refetch learned after the rejected save', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+    const newer = record({
+      title: 'Their title',
+      lexical: buildLexicalParagraph('Their words'),
+      updated_at: '2026-01-02T00:00:00.000Z',
+    });
+
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+    expect(session.recordRefetched(newer)).toBe(true);
+
+    expect(session.recordReloaded(newer)).toBe(true);
+    expect(session.getState().kind).toBe('idle');
+    expect(session.getSaveSnapshot().title).toBe('Their title');
+    expect(session.getLiveLexical()).toBe(newer.lexical);
+  });
+
+  it.each([
+    ['has no collision token', null],
+    ['has a malformed collision token', 'not-a-date'],
+    ['is older', '2025-12-31T23:59:59.000Z'],
+  ])('keeps local content when the reloaded record %s', (_label, updatedAt) => {
+    const { session } = harness({ record: record() });
+    session.patchTitle('My title');
+    session.patchLexical(body('My words'));
+
+    const accepted = session.recordReloaded(
+      record({
+        title: 'Their title',
+        lexical: buildLexicalParagraph('Their words'),
+        updated_at: updatedAt,
+      }),
+    );
+
+    expect(accepted).toBe(false);
+    expect(session.getSaveSnapshot().title).toBe('My title');
+    expect(session.getLiveLexical()).toBe(JSON.stringify(body('My words')));
+  });
+
+  it('follows the reloaded record when it derives the next slug', async () => {
+    const { session, state } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+    expect(
+      session.recordReloaded(
+        record({
+          title: 'Their title',
+          slug: 'their-slug',
+          updated_at: '2026-01-02T00:00:00.000Z',
+        }),
+      ),
+    ).toBe(true);
+    session.patchLexical(body('Written on top of theirs'));
+    await session.dispatchExplicit();
+
+    // Reloaded title and slug agree, so the save keeps their slug rather than
+    // regenerating one from the title this session opened with.
+    expect(state.updates[1].payload.slug).toBe('their-slug');
+  });
+
+  it('moves the edit version when the document is replaced', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+    session.patchLexical(body('Mine'));
+    await session.dispatchExplicit();
+    const before = session.getSaveSnapshot().version;
+
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+
+    expect(session.getSaveSnapshot().version).toBeGreaterThan(before);
+  });
+
+  it('ignores a reload that lands after the session was disposed', () => {
+    const { session } = harness({ record: record() });
+
+    session.dispose();
+    session.recordReloaded(record({ title: 'Their title' }));
+
+    expect(session.getSaveSnapshot().title).toBe('Hello');
+  });
+
+  it('ignores a reload of a different post', () => {
+    const { session } = harness({ record: record() });
+
+    const accepted = session.recordReloaded(
+      record({
+        id: 'someone-else',
+        title: 'Not this one',
+        updated_at: '2026-01-02T00:00:00.000Z',
+      }),
+    );
+
+    expect(accepted).toBe(false);
+    expect(session.getSaveSnapshot().title).toBe('Hello');
   });
 
   it('stops saving once disposed', async () => {
@@ -303,5 +545,91 @@ describe('createEditorSession', () => {
     await session.dispatchExplicit();
 
     expect(state.updates).toHaveLength(0);
+  });
+
+  it('notifies subscribers once per dirtiness flip, not once per edit', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    session.patchLexical(body('Hello and more still'));
+    session.patchLexical(body('Hello and more still again'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('notifies subscribers when the pending baseline lands and settles the post', () => {
+    const { session } = harness({ record: record() });
+    const edited = buildLexicalParagraph('Hello and more');
+    session.patchLexical(JSON.parse(edited));
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    // Until the hidden editor reports, a diverged body has to be assumed dirty.
+    expect(session.isDirty()).toBe(true);
+
+    session.setBaseline(edited);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('reports a throwing subscriber instead of interrupting the edit', () => {
+    const onError = vi.fn();
+    const { session } = harness({ record: record(), onError });
+    session.setBaseline(record().lexical);
+    session.subscribe(() => {
+      throw new Error('listener blew up');
+    });
+
+    session.patchLexical(body('Hello and more'));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+  });
+
+  it('notifies subscribers when a retry settles what a failed save left dirty', async () => {
+    let saveFails = true;
+    const { session } = harness({ record: record() }, { failSave: () => saveFails });
+    session.setBaseline(record().lexical);
+    session.patchLexical(body('Hello and more'));
+    const seen: boolean[] = [];
+    session.subscribe(() => seen.push(session.isDirty()));
+
+    await session.dispatchExplicit();
+
+    // A failed save keeps the post dirty and recoverable.
+    expect(session.isDirty()).toBe(true);
+    expect(seen).toContain(true);
+
+    saveFails = false;
+    await session.dispatchExplicit();
+
+    expect(session.isDirty()).toBe(false);
+    expect(seen.at(-1)).toBe(false);
+  });
+
+  it('stops notifying an unsubscribed listener', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    const unsubscribe = session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
   });
 });

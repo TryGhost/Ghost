@@ -145,7 +145,7 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
     retryInFlight.current = true;
     setIsRetryRefreshPending(true);
     try {
-      await retryEmail(emailId);
+      await retryEmail({ id: emailId });
       await refetchStatus({ throwOnError: true });
     } catch (error) {
       handleError(error);

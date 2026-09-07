@@ -1,8 +1,9 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
@@ -33,6 +34,7 @@ import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
@@ -122,7 +124,28 @@ function EditorContent({
   snippetDialog,
 }: EditorContentProps) {
   const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
-  const featureImage = useFeatureImageBinding(session, record);
+  const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
+  const leaveGuard = useEditorLeaveGuard(session, postType);
+  const acceptedRecord = session.loadedRecord;
+  const currentCardConfig = useMemo(() => {
+    if (!acceptedRecord || !cardConfig.post) {
+      return cardConfig;
+    }
+
+    // Use the session's accepted metadata, which also rejects stale refetches,
+    // so cards describe the access of the document the editor now holds.
+    return {
+      ...cardConfig,
+      post: {
+        ...cardConfig.post,
+        visibility: acceptedRecord.visibility ?? cardConfig.post.visibility,
+        showTitleAndFeatureImage:
+          'show_title_and_feature_image' in acceptedRecord
+            ? (acceptedRecord.show_title_and_feature_image ?? true)
+            : true,
+      },
+    };
+  }, [acceptedRecord, cardConfig]);
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -131,27 +154,32 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
+          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
       </EditorHeader>
       <SessionBanners
+        contentText={session.contentText}
+        hasUnsavedContent={session.hasUnsavedContent}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
+        onReload={session.reload}
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
       <div className="min-h-0 flex-1">
         <PostEditor
+          key={session.contentKey}
           {...session.bind}
           autofocusTitle={!record}
-          cardConfig={cardConfig}
+          cardConfig={currentCardConfig}
           featureImage={featureImage}
           postType={postType}
           showExcerpt={showExcerpt}
         />
       </div>
       {snippetDialog}
+      <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
     </Stack>
   );
 }
@@ -165,8 +193,10 @@ function EditorSurface({
   record?: EditorRecord;
   createdId?: string;
 }) {
-  const { data: currentUser } = useCurrentUser();
-  const showExcerpt = useFeatureFlag('editorExcerpt');
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const showExcerpt = useFeatureFlag('editorExcerpt', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
 
   const canManageSnippets =
     !!currentUser &&
@@ -255,7 +285,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
   const navigate = useNavigate();
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,

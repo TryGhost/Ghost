@@ -39,7 +39,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
               <img alt="Site icon" className="size-full rounded-md object-cover" src={siteIcon} />
             </div>
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <div className="admin7-heading-features min-w-0 truncate text-lg font-semibold text-foreground">
+              <div className="heading-font-features min-w-0 truncate text-lg font-semibold text-foreground">
                 {title}
               </div>
               {isPrivate && (

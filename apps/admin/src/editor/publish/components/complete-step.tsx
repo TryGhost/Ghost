@@ -3,6 +3,7 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   publishBackToDashboard,
   publishCompleteNote,
@@ -69,7 +70,9 @@ export function CompleteStep({
   note,
   onRevertToDraft,
 }: CompleteStepProps) {
-  const { count } = useMembersCount(state.fullRecipientFilter);
+  const { count } = useMembersCount(state.fullRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const emailOnly = captured.willOnlyEmail;
   // A schedule publishes at the chosen time; anything else just published.
   const publishedAt = captured.isScheduled

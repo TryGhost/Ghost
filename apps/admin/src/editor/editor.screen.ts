@@ -1,11 +1,17 @@
 import { page } from 'vitest/browser';
 import {
   addFeatureImageLabel,
+  conflictCancelReloadButton,
+  conflictCopyContentButton,
+  conflictDiscardAndReloadButton,
+  conflictReloadButton,
   editorBody,
   editorConflictBanner,
+  editorConflictReloadConfirm,
   editorExcerptInput,
   editorFeatureImage,
   editorFeatureImageCaption,
+  editorLeaveDialog,
   editorLoadError,
   editorReauthBanner,
   editorScheduleCountdown,
@@ -17,10 +23,12 @@ import {
   featureImageAltLabel,
   featureImageTkIndicator,
   featureImageUnsplashButton,
+  leaveEditorButton,
   pagesBackLink,
   postEditor,
   postsBackLink,
   removeFeatureImageButton,
+  stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
 } from '@tryghost/test-data/selectors/editor';
@@ -38,9 +46,29 @@ export const editorScreen = {
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
+  reloadAfterConflict: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictReloadButton }),
+  copyConflictedContent: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictCopyContentButton }),
+  conflictReloadConfirm: () => page.getByTestId(editorConflictReloadConfirm),
+  confirmConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictDiscardAndReloadButton }),
+  cancelConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
+  leaveDialog: () => page.getByTestId(editorLeaveDialog),
+  /** The leave dialog as a raw selector, for DOM-level sampling a locator cannot do. */
+  leaveDialogSelector: `[data-testid="${editorLeaveDialog}"]`,
+  stayInEditor: () =>
+    page.getByTestId(editorLeaveDialog).getByRole('button', { name: stayInEditorButton }),
+  leaveEditor: () =>
+    page.getByTestId(editorLeaveDialog).getByRole('button', { name: leaveEditorButton }),
   dismissReauth: () =>
     page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Dismiss' }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),

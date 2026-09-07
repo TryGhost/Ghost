@@ -149,6 +149,7 @@ export function usePublishInputs(): PublishInputs {
   });
   const newslettersQuery = useBrowseNewsletters({
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: { limit: 'all' },
   });
   const {
@@ -170,8 +171,7 @@ export function usePublishInputs(): PublishInputs {
     isFetchingNextNewsletterPage,
     newslettersError,
   ]);
-  // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
-  const currentUserQuery = useCurrentUser();
+  const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   // Site-wide total, the way Ember's publish options read it.
   const {
     count: memberCount,
@@ -179,7 +179,7 @@ export function usePublishInputs(): PublishInputs {
     isFetching: memberCountFetching,
     error: memberCountError,
     refetch: refetchMemberCount,
-  } = useMembersCount('');
+  } = useMembersCount('', { requestOptions: EDITOR_REQUEST_OPTIONS });
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
   const newslettersData = newslettersQuery.data;

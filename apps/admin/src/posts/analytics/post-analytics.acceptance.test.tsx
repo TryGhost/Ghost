@@ -254,7 +254,9 @@ describe('Post analytics overview', () => {
     await expect
       .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
       .toBeVisible();
-    await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeDisabled();
+    await expect
+      .element(page.getByRole('button', { name: /View members/ }).first())
+      .not.toBeInTheDocument();
 
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
@@ -270,6 +272,37 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByText('1,000').first()).toBeVisible();
     await expect.element(page.getByText('400').first()).toBeVisible();
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
+  });
+
+  it('shows only recipient counts until a sending estimate is available', async () => {
+    seedPostAnalyticsWorld({
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    let estimate: number | null = null;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: estimate },
+          },
+        },
+      ],
+    }));
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    estimate = 30;
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Sending emails · 250 of 1,000 · Less than 1 minute left');
   });
 
   it('moves a failed send and its retry action into the banner', async () => {
@@ -535,16 +568,6 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.newsletterTab()).not.toBeInTheDocument();
     expect(statusApi.requests).toHaveLength(0);
-  });
-
-  it('applies the Admin 7 chrome on post analytics', async () => {
-    seedPostAnalyticsWorld();
-    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { admin7PageChrome: true, improveSendingUI: false },
-      boot: webAnalyticsBootOverrides(),
-    });
-    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
   });
 
   it('renders the seeded post with web and growth sections', async () => {

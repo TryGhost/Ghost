@@ -13,6 +13,7 @@ export const editorWordCount = 'editor-word-count';
 export const editorLoadError = 'editor-load-error';
 export const editorReauthBanner = 'editor-reauth-banner';
 export const editorConflictBanner = 'editor-conflict-banner';
+export const editorConflictReloadConfirm = 'editor-conflict-reload-confirm';
 export const editorStatus = 'editor-status';
 export const editorScheduleCountdown = 'editor-schedule-countdown';
 export const editorFeatureImage = 'editor-feature-image';
@@ -31,6 +32,7 @@ export const postPreviewUnavailable = 'post-preview-unavailable';
 export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewSaveFailed = 'post-preview-save-failed';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
+export const editorLeaveDialog = 'editor-leave-dialog';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -91,3 +93,9 @@ export const featureImageAltLabel = 'Alt text for feature image';
 export const featureImageUnsplashButton = 'Select feature image from Unsplash';
 export const removeFeatureImageButton = 'Remove feature image';
 export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';
+export const stayInEditorButton = 'Stay';
+export const leaveEditorButton = 'Leave';
+export const conflictReloadButton = 'Reload';
+export const conflictCopyContentButton = 'Copy content';
+export const conflictDiscardAndReloadButton = 'Discard and reload';
+export const conflictCancelReloadButton = 'Cancel';

@@ -4,9 +4,7 @@
 @source "../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
 
 @import '@tryghost/shade/styles.css';
-@import './assets/fonts/inter-admin-7/fonts.css';
-
-@custom-variant admin7 (&:where(.admin7, .admin7 *));
+@import './assets/fonts/inter-admin/fonts.css';
 
 @keyframes email-sending-arrow-rise {
   from {
@@ -18,11 +16,21 @@
   }
 }
 
-/* The shell owns rollout eligibility. Admin overlays mount beside #root, so
-   mirror typography into Shade portals and the three legacy overlay hosts.
+@keyframes email-sending-fill-rise {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0%);
+  }
+}
+
+/* Admin overlays mount beside #root, so mirror typography into Shade portals
+   and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
-.admin7,
-:where(body.react-admin:has(> #root .admin7))
+.shade-admin,
+:where(body.react-admin:has(> #root .shade-admin))
   > :is(
     .shade.shade-admin,
     #ember-basic-dropdown-wormhole,
@@ -32,7 +40,7 @@
     #ember-notifications-wormhole
   ) {
   --font-sans:
-    'Inter Admin 7', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
+    'Inter Admin', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   --font-family: var(--font-sans);
   --font-feature-settings: 'zero' 1, 'ss01' 1;
@@ -46,8 +54,8 @@
 /* Display alternates feel crowded at small sizes, so reserve them for
    semantic headings across both Admin screens and Settings overlays. */
 :where(
-    .admin7,
-    body.react-admin:has(> #root .admin7)
+    .shade-admin,
+    body.react-admin:has(> #root .shade-admin)
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -64,8 +72,8 @@
 /* Browser form-control defaults can reset these inherited font properties.
    Keep the rule weaker than any explicit component typography choice. */
 :where(
-    .admin7,
-    body.react-admin:has(> #root .admin7)
+    .shade-admin,
+    body.react-admin:has(> #root .shade-admin)
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -82,10 +90,10 @@
 }
 
 /* These components are visually headings but do not all use heading elements.
-   Keep the display alternates scoped to their title text in Admin 7. */
+   Keep the display alternates scoped to their title text. */
 :where(
-    .admin7,
-    body.react-admin:has(> #root .admin7)
+    .shade-admin,
+    body.react-admin:has(> #root .shade-admin)
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -95,7 +103,7 @@
         #ember-notifications-wormhole
       )
   )
-  :is(.admin7-heading-features, .gh-publish-title) {
+  :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
@@ -104,6 +112,7 @@
    settings/custom-fonts.css in the settings chunk. */
 @theme {
   --animate-email-sending-arrow-rise: email-sending-arrow-rise 1200ms linear infinite;
+  --animate-email-sending-fill-rise: email-sending-fill-rise 1200ms linear infinite;
   --font-cardo: Cardo;
   --font-manrope: Manrope;
   --font-merriweather: Merriweather;
