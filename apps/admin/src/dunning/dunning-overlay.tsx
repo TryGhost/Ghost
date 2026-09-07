@@ -65,7 +65,7 @@ export function DunningOverlay() {
         className="absolute top-6 right-6"
         size="icon"
         title="Dismiss"
-        variant="ghost"
+        variant="outline"
         onClick={() => dismissLock(state)}
       >
         <LucideIcon.X className="size-5" />
