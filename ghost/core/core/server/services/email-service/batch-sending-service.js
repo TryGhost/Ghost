@@ -34,6 +34,7 @@ class BatchSendingService {
   #db;
   #sentry;
   #getRequiredUrlRelations;
+  #batchCreation;
   #shuttingDown = false;
   #inFlight = new Set();
 
@@ -64,6 +65,9 @@ class BatchSendingService {
    * @param {object} dependencies.db
    * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
    * @param {object} [dependencies.sentry]
+   * @param {object} [dependencies.batchCreation]
+   * @param {number} [dependencies.batchCreation.concurrency] Batch-creation transactions in flight at once (default 1)
+   * @param {number} [dependencies.batchCreation.batchesPerTransaction] Batches committed per transaction (default 1)
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
@@ -78,6 +82,7 @@ class BatchSendingService {
     db,
     sentry,
     getRequiredUrlRelations = () => [],
+    batchCreation,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
@@ -89,6 +94,10 @@ class BatchSendingService {
     this.#domainWarmingService = domainWarmingService;
     this.#models = models;
     this.#db = db;
+    this.#batchCreation = {
+      concurrency: Math.max(1, Number(batchCreation?.concurrency) || 1),
+      batchesPerTransaction: Math.max(1, Number(batchCreation?.batchesPerTransaction) || 1),
+    };
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
 
@@ -400,6 +409,7 @@ class BatchSendingService {
    */
   async createBatches({ email, post, newsletter, existingBatches = [] }) {
     logging.info(`Creating batches for email ${email.id}`);
+    const { concurrency, batchesPerTransaction } = this.#batchCreation;
 
     // Infinity implies all emails should be sent from the primary domain
     let domainWarmupLimit = Infinity;
@@ -436,6 +446,59 @@ class BatchSendingService {
       );
     }
 
+    // Member paging below stays sequential (each page's cursor is the previous page's last
+    // id), but the transactions that write batches go through a bounded pool so the next
+    // page is fetched while earlier pages are being written. `batchesPerTransaction`
+    // batches share one commit. Results are kept in dispatch order.
+    /** @type {EmailBatch[][]} */
+    const groupResults = [];
+    const active = new Set();
+    let pending = [];
+    let firstError = null;
+
+    const dispatch = () => {
+      if (pending.length === 0) {
+        return;
+      }
+      const specs = pending;
+      pending = [];
+      const slot = groupResults.length;
+      groupResults.push([]);
+      const work = this.retryDb(
+        async () => {
+          return await this.createBatchGroup(email, specs);
+        },
+        {
+          ...this.#getBeforeRetryConfig(email),
+          description: `createBatchGroup email ${email.id} (${specs.length} batches)`,
+        },
+      ).then(
+        (created) => {
+          groupResults[slot] = created;
+        },
+        (err) => {
+          firstError = firstError ?? err;
+        },
+      );
+      const tracked = work.finally(() => active.delete(tracked));
+      active.add(tracked);
+    };
+    const enqueue = (spec) => {
+      if (spec.members.length === 0) {
+        return 0;
+      }
+      pending.push(spec);
+      if (pending.length >= batchesPerTransaction) {
+        dispatch();
+      }
+      return spec.members.length;
+    };
+    const drainTo = async (limit) => {
+      while (active.size > limit) {
+        await Promise.race(active);
+      }
+    };
+
     for (const segment of segments) {
       logging.info(`Creating batches for email ${email.id} segment ${segment}`);
 
@@ -453,17 +516,27 @@ class BatchSendingService {
       // On a resume, start below this segment's watermark so we only build the un-built
       // tail (coverage is a contiguous id-descending prefix, so nothing is skipped).
       const segmentCoverage = coverage.get(segment ?? null);
-      let lastId = segmentCoverage ? segmentCoverage.minMemberId : email.id;
+      // With concurrent writers the committed batches are no longer a contiguous
+      // id-descending prefix (a lower page can commit while a higher one is still in
+      // flight), so the MIN(member_id) watermark can't be trusted. Resume from the top and
+      // skip members that already have a recipient row for this email instead; that probe
+      // uses the (email_id, member_email) index and only runs on a resume.
+      const resumeWithAntiJoin = Boolean(segmentCoverage) && concurrency > 1;
+      let lastId = segmentCoverage && !resumeWithAntiJoin ? segmentCoverage.minMemberId : email.id;
 
       while (!members || lastId) {
         // Stop claiming new creation work on shutdown. Bailing at a batch boundary
         // (createBatch is atomic) leaves a consistent partial that resumes next boot;
         // SHUTDOWN_CODE keeps the email in `submitting` rather than sending it incomplete.
         if (this.#shuttingDown) {
+          await drainTo(0);
           throw new errors.InternalServerError({
             code: SHUTDOWN_CODE,
             message: 'Email batch creation stopped because the container is shutting down',
           });
+        }
+        if (firstError) {
+          break;
         }
 
         logging.info(
@@ -475,10 +548,19 @@ class BatchSendingService {
           `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`,
         );
 
-        members = await this.#models.Member.getFilteredCollectionQuery({ filter })
+        let query = this.#models.Member.getFilteredCollectionQuery({ filter })
           .orderByRaw('id DESC')
           .select('members.id', 'members.uuid', 'members.email', 'members.name')
           .limit(BATCH_SIZE + 1);
+        if (resumeWithAntiJoin) {
+          query = query.whereNotExists(function () {
+            this.select(1)
+              .from('email_recipients as r')
+              .whereRaw('r.email_id = ?', [email.id])
+              .whereRaw('r.member_email = members.email');
+          });
+        }
+        members = await query;
 
         if (members.length > 0) {
           // Determine how many members to include in this batch
@@ -489,30 +571,26 @@ class BatchSendingService {
             remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < membersToProcess;
           if (shouldSplitBatch) {
             // Split batch: some via custom domain, rest via fallback
-            totalCount += await this.#createBatchWithRetry({
-              email,
+            totalCount += enqueue({
               segment,
               members: members.slice(0, remainingCustomDomainCapacity),
               useFallbackDomain: false,
-              batches,
             });
-            totalCount += await this.#createBatchWithRetry({
-              email,
+            totalCount += enqueue({
               segment,
               members: members.slice(remainingCustomDomainCapacity, membersToProcess),
               useFallbackDomain: true,
-              batches,
             });
           } else {
             // Single batch: all members use same domain
-            totalCount += await this.#createBatchWithRetry({
-              email,
+            totalCount += enqueue({
               segment,
               members: members.slice(0, membersToProcess),
               useFallbackDomain: totalCount >= domainWarmupLimit,
-              batches,
             });
           }
+          // Keep at most `concurrency` groups in flight while the next page is fetched
+          await drainTo(concurrency);
         }
 
         if (members.length > BATCH_SIZE) {
@@ -521,6 +599,18 @@ class BatchSendingService {
           break;
         }
       }
+      if (firstError) {
+        break;
+      }
+    }
+
+    dispatch();
+    await drainTo(0);
+    if (firstError) {
+      throw firstError;
+    }
+    for (const created of groupResults) {
+      batches.push(...created);
     }
 
     logging.info(
@@ -588,33 +678,26 @@ class BatchSendingService {
   }
 
   /**
-   * Creates a batch with retry logic and adds it to the batches array
-   * @param {object} params
-   * @param {Email} params.email
-   * @param {import('./email-renderer').Segment} params.segment
-   * @param {object[]} params.members
-   * @param {boolean} params.useFallbackDomain
-   * @param {EmailBatch[]} params.batches
-   * @returns {Promise<number>} The number of members added
+   * Creates several batches in one transaction, so a send pays one commit per group instead
+   * of one per batch. Atomic: if anything fails no batch of the group exists, so a retry
+   * rebuilds the whole group.
+   * @param {Email} email
+   * @param {{segment: import('./email-renderer').Segment, members: object[], useFallbackDomain: boolean}[]} specs
+   * @returns {Promise<EmailBatch[]>}
    */
-  async #createBatchWithRetry({ email, segment, members, useFallbackDomain, batches }) {
-    if (members.length === 0) {
-      return 0;
-    }
-
-    const batch = await this.retryDb(
-      async () => {
-        return await this.createBatch(email, segment, members, {
-          useFallbackDomain,
-        });
-      },
-      {
-        ...this.#getBeforeRetryConfig(email),
-        description: `createBatch email ${email.id} segment ${segment}${useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`,
-      },
-    );
-    batches.push(batch);
-    return members.length;
+  async createBatchGroup(email, specs) {
+    return this.#models.EmailBatch.transaction(async (transacting) => {
+      const created = [];
+      for (const spec of specs) {
+        created.push(
+          await this.createBatch(email, spec.segment, spec.members, {
+            transacting,
+            useFallbackDomain: spec.useFallbackDomain,
+          }),
+        );
+      }
+      return created;
+    });
   }
 
   /**

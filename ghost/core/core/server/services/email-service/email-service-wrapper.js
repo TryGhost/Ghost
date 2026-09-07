@@ -126,6 +126,10 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
+      batchCreation: {
+        concurrency: configService.get('bulkEmail:batchCreationConcurrency'),
+        batchesPerTransaction: configService.get('bulkEmail:batchesPerTransaction'),
+      },
     });
 
     if (ghostServer) {
