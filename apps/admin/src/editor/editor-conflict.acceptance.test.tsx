@@ -530,6 +530,36 @@ describe('Post editor update collision', () => {
     SLOW,
   );
 
+  it.each([
+    ['public', 'paid', 'Paid members only'],
+    ['paid', 'public', 'No effect while post is public'],
+  ] as const)(
+    'updates the paywall after reloading access from %s to %s',
+    async (initialVisibility, reloadedVisibility, expectedLabel) => {
+      const { saveApi } = fakeCollidingPost();
+      readAnswers(200, { posts: [{ ...mine(), visibility: initialVisibility }] });
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, paywallImprovements: true },
+      });
+      await collide(saveApi);
+
+      const lexical = JSON.parse(buildLexicalParagraph('Their version of the body')) as {
+        root: { children: unknown[] };
+      };
+      lexical.root.children.unshift({ type: 'paywall', version: 1 });
+      readAnswers(200, {
+        posts: [theirs({ visibility: reloadedVisibility, lexical: JSON.stringify(lexical) })],
+      });
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from someone else');
+      await expect.element(editorScreen.body(), POLL).toHaveTextContent(expectedLabel);
+      await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
   it(
     'keeps the reloaded status when a later read answers with the copy it replaced',
     async () => {
