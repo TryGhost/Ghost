@@ -27,8 +27,8 @@ function getIngestConfig(): IngestConfig | null {
 
 const randomBelow = (max: number) => Math.floor(Math.random() * max);
 
-// Every 20 seconds, offset per process so sites don't all hit Tinybird at the same instant.
-const randomTwentySecondCron = () => `${randomBelow(20)}/20 * * * * *`;
+// Every five minutes, offset per process so sites don't all hit Tinybird at the same instant.
+const randomFiveMinuteCron = () => `${randomBelow(60)} ${randomBelow(5)}/5 * * * *`;
 
 let hasScheduled = false;
 
@@ -43,7 +43,7 @@ export async function scheduleTinybirdSyncJob(
     return;
   }
 
-  const cron = randomTwentySecondCron();
+  const cron = randomFiveMinuteCron();
   logging.info(`[Background Job] tinybird-sync scheduled at ${cron}`);
   await jobsService.scheduleRecurring(new TinybirdSyncJob(), { cron });
 
@@ -82,7 +82,7 @@ async function syncAll(): Promise<void> {
 
 let inFlight: Promise<void> | null = null;
 
-// A run can outlast the 20-second interval on a large backlog; the jobs backend
+// A run can outlast the five-minute interval on a large backlog; the jobs backend
 // processes concurrently, so overlapping runs would race on the watermark.
 export function run(): Promise<void> {
   inFlight ??= syncAll().finally(() => {
