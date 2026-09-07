@@ -755,6 +755,9 @@ describe('Batch Sending Service', function () {
     for (const renderFails of [false, true]) {
       it(`reuses the intended payload and persists absolute counts after ${renderFails ? 'render and provider retries' : 'a provider retry'}`, async function () {
         const batch = createModel({ status: 'pending', recipient_count: 2 });
+        const recipients = await EmailRecipient.findAll();
+        await recipients.models[0].save({ member_email: 'invalid-address' });
+        sinon.stub(EmailRecipient, 'findAll').resolves(recipients);
         const provider = {
           getMaximumRecipients: () => 5,
           send: sinon.stub().resolves({ id: 'accepted' }),
@@ -799,9 +802,15 @@ describe('Batch Sending Service', function () {
         sinon.assert.calledWithMatch(save, {
           status: 'submitted',
           mailgun_message_id: 'accepted',
-          submitted_count: 2,
-          submission_excluded_count: 0,
+          submitted_count: 1,
+          submission_excluded_count: 1,
         });
+        assert.equal(
+          errorLog
+            .getCalls()
+            .filter((call) => call.args[0]?.code === 'BULK_EMAIL_INVALID_RECIPIENT').length,
+          1,
+        );
       });
     }
 
