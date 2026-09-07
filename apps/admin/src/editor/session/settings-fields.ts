@@ -32,9 +32,3 @@ export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
 export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey>;
 
 export type EditorSettingsPatch = Partial<EditorSettingsFields>;
-
-const WRITABLE: ReadonlySet<string> = new Set(SETTINGS_FIELD_KEYS);
-
-export function isSettingsFieldKey(key: string): key is SettingsFieldKey {
-  return WRITABLE.has(key);
-}
