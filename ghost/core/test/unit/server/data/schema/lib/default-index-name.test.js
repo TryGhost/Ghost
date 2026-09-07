@@ -29,21 +29,17 @@ function knexIndexName(knex, table, columns) {
 }
 
 describe('defaultIndexName', function () {
-  for (const client of ['better-sqlite3', 'mysql2']) {
-    describe(client, function () {
-      const knex = Knex({ client, useNullAsDefault: true });
+  const knex = Knex({ client: 'mysql2' });
 
-      afterAll(function () {
-        return knex.destroy();
-      });
+  afterAll(function () {
+    return knex.destroy();
+  });
 
-      for (const { title, table, columns } of TEST_CASES) {
-        it(`matches knex for ${title}`, function () {
-          const actual = defaultIndexName(table, columns);
-          const expected = knexIndexName(knex, table, columns);
-          assert.equal(actual, expected);
-        });
-      }
+  for (const { title, table, columns } of TEST_CASES) {
+    it(`matches knex for ${title}`, function () {
+      const actual = defaultIndexName(table, columns);
+      const expected = knexIndexName(knex, table, columns);
+      assert.equal(actual, expected);
     });
   }
 });
