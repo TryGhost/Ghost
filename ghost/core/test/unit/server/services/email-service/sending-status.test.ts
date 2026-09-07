@@ -279,6 +279,52 @@ describe('buildSendingStatus', function () {
     );
   });
 
+  it('retains overlapping worker completions when estimating submission throughput', function () {
+    // One worker completes small batches regularly; the other finishes a large
+    // batch just after one of them. Both workers' recipients count as throughput.
+    const batches = [
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:00' }),
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:10' }),
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:20' }),
+      batch({
+        status: 'submitted',
+        createdAt: '12:00:00',
+        updatedAt: '12:01:20.100',
+        recipientCount: 1000,
+      }),
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:30' }),
+      batch({ status: 'submitted', createdAt: '12:00:00', updatedAt: '12:01:40' }),
+      batch({ status: 'pending', createdAt: '12:00:00', recipientCount: 1040 }),
+    ];
+    assert.equal(
+      buildSendingStatus(email({ recipientCount: 2090 }), batches).progress
+        .estimatedSecondsRemaining,
+      40,
+    );
+  });
+
+  it('limits distinct completion samples rather than rows for high-throughput sends', function () {
+    for (const status of ['pending', 'submitted'] as const) {
+      const completed = Array.from({ length: 30 }, (_, index) =>
+        batch({ status, createdAt: `12:00:0${Math.floor(index / 5)}` }),
+      );
+      // Five batches per second gives 50 recipients/second. The last 20 rows
+      // alone only span four timestamps, despite six being available.
+      const batches =
+        status === 'pending'
+          ? completed
+          : [
+              ...completed,
+              batch({ status: 'pending', createdAt: '12:00:00', recipientCount: 100 }),
+            ];
+      assert.equal(
+        buildSendingStatus(email({ recipientCount: 400 }), batches.reverse()).progress
+          .estimatedSecondsRemaining,
+        2,
+      );
+    }
+  });
+
   describe('recipient-weighted estimates', function () {
     function estimate(counts: number[], gaps: number[], remaining = 100) {
       let timestamp = at('12:00:00').getTime();

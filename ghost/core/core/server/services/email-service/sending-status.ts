@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { StoredSendingStatus } from './sending-status-schema';
 
-const ETA_BATCH_WINDOW = 20;
+const ETA_COMPLETION_WINDOW = 20;
 const ETA_MIN_INTERVALS = 5;
 
 export const SendingPhase = z.enum(['preparing', 'submitting']);
@@ -90,6 +90,7 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       completed,
       total,
       estimatedSecondsRemaining: estimateSecondsRemaining({
+        phase,
         remaining,
         samples,
         attemptStartedAt,
@@ -112,10 +113,12 @@ function failedDuringAttempt(batch: SendingBatch, attemptStartedAt: number | nul
 }
 
 function estimateSecondsRemaining({
+  phase,
   remaining,
   samples,
   attemptStartedAt,
 }: {
+  phase: SendingPhase;
   remaining: number;
   samples: BatchSample[];
   attemptStartedAt: number | null;
@@ -124,19 +127,18 @@ function estimateSecondsRemaining({
     return 0;
   }
 
-  const window = samples
+  const sorted = samples
     .filter(
       (sample) =>
         sample.recipientCount > 0 &&
         (attemptStartedAt === null || sample.timestamp >= attemptStartedAt),
     )
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-ETA_BATCH_WINDOW);
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   // Coalesce completions sharing a timestamp so database timestamp precision does
   // not turn their recipients into zero-duration samples or make row order matter.
   const completions: BatchSample[] = [];
-  for (const sample of window) {
+  for (const sample of sorted) {
     const previous = completions.at(-1);
     if (previous?.timestamp === sample.timestamp) {
       previous.recipientCount += sample.recipientCount;
@@ -145,27 +147,34 @@ function estimateSecondsRemaining({
     }
   }
 
-  const intervals = completions.slice(1).map((sample, index) => {
-    const seconds = (sample.timestamp - completions[index].timestamp) / 1000;
+  // Limit usable timestamps, not rows: fast sends may finish many batches per timestamp.
+  const window = completions.slice(-ETA_COMPLETION_WINDOW);
+  const intervals = window.slice(1).map((sample, index) => {
+    const seconds = (sample.timestamp - window[index].timestamp) / 1000;
     return {
       recipientCount: sample.recipientCount,
       seconds,
       rate: seconds / sample.recipientCount,
     };
   });
-  // Avoid publishing a startup estimate before outlier filtering has enough evidence.
+  // Wait for enough timing evidence before publishing a startup estimate.
   if (intervals.length < ETA_MIN_INTERVALS) {
     return null;
   }
 
-  // Compare time per recipient, not batch duration: a larger batch is expected
-  // to take longer.
-  const rates = intervals.map((interval) => interval.rate).sort((a, b) => a - b);
-  const middle = Math.floor(rates.length / 2);
-  const median = rates.length % 2 === 0 ? (rates[middle - 1] + rates[middle]) / 2 : rates[middle];
-  const retained = intervals.filter(
-    (interval) => interval.rate >= median / 3 && interval.rate <= median * 3,
-  );
+  // Preparation is sequential, so each gap describes the next group's work.
+  // Submission workers overlap: a tiny gap can belong to a large batch that ran
+  // alongside another. Keep all submission completions to measure aggregate
+  // throughput rather than mistaking worker overlap for timing outliers.
+  let retained = intervals;
+  if (phase === 'preparing') {
+    const rates = intervals.map((interval) => interval.rate).sort((a, b) => a - b);
+    const middle = Math.floor(rates.length / 2);
+    const median = rates.length % 2 === 0 ? (rates[middle - 1] + rates[middle]) / 2 : rates[middle];
+    retained = intervals.filter(
+      (interval) => interval.rate >= median / 3 && interval.rate <= median * 3,
+    );
+  }
 
   // The first completion is only the time baseline; its recipients were
   // processed before the measured interval. Weight retained timings by recipients.
