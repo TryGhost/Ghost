@@ -1,3 +1,4 @@
+import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
@@ -133,24 +134,30 @@ async function postEvents(
   }
 }
 
-async function readWatermark(knex: Knex, table: string): Promise<string | null> {
+async function readWatermark(knex: Knex, table: string): Promise<Cursor | null> {
   const row = await knex('tinybird_syncs')
-    .select('last_synced_updated_at')
+    .select('last_synced_updated_at', 'last_synced_id')
     .where({ table_name: table })
     .first();
-  return row ? toDatabaseDate(row.last_synced_updated_at) : null;
+  if (!row) {
+    return null;
+  }
+  // A watermark without an id predates the column; the empty id restarts inclusively
+  // at that second, so nothing that landed in it is skipped.
+  return { updatedAt: toDatabaseDate(row.last_synced_updated_at), id: row.last_synced_id ?? '' };
 }
 
-async function writeWatermark(knex: Knex, table: string, value: string): Promise<void> {
+async function writeWatermark(knex: Knex, table: string, cursor: Cursor): Promise<void> {
   const now = toDatabaseDate(new Date());
+  const values = { last_synced_updated_at: cursor.updatedAt, last_synced_id: cursor.id };
   const updated = await knex('tinybird_syncs')
     .where({ table_name: table })
-    .update({ last_synced_updated_at: value, updated_at: now });
+    .update({ ...values, updated_at: now });
   if (!updated) {
     await knex('tinybird_syncs').insert({
       id: ObjectId().toHexString(),
       table_name: table,
-      last_synced_updated_at: value,
+      ...values,
       created_at: now,
       updated_at: now,
     });
@@ -192,10 +199,7 @@ export async function syncTableToTinybird(
     maxPayloadBytes = DEFAULT_MAX_PAYLOAD_BYTES,
   } = options;
   const cutoff = toDatabaseDate(new Date(now().getTime() - SAFETY_LAG_MS));
-  const watermark = await readWatermark(knex, target.table);
-  // The empty id makes the first page inclusive of the watermark second, so rows that
-  // landed in that second after the previous run are re-sent rather than skipped.
-  let cursor: Cursor | null = watermark ? { updatedAt: watermark, id: '' } : null;
+  let cursor = await readWatermark(knex, target.table);
   let sent = 0;
 
   while (true) {
@@ -211,11 +215,15 @@ export async function syncTableToTinybird(
 
     const last = rows[rows.length - 1];
     cursor = { updatedAt: toDatabaseDate(last.updated_at), id: last.id };
-    await writeWatermark(knex, target.table, cursor.updatedAt);
+    await writeWatermark(knex, target.table, cursor);
     sent += rows.length;
 
     if (rows.length < batchSize) {
       return sent;
     }
+
+    // The sync shares the event loop with HTTP; let queued requests run before the next
+    // batch is serialised.
+    await flushEventLoop();
   }
 }
