@@ -8,6 +8,8 @@ const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
+const SendingService = require('../../../../core/server/services/email-service/sending-service');
+const MailgunEmailProvider = require('../../../../core/server/services/email-service/mailgun-email-provider');
 
 // The legacy Bookshelf models are untyped; keep that boundary separate from the test fixtures.
 type Email = InstanceType<typeof models.Email>;
@@ -106,7 +108,11 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       send: sinon.stub().resolves({ id: 'accepted' }),
     };
     renderer = { getSegments: sinon.stub().resolves([null]) };
-    segmenter = { getMemberFilterForSegment: sinon.stub().returns('status:free') };
+    segmenter = {
+      getMemberFilterForSegment: sinon.stub().callsFake((_newsletter, filter) =>
+        filter === 'all' ? 'status:free' : filter,
+      ),
+    };
     service = createService();
     data = { email, post: {}, newsletter: {} };
   });
@@ -135,7 +141,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       emailRenderer: renderer,
       emailSegmenter: segmenter,
       domainWarmingService: { isEnabled: () => true },
-      sendingService: sender,
+      sendingService: new SendingService({
+        emailProvider: sender,
+        emailRenderer: {
+          renderBody: async () => ({ html: 'Hello', plaintext: 'Hello', replacements: [] }),
+          getSubject: () => 'Hello',
+          getFromAddress: () => 'sender@example.com',
+          getReplyToAddress: () => null,
+        },
+        emailAddressService: {},
+        sentry,
+      }),
       BEFORE_RETRY_CONFIG: { maxRetries: 2, sleep: 0 },
     });
   }
@@ -404,7 +420,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.ok(batches.every((batch) => !partialIds.includes(batch.id)));
     const sentIds = sender.send
       .getCalls()
-      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+      .flatMap((call) => call.args[0].recipients.map((recipient: { email: string }) => recipient.email));
     assert.equal(sentIds.length, 4);
     assert.equal(new Set(sentIds).size, 4);
   });
@@ -457,7 +473,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     );
     const sentIds = sender.send
       .getCalls()
-      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+      .flatMap((call) => call.args[0].recipients.map((recipient: { email: string }) => recipient.email));
     assert.equal(sentIds.length, 4);
     assert.equal(new Set(sentIds).size, 4);
   });
@@ -1028,6 +1044,67 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
+  it('persists verified submission totals and exclusions when completing the email', async function () {
+    const batches = await service.createBatches(data);
+    const excludedBatch = batches.find((batch) => batch.get('recipient_count') === 1);
+    await db
+      .knex('email_recipients')
+      .where({ batch_id: excludedBatch.id })
+      .update({ member_email: 'invalid' });
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), 3);
+    assert.equal(email.get('candidate_count'), 4);
+    const persisted = await service.getBatches(email);
+    assert.equal(
+      persisted.reduce((sum, b) => sum + b.get('submitted_count'), 0),
+      3,
+    );
+    assert.equal(
+      persisted.reduce((sum, b) => sum + b.get('submission_excluded_count'), 0),
+      1,
+    );
+    await excludedBatch.refresh();
+    assert.equal(excludedBatch.get('status'), 'submitted');
+    assert.equal(excludedBatch.get('submitted_count'), 0);
+    assert.equal(excludedBatch.get('mailgun_message_id'), null);
+    sinon.assert.calledTwice(sender.send);
+  });
+
+  it('preserves a duplicate-payload verification error through batch failure to the email banner', async function () {
+    const batches = await service.createBatches(data);
+    const duplicateBatch = batches.find((batch) => batch.get('recipient_count') === 2);
+    await db
+      .knex('email_recipients')
+      .where({ batch_id: duplicateBatch.id })
+      .update({ member_email: 'duplicate@example.com' });
+    const client = { send: sinon.stub().resolves({ id: '<accepted>' }) };
+    const provider = new MailgunEmailProvider({
+      mailgunClient: client,
+      config: { get: () => undefined },
+    });
+    sender.send.callsFake(provider.send.bind(provider));
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await duplicateBatch.refresh();
+    assert.equal(duplicateBatch.get('status'), 'failed');
+    assert.equal(
+      JSON.parse(duplicateBatch.get('error_data')).code,
+      'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+    );
+    sinon.assert.calledTwice(client.send);
+    await email.refresh();
+    assert.equal(email.get('status'), 'failed');
+    assert.match(email.get('error'), /recipient verification failed/);
+    assert.ok(!email.get('error').toLowerCase().includes('retry'));
+  });
+
   it('counts each consumed candidate once across lookahead pages and warming splits', async function () {
     const batches = await service.createBatches(data);
     await email.refresh();
@@ -1041,6 +1118,68 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const recipients = await db.knex('email_recipients').where({ email_id: email.id });
     assert.equal(recipients.length, 4);
     assert.equal(new Set(recipients.map((r) => r.member_id)).size, 4);
+  });
+
+  it('completes mixed preparation-era submissions without inventing historical counts', async function () {
+    const batches = await service.createBatches(data);
+    await batches[0].save({ status: 'submitted' }, { patch: true });
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), 4);
+    await batches[0].refresh();
+    assert.equal(batches[0].get('submitted_count'), null);
+    assert.equal(batches[0].get('submission_excluded_count'), null);
+    sinon.assert.calledWithMatch(logging.info, { event: { name: 'email.submission.unverified' } });
+    sinon.assert.calledTwice(sender.send);
+  });
+
+  it('rejects inconsistent persisted submission counts even when all batches are submitted', async function () {
+    const batches = await service.createBatches(data);
+    await service.sendBatches({ ...data, batches });
+    await batches[0].refresh();
+    await batches[0].save(
+      { submitted_count: batches[0].get('recipient_count') + 1 },
+      { patch: true },
+    );
+    await assert.rejects(
+      service.sendBatches({ ...data, batches: await service.getBatches(email) }),
+      {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      },
+    );
+    sinon.assert.callCount(sender.send, 3);
+  });
+
+  it('keeps ordinary provider failures retry-oriented', async function () {
+    const batches = await service.createBatches(data);
+    sender.send.rejects(new Error('Provider unavailable'));
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'failed');
+    assert.match(email.get('error'), /retry/i);
+    assert.doesNotMatch(email.get('error'), /recipient verification failed/);
+  });
+
+  it('completes a zero-candidate email with verified zero submissions', async function () {
+    await email.save({ recipient_filter: "email:'nobody@example.com'" }, { patch: true });
+    const batches = await service.createBatches(data);
+    assert.equal(batches.length, 0);
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('candidate_count'), 0);
+    assert.equal(email.get('email_count'), 0);
+    sinon.assert.notCalled(sender.send);
   });
 
   it('does not complete preparation when persisted recipients are missing', async function () {

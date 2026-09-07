@@ -39,6 +39,7 @@ export interface SendingBatch {
   recipientCount: number;
   createdAt: Date;
   updatedAt: Date;
+  accountedRecipientCount?: number;
 }
 
 type BatchSample = { recipientCount: number; timestamp: number };
@@ -65,7 +66,10 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
   const preparedCount = sumRecipients(batches);
   const completedBatches =
     phase === 'preparing' ? batches : batches.filter((batch) => batch.status === 'submitted');
-  const completed = sumRecipients(completedBatches);
+  const completed = completedBatches.reduce(
+    (sum, batch) => sum + completedRecipients(batch, phase),
+    0,
+  );
   const total =
     phase === 'preparing' ? Math.max(email.recipientCount, preparedCount) : preparedCount;
 
@@ -80,7 +84,7 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
   const failedThisAttempt = batches.filter((batch) => failedDuringAttempt(batch, attemptStartedAt));
   const remaining = total - completed - sumRecipients(failedThisAttempt);
   const samples = completedBatches.map((batch) => ({
-    recipientCount: batch.recipientCount,
+    recipientCount: completedRecipients(batch, phase),
     timestamp: (phase === 'preparing' ? batch.createdAt : batch.updatedAt).getTime(),
   }));
 
@@ -100,6 +104,12 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
 
 function sumRecipients(batches: SendingBatch[]): number {
   return batches.reduce((sum, batch) => sum + batch.recipientCount, 0);
+}
+
+function completedRecipients(batch: SendingBatch, phase: SendingPhase): number {
+  return phase === 'submitting'
+    ? (batch.accountedRecipientCount ?? batch.recipientCount)
+    : batch.recipientCount;
 }
 
 // A batch that fails is only retried together with its email, so within an attempt it is finished work.
