@@ -61,7 +61,10 @@ difference of at least 1% emits a warning and a Sentry message without failing
 preparation. Verification failures emit structured error logs with their reason
 and counts; the event contract below distinguishes confirmed count mismatches. The email job reports terminal verification failures to Sentry
 once, including during shutdown while leaving the email resumable. Failures during
-safely rebuildable preparation ask the user to retry; frozen or possibly submitted batches require investigation.
+safely rebuildable preparation ask the user to retry; frozen or possibly submitted
+batches require investigation. When shutdown leaves batches unstarted, check the
+persisted batch outcomes for integrity failures before exiting, without rescanning
+recipient rows.
 
 An interrupted preparation without `prepared_at` is discarded on retry, using
 bounded deletes of recipient rows followed by batches. Any non-pending batch

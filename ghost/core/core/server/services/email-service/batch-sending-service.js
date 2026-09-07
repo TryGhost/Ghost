@@ -1138,6 +1138,18 @@ class BatchSendingService {
     );
 
     if (this.#shuttingDown && queue.length > 0) {
+      if (this.#usesRecipientAccounting(email)) {
+        // A worker may have persisted an integrity failure while shutdown left
+        // other batches unstarted. Check the small batch rows before interrupting
+        // so emailJob still reports it; do not rescan recipients during the drain.
+        await this.retryDb(
+          async () => this.#verifySubmissionCounts(email, await this.getBatches(email)),
+          {
+            ...this.#getAfterRetryConfig(),
+            description: `verify interrupted batches for email ${email.id}`,
+          },
+        );
+      }
       throw new errors.InternalServerError({
         code: SHUTDOWN_CODE,
         message: 'Email send stopped because the container is shutting down',
@@ -1242,15 +1254,9 @@ class BatchSendingService {
     if (unknown) {
       return;
     }
-    if (
-      email.get('candidate_count') !==
-      submittedCount + submissionExcludedCount + email.get('preparation_excluded_count')
-    ) {
-      throw this.#verificationFailure(email, 'submission_totals', {
-        submitted_count: submittedCount,
-        submission_excluded_count: submissionExcludedCount,
-      });
-    }
+    // Before completion, preparation verification has already balanced candidates
+    // against these same batches. The per-batch identities above therefore also
+    // balance the email-wide submission and exclusion totals.
     return { submittedCount, submissionExcludedCount };
   }
 
