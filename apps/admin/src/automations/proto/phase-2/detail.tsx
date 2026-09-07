@@ -9,11 +9,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Banner,
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   EmptyIndicator,
   Dialog,
@@ -27,7 +27,7 @@ import {
   Textarea,
   buttonVariants,
 } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
@@ -38,13 +38,15 @@ import {
   duplicateAutomation,
   saveAutomation,
   setAutomationStatus,
+  suggestCopyName,
   updateAutomationDetails,
   useProtoAutomation,
+  useStripeConnected,
 } from '@/automations/proto/shared/store';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
 import { LeftPanel } from './left-panel';
-import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
+import { type TriggerConfig, needsStripe } from '@/automations/proto/shared/trigger-config';
 import {
   CANVAS_HUD_BUTTON,
   CANVAS_SLOT_FILL,
@@ -163,6 +165,84 @@ const PublishChangesDialog: React.FC<{
  * before it was cut, and stayed separate because the flow itself isn't part of
  * what this screen decides.
  */
+/**
+ * Name + description, in a dialog. One component for both the settings dialog and
+ * the duplicate dialog, so the two are the same object rather than two that
+ * resemble each other — duplicating is naming a new automation, and it should ask
+ * the way renaming asks.
+ *
+ * Values are held by the caller, so nothing is committed by typing and Cancel is
+ * a real cancel rather than an undo of writes that already landed.
+ */
+interface DetailsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  heading: string;
+  blurb: string;
+  confirmLabel: string;
+  values: { name: string; description: string };
+  onChange: (next: { name: string; description: string }) => void;
+  onConfirm: () => void;
+}
+
+const DetailsDialog: React.FC<DetailsDialogProps> = ({
+  open,
+  onOpenChange,
+  heading,
+  blurb,
+  confirmLabel,
+  values,
+  onChange,
+  onConfirm,
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{heading}</DialogTitle>
+        <DialogDescription>{blurb}</DialogDescription>
+      </DialogHeader>
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="automation-name">Name</Label>
+          <Input
+            id="automation-name"
+            value={values.name}
+            autoFocus
+            onChange={(e) => onChange({ ...values, name: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="automation-description">Description</Label>
+          <Textarea
+            id="automation-description"
+            placeholder="What this automation is for"
+            rows={3}
+            value={values.description}
+            onChange={(e) => onChange({ ...values, description: e.target.value })}
+          />
+          {/* Says where the words end up. Without it the field is a box asking
+                    for text with no stated audience, and people either skip it or
+                    write for nobody. */}
+          <p className="text-sm text-muted-foreground">
+            Shown under the name on your automations list.
+          </p>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        {/* An automation with no name is unfindable in a list, so this holds
+                    rather than writing an empty one. Nothing else here can be invalid —
+                    a blank description is a legitimate answer. */}
+        <Button disabled={!values.name.trim()} onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
 const AutomationFloat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -195,12 +275,15 @@ const AutomationFloat: React.FC = () => {
   const [startOpen, setStartOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const stripeConnected = useStripeConnected();
   // Name + description, edited in their own dialog. Held as draft fields while it's
   // open and written on Save — nothing is committed by typing, so Cancel is a real
   // cancel rather than an undo of writes that already landed.
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
-  const [descriptionDraft, setDescriptionDraft] = useState('');
+  const [settingsDraft, setSettingsDraft] = useState({ name: '', description: '' });
+  // The copy's name and description, offered before it exists.
+  const [duplicateOpen, setDuplicateOpen] = useState(false);
+  const [duplicateDraft, setDuplicateDraft] = useState({ name: '', description: '' });
   // Set the moment Delete is confirmed, and never unset — the screen is on its
   // way out. Two things downstream have to know: the "not found" state, which is
   // otherwise the correct read of an automation that no longer exists, and the
@@ -317,10 +400,23 @@ const AutomationFloat: React.FC = () => {
   // one thing that genuinely wants a read-only view. The crossfade between the
   // two canvases is what handles that.
   const showEditCanvas = !selectedRun;
-  // Nothing can go live without something to start it. This is the only gate the
-  // create flow adds: an automation with no trigger isn't half-configured, it's
-  // an automation that cannot run.
-  const canGoLive = triggerConfig !== null;
+  // This automation depends on payments the site can't take.
+  //
+  // Nothing is hidden for it. The ticket's instinct was to remove the paid
+  // trigger and the paid exit conditions when Stripe isn't connected, and the
+  // cost of that is a publisher who never learns the feature exists — you can't
+  // evaluate something you can't see. Building it and being told why it won't
+  // publish is more informative than the option quietly not being there.
+  //
+  // It also answers a question hiding couldn't: what happens to an automation
+  // built while Stripe WAS connected, when it later isn't. That's this same
+  // state, so it gets this same banner rather than a second design.
+  const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
+
+  // Nothing can go live without something to start it, or without the payments
+  // it depends on. An automation with no trigger isn't half-configured, it's an
+  // automation that cannot run — and neither is one waiting on Stripe.
+  const canGoLive = triggerConfig !== null && !stripeMissing;
   const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 
@@ -392,17 +488,43 @@ const AutomationFloat: React.FC = () => {
     setPublishOpen(true);
   };
 
-  // Duplicate copies WHAT'S ON SCREEN — the draft, unsaved edits included — and
-  // leaves you where you are.
+  // Duplicate asks before it copies, in the same dialog renaming uses.
+  //
+  // It used to fire straight off the menu and report itself in a toast, which was
+  // too quiet for something that creates a second automation: the only evidence
+  // was a message that disappears, and the copy's name had been decided for you.
+  // The dialog makes the act deliberate and hands back the one decision worth
+  // having — what the copy is called — already filled in, so confirming without
+  // reading it still gives a sensible answer.
+  const openDuplicate = () => {
+    setDuplicateDraft({
+      name: suggestCopyName(automation.name),
+      description: record.description,
+    });
+    setDuplicateOpen(true);
+  };
+
+  // Copies WHAT'S ON SCREEN — the draft, unsaved edits included — and leaves you
+  // where you are.
   //
   // Navigating to the copy was the other candidate, and it collides with explicit
-  // save: with unsaved changes, pressing Duplicate would open the "Discard unsaved
+  // save: with unsaved changes, going there would open the "Discard unsaved
   // changes?" guard, which is a baffling thing for Duplicate to ask. Staying put
   // has no such collision, and the toast's action offers the trip anyway for
   // anyone who wanted it — one click, on request, rather than imposed.
-  const handleDuplicate = () => {
-    const copyId = duplicateAutomation(draftFlow, triggerConfig, record.description);
-    toast.success('Automation duplicated', {
+  const confirmDuplicate = () => {
+    const name = duplicateDraft.name.trim();
+    if (!name) {
+      return;
+    }
+    setDuplicateOpen(false);
+    const copyId = duplicateAutomation(
+      draftFlow,
+      triggerConfig,
+      duplicateDraft.description.trim(),
+      name,
+    );
+    toast.success(`“${name}” created`, {
       action: {
         label: 'View',
         onClick: () => navigate(toVersioned(`${lanePath(LANE)}/${copyId}`)),
@@ -413,18 +535,20 @@ const AutomationFloat: React.FC = () => {
   const openSettings = () => {
     // Seeded from the record each time it opens, so an abandoned edit doesn't
     // reappear the next time.
-    setNameDraft(savedAutomation?.name ?? '');
-    setDescriptionDraft(record?.description ?? '');
+    setSettingsDraft({
+      name: savedAutomation?.name ?? '',
+      description: record?.description ?? '',
+    });
     setSettingsOpen(true);
   };
 
   const saveSettings = () => {
-    const name = nameDraft.trim();
+    const name = settingsDraft.name.trim();
     if (!name) {
       return;
     }
     setSettingsOpen(false);
-    updateAutomationDetails(id, name, descriptionDraft.trim());
+    updateAutomationDetails(id, name, settingsDraft.description.trim());
     toast.success('Automation updated');
   };
 
@@ -467,16 +591,29 @@ const AutomationFloat: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {/* Save moves in here below lg (1024px), where the header has two rows and
+                    three actions is one too many beside a title. It's the action that gives
+                    up its slot rather than Publish: Publish is why you're on this screen,
+                    and Save is reachable in a menu without the moment feeling worse.
+
+                    Duplicated rather than moved — the button below carries the inverse
+                    class, so exactly one of the two is ever rendered. */}
+        {liveStatus === 'inactive' && (
+          <DropdownMenuItem className="lg:hidden" disabled={!hasChanges} onClick={handleSave}>
+            <LucideIcon.Save /> Save
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={openSettings}>
           <LucideIcon.Settings /> Settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDuplicate}>
+        <DropdownMenuItem onClick={openDuplicate}>
           <LucideIcon.Copy /> Duplicate
         </DropdownMenuItem>
-        {/* Delete sits last, in its own section. A menu opens with the cursor at
-                    the top, so leading with the one item that destroys something would
-                    put it directly under the pointer. */}
-        <DropdownMenuSeparator />
+        {/* Delete sits last. A menu opens with the cursor at the top, so leading
+                    with the one item that destroys something would put it directly under
+                    the pointer. It used to be fenced off by a separator too; with four
+                    items the rules were doing more to break the list up than the grouping
+                    justified, and the destructive colour already marks it. */}
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
           onClick={() => setDeleteOpen(true)}
@@ -494,7 +631,12 @@ const AutomationFloat: React.FC = () => {
         {/* Nothing to save until something changes. Publish stays available
                 either way — an unedited draft is still publishable, which is how
                 the shipping editor behaves. */}
-        <Button disabled={!hasChanges} variant="outline" onClick={handleSave}>
+        <Button
+          className="hidden lg:inline-flex"
+          disabled={!hasChanges}
+          variant="outline"
+          onClick={handleSave}
+        >
           Save
         </Button>
         <Button disabled={!canGoLive} onClick={() => setStartOpen(true)}>
@@ -522,8 +664,34 @@ const AutomationFloat: React.FC = () => {
     >
       {/* The header never carries the pane control in either release — its left
                 is the back arrow, the title and its status, full stop. */}
+      {/* Says why Publish is unavailable, at the moment it becomes true. Paired
+                with the disabled button deliberately: a control that stops working
+                without explaining itself is the failure this avoids, and the header
+                puts the explanation on the same row as the button it's about.
+
+                Composed exactly as admin's other warning banner is (see
+                settings/advanced/migration-tools/content-import/mapping-step): Shade's
+                Banner takes children only, so the icon is the caller's to place, and
+                copying that arrangement rather than inventing one keeps every warning
+                in the app the same object.
+
+                One sentence, stating the rule rather than this instance. "Members",
+                not "subscribers": Ghost's noun, and the one every other string on this
+                screen uses. */}
       <HeaderBar
         actions={chromeActions}
+        notice={
+          stripeMissing ? (
+            <Banner role="alert" size="sm" variant="warning">
+              <Inline align="center" gap="sm">
+                <LucideIcon.TriangleAlert className="size-4 shrink-0 text-state-warning" />
+                <Text size="sm" weight="semibold">
+                  Connect Stripe to publish automations for paid members.
+                </Text>
+              </Inline>
+            </Banner>
+          ) : undefined
+        }
         status={liveStatus}
         title={automation.name}
         onBack={goBack}
@@ -751,54 +919,29 @@ const AutomationFloat: React.FC = () => {
                 list, not on this screen, so there's no text here to click into.
                 Reached two ways: the title, which is where people try first, and the
                 ⋯, which is what makes it findable for anyone who doesn't. */}
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Automation settings</DialogTitle>
-            <DialogDescription>
-              The name and description shown on your automations list.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="automation-name">Name</Label>
-              <Input
-                id="automation-name"
-                value={nameDraft}
-                autoFocus
-                onChange={(e) => setNameDraft(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="automation-description">Description</Label>
-              <Textarea
-                id="automation-description"
-                placeholder="What this automation is for"
-                rows={3}
-                value={descriptionDraft}
-                onChange={(e) => setDescriptionDraft(e.target.value)}
-              />
-              {/* Says where the words end up. Without it the field is a box
-                            asking for text with no stated audience, and people either
-                            skip it or write for nobody. */}
-              <p className="text-sm text-muted-foreground">
-                Shown under the name on your automations list.
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSettingsOpen(false)}>
-              Cancel
-            </Button>
-            {/* An automation with no name is unfindable in a list, so Save holds
-                            rather than writing an empty one. Nothing else here can be
-                            invalid — a blank description is a legitimate answer. */}
-            <Button disabled={!nameDraft.trim()} onClick={saveSettings}>
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DetailsDialog
+        blurb="The name and description shown on your automations list."
+        confirmLabel="Save"
+        heading="Automation settings"
+        open={settingsOpen}
+        values={settingsDraft}
+        onChange={setSettingsDraft}
+        onConfirm={saveSettings}
+        onOpenChange={setSettingsOpen}
+      />
+
+      {/* The copy, named before it exists. Same dialog as settings — naming a new
+                automation and renaming an existing one are the same act. */}
+      <DetailsDialog
+        blurb="Creates a copy of this automation. It starts turned off."
+        confirmLabel="Duplicate"
+        heading="Duplicate automation"
+        open={duplicateOpen}
+        values={duplicateDraft}
+        onChange={setDuplicateDraft}
+        onConfirm={confirmDuplicate}
+        onOpenChange={setDuplicateOpen}
+      />
 
       {/* Delete. The one warning this screen can give that the list can't: how
                 many members are mid-flow right now. "This can't be undone" is true of

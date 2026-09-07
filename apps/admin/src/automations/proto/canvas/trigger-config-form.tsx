@@ -1,17 +1,34 @@
 import React, { useState } from 'react';
-import { Button, Label } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import {
+  Button,
+  Combobox,
+  ComboboxContent,
+  ComboboxTrigger,
+  ComboboxValue,
+  Label,
+  MultiSelectCombobox,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
-  EXIT_CRITERIA,
+  AUDIENCE_OPTIONS,
   TIER_OPTIONS,
+  EXIT_CRITERIA,
+  AUTOMATIC_EXIT_SENTENCE,
   TRIGGER_OPTIONS,
+  type AudienceScope,
   type ExitCriterionId,
   type TriggerConfig,
   type TriggerType,
   availableCriteria,
-  exitCriterion,
+  hasTiers,
   reconcileCriteria,
+  tierNames,
   triggerLabel,
   triggerConfigFor,
 } from '@/automations/proto/shared/trigger-config';
@@ -26,35 +43,6 @@ import { OptionPicker, type PickerOption } from '@/automations/proto/shared/opti
 // click plus the guesswork of what's behind a summary label. Shade's ToggleGroup
 // isn't the right primitive here — it's a segmented control (single muted track,
 // no wrapping), whereas these need to wrap freely on a card.
-
-const ToggleChip: React.FC<{
-  label: string;
-  selected: boolean;
-  fixed?: boolean;
-  onClick: () => void;
-}> = ({ label, selected, fixed = false, onClick }) => (
-  <button
-    aria-pressed={selected}
-    className={cn(
-      // rounded-md to match Shade's buttons — these are controls sitting
-      // among controls, not badges.
-      'rounded-md border px-3 py-1.5 text-sm transition-colors',
-      selected
-        ? 'border-foreground bg-muted font-medium text-foreground'
-        : 'border-border-default text-muted-foreground hover:bg-muted/40',
-      // Fixed chips read as on and simply don't respond — deliberately not
-      // the faded disabled treatment, which would suggest something is
-      // switched off or broken rather than permanent.
-      fixed && 'cursor-default',
-    )}
-    disabled={fixed}
-    title={fixed ? 'Always applies' : undefined}
-    type="button"
-    onClick={onClick}
-  >
-    {label}
-  </button>
-);
 
 // The trigger list, in the shared icon/title/description shape.
 const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map((option) => ({
@@ -138,52 +126,56 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   onChange,
   locked = false,
 }) => {
-  const isPaid = config.type === 'paid_subscription_starts';
-  const criteria = availableCriteria(config);
+  // Filtered through availableCriteria so a criterion that stopped applying (the
+  // audience changed to paid, say) neither shows in the summary nor in the list.
+  const available = availableCriteria(config);
+  const chosenIds = available
+    .filter((criterion) => config.exitCriteria.includes(criterion.id))
+    .map((criterion) => criterion.id);
+  const exitOptions = available.map((criterion) => ({
+    value: criterion.id,
+    label: criterion.label(config),
+  }));
+  const tierOptions = TIER_OPTIONS.map((tier) => ({ value: tier.id, label: tier.name }));
+  const [tiersOpen, setTiersOpen] = useState(false);
+  const [exitsOpen, setExitsOpen] = useState(false);
+  // The paid trigger already answers the membership question, so its Select would
+  // offer a choice with one valid outcome. The tiers below still narrow it.
+  const scopeLocked = config.type === 'paid_subscription_starts';
+  const showTiers = hasTiers(config);
 
-  // Trigger and tier-scope changes rewrite which criteria exist, so they go
+  // Trigger and audience changes both rewrite which criteria exist, so they go
   // through reconcileCriteria rather than setting state directly.
   const changeType = (type: TriggerType) =>
     onChange(reconcileCriteria({ ...config, type }, config));
-  const selectAny = () =>
-    onChange(reconcileCriteria({ ...config, tierScope: 'any', tierIds: [] }, config));
 
-  // "Any" and the individual tiers stay mutually exclusive: Any clears the tiers,
-  // picking a tier clears Any, and clearing the last tier falls back to Any — so
-  // there's always exactly one valid answer and never an empty one.
-  const toggleTier = (tierId: string) => {
-    const current = config.tierScope === 'specific' ? config.tierIds : [];
-    const tierIds = current.includes(tierId)
-      ? current.filter((id) => id !== tierId)
-      : [...current, tierId];
-    onChange(
-      reconcileCriteria(
-        { ...config, tierScope: tierIds.length === 0 ? 'any' : 'specific', tierIds },
-        config,
-      ),
-    );
-  };
+  // Changing the membership scope clears the tiers with it. Tiers only narrow a
+  // paid audience, and leaving them set behind a Free scope would keep a filter
+  // alive that nothing on screen is showing.
+  const changeScope = (scope: AudienceScope) =>
+    onChange(reconcileCriteria({ ...config, audience: { scope, tierIds: [] } }, config));
 
-  const toggleCriterion = (id: ExitCriterionId) => {
-    if (exitCriterion(id).fixed) {
-      return;
-    }
-    const next = config.exitCriteria.includes(id)
-      ? config.exitCriteria.filter((criterion) => criterion !== id)
-      : [...config.exitCriteria, id];
-    // Keep EXIT_CRITERIA order so chips don't reshuffle as they're toggled.
+  // Tiers are a plain multi-select against "any paid tier" — an empty list IS
+  // "any", so there's no separate Any option to keep in sync with the others and
+  // no state where the scope and the tiers disagree.
+  const setTiers = (tierIds: string[]) =>
+    onChange(reconcileCriteria({ ...config, audience: { ...config.audience, tierIds } }, config));
+
+  const setCriteria = (ids: ExitCriterionId[]) =>
+    // Keep EXIT_CRITERIA order so the summary doesn't reshuffle as options are
+    // picked — the trigger reads them back joined, and a list that reorders itself
+    // as you tick boxes reads as though something else changed.
     onChange({
       ...config,
-      exitCriteria: EXIT_CRITERIA.filter((criterion) => next.includes(criterion.id)).map(
+      exitCriteria: EXIT_CRITERIA.filter((criterion) => ids.includes(criterion.id)).map(
         (criterion) => criterion.id,
       ),
     });
-  };
 
   return (
-    // gap="xl" (24px) between the three blocks, double the usual md — the
-    // labelled chip sections need more air from the control above them than a
-    // single row of inputs would, or the card reads as one dense block.
+    // gap="xl" (24px) between the blocks, double the usual md — each is a
+    // labelled field with its own meaning, and at md they ran together into one
+    // dense stack with no visible grouping.
     <Stack gap="xl">
       {/* No label — the card header already says "Trigger", the same way the
                 wait card's header names its duration field.
@@ -194,47 +186,123 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 a beat apart in meaning with nothing to tell them apart. */}
       <TriggerChoiceField locked={locked} value={config.type} onSelect={changeType} />
 
-      {/* Only the paid trigger watches tiers at all — and locked, the
-                disclosed fields go entirely rather than rendering disabled. */}
-      {isPaid && !locked && (
+      {/* AUDIENCE — who this applies to, as its own block rather than a clause
+                inside the trigger. See shared/trigger-config for why. Locked, the
+                disclosed fields go entirely rather than rendering disabled.
+
+                Fields rather than chips. Three rows of chip-shaped things doing
+                three different jobs — one pick-one, one pick-many, one add/remove
+                — looked like one control repeated and behaved like three, and the
+                card read as a pile rather than a form. Everything is a select now,
+                including the trigger above, so the card is one shape end to end
+                and each row's label says what it's for. */}
+      {/* AUDIENCE — who this applies to, as its own block rather than a clause
+                inside the trigger. See shared/trigger-config for why. Locked, the
+                disclosed fields go entirely rather than rendering disabled.
+
+                Two fields, not one. They were briefly a single flat list — Free,
+                Any paid tier, then the tiers — which modelled well but read badly:
+                the combobox hoists chosen options to the top, so picking a tier
+                lifted it out of its group and the list rearranged itself under the
+                cursor. Two stable lists beat one that moves. */}
+      {!locked && !scopeLocked && (
         <Stack gap="sm">
-          {/* Paired with the exit label below: enters/exits, each a stem its
-                        own chips finish. */}
-          <Label className="text-muted-foreground">Member enters when they subscribe to</Label>
-          <Inline gap="sm" wrap>
-            <ToggleChip
-              label="Any tier"
-              selected={config.tierScope === 'any'}
-              onClick={selectAny}
-            />
-            {TIER_OPTIONS.map((tier) => (
-              <ToggleChip
-                key={tier.id}
-                label={tier.name}
-                selected={config.tierScope === 'specific' && config.tierIds.includes(tier.id)}
-                onClick={() => toggleTier(tier.id)}
-              />
-            ))}
-          </Inline>
+          {/* "Applies to" rather than the old "Member enters when they subscribe
+                        to". That stem tied tiers to the act of subscribing, which was true
+                        of one trigger; this describes the members themselves, which is what
+                        an audience is and what every trigger can have.
+
+                        A plain Select, not a multi-select: membership is one-of-three. */}
+          <Label className="text-muted-foreground">Applies to</Label>
+          <Select
+            value={config.audience.scope}
+            onValueChange={(value) => changeScope(value as AudienceScope)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AUDIENCE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Stack>
       )}
 
-      {!locked && (
+      {/* Tiers narrow a paid or complimentary audience — comping someone means
+                giving them a tier, so both are tier-holders. Nothing selected means any
+                tier — an
+                empty filter rather than an option of its own, so the scope and the
+                tiers can never say different things, and the trigger says so in words
+                rather than leaving the field looking unanswered. */}
+      {!locked && showTiers && (
         <Stack gap="sm">
-          {/* The label opens a sentence the chips finish, so each chip can be a
-                    bare verb phrase instead of repeating "Member" three times. */}
-          <Label className="text-muted-foreground">Member exits when they</Label>
-          <Inline gap="sm" wrap>
-            {criteria.map((criterion) => (
-              <ToggleChip
-                key={criterion.id}
-                fixed={criterion.fixed}
-                label={criterion.label}
-                selected={config.exitCriteria.includes(criterion.id)}
-                onClick={() => toggleCriterion(criterion.id)}
+          <Label className="text-muted-foreground">Tiers</Label>
+          <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
+            <ComboboxTrigger aria-label="Tiers">
+              <ComboboxValue placeholder={config.audience.tierIds.length === 0}>
+                {config.audience.tierIds.length > 0
+                  ? tierNames(config.audience.tierIds).join(', ')
+                  : 'Any tier'}
+              </ComboboxValue>
+            </ComboboxTrigger>
+            {/* "always" so the list tracks its card when the canvas pans — the
+                            same reason the node menus and the option picker set it. */}
+            <ComboboxContent updatePositionStrategy="always">
+              {/* searchable={false}: three fixed options, and a search box over
+                                three rows is chrome asking to be ignored. */}
+              <MultiSelectCombobox
+                options={tierOptions}
+                searchable={false}
+                values={config.audience.tierIds}
+                onChange={setTiers}
+                onClose={() => setTiersOpen(false)}
               />
-            ))}
-          </Inline>
+            </ComboboxContent>
+          </Combobox>
+        </Stack>
+      )}
+
+      {/* EXITS.
+
+                Unsubscribing sits under the field as a statement, not a control.
+                There is nothing to decide — you cannot email someone who left — and
+                offering the switch would only imply the default was arbitrary.
+                Stated rather than offered: the PRD asks for exits to be EXPLICIT,
+                and the opposite of implicit is visible, not editable.
+
+                Everything else is in the field, cancelling and leaving a tier
+                included. Both were in that sentence for a while, and both have a
+                defensible other answer — which is the line: facts are stated,
+                choices are offered. */}
+      {!locked && exitOptions.length > 0 && (
+        <Stack gap="sm">
+          <Label className="text-muted-foreground">Also exit when</Label>
+          <Combobox open={exitsOpen} onOpenChange={setExitsOpen}>
+            <ComboboxTrigger aria-label="Additional exit conditions">
+              <ComboboxValue placeholder={chosenIds.length === 0}>
+                {chosenIds.length > 0
+                  ? exitOptions
+                      .filter((option) => chosenIds.includes(option.value))
+                      .map((option) => option.label)
+                      .join(', ')
+                  : 'Nothing else'}
+              </ComboboxValue>
+            </ComboboxTrigger>
+            <ComboboxContent updatePositionStrategy="always">
+              <MultiSelectCombobox
+                options={exitOptions}
+                searchable={false}
+                values={chosenIds}
+                onChange={setCriteria}
+                onClose={() => setExitsOpen(false)}
+              />
+            </ComboboxContent>
+          </Combobox>
+          <p className="text-sm text-muted-foreground">{AUTOMATIC_EXIT_SENTENCE}</p>
         </Stack>
       )}
     </Stack>

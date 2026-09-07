@@ -4,8 +4,8 @@ import type {
 } from '@tryghost/admin-x-framework/api/automations';
 import {
   type TriggerConfig,
+  audienceLabel,
   exitCriterion,
-  tierNames,
   triggerLabel,
 } from '@/automations/proto/shared/trigger-config';
 import { type StepKind, formatWait, orderActions } from '@/automations/proto/canvas/flow-utils';
@@ -52,11 +52,9 @@ const describe = (action: AutomationAction): string =>
     ? `email ${emailLabel(action.data.email_subject)}`
     : `a ${formatWait(action.data.wait_hours)} wait`;
 
-// Which tiers the trigger watches, as one comparable string.
-const tierText = (config: TriggerConfig): string =>
-  config.tierScope === 'specific' && config.tierIds.length > 0
-    ? tierNames(config.tierIds).join(', ')
-    : 'any paid tier';
+// Who the automation applies to, as one comparable string. audienceLabel is the
+// same phrase the trigger card shows, so a change entry names the audience in the
+// words the reader just set it in.
 
 export function changeSummary({
   published,
@@ -89,16 +87,14 @@ export function changeSummary({
     });
   }
 
-  // Only meaningful while the trigger is the paid one — otherwise tiers aren't
-  // part of what's running.
-  if (
-    draftTrigger.type === 'paid_subscription_starts' &&
-    tierText(publishedTrigger) !== tierText(draftTrigger)
-  ) {
+  // Audience is its own axis now, so it's diffed for every trigger rather than
+  // only the paid one — narrowing a signup automation to Free members is as much
+  // a change to what's running as swapping its tiers.
+  if (audienceLabel(publishedTrigger) !== audienceLabel(draftTrigger)) {
     changes.push({
-      id: 'trigger-tiers',
+      id: 'trigger-audience',
       kind: 'trigger',
-      label: `Paid tiers changed to ${tierText(draftTrigger)}`,
+      label: `Audience changed to ${audienceLabel(draftTrigger)}`,
     });
   }
 
@@ -112,7 +108,7 @@ export function changeSummary({
       changes.push({
         id: `criterion-add-${criterion}`,
         kind: 'trigger',
-        label: `Members now exit when they ${exitCriterion(criterion).label.toLowerCase()}`,
+        label: `Members now exit when they ${exitCriterion(criterion).label(draftTrigger).toLowerCase()}`,
       }),
     );
   publishedTrigger.exitCriteria
@@ -121,7 +117,7 @@ export function changeSummary({
       changes.push({
         id: `criterion-remove-${criterion}`,
         kind: 'trigger',
-        label: `Members no longer exit when they ${exitCriterion(criterion).label.toLowerCase()}`,
+        label: `Members no longer exit when they ${exitCriterion(criterion).label(publishedTrigger).toLowerCase()}`,
       }),
     );
 

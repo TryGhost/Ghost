@@ -56,17 +56,28 @@ export interface ProtoAutomation {
 interface StoreState {
   version: number;
   automations: ProtoAutomation[];
+  /**
+   * Whether the site has Stripe connected — a property of the SITE, not of any
+   * automation, which is why it sits beside the list rather than on a record.
+   *
+   * Held here so it can be flipped at runtime from the lane switcher. It's the
+   * one site-level state the automations screens care about, and the difference
+   * it makes is only visible by toggling it: a reviewer on a preview URL can't
+   * disconnect Stripe to see what happens.
+   */
+  stripeConnected: boolean;
 }
 
 // Bumping the version discards whatever is in localStorage rather than trying to
 // migrate it. This is fixture data behind a Labs flag — a reseed is the correct
 // response to a shape change, and a migration path would be ceremony around data
 // nobody is going to miss.
-const VERSION = 4;
+const VERSION = 10;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
   version: VERSION,
+  stripeConnected: true,
   automations: mockAutomations.map((automation) => ({
     automation,
     // The fixture map is the seed now, not the lookup — once a description can be
@@ -126,8 +137,18 @@ const subscribe = (listener: () => void): (() => void) => {
 
 const update = (fn: (automations: ProtoAutomation[]) => ProtoAutomation[]) => {
   const current = snapshot();
-  commit({ version: VERSION, automations: fn(current.automations) });
+  commit({ ...current, version: VERSION, automations: fn(current.automations) });
 };
+
+export const useStripeConnected = (): boolean =>
+  useSyncExternalStore(
+    subscribe,
+    () => snapshot().stripeConnected,
+    () => snapshot().stripeConnected,
+  );
+
+export const setStripeConnected = (stripeConnected: boolean): void =>
+  commit({ ...snapshot(), stripeConnected });
 
 // ---------------------------------------------------------------------------
 // Naming
@@ -174,6 +195,19 @@ export const nextCopyName = (base: string, taken: string[]): string => {
   }
   return `${base} (copy ${n})`;
 };
+
+/**
+ * What to prefill a duplicate's name with, against the names already taken.
+ *
+ * Exported so the screen offering the copy can show the name BEFORE making it —
+ * the alternative is minting the name inside duplicateAutomation, which works
+ * only while nobody is allowed to change it.
+ */
+export const suggestCopyName = (sourceName: string): string =>
+  nextCopyName(
+    sourceName,
+    snapshot().automations.map((entry) => entry.automation.name),
+  );
 
 // Real ids are 24-char ObjectIds. The fixtures use readable ones ('auto_welcome')
 // for design clarity and created ones follow suit — they end up in the URL, and
@@ -253,6 +287,11 @@ export const createAutomation = (): string => {
  * including edits that haven't been saved. Duplicating what was last saved would
  * hand back a copy quietly missing the changes you were looking at.
  *
+ * The name comes in too, rather than being minted here: it's offered to the
+ * publisher first (see suggestCopyName) and they can change it before confirming.
+ * A name they typed isn't checked for collisions — two automations may share a
+ * name if that's what someone wants, exactly as renaming allows.
+ *
  * Action ids are regenerated and the edges remapped onto them. Ids are unique
  * per action in the real API, and two automations sharing them would be a lie
  * the prototype tells for free — runs reference actions by id, so a copy that
@@ -265,15 +304,12 @@ export const duplicateAutomation = (
   source: AutomationDetail,
   trigger: TriggerConfig | null,
   description: string,
+  name: string,
 ): string => {
   const id = newId();
   const now = new Date().toISOString();
   const actionIds = new Map(source.actions.map((action) => [action.id, `act_${newId().slice(5)}`]));
   update((automations) => {
-    const name = nextCopyName(
-      source.name,
-      automations.map((a) => a.automation.name),
-    );
     const copy: ProtoAutomation = {
       automation: {
         ...source,

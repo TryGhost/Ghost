@@ -5,6 +5,7 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -15,7 +16,7 @@ import {
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { ProtoVariantsContext, resolveVariantId } from './proto-variants';
 import { useVersionLink } from './use-version-link';
-import { resetProtoStore } from './store';
+import { resetProtoStore, setStripeConnected, useStripeConnected } from './store';
 import { LANES, type LaneId, laneLabel, lanePath } from './lanes';
 
 // The lane switcher. Split from lanes.ts, which holds the registry and the
@@ -53,6 +54,7 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
   const toVersioned = useVersionLink();
   const ctx = useContext(ProtoVariantsContext);
   const slots = ctx?.slots ?? [];
+  const stripeConnected = useStripeConnected();
 
   return (
     <div className={cn('absolute right-4 bottom-4 z-30', className)}>
@@ -103,6 +105,20 @@ export const LaneSwitcher: React.FC<{ lane: LaneId; className?: string }> = ({
               </DropdownMenuRadioGroup>
             </React.Fragment>
           ))}
+          <DropdownMenuSeparator />
+          {/* Site state, not lane state — but it belongs in the same menu for the
+                    same reason resetting does: it exists because this is a prototype.
+                    A reviewer on a preview URL can't disconnect Stripe to see what the
+                    automations screens do about it, so the toggle stands in for the
+                    site setting. */}
+          <DropdownMenuLabel>Site</DropdownMenuLabel>
+          <DropdownMenuCheckboxItem
+            checked={stripeConnected}
+            onCheckedChange={(checked) => setStripeConnected(checked)}
+          >
+            Stripe connected
+          </DropdownMenuCheckboxItem>
+
           <DropdownMenuSeparator />
           {/* Resets every lane at once — they share one store. Last, and on its
                     own, because it's the only thing in here that destroys anything. */}
