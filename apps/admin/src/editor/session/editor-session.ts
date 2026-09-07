@@ -61,6 +61,8 @@ export interface EditorSessionTransport {
 export interface EditorSessionOptions {
   record?: EditorRecord;
   siteUrl?: string;
+  /** Authors the create. Core rejects an Author's or Contributor's create without it. */
+  currentUserId?: string;
   saveFailureMessage: string;
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
@@ -120,6 +122,7 @@ export function isOlderToken(candidate: string, held: string | null): boolean {
 export function createEditorSession({
   record,
   siteUrl,
+  currentUserId,
   saveFailureMessage,
   transport,
   onIdAcquired,
@@ -232,6 +235,11 @@ export function createEditorSession({
       status: request.target.status,
       published_at: request.target.publishedAt,
     };
+    // An Author's or Contributor's create is refused unless `authors` names them
+    // (core/server/models/relations/authors.js). Updates never resend it.
+    if (isCreate && currentUserId) {
+      payload.authors = [{ id: currentUserId }];
+    }
     if (!isCreate) {
       if (!projection.updated_at) {
         // Without the token the server skips its collision check entirely and the

@@ -126,7 +126,12 @@ function EditorContent({
   showExcerpt,
   snippetDialog,
 }: EditorContentProps) {
-  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
+  const session = useEditorSession({
+    postType,
+    record,
+    siteUrl: cardConfig.siteUrl,
+    currentUserId: currentUser?.id,
+  });
   const [tkCount, setTkCount] = useState(0);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
