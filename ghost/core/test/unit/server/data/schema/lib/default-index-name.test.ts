@@ -1,8 +1,6 @@
-const assert = require('node:assert/strict');
-const Knex = require('knex');
-const {
-  defaultIndexName,
-} = require('../../../../../../core/server/data/schema/lib/default-index-name');
+import assert from 'node:assert/strict';
+import createKnex, { type Knex } from 'knex';
+import { defaultIndexName } from '../../../../../../core/server/data/schema/lib/default-index-name';
 
 const TEST_CASES = [
   { title: 'a single column', table: 'tbl', columns: 'col' },
@@ -13,23 +11,19 @@ const TEST_CASES = [
   { title: 'a mix of dots, dashes and uppercase', table: 'Foo.Bar-Baz', columns: ['ColA', 'ColB'] },
 ];
 
-/**
- * @param {import('knex').Knex} knex
- * @param {string} table
- * @param {string|string[]} columns
- * @returns {string}
- */
-function knexIndexName(knex, table, columns) {
-  const [{ sql }] = knex.schema
-    .table(table, function (t) {
+function knexIndexName(knex: Knex, table: string, columns: string | string[]): string {
+  const sql = knex.schema
+    .alterTable(table, (t) => {
       t.index(columns);
     })
-    .toSQL();
-  return sql.match(/index `([^`]+)`/)[1];
+    .toString();
+  const result = sql.match(/index `([^`]+)`/)?.[1];
+  assert(result, `Test setup error: could not extract index name from SQL: ${sql}`);
+  return result;
 }
 
 describe('defaultIndexName', function () {
-  const knex = Knex({ client: 'mysql2' });
+  const knex = createKnex({ client: 'mysql2' });
 
   afterAll(function () {
     return knex.destroy();
