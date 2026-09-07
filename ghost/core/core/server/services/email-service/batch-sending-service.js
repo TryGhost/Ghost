@@ -3,6 +3,7 @@ const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {
+  RECIPIENT_VERIFICATION_CODE: VERIFICATION_CODE,
   recipientVerificationError,
   excludedRecipientError,
   isCount,
@@ -18,6 +19,7 @@ const messages = {
 
 const MAX_SENDING_CONCURRENCY = 2;
 const SHUTDOWN_CODE = 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS';
+const RECIPIENT_READ_MISMATCH = 'BULK_EMAIL_RECIPIENT_READ_MISMATCH';
 
 /**
  * @typedef {import('./sending-service')} SendingService
@@ -263,7 +265,7 @@ class BatchSendingService {
     email._retryCutOffTime = retryCutOffTime;
 
     try {
-      await this.sendEmail(email);
+      const submission = await this.sendEmail(email);
       await this.retryDb(
         async () => {
           await email.save(
@@ -271,6 +273,7 @@ class BatchSendingService {
               status: 'submitted',
               submitted_at: new Date(),
               error: null,
+              ...(submission ? { email_count: submission.submittedCount } : {}),
             },
             { patch: true, autoRefresh: false },
           );
@@ -378,7 +381,7 @@ class BatchSendingService {
     // Rebuild until prepared_at is saved. Emails with null preflight_email_count
     // whose submission has already started reuse their existing batches instead.
     const batches = await this.createBatches({ email, newsletter, post });
-    await this.sendBatches({ email, batches, post, newsletter });
+    return await this.sendBatches({ email, batches, post, newsletter });
   }
 
   /**
@@ -1154,25 +1157,32 @@ class BatchSendingService {
 
   async #verifySubmittedBatches(email) {
     const batches = await this.#verifyFrozenPreparation(email, this.#getAfterRetryConfig());
+    const submission = this.#verifySubmissionCounts(email, batches);
     if (batches.some((batch) => batch.get('status') === 'submitting')) {
       throw new errors.EmailError({
-        code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN',
-        message: tpl(messages.submissionUncertain),
+        code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN', message: tpl(messages.submissionUncertain),
       });
     }
-    this.#assertSubmissionComplete(
-      batches.filter((batch) => batch.get('status') === 'submitted').length,
-      batches.length,
-    );
-    logging.info(
-      {
-        event: { name: 'email.submission.unverified' },
-        email_id: email.id,
-        batch_count: batches.length,
-        reason: 'submission_counts_unavailable',
-      },
-      'All email batches submitted; submission recipient counts are unavailable',
-    );
+    this.#assertSubmissionComplete(batches.filter(batch => batch.get('status') === 'submitted').length, batches.length);
+    this.#reportSubmission(email, batches, submission);
+    return submission;
+  }
+
+  #reportSubmission(email, batches, submission) {
+    if (submission) {
+      logging.info({
+        event: { name: 'email.submission.verified' }, email_id: email.id,
+        candidate_count: email.get('candidate_count'),
+        preparation_excluded_count: email.get('preparation_excluded_count'),
+        submitted_count: submission.submittedCount,
+        submission_excluded_count: submission.submissionExcludedCount,
+      }, 'Email recipient submission verified');
+      return;
+    }
+    logging.info({
+      event: { name: 'email.submission.unverified' }, email_id: email.id,
+      batch_count: batches.length, reason: 'submission_counts_unavailable',
+    }, 'All email batches submitted; submission recipient counts are unavailable');
   }
 
   #assertSubmissionComplete(succeededCount, expectedBatchCount) {
@@ -1181,6 +1191,66 @@ class BatchSendingService {
         message: tpl(succeededCount > 0 ? messages.emailErrorPartialFailure : messages.emailError),
       });
     }
+  }
+
+  #verifySubmissionCounts(email, batches) {
+    let submittedCount = 0;
+    let submissionExcludedCount = 0;
+    let unknown = false;
+    for (const batch of batches) {
+      let errorData;
+      try {
+        errorData = JSON.parse(batch.get('error_data') ?? 'null');
+      } catch {
+        // Ordinary provider failures can contain non-JSON diagnostics.
+      }
+      if (errorData?.code === VERIFICATION_CODE) {
+        throw this.#verificationFailure(email, 'batch_verification_failed', {
+          batch_id: batch.id,
+          batch_error: errorData,
+        });
+      }
+      if (batch.get('status') !== 'submitted') {
+        unknown = true;
+        continue;
+      }
+      const submitted = batch.get('submitted_count');
+      const excluded = batch.get('submission_excluded_count');
+      if (submitted === null && excluded === null) {
+        // Preparation-only deployments recorded intent but no provider counts.
+        unknown = true;
+        continue;
+      }
+      if (
+        !Number.isSafeInteger(submitted) ||
+        submitted < 0 ||
+        !Number.isSafeInteger(excluded) ||
+        excluded < 0 ||
+        batch.get('recipient_count') !== submitted + excluded
+      ) {
+        throw this.#verificationFailure(email, 'batch_submission_counts', {
+          batch_id: batch.id,
+          recipient_count: batch.get('recipient_count'),
+          submitted_count: submitted,
+          submission_excluded_count: excluded,
+        });
+      }
+      submittedCount += submitted;
+      submissionExcludedCount += excluded;
+    }
+    if (unknown) {
+      return;
+    }
+    if (
+      email.get('candidate_count') !==
+      submittedCount + submissionExcludedCount + email.get('preparation_excluded_count')
+    ) {
+      throw this.#verificationFailure(email, 'submission_totals', {
+        submitted_count: submittedCount,
+        submission_excluded_count: submissionExcludedCount,
+      });
+    }
+    return { submittedCount, submissionExcludedCount };
   }
 
   /**
@@ -1233,9 +1303,20 @@ class BatchSendingService {
     let succeeded = false;
 
     try {
+      const expectedCount = batch.get('recipient_count');
+      const recipientAccounting =
+        this.#usesRecipientAccounting(email) && (expectedCount ?? null) !== null;
+      if (recipientAccounting && (!Number.isSafeInteger(expectedCount) || expectedCount < 1)) {
+        throw this.#verificationFailure(email, 'invalid_batch_recipient_count', {
+          batch_id: batch.id,
+          expected: expectedCount,
+        });
+      }
       let members = await this.retryDb(
         async () => {
-          const m = await this.getBatchMembers(batch.id);
+          const m = recipientAccounting
+            ? await this.getBatchMembers(batch.id, expectedCount)
+            : await this.getBatchMembers(batch.id);
 
           // If we receive 0 rows, there is a possibility that we switched to a secondary database and have replication lag
           // So we throw an error and we retry
@@ -1251,27 +1332,39 @@ class BatchSendingService {
           ...this.#getBeforeRetryConfig(email),
           description: `getBatchMembers batch ${originalBatch.id}`,
         },
-      );
+      ).catch((error) => {
+        if (error.code === RECIPIENT_READ_MISMATCH) {
+          throw this.#verificationFailure(email, 'batch_recipient_read', {
+            batch_id: batch.id,
+            ...JSON.parse(error.errorDetails),
+          });
+        }
+        throw error;
+      });
 
+      const messageData = {
+        emailId: email.id,
+        post,
+        newsletter,
+        segment: batch.get('member_segment'),
+        members,
+      };
+      const messageOptions = {
+        openTrackingEnabled: !!email.get('track_opens'),
+        clickTrackingEnabled: !!email.get('track_clicks'),
+        useFallbackAddress: batch.get('fallback_sending_domain'),
+        deliveryTime,
+        emailBodyCache,
+        ...(recipientAccounting ? { recipientAccounting: true, batchId: batch.id } : {}),
+      };
+      const message = recipientAccounting
+        ? await this.#sendingService.buildMessage(messageData, messageOptions)
+        : null;
       const response = await this.retryDb(
-        async () => {
-          return await this.#sendingService.send(
-            {
-              emailId: email.id,
-              post,
-              newsletter,
-              segment: batch.get('member_segment'),
-              members,
-            },
-            {
-              openTrackingEnabled: !!email.get('track_opens'),
-              clickTrackingEnabled: !!email.get('track_clicks'),
-              useFallbackAddress: batch.get('fallback_sending_domain'),
-              deliveryTime,
-              emailBodyCache,
-            },
-          );
-        },
+        () =>
+          recipientAccounting
+            ? this.#sendingService.sendMessage(message)
+            : this.#sendingService.send(messageData, messageOptions),
         {
           ...this.#getMailgunRetryConfig(),
           description: `Sending email batch ${originalBatch.id} ${deliveryTime ? `with delivery time ${deliveryTime}` : ''}`,
@@ -1285,6 +1378,12 @@ class BatchSendingService {
             {
               status: 'submitted',
               mailgun_message_id: response.id,
+              ...(recipientAccounting
+                ? {
+                    submitted_count: response.submittedCount,
+                    submission_excluded_count: response.submissionExcludedCount,
+                  }
+                : {}),
               // reset error fields when sending succeeds
               error_status_code: null,
               error_message: null,
@@ -1298,6 +1397,19 @@ class BatchSendingService {
           description: `save batch ${originalBatch.id} -> submitted`,
         },
       );
+      if (recipientAccounting) {
+        logging.info(
+          {
+            event: { name: 'email.batch.submitted' },
+            email_id: email.id,
+            batch_id: batch.id,
+            recipient_count: expectedCount,
+            submitted_count: response.submittedCount,
+            submission_excluded_count: response.submissionExcludedCount,
+          },
+          'Email batch submission accounted',
+        );
+      }
     } catch (err) {
       if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
         logging.error(err);
@@ -1370,13 +1482,20 @@ class BatchSendingService {
    * That keeps the sending service nicely separated so it isn't dependent on the batch sending data structure.
    * @returns {Promise<MemberLike[]>}
    */
-  async getBatchMembers(batchId) {
+  async getBatchMembers(batchId, expectedCount) {
     let models = await this.#models.EmailRecipient.findAll({
       filter: `batch_id:'${batchId}'`,
       withRelated: ['member', 'member.stripeSubscriptions', 'member.products'],
     });
 
     const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
+    if (expectedCount !== undefined && models.length !== expectedCount) {
+      throw new errors.EmailError({
+        code: RECIPIENT_READ_MISMATCH,
+        message: `Email batch ${batchId} has ${models.length} recipients, expected ${expectedCount}`,
+        errorDetails: JSON.stringify({ expected: expectedCount, actual: models.length }),
+      });
+    }
     if (models.length > BATCH_SIZE) {
       throw new errors.EmailError({
         message: `Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch.`,

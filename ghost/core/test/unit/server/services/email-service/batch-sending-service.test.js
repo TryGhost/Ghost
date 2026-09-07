@@ -1,5 +1,6 @@
 const { createModel, createModelClass, createDb, sleep } = require('./utils');
 const BatchSendingService = require('../../../../../core/server/services/email-service/batch-sending-service');
+const SendingService = require('../../../../../core/server/services/email-service/sending-service');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
@@ -698,6 +699,100 @@ describe('Batch Sending Service', function () {
             }),
           },
         ],
+      });
+    });
+
+    for (const expected of [1, 3]) {
+      it(`fails after bounded reads of two rows when the expected count is ${expected}`, async function () {
+        const batch = createModel({ status: 'pending', recipient_count: expected });
+        const sender = {
+          send: sinon.stub().resolves({ id: 'provider' }),
+          getMaximumRecipients: () => 5,
+        };
+        const service = new BatchSendingService({
+          models: { EmailRecipient },
+          sendingService: sender,
+          BEFORE_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+        });
+        sinon.stub(service, 'updateStatusLock').resolves(batch);
+        const read = sinon.spy(service, 'getBatchMembers');
+        const result = await service.sendBatch({
+          email: createModel({ preflight_email_count: expected }),
+          batch,
+          post: createModel({}),
+          newsletter: createModel({}),
+        });
+        assert.equal(result, false);
+        assert.equal(batch.get('status'), 'failed');
+        assert.equal(
+          JSON.parse(batch.get('error_data')).code,
+          'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+        );
+        sinon.assert.calledTwice(read);
+        sinon.assert.notCalled(sender.send);
+      });
+    }
+
+    it('rejects a corrupt zero recipient count before reading recipients', async function () {
+      const batch = createModel({ status: 'pending', recipient_count: 0 });
+      const service = new BatchSendingService({ models: { EmailRecipient } });
+      sinon.stub(service, 'updateStatusLock').resolves(batch);
+      const read = sinon.stub(service, 'getBatchMembers').resolves([{ email: 'a@example.com' }]);
+      await service.sendBatch({
+        email: createModel({ preflight_email_count: 0 }),
+        batch,
+        post: createModel({}),
+        newsletter: createModel({}),
+      });
+      assert.equal(batch.get('status'), 'failed');
+      assert.equal(
+        JSON.parse(batch.get('error_data')).code,
+        'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      );
+      sinon.assert.notCalled(read);
+    });
+
+    it('reuses the intended payload on provider retry and persists absolute counts with status', async function () {
+      const batch = createModel({ status: 'pending', recipient_count: 2 });
+      const provider = {
+        getMaximumRecipients: () => 5,
+        send: sinon.stub().resolves({ id: 'accepted' }),
+      };
+      provider.send.onFirstCall().rejects(new Error('Response lost'));
+      const renderer = {
+        renderBody: sinon.stub().resolves({ html: 'Hello', plaintext: 'Hello', replacements: [] }),
+        getSubject: () => 'Hello',
+        getFromAddress: () => 'sender@example.com',
+        getReplyToAddress: () => null,
+      };
+      const service = new BatchSendingService({
+        models: { EmailRecipient },
+        sendingService: new SendingService({
+          emailProvider: provider,
+          emailRenderer: renderer,
+          emailAddressService: {},
+        }),
+        MAILGUN_API_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+      });
+      sinon.stub(service, 'updateStatusLock').resolves(batch);
+      const save = sinon.spy(batch, 'save');
+      assert.equal(
+        await service.sendBatch({
+          email: createModel({ preflight_email_count: 2 }),
+          batch,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        true,
+      );
+      sinon.assert.calledTwice(provider.send);
+      assert.equal(provider.send.firstCall.args[0], provider.send.secondCall.args[0]);
+      sinon.assert.calledOnce(renderer.renderBody);
+      sinon.assert.calledWithMatch(save, {
+        status: 'submitted',
+        mailgun_message_id: 'accepted',
+        submitted_count: 2,
+        submission_excluded_count: 0,
       });
     });
 

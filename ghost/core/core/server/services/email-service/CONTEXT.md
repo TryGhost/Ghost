@@ -25,7 +25,7 @@ The completed and total recipient counts for the current sending phase.
 _Avoid_: Delivery progress, expected count
 
 **Submitted**:
-Every batch of a newsletter email has been accepted by the configured email provider. Submission does not mean that recipients have received the email.
+Every batch of a newsletter email has completed submission: the provider accepted its valid recipients, or validation explicitly excluded every recipient without a provider call. Submission does not mean that recipients have received the email.
 _Avoid_: Sent, delivered
 
 **Failed**:

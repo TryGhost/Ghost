@@ -1,5 +1,6 @@
 const validator = require('@tryghost/validator');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {object} EmailData
@@ -38,6 +39,8 @@ const logging = require('@tryghost/logging');
  * @prop {boolean} useFallbackAddress
  * @prop {Date} deliveryTime
  * @prop {Map<string, EmailBody>} [emailBodyCache]
+ * @prop {boolean} [recipientAccounting]
+ * @prop {string} [batchId]
  */
 
 /**
@@ -59,24 +62,29 @@ const logging = require('@tryghost/logging');
 
 /**
  * @typedef {object} EmailProviderSuccessResponse
- * @prop {string} id
+ * @prop {string|null} id
+ * @prop {number} [submittedCount]
+ * @prop {number} [submissionExcludedCount]
  */
 
 class SendingService {
   #emailProvider;
   #emailRenderer;
   #emailAddressService;
+  #sentry;
 
   /**
    * @param {object} dependencies
    * @param {IEmailProviderService} dependencies.emailProvider
    * @param {EmailRenderer} dependencies.emailRenderer
    * @param {EmailAddressService} dependencies.emailAddressService
+   * @param {object} [dependencies.sentry]
    */
-  constructor({ emailProvider, emailRenderer, emailAddressService }) {
+  constructor({ emailProvider, emailRenderer, emailAddressService, sentry }) {
     this.#emailProvider = emailProvider;
     this.#emailRenderer = emailRenderer;
     this.#emailAddressService = emailAddressService;
+    this.#sentry = sentry;
   }
 
   getMaximumRecipients() {
@@ -103,7 +111,13 @@ class SendingService {
    * @param {EmailSendingOptions} options
    * @returns {Promise<EmailProviderSuccessResponse>}
    */
-  async send({ post, newsletter, segment, members, emailId }, options) {
+  async send(data, options) {
+    return this.sendMessage(await this.buildMessage(data, options));
+  }
+
+  // Construct once outside the provider retry loop so exclusions, recipient
+  // replacements, and the intended payload stay fixed across uncertain retries.
+  async buildMessage({ post, newsletter, segment, members, emailId }, options) {
     const cacheId = emailId + '-' + (segment ?? 'null');
     const isTestEmail = options.isTestEmail ?? false;
 
@@ -125,9 +139,13 @@ class SendingService {
       }
     }
 
-    const recipients = this.buildRecipients(members, emailBody.replacements);
-    return await this.#emailProvider.send(
-      {
+    const recipients = this.buildRecipients(
+      members,
+      emailBody.replacements,
+      options.recipientAccounting ? { emailId, batchId: options.batchId } : undefined,
+    );
+    return {
+      data: {
         subject: this.#emailRenderer.getSubject(post, isTestEmail),
         from: this.#emailRenderer.getFromAddress(post, newsletter, !!options.useFallbackAddress),
         replyTo:
@@ -142,22 +160,46 @@ class SendingService {
           ? this.#emailAddressService.fallbackDomain
           : undefined,
       },
-      {
+      options: {
         clickTrackingEnabled: !!options.clickTrackingEnabled,
         openTrackingEnabled: !!options.openTrackingEnabled,
         useFallbackAddress: !!options.useFallbackAddress,
         ...(options.deliveryTime && { deliveryTime: options.deliveryTime }),
+        ...(options.recipientAccounting ? { expectedRecipientCount: recipients.length } : {}),
       },
-    );
+      ...(options.recipientAccounting
+        ? { submissionExcludedCount: members.length - recipients.length }
+        : {}),
+    };
+  }
+
+  async sendMessage(message) {
+    if (message.submissionExcludedCount !== undefined && message.data.recipients.length === 0) {
+      return {
+        id: null,
+        submittedCount: 0,
+        submissionExcludedCount: message.submissionExcludedCount,
+      };
+    }
+    const response = await this.#emailProvider.send(message.data, message.options);
+    if (message.submissionExcludedCount === undefined) {
+      return response;
+    }
+    return {
+      ...response,
+      submittedCount: message.data.recipients.length,
+      submissionExcludedCount: message.submissionExcludedCount,
+    };
   }
 
   /**
    * @private
    * @param {MemberLike[]} members
    * @param {import("./email-renderer").ReplacementDefinition[]} replacementDefinitions
+   * @param {{emailId: string|null, batchId?: string}} [accounting]
    * @returns {Recipient[]}
    */
-  buildRecipients(members, replacementDefinitions) {
+  buildRecipients(members, replacementDefinitions, accounting) {
     return members
       .map((member) => {
         return {
@@ -171,13 +213,29 @@ class SendingService {
           }),
         };
       })
-      .filter((recipient) => {
+      .filter((recipient, index) => {
         // Remove invalid recipient email addresses
         const isValidRecipient = validator.isEmail(recipient.email, { legacy: false });
         if (!isValidRecipient) {
-          logging.warn(
-            `Removed recipient ${recipient.email} from list because it is not a valid email address`,
-          );
+          if (accounting) {
+            const error = new errors.EmailError({
+              code: 'BULK_EMAIL_INVALID_RECIPIENT',
+              message:
+                'Recipient excluded from newsletter submission due to an invalid email address',
+              errorDetails: JSON.stringify({
+                email_id: accounting.emailId,
+                batch_id: accounting.batchId,
+                member_id: members[index].id,
+                reason: 'invalid_email_address',
+              }),
+            });
+            logging.error(error);
+            this.#sentry?.captureException(error);
+          } else {
+            logging.warn(
+              `Removed recipient ${recipient.email} from list because it is not a valid email address`,
+            );
+          }
         }
         return isValidRecipient;
       });

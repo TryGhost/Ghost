@@ -25,6 +25,25 @@ describe('Mailgun Email Provider', function () {
       sinon.restore();
     });
 
+    it('rejects duplicate recipient keys before an accounted provider request', async function () {
+      const provider = new MailgunEmailProvider({ mailgunClient, config });
+      await assert.rejects(
+        provider.send(
+          {
+            emailId: 'email',
+            recipients: [
+              { email: 'same@example.com', replacements: [] },
+              { email: 'same@example.com', replacements: [] },
+            ],
+            replacementDefinitions: [],
+          },
+          { expectedRecipientCount: 2 },
+        ),
+        { code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED' },
+      );
+      sinon.assert.notCalled(sendStub);
+    });
+
     it('calls mailgun client with correct data', async function () {
       config.get.withArgs('bulkEmail:mailgun:tag').returns('newsletter-email');
 

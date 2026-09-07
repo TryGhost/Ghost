@@ -90,6 +90,33 @@ forward, that email cannot safely rebuild or complete preparation automatically;
 its recorded state requires reconciliation. Resending after a lost preparation
 boundary can also duplicate submissions already accepted by the provider.
 
+## Recipient submission
+
+Accounted batches verify their recipient read against `recipient_count` before
+constructing the provider payload. Existing invalid-address validation records
+explicit exclusions with error logging and Sentry reporting. A final payload
+whose address keys collapse multiple recipients fails before the provider call.
+Provider retries reuse the same intended recipients and exclusion counts.
+
+Persist `submitted_count` and `submission_excluded_count` as absolute values with
+the batch's submitted status and message ID. If every recipient is excluded,
+complete the batch with zero submitted and no message ID, without calling the
+provider. A corrupt zero expected count fails before reading recipients.
+
+After workers settle, verify every persisted batch, including batches omitted
+from the dispatched list. Expected recipients must equal submitted recipients
+plus exclusions, and candidates must equal submitted recipients plus both kinds
+of exclusions. Complete the email with the verified submitted total as
+`email_count`. Integrity errors retain their distinct code through persisted
+batch errors and the final verification, so the Admin banner asks for
+investigation instead of another identical retry.
+
+Emails spanning the preparation-only deployment may contain submitted batches
+whose submission counts are null. Verify their rows and statuses, preserve the
+intended `email_count`, and emit an unverified-submission-counts event. Do not
+infer or backfill provider counts for those batches.
+
+
 ## Recipient accounting events
 
 Confirmed recipient-count discrepancies emit error-level records with
@@ -149,11 +176,20 @@ derived on read. `sending-status.ts` owns the derivation from an email and its
 batches with their recipient counts; `SendingStatusService` reads those rows
 and `sending-status-serializers.ts` shapes the response. Submitted is terminal and the batch aggregation only
 describes a send that is still in progress or has failed, so submitted emails answer with the email's stored
-`email_count` as both completed and total; accounted preparation verifies that
-column against the recipient rows it built. Emails with null
-`preflight_email_count` retain their stored intended total. That also keeps reads of long-finished
+`email_count` as both completed and total. Fully accounted sends persist the
+verified submission total. Emails with null `preflight_email_count`, and emails
+with batches submitted before submission counts were recorded, retain the
+intended total. That also keeps reads of long-finished
 emails cheap, with no query over the batches or recipients. The endpoint is always available; Admin decides
 whether to poll it while a send is active.
+
+Active accounted sends read the small batch table: preparation progress sums
+`recipient_count`; submission progress sums submitted and excluded counts for
+submitted batches. Unknown preparation-era submission counts fall back to the
+batch's expected count at read time only. The submission total remains the sum
+of expected batch counts, so exclusions cannot leave progress short. Legacy
+sends retain their indexed recipient-count queries. Actual recipient verification
+runs at lifecycle boundaries, not on the polling path.
 
 The phase is read from the batches: an email is submitting once any batch has
 left `pending`, and preparing otherwise. Batch statuses persist across

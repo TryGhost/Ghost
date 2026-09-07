@@ -14,7 +14,7 @@ export class SendingStatusService {
 
   async statusFor(emailId: string): Promise<EmailSendingStatus | null> {
     const row = await this.#knex('emails')
-      .select('id', 'status', 'email_count', 'updated_at')
+      .select('id', 'status', 'email_count', 'preflight_email_count', 'updated_at')
       .where('id', emailId)
       .first();
 
@@ -23,9 +23,12 @@ export class SendingStatusService {
     }
 
     const email = DbEmailSendingRow.parse(row);
-    // A submitted email answers from its own count, and batch creation reconciles email_count
-    // to the recipient rows it built, so the batch query is skipped rather than run and ignored.
-    const batches = email.status === 'submitted' ? [] : await this.#batchesFor(emailId);
+    // Completion persists the verified submitted count (legacy sends retain their
+    // intended count), so finished sends need no batch or recipient aggregation.
+    const batches =
+      email.status === 'submitted'
+        ? []
+        : await this.#batchesFor(emailId, email.preflight_email_count !== null);
 
     return {
       id: email.id,
@@ -42,7 +45,18 @@ export class SendingStatusService {
     };
   }
 
-  async #batchesFor(emailId: string): Promise<SendingBatch[]> {
+  async #batchesFor(emailId: string, recipientAccounting: boolean): Promise<SendingBatch[]> {
+    if (recipientAccounting) {
+      const rows = await this.#knex('email_batches')
+        .select('status', 'created_at', 'updated_at', 'recipient_count')
+        .select(
+          this.#knex.raw(
+            'COALESCE(submitted_count + submission_excluded_count, recipient_count) AS accounted_recipient_count',
+          ),
+        )
+        .where('email_id', emailId);
+      return rows.map((batchRow) => camelKeys(DbBatchSendingRow.parse(batchRow)));
+    }
     // Correlated per-batch count stays on the batch_id index; grouping recipients by email_id scans every recipient row.
     const recipientCount = this.#knex('email_recipients as recipient')
       .count('*')
