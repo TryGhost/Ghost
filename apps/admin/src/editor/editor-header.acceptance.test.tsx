@@ -51,9 +51,31 @@ const MAILGUN_ON = {
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
+function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
+  const request = capture.requests.at(index);
+  const body = request?.body as { posts: Record<string, unknown>[] } | undefined;
   return body?.posts[0] ?? {};
+}
+
+/** The error body Ghost answers a failed save with, by status. */
+function failureBody(status: number) {
+  if (status === 409) {
+    return {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          type: 'UpdateCollisionError',
+          message: 'Saving failed! Someone else is editing this post.',
+        },
+      ],
+    };
+  }
+
+  if (status === 401) {
+    return { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] };
+  }
+
+  return { errors: [{ type: 'ValidationError', message: 'Title cannot be that long.' }] };
 }
 
 /** Every read the header's publish inputs and preview make beyond the boot table. */
@@ -115,7 +137,7 @@ function fakeSavablePost(
       }
 
       if (failWith) {
-        return { errors: [{ type: 'ValidationError', message: 'Title cannot be that long.' }] };
+        return failureBody(failWith);
       }
 
       const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
@@ -358,6 +380,143 @@ describe('Editor header actions', () => {
       await publishThroughFlow();
 
       await expect.element(publishScreen.confirmError()).toHaveTextContent('Validation failed');
+      await expect(publishScreen.complete()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+  it(
+    'offers no preview once the post has been published',
+    async () => {
+      publishChrome();
+      fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.updateButton()).toBeVisible();
+      await expect(editorScreen.previewButton()).toHaveCount(0);
+
+      // Nothing is bound to the chord, so the browser keeps its print dialog.
+      await userEvent.keyboard('{Meta>}p{/Meta}');
+      await expect(previewScreen.modal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'opens the publish flow with the keyboard shortcut',
+    async () => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
+
+      await expect.element(publishScreen.options()).toBeVisible();
+      await expect(previewScreen.modal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the publish flow and its choices while previewing from inside it',
+    async () => {
+      publishChrome({ newsletters: 1 });
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+
+      await editorScreen.publishButton().click();
+      await publishScreen.setting('publish-type').click();
+      await page.getByLabelText('Publish only').click();
+
+      await publishScreen.previewButton().click();
+      await expect.element(previewScreen.modal()).toBeVisible();
+      await previewScreen.publishButton().click();
+      await expect(previewScreen.modal()).toHaveCount(0);
+
+      // A restarted flow would default back to publishing and emailing.
+      await expect.element(publishScreen.options()).toBeVisible();
+      await publishScreen.continueButton().click();
+      await publishScreen.confirmButton().click();
+
+      await expect.element(publishScreen.complete()).toBeVisible();
+      expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+      expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
+    },
+    SLOW,
+  );
+
+  it(
+    'returns to the publish flow when the preview it opened is closed',
+    async () => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.publishButton().click();
+      await publishScreen.previewButton().click();
+      await expect.element(previewScreen.modal()).toBeVisible();
+
+      await previewScreen.closeButton().click();
+
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await expect.element(publishScreen.options()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'saves unsaved work before the publish it carries',
+    async () => {
+      publishChrome();
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+      await typeIntoBody(' and more');
+      await publishThroughFlow();
+
+      await expect.element(publishScreen.complete()).toBeVisible();
+      expect(saveApi.requests).toHaveLength(2);
+      expect(submittedPost(saveApi, 0)).toMatchObject({ status: 'draft' });
+      expect(saveApi.requests[0].url).toContain('save_revision=true');
+      expect(submittedPost(saveApi, 1)).toMatchObject({ status: 'published' });
+    },
+    SLOW,
+  );
+
+  it(
+    'holds the publish flow on the confirm step when the session expired',
+    async () => {
+      publishChrome();
+      const saveApi = fakeSavablePost({}, { failWith: 401 });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await publishThroughFlow();
+
+      await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
+      // The engine holds the publish until the session is restored, so the flow waits with it.
+      await expect.element(publishScreen.confirm()).toBeVisible();
+      await expect(publishScreen.complete()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+
+  it(
+    'reports a collision in the publish flow and sends nothing more',
+    async () => {
+      publishChrome();
+      const saveApi = fakeSavablePost({}, { failWith: 409 });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await publishThroughFlow();
+
+      await expect
+        .element(publishScreen.confirmError())
+        .toHaveTextContent('Someone else has edited this post');
       await expect(publishScreen.complete()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(1);
     },

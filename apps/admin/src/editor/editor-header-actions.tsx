@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
@@ -17,6 +17,7 @@ import { usePublishInputs } from './publish/use-publish-inputs';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut } from './use-preview-shortcut';
+import { usePublishShortcut } from './use-publish-shortcut';
 
 type OpenFlow = 'none' | 'publish' | 'update';
 
@@ -59,23 +60,23 @@ export function EditorHeaderActions({
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
-  const previewOpenRef = useRef(previewOpen);
-  previewOpenRef.current = previewOpen;
 
-  const openPreview = useCallback(() => {
-    setOpenFlow('none');
-    setPreviewOpen(true);
-  }, []);
+  const openPreview = useCallback(() => setPreviewOpen(true), []);
+  const closePreview = useCallback(() => setPreviewOpen(false), []);
+
+  const post = buildPublishFlowPost({
+    snapshot,
+    record,
+    displayName: postType,
+    lexical: session.getLiveLexical(),
+  });
+  // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
+  // audience query, so Ember offers a preview only while the post is a draft.
+  const isDraft = post.status === 'draft';
 
   usePreviewShortcut(
-    useCallback(() => {
-      if (previewOpenRef.current) {
-        setPreviewOpen(false);
-        return;
-      }
-      openPreview();
-    }, [openPreview]),
-    snapshot.id !== null,
+    useCallback(() => setPreviewOpen((open) => !open), []),
+    isDraft && snapshot.id !== null,
   );
 
   // Ember saves a dirty draft before previewing it and leaves every other post as it is.
@@ -86,12 +87,6 @@ export function EditorHeaderActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
 
-  const post = buildPublishFlowPost({
-    snapshot,
-    record,
-    displayName: postType,
-    lexical: session.getLiveLexical(),
-  });
   const isSaving = session.state.kind === 'saving' || session.state.kind === 'pending-coalesced';
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
@@ -102,15 +97,18 @@ export function EditorHeaderActions({
 
   return (
     <Inline className="ml-auto" data-testid={editorHeaderActions} gap="sm">
-      <Button size="sm" variant="outline" onClick={openPreview}>
-        Preview
-      </Button>
+      {isDraft ? (
+        <Button size="sm" variant="outline" onClick={openPreview}>
+          Preview
+        </Button>
+      ) : null}
       {isContributor ? (
         <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
           Save
         </Button>
       ) : (
         <PublishActions
+          isDraft={isDraft}
           isSaving={isSaving}
           openFlow={openFlow}
           post={post}
@@ -120,15 +118,18 @@ export function EditorHeaderActions({
           onPreview={openPreview}
         />
       )}
-      <PostPreviewModal
-        isPost={postType === 'post'}
-        newsletterSlug={post.newsletter ?? undefined}
-        open={previewOpen}
-        postId={snapshot.id}
-        previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
-        onBeforeOpen={saveBeforePreview}
-        onOpenChange={setPreviewOpen}
-      />
+      {isDraft ? (
+        <PostPreviewModal
+          isPost={postType === 'post'}
+          newsletterSlug={post.newsletter ?? undefined}
+          open={previewOpen}
+          postId={snapshot.id}
+          previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
+          onBeforeOpen={saveBeforePreview}
+          onOpenChange={setPreviewOpen}
+          onReturnToPublish={openFlow === 'publish' ? closePreview : undefined}
+        />
+      ) : null}
     </Inline>
   );
 }
@@ -137,6 +138,7 @@ interface PublishActionsProps {
   session: EditorSessionHandle;
   post: PublishFlowPost;
   tkCount: number;
+  isDraft: boolean;
   isSaving: boolean;
   openFlow: OpenFlow;
   onOpenFlow: (flow: OpenFlow) => void;
@@ -151,6 +153,7 @@ function PublishActions({
   session,
   post,
   tkCount,
+  isDraft,
   isSaving,
   openFlow,
   onOpenFlow,
@@ -163,8 +166,15 @@ function PublishActions({
   });
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
+    defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
+  // A refetch of any input must not unmount an open flow, so readiness latches once.
+  const [everReady, setEverReady] = useState(false);
+
+  if (inputs.isReady && !everReady) {
+    setEverReady(true);
+  }
 
   // The publish command carries the live post, so only unsaved work needs a save first.
   const saveBeforePublish = useCallback(async () => {
@@ -178,20 +188,26 @@ function PublishActions({
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
   const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
+  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
 
-  const isDraft = post.status === 'draft';
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady);
 
   return (
     <>
       {isDraft ? (
         <>
-          <Button disabled={!inputs.isReady} size="sm" onClick={() => onOpenFlow('publish')}>
+          <Button disabled={!inputs.isReady} size="sm" onClick={openPublishFlow}>
             Publish
           </Button>
           {inputs.error ? (
-            <Button size="sm" variant="ghost" onClick={inputs.retry}>
-              Retry
-            </Button>
+            <>
+              <Text className="text-destructive" role="alert" size="sm">
+                {inputs.error.message}
+              </Text>
+              <Button size="sm" variant="ghost" onClick={inputs.retry}>
+                Retry
+              </Button>
+            </>
           ) : null}
         </>
       ) : (
@@ -203,7 +219,7 @@ function PublishActions({
           >
             Update
           </Button>
-          {/* An email-only send cannot be reverted, so it is offered no update flow. */}
+          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
           {post.status === 'sent' ? null : (
             <Button size="sm" variant="outline" onClick={() => onOpenFlow('update')}>
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
@@ -212,7 +228,7 @@ function PublishActions({
         </>
       )}
 
-      {openFlow === 'publish' && inputs.isReady ? (
+      {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
           dispatch={session.dispatchPublish}
           paywallImprovements={paywallImprovements}
@@ -229,7 +245,7 @@ function PublishActions({
         />
       ) : null}
 
-      {openFlow === 'update' && inputs.isReady ? (
+      {openFlow === 'update' && everReady ? (
         <UpdateFlowModal
           dispatch={session.dispatchPublish}
           post={post}
