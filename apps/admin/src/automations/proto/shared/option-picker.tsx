@@ -28,7 +28,11 @@ export interface PickerOption<Value extends string> {
   description: string;
 }
 
-const PickerRow = <Value extends string>({
+// Exported so a card can render the same rows inline. A new automation opens on
+// its trigger card showing the list rather than a select that opens it, and the
+// two have to be the same rows — the choice you make on the card and the choice
+// you make in the popover are the same choice.
+export const PickerRow = <Value extends string>({
   option,
   selected,
   onSelect,
@@ -70,6 +74,11 @@ interface OptionPickerProps<Value extends string> {
   onSelect: (value: Value) => void;
   // The control the list hangs off.
   children: React.ReactNode;
+  // The list is opened from somewhere other than the control it hangs under —
+  // a menu item that has already closed its menu, say. `children` then renders
+  // as-is and the caller marks the control to position against with Shade's
+  // `PopoverAnchor`, since that control is nested somewhere only the caller knows.
+  externalAnchor?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   align?: 'start' | 'center' | 'end';
@@ -84,6 +93,7 @@ export const OptionPicker = <Value extends string>({
   children,
   open,
   onOpenChange,
+  externalAnchor = false,
   align = 'center',
   side = 'bottom',
   sideOffset = 8,
@@ -113,22 +123,30 @@ export const OptionPicker = <Value extends string>({
       if (!target) {
         return;
       }
-      // The trigger is excluded because Radix toggles on its click — closing
-      // here would let that toggle reopen what the user just dismissed.
-      if (contentRef.current?.contains(target) || triggerRef.current?.contains(target)) {
+      if (contentRef.current?.contains(target)) {
+        return;
+      }
+      // A trigger is excluded because Radix toggles on its click — closing here
+      // would let that toggle reopen what the user just dismissed. An external
+      // anchor toggles nothing, so a click on it is an outside click like any other.
+      if (!externalAnchor && triggerRef.current?.contains(target)) {
         return;
       }
       onOpenChange(false);
     };
     document.addEventListener('pointerdown', handlePointerDown, true);
     return () => document.removeEventListener('pointerdown', handlePointerDown, true);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, externalAnchor]);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger ref={triggerRef} asChild>
-        {children}
-      </PopoverTrigger>
+      {externalAnchor ? (
+        children
+      ) : (
+        <PopoverTrigger ref={triggerRef} asChild>
+          {children}
+        </PopoverTrigger>
+      )}
       {/* p-2 gutter so a row's hover fill stops short of the popover's own
                 edge — the rows carry the padding, the container just frames them.
 

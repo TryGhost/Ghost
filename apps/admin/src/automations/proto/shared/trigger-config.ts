@@ -1,4 +1,5 @@
 import type { ElementType } from 'react';
+import type { PickerOption } from '@/automations/proto/shared/option-picker';
 import { LucideIcon } from '@tryghost/shade/utils';
 
 // Trigger, audience and exit criteria for the proto. Proto-local on purpose: the
@@ -30,6 +31,11 @@ import { LucideIcon } from '@tryghost/shade/utils';
 // and "upgrade to paid" correctly disappears for an audience that's already paid.
 // ---------------------------------------------------------------------------
 
+// The ids stay put while the labels move. "Member signs up" and "Paid
+// subscription starts" are the project doc's working titles and will churn again;
+// an id that tracked them would invalidate every stored config for a copy change,
+// and mean nothing more than the stable one does. (Same reasoning as the phase
+// slot, which kept `future` when its label became "Exploration".)
 export type TriggerType = 'member_subscribes' | 'paid_subscription_starts';
 /**
  * The exits a publisher actually CHOOSES.
@@ -102,8 +108,12 @@ export const TRIGGER_OPTIONS: {
 }[] = [
   {
     value: 'member_subscribes',
-    label: 'Member subscribes',
-    description: 'Someone signs up as a member',
+    label: 'Member signs up',
+    // The two labels are close enough that the description is what tells them
+    // apart — and the confusion the project doc names is exactly this: you can
+    // sign up today and become paid next week, so signing up is a first arrival
+    // rather than anything to do with money.
+    description: 'The first time someone becomes a member',
     icon: LucideIcon.UserPlus,
   },
   {
@@ -113,6 +123,18 @@ export const TRIGGER_OPTIONS: {
     icon: LucideIcon.CreditCard,
   },
 ];
+
+// The same list in the shared picker's icon/title/description shape, so the rows
+// read identically wherever the choice is offered — the empty trigger card, and
+// the "Change trigger" popover on a configured one.
+export const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(
+  (option) => ({
+    value: option.value,
+    icon: option.icon,
+    title: option.label,
+    description: option.description,
+  }),
+);
 
 // The membership axis. "Any member" is a scope rather than a membership type,
 // which is why it leads rather than sitting among the others. The rest mirror
@@ -333,6 +355,17 @@ export const reconcileCriteria = (
   };
 };
 
+/**
+ * The trigger's own icon — the one shown beside it in the picker.
+ *
+ * The card wears what you chose rather than a generic bolt, so the icon that
+ * identified the option in the list is the icon that identifies the card
+ * afterwards. Nothing else on the canvas is labelled by its category either: an
+ * email card shows an envelope, not "a step".
+ */
+export const triggerIcon = (config: Pick<TriggerConfig, 'type'>): ElementType =>
+  TRIGGER_OPTIONS.find((option) => option.value === config.type)?.icon ?? TRIGGER_OPTIONS[0].icon;
+
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.
 export const triggerLabel = (config: Pick<TriggerConfig, 'type'>): string =>
@@ -342,7 +375,7 @@ export const triggerLabel = (config: Pick<TriggerConfig, 'type'>): string =>
 // what THIS member did — "Subscribed", not the configuration-voice "Member
 // subscribes" the edit and read canvases use.
 export const triggerReviewLabel = (config: TriggerConfig): string =>
-  config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Subscribed';
+  config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Signed up';
 
 /**
  * Who this automation applies to, as one phrase — "Any member", "Free members",

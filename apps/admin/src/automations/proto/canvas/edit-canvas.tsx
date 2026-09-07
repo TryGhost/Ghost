@@ -1,5 +1,5 @@
 import '@xyflow/react/dist/style.css';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { StepPickerType } from '@/automations/components/canvas/step-picker';
 import { AutomationCanvasControls } from '@/automations/components/canvas/controls';
 import { CANVAS_ZOOM_CONFIG } from '@/automations/components/canvas/use-canvas-viewport';
@@ -28,6 +28,14 @@ import {
   updateWaitAction,
 } from '@tryghost/admin-x-framework/api/automations';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Button,
   Dialog,
   DialogContent,
@@ -40,6 +48,7 @@ import {
   DropdownMenuTrigger,
   Input,
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
   Select,
@@ -52,7 +61,12 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
 import {
   DEFAULT_TRIGGER_CONFIG,
+  TRIGGER_PICKER_OPTIONS,
   type TriggerConfig,
+  type TriggerType,
+  triggerConfigFor,
+  triggerIcon,
+  triggerLabel,
   triggerSummary,
 } from '@/automations/proto/shared/trigger-config';
 import {
@@ -137,11 +151,18 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
-  // A created automation with nothing chosen to start it. Its own flag rather
-  // than an absent triggerConfig, because the read canvas also passes no config
-  // and means something entirely different by it — "don't offer to edit this",
-  // not "this hasn't been answered".
+  // Nothing chosen to start this automation yet. Its own flag rather than an
+  // absent triggerConfig, because the read canvas also passes no config and means
+  // something entirely different by it — "don't offer to edit this", not "this
+  // hasn't been answered".
   triggerUnset?: boolean;
+  // Which beat of the creation sequence is playing, or undefined for a canvas that
+  // isn't playing one. The canvas owns the clock; the node owns its own motion.
+  introPhase?: IntroPhase;
+  // Asks the canvas to confirm a different trigger. The node doesn't apply it
+  // itself: swapping the trigger discards the audience and exits configured under
+  // the old one, which is a warning the canvas owns.
+  onRequestTriggerChange?: (type: TriggerType) => void;
   // Which action this card is, so the email's link fixtures can be looked up.
   actionId?: string;
   // Future concept: an email's numbers live on the card as bars, with the top
@@ -159,6 +180,61 @@ type StepNodeData = {
   onEditContent?: () => void;
 };
 
+// The one-time sequence a brand-new automation plays when its trigger is first
+// chosen. Four beats, because the canvas is answering four separate questions and
+// running them together reads as a single jumble:
+//
+//   leaving     the options fade out, the card holding still
+//   growing     the fields fade in while the card resizes to hug them
+//   connecting  the connector draws downward, then the exit card lands
+//   (null)      no animation — an existing automation, or the sequence is over
+//
+// Deliberately NOT a crossfade with the flow already in place. The connector and
+// the exit card can't be positioned until the trigger card has finished resizing —
+// their y comes from its measured height — so drawing them early would mean
+// re-deriving the line every frame against a card still in motion.
+export type IntroPhase = 'leaving' | 'growing' | 'connecting';
+
+// Each beat's own duration lives with the element that animates it; these are when
+// the NEXT beat starts, so they trail their animation slightly rather than cutting
+// it off.
+export const INTRO_LEAVING_MS = 140;
+// Ends 40ms BEFORE the card has finished resizing, on purpose. The last stretch of
+// a decelerating curve covers almost no distance, and node positions are re-derived
+// from the measured height every frame — so the connector starts drawing while the
+// card settles its final few pixels, and the exit card tracks it rather than
+// waiting for it. Overlapping the beats is most of what stops this reading as slow.
+export const INTRO_GROWING_MS = 240;
+// The line, and the exit card starting just before the line finishes reaching it.
+export const INTRO_CONNECTING_MS = 380;
+
+// One curve for the whole sequence, so a card resizing and a line drawing read as
+// the same gesture rather than two things eased differently.
+//
+// A plain decelerate, not the hard-out curve this started with. That one covered
+// most of its distance in the first third and then crept, which is why a 300ms
+// grow read as instant-then-settling — the duration was real, but almost none of
+// the movement was in it.
+const INTRO_EASE = 'ease-[cubic-bezier(0.22,0.61,0.36,1)]';
+
+// The card resizing around its new contents, and the connector drawing itself down
+// to the exit card. Both are transitions rather than keyframes — they interpolate
+// between two measured values, which is what a transition is for — and both are
+// classes rather than inline style, because an inline `transition` outranks the
+// motion-reduce utility that has to be able to switch it off.
+//
+// INTRO_GROWING_MS above has to outlast the grow, since the connector can't be
+// positioned until the card it hangs from has stopped moving.
+const INTRO_GROW_CLASS = `transition-[height] duration-280 ${INTRO_EASE} motion-reduce:transition-none`;
+// Still the quickest beat — the line is a connection being made, not an object
+// arriving — but not so quick that the exit card lands before it has got there.
+const INTRO_DRAW_CLASS = `transition-[stroke-dashoffset] duration-200 ${INTRO_EASE} motion-reduce:transition-none`;
+// The exit card, held back until the line is most of the way down to it — not all
+// the way, so the two overlap rather than queue. The delay is an arbitrary property
+// rather than `delay-*`, which tw-animate-css redefines to mean animation-delay,
+// and this is a transition.
+const INTRO_EXIT_CLASS = `transition-[opacity,translate] duration-240 [transition-delay:140ms] ${INTRO_EASE} motion-reduce:transition-none`;
+
 const StepNode: React.FC<NodeProps> = ({ data }) => {
   const d = data as StepNodeData;
   const isTrigger = d.kind === 'trigger';
@@ -175,6 +251,45 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   };
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
   const triggerUnset = isTrigger && Boolean(d.triggerUnset);
+  // Captured at mount: a card that STARTED life asking the question is the one
+  // being created, and it's the only one that fades in. Read live, this would also
+  // fire on the card returning from a "Change trigger".
+  const bornAsking = useRef(triggerUnset).current;
+  const [changeTriggerOpen, setChangeTriggerOpen] = useState(false);
+  const phase = d.introPhase;
+  // Height animation for the card body. `height: auto` doesn't interpolate, so the
+  // card can't simply be told to resize — it has to be handed the two numbers. The
+  // option list's height is captured while it's still on screen, and the fields'
+  // height is measured the moment they render, before the browser paints. Between
+  // beats the height is null, meaning auto: nothing here clamps a card that later
+  // grows because a tier filter revealed another field.
+  const [bodyHeight, setBodyHeight] = useState<number | null>(null);
+  const bodyContentRef = useRef<HTMLDivElement>(null);
+  const optionsHeight = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    if (phase === 'leaving') {
+      optionsHeight.current = bodyContentRef.current?.offsetHeight ?? null;
+      return;
+    }
+    if (phase !== 'growing') {
+      // Back to auto — the transition has finished and the card's own content
+      // should decide its height again.
+      setBodyHeight(null);
+      return;
+    }
+    const from = optionsHeight.current;
+    const to = bodyContentRef.current?.offsetHeight;
+    if (from === null || to === undefined) {
+      return;
+    }
+    // Pin to the old height first, then hand over the new one a frame later —
+    // a transition needs two rendered values, not one assignment.
+    setBodyHeight(from);
+    const frame = requestAnimationFrame(() => setBodyHeight(to));
+    return () => cancelAnimationFrame(frame);
+  }, [phase]);
+  // Set by the "Change trigger" item, read once the menu has finished closing.
+  const openPickerOnClose = useRef(false);
   // Locked trigger: a lock where other cards put their overflow menu. A button,
   // not a static glyph — clicking it answers "why can't I change this?" in a
   // popover instead of leaving the disabled select to explain itself.
@@ -192,6 +307,60 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       </PopoverContent>
     </Popover>
   ) : undefined;
+  // The trigger's own ⋯, in the slot every other card puts one. Changing the
+  // trigger opens the picker as a popover rather than returning the card to its
+  // asking state — the card is showing a configured trigger, and reverting it to a
+  // list would look like the configuration had been thrown away before you'd
+  // agreed to it.
+  //
+  // The menu closes first and the picker hangs off the ⋯ itself, so the list lands
+  // just under the card header where the menu was, rather than cascading off a menu
+  // item that's still sitting open behind it.
+  const changeTriggerAction =
+    isTrigger && !triggerUnset && !triggerLocked && d.onRequestTriggerChange ? (
+      <OptionPicker
+        align="end"
+        open={changeTriggerOpen}
+        options={TRIGGER_PICKER_OPTIONS}
+        value={triggerConfig.type}
+        externalAnchor
+        onOpenChange={setChangeTriggerOpen}
+        onSelect={(type) => d.onRequestTriggerChange?.(type)}
+      >
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            {/* The ⋯ is both the menu's trigger and the picker's anchor, so the
+                            list lands under the card header where the menu was. */}
+            <PopoverAnchor asChild>
+              <Button aria-label="Trigger actions" size="icon" variant="ghost">
+                <LucideIcon.MoreHorizontal />
+              </Button>
+            </PopoverAnchor>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            updatePositionStrategy="always"
+            // Radix closes a menu asynchronously and then pulls focus back to the
+            // trigger. Opening the picker inside onSelect races both: it can be
+            // dismissed by the closing menu, or lose focus a frame later. Waiting
+            // for the close, and keeping the focus return from firing, hands the
+            // picker an empty stage.
+            onCloseAutoFocus={(event) => {
+              if (!openPickerOnClose.current) {
+                return;
+              }
+              openPickerOnClose.current = false;
+              event.preventDefault();
+              setChangeTriggerOpen(true);
+            }}
+          >
+            <DropdownMenuItem onSelect={() => (openPickerOnClose.current = true)}>
+              <LucideIcon.Repeat /> Change trigger
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </OptionPicker>
+    ) : undefined;
   // Email cards raise their analytics from the header, beside the overflow, so
   // the way in is a control that names itself rather than a hover state buried
   // in the metrics.
@@ -209,6 +378,8 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
     ) : null;
   // Header action slot: overflow menu for editable steps. The trigger has no
   // action unless locked — its fields are in the card.
+  // The trigger's slot holds the lock when it's fixed, the ⋯ when it isn't.
+  const triggerAction = lockAction ?? changeTriggerAction;
   const overflowAction = clickable ? (
     // modal={false} — the default wraps the menu in RemoveScroll and kills
     // outside pointer events, which freezes the canvas underneath it. The
@@ -233,7 +404,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    lockAction
+    triggerAction
   );
   const action =
     analyticsAction || overflowAction ? (
@@ -242,28 +413,73 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
         {overflowAction}
       </>
     ) : undefined;
+  // The trigger wears its own icon once chosen, and none at all before — while the
+  // card is still asking the question the options below carry their own icons, and
+  // a generic bolt above them was a fourth icon introducing three.
+  const headerIcon = triggerUnset
+    ? undefined
+    : isTrigger
+      ? triggerIcon(triggerConfig)
+      : stepKindIcon[d.kind];
+
   return (
-    <NodeCard border={d.selected ? 'selected' : 'default'}>
-      <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
+    <NodeCard
+      border={d.selected ? 'selected' : 'default'}
+      className={cn(
+        bornAsking &&
+          `animate-in duration-300 ${INTRO_EASE} fade-in-0 slide-in-from-top-2 motion-reduce:animate-none`,
+      )}
+    >
+      <NodeHeader action={action} icon={headerIcon} title={d.title} />
       {isTrigger && (
         // The trigger's own fields sit in the card, like every other step's
         // form — nothing about the trigger is behind a popover any more.
         // nodrag/nopan + stopPropagation so using them doesn't pan the canvas.
+        //
+        // Two elements rather than one: the outer holds the animated height and
+        // clips what overflows it mid-resize, the inner carries the padding so
+        // measuring it gives the height the card actually wants.
         <div
-          className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)}
+          className={cn(
+            'nodrag nopan cursor-default',
+            bodyHeight !== null && `overflow-hidden ${INTRO_GROW_CLASS}`,
+          )}
+          style={bodyHeight === null ? undefined : { height: bodyHeight }}
           onClick={(e) => e.stopPropagation()}
         >
-          {triggerUnset && d.onTriggerConfigChange ? (
-            <TriggerEmptyState onSelect={d.onTriggerConfigChange} />
-          ) : configurable && d.onTriggerConfigChange ? (
-            <TriggerFieldsForm
-              config={triggerConfig}
-              locked={triggerLocked}
-              onChange={d.onTriggerConfigChange}
-            />
-          ) : (
-            <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
-          )}
+          <div ref={bodyContentRef} className={NODE_BODY_PADDING}>
+            {triggerUnset && d.onTriggerConfigChange ? (
+              // Fades out in place, the card holding its size, so the options leave
+              // before anything replaces them rather than dissolving into the fields.
+              <div
+                className={cn(
+                  phase === 'leaving' &&
+                    'animate-out duration-140 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
+                )}
+              >
+                <TriggerEmptyState onSelect={d.onTriggerConfigChange} />
+              </div>
+            ) : configurable && d.onTriggerConfigChange ? (
+              // Fades in over the list it replaces, alongside the card resizing
+              // around it. Without this the configured fields blink into place where
+              // the options were.
+              //
+              // The same recipe the shipping canvas uses for a newly inserted node
+              // (components/canvas/nodes) — including motion-reduce, since this is
+              // decoration and nobody needs it to understand what happened.
+              <div
+                className={`animate-in duration-280 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
+              >
+                <TriggerFieldsForm
+                  config={triggerConfig}
+                  locked={triggerLocked}
+                  onChange={d.onTriggerConfigChange}
+                />
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
+            )}
+          </div>
         </div>
       )}
       {clickable && (
@@ -351,15 +567,35 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
 // different one at the end. The tail button was the only place in the flow where
 // adding meant pressing a big dashed rectangle, and it was also the only place
 // you could not insert BEFORE the thing you were pointing at.
-const ExitNode: React.FC = () => (
-  <NodeCard>
-    <NodeHeader icon={LucideIcon.LogOut} title="Exit automation" />
-  </NodeCard>
-);
+const ExitNode: React.FC<NodeProps> = ({ data }) => {
+  // Lands after the connector has drawn down to it, so the line arrives somewhere
+  // rather than the two appearing together and the line explaining nothing.
+  //
+  // A transition off a flipped state rather than an `animate-in` on mount, for the
+  // same reason the edge waits: React Flow mounts a node before it has measured it,
+  // and a keyframe animation starts its clock there — on a card the canvas is still
+  // holding hidden. A transition doesn't start until we say so.
+  const intro = useRef(Boolean((data as { intro?: boolean } | undefined)?.intro)).current;
+  const [shown, setShown] = useState(!intro);
+  useEffect(() => {
+    if (shown) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, [shown]);
+  return (
+    <NodeCard
+      className={cn(intro && INTRO_EXIT_CLASS, intro && !shown && 'translate-y-2 opacity-0')}
+    >
+      <NodeHeader icon={LucideIcon.LogOut} title="Exit automation" />
+    </NodeCard>
+  );
+};
 
 const nodeTypes = { step: StepNode, exit: ExitNode };
 
-type PlusEdgeData = { onPick: (type: StepPickerType) => void };
+type PlusEdgeData = { onPick: (type: StepPickerType) => void; intro?: boolean };
 
 // Connecting line with a hover-revealed circular "+" at its midpoint, matched to
 // the real add-step-edge: the button fades in while the cursor is near the edge
@@ -378,6 +614,41 @@ const PlusEdge: React.FC<EdgeProps> = ({
   const [edgeHovered, setEdgeHovered] = useState(false);
   const [labelHovered, setLabelHovered] = useState(false);
   const onPick = (data as PlusEdgeData | undefined)?.onPick;
+
+  // Drawing the line from the trigger card downward. A dash the length of the whole
+  // path, offset out of sight and then slid back in — the standard SVG stroke trick,
+  // and the only part that needs the path's length.
+  //
+  // Which is known without measuring the DOM: the column is a single x, so a
+  // connector is a straight vertical drop. Summing both axes is exact for that and a
+  // slight overestimate for anything with a rounded corner, which only means the
+  // line finishes a few milliseconds early.
+  const drawLength = Math.abs(targetY - sourceY) + Math.abs(targetX - sourceX);
+  // Captured at mount: the flag goes false when the sequence ends, and re-reading
+  // it then would undraw a line that's already there.
+  const introDraw = useRef(Boolean((data as PlusEdgeData | undefined)?.intro)).current;
+  const [drawn, setDrawn] = useState(!introDraw);
+  // Wait for a real length before starting. React Flow renders an edge before its
+  // endpoints have been measured, so the first frame or two arrive with the
+  // coordinates all at zero — and a dash animation over a zero-length path
+  // completes instantly. Flipping on the first frame regardless meant the draw was
+  // always already over by the time the line had somewhere to go.
+  useEffect(() => {
+    if (drawn || drawLength === 0) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(frame);
+  }, [drawn, drawLength]);
+  const stroke: React.CSSProperties = {
+    stroke: EDGE_STROKE,
+    strokeWidth: 1,
+    ...(introDraw && {
+      strokeDasharray: drawLength,
+      strokeDashoffset: drawn ? 0 : drawLength,
+    }),
+  };
+  const strokeClass = introDraw ? INTRO_DRAW_CLASS : undefined;
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -388,18 +659,14 @@ const PlusEdge: React.FC<EdgeProps> = ({
   });
 
   if (!onPick) {
-    return <BaseEdge id={id} path={path} style={{ stroke: EDGE_STROKE, strokeWidth: 1 }} />;
+    return <BaseEdge className={strokeClass} id={id} path={path} style={stroke} />;
   }
 
-  const visible = open || edgeHovered || labelHovered;
+  // No "+" until the line it hangs on exists.
+  const visible = drawn && (open || edgeHovered || labelHovered);
   return (
     <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
-      <BaseEdge
-        id={id}
-        interactionWidth={30}
-        path={path}
-        style={{ stroke: EDGE_STROKE, strokeWidth: 1 }}
-      />
+      <BaseEdge className={strokeClass} id={id} interactionWidth={30} path={path} style={stroke} />
       <EdgeLabelRenderer>
         <div
           className="pointer-events-auto absolute"
@@ -464,6 +731,67 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   const [linksOpenId, setLinksOpenId] = useState<string | null>(null);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  // A trigger picked from the node's ⋯, waiting on the warning below. Swapping the
+  // trigger throws away the audience and exits configured under the old one, so the
+  // pick is held here rather than applied where it was made.
+  const [pendingTriggerType, setPendingTriggerType] = useState<TriggerType | null>(null);
+
+  // No trigger chosen yet — a created automation, before its first decision.
+  // `triggerConfig === undefined` is the read canvas passing none and means the
+  // opposite, so the check is explicitly against null.
+  const unset = triggerConfig === null;
+
+  // The creation sequence, run once, when a canvas that had no trigger gets one.
+  // Not on "Change trigger" — the flow below is already built, and animating it away
+  // and back would say something was rebuilt that wasn't — and not on load.
+  const [introPhase, setIntroPhase] = useState<IntroPhase | null>(null);
+  // Adjusted during render, not from an effect, and tracked in STATE rather than a
+  // ref. Both halves of that matter:
+  //
+  // An effect runs after the browser paints, so there would be one painted frame
+  // where the trigger is set but the sequence hasn't started — the whole flow at
+  // full height, for a frame. React discards a render that sets its own state this
+  // way and re-runs it before anything reaches the screen.
+  //
+  // And StrictMode invokes render twice, discarding the first pass. A ref mutated
+  // in that first pass survives the discard while the setState beside it does not,
+  // so the second pass sees "already handled" and starts nothing — the sequence
+  // never ran in dev, which is the only place it was being looked at. State is
+  // rolled back with the discarded render, so both passes reach the same
+  // conclusion. This is why React's own "adjust state on prop change" pattern uses
+  // state for the previous value.
+  const [prevUnset, setPrevUnset] = useState(unset);
+  if (prevUnset !== unset) {
+    setPrevUnset(unset);
+    setIntroPhase(unset ? null : 'leaving');
+  }
+  // Each beat schedules only the one after it, so the sequence is a chain rather
+  // than three timers set at once — which would need the cleanup to know which of
+  // them had already fired.
+  useEffect(() => {
+    if (introPhase === null) {
+      return;
+    }
+    const next: Record<IntroPhase, IntroPhase | null> = {
+      leaving: 'growing',
+      growing: 'connecting',
+      connecting: null,
+    };
+    const after: Record<IntroPhase, number> = {
+      leaving: INTRO_LEAVING_MS,
+      growing: INTRO_GROWING_MS,
+      connecting: INTRO_CONNECTING_MS,
+    };
+    const timer = setTimeout(() => setIntroPhase(next[introPhase]), after[introPhase]);
+    return () => clearTimeout(timer);
+  }, [introPhase]);
+
+  // The card still asking its question: either nothing is chosen, or something just
+  // was and the options haven't finished leaving.
+  const showOptions = unset || introPhase === 'leaving';
+  // The trigger card alone on the canvas. Holds through the resize as well, because
+  // everything below it is positioned from its height.
+  const triggerOnly = showOptions || introPhase === 'growing';
 
   const ordered = orderActions(draft);
 
@@ -490,20 +818,26 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         }
       : null;
 
-  const { nodes, edges, contentBottom } = useMemo(() => {
-    // A created automation, before its trigger is chosen. The column is the
-    // trigger card and nothing else — no steps and no add-step button, because
-    // there's nothing yet for a step to hang off. `triggerConfig === undefined`
-    // is the read canvas passing none and means the opposite, so the check is
-    // explicitly against null.
-    const unset = triggerConfig === null;
+  // Re-picking the trigger it already has is a no-op, not a warning about
+  // discarding settings it isn't going to discard.
+  const requestTriggerChange = useCallback(
+    (type: TriggerType) => {
+      if (triggerConfig && triggerConfig.type !== type) {
+        setPendingTriggerType(type);
+      }
+    },
+    [triggerConfig],
+  );
 
+  const { nodes, edges, contentBottom } = useMemo(() => {
     // The column, top to bottom: trigger, each action in flow order, then the
     // tail button. Order is the only thing the layout needs — heights come back
     // measured, so an email card growing an analytics block or a links list
     // moves the cards below it without anything here being told.
     const { ys, bottom } = layout(
-      unset ? ['__trigger__'] : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'],
+      triggerOnly
+        ? ['__trigger__']
+        : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'],
     );
 
     const built: Node[] = [];
@@ -513,19 +847,27 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       position: { x: 0, y: ys[0] },
       data: {
         kind: 'trigger',
-        title: 'Trigger',
+        // Named by what it is once it's chosen, the way the read canvas already
+        // titles it and the way every step card names its own subject. Before that
+        // the header is the question the card is asking, since the body is the list
+        // of answers.
+        title: showOptions || !triggerConfig ? 'Select a trigger' : triggerLabel(triggerConfig),
         subtitle: '',
         selected: false,
         triggerConfig: triggerConfig ?? undefined,
         onTriggerConfigChange,
         triggerLocked,
-        triggerUnset: unset,
+        triggerUnset: showOptions,
+        introPhase: introPhase ?? undefined,
+        onRequestTriggerChange: requestTriggerChange,
       },
       draggable: false,
       connectable: false,
       selectable: false,
     });
-    if (unset) {
+    // Nothing else to draw yet: the trigger node is either asking the question, or
+    // resizing around the answer with nothing below it to displace.
+    if (triggerOnly) {
       return { nodes: built, edges: [] as Edge[], contentBottom: bottom };
     }
     ordered.forEach((action, i) => {
@@ -578,7 +920,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       id: '__exit__',
       type: 'exit',
       position: { x: 0, y: ys[ys.length - 1] },
-      data: {},
+      data: { intro: introPhase === 'connecting' },
       draggable: false,
       connectable: false,
       selectable: false,
@@ -607,6 +949,9 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
               },
               toInsertKind(type),
             ),
+          // Only the first automation's first connector draws itself. A step
+          // inserted later gets its edge the way it always did.
+          intro: introPhase === 'connecting',
         },
       });
     }
@@ -622,6 +967,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     inlineAnalytics,
     linksOpenId,
     layout,
+    showOptions,
+    triggerOnly,
+    introPhase,
+    requestTriggerChange,
   ]);
 
   const translateExtent = useMemo(
@@ -677,6 +1026,39 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       </div>
 
       <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
+
+      {/* Picking a different trigger from the node's ⋯ resets the audience and
+                exits underneath it, which is worth saying out loud before it happens. */}
+      <AlertDialog
+        open={pendingTriggerType !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingTriggerType(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change trigger?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The audience and exit conditions you’ve set for this trigger will be reset.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingTriggerType) {
+                  onTriggerConfigChange?.(triggerConfigFor(pendingTriggerType));
+                }
+                setPendingTriggerType(null);
+              }}
+            >
+              Change trigger
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Email content editing is out of scope for the prototype — opened from a
                 card's inline "Edit email content" button. */}

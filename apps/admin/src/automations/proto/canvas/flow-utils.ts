@@ -341,7 +341,13 @@ export function panTranslateExtent(
   const visBottom = h - 48;
   return [
     [Math.min(0, visLeft) - PAN_SLACK_X, Math.min(0, visTop) - marginY],
-    [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom, visBottom) + marginY],
+    // Slack is added to the CONTENT, then floored at what the initial viewport
+    // needs — not added on top of that floor. Adding it to the floor let a flow
+    // shorter than about half a viewport be panned entirely off the top edge:
+    // visBottom already sits a full viewport below the content for a short flow,
+    // and marginY pushed it half a viewport further. Short flows now can't be
+    // scrolled away at all, and tall ones keep the same half-viewport of slack.
+    [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom + marginY, visBottom)],
   ];
 }
 

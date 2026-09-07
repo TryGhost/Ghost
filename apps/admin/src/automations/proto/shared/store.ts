@@ -154,26 +154,41 @@ export const setStripeConnected = (stripeConnected: boolean): void =>
 // Naming
 // ---------------------------------------------------------------------------
 
-const NEW_AUTOMATION_NAME = 'New automation';
+export const UNNAMED_AUTOMATION = 'New automation';
 
 /**
- * "New automation", then "New automation (2)", "(3)" — the first free number,
- * so deleting (2) makes (2) available again rather than counting past it. The
- * alternative (always taking the highest + 1) produces a list that climbs
- * forever while you make and discard test automations, which is the exact
+ * A name nothing else is using: the base, then "base (2)", "(3)".
+ *
+ * The base is always "New automation". Naming a new one after its trigger was
+ * tried — "Member signs up (2)" says more than "New automation (2)" — but the
+ * rename landed on the same click as the trigger, so the header's title changed
+ * while the canvas was rebuilding itself, two regions moving at once for reasons
+ * that didn't look related. The better name wasn't worth the collision, and
+ * anything an automation is really called gets typed in Settings.
+ *
+ * Takes the first free number, so deleting (2) makes (2) available again rather
+ * than counting past it. Always taking the highest + 1 produces a list that
+ * climbs forever while you make and discard test automations, which is the exact
  * situation this naming exists to serve.
  */
-export const nextUntitledName = (taken: string[]): string => {
+export const nextUntitledName = (base: string, taken: string[]): string => {
   const names = new Set(taken);
-  if (!names.has(NEW_AUTOMATION_NAME)) {
-    return NEW_AUTOMATION_NAME;
+  if (!names.has(base)) {
+    return base;
   }
   let n = 2;
-  while (names.has(`${NEW_AUTOMATION_NAME} (${n})`)) {
+  while (names.has(`${base} (${n})`)) {
     n += 1;
   }
-  return `${NEW_AUTOMATION_NAME} (${n})`;
+  return `${base} (${n})`;
 };
+
+/** nextUntitledName against the names currently in the store. */
+export const suggestUntitledName = (): string =>
+  nextUntitledName(
+    UNNAMED_AUTOMATION,
+    snapshot().automations.map((entry) => entry.automation.name),
+  );
 
 /**
  * "Welcome series (copy)", then "(copy 2)", "(copy 3)".
@@ -244,40 +259,49 @@ export const useProtoAutomation = (id: string | undefined): ProtoAutomation | un
 // ---------------------------------------------------------------------------
 
 /**
- * Create an empty automation and return its id, so the caller can navigate
- * straight to it.
+ * A new automation, NOT written to the store.
  *
- * It's written to the store immediately rather than held until first save: the
- * numbering above only means anything if untitled automations are real enough to
- * collide, and a created-then-abandoned automation showing up in the list is the
- * honest outcome — it's what the real feature would do too.
+ * Creating is a two-step act: this makes the thing you're editing, and
+ * insertAutomation is what saves it. Nothing exists until Save, which is the same
+ * rule every other edit on this screen follows — and it's what Ghost's own tag
+ * creation does (`/tags/new` holds a local draft; the record appears on save).
  *
- * `trigger: null` is what makes the canvas open on a picker. `inactive` because
- * nothing with no steps should read as running.
+ * The alternative — writing immediately on "New automation" — contradicts that
+ * rule and litters the list: click in, look, back out, and you've left an empty
+ * automation behind with no way to know you did. The `(2)`, `(3)` numbering was
+ * built to cope with exactly that collision, which is a symptom rather than a
+ * feature.
+ *
+ * The id is minted here rather than at save so the screen can navigate to a real
+ * URL the moment it saves, and so nothing has to be re-keyed on the way.
  */
-export const createAutomation = (): string => {
+export const blankAutomation = (): ProtoAutomation => {
   const id = newId();
   const now = new Date().toISOString();
-  update((automations) => {
-    const name = nextUntitledName(automations.map((a) => a.automation.name));
-    const created: ProtoAutomation = {
-      automation: {
-        id,
-        name,
-        slug: `${slugify(name)}-${id.slice(5)}`,
-        status: 'inactive',
-        created_at: now,
-        updated_at: now,
-        actions: [],
-        edges: [],
-      },
-      description: '',
-      trigger: null,
-    };
-    return [created, ...automations];
-  });
-  return id;
+  // Named for the trigger the moment one is chosen (see the detail screen); until
+  // then it needs something, and "New automation" is what an unfinished one is.
+  const name = suggestUntitledName();
+  return {
+    automation: {
+      id,
+      name,
+      slug: `${slugify(name)}-${id.slice(5)}`,
+      // Nothing with no steps should read as running.
+      status: 'inactive',
+      created_at: now,
+      updated_at: now,
+      actions: [],
+      edges: [],
+    },
+    description: '',
+    // No trigger yet — what makes the canvas open on the trigger list.
+    trigger: null,
+  };
 };
+
+/** Save a new automation for the first time. */
+export const insertAutomation = (record: ProtoAutomation): void =>
+  update((automations) => [record, ...automations]);
 
 /**
  * Copy an automation, returning the new id.

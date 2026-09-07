@@ -20,6 +20,7 @@ import type { AutomationRun, RunStepState } from '@/automations/proto/shared/moc
 import {
   DEFAULT_TRIGGER_CONFIG,
   type TriggerConfig,
+  triggerIcon,
   triggerLabel,
   triggerReviewLabel,
   triggerSummary,
@@ -83,6 +84,12 @@ type FlowNodeData = {
   stats?: AutomationEmailStats;
   // Trigger node: the one-line config summary (read-only here — configuring
   // happens on the edit canvas), and the member-voice title for review mode.
+  //
+  // `icon` overrides the step-kind default. The trigger wears the icon of the
+  // trigger it is, so the card doesn't change its mark when this canvas crossfades
+  // with the edit one. A run state still wins it — a chip that reports where the
+  // member got to is more use than one repeating what the card already says.
+  icon?: React.ElementType;
   summary?: string;
   reviewLabel?: string;
   // Email node: opens the right-hand analytics sheet, and goes blue while that
@@ -271,7 +278,7 @@ const FlowStepNode: React.FC<NodeProps> = ({ data }) => {
           ) : undefined
         }
         chipClassName={chip?.className}
-        icon={chip?.glyph ?? stepKindIcon[d.kind]}
+        icon={chip?.glyph ?? d.icon ?? stepKindIcon[d.kind]}
         meta={meta}
         title={label}
       />
@@ -364,6 +371,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
       data: {
         kind: 'trigger',
         title: 'Trigger',
+        icon: triggerIcon(triggerConfig),
         subtitle: triggerLabel(triggerConfig),
         summary: triggerSummary(triggerConfig),
         reviewLabel: triggerReviewLabel(triggerConfig ?? DEFAULT_TRIGGER_CONFIG),

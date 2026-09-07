@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Button,
   Combobox,
   ComboboxContent,
   ComboboxTrigger,
@@ -14,25 +13,22 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   AUDIENCE_OPTIONS,
   TIER_OPTIONS,
   EXIT_CRITERIA,
   AUTOMATIC_EXIT_SENTENCE,
-  TRIGGER_OPTIONS,
   type AudienceScope,
   type ExitCriterionId,
   type TriggerConfig,
-  type TriggerType,
   availableCriteria,
   hasTiers,
   reconcileCriteria,
   tierNames,
-  triggerLabel,
+  TRIGGER_PICKER_OPTIONS,
   triggerConfigFor,
 } from '@/automations/proto/shared/trigger-config';
-import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
+import { PickerRow } from '@/automations/proto/shared/option-picker';
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -44,73 +40,38 @@ import { OptionPicker, type PickerOption } from '@/automations/proto/shared/opti
 // isn't the right primitive here — it's a segmented control (single muted track,
 // no wrapping), whereas these need to wrap freely on a card.
 
-// The trigger list, in the shared icon/title/description shape.
-const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map((option) => ({
-  value: option.value,
-  icon: option.icon,
-  title: option.label,
-  description: option.description,
-}));
-
-/**
- * The trigger choice on its own: a control that reads as a select and opens the
- * shared icon/title/description picker, so choosing what starts an automation
- * and choosing what happens next are the same act in the same shape.
- *
- * Extracted from the form below because a brand-new automation needs exactly
- * this and nothing else — there's no config to show until something has been
- * picked, so its card is this control and a line of prompt.
- */
-export const TriggerChoiceField: React.FC<{
-  value: TriggerType | null;
-  onSelect: (type: TriggerType) => void;
-  locked?: boolean;
-}> = ({ value, onSelect, locked = false }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <OptionPicker
-      align="start"
-      open={!locked && open}
-      options={TRIGGER_PICKER_OPTIONS}
-      value={value ?? undefined}
-      onOpenChange={setOpen}
-      onSelect={onSelect}
-    >
-      <Button
-        className="h-9 w-full justify-between px-3 font-normal"
-        disabled={locked}
-        type="button"
-        variant="outline"
-      >
-        {/* Unchosen reads as a placeholder, the same muted treatment a select
-                    gives one — the control shouldn't look like it already holds an
-                    answer when it doesn't. */}
-        <span className={cn(!value && 'text-muted-foreground')}>
-          {value ? triggerLabel({ type: value }) : 'Choose a trigger'}
-        </span>
-        <LucideIcon.ChevronDown className="opacity-50" />
-      </Button>
-    </OptionPicker>
-  );
-};
-
 /**
  * The trigger card for an automation that has no trigger yet.
  *
+ * The options themselves, listed on the card — not a select that opens them. A
+ * new automation's canvas is one card and nothing else, so the card may as well
+ * ask its question directly; a select would be a control whose only purpose is to
+ * reveal the thing there is room to show.
+ *
  * Deliberately the only thing on the canvas until it's answered: an automation
  * with nothing to start it has no flow to show, and offering "add a step" first
- * would let someone build a sequence that can never run. One question, then the
- * canvas opens up.
+ * would let someone build a sequence that can never run.
  *
- * The control alone, with no help text above it. A card headed "Trigger" holding
- * one empty select that reads "Choose a trigger", as the only object on an
- * otherwise empty canvas, is not a situation anyone needs a sentence to
- * understand — and a line of prose the reader outgrows on their first automation
- * stays there forever.
+ * The same PickerRow the step and trigger popovers use, so the choice reads
+ * identically wherever it's made. -mx-4 pulls the rows back out of the node body's
+ * own p-6 so each row's icon chip lands on 24px — the column a configured card's
+ * header chip sits on — and the hover fill reads as an inset list rather than a
+ * stack of blocks jammed against the padding.
  */
 export const TriggerEmptyState: React.FC<{ onSelect: (config: TriggerConfig) => void }> = ({
   onSelect,
-}) => <TriggerChoiceField value={null} onSelect={(type) => onSelect(triggerConfigFor(type))} />;
+}) => (
+  <div className="-mx-4">
+    {TRIGGER_PICKER_OPTIONS.map((option) => (
+      <PickerRow
+        key={option.value}
+        option={option}
+        selected={false}
+        onSelect={(type) => onSelect(triggerConfigFor(type))}
+      />
+    ))}
+  </div>
+);
 
 interface TriggerConfigFormProps {
   config: TriggerConfig;
@@ -144,11 +105,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const scopeLocked = config.type === 'paid_subscription_starts';
   const showTiers = hasTiers(config);
 
-  // Trigger and audience changes both rewrite which criteria exist, so they go
-  // through reconcileCriteria rather than setting state directly.
-  const changeType = (type: TriggerType) =>
-    onChange(reconcileCriteria({ ...config, type }, config));
-
   // Changing the membership scope clears the tiers with it. Tiers only narrow a
   // paid audience, and leaving them set behind a Free scope would keep a filter
   // alive that nothing on screen is showing.
@@ -177,14 +133,11 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
     // labelled field with its own meaning, and at md they ran together into one
     // dense stack with no visible grouping.
     <Stack gap="xl">
-      {/* No label — the card header already says "Trigger", the same way the
-                wait card's header names its duration field.
-
-                Reads as a select (h-9, full width, chevron) but opens the shared
-                picker, so choosing a trigger and choosing a step are the same
-                act in the same shape. A plain select would have shown two labels
-                a beat apart in meaning with nothing to tell them apart. */}
-      <TriggerChoiceField locked={locked} value={config.type} onSelect={changeType} />
+      {/* No trigger control here: the card's header carries the trigger's name
+                once one is chosen, so a select repeating it would be the same fact
+                twice on one card. Changing a trigger after the fact is its own
+                question and hasn't been designed yet — a locked card says so with
+                the lock in its header, and an unlocked one currently just can't.
 
       {/* AUDIENCE — who this applies to, as its own block rather than a clause
                 inside the trigger. See shared/trigger-config for why. Locked, the

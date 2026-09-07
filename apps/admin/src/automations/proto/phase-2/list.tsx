@@ -21,11 +21,14 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { AutomationsTable } from '@/automations/proto/shared/automations-table';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
+import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
-  createAutomation,
   deleteAutomation,
+  duplicateAutomation,
+  suggestCopyName,
   useProtoAutomations,
 } from '@/automations/proto/shared/store';
+import { DetailsDialog } from './details-dialog';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 
 // PHASE 2 — the automations list, with CRUD.
@@ -41,14 +44,51 @@ const AutomationsList: React.FC = () => {
   // Held rather than confirmed per row, so the list has one dialog instead of
   // one behind every overflow menu.
   const [pendingDelete, setPendingDelete] = useState<AutomationDetail | null>(null);
+  // The row being copied, and the name and description offered for the copy.
+  const [pendingDuplicate, setPendingDuplicate] = useState<ProtoAutomation | null>(null);
+  const [duplicateDraft, setDuplicateDraft] = useState({ name: '', description: '' });
 
-  // Creating writes immediately and goes straight to the automation. There's no
-  // name-it-first dialog: the automation is named for you ("New automation", then
-  // numbered), and the first real decision — what starts it — is the trigger card
-  // waiting on the canvas. A modal asking for a name before you have decided the
-  // automation exists is a step you would have to undo to change your mind.
+  // Opens an unsaved automation rather than making one. `new` is a sentinel id,
+  // the same way Ghost's own tag creation uses /tags/new: the screen holds a draft
+  // and the record appears when Save is pressed.
+  //
+  // No name-it-first dialog. The automation is named for you ("New automation",
+  // then numbered), and the first real decision — what starts it — is the trigger
+  // list waiting on the canvas.
   const handleCreate = () => {
-    navigate(toVersioned(`${lanePath(LANE)}/${createAutomation()}`));
+    navigate(toVersioned(`${lanePath(LANE)}/new`));
+  };
+
+  // Same dialog the automation's own ⋯ opens, so duplicating from the list and
+  // duplicating from inside are one act asked one way. From here it copies the
+  // SAVED record — there's no draft on this screen to prefer.
+  const openDuplicate = (entry: ProtoAutomation) => {
+    setDuplicateDraft({
+      name: suggestCopyName(entry.automation.name),
+      description: entry.description,
+    });
+    setPendingDuplicate(entry);
+  };
+
+  const confirmDuplicate = () => {
+    const name = duplicateDraft.name.trim();
+    if (!pendingDuplicate || !name) {
+      return;
+    }
+    const source = pendingDuplicate;
+    setPendingDuplicate(null);
+    const copyId = duplicateAutomation(
+      source.automation,
+      source.trigger,
+      duplicateDraft.description.trim(),
+      name,
+    );
+    toast.success(`“${name}” created`, {
+      action: {
+        label: 'View',
+        onClick: () => navigate(toVersioned(`${lanePath(LANE)}/${copyId}`)),
+      },
+    });
   };
 
   const confirmDelete = () => {
@@ -96,11 +136,23 @@ const AutomationsList: React.FC = () => {
                 automations={automations}
                 basePath={lanePath(LANE)}
                 onDelete={setPendingDelete}
+                onDuplicate={openDuplicate}
               />
             )}
           </ListPage.Body>
         </ListPage>
       </Container>
+
+      <DetailsDialog
+        blurb="Creates a copy of this automation. It starts turned off."
+        confirmLabel="Duplicate"
+        heading="Duplicate automation"
+        open={Boolean(pendingDuplicate)}
+        values={duplicateDraft}
+        onChange={setDuplicateDraft}
+        onConfirm={confirmDuplicate}
+        onOpenChange={() => setPendingDuplicate(null)}
+      />
 
       <AlertDialog open={Boolean(pendingDelete)} onOpenChange={() => setPendingDelete(null)}>
         <AlertDialogContent>

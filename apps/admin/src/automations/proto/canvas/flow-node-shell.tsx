@@ -40,8 +40,10 @@ const NODE_BORDER: Record<NodeBorder, string> = {
 export const NodeCard: React.FC<{
   border?: NodeBorder;
   muted?: boolean;
+  // Entrance animation, for a card that arrives after the canvas is already there.
+  className?: string;
   children: React.ReactNode;
-}> = ({ border = 'default', muted = false, children }) => (
+}> = ({ border = 'default', muted = false, className, children }) => (
   // group/node so controls that only earn their place on hover — the subject's
   // pencil, the performance chevron — can key off the whole card rather than the
   // element they sit next to.
@@ -51,6 +53,7 @@ export const NodeCard: React.FC<{
       NODE_CARD_SHELL,
       NODE_BORDER[border],
       muted && 'opacity-60',
+      className,
     )}
   >
     <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
@@ -60,7 +63,14 @@ export const NodeCard: React.FC<{
 );
 
 interface StepNodeHeaderProps {
-  icon: React.ElementType;
+  /**
+   * Optional: without one the header is a plain title.
+   *
+   * The trigger card before a trigger is chosen is the case — it's a question
+   * ("Select a trigger") over a list of options that carry icons of their own, and
+   * a generic chip above them competed with the three it was introducing.
+   */
+  icon?: React.ElementType;
   title: string;
   subtitle?: string;
   // Recolours the chip (fill + foreground). The review canvas tints it with a
@@ -86,14 +96,16 @@ export const StepNodeHeader: React.FC<StepNodeHeaderProps> = ({
   chipClassName,
 }) => (
   <div className="flex min-w-0 items-center gap-3">
-    <span
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-md p-2.5',
-        chipClassName ?? 'bg-muted text-foreground',
-      )}
-    >
-      <Icon className="size-4" />
-    </span>
+    {Icon && (
+      <span
+        className={cn(
+          'flex shrink-0 items-center justify-center rounded-md p-2.5',
+          chipClassName ?? 'bg-muted text-foreground',
+        )}
+      >
+        <Icon className="size-4" />
+      </span>
+    )}
     {subtitle ? (
       <div className="flex min-w-0 flex-col">
         <span className="text-xs text-muted-foreground">{title}</span>

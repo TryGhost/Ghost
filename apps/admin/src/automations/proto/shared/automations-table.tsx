@@ -16,6 +16,7 @@ import {
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import { getRunData } from './mock';
+import { triggerIcon } from './trigger-config';
 import type { ProtoAutomation } from './store';
 import { startedLabel } from './member-runs';
 import { StatusBadge } from './status-badge';
@@ -49,11 +50,16 @@ const relRunDate = (iso: string | null): string => (iso ? startedLabel(iso) : 'N
 // different, so the block read as drifting rather than as a grid. Equal columns
 // put every value the same distance from the one beside it.
 //
-// The trailing 48px column is the row's overflow menu. It's always in the
-// template, even where no menu is passed, so the columns don't shift between a
-// list that can delete and one that can't.
+// The trailing column is the row's overflow menu. It's always in the template,
+// even where no menu is passed, so the columns don't shift between a list that can
+// act on a row and one that can't.
+//
+// 72px, not 48: the button is 38px wide (px-2.5 + a size-4 glyph + its border) and
+// the cell keeps the same p-4 every other cell has, so the column has to hold both.
+// At 48 the button overflowed its own padding and sat flush against the row's right
+// edge, touching the hover fill.
 const gridCols =
-  'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px_48px]';
+  'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px_72px]';
 
 // text-right + font-mono + text-sm is how every numeric table column in the app
 // renders — analytics newsletters, analytics growth, growth sources and post
@@ -76,10 +82,19 @@ const AutomationRow: React.FC<{
   entry: ProtoAutomation;
   basePath: string;
   onDelete?: (automation: AutomationDetail) => void;
-}> = ({ entry, basePath, onDelete }) => {
-  const { automation, description } = entry;
+  onDuplicate?: (entry: ProtoAutomation) => void;
+}> = ({ entry, basePath, onDelete, onDuplicate }) => {
+  const { automation, description, trigger } = entry;
   const toVersioned = useVersionLink();
   const { metrics } = getRunData(automation.id);
+  // What starts it, as its own mark. With two automations the names carried the
+  // whole distinction; with a flow per tier they're variations on one word, and
+  // the thing that actually separates them — how a member gets in — was only
+  // readable by opening each one.
+  //
+  // The generic bolt is the unfinished case: an automation saved before a trigger
+  // was chosen can't run, and reads as pending rather than as a fourth kind.
+  const TriggerIcon = trigger ? triggerIcon(trigger) : LucideIcon.Zap;
 
   return (
     <TableRow
@@ -90,13 +105,34 @@ const AutomationRow: React.FC<{
       data-testid="automation-list-row"
     >
       <TableCell className="static min-w-0 lg:p-4">
-        <Link
-          className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
-          to={toVersioned(`${basePath}/${automation.id}`)}
-        >
-          <span className="block text-md font-semibold">{automation.name}</span>
-        </Link>
-        {description && <span className="block text-muted-foreground">{description}</span>}
+        {/* Mark, then the stacked name and description — the members list's own
+                    row shape (size-8 mark, gap-3, text beside it), so a table of
+                    automations scans the way the other tables in the app do.
+
+                    rounded-md rather than an avatar's circle: this echoes the icon chip
+                    on the trigger's node card, which is where the same icon appears
+                    once you're inside. */}
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={cn(
+              'flex size-8 min-w-8 items-center justify-center rounded-md bg-muted',
+              trigger ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            <TriggerIcon className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <Link
+              className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
+              to={toVersioned(`${basePath}/${automation.id}`)}
+            >
+              <span className="block truncate text-md font-semibold">{automation.name}</span>
+            </Link>
+            {description && (
+              <span className="block truncate text-muted-foreground">{description}</span>
+            )}
+          </div>
+        </div>
       </TableCell>
       <TableCell
         className={cn(
@@ -116,22 +152,50 @@ const AutomationRow: React.FC<{
         <StatusBadge status={automation.status} />
       </TableCell>
       {/* Above the row's own click overlay (z-10) or the link would swallow the
-                menu, and it stops propagation so opening it doesn't also navigate. */}
-      <TableCell className="relative z-20 lg:p-4" onClick={(e) => e.stopPropagation()}>
-        {onDelete && (
+                menu, and it stops propagation so opening it doesn't also navigate.
+
+                Always rendered, never revealed on hover. Tags fades its row action in,
+                but the rest of the app's lists keep theirs — and an action you can only
+                find by hovering is one a keyboard or a touch screen has to guess at.
+
+                Duplicate is what makes this a menu rather than a bare Delete button.
+                Building the fourth tier flow from the third is the job this project
+                exists to make easier, so it belongs on the row you'd copy — and with
+                two items, the destructive one stops being the row's only action. */}
+      <TableCell
+        className="relative z-20 flex justify-end lg:p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {(onDelete || onDuplicate) && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button aria-label={`Actions for ${automation.name}`} size="icon" variant="ghost">
+              {/* Bordered, and at the DEFAULT size — 34px, which is what every
+                            other outline button in the app measures: --control-height is
+                            32px and the border adds one either side. `sm` renders 30 and
+                            would sit a notch short of the controls on every neighbouring
+                            page.
+
+                            Outline rather than ghost: on a row a border is what says this
+                            is a control. Ghost belongs to the canvas, where buttons float
+                            on a surface and a border would compete with the cards. */}
+              <Button aria-label={`Actions for ${automation.name}`} variant="outline">
                 <LucideIcon.MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDelete(automation)}
-              >
-                <LucideIcon.Trash2 /> Delete
-              </DropdownMenuItem>
+              {onDuplicate && (
+                <DropdownMenuItem onClick={() => onDuplicate(entry)}>
+                  <LucideIcon.Copy /> Duplicate
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => onDelete(automation)}
+                >
+                  <LucideIcon.Trash2 /> Delete
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -145,9 +209,10 @@ interface AutomationsTableProps {
   // name is editable and lives on the record, not on the API type.
   automations: ProtoAutomation[];
   basePath: string;
-  // Reports the row's Delete; the caller owns the confirmation and the write, so
+  // Report the row's action; the caller owns the confirmation and the write, so
   // one dialog serves the whole list instead of one per row.
   onDelete?: (automation: AutomationDetail) => void;
+  onDuplicate?: (entry: ProtoAutomation) => void;
 }
 
 // Column headers + body. `data-testid` stays "automations-list" — callers
@@ -156,6 +221,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   automations,
   basePath,
   onDelete,
+  onDuplicate,
 }) => (
   <Table className="flex flex-col" data-testid="automations-list">
     <TableHeader className="hidden lg:flex lg:flex-col">
@@ -179,6 +245,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
           basePath={basePath}
           entry={entry}
           onDelete={onDelete}
+          onDuplicate={onDuplicate}
         />
       ))}
     </TableBody>

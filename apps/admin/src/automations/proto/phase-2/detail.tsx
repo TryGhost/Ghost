@@ -16,15 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   EmptyIndicator,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-  Textarea,
   buttonVariants,
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
@@ -33,9 +24,12 @@ import { toast } from 'sonner';
 
 import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
+import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
+  blankAutomation,
   deleteAutomation,
   duplicateAutomation,
+  insertAutomation,
   saveAutomation,
   setAutomationStatus,
   suggestCopyName,
@@ -57,6 +51,7 @@ import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
 import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
+import { DetailsDialog } from './details-dialog';
 
 // PHASE 2 — per-tier automations. See shared/lanes for why each lane owns its
 // own copy of this screen.
@@ -165,84 +160,6 @@ const PublishChangesDialog: React.FC<{
  * before it was cut, and stayed separate because the flow itself isn't part of
  * what this screen decides.
  */
-/**
- * Name + description, in a dialog. One component for both the settings dialog and
- * the duplicate dialog, so the two are the same object rather than two that
- * resemble each other — duplicating is naming a new automation, and it should ask
- * the way renaming asks.
- *
- * Values are held by the caller, so nothing is committed by typing and Cancel is
- * a real cancel rather than an undo of writes that already landed.
- */
-interface DetailsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  heading: string;
-  blurb: string;
-  confirmLabel: string;
-  values: { name: string; description: string };
-  onChange: (next: { name: string; description: string }) => void;
-  onConfirm: () => void;
-}
-
-const DetailsDialog: React.FC<DetailsDialogProps> = ({
-  open,
-  onOpenChange,
-  heading,
-  blurb,
-  confirmLabel,
-  values,
-  onChange,
-  onConfirm,
-}) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>{heading}</DialogTitle>
-        <DialogDescription>{blurb}</DialogDescription>
-      </DialogHeader>
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="automation-name">Name</Label>
-          <Input
-            id="automation-name"
-            value={values.name}
-            autoFocus
-            onChange={(e) => onChange({ ...values, name: e.target.value })}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="automation-description">Description</Label>
-          <Textarea
-            id="automation-description"
-            placeholder="What this automation is for"
-            rows={3}
-            value={values.description}
-            onChange={(e) => onChange({ ...values, description: e.target.value })}
-          />
-          {/* Says where the words end up. Without it the field is a box asking
-                    for text with no stated audience, and people either skip it or
-                    write for nobody. */}
-          <p className="text-sm text-muted-foreground">
-            Shown under the name on your automations list.
-          </p>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
-        {/* An automation with no name is unfindable in a list, so this holds
-                    rather than writing an empty one. Nothing else here can be invalid —
-                    a blank description is a legitimate answer. */}
-        <Button disabled={!values.name.trim()} onClick={onConfirm}>
-          {confirmLabel}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
-
 const AutomationFloat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -252,7 +169,34 @@ const AutomationFloat: React.FC = () => {
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
   // `cancellationSurvey` already designs for.
-  const record = useProtoAutomation(id);
+  // `new` is a sentinel id, not an automation — Ghost's tag detail uses the same
+  // one for /tags/new. Nothing exists in the store until Save, so the screen holds
+  // the whole thing locally until then.
+  const isCreating = id === 'new';
+  // Made once, on mount, and never mutated. The screen is keyed by id (see
+  // AutomationFloatScreen), so this is per-visit rather than something to reset —
+  // and keeping it pristine is what lets a rename be DIFFED rather than tracked.
+  const [newRecord] = useState<ProtoAutomation | null>(() =>
+    id === 'new' ? blankAutomation() : null,
+  );
+  // Name and description while creating. Their own state rather than an edit to
+  // the blank above: applied immediately in both modes, but here there's no store
+  // to apply them to, and overwriting the blank would destroy the only copy of
+  // what they started as.
+  const [newDetails, setNewDetails] = useState<{ name: string; description: string } | null>(null);
+  const storedRecord = useProtoAutomation(isCreating ? undefined : id);
+  const baseRecord = storedRecord ?? newRecord;
+  // The blank stands in for "what Save last committed" while creating, so every
+  // derivation below — the diff, the leave guard, the change summary — works
+  // unchanged: an automation you haven't saved is one whose saved version is empty.
+  const record =
+    baseRecord && newDetails
+      ? {
+          ...baseRecord,
+          description: newDetails.description,
+          automation: { ...baseRecord.automation, name: newDetails.name },
+        }
+      : (baseRecord ?? undefined);
   const scenario = record
     ? { automation: record.automation, ...getRunData(record.automation.id) }
     : undefined;
@@ -276,22 +220,27 @@ const AutomationFloat: React.FC = () => {
   const [publishOpen, setPublishOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const stripeConnected = useStripeConnected();
-  // Name + description, edited in their own dialog. Held as draft fields while it's
-  // open and written on Save — nothing is committed by typing, so Cancel is a real
-  // cancel rather than an undo of writes that already landed.
+  // Set when the screen is deliberately navigating away — Delete, and the first
+  // Save of a new automation, which swaps /new for a real id.
+  //
+  // Two things downstream have to know. The "not found" state, which is otherwise
+  // the correct read of an automation that no longer exists. And the leave guard,
+  // which would otherwise ask whether to discard unsaved edits to the thing you
+  // just deleted — or, on a first save, treat the automation you just saved as
+  // unsaved work, because the blank it's diffed against is still the baseline
+  // until the remount.
+  //
+  // A ref rather than state because both are read during the same render that
+  // removes or replaces the automation, and a setState wouldn't have landed yet.
+  const leaving = useRef(false);
+  // Name and description, edited in their own dialog. Held as draft fields while
+  // it's open and written on Save — nothing is committed by typing, so Cancel is a
+  // real cancel rather than an undo of writes that already landed.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsDraft, setSettingsDraft] = useState({ name: '', description: '' });
   // The copy's name and description, offered before it exists.
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [duplicateDraft, setDuplicateDraft] = useState({ name: '', description: '' });
-  // Set the moment Delete is confirmed, and never unset — the screen is on its
-  // way out. Two things downstream have to know: the "not found" state, which is
-  // otherwise the correct read of an automation that no longer exists, and the
-  // leave guard, which would otherwise ask whether to discard unsaved edits to
-  // the thing you just deleted. A ref rather than state because both are read
-  // during the same render that removes the automation, and a setState wouldn't
-  // have landed yet.
-  const deleting = useRef(false);
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
   // defined as the thing you haven't committed, and restoring one a week later
@@ -301,12 +250,11 @@ const AutomationFloat: React.FC = () => {
   // The screen is keyed by automation id (see AutomationFloatScreen), so this
   // starts empty for each automation rather than needing to be reset.
   const [draft, setDraft] = useState<AutomationDetail | null>(null);
-  // Trigger + exit criteria. Separate from `draft` because AutomationDetail carries no
-  // trigger config yet — the canvases take it as its own prop. `null` is the
+  // Trigger + exit criteria. Separate from `draft` because AutomationDetail carries
+  // no trigger config yet — the canvases take it as its own prop. `null` is the
   // just-created state: nothing has been chosen to start this automation, and the
-  // canvas shows a picker rather than a flow.
+  // trigger node asks for one rather than showing a flow.
   const [triggerConfig, setTriggerConfig] = useState<TriggerConfig | null>(savedTrigger);
-
   // The canvas is always editable, so hiding the pane is the user's call.
   //
   // The pane follows the automation's lifecycle: open when it's running, closed
@@ -353,7 +301,22 @@ const AutomationFloat: React.FC = () => {
           draftTrigger: triggerConfig,
         })
       : [];
-  const hasChanges = changes.length > 0;
+  // A rename is a change too, and changeSummary can't see it: name and
+  // description aren't part of the draft/published split — they apply immediately
+  // — so there's nothing for it to diff. Without this, naming a new automation and
+  // leaving lost the name with no prompt, because every other signal said nothing
+  // had happened.
+  //
+  // Compared against the pristine blank rather than flagged on first edit, for the
+  // same reason the rest of this screen computes its diff: renaming and then
+  // renaming back should stop counting.
+  const detailsTouched = Boolean(
+    newRecord &&
+    newDetails &&
+    (newDetails.name !== newRecord.automation.name ||
+      newDetails.description !== newRecord.description),
+  );
+  const hasChanges = changes.length > 0 || detailsTouched;
 
   // Edits are held, not written, so any difference is unsaved work that leaving
   // would destroy — in either lifecycle state, since a stopped automation's edits
@@ -361,7 +324,7 @@ const AutomationFloat: React.FC = () => {
   useConfirmUnload(hasChanges);
   const navigationBlocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      !deleting.current && hasChanges && currentLocation.pathname !== nextLocation.pathname,
+      !leaving.current && hasChanges && currentLocation.pathname !== nextLocation.pathname,
   );
 
   const goBack = () => navigate(toVersioned(lanePath(LANE)));
@@ -372,7 +335,7 @@ const AutomationFloat: React.FC = () => {
     // used to paint "Automation not found", which reads as a failure — you did
     // something deliberate and the app answered with an error. Nothing at all,
     // for one frame, then the list.
-    if (deleting.current) {
+    if (leaving.current) {
       return null;
     }
     return (
@@ -411,6 +374,12 @@ const AutomationFloat: React.FC = () => {
   // It also answers a question hiding couldn't: what happens to an automation
   // built while Stripe WAS connected, when it later isn't. That's this same
   // state, so it gets this same banner rather than a second design.
+  // The first decision, and the only thing on screen while it's open. Chrome that
+  // acts on an automation — its name, its status, Save, Publish — is chrome for
+  // something that doesn't exist yet, so the header stands down until there's an
+  // automation to act on. What's left is the canvas, one centred card, and the way
+  // back.
+
   const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
 
   // Nothing can go live without something to start it, or without the payments
@@ -424,6 +393,11 @@ const AutomationFloat: React.FC = () => {
   // Whether anything actually differs is read back off the draft.
   const handleDraftChange = (next: AutomationDetail) => setDraft(next);
 
+  // Choosing a trigger doesn't rename the automation. It used to — a new one was
+  // named after whatever started it — but that put the header's title and the whole
+  // canvas in motion on the same click, in two different regions, and the rename was
+  // the half nobody was looking at. A new automation is "New automation", numbered,
+  // from creation until someone names it themselves.
   const handleTriggerConfigChange = (next: TriggerConfig) => setTriggerConfig(next);
 
   // Start — take a stopped automation live. Read mode only now, so there's no
@@ -431,8 +405,27 @@ const AutomationFloat: React.FC = () => {
   // reversible via Stop, and a blocking modal would interrupt the flow. All the
   // friction lives on Stop and on publishing to something already running.
   // Whatever's in the draft becomes the running version.
-  const promoteDraft = () => {
+  // First Save creates the automation; every Save after commits to it. The record
+  // being written is the same either way — what differs is whether the store has
+  // seen it before — so the two paths meet here rather than at each caller.
+  const promoteDraft = (status?: LiveStatus) => {
+    if (isCreating && record) {
+      leaving.current = true;
+      insertAutomation({
+        ...record,
+        automation: { ...draftFlow, status: status ?? draftFlow.status },
+        trigger: triggerConfig,
+      });
+      // replace: /new isn't somewhere to go Back to, and the automation now has a
+      // real id. The screen is keyed by id, so this remounts onto the saved record
+      // — which is why the write has to land first.
+      navigate(toVersioned(`${lanePath(LANE)}/${draftFlow.id}`), { replace: true });
+      return;
+    }
     saveAutomation(id, draftFlow, triggerConfig);
+    if (status) {
+      setAutomationStatus(id, status);
+    }
     setDraft(null);
   };
 
@@ -441,8 +434,7 @@ const AutomationFloat: React.FC = () => {
     // becomes the published version in the same move — there's no separate
     // "publish" step to remember for something that was never running.
     setStartOpen(false);
-    promoteDraft();
-    setAutomationStatus(id, 'active');
+    promoteDraft('active');
     // Open the performance pane on the way live, so the screen ends up in the
     // state it would open in from now on (see paneCollapsed): the pane tracks the
     // lifecycle, and this is the lifecycle changing.
@@ -548,7 +540,13 @@ const AutomationFloat: React.FC = () => {
       return;
     }
     setSettingsOpen(false);
-    updateAutomationDetails(id, name, settingsDraft.description.trim());
+    if (isCreating) {
+      // Nothing to update in the store yet — these ride alongside the blank until
+      // Save writes the whole record.
+      setNewDetails({ name, description: settingsDraft.description.trim() });
+    } else {
+      updateAutomationDetails(id, name, settingsDraft.description.trim());
+    }
     toast.success('Automation updated');
   };
 
@@ -557,7 +555,7 @@ const AutomationFloat: React.FC = () => {
     // Flagged before either of the next two lines, because removing the
     // automation re-renders this screen synchronously (the store is an external
     // store) and the route change lands after it.
-    deleting.current = true;
+    leaving.current = true;
     deleteAutomation(id);
     navigate(toVersioned(lanePath(LANE)));
     toast.success('Automation deleted');
@@ -606,20 +604,26 @@ const AutomationFloat: React.FC = () => {
         <DropdownMenuItem onClick={openSettings}>
           <LucideIcon.Settings /> Settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={openDuplicate}>
-          <LucideIcon.Copy /> Duplicate
-        </DropdownMenuItem>
+        {/* Both act on a record that doesn't exist yet — there is nothing to copy
+                    and nothing to remove until the first Save. */}
+        {!isCreating && (
+          <DropdownMenuItem onClick={openDuplicate}>
+            <LucideIcon.Copy /> Duplicate
+          </DropdownMenuItem>
+        )}
         {/* Delete sits last. A menu opens with the cursor at the top, so leading
                     with the one item that destroys something would put it directly under
                     the pointer. It used to be fenced off by a separator too; with four
                     items the rules were doing more to break the list up than the grouping
                     justified, and the destructive colour already marks it. */}
-        <DropdownMenuItem
-          className="text-destructive focus:text-destructive"
-          onClick={() => setDeleteOpen(true)}
-        >
-          <LucideIcon.Trash2 /> Delete
-        </DropdownMenuItem>
+        {!isCreating && (
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <LucideIcon.Trash2 /> Delete
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -885,16 +889,16 @@ const AutomationFloat: React.FC = () => {
                 z-30 clears the pane's own sticky bars at z-20. The pane holds an
                 invisible twin of this button in flow (see reserveToggle) so the
                 Performance title starts where it would if this one were really there. */}
+        {/* Anchored to the ROW rather than to either side of it — the one thing
+                    in this layout that doesn't belong to the pane or the canvas, because
+                    its whole job is to survive the boundary moving between them.
+
+                    -ml-2, as everywhere else a ghost icon button meets the inset: the box
+                    pulls back so the glyph sits on 24px. */}
         <div className="absolute top-4 left-6 z-30">
           <Button
             aria-label={paneCollapsed ? 'Show performance' : 'Hide performance'}
             aria-pressed={!paneCollapsed}
-            // -ml-2, as everywhere else a ghost icon button meets the inset:
-            // the box pulls back so the glyph sits on 24px. Net effect is the
-            // box at 16px, which is also exactly where the pane's own leading
-            // button sits — so this still lands on the pixels the pane's
-            // button occupied, now for a stated reason rather than a
-            // coincidence of two different numbers.
             className="-ml-2"
             size="icon"
             type="button"
