@@ -4,7 +4,10 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
-import { editorHeaderActions } from '@tryghost/test-data/selectors/editor';
+import {
+  editorHeaderActions,
+  editorPublishInputsError,
+} from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { PostPreviewModal } from './preview/post-preview-modal';
@@ -112,6 +115,7 @@ export function EditorHeaderActions({
           isSaving={isSaving}
           openFlow={openFlow}
           post={post}
+          previewOpen={previewOpen}
           session={session}
           tkCount={tkCount}
           onOpenFlow={setOpenFlow}
@@ -141,6 +145,7 @@ interface PublishActionsProps {
   isDraft: boolean;
   isSaving: boolean;
   openFlow: OpenFlow;
+  previewOpen: boolean;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -156,6 +161,7 @@ function PublishActions({
   isDraft,
   isSaving,
   openFlow,
+  previewOpen,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
@@ -190,7 +196,9 @@ function PublishActions({
   const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
   const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
 
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady);
+  // A flow opened under the preview's portal is hidden from a screen reader,
+  // so the preview's own Publish button is the only way into it from there.
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !previewOpen);
 
   return (
     <>
@@ -201,7 +209,12 @@ function PublishActions({
           </Button>
           {inputs.error ? (
             <>
-              <Text className="text-destructive" role="alert" size="sm">
+              <Text
+                className="text-destructive"
+                data-testid={editorPublishInputsError}
+                role="alert"
+                size="sm"
+              >
                 {inputs.error.message}
               </Text>
               <Button size="sm" variant="ghost" onClick={inputs.retry}>
