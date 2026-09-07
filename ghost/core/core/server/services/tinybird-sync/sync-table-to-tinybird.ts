@@ -1,3 +1,4 @@
+import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
@@ -226,6 +227,10 @@ export async function syncTableToTinybird(
     if (rows.length < limit) {
       return sent;
     }
+
+    // The sync shares the event loop with HTTP; let queued requests run before the next
+    // batch is serialised.
+    await flushEventLoop();
   }
 
   return sent;
