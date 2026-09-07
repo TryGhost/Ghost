@@ -533,8 +533,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         await assert.rejects(
           service.sendBatches({ ...data, batches: await service.getBatches(email) }),
           (error) => {
-            assert.notEqual(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-            assert.match(error.message, /only partially sent/);
+            assert.equal(error.code, 'BULK_EMAIL_SUBMISSION_UNCERTAIN');
+            assert.match(error.message, /Contact support/);
             return true;
           },
         );
@@ -585,6 +585,65 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(result.sending.status, 'failed');
     await batches[0].refresh();
     assert.equal(batches[0].get('recipient_count'), null);
+  });
+
+  it('leaves legacy submission counts unknown and preserves the prepared email count', async function () {
+    await email.save({ preflight_email_count: null }, { patch: true });
+    const batches = await service.createBatches(data);
+    const intendedCount = email.get('email_count');
+    await db
+      .knex('email_recipients')
+      .where({ batch_id: batches.find((b) => b.get('fallback_sending_domain')).id })
+      .update({ member_email: 'invalid' });
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), intendedCount);
+    for (const batch of await service.getBatches(email)) {
+      assert.equal(batch.get('submitted_count'), null);
+      assert.equal(batch.get('submission_excluded_count'), null);
+    }
+  });
+
+  it('rejects changed candidate totals while every submitted batch remains internally consistent', async function () {
+    const batches = await service.createBatches(data);
+    await service.sendBatches({ ...data, batches });
+    sender.send.resetHistory();
+    await email.save({ candidate_count: 5 }, { patch: true });
+    await assert.rejects(
+      service.sendBatches({ ...data, batches: await service.getBatches(email) }),
+      (error) => {
+        assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+        // The preparation identity catches this before the redundant submission sum.
+        assert.equal(JSON.parse(error.errorDetails).reason, 'preparation_totals');
+        return true;
+      },
+    );
+    sinon.assert.notCalled(sender.send);
+  });
+
+  it('preserves a verified batch failure when another batch has an uncertain submission', async function () {
+    const batches = await service.createBatches(data);
+    await batches[0].save({ status: 'submitting' }, { patch: true });
+    await batches[1].save(
+      {
+        status: 'failed',
+        error_data: JSON.stringify({
+          code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+          reason: 'provider_payload_count',
+        }),
+      },
+      { patch: true },
+    );
+    sinon.stub(service, 'sendBatch').resolves(false);
+    await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+      assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      assert.equal(JSON.parse(error.errorDetails).batch_id, batches[1].id);
+      return true;
+    });
   });
 
   it('alerts on preflight drift without rejecting a valid candidate sweep', async function () {
@@ -1149,6 +1208,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(excludedBatch.get('status'), 'submitted');
     assert.equal(excludedBatch.get('submitted_count'), 0);
     assert.equal(excludedBatch.get('mailgun_message_id'), null);
+    const mapBatch = require('../../../../core/server/api/endpoints/utils/serializers/output/mappers/email-batches');
+    const response = mapBatch(excludedBatch, { options: {} });
+    assert.equal(response.status, 'submitted');
+    assert.equal(response.mailgun_message_id, null);
     sinon.assert.calledTwice(sender.send);
   });
 
@@ -1178,6 +1241,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.assert.calledTwice(client.send);
     await email.refresh();
     assert.equal(email.get('status'), 'failed');
+    sinon.assert.calledOnce(sentry.captureException);
     assert.match(email.get('error'), /recipient verification failed/);
     assert.ok(!email.get('error').toLowerCase().includes('retry'));
   });
@@ -1210,7 +1274,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await batches[0].refresh();
     assert.equal(batches[0].get('submitted_count'), null);
     assert.equal(batches[0].get('submission_excluded_count'), null);
-    sinon.assert.calledWithMatch(logging.info, { event: { name: 'email.submission.unverified' } });
+    sinon.assert.calledWithMatch(logging.info, {
+      event: { name: 'email.submission.unverified' },
+      unverified_batch_ids: [batches[0].id],
+    });
     sinon.assert.calledTwice(sender.send);
   });
 
