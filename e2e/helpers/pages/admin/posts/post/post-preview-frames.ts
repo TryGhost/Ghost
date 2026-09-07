@@ -1,4 +1,11 @@
 import { FrameLocator, Locator, Page } from '@playwright/test';
+import {
+  postPreviewBrowserFrame,
+  postPreviewEmailFrame,
+} from '@tryghost/test-data/selectors/editor';
+
+/** Which implementation renders the preview — decided by the `editorReact` flag. */
+export type PostPreviewImplementation = 'ember' | 'react';
 
 class PreviewFrame {
   protected readonly page: Page;
@@ -34,10 +41,18 @@ export class EmailPreviewFrame extends PreviewFrame {
   readonly previewBody: Locator;
   readonly frameBody: Locator;
 
-  constructor(page: Page) {
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
+  ) {
     super(page);
-    this.frame = this.page.frameLocator('iframe[title="Email preview"]');
+    // Both implementations title the iframe "Email preview"; React also marks it.
+    const selector =
+      implementation === 'react'
+        ? `iframe[data-testid="${postPreviewEmailFrame}"]`
+        : 'iframe[title="Email preview"]';
 
+    this.frame = this.page.frameLocator(selector);
     this.previewBody = this.frame.getByTestId('email-preview-body');
     this.frameBody = this.frame.locator('body');
   }
@@ -50,10 +65,23 @@ export class EmailPreviewFrame extends PreviewFrame {
 
 export class DesktopPreviewFrame extends PreviewFrame {
   readonly desktopPreviewFrame: FrameLocator;
+  /** The iframe element itself, for reading the URL the preview was pointed at. */
+  readonly frameElement: Locator;
 
-  constructor(page: Page) {
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostPreviewImplementation } = {},
+  ) {
     super(page);
-    this.desktopPreviewFrame = page.frameLocator('iframe[title="Desktop browser post preview"]');
+    // React renders one preview iframe and changes the chrome around it; Ember
+    // titles a separate iframe per device.
+    const selector =
+      implementation === 'react'
+        ? `iframe[data-testid="${postPreviewBrowserFrame}"]`
+        : 'iframe[title="Desktop browser post preview"]';
+
+    this.desktopPreviewFrame = page.frameLocator(selector);
+    this.frameElement = page.locator(selector);
   }
 
   async focus(): Promise<void> {

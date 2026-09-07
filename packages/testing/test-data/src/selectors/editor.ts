@@ -107,3 +107,7 @@ export const editorUpdateButton = 'Update';
 export const editorSaveButton = 'Save';
 export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
+export const publishTypePublishAndEmailOption = 'Publish and email';
+export const publishTypePublishOnlyOption = 'Publish only';
+export const publishTypeEmailOnlyOption = 'Email only';
+export const publishAtScheduleOption = 'Schedule for later';
