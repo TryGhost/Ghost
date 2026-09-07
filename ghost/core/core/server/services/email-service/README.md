@@ -34,7 +34,8 @@ to retry; frozen or possibly submitted batches require investigation.
 
 An interrupted preparation without `prepared_at` is discarded on retry, using
 bounded deletes of recipient rows followed by batches. Any non-pending batch
-blocks cleanup. Once prepared, retries reuse the batches without selecting the
+blocks cleanup. Cross-email recipient references fail verification before any
+cleanup deletes. Once prepared, retries reuse the batches without selecting the
 audience again. Batches created after the preparation marker fail verification.
 After submission workers settle, re-read all persisted batches, verify recipient
 counts again, and require every batch submitted before completing the email.

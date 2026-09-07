@@ -662,7 +662,7 @@ class BatchSendingService {
       code: VERIFICATION_CODE,
       message: canRebuild
         ? 'Newsletter recipient preparation failed. Retry sending to rebuild the recipient batches.'
-        : 'Newsletter recipient verification failed. Some messages may have been submitted. Contact support to investigate.',
+        : 'Newsletter recipient verification failed. Contact support to investigate.',
       errorDetails: JSON.stringify({
         code: VERIFICATION_CODE,
         email_id: email.id,
@@ -670,12 +670,17 @@ class BatchSendingService {
         ...details,
       }),
     });
-    logging.error(error);
     logging.error(
-      { event: { name: 'email.verification.failed' }, email_id: email.id, reason, ...details },
+      {
+        err: error,
+        event: { name: 'email.verification.failed' },
+        email_id: email.id,
+        reason,
+        ...details,
+      },
       'Newsletter recipient verification failed',
     );
-    this.#sentry?.captureException(error);
+    // emailJob reports the terminal integrity failure to Sentry once.
     return error;
   }
 
@@ -683,6 +688,21 @@ class BatchSendingService {
     const batches = await this.getBatches(email);
     if (batches.some((batch) => batch.get('status') !== 'pending')) {
       throw this.#verificationFailure(email, 'incomplete_preparation_already_submitting');
+    }
+    // A row owned by another email cannot be discarded as part of this send.
+    // Detect it before cleanup reaches the batch foreign-key restriction.
+    if (batches.length > 0) {
+      const foreignRecipient = await this.#db
+        .knex('email_recipients as recipient')
+        .join('email_batches as batch', 'batch.id', 'recipient.batch_id')
+        .where('batch.email_id', email.id)
+        .whereNot('recipient.email_id', email.id)
+        .first('recipient.batch_id');
+      if (foreignRecipient) {
+        throw this.#verificationFailure(email, 'cross_email_recipient', {
+          batch_id: foreignRecipient.batch_id,
+        });
+      }
     }
     // Preparation is sequential today. Its awaited writes have settled before a
     // retry enters here. Keep deletion bounded and restartable between chunks.
@@ -850,7 +870,18 @@ class BatchSendingService {
             missing_fields: missing,
           }),
         });
-        logging.error(error);
+        logging.error(
+          {
+            err: error,
+            event: { name: 'email.preparation.excluded' },
+            email_id: email.id,
+            attempt_id: accounting.attemptId,
+            member_id: member.id,
+            reason: 'missing_fields',
+            missing_fields: missing,
+          },
+          'Member excluded from newsletter preparation',
+        );
         this.#sentry?.captureException(error);
         return false;
       });
@@ -878,7 +909,15 @@ class BatchSendingService {
           if (!accounting) {
             throw error;
           }
-          logging.error(error);
+          logging.info(
+            {
+              err: error,
+              event: { name: 'email.batch.recovery.started' },
+              email_id: email.id,
+              batch_id: batchId,
+            },
+            'Checking the outcome of email batch creation',
+          );
           // The transaction handler has settled (including its rollback) before
           // this read. A failed acknowledgement does not prove a failed commit.
           const committed = await this.#models.EmailBatch.findOne({ id: batchId });
@@ -1106,6 +1145,13 @@ class BatchSendingService {
           description: `verify persisted batches for email ${email.id}`,
         },
       );
+      if (verified.batches.some((batch) => batch.get('status') === 'submitting')) {
+        throw new errors.EmailError({
+          code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN',
+          message:
+            'Newsletter submission could not be confirmed. Contact support to reconcile the affected batches before retrying.',
+        });
+      }
       expectedBatchCount = verified.batches.length;
       succeededCount = verified.batches.filter(
         (batch) => batch.get('status') === 'submitted',
