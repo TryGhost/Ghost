@@ -1,7 +1,11 @@
 import type { DunningState } from './use-dunning-state';
 
-/** Destination of the "Pay now" CTA: the host's billing app route. */
-export const PAY_URL = '#/pro/update-card';
+/**
+ * Destination of the "Pay now" CTA: the billing app's payment page, on its
+ * return variant — after a successful payment the billing app sends Admin
+ * back to the page the user came from.
+ */
+export const PAY_URL = '#/pro/update-card/return';
 
 /** Destination of the "Download my data" CTA: the export tools in settings. */
 export const EXPORT_URL = '#/settings/migration';
