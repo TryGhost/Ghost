@@ -1204,7 +1204,7 @@ class BatchSendingService {
       } catch {
         // Ordinary provider failures can contain non-JSON diagnostics.
       }
-      if (errorData?.code === VERIFICATION_CODE) {
+      if (batch.get('status') === 'failed' && errorData?.code === VERIFICATION_CODE) {
         throw this.#verificationFailure(email, 'batch_verification_failed', {
           batch_id: batch.id,
           batch_error: errorData,
@@ -1304,8 +1304,7 @@ class BatchSendingService {
 
     try {
       const expectedCount = batch.get('recipient_count');
-      const recipientAccounting =
-        this.#usesRecipientAccounting(email) && (expectedCount ?? null) !== null;
+      const recipientAccounting = this.#usesRecipientAccounting(email);
       if (recipientAccounting && (!Number.isSafeInteger(expectedCount) || expectedCount < 1)) {
         throw this.#verificationFailure(email, 'invalid_batch_recipient_count', {
           batch_id: batch.id,
@@ -1359,7 +1358,7 @@ class BatchSendingService {
       };
       const message = recipientAccounting
         ? await this.retryDb(() => this.#sendingService.buildMessage(messageData, messageOptions), {
-            ...this.#getMailgunRetryConfig(),
+            ...this.#getBeforeRetryConfig(email),
             description: `Constructing email batch ${originalBatch.id}`,
           })
         : null;

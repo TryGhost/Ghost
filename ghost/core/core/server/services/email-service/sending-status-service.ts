@@ -48,10 +48,13 @@ export class SendingStatusService {
   async #batchesFor(emailId: string, recipientAccounting: boolean): Promise<SendingBatch[]> {
     if (recipientAccounting) {
       const rows = await this.#knex('email_batches')
-        .select('status', 'created_at', 'updated_at', 'recipient_count')
+        .select('status', 'created_at', 'updated_at')
+        // Corrupt or transitional null counts must not hide the failed-send status.
+        // Verification rejects them; this read-only projection gives no credit for unknown rows.
+        .select(this.#knex.raw('COALESCE(recipient_count, 0) AS recipient_count'))
         .select(
           this.#knex.raw(
-            'COALESCE(submitted_count + submission_excluded_count, recipient_count) AS accounted_recipient_count',
+            'COALESCE(submitted_count + submission_excluded_count, recipient_count, 0) AS accounted_recipient_count',
           ),
         )
         .where('email_id', emailId);

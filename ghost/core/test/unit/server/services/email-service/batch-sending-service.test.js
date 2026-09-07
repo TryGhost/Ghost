@@ -733,23 +733,52 @@ describe('Batch Sending Service', function () {
       });
     }
 
-    it('rejects a corrupt zero recipient count before reading recipients', async function () {
-      const batch = createModel({ status: 'pending', recipient_count: 0 });
-      const service = new BatchSendingService({ models: { EmailRecipient } });
-      sinon.stub(service, 'updateStatusLock').resolves(batch);
-      const read = sinon.stub(service, 'getBatchMembers').resolves([{ email: 'a@example.com' }]);
-      await service.sendBatch({
-        email: createModel({ preflight_email_count: 0 }),
-        batch,
-        post: createModel({}),
-        newsletter: createModel({}),
+    for (const expectedCount of [0, null]) {
+      it(`rejects a corrupt ${expectedCount} recipient count before reading recipients`, async function () {
+        const batch = createModel({ status: 'pending', recipient_count: expectedCount });
+        const service = new BatchSendingService({ models: { EmailRecipient } });
+        sinon.stub(service, 'updateStatusLock').resolves(batch);
+        const read = sinon.stub(service, 'getBatchMembers').resolves([{ email: 'a@example.com' }]);
+        await service.sendBatch({
+          email: createModel({ preflight_email_count: 0 }),
+          batch,
+          post: createModel({}),
+          newsletter: createModel({}),
+        });
+        assert.equal(batch.get('status'), 'failed');
+        assert.equal(
+          JSON.parse(batch.get('error_data')).code,
+          'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+        );
+        sinon.assert.notCalled(read);
       });
-      assert.equal(batch.get('status'), 'failed');
+    }
+
+    it('uses the pre-send retry budget when constructing an accounted message', async function () {
+      const batch = createModel({ status: 'pending', recipient_count: 2 });
+      const sender = {
+        getMaximumRecipients: () => 5,
+        buildMessage: sinon.stub().rejects(new Error('Render query unavailable')),
+        sendMessage: sinon.stub(),
+      };
+      const service = new BatchSendingService({
+        models: { EmailRecipient },
+        sendingService: sender,
+        BEFORE_RETRY_CONFIG: { maxRetries: 0, sleep: 0 },
+        MAILGUN_API_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+      });
+      sinon.stub(service, 'updateStatusLock').resolves(batch);
       assert.equal(
-        JSON.parse(batch.get('error_data')).code,
-        'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+        await service.sendBatch({
+          email: createModel({ preflight_email_count: 2 }),
+          batch,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        false,
       );
-      sinon.assert.notCalled(read);
+      sinon.assert.calledOnce(sender.buildMessage);
+      sinon.assert.notCalled(sender.sendMessage);
     });
 
     for (const renderFails of [false, true]) {
@@ -783,6 +812,7 @@ describe('Batch Sending Service', function () {
             emailRenderer: renderer,
             emailAddressService: {},
           }),
+          BEFORE_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
           MAILGUN_API_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
         });
         sinon.stub(service, 'updateStatusLock').resolves(batch);

@@ -107,6 +107,33 @@ describe('Sending service', function () {
       sinon.assert.notCalled(sendStub);
     });
 
+    it('rejects an unexplained omission before treating a message as all excluded', async function () {
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+      });
+      sinon.stub(sendingService, 'buildRecipients').returns({ recipients: [], excludedCount: 0 });
+      await assert.rejects(
+        sendingService.send(
+          {
+            post: {},
+            newsletter: {},
+            segment: null,
+            emailId: 'email',
+            members: [{ id: 'valid', email: 'a@example.com' }],
+          },
+          { recipientAccounting: true },
+        ),
+        (error) => {
+          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+          assert.equal(JSON.parse(error.errorDetails).reason, 'message_recipient_counts');
+          return true;
+        },
+      );
+      sinon.assert.notCalled(sendStub);
+    });
+
     it('calls mailgun client with correct data', async function () {
       const sendingService = new SendingService({
         emailRenderer,
