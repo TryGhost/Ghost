@@ -7,6 +7,9 @@ const logging = require('@tryghost/logging');
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
+const {
+  SendingStatusService,
+} = require('../../../../core/server/services/email-service/sending-status-service');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
 const SendingService = require('../../../../core/server/services/email-service/sending-service');
 const MailgunEmailProvider = require('../../../../core/server/services/email-service/mailgun-email-provider');
@@ -508,6 +511,80 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     } finally {
       db.knex.removeListener('query-response', stop);
     }
+  });
+
+  for (const status of ['submitting', 'submitted']) {
+    it(`ignores prior verification diagnostics on a ${status} batch`, async function () {
+      const batches = await service.createBatches(data);
+      await service.sendBatches({ ...data, batches });
+      await batches[0].save(
+        {
+          status,
+          error_data: JSON.stringify({
+            code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+            reason: 'previous_attempt',
+          }),
+        },
+        { patch: true },
+      );
+      if (status === 'submitted') {
+        await service.sendBatches({ ...data, batches: await service.getBatches(email) });
+      } else {
+        await assert.rejects(
+          service.sendBatches({ ...data, batches: await service.getBatches(email) }),
+          (error) => {
+            assert.notEqual(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+            assert.match(error.message, /only partially sent/);
+            return true;
+          },
+        );
+      }
+    });
+  }
+
+  it('reads active mixed-era progress from batch counts including all-excluded submissions', async function () {
+    const batches = await service.createBatches(data);
+    const full = batches.find((b) => b.get('recipient_count') === 2);
+    const singles = batches.filter((b) => b.get('recipient_count') === 1);
+    await email.save({ status: 'submitting' }, { patch: true });
+    await full.save({ status: 'submitted' }, { patch: true });
+    await singles[0].save(
+      { status: 'submitted', submitted_count: 0, submission_excluded_count: 1 },
+      { patch: true },
+    );
+    const statusService = new SendingStatusService({ knex: db.knex });
+    const queries = [];
+    const recordQuery = ({ sql }) => queries.push(sql);
+    db.knex.on('query', recordQuery);
+    try {
+      const active = await statusService.statusFor(email.id);
+      assert.equal(active.sending.status, 'submitting');
+      assert.equal(active.sending.progress.completed, 3);
+      assert.equal(active.sending.progress.total, 4);
+      assert.ok(queries.every((sql) => !sql.includes('email_recipients')));
+    } finally {
+      db.knex.removeListener('query', recordQuery);
+    }
+    await full.refresh();
+    assert.equal(full.get('submitted_count'), null);
+    assert.equal(singles[0].get('mailgun_message_id'), null);
+    await singles[1].save(
+      { status: 'submitted', submitted_count: 1, submission_excluded_count: 0 },
+      { patch: true },
+    );
+    const done = await statusService.statusFor(email.id);
+    assert.equal(done.sending.progress.completed, 4);
+    assert.equal(done.sending.progress.total, 4);
+  });
+
+  it('keeps failed progress readable when an accounted batch count is unexpectedly null', async function () {
+    const batches = await service.createBatches(data);
+    await email.save({ status: 'failed' }, { patch: true });
+    await batches[0].save({ status: 'failed', recipient_count: null }, { patch: true });
+    const result = await new SendingStatusService({ knex: db.knex }).statusFor(email.id);
+    assert.equal(result.sending.status, 'failed');
+    await batches[0].refresh();
+    assert.equal(batches[0].get('recipient_count'), null);
   });
 
   it('alerts on preflight drift without rejecting a valid candidate sweep', async function () {

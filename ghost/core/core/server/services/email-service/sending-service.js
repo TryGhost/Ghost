@@ -1,6 +1,7 @@
 const validator = require('@tryghost/validator');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const { recipientVerificationError } = require('./recipient-accounting');
 
 /**
  * @typedef {object} EmailData
@@ -139,11 +140,19 @@ class SendingService {
       }
     }
 
-    const recipients = this.buildRecipients(
+    const { recipients, excludedCount } = this.buildRecipients(
       members,
       emailBody.replacements,
       options.recipientAccounting ? { emailId, batchId: options.batchId } : undefined,
     );
+    if (options.recipientAccounting && members.length !== recipients.length + excludedCount) {
+      throw recipientVerificationError(emailId, 'message_recipient_counts', {
+        batch_id: options.batchId,
+        expected: members.length,
+        recipient_count: recipients.length,
+        submission_excluded_count: excludedCount,
+      });
+    }
     return {
       data: {
         subject: this.#emailRenderer.getSubject(post, isTestEmail),
@@ -165,11 +174,11 @@ class SendingService {
         openTrackingEnabled: !!options.openTrackingEnabled,
         useFallbackAddress: !!options.useFallbackAddress,
         ...(options.deliveryTime && { deliveryTime: options.deliveryTime }),
-        ...(options.recipientAccounting ? { expectedRecipientCount: recipients.length } : {}),
+        ...(options.recipientAccounting
+          ? { expectedRecipientCount: members.length - excludedCount }
+          : {}),
       },
-      ...(options.recipientAccounting
-        ? { submissionExcludedCount: members.length - recipients.length }
-        : {}),
+      ...(options.recipientAccounting ? { submissionExcludedCount: excludedCount } : {}),
     };
   }
 
@@ -197,10 +206,11 @@ class SendingService {
    * @param {MemberLike[]} members
    * @param {import("./email-renderer").ReplacementDefinition[]} replacementDefinitions
    * @param {{emailId: string|null, batchId?: string}} [accounting]
-   * @returns {Recipient[]}
+   * @returns {{recipients: Recipient[], excludedCount: number}}
    */
   buildRecipients(members, replacementDefinitions, accounting) {
-    return members
+    let excludedCount = 0;
+    const recipients = members
       .map((member) => {
         return {
           email: member.email?.trim(),
@@ -217,6 +227,7 @@ class SendingService {
         // Remove invalid recipient email addresses
         const isValidRecipient = validator.isEmail(recipient.email, { legacy: false });
         if (!isValidRecipient) {
+          excludedCount += 1;
           if (accounting) {
             const error = new errors.EmailError({
               code: 'BULK_EMAIL_INVALID_RECIPIENT',
@@ -239,6 +250,7 @@ class SendingService {
         }
         return isValidRecipient;
       });
+    return { recipients, excludedCount };
   }
 }
 
