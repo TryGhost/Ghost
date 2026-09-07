@@ -147,8 +147,17 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
+export type BrowseOptions = Readonly<{
+  /**
+   * Should stats be included?
+   *
+   * In the future, we plan to remove this option and never return stats from the database repository.
+   */
+  includeStats: boolean;
+}>;
+
 export type AutomationsRepository = {
-  browse(): Promise<Page<AutomationBrowseResult>>;
+  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
   getById(id: string): Promise<Automation | null>;
   getAutomationActionLinks(
     automationId: string,
