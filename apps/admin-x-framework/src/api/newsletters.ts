@@ -48,7 +48,8 @@ export const NewsletterSchema = z.object({
   // Older and current Core versions may omit this design setting.
   divider_style: z.string().nullish(),
   created_at: z.string(),
-  updated_at: z.string(),
+  // Core's newsletters.updated_at column is nullable.
+  updated_at: z.string().nullable(),
   count: z
     .object({
       posts: z.number().optional(),
