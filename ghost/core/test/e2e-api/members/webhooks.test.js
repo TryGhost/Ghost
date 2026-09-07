@@ -1468,11 +1468,11 @@ describe('Members API', function () {
       });
 
       afterEach(async function () {
-        await models.Base.knex('members_custom_field_values').del();
-        await models.Base.knex('members_custom_field_bindings').del();
+        await models.Base.knex('members_metafield_values').del();
+        await models.Base.knex('members_metafield_bindings').del();
         await models.Base.knex('products_checkout_fields').del();
         await models.Base.knex('products_checkout_config').del();
-        await models.Base.knex('members_custom_fields').del();
+        await models.Base.knex('members_metafields').del();
         // The second tier one test adds is a paid product, and `getPaidProduct` asks for
         // whichever paid product comes first. Leaving it behind would decide that answer
         // for every test after this one.
@@ -1612,7 +1612,7 @@ describe('Members API', function () {
           shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
         });
 
-        const written = await models.Base.knex('members_custom_field_values')
+        const written = await models.Base.knex('members_metafield_values')
           .where('member_id', member.id)
           .distinct('written_by_type')
           .pluck('written_by_type');
@@ -1621,14 +1621,14 @@ describe('Members API', function () {
         // The id is the point: it resolves back to the tier that asked, what it was
         // collected as, and the field it landed in — which is everything worth
         // knowing about how a value got here, and more than a name could say.
-        const resolved = await models.Base.knex('members_custom_field_values')
+        const resolved = await models.Base.knex('members_metafield_values')
           .join(
-            'members_custom_field_bindings',
-            'members_custom_field_bindings.id',
-            'members_custom_field_values.written_by_id',
+            'members_metafield_bindings',
+            'members_metafield_bindings.id',
+            'members_metafield_values.written_by_id',
           )
-          .where('members_custom_field_values.member_id', member.id)
-          .distinct('members_custom_field_bindings.port')
+          .where('members_metafield_values.member_id', member.id)
+          .distinct('members_metafield_bindings.port')
           .pluck('port');
         assert.deepEqual(
           resolved.sort(),

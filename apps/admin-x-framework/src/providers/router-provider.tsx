@@ -12,6 +12,8 @@ import {
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
+import { syncFeatureFlagOverrides } from '../utils/feature-flag-overrides';
+import { FeatureFlagOverridesContext } from './feature-flag-overrides-context';
 
 /**
  * This provider uses React Router to provide a router context to React apps
@@ -31,6 +33,23 @@ export interface RouterProviderProps {
   // Custom routing props
   errorElement?: React.ReactNode;
   children?: React.ReactNode;
+}
+
+function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
+  const { search } = useLocation();
+  const { onFeatureFlagOverridesChange } = useFramework();
+  const enabledFlags = useMemo(() => syncFeatureFlagOverrides(search), [search]);
+  const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
+
+  useEffect(() => {
+    return onFeatureFlagOverridesChange?.();
+  }, [enabledFlags, onFeatureFlagOverridesChange]);
+
+  return (
+    <FeatureFlagOverridesContext.Provider value={value}>
+      {children}
+    </FeatureFlagOverridesContext.Provider>
+  );
 }
 
 // Store scroll positions globally
@@ -100,7 +119,11 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
     // Create a root route that wraps all routes with NavigationStackProvider
     // and any additional children (providers) so they have access to routing
     const rootRoute: RouteObject = {
-      element: <NavigationStackProvider>{children}</NavigationStackProvider>,
+      element: (
+        <FeatureFlagOverridesRouteProvider>
+          <NavigationStackProvider>{children}</NavigationStackProvider>
+        </FeatureFlagOverridesRouteProvider>
+      ),
       hydrateFallbackElement: <></>,
       children: routes.map((route) => ({
         ...route,

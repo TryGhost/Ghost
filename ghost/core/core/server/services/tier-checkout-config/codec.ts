@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema } from '@tryghost/metafield-types';
 import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbCheckoutOptions, DbCheckoutQuestion } from './schema';
 import { CheckoutOptions } from './models';

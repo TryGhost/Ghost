@@ -63,7 +63,6 @@ describe('Config API', function () {
           );
           // Fixture setup enables every registered writable flag. Keep an
           // explicit assertion while this private rollout uses dynamic snapshots.
-          assert.equal(labs.admin7PageChrome, true);
           assert.equal(labs.admin7Pill, true);
         })
         .matchHeaderSnapshot({

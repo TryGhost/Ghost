@@ -113,8 +113,8 @@ describe('Members API — exportCSV with custom fields', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
@@ -289,7 +289,7 @@ describe('Members API — exportCSV with custom fields', function () {
 
   // Whether a name like this is reservable is the definitions layer's business,
   // not the export's — the namespace holds either way. The property itself is
-  // pinned in the custom-field-types unit tests, where the colliding key is
+  // pinned in the metafield-types unit tests, where the colliding key is
   // constructed directly rather than minted.
   it('keeps a field named after a core column out of that column', async function () {
     const field = await createField('Email', 'short_text');

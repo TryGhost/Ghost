@@ -198,8 +198,8 @@ describe('Members export -> import round-trip', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
   });
 
   it('round-trips the base member set with no custom fields defined', async function () {

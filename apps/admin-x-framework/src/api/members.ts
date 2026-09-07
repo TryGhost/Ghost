@@ -7,8 +7,8 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
-import { apiUrl } from '../utils/api/fetch-api';
-import type { FieldValue } from '@tryghost/custom-field-types';
+import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
+import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
 import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
@@ -195,6 +195,7 @@ export function useMemberCount() {
 // The Ember members-count-cache's TTL; the framework default staleTime (5min)
 // is too stale for publish-flow recipient counts.
 const MEMBERS_COUNT_STALE_TIME = 60 * 1000;
+const noOpMembersCountRefetch = () => Promise.resolve();
 
 const useBrowseMembersCountQuery = createQuery<MembersResponseType>({
   dataType,
@@ -205,6 +206,16 @@ export interface MembersCountResult {
   /** `null` while loading and for roles that cannot browse members. */
   count: number | null;
   isLoading: boolean;
+  isFetching: boolean;
+  /** Preserved for flows where an unreadable count must block a destructive action. */
+  error: unknown;
+  /** Retries the failed current-user prerequisite and/or count request. */
+  refetch: () => Promise<unknown>;
+}
+
+export interface MembersCountOptions {
+  /** Transport options for both requests this hook makes: the count and the current user. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 }
 
 /**
@@ -212,13 +223,21 @@ export interface MembersCountResult {
  * `members-count-cache` service + `members-count-fetcher` resource: a browse
  * request with `limit=1` reading `meta.pagination.total`, cached per-filter
  * for 60 seconds. As in Ember, roles that cannot manage members get
- * `count: null` without a request, a nullish filter counts as 0 without a
- * request, and request errors resolve to 0 with no error toast. While the
- * current user is still loading the result is `{count: null, isLoading: true}`
- * so callers can tell it apart from a role that cannot browse members.
+ * `count: null` without a request and a nullish filter counts as 0 without a
+ * request. A failed request resolves to `count: null` with no error toast —
+ * an unreadable count is not a count of zero, and callers render descriptive
+ * copy for `null` rather than claiming an audience of none. While the current
+ * user is still loading the result has `count: null` and `isLoading: true`,
+ * so callers can tell it apart from a role that cannot browse members. The
+ * request error and retry are also exposed for callers such as publish limits
+ * that cannot safely treat an unreadable count as zero.
  */
-export function useMembersCount(filter: string | null | undefined): MembersCountResult {
-  const { data: currentUser } = useCurrentUser();
+export function useMembersCount(
+  filter: string | null | undefined,
+  { requestOptions }: MembersCountOptions = {},
+): MembersCountResult {
+  const currentUserQuery = useCurrentUser({ requestOptions });
+  const { data: currentUser } = currentUserQuery;
   const canFetch = Boolean(currentUser && canManageMembers(currentUser));
   const enabled = canFetch && filter !== null && filter !== undefined;
 
@@ -228,19 +247,71 @@ export function useMembersCount(filter: string | null | undefined): MembersCount
     staleTime: MEMBERS_COUNT_STALE_TIME,
     enabled,
     defaultErrorHandler: false,
+    requestOptions,
   });
 
-  if (currentUser === undefined) {
-    return { count: null, isLoading: true };
+  const refetchAfterCurrentUserError = async () => {
+    const refreshedUser = await currentUserQuery.refetch();
+
+    if (
+      refreshedUser.isSuccess &&
+      refreshedUser.data &&
+      canManageMembers(refreshedUser.data) &&
+      filter !== null &&
+      filter !== undefined
+    ) {
+      return result.refetch();
+    }
+
+    return refreshedUser;
+  };
+
+  if (currentUserQuery.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: currentUserQuery.isFetching,
+      error: currentUserQuery.error,
+      refetch: refetchAfterCurrentUserError,
+    };
   }
 
-  if (!enabled || result.isError) {
-    return { count: canFetch ? 0 : null, isLoading: false };
+  if (currentUser === undefined) {
+    return {
+      count: null,
+      isLoading: true,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (!enabled) {
+    return {
+      count: canFetch ? 0 : null,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (result.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: result.isFetching,
+      error: result.error,
+      refetch: result.refetch,
+    };
   }
 
   return {
     count: result.data?.meta?.pagination.total ?? null,
     isLoading: result.isLoading,
+    isFetching: result.isFetching,
+    error: result.error,
+    refetch: result.refetch,
   };
 }
 

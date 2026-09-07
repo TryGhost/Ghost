@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation } from '@tryghost/admin-x-framework';
 import { useGenerateSlug } from '@tryghost/admin-x-framework/api/slugs';
 import {
   useAddPage,
@@ -19,7 +19,11 @@ import type {
   EditContentData,
 } from '@tryghost/admin-x-framework/api/content-types';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
-import { DEFAULT_TITLE, type SaveEngineState } from '@/editor/engine/save-engine';
+import {
+  DEFAULT_TITLE,
+  type LeaveDecision,
+  type SaveEngineState,
+} from '@/editor/engine/save-engine';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
@@ -56,12 +60,16 @@ export interface EditorSessionBinding {
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  /** The server ID acquired by this session's first create, if it began new. */
+  createdId: string | null;
   isDirty: () => boolean;
   patchFeatureImage: EditorSession['patchFeatureImage'];
   dispatchField: () => void;
   dispatchExplicit: () => void;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
+  /** Resolves once nothing is in flight; `proceed` means leaving loses nothing. */
+  leaveRequested: () => Promise<LeaveDecision>;
 }
 
 export interface UseEditorSessionOptions {
@@ -81,8 +89,6 @@ export function useEditorSession({
   record,
   siteUrl,
 }: UseEditorSessionOptions): EditorSessionHandle {
-  const navigate = useNavigate();
-  const sessionKey = useEditorSessionKey();
   const generateSlug = useGenerateSlug();
   const { mutateAsync: addPost } = useAddPost();
   const { mutateAsync: editPost } = useEditPost();
@@ -163,6 +169,7 @@ export function useEditorSession({
   }, [session]);
 
   const state = useSyncExternalStore(session.subscribe, session.getState);
+  const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
 
   // The saved record: the same query key the screen loaded with, so an existing
   // post shares one cache entry and a created one starts observing its own.
@@ -185,15 +192,6 @@ export function useEditorSession({
   }, [saved, session]);
 
   const isNew = !record;
-  useEffect(() => {
-    if (isNew && persistedId) {
-      navigate(`/editor/${postType}/${persistedId}`, {
-        replace: true,
-        state: { editorSession: sessionKey },
-      });
-    }
-  }, [isNew, persistedId, postType, navigate, sessionKey]);
-
   const onTitleChange = useCallback(
     (next: string) => {
       setTitle(next);
@@ -249,11 +247,13 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
-    isDirty: () => session.getSaveSnapshot().isDirty,
+    createdId: isNew ? persistedId : null,
+    isDirty: () => isDirty,
     patchFeatureImage: session.patchFeatureImage,
     dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,
+    leaveRequested: session.leaveRequested,
   };
 }

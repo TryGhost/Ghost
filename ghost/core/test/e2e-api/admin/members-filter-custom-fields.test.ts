@@ -67,8 +67,8 @@ describe('Members filtering by custom fields', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     await models.Base.knex('members_labels').del();
     await models.Base.knex('members').del();
   });

@@ -127,7 +127,7 @@ The machine never mutates a post, so it needs no snapshot-and-rollback around a 
 
 ## Limits
 
-`checkLimits()` runs the two host checks concurrently and returns — and stores — a typed result. It clears any result from a previous run first.
+`checkLimits()` runs the two host checks concurrently and returns — and stores — a typed result. It clears any result from a previous run first. Both checks settle before it returns or rethrows a settings-refresh failure, so a slower publishing block cannot land after the options step becomes ready.
 
 The sending check awaits `refreshSettings()` before anything else, so a hold applied since the editor opened is seen; a failed refresh rejects `checkLimits()`. It then evaluates the email limit, skipping it for authors and contributors, who cannot read email counts. A rejection becomes a `sending-limit` block carrying the host's message. Only if the limit passes is the verification hold read, so a site under its email limit still surfaces a hold; a hold without host-specific copy uses the default message.
 
@@ -140,3 +140,85 @@ Both blocks feed the state directly. An email block disables the email publish t
 `isDirty` compares the publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
 
 `reset()` restores every option and re-arms the automatic type fallback that `setPublishType()` disables. It takes a fresh scheduled time from the current clock, since the floor the machine was created with may itself have passed.
+
+# Publish flow
+
+`PublishFlowModal` is the screen that machine drives. It renders the three steps of Ghost's publish flow — options, confirm, complete — plus the email-failure step, over a fullscreen Shade dialog.
+
+It is self-contained: the caller supplies the post projection, the site and user inputs, the site timezone and a `dispatch` function, and gets back a flow that publishes. The caller passes the save engine's `dispatch` unchanged; the modal never touches the engine, the editor session or the router. `usePublishInputs()` assembles the site and user inputs from the API for callers that have no better source.
+
+The stateful journey is keyed by post id. If a mounted caller replaces the post, the gates, options machine, limits readiness, failures and completion state all start again for the new post.
+
+## Steps
+
+The flow is a four-way branch, taken in this order:
+
+| Condition                                | Step                         |
+| ---------------------------------------- | ---------------------------- |
+| An email failed, at open or after saving | `CompleteWithEmailErrorStep` |
+| The publish landed                       | `CompleteStep`               |
+| The user asked for the final review      | `ConfirmStep`                |
+| Otherwise                                | `OptionsStep`                |
+
+`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had. Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+
+## Gates
+
+Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. They never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
+
+## Publishing
+
+Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the completion the engine returns:
+
+| Completion              | Result                                                              |
+| ----------------------- | ------------------------------------------------------------------- |
+| `saved`                 | The email confirmation runs when the publish emails immediately     |
+| `needs-retry`           | Back to confirm with the re-auth message; the user retries in place |
+| `failed` (`conflict`)   | The collision message, in place                                     |
+| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link      |
+| `failed` (`validation`) | The validation message, in place                                    |
+| `dropped`/`superseded`  | The post is no longer publishable from here                         |
+
+No completion closes the modal or navigates. Reaching the complete step writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's.
+
+## Email confirmation
+
+A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously. The flow hands the post to `createEmailConfirmation()` and waits, and the confirm button stays in its running state throughout — the publish is not finished, and a button reading "Published & sent" would invite a second dispatch.
+
+A `failed` outcome moves to the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened.
+
+A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
+
+The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
+
+## Requests
+
+Every request the flow makes opts out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, and the current-user read those counts depend on all pass the shared editor `EDITOR_REQUEST_OPTIONS`, and the email retry carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
+
+The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
+
+The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. Every editor component reading a shared key therefore opts out too — the status line's count and settings reads, the card config's boot reads, and the preview modal's — so that a refetch one of them initiates cannot navigate away mid-edit. Most of those reads keep the global error handler, while the flow-owned and status reads disable it; either way a session-expiry error is silent because the handler deliberately swallows it. The editor reports the expiry from the save engine instead.
+
+The same options reach the less-visible reads behind those hooks too. `createQuery` and `createInfiniteQuery` forward them through `usePermission` to its current-user observer; the editor's feature-flag, settings-selector and Pintura hooks accept them; and the editor screen's direct current-user reads opt out. That matters because an opted-out outer query cannot protect a second observer of the same cache key when that observer initiates its own refetch.
+
+If the current-user prerequisite for `useMembersCount` fails, the hook exposes that error and its retry rather than staying in a loading state forever. Callers that need the count to proceed can therefore recover in place.
+
+An audience that could not be counted is not an audience of none: `useMembersCount` resolves a failed request to `null`, never to `0`. Where the flow states a recipient count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split. That is pre-existing behaviour and is not surfaced to the user.
+
+Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
+
+## Update flow
+
+`UpdateFlowModal` is the counterpart for a post that is already published, scheduled or sent. It describes what happened and offers the one action available at that point: reverting to a draft, dispatched as `toRevertDispatch()`.
+
+It reads the newsletter from the post rather than from the options machine, because the machine only ever exposes a selectable newsletter: a post sent to a since-archived one would be described against the site's default instead.
+
+Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
+
+That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the flow's own reads ask only for `include: 'email'`, and the framework's `Email` type carries no created date yet. Without those fields the copy degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
+
+## Not yet ported
+
+The size of a newsletter is not shown. The options step keeps the slot the warning belongs in, but nothing measures the rendered email yet, so a send over the 100kB clipping threshold goes unflagged.
+
+The host limit ports are optional and unset, so `checkLimits()` finds no blocks unless a caller supplies them.

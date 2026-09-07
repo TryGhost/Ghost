@@ -1,4 +1,4 @@
-import { MEMBERS, definitions } from '../../services/members-custom-fields';
+import { MEMBERS, definitions } from '../../services/members-metafields';
 
 /**
  * The extra fields a publisher has defined, as a member's own client reads them.

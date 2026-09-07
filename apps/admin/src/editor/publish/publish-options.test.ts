@@ -956,6 +956,32 @@ describe('checkLimits', () => {
     await expect(create({ limits }).checkLimits()).rejects.toThrow('offline');
   });
 
+  it('waits for the publishing check before rejecting a settings refresh', async () => {
+    let finishPublishingCheck: () => void = () => {};
+    const limits = ports({
+      refreshSettings: vi.fn(() => Promise.reject(new Error('offline'))),
+      checkPublishingLimit: vi.fn(
+        () =>
+          new Promise<void>((_resolve, reject) => {
+            finishPublishingCheck = () => reject(new Error('over member limit'));
+          }),
+      ),
+    });
+    const machine = create({ limits });
+    const checking = machine.checkLimits();
+    let settled = false;
+    void checking.catch(() => {
+      settled = true;
+    });
+
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    finishPublishingCheck();
+
+    await expect(checking).rejects.toThrow('offline');
+    expect(machine.getState().publishBlock?.message).toBe('over member limit');
+  });
+
   it('blocks email on the sending limit and skips the verification read', async () => {
     const limits = ports({
       checkSendingLimit: vi.fn(() =>

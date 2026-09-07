@@ -7,22 +7,22 @@ import {
   type FieldType,
   type PartType,
   type PartsOf,
-} from '@tryghost/custom-field-types';
-import { csvColumnsForField } from '@tryghost/custom-field-types/csv';
+} from '@tryghost/metafield-types';
+import { csvColumnsForField } from '@tryghost/metafield-types/csv';
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isCustomFieldColumn } from '@tryghost/custom-field-types/csv';
-export type { FieldIdentity, FieldIdentityString } from '@tryghost/custom-field-types/identity';
+export { isMetafieldColumn } from '@tryghost/metafield-types/csv';
+export type { FieldIdentity, FieldIdentityString } from '@tryghost/metafield-types/identity';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
 // catalog package — the framework is their surface for everything custom-fields.
-export type { Address as MemberCustomFieldAddress } from '@tryghost/custom-field-types';
-export { FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/custom-field-types';
-export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/custom-field-types';
-export type { FieldKind as MemberCustomFieldKind } from '@tryghost/custom-field-types';
+export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
+export { FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES } from '@tryghost/metafield-types';
+export { FIELD_KINDS as MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/metafield-types';
+export type { FieldKind as MemberCustomFieldKind } from '@tryghost/metafield-types';
 
 export type MemberCustomField = {
   namespace: string;
@@ -44,7 +44,7 @@ export type MemberCustomField = {
 /**
  * The user-type catalog: the presentation layer over the shared field types.
  *
- * The shared catalog (@tryghost/custom-field-types) owns what a field type *is*
+ * The shared catalog (@tryghost/metafield-types) owns what a field type *is*
  * - its storage and validation. This catalog owns what a publisher is told it is:
  * its name, and which control collects a value. Admin surfaces (settings
  * list/modal, member detail) render from here so every surface presents fields
@@ -169,7 +169,7 @@ export const memberCustomFieldCsvColumns = (
   });
 };
 
-export type { PartType as MemberCustomFieldPartType } from '@tryghost/custom-field-types';
+export type { PartType as MemberCustomFieldPartType } from '@tryghost/metafield-types';
 
 /** One part of a composite field type: the key the value schema declares, its label, and its declared type. */
 export type MemberCustomFieldPart<T extends FieldType = FieldType> = {

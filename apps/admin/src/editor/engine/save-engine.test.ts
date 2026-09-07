@@ -504,6 +504,22 @@ describe('createSaveEngine', () => {
       await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
       expect(h.execute).toHaveBeenCalledTimes(1);
     });
+
+    it.each<DispatchIntent>(['publish', 'schedule', 'revert'])(
+      'asks before discarding a clean %s command frozen behind re-auth',
+      async (intent) => {
+        const h = setup({
+          isDirty: false,
+          ...(intent === 'revert' ? { status: 'published', publishedAt: PAST } : {}),
+        });
+        void dispatchAny(h.engine, intent);
+        await h.fail(sessionInvalid);
+
+        expect(h.engine.getState()).toEqual({ kind: 'reauth-pending', intent });
+        await expect(h.engine.leaveRequested()).resolves.toBe('confirm');
+        expect(h.execute).toHaveBeenCalledTimes(1);
+      },
+    );
   });
 
   describe('save-on-leave fires at most once and only for dirty drafts', () => {

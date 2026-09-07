@@ -30,6 +30,8 @@ import { formatMemberName, getMemberInitials } from '@/members/api';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
 import { useState } from 'react';
+import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 interface FeedbackProps {
   feedbackStats: {
@@ -42,6 +44,7 @@ interface FeedbackProps {
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const { isNewsletterDataHidden } = useEmailSendingStatusContext();
   const [activeFeedbackTab, setActiveFeedbackTab] = useState<'positive' | 'negative'>('positive');
   const ITEMS_PER_PAGE = 9;
 
@@ -70,92 +73,104 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
         <CardTitle>Feedback</CardTitle>
         <CardDescription>What did your readers think?</CardDescription>
       </CardHeader>
-      {feedbackStats.totalFeedback > 0 ? (
+      {isNewsletterDataHidden ? (
         <CardContent className="pb-3">
-          <div className="flex items-center justify-between gap-3">
-            <Tabs
-              className="pb-3"
-              defaultValue="positive"
-              value={activeFeedbackTab}
-              variant="button"
-              onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
-            >
-              <TabsList className="gap-1">
-                <TabsTrigger className="h-7" value="positive">
-                  <div className="flex items-center gap-1 text-xs">
-                    <LucideIcon.ThumbsUp size={14} strokeWidth={1.25} />
-                    <span className="hidden font-medium sm:visible! sm:inline!">
-                      More like this
-                    </span>
-                    <span className="font-semibold tracking-tight">
-                      {formatPercentage(
-                        feedbackStats.positiveFeedback / feedbackStats.totalFeedback,
-                      )}
-                    </span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger className="h-7" value="negative">
-                  <div className="flex items-center gap-1 text-xs">
-                    <LucideIcon.ThumbsDown size={14} strokeWidth={1.25} />
-                    <span className="hidden font-medium sm:visible! sm:inline!">
-                      Less like this
-                    </span>
-                    <span className="font-semibold tracking-tight">
-                      {formatPercentage(
-                        feedbackStats.negativeFeedback / feedbackStats.totalFeedback,
-                      )}
-                    </span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <HTable className="mr-2 mb-3 lg:hidden xl:visible! xl:block!">Date</HTable>
-          </div>
-          <Separator />
-          {isLoading ? (
-            <SkeletonTable className="mt-3" lines={3} />
-          ) : paginatedFeedback && paginatedFeedback.length > 0 ? (
-            <div className="flex w-full flex-col py-3">
-              {paginatedFeedback.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent"
-                  onClick={() => {
-                    navigate(`/members/${item.member.id}`);
-                  }}
-                >
-                  <div className="flex items-center gap-2 font-medium">
-                    <Avatar className="size-7">
-                      {item.member?.avatar_image && (
-                        <img
-                          className="absolute aspect-square size-full"
-                          src={item.member?.avatar_image}
-                        />
-                      )}
-                      <AvatarFallback
-                        className="text-white"
-                        style={{
-                          backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
-                        }}
-                      >
-                        {getMemberInitials(item.member)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {formatMemberName(item.member)}
-                  </div>
-                  <div className="whitespace-nowrap text-muted-foreground">
-                    {formatTimestamp(item.created_at)}
-                  </div>
-                </div>
-              ))}
+          <PendingSendEmpty
+            description="Once the first responses are recorded, they'll show here"
+            title="No feedback data available"
+          />
+        </CardContent>
+      ) : feedbackStats.totalFeedback > 0 ? (
+        <CardContent className="pb-3">
+          <PendingSendEmpty
+            description="Once the first responses are recorded, they'll show here"
+            title="No feedback data available"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <Tabs
+                className="pb-3"
+                defaultValue="positive"
+                value={activeFeedbackTab}
+                variant="button"
+                onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
+              >
+                <TabsList className="gap-1">
+                  <TabsTrigger className="h-7" value="positive">
+                    <div className="flex items-center gap-1 text-xs">
+                      <LucideIcon.ThumbsUp size={14} strokeWidth={1.25} />
+                      <span className="hidden font-medium sm:visible! sm:inline!">
+                        More like this
+                      </span>
+                      <span className="font-semibold tracking-tight">
+                        {formatPercentage(
+                          feedbackStats.positiveFeedback / feedbackStats.totalFeedback,
+                        )}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger className="h-7" value="negative">
+                    <div className="flex items-center gap-1 text-xs">
+                      <LucideIcon.ThumbsDown size={14} strokeWidth={1.25} />
+                      <span className="hidden font-medium sm:visible! sm:inline!">
+                        Less like this
+                      </span>
+                      <span className="font-semibold tracking-tight">
+                        {formatPercentage(
+                          feedbackStats.negativeFeedback / feedbackStats.totalFeedback,
+                        )}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <HTable className="mr-2 mb-3 lg:hidden xl:visible! xl:block!">Date</HTable>
             </div>
-          ) : (
-            <div className="flex h-full items-center justify-center py-8 text-center text-sm text-muted-foreground">
-              <div>
-                No {activeFeedbackTab === 'positive' ? 'positive' : 'negative'} feedback yet
+            <Separator />
+            {isLoading ? (
+              <SkeletonTable className="mt-3" lines={3} />
+            ) : paginatedFeedback && paginatedFeedback.length > 0 ? (
+              <div className="flex w-full flex-col py-3">
+                {paginatedFeedback.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent"
+                    onClick={() => {
+                      navigate(`/members/${item.member.id}`);
+                    }}
+                  >
+                    <div className="flex items-center gap-2 font-medium">
+                      <Avatar className="size-7">
+                        {item.member?.avatar_image && (
+                          <img
+                            className="absolute aspect-square size-full"
+                            src={item.member?.avatar_image}
+                          />
+                        )}
+                        <AvatarFallback
+                          className="text-white"
+                          style={{
+                            backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
+                          }}
+                        >
+                          {getMemberInitials(item.member)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {formatMemberName(item.member)}
+                    </div>
+                    <div className="whitespace-nowrap text-muted-foreground">
+                      {formatTimestamp(item.created_at)}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex h-full items-center justify-center py-8 text-center text-sm text-muted-foreground">
+                <div>
+                  No {activeFeedbackTab === 'positive' ? 'positive' : 'negative'} feedback yet
+                </div>
+              </div>
+            )}
+          </PendingSendEmpty>
         </CardContent>
       ) : (
         <CardContent className="flex grow flex-col items-center justify-center text-center text-sm text-muted-foreground">
@@ -163,7 +178,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
           <div>When someone does, you&apos;ll see their response here.</div>
         </CardContent>
       )}
-      {feedbackStats.totalFeedback > 0 && (
+      {feedbackStats.totalFeedback > 0 && !isNewsletterDataHidden && (
         <CardFooter className="grow-0">
           <div className="flex w-full items-center justify-between gap-3">
             <Button

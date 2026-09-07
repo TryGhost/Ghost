@@ -45,11 +45,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
-  },
-  {
     title: 'Admin 7 pill styles',
     description: 'Enable the new pill-shaped controls in approved Admin areas.',
     flag: 'admin7Pill',

@@ -1,4 +1,4 @@
-import { isCustomFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { isMetafieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
  * What this modal adds to the shipped mapping vocabulary, and nothing it already says.
@@ -33,7 +33,7 @@ export function suggestedFieldName(column: string): string {
   // A custom field column is `metafields.<namespace>.<key>[.<part>]`. The name being
   // suggested is the field's, so only the key segment is kept: the part is asked for
   // separately.
-  const key = isCustomFieldColumn(column) ? column.split('.')[2] : column;
+  const key = isMetafieldColumn(column) ? column.split('.')[2] : column;
   const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }

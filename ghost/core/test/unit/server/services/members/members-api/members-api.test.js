@@ -91,7 +91,7 @@ describe('MembersAPI', function () {
           redeem: giftRedeem,
         },
       },
-      customFieldValues: {
+      metafieldValues: {
         getValuesForMembers: sinon.stub().resolves(new Map()),
         namesValues: sinon.stub().returns(false),
         planWrite: sinon.stub().resolves([]),
@@ -168,7 +168,7 @@ describe('MembersAPI', function () {
     sinon.assert.calledWithExactly(
       MemberBREADService.prototype.read.firstCall,
       { email: 'jamie@example.com' },
-      { customFieldsFor: null },
+      { metafieldsFor: null },
     );
     sinon.assert.calledOnceWithExactly(memberLoginEvent.add, { member_id: 'member_1' });
     sinon.assert.calledOnceWithExactly(giftRedeem, {

@@ -75,7 +75,7 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 
 ### Leave
 
-`leaveRequested()` returns `proceed` or `confirm` and loops until nothing is in flight, pending, or armed with dirty content, re-reading the post after every wait: `saving` is never safe to leave. Save-on-leave (with a revision) fires at most once per attempt, only for a dirty draft with unrevisioned changes or an armed autosave, never while the snapshot carries a rejected `updated_at`, never while frozen, halted, or crashed. A post still dirty afterwards asks for confirmation, and so does an unreadable snapshot. Concurrent calls share one decision; a decision that outlives the engine resolves `proceed`.
+`leaveRequested()` returns `proceed` or `confirm` and loops until nothing is in flight, pending, or armed with dirty content, re-reading the post after every wait: `saving` is never safe to leave. Save-on-leave (with a revision) fires at most once per attempt, only for a dirty draft with unrevisioned changes or an armed autosave, never while the snapshot carries a rejected `updated_at`, never while frozen, halted, or crashed. A frozen command always asks for confirmation, even when its input snapshot is clean. A post still dirty afterwards also asks for confirmation, as does an unreadable snapshot. Concurrent calls share one decision; a decision that outlives the engine resolves `proceed`.
 
 ### Subscriptions
 
