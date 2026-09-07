@@ -48,7 +48,10 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
-  /** Whether this query leaves an expired session for its caller to handle in place. */
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 };
 
@@ -121,7 +124,10 @@ type InfiniteQueryHookOptions<ResponseData, PageData = ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
-  /** Whether this query leaves an expired session for its caller to handle in place. */
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
   getNextPageParams?: (
     data: PageData,
