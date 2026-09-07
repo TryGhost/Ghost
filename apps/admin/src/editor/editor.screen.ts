@@ -11,8 +11,15 @@ import {
   editorExcerptInput,
   editorFeatureImage,
   editorFeatureImageCaption,
+  editorHeaderActions,
   editorLeaveDialog,
   editorLoadError,
+  editorPreviewButton,
+  editorPublishButton,
+  editorSaveButton,
+  editorUnpublishButton,
+  editorUnscheduleButton,
+  editorUpdateButton,
   editorReauthBanner,
   editorScheduleCountdown,
   editorSaveErrorBanner,
@@ -60,6 +67,20 @@ export const editorScreen = {
       .getByTestId(editorConflictReloadConfirm)
       .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+
+  headerActions: () => page.getByTestId(editorHeaderActions),
+  previewButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
+  publishButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPublishButton }),
+  updateButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUpdateButton }),
+  saveButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorSaveButton }),
+  unpublishButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnpublishButton }),
+  unscheduleButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnscheduleButton }),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),

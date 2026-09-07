@@ -33,6 +33,7 @@ export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewSaveFailed = 'post-preview-save-failed';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
 export const editorLeaveDialog = 'editor-leave-dialog';
+export const editorHeaderActions = 'editor-header-actions';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -99,3 +100,9 @@ export const conflictReloadButton = 'Reload';
 export const conflictCopyContentButton = 'Copy content';
 export const conflictDiscardAndReloadButton = 'Discard and reload';
 export const conflictCancelReloadButton = 'Cancel';
+export const editorPreviewButton = 'Preview';
+export const editorPublishButton = 'Publish';
+export const editorUpdateButton = 'Update';
+export const editorSaveButton = 'Save';
+export const editorUnpublishButton = 'Unpublish';
+export const editorUnscheduleButton = 'Unschedule';

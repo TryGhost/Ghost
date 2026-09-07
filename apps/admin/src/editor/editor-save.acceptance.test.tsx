@@ -5,6 +5,8 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -46,6 +48,9 @@ function submittedBody(capture: EndpointCapture): string {
 function editorChrome() {
   fakeSnippets([]);
   fakePosts([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
 }
 
 /**
