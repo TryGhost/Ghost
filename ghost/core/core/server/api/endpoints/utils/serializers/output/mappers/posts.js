@@ -3,6 +3,7 @@ const _ = require('lodash');
 const mapTag = require('./tags');
 const mapUser = require('./users');
 const mapEmail = require('./emails');
+const stripEmailAccounting = require('../utils/strip-email-accounting');
 
 const clean = require('../utils/clean');
 const date = require('../utils/date');
@@ -157,6 +158,10 @@ module.exports = async (model, frame, options = {}) => {
         jsonModel.authors = jsonModel.authors.map((author) => mapUser(author, frame));
       }
 
+      if (relation === 'email' && jsonModel.email) {
+        jsonModel.email = mapEmail(jsonModel.email, frame);
+      }
+
       if (relation === 'email' && _.isEmpty(jsonModel.email)) {
         jsonModel.email = null;
       }
@@ -169,7 +174,7 @@ module.exports = async (model, frame, options = {}) => {
 
   // Model hooks can load the email relation even when it was not requested.
   if (jsonModel.email) {
-    jsonModel.email = mapEmail(jsonModel.email, frame);
+    stripEmailAccounting(jsonModel.email);
   }
 
   if (jsonModel.email && jsonModel.count) {
