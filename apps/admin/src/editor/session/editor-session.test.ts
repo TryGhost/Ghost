@@ -826,6 +826,17 @@ describe('createEditorSession', () => {
       expect(session.isDirty()).toBe(true);
     });
 
+    it('leaves a typed excerpt alone when a refetch disagrees', () => {
+      const { session } = harness({ record: record({ custom_excerpt: 'Opened with' }) });
+
+      session.patchExcerpt('typing…');
+      session.recordRefetched(
+        record({ custom_excerpt: 'From elsewhere', updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields().custom_excerpt).toBe('typing…');
+    });
+
     it('discards staged fields when the server copy replaces the document', async () => {
       const { session } = harness(
         { record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }) },
