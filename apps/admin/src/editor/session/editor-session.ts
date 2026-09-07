@@ -28,6 +28,8 @@ import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
   SETTINGS_FIELD_KEYS,
+  TIERS_REQUIRED,
+  tiersIncomplete,
   type EditorSettingsPatch,
   type SettingsFieldKey,
 } from './settings-fields';
@@ -332,6 +334,12 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
+    // A create has no visibility of its own to preserve, so the server's default
+    // settles it; every later save is refused as Ember's validator refuses it.
+    if (!prepared.isCreate && tiersIncomplete(live)) {
+      return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
+    }
+
     inFlightSince = prepared.builtAtVersion;
     try {
       const saved = prepared.isCreate
@@ -445,7 +453,9 @@ export function createEditorSession({
     // The one place the sidebar's save policy lives. A draft persists a settings
     // field the way the body does; every other status stages it until Update.
     commitField: () => {
-      if (status !== 'draft') {
+      // Ember validates the field before saving it, so an incomplete tier
+      // selection stays staged rather than failing a save the writer sees.
+      if (status !== 'draft' || tiersIncomplete(live)) {
         return;
       }
       void engine.dispatch('field');

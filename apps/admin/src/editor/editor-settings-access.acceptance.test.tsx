@@ -39,6 +39,11 @@ const GOLD = tier({ name: 'Gold', type: 'paid', active: true });
 const SILVER = tier({ name: 'Silver', type: 'paid', active: true });
 const BRONZE = tier({ name: 'Bronze', type: 'paid', active: false });
 const FREE = tier({ name: 'Free', type: 'free', active: true });
+const SITE_TIERS = [GOLD, SILVER, BRONZE, FREE];
+// More paid tiers than a browse's default page holds, so a single page loses some.
+const MANY_TIERS = Array.from({ length: 18 }, (_, index) =>
+  tier({ name: `Tier ${String(index + 1).padStart(2, '0')}`, type: 'paid', active: true }),
+);
 
 function submittedPost(capture: EndpointCapture): Record<string, unknown> {
   const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
@@ -63,22 +68,22 @@ function withDefaultVisibility(visibility: string) {
   };
 }
 
-function editorChrome() {
+function editorChrome(tiers = SITE_TIERS) {
   fakeSnippets([]);
   fakePosts([]);
   // The header's publish inputs read the site's member total and newsletter list.
   fakeMembers([]);
   fakeNewsletters([]);
   // After fakeMembers, which serves its filter bar an empty tier list of its own.
-  fakeTiers([GOLD, SILVER, BRONZE, FREE]);
+  fakeTiers(tiers);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
 }
 
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
-function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
-  editorChrome();
+function fakeSavablePost(overrides: Partial<SavedPost> = {}, tiers = SITE_TIERS) {
+  editorChrome(tiers);
   let current = post({
     id: POST_ID,
     title: 'Hello from React',
@@ -108,6 +113,11 @@ async function openAccess() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
   await expect.element(editorScreen.settingsVisibility()).toBeVisible();
+}
+
+async function typeIntoBody(text: string) {
+  await editorScreen.body().click();
+  await userEvent.keyboard(`{End}${text}`);
 }
 
 async function chooseVisibility(label: string) {
@@ -208,11 +218,18 @@ describe('Post settings access', () => {
         tiers: [],
         tags: [],
       });
-      fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
         const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
         created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: LOADED_AT };
         return { posts: [created] };
       });
+      fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+        posts: [created],
+      }));
+      // The autosave that follows the create can land before the test ends.
+      fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({
+        posts: [created],
+      }));
 
       await renderAdminApp('/editor/post', withDefaultVisibility('paid'));
       await openAccess();
@@ -220,8 +237,39 @@ describe('Post settings access', () => {
       await expect
         .element(editorScreen.settingsVisibility())
         .toHaveTextContent('Paid-members only');
-      // The default is the server's to apply on create, so nothing is sent for it.
       await expect(editorScreen.settingsTiers()).toHaveCount(0);
+
+      await typeIntoBody('First words');
+
+      // The default is the server's to apply on create, so nothing is sent for it.
+      await expect.poll(() => createApi.requests.length, POLL).toBe(1);
+      expect(submittedPost(createApi)).not.toHaveProperty('visibility');
+      expect(submittedPost(createApi)).not.toHaveProperty('tiers');
+    },
+    SLOW,
+  );
+
+  it(
+    'offers every paid tier, past the first page of the browse',
+    async () => {
+      const last = MANY_TIERS[MANY_TIERS.length - 1];
+      const saveApi = fakeSavablePost(
+        { visibility: 'tiers', tiers: [{ id: last.id }] },
+        MANY_TIERS,
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAccess();
+
+      await expect.element(editorScreen.settingsTier(last.name)).toBeVisible();
+      await expect
+        .element(editorScreen.settingsTier(last.name))
+        .toHaveAttribute('data-state', 'checked');
+
+      await editorScreen.settingsTier('Tier 01').click();
+
+      // A tier the browse never returned must survive a toggle of another one.
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi).tiers).toEqual([{ id: MANY_TIERS[0].id }, { id: last.id }]);
     },
     SLOW,
   );
@@ -245,6 +293,35 @@ describe('Post settings access', () => {
         .element(editorScreen.settingsTier('Gold'))
         .toHaveAttribute('data-state', 'unchecked');
       expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'refuses an explicit save while no tier is picked',
+    async () => {
+      const saveApi = fakeSavablePost({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        visibility: 'tiers',
+        tiers: [{ id: GOLD.id }],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAccess();
+
+      await editorScreen.settingsTier('Gold').click();
+
+      // The empty selection is staged, so it is the writer's unsaved work.
+      await expect.element(editorScreen.updateButton()).toBeEnabled();
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect
+        .element(editorScreen.saveErrorBanner())
+        .toHaveTextContent('Please select at least one tier');
+      expect(saveApi.requests).toHaveLength(0);
+      await expect.element(editorScreen.updateButton()).toBeEnabled();
     },
     SLOW,
   );

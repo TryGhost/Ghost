@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import {
   Checkbox,
   Label,
@@ -18,10 +18,11 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { SettingsSection } from './settings-section';
 import {
   VISIBILITY_OPTIONS,
-  isCommittableAccess,
   postTiers,
   selectedTierIds,
   selectedVisibility,
@@ -55,7 +56,7 @@ function TierGroup({
   selected,
   onToggle,
 }: {
-  heading?: string;
+  heading: string;
   options: TierOption[];
   selected: ReadonlySet<string>;
   onToggle: (id: string) => void;
@@ -66,11 +67,9 @@ function TierGroup({
 
   return (
     <Stack gap="sm">
-      {heading ? (
-        <Text size="sm" tone="secondary" weight="medium">
-          {heading}
-        </Text>
-      ) : null}
+      <Text size="sm" tone="secondary" weight="medium">
+        {heading}
+      </Text>
       {options.map((option) => (
         <TierCheckbox
           key={option.id}
@@ -101,45 +100,34 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     'default_content_visibility',
   );
 
-  // The write contract drops `visibility: 'tiers'` when no tiers accompany it,
-  // so that pairing is held here until a tier is picked rather than sent.
-  const [tiersPending, setTiersPending] = useState(false);
-
-  const visibility = tiersPending
-    ? 'tiers'
-    : selectedVisibility(session.settings.visibility, defaultContentVisibility);
-  const selected = new Set(tiersPending ? [] : selectedTierIds(session.settings.tiers));
+  const visibility = selectedVisibility(session.settings.visibility, defaultContentVisibility);
+  const selected = new Set(selectedTierIds(session.settings.tiers));
 
   const { data: tiersData } = useBrowseTiers({
+    defaultErrorHandler: false,
     enabled: visibility === 'tiers',
     requestOptions: EDITOR_REQUEST_OPTIONS,
+    searchParams: { filter: 'type:paid', limit: 'all' },
   });
   const options = tierOptions(tiersData?.tiers);
 
-  const commit = (nextVisibility: string, tiers: ReturnType<typeof postTiers>) => {
-    if (!isCommittableAccess(nextVisibility, tiers.length)) {
-      setTiersPending(true);
-      return;
-    }
-
-    setTiersPending(false);
-    session.editSettings({ visibility: nextVisibility, tiers });
-  };
-
   // Leaving `tiers` clears the tiers it granted, as the tier pickers do.
   const changeVisibility = (next: string) =>
-    commit(next, next === 'tiers' ? postTiers(session.settings.tiers) : []);
+    session.editSettings({
+      visibility: next,
+      tiers: next === 'tiers' ? postTiers(session.settings.tiers) : [],
+    });
 
   const toggleTier = (id: string) => {
     const next = new Set(selected);
     if (!next.delete(id)) {
       next.add(id);
     }
-    commit('tiers', tiersFromSelection(options, next));
+    session.editSettings({ visibility: 'tiers', tiers: tiersFromSelection(options, next) });
   };
 
   return (
-    <>
+    <SettingsSection>
       <Label htmlFor={selectId}>{postType === 'page' ? 'Page' : 'Post'} access</Label>
       <Select value={visibility} onValueChange={changeVisibility}>
         <SelectTrigger data-testid={settingsVisibilitySelect} id={selectId}>
@@ -155,8 +143,9 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
       </Select>
 
       {visibility === 'tiers' ? (
-        <Stack className="pt-1" data-testid={settingsTiersPicker} gap="md">
+        <Stack data-testid={settingsTiersPicker} gap="md">
           <TierGroup
+            heading="Active tiers"
             options={options.filter((option) => !option.archived)}
             selected={selected}
             onToggle={toggleTier}
@@ -167,13 +156,13 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
             selected={selected}
             onToggle={toggleTier}
           />
-          {tiersPending ? (
+          {tiersIncomplete(session.settings) ? (
             <Text className="text-destructive" data-testid={settingsTiersError} size="sm">
-              Please select at least one tier
+              {TIERS_REQUIRED}
             </Text>
           ) : null}
         </Stack>
       ) : null}
-    </>
+    </SettingsSection>
   );
 }

@@ -55,20 +55,16 @@ export function postTiers(tiers: ReadonlyArray<PostRelationLike>): PostRelationL
 
 /**
  * The tier relations a selection writes, in option order so the payload does
- * not depend on the order the writer ticked the boxes.
+ * not depend on the order the writer ticked the boxes. A selected tier the
+ * browse did not return is kept, so a partial list cannot drop it.
  */
 export function tiersFromSelection(
   options: TierOption[],
   selected: ReadonlySet<string>,
 ): PostRelationLike[] {
-  return options.filter((option) => selected.has(option.id)).map((option) => ({ id: option.id }));
-}
+  const offered = new Set(options.map((option) => option.id));
+  const listed = options.filter((option) => selected.has(option.id)).map((option) => option.id);
+  const unlisted = [...selected].filter((id) => !offered.has(id));
 
-/**
- * Whether a visibility choice can be saved. The write contract drops
- * `visibility: 'tiers'` when no tiers accompany it, so that pairing is held
- * back rather than sent and answered with the post's unchanged visibility.
- */
-export function isCommittableAccess(visibility: string, tierCount: number): boolean {
-  return visibility !== 'tiers' || tierCount > 0;
+  return [...listed, ...unlisted].map((id) => ({ id }));
 }

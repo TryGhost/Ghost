@@ -3,7 +3,6 @@ import { tier } from '@tryghost/test-data';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import {
   VISIBILITY_OPTIONS,
-  isCommittableAccess,
   postTiers,
   selectedTierIds,
   selectedVisibility,
@@ -76,18 +75,14 @@ describe('access options', () => {
 
       expect(tiersFromSelection(options, new Set(['c', 'a']))).toEqual([{ id: 'a' }, { id: 'c' }]);
     });
-  });
 
-  describe('isCommittableAccess', () => {
-    it('holds back a tiers choice with nothing selected', () => {
-      expect(isCommittableAccess('tiers', 0)).toBe(false);
-      expect(isCommittableAccess('tiers', 1)).toBe(true);
-    });
+    it('keeps a selected tier the options do not list', () => {
+      const options = [{ id: 'a', name: 'A', archived: false }];
 
-    it('lets every other visibility through', () => {
-      expect(isCommittableAccess('public', 0)).toBe(true);
-      expect(isCommittableAccess('members', 0)).toBe(true);
-      expect(isCommittableAccess('paid', 0)).toBe(true);
+      expect(tiersFromSelection(options, new Set(['unlisted', 'a']))).toEqual([
+        { id: 'a' },
+        { id: 'unlisted' },
+      ]);
     });
   });
 });

@@ -80,16 +80,20 @@ Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
 until then; choosing that same value explicitly is still an edit and still
 saves. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is the site's paid tiers, active ones before archived,
-and it loads only while `Specific tier(s)` is the choice.
+granted. The tier list is every one of the site's paid tiers, active ones
+before archived, and it loads only while `Specific tier(s)` is the choice.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
-and the writer's choice would snap back. The section therefore holds an empty
-tier selection locally, asking for at least one tier, and commits the visibility
-and the tiers together once one is picked. Everything that is committed goes
-through the same gate as the rest of the sidebar, so a draft saves it and every
-other status stages it.
+and the writer's choice would snap back. An empty tier selection is therefore
+staged like any other edit but never sent: the section asks for at least one
+tier, a field change does not save while the pairing is incomplete, and a save
+the writer asks for is refused with the same message, which the status line and
+the save banner carry. Because the pairing is staged rather than held in the
+panel, it survives closing the sidebar, enables Update and is what the leave
+guard asks about. A create is exempt, as the server settles the visibility of a
+post that has none. Everything that is committed goes through the same gate as
+the rest of the sidebar, so a draft saves it and every other status stages it.
 
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what

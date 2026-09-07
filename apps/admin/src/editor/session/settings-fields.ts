@@ -32,3 +32,13 @@ export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
 export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey>;
 
 export type EditorSettingsPatch = Partial<EditorSettingsFields>;
+
+/** Ember's post validator refuses the same pairing (validators/post.js). */
+export const TIERS_REQUIRED = 'Please select at least one tier';
+
+/** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
+export function tiersIncomplete(
+  fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
+): boolean {
+  return fields.visibility === 'tiers' && fields.tiers.length === 0;
+}
