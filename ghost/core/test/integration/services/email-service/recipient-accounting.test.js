@@ -98,7 +98,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   });
 
   it('counts exclusions once when recovering a committed preparation batch', async function () {
-    const memberId = '000000000000000000000001';
+    const memberId = '000000000000000000000004';
     const originalMember = await db.knex('members').where({ id: memberId }).first();
     await db.knex('members').where({ id: memberId }).update({ uuid: '' });
     const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
