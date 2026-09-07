@@ -274,7 +274,7 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
   });
 
-  it('shows a calculating label until a sending estimate is available', async () => {
+  it('shows only recipient counts until a sending estimate is available', async () => {
     seedPostAnalyticsWorld({
       email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
     });
@@ -298,12 +298,11 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000 · Calculating time remaining...');
+      .toHaveTextContent('Sending emails · 250 of 1,000');
     estimate = 30;
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
       .toHaveTextContent('Sending emails · 250 of 1,000 · Less than 1 minute left');
-    await expect.element(page.getByText(/Calculating time remaining/)).not.toBeInTheDocument();
   });
 
   it('moves a failed send and its retry action into the banner', async () => {

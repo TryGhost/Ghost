@@ -33,7 +33,7 @@ export function useSendingEta(status: EmailSendingStatus | undefined): string | 
   }
 
   if (minutes === null) {
-    return isActive ? 'Calculating time remaining...' : null;
+    return null;
   }
   return minutes === 0
     ? 'Less than 1 minute left'
