@@ -33,7 +33,10 @@ payload once this session has edited it, so a value the session merely opened
 with can never overwrite a change made elsewhere. The reverse also holds — a
 field the writer has not moved past adopts the value the server acknowledges or
 a refetch brings back, so a value normalized on the way through or changed by
-someone else does not read as a local edit for good.
+someone else does not read as a local edit for good. Enrolment outlives a
+successful save and is cleared only by a reload, so a field the writer edited
+once is never adopted from a refetch again this session and every later save
+re-sends their value: last writer wins.
 
 Three fields are deliberately absent from the settings projection. Status and
 publish time belong to the save engine's command target, which the publish flow
