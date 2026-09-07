@@ -12,6 +12,7 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
+import { UrlSection } from './url-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
   const inputId = useId();
@@ -77,6 +78,7 @@ export function PostSettingsSidebar({
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
+    url: <UrlSection postType={postType} session={session} />,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,

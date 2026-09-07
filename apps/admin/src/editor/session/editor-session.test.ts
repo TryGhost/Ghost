@@ -87,6 +87,7 @@ interface HarnessHooks {
   /** Answers an update with nothing, which the session reports as a failed save. */
   failSave?: (saveCount: number) => boolean;
   failUpdateWith?: Error;
+  failSlugWith?: Error;
 }
 
 function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
@@ -144,7 +145,8 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
         state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
-      generateSlug: (text) => Promise.resolve(slugify(text)),
+      generateSlug: (text) =>
+        hooks.failSlugWith ? Promise.reject(hooks.failSlugWith) : Promise.resolve(slugify(text)),
     },
     ...options,
   });
@@ -1228,6 +1230,101 @@ describe('createEditorSession', () => {
 
       expect(reloaded).toBe(true);
       expect(session.getFields().featured).toBe(false);
+    });
+  });
+
+  describe('slug', () => {
+    const PUBLISHED_AT = '2025-12-01T00:00:00.000Z';
+
+    // A slug edit awaits the generator, and the field save it triggers the transport.
+    const settle = () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+    it('takes a draft’s manual edit custom and persists it on its own', async () => {
+      const { session, state } = harness({ record: record() });
+
+      await session.editSlug('A New Slug');
+      await settle();
+
+      expect(session.getSlug()).toBe('a-new-slug');
+      expect(session.getSaveSnapshot().slugIsCustom).toBe(true);
+      expect(engineSpy.dispatched).toEqual(['field']);
+      expect(state.updates).toHaveLength(1);
+      expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug' });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('stages a published post’s manual edit until an explicit save', async () => {
+      const { session, state } = harness({
+        record: record({ status: 'published', published_at: PUBLISHED_AT }),
+      });
+
+      await session.editSlug('A New Slug');
+      await settle();
+
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(0);
+      expect(session.getSlug()).toBe('a-new-slug');
+      expect(session.isDirty()).toBe(true);
+
+      await session.dispatchExplicit();
+
+      expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug', status: 'published' });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps a manually edited slug through a later title commit', async () => {
+      const { session } = harness({ record: record() });
+
+      await session.editSlug('A New Slug');
+      session.patchTitle('Something else entirely');
+      session.commitTitle('Something else entirely');
+      await settle();
+
+      expect(session.getSlug()).toBe('a-new-slug');
+    });
+
+    it('leaves an edit that matches the current slug alone', async () => {
+      const { session, state } = harness({ record: record() });
+
+      await session.editSlug('hello');
+      await settle();
+
+      expect(session.getSlug()).toBe('hello');
+      expect(session.getSaveSnapshot().slugIsCustom).toBe(false);
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it('keeps the slug and reports the error when the generator fails', async () => {
+      const errors: unknown[] = [];
+      const failure = new Error('Slug generation failed');
+      const { session, state } = harness(
+        { record: record(), onError: (error) => errors.push(error) },
+        { failSlugWith: failure },
+      );
+
+      await session.editSlug('A New Slug');
+      await settle();
+
+      expect(session.getSlug()).toBe('hello');
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(0);
+      expect(errors).toEqual([failure]);
+    });
+
+    it('notifies subscribers when a title commit regenerates the slug', async () => {
+      const { session } = harness({ record: record() });
+      const listener = vi.fn();
+      session.subscribe(listener);
+
+      session.commitTitle('Second title');
+      await settle();
+
+      expect(session.getSlug()).toBe('second-title');
+      expect(listener).toHaveBeenCalled();
     });
   });
 

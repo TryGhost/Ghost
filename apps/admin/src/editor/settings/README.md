@@ -69,6 +69,15 @@ Role gates live with the section, not with the frame: every role that can open
 the editor can open the sidebar, and a section the writer's role cannot write is
 the part that is left out.
 
+The URL section edits the slug, which is not a settings field: a manual edit
+goes to the slug machine, and only a proposal the machine applies reaches the
+live document, where the save policy above then decides whether it is persisted
+or staged. A superseded proposal is ignored and a failed generator leaves the
+slug alone, so the input reverts to whatever the machine still holds. Because an
+applied edit makes the slug the writer's, a later title change no longer moves
+it. The preview under the input is the site URL without its scheme, then the
+slug, both slash-terminated.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.
