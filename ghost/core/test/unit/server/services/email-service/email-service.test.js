@@ -268,6 +268,22 @@ describe('Email Service', function () {
   });
 
   describe('createEmail', function () {
+    it('records the original preflight count, including zero, to identify new sends', async function () {
+      const newsletter = createModel({ status: 'active' });
+      const post = createModel({
+        newsletter,
+        email_recipient_filter: 'all',
+        mobiledoc: 'Mobiledoc',
+      });
+      for (const emailCount of [42, 0]) {
+        const email = await service.createEmail(post, {
+          preflight: { newsletter, emailRecipientFilter: 'all', emailCount },
+        });
+        assert.equal(email.get('preflight_email_count'), emailCount);
+        assert.equal(email.get('email_count'), emailCount);
+      }
+    });
+
     it('Throws if post does not have a newsletter', async function () {
       const post = createModel({
         newsletter: null,
