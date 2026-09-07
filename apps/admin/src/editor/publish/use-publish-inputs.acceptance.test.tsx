@@ -30,6 +30,8 @@ function fakeBoundaryInputs() {
       { key: 'members_signup_access', value: 'all' },
       { key: 'editor_default_email_recipients', value: 'visibility' },
       { key: 'timezone', value: 'Etc/UTC' },
+      // Core always includes this array-valued calculated setting in the members group.
+      { key: 'all_blocked_email_domains', value: [] },
     ],
   });
   const config = fakeAdminEndpoint('GET', /^\/config\/(?:\?.*)?$/, {
