@@ -365,11 +365,22 @@ export function createEditorSession({
     };
     adoptWhereUnchanged(prepared.authoredFrom, submitted);
 
+    // A matching refetch can make an unsubmitted edit look saved. Preserve
+    // those edits through the rebase, whose fallback base is the latest saved
+    // copy. Submitted fields already have a stable base in the request.
+    const unsubmittedEdits = Object.fromEntries(
+      SETTINGS_FIELD_KEYS.filter(
+        (key) =>
+          prepared.projection[key] === undefined &&
+          (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
+      ).map((key) => [key, live[key]]),
+    );
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
+    tracker.setLive(result.id, unsubmittedEdits);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
-    // The rebase has answered the request's own window, so it closes before the
-    // adoption: from here the tracker's compare is the whole rule.
+    // The tracker now holds the retained edits as well as the rebase, so its
+    // compare can decide adoption after the request's window closes.
     inFlightSince = null;
     adoptSettings(acknowledged, isAdoptable);
     machine.saveAcknowledged(submitted, {

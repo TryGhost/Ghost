@@ -43,6 +43,13 @@ pre-save snapshot, so adopting one refetch inside a save window does not stop a
 later one from being adopted too, and re-emitting a value the field already
 holds does not claim it.
 
+An acknowledgement also retains fields edited after submission that the request
+did not carry. A matching refetch may temporarily make such a field look saved,
+but it cannot grant the earlier request ownership of that edit. The session
+reapplies these values to the tracker after its rebase so they remain dirty
+against a disagreeing acknowledgement and enter the next save. A matching
+acknowledgement still releases the edit and supplies server-owned relation metadata.
+
 Three fields are deliberately absent from the settings projection. Status and
 publish time belong to the save engine's command target, which the publish flow
 owns; a publish-date section reads and writes them through that command, not

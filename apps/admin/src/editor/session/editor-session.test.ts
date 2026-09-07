@@ -923,6 +923,73 @@ describe('createEditorSession', () => {
       expect(built.state.updates[1].payload).toMatchObject({ visibility: 'members' });
     });
 
+    it.each([
+      { field: 'custom_excerpt' as const, edited: 'Typed while saving', remote: 'Server excerpt' },
+      { field: 'visibility' as const, edited: 'members', remote: 'paid' },
+      {
+        field: 'tags' as const,
+        edited: [{ name: 'News' }],
+        remote: [{ id: 'tag-2', name: 'Tech' }],
+      },
+      {
+        field: 'authors' as const,
+        edited: [{ id: 'author-1' }],
+        remote: [{ id: 'author-2' }],
+      },
+    ])(
+      'keeps an unsubmitted $field edit after a matching refetch and persists it next',
+      async ({ field, edited, remote }) => {
+        const built = harness(
+          { record: record() },
+          {
+            duringSave: once(() => {
+              built.session.patchFields({ [field]: edited });
+              built.session.recordRefetched(
+                record({ [field]: edited, updated_at: '2026-01-01T00:00:00.500Z' }),
+              );
+            }),
+            acknowledge: (acknowledged, count) => ({
+              ...acknowledged,
+              [field]: count === 1 ? remote : edited,
+            }),
+          },
+        );
+
+        built.session.patchTitle('Changed title');
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[0].payload).not.toHaveProperty(field);
+        expect(built.session.getFields()[field]).toEqual(edited);
+        expect(built.session.isDirty()).toBe(true);
+        expect(built.session.hasUnsavedContent()).toBe(true);
+
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[1].payload).toMatchObject({ [field]: edited });
+        expect(built.session.isDirty()).toBe(false);
+      },
+    );
+
+    it('adopts acknowledged tag metadata when an unsubmitted edit matches the server', async () => {
+      const built = harness(
+        { record: record() },
+        {
+          duringSave: once(() => built.session.patchFields({ tags: [{ name: 'News' }] })),
+          acknowledge: (acknowledged) => ({
+            ...acknowledged,
+            tags: [{ id: 'tag-1', name: 'News' }],
+          }),
+        },
+      );
+
+      built.session.patchTitle('Changed title');
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[0].payload).not.toHaveProperty('tags');
+      expect(built.session.getFields().tags).toEqual([{ id: 'tag-1', name: 'News' }]);
+      expect(built.session.isDirty()).toBe(false);
+    });
+
     it('adopts a refetch after a settings value was re-emitted unmoved', async () => {
       const built = harness(
         { record: record({ visibility: 'public' }) },
