@@ -351,6 +351,17 @@ const AutomationFloat: React.FC = () => {
     });
   };
 
+  // The switch never flips itself. Both directions open their confirm, and the
+  // status only moves when that's answered — a control that changes on click and
+  // then changes back is worse than one that waits.
+  const handleStatusToggle = (next: boolean) => {
+    if (next) {
+      setStartOpen(true);
+      return;
+    }
+    setStopOpen(true);
+  };
+
   const handleStop = () => {
     setStopOpen(false);
     setAutomationStatus(id, 'inactive');
@@ -412,24 +423,10 @@ const AutomationFloat: React.FC = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {liveStatus === 'active' && (
-            <DropdownMenuItem onClick={() => setStopOpen(true)}>
-              <LucideIcon.Power /> Turn off
-            </DropdownMenuItem>
-          )}
           {/* Prototype stub — duplication has no design decision behind it
                         yet, so this reports success without creating anything. */}
           <DropdownMenuItem onClick={() => toast.success('Automation duplicated')}>
             <LucideIcon.Copy /> Duplicate
-          </DropdownMenuItem>
-          {/* Dead link for now. A verb like everything else in this menu —
-                        every other row names something you do, and a lone noun read
-                        as a different kind of item. What it opens is where the
-                        automation's own configuration would live, including Delete,
-                        which wants room to warn about members mid-flow rather than a
-                        menu row that fires on click. */}
-          <DropdownMenuItem>
-            <LucideIcon.Settings /> Configure
           </DropdownMenuItem>
           {/* Discard sits last, in its own section. It's the one item here
                         that destroys work, and a menu opens with the cursor at the
@@ -449,11 +446,6 @@ const AutomationFloat: React.FC = () => {
         </DropdownMenuContent>
       </DropdownMenu>
       {hasUnpublishedChanges && <Button onClick={handlePublishClick}>Publish changes</Button>}
-      {liveStatus === 'inactive' && (
-        <Button disabled={!canGoLive} onClick={() => setStartOpen(true)}>
-          Turn on
-        </Button>
-      )}
     </>
   );
 
@@ -468,9 +460,12 @@ const AutomationFloat: React.FC = () => {
                 is the back arrow, the title and its status, full stop. */}
       <HeaderBar
         actions={chromeActions}
+        canGoLive={canGoLive}
         status={liveStatus}
         title={automation.name}
         onBack={goBack}
+        onOpenSettings={() => toast.success('Automation settings')}
+        onStatusChange={handleStatusToggle}
       />
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
