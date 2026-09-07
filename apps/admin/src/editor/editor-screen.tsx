@@ -201,7 +201,7 @@ function EditorContent({
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
-      <Inline className="relative min-h-0 flex-1 items-stretch" gap="none">
+      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
         <div className="min-h-0 min-w-0 flex-1">
           <PostEditor
             key={session.contentKey}

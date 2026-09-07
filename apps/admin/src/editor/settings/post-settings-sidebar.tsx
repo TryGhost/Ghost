@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { isAuthorOrContributor, type User } from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
@@ -51,7 +51,7 @@ function FeaturedSection({
 
   return (
     <SettingsSection>
-      <Stack className="flex-row items-center justify-between" gap="sm">
+      <Inline gap="sm" justify="between">
         <Label htmlFor={inputId}>Feature this {postType}</Label>
         <Switch
           checked={session.settings.featured}
@@ -59,7 +59,7 @@ function FeaturedSection({
           id={inputId}
           onCheckedChange={(featured) => session.editSettings({ featured })}
         />
-      </Stack>
+      </Inline>
     </SettingsSection>
   );
 }
@@ -95,7 +95,7 @@ export function PostSettingsSidebar({
       className="absolute inset-y-0 right-0 z-10 w-[350px] overflow-y-auto border-l border-border bg-background shadow-lg max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none"
       data-testid={postSettingsSidebar}
     >
-      <Text as="h4" className="px-5 py-4" size="md" weight="semibold">
+      <Text as="h2" className="px-5 py-4" size="md" weight="semibold">
         {postType === 'page' ? 'Page' : 'Post'} settings
       </Text>
       <Separator />
