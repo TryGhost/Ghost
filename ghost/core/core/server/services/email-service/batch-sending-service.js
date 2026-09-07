@@ -6,6 +6,13 @@ const messages = {
   emailErrorPartialFailure:
     'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
   emailError: 'An unexpected error occurred, please retry sending your newsletter.',
+  // The newsletter banner displays emails.error, which persists only the message.
+  // Keep recovery guidance here until that interface supports a separate help field.
+  preparationError:
+    'Newsletter recipient preparation failed. Retry sending to rebuild the recipient batches.',
+  verificationError: 'Newsletter recipient verification failed. Contact support to investigate.',
+  submissionUncertain:
+    'Newsletter submission could not be confirmed. Contact support to reconcile the affected batches before retrying.',
 };
 
 const MAX_SENDING_CONCURRENCY = 2;
@@ -278,6 +285,9 @@ class BatchSendingService {
       // collapsed budgets surface transient errors as hard failures, and `failed`
       // drops the email out of the boot resume scan.
       if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
+        if (e?.code === VERIFICATION_CODE) {
+          this.#sentry?.captureException(e);
+        }
         logging.info(
           `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
         );
@@ -660,9 +670,7 @@ class BatchSendingService {
       ['batch_recipient_count', 'preparation_totals', 'batch_recovery_conflict'].includes(reason);
     const error = new errors.EmailError({
       code: VERIFICATION_CODE,
-      message: canRebuild
-        ? 'Newsletter recipient preparation failed. Retry sending to rebuild the recipient batches.'
-        : 'Newsletter recipient verification failed. Contact support to investigate.',
+      message: tpl(canRebuild ? messages.preparationError : messages.verificationError),
       errorDetails: JSON.stringify({
         code: VERIFICATION_CODE,
         email_id: email.id,
@@ -703,6 +711,19 @@ class BatchSendingService {
           batch_id: foreignRecipient.batch_id,
         });
       }
+    }
+    // Check the reverse direction even when this email has no batches: deleting
+    // its recipient rows must not change another email's batch membership.
+    const foreignBatchRecipient = await this.#db
+      .knex('email_recipients as recipient')
+      .join('email_batches as batch', 'batch.id', 'recipient.batch_id')
+      .where('recipient.email_id', email.id)
+      .whereNot('batch.email_id', email.id)
+      .first('recipient.batch_id');
+    if (foreignBatchRecipient) {
+      throw this.#verificationFailure(email, 'cross_email_recipient', {
+        batch_id: foreignBatchRecipient.batch_id,
+      });
     }
     // Preparation is sequential today. Its awaited writes have settled before a
     // retry enters here. Keep deletion bounded and restartable between chunks.
@@ -763,16 +784,31 @@ class BatchSendingService {
       .where('batch.email_id', email.id)
       .groupBy('recipient.batch_id')
       .select('recipient.batch_id')
+      .select(
+        this.#db.knex.raw(
+          'SUM(CASE WHEN recipient.email_id <> ? THEN 1 ELSE 0 END) AS foreign_count',
+          [email.id],
+        ),
+      )
       .count('recipient.id as count');
     const counts = new Map(rows.map((row) => [row.batch_id, Number(row.count)]));
     // Check email ownership separately: a malformed row can reference this
-    // email's batch while naming another email (or the reverse).
+    // email's batch while naming another email (or the reverse). Filtering only
+    // by recipient.email_id would miss extra foreign rows attached to our batches.
     const total = await this.#db
       .knex('email_recipients')
       .where({ email_id: email.id })
       .count('* as count')
       .first();
     const actualCount = Number(total.count);
+    // Equal-sized swaps can preserve both batch counts and the email total. Explicitly
+    // verify ownership within the batch scan so those swaps cannot hide corruption.
+    const foreignRecipient = rows.find((row) => Number(row.foreign_count) > 0);
+    if (foreignRecipient) {
+      throw this.#verificationFailure(email, 'cross_email_recipient', {
+        batch_id: foreignRecipient.batch_id,
+      });
+    }
     let recipientCount = 0;
     for (const batch of batches) {
       const expected = batch.get('recipient_count');
@@ -1148,8 +1184,7 @@ class BatchSendingService {
       if (verified.batches.some((batch) => batch.get('status') === 'submitting')) {
         throw new errors.EmailError({
           code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN',
-          message:
-            'Newsletter submission could not be confirmed. Contact support to reconcile the affected batches before retrying.',
+          message: tpl(messages.submissionUncertain),
         });
       }
       expectedBatchCount = verified.batches.length;

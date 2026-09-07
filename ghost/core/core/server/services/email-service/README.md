@@ -24,18 +24,21 @@ the recovery read; a lock-wait timeout is not evidence that the original insert
 failed.
 
 Before saving `prepared_at`, verify actual recipient rows against stored counts,
-per batch and for the email, and require candidates to equal prepared recipients
+per batch and for the email, reject cross-email ownership even when swapped rows
+leave those counts unchanged, and require candidates to equal prepared recipients
 plus exclusions. The verified database read supplies the batches for submission.
 The preflight estimate can legitimately differ from the consumed audience; a
 difference of at least 1% emits a warning and a Sentry message without failing
 preparation. Verification failures emit `email.verification.failed` with their
-reason and counts. Failures during safely rebuildable preparation ask the user
-to retry; frozen or possibly submitted batches require investigation.
+reason and counts. The email job reports terminal verification failures to Sentry
+once, including during shutdown while leaving the email resumable. Failures during
+safely rebuildable preparation ask the user to retry; frozen or possibly submitted batches require investigation.
 
 An interrupted preparation without `prepared_at` is discarded on retry, using
 bounded deletes of recipient rows followed by batches. Any non-pending batch
 blocks cleanup. Cross-email recipient references fail verification before any
-cleanup deletes. Once prepared, retries reuse the batches without selecting the
+cleanup deletes in either ownership direction, including when the email has no
+batches of its own. Once prepared, retries reuse the batches without selecting the
 audience again. Batches created after the preparation marker fail verification.
 After submission workers settle, re-read all persisted batches, verify recipient
 counts again, and require every batch submitted before completing the email.

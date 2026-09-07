@@ -161,7 +161,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('email_recipients').insert({ ...row, id: extraId, email_id: otherEmail.id });
     try {
       await assert.rejects(service.createBatches(data), (error) => {
-        assert.equal(JSON.parse(error.errorDetails).reason, 'batch_recipient_count');
+        assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
         return true;
       });
     } finally {
@@ -253,6 +253,93 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       await db.knex('emails').where({ id: otherEmail.id }).del();
     }
   });
+
+  for (const hasOwnBatch of [false, true]) {
+    it(`preserves recipients owned by this email in another email's batch (hasOwnBatch=${hasOwnBatch})`, async function () {
+      const member = await db.knex('members').first();
+      if (hasOwnBatch) {
+        await service.createBatch(email, null, [member], { useFallbackDomain: false });
+      }
+      const otherEmail = await models.Email.add({
+        post_id: ObjectID().toHexString(),
+        submitted_at: new Date(),
+        email_count: 1,
+      });
+      const otherBatch = await service.createBatch(otherEmail, null, [member], {
+        useFallbackDomain: false,
+      });
+      const row = await db.knex('email_recipients').where({ batch_id: otherBatch.id }).first();
+      await db.knex('email_recipients').where({ id: row.id }).update({ email_id: email.id });
+      const emailIds = [email.id, otherEmail.id];
+      const recipients = await db
+        .knex('email_recipients')
+        .whereIn('email_id', emailIds)
+        .orderBy('id');
+      const batches = await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id');
+      try {
+        await assert.rejects(service.createBatches(data), (error) => {
+          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+          assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
+          assert.equal(JSON.parse(error.errorDetails).batch_id, otherBatch.id);
+          return true;
+        });
+        assert.deepEqual(
+          await db.knex('email_recipients').whereIn('email_id', emailIds).orderBy('id'),
+          recipients,
+        );
+        assert.deepEqual(
+          await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id'),
+          batches,
+        );
+      } finally {
+        await db.knex('email_recipients').whereIn('email_id', emailIds).del();
+        await db.knex('email_batches').where({ email_id: otherEmail.id }).del();
+        await db.knex('emails').where({ id: otherEmail.id }).del();
+      }
+    });
+  }
+
+  for (const balancedSwap of [false, true]) {
+    it(`rejects foreign recipient ownership in frozen batches (balancedSwap=${balancedSwap})`, async function () {
+      const batches = await service.createBatches(data);
+      const ownRow = await db.knex('email_recipients').where({ batch_id: batches[0].id }).first();
+      const member = await db.knex('members').first();
+      const otherEmail = await models.Email.add({
+        post_id: ObjectID().toHexString(),
+        submitted_at: new Date(),
+        email_count: 1,
+      });
+      const otherBatch = await service.createBatch(otherEmail, null, [member], {
+        useFallbackDomain: false,
+      });
+      const foreignRow = await db
+        .knex('email_recipients')
+        .where({ batch_id: otherBatch.id })
+        .first();
+      await db
+        .knex('email_recipients')
+        .where({ id: foreignRow.id })
+        .update({ batch_id: batches[0].id });
+      if (balancedSwap) {
+        await db
+          .knex('email_recipients')
+          .where({ id: ownRow.id })
+          .update({ batch_id: otherBatch.id });
+      }
+      try {
+        await assert.rejects(service.createBatches(data), (error) => {
+          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+          assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
+          return true;
+        });
+        sinon.assert.notCalled(sender.send);
+      } finally {
+        await db.knex('email_recipients').whereIn('email_id', [email.id, otherEmail.id]).del();
+        await db.knex('email_batches').where({ email_id: otherEmail.id }).del();
+        await db.knex('emails').where({ id: otherEmail.id }).del();
+      }
+    });
+  }
 
   it('counts each consumed candidate once across lookahead pages and warming splits', async function () {
     const batches = await service.createBatches(data);
@@ -533,6 +620,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
               'SELECT @@SESSION.innodb_lock_wait_timeout AS timeout',
             );
             await trx.raw('SET SESSION innodb_lock_wait_timeout = 1');
+            let handlerError;
+            let result;
             try {
               if (!timedOut) {
                 retryTransaction = trx;
@@ -540,14 +629,25 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
                 // write must also disappear when Bookshelf rejects the handler.
                 await trx('accounting_retry_marker').insert({ id: 1 });
               }
-              return await handler(trx);
-            } finally {
+              result = await handler(trx);
+            } catch (error) {
+              handlerError = error;
+            }
+            try {
               await trx.raw('SET SESSION innodb_lock_wait_timeout = ?', [timeout]);
               const [[restored]] = await trx.raw(
                 'SELECT @@SESSION.innodb_lock_wait_timeout AS timeout',
               );
               assert.equal(restored.timeout, timeout);
+            } catch (restoreError) {
+              // A lost connection can also prevent restoring the session. Keep
+              // the transaction failure as the cause reported by this test.
+              throw handlerError || restoreError;
             }
+            if (handlerError) {
+              throw handlerError;
+            }
+            return result;
           });
         } catch (error) {
           assert.equal(error.code, 'ER_LOCK_WAIT_TIMEOUT');

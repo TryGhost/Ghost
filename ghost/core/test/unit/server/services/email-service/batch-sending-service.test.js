@@ -2632,6 +2632,26 @@ describe('Batch Sending Service', function () {
       assert.equal(afterEmailModel.get('error'), undefined);
     });
 
+    it('reports a verification failure once during shutdown and preserves the resumable status', async function () {
+      const Email = createModelClass({ findOne: { status: 'pending' } });
+      const sentry = { captureException: sinon.stub() };
+      const service = new BatchSendingService({ models: { Email }, sentry });
+      const failure = new errors.EmailError({
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+        message: 'Newsletter recipient verification failed. Contact support to investigate.',
+      });
+      let interruptedEmail;
+      sinon.stub(service, 'sendEmail').callsFake(async (email) => {
+        interruptedEmail = email;
+        service.onPreStop();
+        throw failure;
+      });
+      await service.emailJob({ emailId: '123' });
+      sinon.assert.calledOnceWithExactly(sentry.captureException, failure);
+      assert.equal(interruptedEmail.get('status'), 'submitting');
+      assert.equal(interruptedEmail.get('error'), undefined);
+    });
+
     it('onPreStop stops workers claiming new batches without waiting for in-flight ones', async function () {
       const clock = sinon.useFakeTimers(new Date());
       const service = new BatchSendingService({
