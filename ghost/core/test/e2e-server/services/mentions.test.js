@@ -1,10 +1,12 @@
+/* global vi */
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const nock = require('nock');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
-const jobsService = require('../../../core/server/services/mentions-jobs');
+const mentionsService = require('../../../core/server/services/mentions');
 const urlService = require('../../../core/server/services/url');
+const events = require('../../../core/server/lib/common/events');
 
 let agent;
 let mentionUrl = new URL('https://www.otherghostsite.com/');
@@ -18,6 +20,78 @@ let targetHtml2 = `<head><link rel="webmention" href="${endpointUrl2.href}"</hea
 let mentionMock;
 let endpointMock;
 const DomainEvents = require('@tryghost/domain-events');
+
+// sendForPost runs from model events that fire on transaction commit and
+// awaits DB work before dispatching. Track every run so tests can drain them.
+const mentionEvents = [
+  'post.published',
+  'post.published.edited',
+  'post.unpublished',
+  'page.published',
+  'page.published.edited',
+  'page.unpublished',
+];
+const pendingSendForPost = [];
+const wrappedListeners = [];
+
+function trackSendForPost() {
+  for (const eventName of mentionEvents) {
+    const original = events.listeners(eventName).find((l) => l.name === 'bound sendForPost');
+    assert.ok(original, `expected a sendForPost listener on ${eventName}`);
+    const wrapper = (...args) => {
+      const run = original(...args);
+      pendingSendForPost.push(run);
+      return run;
+    };
+    events.removeListener(eventName, original);
+    events.on(eventName, wrapper);
+    wrappedListeners.push({ eventName, original, wrapper });
+  }
+}
+
+function untrackSendForPost() {
+  for (const { eventName, original, wrapper } of wrappedListeners) {
+    events.removeListener(eventName, wrapper);
+    events.on(eventName, original);
+  }
+  wrappedListeners.length = 0;
+}
+
+// Draining the runs proves no job was dispatched - for the cases whose
+// filters return before reaching the queue.
+async function sendForPostSettled() {
+  while (pendingSendForPost.length) {
+    await Promise.all(pendingSendForPost.splice(0));
+  }
+  await DomainEvents.allSettled();
+}
+
+let processedJobs;
+
+function recordProcessed(resource) {
+  processedJobs.push(resource);
+}
+
+// Wrap the seam the job handler calls: completion here means the job ran,
+// without coupling the test to the queue or its backend.
+function trackWebmentionSending() {
+  const sendingService = mentionsService.sendingService;
+  const original = sendingService.sendForHTMLResource.bind(sendingService);
+  sinon.stub(sendingService, 'sendForHTMLResource').callsFake(async (resource) => {
+    try {
+      return await original(resource);
+    } finally {
+      // Recorded in finally: "processed" means the handler finished,
+      // successful or not - the nock assertions decide correctness.
+      recordProcessed(resource);
+    }
+  });
+}
+
+async function waitForSends(count, { timeoutMs = 5000 } = {}) {
+  await vi.waitUntil(() => processedJobs.length >= count, { timeout: timeoutMs });
+  await DomainEvents.allSettled();
+}
 
 const mentionsPost = {
   title: 'testing sending webmentions',
@@ -45,6 +119,11 @@ describe('Mentions Service', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsAdmin();
+    trackSendForPost();
+  });
+
+  afterAll(function () {
+    untrackSendForPost();
   });
 
   beforeEach(async function () {
@@ -54,8 +133,9 @@ describe('Mentions Service', function () {
     // mock response from website mentioned by post to provide endpoint
     addMentionMocks();
 
-    await jobsService.allSettled();
-    await DomainEvents.allSettled();
+    await sendForPostSettled();
+    processedJobs = [];
+    trackWebmentionSending();
   });
 
   afterEach(async function () {
@@ -72,8 +152,7 @@ describe('Mentions Service', function () {
           .body({ posts: [draftPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await sendForPostSettled();
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
@@ -86,8 +165,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await sendForPostSettled();
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
@@ -104,8 +182,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await sendForPostSettled();
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
@@ -118,8 +195,7 @@ describe('Mentions Service', function () {
           .body({ pages: [draftPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await sendForPostSettled();
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
@@ -134,8 +210,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         assert.equal(mentionMock.isDone(), true);
         assert.equal(endpointMock.isDone(), true);
@@ -148,8 +223,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -171,8 +245,9 @@ describe('Mentions Service', function () {
           .body({ posts: [editedPost] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        // The edit dispatches a job (the html changed); "does not send" is
+        // the handler's link diff yielding nothing, so wait for processing.
+        await waitForSends(2);
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(endpointMock.isDone(), false);
@@ -185,8 +260,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -216,8 +290,7 @@ describe('Mentions Service', function () {
           .body({ posts: [editedPost] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -234,8 +307,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -261,8 +333,7 @@ describe('Mentions Service', function () {
           .body({ posts: [unpublishedPost] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -279,8 +350,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
         assert.equal(endpointMock.isDone(), true);
 
         nock.cleanAll();
@@ -296,8 +366,7 @@ describe('Mentions Service', function () {
         const postId = res.body.posts[0].id;
         await agent.delete(`posts/${postId}/`).expectStatus(204);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         // the webmention for the removed content went out...
         assert.equal(endpointMock.isDone(), true);
@@ -317,8 +386,7 @@ describe('Mentions Service', function () {
           .body({ pages: [publishedPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         assert.equal(mentionMock.isDone(), true);
         assert.equal(endpointMock.isDone(), true);
@@ -331,8 +399,7 @@ describe('Mentions Service', function () {
           .body({ pages: [publishedPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -354,8 +421,9 @@ describe('Mentions Service', function () {
           .body({ pages: [editedPage] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        // The edit dispatches a job (the html changed); "does not send" is
+        // the handler's link diff yielding nothing, so wait for processing.
+        await waitForSends(2);
 
         assert.equal(mentionMock.isDone(), false);
         assert.equal(mentionMock.isDone(), false);
@@ -368,8 +436,7 @@ describe('Mentions Service', function () {
           .body({ pages: [publishedPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -399,8 +466,7 @@ describe('Mentions Service', function () {
           .body({ pages: [editedPage] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -417,8 +483,7 @@ describe('Mentions Service', function () {
           .body({ pages: [publishedPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -444,8 +509,7 @@ describe('Mentions Service', function () {
           .body({ pages: [unpublishedPage] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -458,8 +522,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -485,8 +548,7 @@ describe('Mentions Service', function () {
           .body({ posts: [editedPost] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -499,8 +561,7 @@ describe('Mentions Service', function () {
           .body({ pages: [publishedPage] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         // while not the point of the test, we should have real links/mentions to start with
         assert.equal(mentionMock.isDone(), true);
@@ -526,8 +587,7 @@ describe('Mentions Service', function () {
           .body({ pages: [editedPage] })
           .expectStatus(200);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(2);
 
         assert.equal(mentionMockTwo.isDone(), true);
         assert.equal(endpointMockTwo.isDone(), true);
@@ -541,8 +601,7 @@ describe('Mentions Service', function () {
           .body({ posts: [publishedPost] })
           .expectStatus(201);
 
-        await jobsService.allSettled();
-        await DomainEvents.allSettled();
+        await waitForSends(1);
 
         assert.equal(mentionMock.isDone(), true);
         assert.equal(endpointMock.isDone(), true);

@@ -46,6 +46,11 @@
       "import": "./dist/utils/get-site-timezone.js",
       "require": "./dist/utils/get-site-timezone.cjs"
     },
+    "./utils/recipient-filter": {
+      "types": "./types/utils/recipient-filter.d.ts",
+      "import": "./dist/utils/recipient-filter.js",
+      "require": "./dist/utils/recipient-filter.cjs"
+    },
     "./vite": {
       "types": "./types/vite.d.ts",
       "import": "./dist/vite.js",
@@ -75,15 +80,17 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tryghost/custom-field-types": "workspace:*",
     "@tryghost/limit-service": "catalog:",
+    "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
+    "@tryghost/string": "catalog:",
     "bson-objectid": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
-    "sonner": "catalog:"
+    "sonner": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",

@@ -861,8 +861,8 @@ describe('Create Stripe Checkout Session', function () {
       nock.cleanAll();
       await models.Base.knex('products_checkout_fields').del();
       await models.Base.knex('products_checkout_config').del();
-      await models.Base.knex('members_custom_field_bindings').del();
-      await models.Base.knex('members_custom_fields').del();
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafields').del();
     });
 
     it('asks Stripe for the questions and the collection a tier configured', async function () {

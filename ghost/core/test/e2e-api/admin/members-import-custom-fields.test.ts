@@ -71,7 +71,7 @@ describe('Members import — custom fields', function () {
     email: string,
   ): Promise<Array<{ path: string; value_text: string }>> => {
     const member = await findMember(email);
-    return models.Base.knex('members_custom_field_values')
+    return models.Base.knex('members_metafield_values')
       .where('member_id', member.id)
       .orderBy('path')
       .select('path', 'value_text');
@@ -90,8 +90,8 @@ describe('Members import — custom fields', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     // Every test file in this suite runs against one shared database, so a member left behind
     // here changes counts and listings that later files assert on. The imported members have
     // to go, not just their field values.
@@ -417,10 +417,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.invalid.length, 0);
 
     const member = await findMember(email);
-    const values = await models.Base.knex('members_custom_field_values').where(
-      'member_id',
-      member.id,
-    );
+    const values = await models.Base.knex('members_metafield_values').where('member_id', member.id);
     assert.equal(values.length, 0, 'no value written for a column naming no defined field');
   });
 
@@ -449,7 +446,7 @@ describe('Members import — custom fields', function () {
 
     const member = await findMember(email);
     const writers: Array<{ written_by_type: string; written_by_id: string | null }> =
-      await models.Base.knex('members_custom_field_values')
+      await models.Base.knex('members_metafield_values')
         .where('member_id', member.id)
         .orderBy('path')
         .select('written_by_type', 'written_by_id');

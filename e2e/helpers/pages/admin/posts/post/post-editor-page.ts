@@ -2,6 +2,14 @@ import { AdminPage } from '@/admin-pages';
 import { BasePage } from '@/helpers/pages';
 import { DesktopPreviewFrame, PostPreviewModal } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  editorBody,
+  editorConflictBanner,
+  editorReauthBanner,
+  editorSecondaryInstance,
+  editorTitleInput,
+  postsBackLink,
+} from '@tryghost/test-data/selectors/editor';
 
 class SettingsMenu extends BasePage {
   readonly postUrlInput: Locator;
@@ -25,6 +33,25 @@ class SettingsMenu extends BasePage {
   async deletePost(): Promise<void> {
     await this.deletePostButton.click();
     await this.deletePostConfirmButton.click();
+  }
+}
+
+class ReAuthenticateModal extends BasePage {
+  readonly modal: Locator;
+  readonly passwordInput: Locator;
+  readonly signInButton: Locator;
+
+  constructor(page: Page) {
+    super(page);
+
+    this.modal = page.locator('[data-test-modal="re-authenticate"]');
+    this.passwordInput = this.modal.getByLabel('Your password');
+    this.signInButton = this.modal.getByRole('button', { name: /Sign in/ });
+  }
+
+  async signIn(password: string): Promise<void> {
+    await this.passwordInput.fill(password);
+    await this.signInButton.click();
   }
 }
 
@@ -123,7 +150,12 @@ class PublishFlow extends BasePage {
   }
 }
 
+/** Which implementation serves the editor — decided by the `editorReact` flag. */
+export type PostEditorImplementation = 'ember' | 'react';
+
 export class PostEditorPage extends AdminPage {
+  private readonly implementation: PostEditorImplementation;
+
   readonly titleInput: Locator;
   readonly postStatus: Locator;
   readonly previewButton: Locator;
@@ -142,28 +174,72 @@ export class PostEditorPage extends AdminPage {
    * really "arrow-left Posts".
    */
   readonly backButton: Locator;
+  /** The session-expired prompt: Ember's modal, React's banner. */
+  readonly reauthPrompt: Locator;
+  /** React's update-collision banner. */
+  readonly conflictBanner: Locator;
 
   readonly settingsMenu: SettingsMenu;
+  readonly reauthenticateModal: ReAuthenticateModal;
 
-  constructor(page: Page) {
+  constructor(
+    page: Page,
+    { implementation = 'ember' }: { implementation?: PostEditorImplementation } = {},
+  ) {
     super(page);
+    this.implementation = implementation;
     this.pageUrl = '/ghost/#/editor/post/';
 
-    this.titleInput = page.locator('[data-test-editor-title-input]');
+    const react = implementation === 'react';
+
+    this.titleInput = react
+      ? page.getByTestId(editorTitleInput)
+      : page.locator('[data-test-editor-title-input]');
+    // React has no save-state chip yet; `waitForSaved` refuses rather than
+    // resolving this against nothing.
     this.postStatus = page.locator('[data-test-editor-post-status]');
     this.previewButton = page.getByRole('button', { name: 'Preview' });
     this.previewModal = new PostPreviewModal(page);
     this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
     this.publishFlow = new PublishFlow(page);
     this.screenTitle = page.locator('[data-test-screen-title]');
-    this.lexicalEditor = page.locator('[data-kg="editor"]').first();
-    this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
+    // Ember marks the Koenig container; React wraps each instance in its own
+    // testid, and the contenteditable is the textbox inside the primary one.
+    this.lexicalEditor = react
+      ? page.getByTestId(editorBody).getByRole('textbox').first()
+      : page.locator('[data-kg="editor"]').first();
+    this.secondaryEditor = react
+      ? page.getByTestId(editorSecondaryInstance)
+      : page.locator('[data-secondary-instance="true"]');
     this.publishSaveButton = page.locator('[data-test-button="publish-save"]').first();
     this.updateFlowButton = page.locator('[data-test-button="update-flow"]').first();
     this.revertToDraftButton = page.locator('[data-test-button="revert-to-draft"]');
-    this.backButton = page.locator('[data-test-breadcrumb]');
+    // Ember's back link carries the inlined arrow icon's title in its
+    // accessible name; React's is a plain link named for the list.
+    this.backButton = react
+      ? page.getByRole('link', { name: postsBackLink, exact: true })
+      : page.locator('[data-test-breadcrumb]');
 
     this.settingsMenu = new SettingsMenu(page);
+    this.reauthenticateModal = new ReAuthenticateModal(page);
+
+    this.reauthPrompt = react
+      ? page.getByTestId(editorReauthBanner)
+      : this.reauthenticateModal.modal;
+    this.conflictBanner = page.getByTestId(editorConflictBanner);
+  }
+
+  /**
+   * The id of the post currently open in the editor. Waits for the URL to
+   * carry an id first: a new draft only gets one after its first save.
+   */
+  async getPostId(): Promise<string> {
+    await this.page.waitForURL(/#\/editor\/post\/[0-9a-f]{24}/);
+    const match = this.page.url().match(/#\/editor\/post\/([0-9a-f]{24})/);
+    if (!match) {
+      throw new Error(`No post id in editor URL: ${this.page.url()}`);
+    }
+    return match[1];
   }
 
   async gotoPost(postId: string): Promise<void> {
@@ -196,11 +272,21 @@ export class PostEditorPage extends AdminPage {
   }
 
   async waitForSaved(): Promise<void> {
+    if (this.implementation === 'react') {
+      // The React editor renders no save-state chip, so there is nothing to
+      // read; wait on the save request or the persisted record instead.
+      throw new Error('waitForSaved reads the Ember status chip; the React editor has none');
+    }
+
     await this.postStatus.filter({ hasText: /Saved/ }).waitFor({ timeout: 30000 });
   }
 
   async appendToBody(text: string): Promise<void> {
     await this.lexicalEditor.click();
+    // The click can land the caret mid-content; select all and collapse the
+    // selection so the text is genuinely appended at the end
+    await this.page.keyboard.press('ControlOrMeta+a');
+    await this.page.keyboard.press('ArrowRight');
     await this.page.keyboard.type(text);
   }
 
@@ -217,6 +303,8 @@ export class PostEditorPage extends AdminPage {
 export class PageEditorPage extends PostEditorPage {
   readonly newPageButton: Locator;
 
+  // Ember only: the React page editor names its back link "Pages", which this
+  // class would inherit as "Posts". Give it the option once a spec needs it.
   constructor(page: Page) {
     super(page);
     this.pageUrl = '/ghost/#/pages';

@@ -45,11 +45,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
-  },
-  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -59,6 +54,11 @@ const features: Feature[] = [
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
+  },
+  {
+    title: 'Improve sending UI',
+    description: 'Enables improvements to email sending and delivery status for large email sends',
+    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',

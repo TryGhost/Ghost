@@ -20,6 +20,10 @@ module.exports = {
     return require('./member-commenting');
   },
 
+  get members_account() {
+    return require('./members-account');
+  },
+
   get authentication() {
     return require('./authentication');
   },

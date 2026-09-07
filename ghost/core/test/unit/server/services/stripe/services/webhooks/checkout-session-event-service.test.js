@@ -1164,12 +1164,12 @@ describe('CheckoutSessionEventService', function () {
     // checkout, and whether the session was started by a signed-in member.
     describe('collected fields writeback', function () {
       let labsService;
-      let customFieldBindings;
+      let metafieldBindings;
 
       beforeEach(function () {
         labsService = { isSet: sinon.stub().returns(true) };
-        customFieldBindings = { writeCollected: sinon.stub().resolves() };
-        service = createService({ labsService, customFieldBindings });
+        metafieldBindings = { writeCollected: sinon.stub().resolves() };
+        service = createService({ labsService, metafieldBindings });
         session.metadata.ghostTierId = 'tier_123';
         api.getCustomer.resolves(customer);
         sinon.stub(logging, 'warn');
@@ -1186,9 +1186,9 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(customFieldBindings.writeCollected);
+        sinon.assert.calledOnce(metafieldBindings.writeCollected);
         sinon.assert.calledWith(
-          customFieldBindings.writeCollected,
+          metafieldBindings.writeCollected,
           'created_member',
           'tier_123',
           sinon.match.array,
@@ -1201,7 +1201,7 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(customFieldBindings.writeCollected);
+        sinon.assert.notCalled(metafieldBindings.writeCollected);
       });
 
       it('treats a session carrying no signup context as unverified', async function () {
@@ -1210,7 +1210,7 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(customFieldBindings.writeCollected);
+        sinon.assert.notCalled(metafieldBindings.writeCollected);
       });
 
       it('writes onto an existing member when the checkout was started signed in', async function () {
@@ -1219,9 +1219,9 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(customFieldBindings.writeCollected);
+        sinon.assert.calledOnce(metafieldBindings.writeCollected);
         sinon.assert.calledWith(
-          customFieldBindings.writeCollected,
+          metafieldBindings.writeCollected,
           'member_123',
           'tier_123',
           sinon.match.array,
@@ -1234,16 +1234,16 @@ describe('CheckoutSessionEventService', function () {
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.notCalled(customFieldBindings.writeCollected);
+        sinon.assert.notCalled(metafieldBindings.writeCollected);
       });
 
       it('does not fail the webhook when the write is rejected', async function () {
         memberRepository.get.resolves(null);
-        customFieldBindings.writeCollected.rejects(new Error('storage broke'));
+        metafieldBindings.writeCollected.rejects(new Error('storage broke'));
 
         await service.handleSubscriptionEvent(session);
 
-        sinon.assert.calledOnce(customFieldBindings.writeCollected);
+        sinon.assert.calledOnce(metafieldBindings.writeCollected);
       });
     });
   });

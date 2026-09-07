@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
-import { renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  fakePosts,
+  fakeSnippets,
+  post,
+  renderAdminApp,
+} from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 
 /**
  * The editor is a focused writing surface — Ghost hides the nav sidebar for it,
@@ -40,11 +47,14 @@ describe('Editor chrome', () => {
   });
 
   // The decision lives on the route handle, so it must hold on both sides of
-  // the `editorReact` gate — here the React placeholder serves the route.
+  // the `editorReact` gate — here the React editor serves the route.
   it('hides it with editorReact on', async () => {
+    fakeSnippets([]);
+    fakePosts([]);
+    fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
     await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
 
-    await expect.element(page.getByTestId('editor-react-placeholder')).toBeVisible();
+    await expect.element(editorScreen.root()).toBeVisible();
     await expect(sidebar()).toHaveCount(0);
   });
 

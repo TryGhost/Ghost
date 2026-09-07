@@ -14,20 +14,53 @@ describe('InMemoryJobsBackend', function () {
     assert.deepEqual(backend.requiredFns, ['start', 'enqueue', 'scheduleRecurring', 'shutdown']);
   });
 
-  it('buffers envelopes enqueued before start, then delivers on start', async function () {
-    const received: JobEnvelope[] = [];
+  // Boot starts the jobs service before the web app is mounted or any
+  // recurring job is scheduled, so a pre-start enqueue or schedule is a
+  // boot-ordering bug.
+  it('throws on an enqueue before start instead of silently losing the job', function () {
     const backend = new InMemoryJobsBackend();
+    assert.throws(
+      () => backend.enqueue({ type: 'early', payload: '{}' }),
+      /before the jobs backend is started/,
+    );
+  });
 
-    backend.enqueue({ type: 'buffered', payload: '{"n":1}' });
+  // A silently accepted pre-start schedule would throw from enqueue inside
+  // the timer callback later - an uncaughtException - so it must fail at the
+  // registration site instead.
+  it('throws on a recurring schedule before start instead of arming a delayed crash', function () {
+    const backend = new InMemoryJobsBackend();
+    assert.throws(
+      () => backend.scheduleRecurring({ type: 'early', payload: '{}' }, { cron: '0 0 3 * * *' }),
+      /before the jobs backend is started/,
+    );
+  });
 
-    backend.start({
-      processor: async (env) => {
-        received.push(env);
-      },
-    });
-    await backend.shutdown({ timeoutMs: 1000 });
+  it('rejects an invalid declared queue concurrency at start instead of silently ignoring it', function () {
+    const backend = new InMemoryJobsBackend();
+    const processor = async () => {};
+    assert.throws(
+      () => backend.start({ processor, queues: { slow: { concurrency: 0 } } }),
+      /declared queue "slow"/,
+    );
+    assert.throws(
+      () => backend.start({ processor, queues: { slow: { concurrency: NaN } } }),
+      /declared queue "slow"/,
+    );
+  });
 
-    assert.deepEqual(received, [{ type: 'buffered', payload: '{"n":1}' }]);
+  it('stays un-started when start rejects a declaration, so no work is accepted', function () {
+    const backend = new InMemoryJobsBackend();
+    assert.throws(() =>
+      backend.start({
+        processor: async () => {},
+        queues: { ok: { concurrency: 1 }, bad: { concurrency: 0 } },
+      }),
+    );
+    assert.throws(
+      () => backend.enqueue({ type: 'early', payload: '{}' }),
+      /before the jobs backend is started/,
+    );
   });
 
   it('caps concurrent deliveries at the default concurrency', async function () {
@@ -221,6 +254,82 @@ describe('InMemoryJobsBackend', function () {
     await backend.shutdown({ timeoutMs: 1000 });
 
     assert.deepEqual(received, ['fresh'], 'a re-boot starts new work despite prior hung handlers');
+  });
+
+  describe('queue routing', function () {
+    // Tracks per-lane concurrency by tagging each envelope with its lane.
+    function makeLaneTracker() {
+      const running = new Map<string, number>();
+      const max = new Map<string, number>();
+      const release: Array<() => void> = [];
+      const processor = async (env: JobEnvelope) => {
+        const lane = JSON.parse(env.payload).lane as string;
+        running.set(lane, (running.get(lane) ?? 0) + 1);
+        max.set(lane, Math.max(max.get(lane) ?? 0, running.get(lane)!));
+        await new Promise<void>((resolve) => {
+          release.push(resolve);
+        });
+        running.set(lane, running.get(lane)! - 1);
+      };
+      return { max, release, processor };
+    }
+
+    async function drainAndShutdown(
+      backend: InMemoryJobsBackend,
+      release: Array<() => void>,
+    ): Promise<void> {
+      release.forEach((resolve) => resolve());
+      const releaser = setInterval(() => release.forEach((resolve) => resolve()), 5);
+      await backend.shutdown({ timeoutMs: 2000 });
+      clearInterval(releaser);
+    }
+
+    it('runs a declared queue at its own concurrency without occupying the default lane', async function () {
+      const { max, release, processor } = makeLaneTracker();
+      const backend = new InMemoryJobsBackend();
+
+      backend.start({ processor, queues: { webmentions: { concurrency: 1 } } });
+
+      for (let i = 0; i < 4; i = i + 1) {
+        backend.enqueue(
+          { type: 'webmention', payload: '{"lane":"webmentions"}' },
+          { queue: 'webmentions' },
+        );
+        backend.enqueue({ type: 'work', payload: '{"lane":"default"}' });
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+
+      assert.equal(max.get('webmentions'), 1, 'the declared queue runs serially');
+      assert.equal(max.get('default'), 3, 'a busy declared queue does not occupy default workers');
+
+      await drainAndShutdown(backend, release);
+    });
+
+    it('drains in-flight work on every lane at shutdown', async function () {
+      const completed: string[] = [];
+      const backend = new InMemoryJobsBackend();
+
+      backend.start({
+        processor: async (env) => {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 20);
+          });
+          completed.push(env.type);
+        },
+        queues: { webmentions: { concurrency: 1 } },
+      });
+
+      backend.enqueue({ type: 'webmention', payload: '{}' }, { queue: 'webmentions' });
+      backend.enqueue({ type: 'work', payload: '{}' });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
+      await backend.shutdown({ timeoutMs: 2000 });
+
+      assert.deepEqual(completed.sort(), ['webmention', 'work']);
+    });
   });
 
   describe('recurring schedules', function () {

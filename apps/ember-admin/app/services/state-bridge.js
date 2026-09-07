@@ -61,6 +61,14 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('featureFlagsChange');
     }
 
+    @action
+    refreshFeatureFlagOverrides() {
+        this.feature.refreshFeatureFlagOverrides();
+        // React route ownership subscribes to this event so it can re-read
+        // Ember's invalidated value. It does not write overrides back.
+        this.triggerFeatureFlagsChange();
+    }
+
     constructor() {
         super(...arguments);
         this.router.on('routeDidChange', this, this.handleRouteDidChange);

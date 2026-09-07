@@ -42,7 +42,7 @@ function liftMetafieldsInclude(frame) {
   frame.options.withRelated = frame.options.withRelated.filter(
     (relation) => relation !== 'metafields',
   );
-  frame.options.includeCustomFields = true;
+  frame.options.includeMetafields = true;
 }
 
 module.exports = {

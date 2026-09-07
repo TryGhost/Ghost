@@ -1033,7 +1033,7 @@ module.exports = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   },
-  members_custom_fields: {
+  members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     key: { type: 'string', maxlength: 191, nullable: false, unique: true },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
@@ -1041,7 +1041,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      // Keep in sync with FIELD_TYPE_IDS in @tryghost/custom-field-types,
+      // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
         isIn: [['short_text', 'long_text', 'address']],
@@ -1071,7 +1071,7 @@ module.exports = {
   //
   // A second kind of source becomes a `source_type` beside a widened id. What it must not
   // become is a second table holding destinations.
-  members_custom_field_bindings: {
+  members_metafield_bindings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     product_id: {
       type: 'string',
@@ -1082,19 +1082,19 @@ module.exports = {
     },
     port: { type: 'string', maxlength: 191, nullable: false },
     // Indexed rather than unique: several sources landing in one field is expected.
-    custom_field_key: {
+    metafield_key: {
       type: 'string',
       maxlength: 191,
       nullable: false,
-      references: 'members_custom_fields.key',
+      references: 'members_metafields.key',
       cascadeDelete: true,
     },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     '@@UNIQUE_CONSTRAINTS@@': [
-      { columns: ['product_id', 'port'], indexName: 'members_custom_field_bindings_unique' },
+      { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
     ],
-    '@@INDEXES@@': [['custom_field_key']],
+    '@@INDEXES@@': [['metafield_key']],
   },
   // How a tier's checkout question is asked. Where the answer lands is the binding it
   // hangs off.
@@ -1105,7 +1105,7 @@ module.exports = {
       maxlength: 24,
       nullable: false,
       unique: true,
-      references: 'members_custom_field_bindings.id',
+      references: 'members_metafield_bindings.id',
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
@@ -1137,17 +1137,17 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  members_custom_field_values: {
+  members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it
     // matters (the write names it, a filter names it, the key is immutable), so the row
     // carries it directly and the read and filter paths skip an id-to-key join. Matches
     // the referenced column's 191, as a foreign key must.
-    custom_field_key: {
+    metafield_key: {
       type: 'string',
       maxlength: 191,
       nullable: false,
-      references: 'members_custom_fields.key',
+      references: 'members_metafields.key',
       cascadeDelete: true,
     },
     member_id: {
@@ -1188,14 +1188,14 @@ module.exports = {
     written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    // Named, because the name knex derives from the table and all three columns
-    // overruns MySQL's 64-character identifier limit. The migration that first
-    // created this table already shortened a column for the same reason; a third
-    // column spends what headroom that bought.
+    // Named rather than derived. The name knex builds from the table and all three
+    // columns used to overrun MySQL's 64-character identifier limit; the shorter table
+    // name now fits, but the index is named in a migration either way, so pinning it
+    // here keeps the two statements of it identical.
     '@@UNIQUE_CONSTRAINTS@@': [
       {
-        columns: ['member_id', 'custom_field_key', 'path'],
-        indexName: 'members_custom_field_values_leaf_unique',
+        columns: ['member_id', 'metafield_key', 'path'],
+        indexName: 'members_metafield_values_leaf_unique',
       },
     ],
     // What a segment filter looks up: every member holding a given value for a
@@ -1203,7 +1203,7 @@ module.exports = {
     // TEXT, so MySQL would need a prefix length, and the schema's index builder
     // applies one length to every column in a composite index rather than to a
     // single chosen one.
-    '@@INDEXES@@': [['custom_field_key', 'path']],
+    '@@INDEXES@@': [['metafield_key', 'path']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

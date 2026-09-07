@@ -33,7 +33,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/custom-field-types": "workspace:*"
+    "@tryghost/metafield-types": "workspace:*"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

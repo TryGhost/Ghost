@@ -8,10 +8,10 @@ const audienceFeedbackService = require('../../services/audience-feedback');
 const middleware = membersService.middleware;
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
-const config = require('../../../shared/config');
 const { http } = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
+const accountRoutes = require('./account');
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
 const corsMiddleware = require('./middleware/cors');
@@ -57,21 +57,9 @@ module.exports = function setupMembersApp() {
     middleware.updateMemberNewsletters,
   );
 
-  // Get and update member data
-  // Caching members content is an experimental feature
-  const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
-  if (shouldCacheMembersContent) {
-    membersApp.get(
-      '/api/member',
-      middleware.loadMemberSession,
-      middleware.accessInfoSession,
-      middleware.getMemberData,
-    );
-  } else {
-    membersApp.get('/api/member', middleware.getMemberData);
-  }
+  // A member's own account. Its routes and how they authenticate live together.
+  membersApp.use('/api/member', accountRoutes());
 
-  membersApp.put('/api/member', bodyParser.json({ limit: '50mb' }), middleware.updateMemberData);
   membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
     membersService.api.middleware.updateEmailAddress(req, res, next),
   );
@@ -86,8 +74,6 @@ module.exports = function setupMembersApp() {
   );
 
   // Remove email from suppression list
-  membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
-
   // Manage session
   membersApp.get('/api/session', middleware.getIdentityToken);
   membersApp.delete('/api/session', bodyParser.json({ limit: '5mb' }), middleware.deleteSession);

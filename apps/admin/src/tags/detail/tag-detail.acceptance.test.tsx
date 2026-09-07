@@ -11,6 +11,7 @@ import {
   renderAdminApp,
   tag,
   type Tag,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagsScreen } from '@/tags/tags.screen';
@@ -311,6 +312,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await expect.element(tagDetailScreen.savedButton()).toBeVisible();
 
     await tagDetailScreen.descriptionInput().fill('A later edit');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
@@ -658,11 +660,15 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
     await tagDetailScreen.nameInput().fill('Renamed');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
     // The dialog carries Ember's ConfirmUnsavedChangesModal copy.
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
+    // The dismissed dialog outlives the click, so re-triggering the guard
+    // without waiting it out clicks Leave on the instance already going away.
+    await expect(tagDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.element(tagDetailScreen.nameInput()).toHaveValue('Renamed');
 
     await tagDetailScreen.backLink().click();
@@ -683,14 +689,13 @@ describe('Tag detail history guard', () => {
     await tagsScreen.tagRows().getByRole('link', { name: 'News' }).click();
     await expect.poll(currentRoute).toBe('/tags/news');
     await tagDetailScreen.nameInput().fill('Renamed');
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
-    });
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
+    await expect(tagDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.poll(currentRoute).toBe('/tags/news');
     await expect.element(tagDetailScreen.nameInput()).toHaveValue('Renamed');
 

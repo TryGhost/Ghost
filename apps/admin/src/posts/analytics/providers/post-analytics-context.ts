@@ -10,11 +10,6 @@ export interface Post extends PostBase {
   authors?: {
     name?: string;
   }[];
-  email?: {
-    opened_count: number;
-    email_count: number;
-    status?: string;
-  } | null;
   newsletter?: {
     feedback_enabled?: boolean;
   } | null;
@@ -37,6 +32,7 @@ export type PostAnalyticsContextType = {
   postId: string;
   post: Post | undefined;
   isPostLoading: boolean;
+  refetchPost: () => Promise<void>;
   range: number;
   setRange: (value: number) => void;
 };

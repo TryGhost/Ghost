@@ -45,6 +45,7 @@ export interface DropzoneProps
   multiple?: boolean;
   maxFiles?: number;
   disabled?: boolean;
+  noDragEventsBubbling?: boolean;
   inputId?: string;
   inputAriaLabel?: string;
   inputTestId?: string;
@@ -60,6 +61,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       multiple = false,
       maxFiles = multiple ? 0 : 1,
       disabled = false,
+      noDragEventsBubbling = false,
       inputId,
       inputAriaLabel,
       inputTestId,
@@ -87,6 +89,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       multiple,
       maxFiles,
       disabled,
+      noDragEventsBubbling,
       onDropAccepted,
       onDropRejected,
     });

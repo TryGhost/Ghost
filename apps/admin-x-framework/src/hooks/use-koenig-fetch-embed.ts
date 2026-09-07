@@ -1,12 +1,20 @@
 import { useCallback } from 'react';
 import { getGhostPaths } from '../utils/helpers';
-import { useFetchApi } from '../utils/api/fetch-api';
+import { useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 
 interface KoenigFetchEmbedOptions {
   type?: string;
 }
 
-export const useKoenigFetchEmbed = () => {
+type EmbedRequestOptions = Pick<RequestOptions, 'sessionExpiryRedirect'>;
+
+// Shared so an omitted argument keeps the returned fetcher's identity stable.
+const DEFAULT_REQUEST_OPTIONS: EmbedRequestOptions = {};
+
+/** The session-expiry policy applies to every lookup this fetcher makes. */
+export const useKoenigFetchEmbed = (
+  requestOptions: EmbedRequestOptions = DEFAULT_REQUEST_OPTIONS,
+) => {
   const fetchApi = useFetchApi();
 
   return useCallback(
@@ -17,8 +25,8 @@ export const useKoenigFetchEmbed = () => {
         oembedUrl.searchParams.set('type', type);
       }
 
-      return await fetchApi(oembedUrl);
+      return await fetchApi(oembedUrl, requestOptions);
     },
-    [fetchApi],
+    [fetchApi, requestOptions],
   );
 };

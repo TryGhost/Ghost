@@ -1,4 +1,5 @@
 import { JobsService } from './jobs-service';
+import type { JobHandlingOptions } from './jobs-service';
 import type { GiftService } from '../gifts/gift-service';
 import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
@@ -9,9 +10,19 @@ import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import * as contentImport from '../content-import';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
 import type MentionController from '../mentions/mention-controller';
+import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
+import SendWebmentionsJob from '../mentions/send-webmentions-job';
 
 const updateCheck = require('../update-check');
+
+// Webmention processing fetches external pages and is triggered by
+// unauthenticated requests, so webmention jobs run in their own lane where a
+// flood cannot occupy the shared workers. The concurrency matches the old
+// dedicated mentions job queue. Every webmention job type must register with
+// this shared declaration so none can declare the queue with a different
+// concurrency.
+const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrency: 3 };
 
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
@@ -22,6 +33,7 @@ interface RegisterJobHandlersDependencies {
   giftService: GiftService;
   mediaInliner: ExternalMediaInliner;
   mentionsController: MentionController;
+  mentionsSendingService: MentionSendingService;
 }
 
 export default function registerJobHandlers({
@@ -30,6 +42,7 @@ export default function registerJobHandlers({
   giftService,
   mediaInliner,
   mentionsController,
+  mentionsSendingService,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -55,7 +68,19 @@ export default function registerJobHandlers({
     await updateCheck({ rethrowErrors: true });
   });
 
-  jobsService.handle(ProcessWebmentionJob, async (job) => {
-    await mentionsController.processWebmention(job);
-  });
+  jobsService.handle(
+    ProcessWebmentionJob,
+    async (job) => {
+      await mentionsController.processWebmention(job);
+    },
+    WEBMENTIONS_QUEUE,
+  );
+
+  jobsService.handle(
+    SendWebmentionsJob,
+    async (job) => {
+      await mentionsSendingService.sendWebmentions(job);
+    },
+    WEBMENTIONS_QUEUE,
+  );
 }
