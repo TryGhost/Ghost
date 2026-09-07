@@ -195,6 +195,7 @@ class EmailService {
       from: this.#emailRenderer.getFromAddress(post, newsletter),
       replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
       email_count: emailCount,
+      preflight_email_count: emailCount,
       csd_email_count: csdEmailCount,
       source: post.get('lexical') || post.get('mobiledoc'),
       source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
