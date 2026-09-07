@@ -110,6 +110,9 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
           slug: payload.slug as string,
           lexical: payload.lexical as string,
           custom_excerpt: (payload.custom_excerpt ?? null) as string | null,
+          featured: ('featured' in payload
+            ? payload.featured
+            : state.acknowledged.featured) as boolean,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
         state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
@@ -627,6 +630,130 @@ describe('createEditorSession', () => {
 
     expect(session.isDirty()).toBe(false);
     expect(seen.at(-1)).toBe(false);
+  });
+
+  describe('settings fields', () => {
+    const PUBLISHED_AT = '2025-12-01T00:00:00.000Z';
+
+    // A field save awaits the slug port and the transport before it lands.
+    const settle = () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+    it('carries every settings field through the projection into the dirty compare', () => {
+      const { session } = harness({
+        record: record({
+          featured: false,
+          visibility: 'public',
+          meta_title: 'Meta',
+          codeinjection_head: null,
+        }),
+      });
+
+      expect(session.getFields()).toMatchObject({
+        featured: false,
+        visibility: 'public',
+        meta_title: 'Meta',
+        codeinjection_head: null,
+      });
+      expect(session.isDirty()).toBe(false);
+
+      session.patchFields({ meta_title: 'Different meta' });
+
+      expect(session.isDirty()).toBe(true);
+      expect(session.getFields().meta_title).toBe('Different meta');
+    });
+
+    it('sends only the fields this session edited', async () => {
+      const { session, state } = harness({
+        record: record({ featured: false, meta_title: 'Untouched', visibility: 'public' }),
+      });
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      expect(state.updates[0].payload).toMatchObject({ featured: true });
+      expect(state.updates[0].payload).not.toHaveProperty('meta_title');
+      expect(state.updates[0].payload).not.toHaveProperty('visibility');
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it.each([
+      { status: 'draft' as const, persists: true },
+      { status: 'published' as const, persists: false },
+      { status: 'scheduled' as const, persists: false },
+      { status: 'sent' as const, persists: false },
+    ])('$status: commitField persists=$persists', async ({ status, persists }) => {
+      const { session, state } = harness({
+        record: record({
+          status,
+          published_at: status === 'draft' ? null : PUBLISHED_AT,
+        }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+      await settle();
+
+      expect(state.updates).toHaveLength(persists ? 1 : 0);
+      expect(session.isDirty()).toBe(!persists);
+    });
+
+    it('stages a field on a published post until an explicit save', async () => {
+      const { session, state } = harness({
+        record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+      await settle();
+
+      expect(state.updates).toHaveLength(0);
+      expect(session.getFields().featured).toBe(true);
+
+      await session.dispatchExplicit();
+
+      expect(state.updates).toHaveLength(1);
+      expect(state.updates[0].payload).toMatchObject({ featured: true, status: 'published' });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps a staged field after a rejected save', async () => {
+      const { session, state } = harness(
+        { record: record({ status: 'published', published_at: PUBLISHED_AT }) },
+        { failUpdateWith: updateCollision() },
+      );
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      expect(state.updates).toHaveLength(1);
+      expect(session.getFields().featured).toBe(true);
+      expect(session.isDirty()).toBe(true);
+    });
+
+    it('discards staged fields when the server copy replaces the document', async () => {
+      const { session } = harness(
+        { record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }) },
+        { failUpdateWith: updateCollision() },
+      );
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      const reloaded = session.recordReloaded(
+        record({
+          status: 'published',
+          published_at: PUBLISHED_AT,
+          featured: false,
+          updated_at: '2026-01-02T00:00:00.000Z',
+        }),
+      );
+
+      expect(reloaded).toBe(true);
+      expect(session.getFields().featured).toBe(false);
+    });
   });
 
   it('stops notifying an unsubscribed listener', () => {

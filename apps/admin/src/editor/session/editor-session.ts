@@ -26,6 +26,7 @@ import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
+import type { EditorSettingsPatch, SettingsFieldKey } from './settings-fields';
 
 export type EditorWritePayload = Record<string, unknown>;
 
@@ -85,6 +86,12 @@ export interface EditorSession {
       Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
     >,
   ) => void;
+  /** Stages settings-sidebar fields in the live document and enrols them in the save payload. */
+  patchFields: (patch: EditorSettingsPatch) => void;
+  /** The live value of every settings field, for the sidebar's inputs. */
+  getFields: () => EditablePostProjection;
+  /** The one save policy gate for settings fields; see the README. */
+  commitField: () => void;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -137,6 +144,9 @@ export function createEditorSession({
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
+  // A field is sent only once this session has edited it. Resending a value the
+  // session merely opened with would overwrite whatever changed elsewhere.
+  const editedFields = new Set<SettingsFieldKey>();
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -211,8 +221,6 @@ export function createEditorSession({
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
-    // Tags are left out: nothing here edits them, and resending the set this
-    // session opened with would overwrite tags changed elsewhere.
     const projection: EditablePostPatch = {
       title: request.title,
       slug: request.slug,
@@ -239,6 +247,16 @@ export function createEditorSession({
     // (core/server/models/relations/authors.js). Updates never resend it.
     if (isCreate && currentUserId) {
       payload.authors = [{ id: currentUserId }];
+    }
+
+    // The engine authors the slug itself, so it is never taken from `live` here.
+    const staged = projection as Record<string, unknown>;
+    for (const key of editedFields) {
+      if (key === 'slug') {
+        continue;
+      }
+      staged[key] = live[key];
+      payload[key] = live[key];
     }
     if (!isCreate) {
       if (!projection.updated_at) {
@@ -360,6 +378,23 @@ export function createEditorSession({
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
     patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
     patchFeatureImage: (patch) => patchLive(patch),
+
+    patchFields: (patch) => {
+      for (const key of Object.keys(patch) as SettingsFieldKey[]) {
+        editedFields.add(key);
+      }
+      patchLive(patch);
+    },
+    getFields: () => live,
+
+    // The one place the sidebar's save policy lives. A draft persists a settings
+    // field the way the body does; every other status stages it until Update.
+    commitField: () => {
+      if (status !== 'draft') {
+        return;
+      }
+      void engine.dispatch('field');
+    },
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
@@ -424,6 +459,7 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
+      editedFields.clear();
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });

@@ -36,6 +36,12 @@ export const editorLeaveDialog = 'editor-leave-dialog';
 export const editorHeaderActions = 'editor-header-actions';
 export const editorPublishInputsError = 'editor-publish-inputs-error';
 
+// settings sidebar testids
+export const postSettingsSidebar = 'post-settings-sidebar';
+export const settingsMenuToggle = 'settings-menu-toggle';
+export const settingsExcerptInput = 'settings-excerpt-input';
+export const settingsFeaturedToggle = 'settings-featured-toggle';
+
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
 export const publishFlowOptions = 'publish-flow-options';
@@ -107,3 +113,7 @@ export const editorUpdateButton = 'Update';
 export const editorSaveButton = 'Save';
 export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
+export const settingsMenuToggleButton = 'Settings';
+export const settingsExcerptLabel = 'Excerpt';
+export const featurePostLabel = 'Feature this post';
+export const featurePageLabel = 'Feature this page';

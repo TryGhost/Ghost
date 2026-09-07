@@ -42,6 +42,11 @@ import { createEditorSession, type EditorSession, type EditorWritePayload } from
 import { createPublishDispatcher } from './publish-dispatch';
 import type { PublishDispatcher } from '@/editor/publish/use-publish-flow';
 import type { EditorRecord } from './projection';
+import {
+  SETTINGS_FIELD_KEYS,
+  type EditorSettingsFields,
+  type EditorSettingsPatch,
+} from './settings-fields';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 /** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
@@ -96,6 +101,10 @@ export interface EditorSessionHandle {
   /** Replaces the document with the server's copy, or says why it could not. */
   reload: () => Promise<ReloadOutcome>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
+  /** The live settings fields, re-read on every sidebar edit. */
+  settings: EditorSettingsFields;
+  /** Stages a settings field, then applies the sidebar's save policy. */
+  editSettings: (patch: EditorSettingsPatch) => void;
   /** The post as the engine reads it: identity, status, publish time and title. */
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
@@ -118,6 +127,14 @@ export interface UseEditorSessionOptions {
   siteUrl: string;
   /** Authors a post this session creates. */
   currentUserId?: string;
+}
+
+function settingsFieldsOf(projection: EditorSettingsFields): EditorSettingsFields {
+  const fields = {} as Record<string, unknown>;
+  for (const key of SETTINGS_FIELD_KEYS) {
+    fields[key] = projection[key];
+  }
+  return fields as EditorSettingsFields;
 }
 
 function reportError(error: unknown): void {
@@ -219,6 +236,21 @@ export function useEditorSession({
   const state = useSyncExternalStore(session.subscribe, session.getState);
   const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
 
+  // Mirrored into React state, as the title and excerpt are: the session
+  // notifies on engine and dirtiness changes, not on every field edit.
+  const [settings, setSettings] = useState<EditorSettingsFields>(() =>
+    settingsFieldsOf(session.getFields()),
+  );
+
+  const editSettings = useCallback(
+    (patch: EditorSettingsPatch) => {
+      session.patchFields(patch);
+      setSettings(settingsFieldsOf(session.getFields()));
+      session.commitField();
+    },
+    [session],
+  );
+
   // The saved record: the same query key the screen loaded with, so an existing
   // post shares one cache entry and a created one starts observing its own.
   const postQuery = useEditorPost(persistedId ?? '', {
@@ -291,6 +323,7 @@ export function useEditorSession({
     queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setExcerpt(fresh.custom_excerpt ?? '');
+    setSettings(settingsFieldsOf(session.getFields()));
     setInitialLexical(fresh.lexical ?? null);
     setLoadedRecord(fresh);
     setContentKey((key) => key + 1);
@@ -324,7 +357,9 @@ export function useEditorSession({
     session.dispatchField();
   }, [session, title]);
 
-  const onExcerptBlur = useCallback(() => session.dispatchField(), [session]);
+  // The excerpt is a settings field wherever it is rendered, so it goes through
+  // the same policy gate as the rest of the sidebar.
+  const onExcerptBlur = useCallback(() => session.commitField(), [session]);
 
   const onLexicalChange = useCallback(
     (lexical: unknown) => {
@@ -376,6 +411,8 @@ export function useEditorSession({
     contentText,
     reload,
     patchFeatureImage: session.patchFeatureImage,
+    settings,
+    editSettings,
     getSaveSnapshot: session.getSaveSnapshot,
     getLiveLexical: session.getLiveLexical,
     dispatchField: session.dispatchField,
