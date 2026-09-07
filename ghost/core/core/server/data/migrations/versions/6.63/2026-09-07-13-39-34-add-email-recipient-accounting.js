@@ -1,46 +1,30 @@
 const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
 
+const addColumn = (table, name, definition) =>
+  createAddColumnMigration(table, name, definition, { algorithm: 'auto' });
+
 module.exports = combineNonTransactionalMigrations(
-  createAddColumnMigration(
-    'emails',
-    'preflight_email_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'emails',
-    'candidate_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'emails',
-    'preparation_excluded_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'emails',
-    'prepared_at',
-    { type: 'dateTime', nullable: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'email_batches',
-    'recipient_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'email_batches',
-    'submission_excluded_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
-  createAddColumnMigration(
-    'email_batches',
-    'submitted_count',
-    { type: 'integer', nullable: true, unsigned: true },
-    { algorithm: 'instant' },
-  ),
+  addColumn('emails', 'preflight_email_count', { type: 'integer', nullable: true, unsigned: true }),
+  addColumn('emails', 'candidate_count', { type: 'integer', nullable: true, unsigned: true }),
+  addColumn('emails', 'preparation_excluded_count', {
+    type: 'integer',
+    nullable: true,
+    unsigned: true,
+  }),
+  addColumn('emails', 'prepared_at', { type: 'dateTime', nullable: true }),
+  addColumn('email_batches', 'recipient_count', {
+    type: 'integer',
+    nullable: true,
+    unsigned: true,
+  }),
+  addColumn('email_batches', 'submission_excluded_count', {
+    type: 'integer',
+    nullable: true,
+    unsigned: true,
+  }),
+  addColumn('email_batches', 'submitted_count', {
+    type: 'integer',
+    nullable: true,
+    unsigned: true,
+  }),
 );

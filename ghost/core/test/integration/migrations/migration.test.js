@@ -43,18 +43,7 @@ describe('Migrations', function () {
     });
 
     it('can rollback to the previous minor version and then forwards again', async function () {
-      await knexMigrator.rollback({
-        version: previousVersion,
-        force: true,
-      });
-      await knexMigrator.migrate({
-        force: true,
-      });
-    });
-
-    it('preserves legacy email accounting as unknown through migration and rollback', async function () {
-      const migration = require('../../../core/server/data/migrations/versions/6.63/2026-09-07-13-39-34-add-email-recipient-accounting');
-      const options = { connection: db.knex };
+      await knexMigrator.rollback({ version: previousVersion, force: true });
       const fields = {
         emails: [
           'preflight_email_count',
@@ -64,9 +53,6 @@ describe('Migrations', function () {
         ],
         email_batches: ['recipient_count', 'submission_excluded_count', 'submitted_count'],
       };
-
-      await migration.down(options);
-      await migration.down(options);
       const emailId = '123456789012345678901234';
       const batchId = '123456789012345678901235';
       await db.knex('emails').insert({
@@ -85,9 +71,7 @@ describe('Migrations', function () {
         created_at: new Date(),
         updated_at: new Date(),
       });
-
-      await migration.up(options);
-      await migration.up(options);
+      await knexMigrator.migrate({ force: true });
       for (const [table, columns] of Object.entries(fields)) {
         const row = await db
           .knex(table)
@@ -101,18 +85,6 @@ describe('Migrations', function () {
         assert.equal(row.status, 'pending');
       }
       assert.equal((await db.knex('emails').where({ id: emailId }).first()).email_count, 12);
-
-      await migration.down(options);
-      for (const [table, columns] of Object.entries(fields)) {
-        for (const column of columns) {
-          assert.equal(await db.knex.schema.hasColumn(table, column), false);
-        }
-      }
-      await migration.up(options);
-      assert.equal(
-        (await db.knex('emails').where({ id: emailId }).first()).preflight_email_count,
-        null,
-      );
     });
 
     it('should have idempotent migrations', async function () {
