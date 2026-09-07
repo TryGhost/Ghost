@@ -600,6 +600,22 @@ class BatchSendingService {
         },
         'Verified email preparation',
       );
+      const preflightCount = email.get('preflight_email_count');
+      const drift = Math.abs(candidateCount - preflightCount);
+      if (drift > 0 && (preflightCount === 0 || drift / preflightCount >= 0.01)) {
+        logging.warn(
+          {
+            event: { name: 'email.preparation.audience_drift' },
+            email_id: email.id,
+            preflight_email_count: preflightCount,
+            candidate_count: candidateCount,
+          },
+          'Newsletter candidate audience differs from the preflight estimate',
+        );
+        this.#sentry?.captureMessage(
+          `Email ${email.id} candidate count ${candidateCount} differs from preflight count ${preflightCount}.`,
+        );
+      }
       return verified.batches;
     }
 
@@ -639,10 +655,14 @@ class BatchSendingService {
   }
 
   #verificationFailure(email, reason, details = {}) {
+    const canRebuild =
+      !email.get('prepared_at') &&
+      ['batch_recipient_count', 'preparation_totals', 'batch_recovery_conflict'].includes(reason);
     const error = new errors.EmailError({
       code: VERIFICATION_CODE,
-      message:
-        'Newsletter recipient verification failed. Some messages may have been submitted. Contact support to investigate.',
+      message: canRebuild
+        ? 'Newsletter recipient preparation failed. Retry sending to rebuild the recipient batches.'
+        : 'Newsletter recipient verification failed. Some messages may have been submitted. Contact support to investigate.',
       errorDetails: JSON.stringify({
         code: VERIFICATION_CODE,
         email_id: email.id,
@@ -651,6 +671,10 @@ class BatchSendingService {
       }),
     });
     logging.error(error);
+    logging.error(
+      { event: { name: 'email.verification.failed' }, email_id: email.id, reason, ...details },
+      'Newsletter recipient verification failed',
+    );
     this.#sentry?.captureException(error);
     return error;
   }
@@ -674,7 +698,6 @@ class BatchSendingService {
           .knex(table)
           .where({ email_id: email.id })
           .select('id')
-          .orderBy('id')
           .limit(1000);
         if (rows.length === 0) {
           break;
@@ -855,6 +878,7 @@ class BatchSendingService {
           if (!accounting) {
             throw error;
           }
+          logging.error(error);
           // The transaction handler has settled (including its rollback) before
           // this read. A failed acknowledgement does not prove a failed commit.
           const committed = await this.#models.EmailBatch.findOne({ id: batchId });
@@ -944,18 +968,6 @@ class BatchSendingService {
       `Creating batch for email ${email.id} segment ${segment} with ${members.length} members`,
     );
 
-    const batch = await this.#models.EmailBatch.add(
-      {
-        ...(options.batchId ? { id: options.batchId } : {}),
-        email_id: email.id,
-        member_segment: segment,
-        status: 'pending',
-        fallback_sending_domain: Boolean(options.useFallbackDomain),
-        ...(this.#usesRecipientAccounting(email) ? { recipient_count: members.length } : {}),
-      },
-      options,
-    );
-
     const recipientData = [];
 
     members.forEach((memberRow) => {
@@ -970,12 +982,27 @@ class BatchSendingService {
         id: ObjectID().toHexString(),
         email_id: email.id,
         member_id: memberRow.id,
-        batch_id: batch.id,
         member_uuid: memberRow.uuid,
         member_email: memberRow.email,
         member_name: memberRow.name,
       });
     });
+
+    const batch = await this.#models.EmailBatch.add(
+      {
+        ...(options.batchId ? { id: options.batchId } : {}),
+        email_id: email.id,
+        member_segment: segment,
+        status: 'pending',
+        fallback_sending_domain: Boolean(options.useFallbackDomain),
+        ...(this.#usesRecipientAccounting(email) ? { recipient_count: recipientData.length } : {}),
+      },
+      options,
+    );
+
+    for (const recipient of recipientData) {
+      recipient.batch_id = batch.id;
+    }
 
     const insertQuery = this.#db.knex('email_recipients').insert(recipientData);
 

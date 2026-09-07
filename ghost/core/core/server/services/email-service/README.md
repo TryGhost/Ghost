@@ -26,7 +26,11 @@ failed.
 Before saving `prepared_at`, verify actual recipient rows against stored counts,
 per batch and for the email, and require candidates to equal prepared recipients
 plus exclusions. The verified database read supplies the batches for submission.
-The preflight estimate can legitimately differ from the consumed audience.
+The preflight estimate can legitimately differ from the consumed audience; a
+difference of at least 1% emits a warning and a Sentry message without failing
+preparation. Verification failures emit `email.verification.failed` with their
+reason and counts. Failures during safely rebuildable preparation ask the user
+to retry; frozen or possibly submitted batches require investigation.
 
 An interrupted preparation without `prepared_at` is discarded on retry, using
 bounded deletes of recipient rows followed by batches. Any non-pending batch
