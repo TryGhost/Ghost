@@ -1,21 +1,11 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useSendingEta } from './use-sending-eta';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
 import type { ReactNode } from 'react';
-
-const formatEta = (seconds: number): string => {
-  if (seconds > 80) {
-    const minutes = Math.round(seconds / 60);
-    return `About ${formatNumber(minutes)} ${minutes === 1 ? 'minute' : 'minutes'} left`;
-  }
-  if (seconds > 40) {
-    return 'About 1 minute left';
-  }
-  return 'Less than 1 minute left';
-};
 
 const FILL_CLIP_ID = 'email-sending-fill-clip';
 
@@ -68,9 +58,11 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
-const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>): ReactNode => {
-  const { completed, total, estimated_seconds_remaining: eta } = sending.progress;
-  const estimate = eta === null ? null : formatEta(eta);
+const activeDetail = (
+  sending: Exclude<EmailSendingState, { status: 'failed' }>,
+  estimate: string | null,
+): ReactNode => {
+  const { completed, total } = sending.progress;
 
   if (total === 0) {
     return estimate;
@@ -105,6 +97,7 @@ const EmailSendingStatusBanner = () => {
   const { status, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
     useEmailSendingStatusContext();
   const sending = status?.sending;
+  const estimate = useSendingEta(status);
 
   if (!sending || sending.status === 'submitted') {
     return null;
@@ -127,7 +120,7 @@ const EmailSendingStatusBanner = () => {
     ? hasUnknownDeliveryOutcome
       ? post?.email?.error || 'Something went wrong while sending this email.'
       : failureDetail(sending, post?.email?.error)
-    : activeDetail(sending);
+    : activeDetail(sending, estimate);
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
