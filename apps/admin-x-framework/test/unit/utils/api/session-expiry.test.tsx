@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
+import { restoreLocation, stubLocation } from '../../../utils/stub-location';
 
 const unauthorizedBody = {
   errors: [
@@ -77,24 +78,13 @@ const loadModules = async () => {
 };
 
 describe('session expiry handling', () => {
-  let originalLocation: Location;
-
   beforeEach(() => {
     vi.resetModules();
-
-    originalLocation = window.location;
-    delete (window as any).location;
-    (window as any).location = {
-      href: 'http://localhost:3000/ghost/',
-      hash: '#/posts',
-      origin: 'http://localhost:3000',
-      pathname: '/ghost/',
-      replace: vi.fn(),
-    };
+    stubLocation();
   });
 
   afterEach(() => {
-    (window as any).location = originalLocation;
+    restoreLocation();
   });
 
   it('redirects to the admin root when an API request returns 403 Authorization failed', async () => {
