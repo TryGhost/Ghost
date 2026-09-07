@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { StoredSendingStatus } from './sending-status-schema';
 
 const ETA_COMPLETION_WINDOW = 20;
-const ETA_MIN_INTERVALS = 5;
+const ETA_MIN_INTERVALS = 2;
 
 export const SendingPhase = z.enum(['preparing', 'submitting']);
 export type SendingPhase = z.infer<typeof SendingPhase>;
@@ -90,7 +90,6 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       completed,
       total,
       estimatedSecondsRemaining: estimateSecondsRemaining({
-        phase,
         remaining,
         samples,
         attemptStartedAt,
@@ -113,12 +112,10 @@ function failedDuringAttempt(batch: SendingBatch, attemptStartedAt: number | nul
 }
 
 function estimateSecondsRemaining({
-  phase,
   remaining,
   samples,
   attemptStartedAt,
 }: {
-  phase: SendingPhase;
   remaining: number;
   samples: BatchSample[];
   attemptStartedAt: number | null;
@@ -149,36 +146,15 @@ function estimateSecondsRemaining({
 
   // Limit usable timestamps, not rows: fast sends may finish many batches per timestamp.
   const window = completions.slice(-ETA_COMPLETION_WINDOW);
-  const intervals = window.slice(1).map((sample, index) => {
-    const seconds = (sample.timestamp - window[index].timestamp) / 1000;
-    return {
-      recipientCount: sample.recipientCount,
-      seconds,
-      rate: seconds / sample.recipientCount,
-    };
-  });
-  // Wait for enough timing evidence before publishing a startup estimate.
-  if (intervals.length < ETA_MIN_INTERVALS) {
+  // Three distinct timestamps provide two measured intervals for an initial rate.
+  if (window.length < ETA_MIN_INTERVALS + 1) {
     return null;
   }
 
-  // Preparation is sequential, so each gap describes the next group's work.
-  // Submission workers overlap: a tiny gap can belong to a large batch that ran
-  // alongside another. Keep all submission completions to measure aggregate
-  // throughput rather than mistaking worker overlap for timing outliers.
-  let retained = intervals;
-  if (phase === 'preparing') {
-    const rates = intervals.map((interval) => interval.rate).sort((a, b) => a - b);
-    const middle = Math.floor(rates.length / 2);
-    const median = rates.length % 2 === 0 ? (rates[middle - 1] + rates[middle]) / 2 : rates[middle];
-    retained = intervals.filter(
-      (interval) => interval.rate >= median / 3 && interval.rate <= median * 3,
-    );
-  }
-
-  // The first completion is only the time baseline; its recipients were
-  // processed before the measured interval. Weight retained timings by recipients.
-  const seconds = retained.reduce((sum, interval) => sum + interval.seconds, 0);
-  const recipients = retained.reduce((sum, interval) => sum + interval.recipientCount, 0);
+  // Measure combined throughput across the window, including overlapping workers.
+  // The first completion is only the baseline: its recipients were processed
+  // before the measured time span.
+  const seconds = (window[window.length - 1].timestamp - window[0].timestamp) / 1000;
+  const recipients = window.slice(1).reduce((sum, sample) => sum + sample.recipientCount, 0);
   return Math.ceil((remaining * seconds) / recipients);
 }

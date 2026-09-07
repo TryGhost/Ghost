@@ -269,11 +269,11 @@ describe('buildSendingStatus', function () {
       const result = buildSendingStatus(currentEmail, batches);
       assert.equal(result.status, 'submitting');
       assert.equal(result.progress.completed, (index + 1) * 10);
-      assert.equal(result.progress.estimatedSecondsRemaining, index < 5 ? null : 10);
+      assert.equal(result.progress.estimatedSecondsRemaining, index < 2 ? null : (6 - index) * 10);
     }
 
     assert.equal(
-      buildSendingStatus({ ...currentEmail, attemptStartedAt: at('12:02:10') }, batches).progress
+      buildSendingStatus({ ...currentEmail, attemptStartedAt: at('12:02:40') }, batches).progress
         .estimatedSecondsRemaining,
       null,
     );
@@ -306,10 +306,10 @@ describe('buildSendingStatus', function () {
   it('limits distinct completion samples rather than rows for high-throughput sends', function () {
     for (const status of ['pending', 'submitted'] as const) {
       const completed = Array.from({ length: 30 }, (_, index) =>
-        batch({ status, createdAt: `12:00:0${Math.floor(index / 5)}` }),
+        batch({ status, createdAt: `12:00:0${Math.floor(index / 10)}` }),
       );
-      // Five batches per second gives 50 recipients/second. The last 20 rows
-      // alone only span four timestamps, despite six being available.
+      // Ten batches per second gives 100 recipients/second. The last 20 rows
+      // alone only span two timestamps, despite three being available.
       const batches =
         status === 'pending'
           ? completed
@@ -320,7 +320,7 @@ describe('buildSendingStatus', function () {
       assert.equal(
         buildSendingStatus(email({ recipientCount: 400 }), batches.reverse()).progress
           .estimatedSecondsRemaining,
-        2,
+        1,
       );
     }
   });
@@ -352,27 +352,30 @@ describe('buildSendingStatus', function () {
       assert.equal(estimate([10, 10, 100, 10, 100, 10, 100], [0, 4, 20, 4, 20, 4, 20], 330), 72);
     });
 
-    it('rejects isolated slow and fast per-recipient timings', function () {
-      assert.equal(estimate([10, 10, 10, 10, 10, 10, 10], [0, 10, 10, 100, 10, 0.1, 10]), 100);
+    it('includes both slow and fast completions in aggregate throughput', function () {
+      assert.equal(estimate([10, 10, 10, 10, 10, 10, 10], [0, 10, 10, 100, 10, 0.1, 10]), 234);
     });
 
     it('retains large batches that take proportionally longer', function () {
       assert.equal(estimate([10, 10, 10, 1000, 10, 10], [0, 10, 10, 1000, 10, 10]), 100);
     });
 
-    it('withholds early estimates and filters the startup spike from the first estimate', function () {
-      const counts = [10, 10, 10, 10, 10, 10];
-      const gaps = [0, 100, 10, 10, 10, 10];
-      for (let completed = 1; completed < counts.length; completed += 1) {
-        assert.equal(estimate(counts.slice(0, completed), gaps.slice(0, completed)), null);
-      }
-      assert.equal(estimate(counts, gaps), 100);
+    it('starts estimating after two measured intervals', function () {
+      assert.equal(estimate([10], [0]), null);
+      assert.equal(estimate([10, 10], [0, 10]), null);
+      assert.equal(estimate([10, 10, 10], [0, 10, 10]), 100);
+      assert.equal(estimate([10, 10, 10], [0, 100, 10]), 550);
+    });
+
+    it('smooths a slow interval as more completions enter the window', function () {
+      assert.equal(estimate([10, 10, 10, 10, 10], [0, 100, 10, 10, 10]), 325);
+      assert.equal(estimate([10, 10, 10, 10, 10, 10], [0, 100, 10, 10, 10, 10]), 280);
     });
 
     it('combines simultaneous completions without losing their recipients', function () {
       assert.equal(estimate([10, 20, 30, 50, 50, 50, 50], [0, 10, 0, 10, 10, 10, 10]), 20);
       assert.equal(estimate([10, 20], [0, 0]), null);
-      assert.equal(estimate(Array(10).fill(10), [0, 10, 0, 10, 0, 10, 0, 10, 0, 0]), null);
+      assert.equal(estimate(Array(10).fill(10), [0, 10, 0, 0, 0, 0, 0, 0, 0, 0]), null);
     });
 
     it('adapts to sustained slowdowns as old batches leave the window', function () {

@@ -22,9 +22,8 @@ attempts, so a retried email reports submitting with frozen progress while it
 waits for its job, and `failed_during` is the same derivation applied to a
 failed email.
 
-The rough ETA uses recent batch timings and accounts for recipient counts.
-Preparation filters timing outliers; submission measures combined throughput
-across concurrent workers. It stays `null` until enough samples are available in
+The rough ETA measures recent recipient throughput, including work completed by
+concurrent workers. It stays `null` until enough timing samples are available in
 the current phase and attempt, so short sends may finish without showing an ETA.
 Progress counts update independently of the estimate.
 
