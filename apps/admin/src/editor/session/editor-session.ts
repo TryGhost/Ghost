@@ -28,6 +28,8 @@ import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
   SETTINGS_FIELD_KEYS,
+  TIERS_REQUIRED,
+  tiersIncomplete,
   type EditorSettingsPatch,
   type SettingsFieldKey,
 } from './settings-fields';
@@ -49,6 +51,8 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
+  /** Access values captured for validation of this request. */
+  access: Pick<EditablePostProjection, 'visibility' | 'tiers'>;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
   payload: EditorWritePayload;
@@ -299,6 +303,15 @@ export function createEditorSession({
         payload[key] = live[key];
       }
     }
+    // The write contract requires the pair even when only one field changed.
+    // Reads include tier relations for Public and Paid posts too, so switching
+    // to specific tiers can leave the relation IDs unchanged.
+    if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+      projection.visibility = live.visibility;
+      payload.visibility = live.visibility;
+      projection.tiers = live.tiers;
+      payload.tiers = live.tiers;
+    }
     if (!isCreate) {
       if (!projection.updated_at) {
         // Without the token the server skips its collision check entirely and the
@@ -318,6 +331,7 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
+      access: { visibility: live.visibility, tiers: live.tiers },
       builtAtVersion: version,
       payload,
       options: {
@@ -332,6 +346,12 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
+    // Untouched creates carry null visibility and use the server's default.
+    // An explicit tier selection needs a tier, including on the first save.
+    if (tiersIncomplete(prepared.access)) {
+      return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
+    }
+
     inFlightSince = prepared.builtAtVersion;
     try {
       const saved = prepared.isCreate
@@ -445,7 +465,9 @@ export function createEditorSession({
     // The one place the sidebar's save policy lives. A draft persists a settings
     // field the way the body does; every other status stages it until Update.
     commitField: () => {
-      if (status !== 'draft') {
+      // Ember validates the field before saving it, so an incomplete tier
+      // selection stays staged rather than failing a save the writer sees.
+      if (status !== 'draft' || tiersIncomplete(live)) {
         return;
       }
       void engine.dispatch('field');

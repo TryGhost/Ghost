@@ -73,6 +73,40 @@ The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.
 
+## Access
+
+Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
+Administrator or Editor sees them. A post carries no visibility until its first
+save applies the site default, so the select shows `default_content_visibility`
+until then; choosing that same value explicitly is still an edit and still
+saves. Choosing anything other than `Specific tier(s)` clears the tiers it
+granted. The tier list is every one of the site's paid tiers, active ones
+before archived, and it loads only while `Specific tier(s)` is the choice.
+The free tier returned with Public and Members posts is excluded from the
+selection; a tier ID without type metadata is preserved.
+
+The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
+so sending that pairing would be answered with the post's unchanged visibility
+and the writer's choice would snap back. An empty tier selection is therefore
+staged like any other edit but never sent: the section asks for at least one
+tier, a field change does not save while the pairing is incomplete, and a save
+the writer asks for is refused with the same message, which the status line and
+the save banner carry. Because the pairing is staged rather than held in the
+panel, it survives closing the sidebar, enables Update and is what the leave
+guard asks about. A create with untouched access settings still uses the server
+default; an explicit tier selection must include a tier even on the first save.
+Everything that is committed goes through the same gate as the rest of the
+sidebar, so a draft saves it and every other status stages it.
+
+When either access field changes to specific tiers, the save submits both
+visibility and the tier list, including unchanged tier IDs. The API also returns
+tier relations for Public and Paid posts, so changing visibility alone can leave
+those IDs unchanged. Once saved, an unrelated edit sends neither access field.
+
+Koenig cards read the post's access from the editor's card config, which follows
+the live field rather than the saved record: a staged visibility changes what
+the cards describe before any save.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

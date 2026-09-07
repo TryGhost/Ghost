@@ -40,6 +40,9 @@ import {
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
+  settingsTiersError,
+  settingsTiersPicker,
+  settingsVisibilitySelect,
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
@@ -107,6 +110,13 @@ export const editorScreen = {
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
+  settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
+  settingsVisibilityOption: (label: string) =>
+    page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
+  settingsTiers: () => page.getByTestId(settingsTiersPicker),
+  settingsTier: (name: string) =>
+    page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
+  settingsTiersError: () => page.getByTestId(settingsTiersError),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

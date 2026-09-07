@@ -141,25 +141,26 @@ function EditorContent({
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const acceptedRecord = session.loadedRecord;
+  const liveVisibility = session.settings.visibility;
   const currentCardConfig = useMemo(() => {
-    if (!acceptedRecord || !cardConfig.post) {
+    if (!cardConfig.post) {
       return cardConfig;
     }
 
-    // Use the session's accepted metadata, which also rejects stale refetches,
-    // so cards describe the access of the document the editor now holds.
+    // The live settings field, not the saved record: a visibility the writer has
+    // only staged still decides what the cards describe.
     return {
       ...cardConfig,
       post: {
         ...cardConfig.post,
-        visibility: acceptedRecord.visibility ?? cardConfig.post.visibility,
+        visibility: liveVisibility || cardConfig.post.visibility,
         showTitleAndFeatureImage:
-          'show_title_and_feature_image' in acceptedRecord
+          acceptedRecord && 'show_title_and_feature_image' in acceptedRecord
             ? (acceptedRecord.show_title_and_feature_image ?? true)
-            : true,
+            : cardConfig.post.showTitleAndFeatureImage,
       },
     };
-  }, [acceptedRecord, cardConfig]);
+  }, [acceptedRecord, cardConfig, liveVisibility]);
 
   useSaveShortcut(session.dispatchExplicit);
 
