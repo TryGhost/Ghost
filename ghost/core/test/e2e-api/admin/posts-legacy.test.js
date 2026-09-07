@@ -542,6 +542,7 @@ describe('Posts API', function () {
 
     assert.equal(res2.headers['x-cache-invalidate'], '/*');
     assert.equal(res2.body.posts[0].status, 'draft');
+    assert.ok(res2.body.posts[0].email, 'Unpublishing should retain the hook-loaded email');
     assert.equal(res2.body.posts[0].email.id, email.id);
     for (const field of [
       'preflight_email_count',
