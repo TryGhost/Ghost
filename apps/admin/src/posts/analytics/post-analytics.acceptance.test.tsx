@@ -254,7 +254,9 @@ describe('Post analytics overview', () => {
     await expect
       .element(page.getByText('Sends, opens and clicks will appear once every email has been sent'))
       .toBeVisible();
-    await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeDisabled();
+    await expect
+      .element(page.getByRole('button', { name: /View members/ }).first())
+      .not.toBeInTheDocument();
 
     completeSending = true;
     const pendingStatusRequestCount = statusRequestCount;
@@ -284,35 +286,37 @@ describe('Post analytics overview', () => {
     } as const;
     seedPostAnalyticsWorld(postOverrides);
     fakeSubmittingBatches();
-    let statusRequestCount = 0;
+    let hasRetried = false;
+    let hasCompleted = false;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
-      statusRequestCount += 1;
       return {
         email_statuses: [
           {
             id: EMAIL_ID,
-            sending:
-              statusRequestCount === 1
+            sending: !hasRetried
+              ? {
+                  status: 'failed',
+                  failed_during: 'submitting',
+                  progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+                }
+              : !hasCompleted
                 ? {
-                    status: 'failed',
-                    failed_during: 'submitting',
-                    progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+                    status: 'submitting',
+                    progress: { completed: 250, total: 1000, estimated_seconds_remaining: 30 },
                   }
-                : statusRequestCount === 2
-                  ? {
-                      status: 'submitting',
-                      progress: { completed: 250, total: 1000, estimated_seconds_remaining: 30 },
-                    }
-                  : {
-                      status: 'submitted',
-                      progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
-                    },
+                : {
+                    status: 'submitted',
+                    progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
+                  },
           },
         ],
       };
     });
-    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, {
-      emails: [{ id: EMAIL_ID, email_count: 250, opened_count: 0, status: 'submitting' }],
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, () => {
+      hasRetried = true;
+      return {
+        emails: [{ id: EMAIL_ID, email_count: 250, opened_count: 0, status: 'submitting' }],
+      };
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
@@ -329,7 +333,8 @@ describe('Post analytics overview', () => {
     await page.getByRole('button', { name: 'Send remaining emails' }).click();
     await expect.poll(() => retryApi.requests.length).toBe(1);
     await expect.element(page.getByText('Sending emails')).toBeVisible();
-    await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(2);
+    // Keep submission visible until asserted, regardless of how many polls CI runs.
+    hasCompleted = true;
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
   });
 

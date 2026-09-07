@@ -17,9 +17,28 @@ const formatEta = (seconds: number): string => {
   return 'Less than 1 minute left';
 };
 
-const HalfFullGlyph = () => (
+const FILL_CLIP_ID = 'email-sending-fill-clip';
+
+/** A grey level rising over a white face and dropping back, on the arrow's tempo. */
+const FillingGlyph = () => (
   <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 12 12" width="12">
-    <path d="M1.2 6 A4.8 4.8 0 0 1 10.8 6 Z" fill="currentColor" />
+    {/* Wider than the 4.8 face: cut to the same radius, the two anti-aliased
+        edges stack and the white bleeds through as a pale ring. */}
+    <clipPath id={FILL_CLIP_ID}>
+      <circle cx="6" cy="6" r="5.1" />
+    </clipPath>
+    <circle cx="6" cy="6" fill="currentColor" r="4.8" />
+    {/* Clip on the group, animation on the child: a transform on a clipped
+        element carries its own clip path along with it. */}
+    <g clipPath={`url(#${FILL_CLIP_ID})`}>
+      <rect
+        className="animate-email-sending-fill-rise fill-muted-foreground motion-reduce:translate-y-1/2 motion-reduce:animate-none"
+        height="12"
+        width="12"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 );
 
@@ -27,7 +46,7 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   if (sending.status === 'preparing') {
     return (
       <span className="relative flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted-foreground text-white ring-1 ring-muted-foreground ring-offset-1 ring-offset-background">
-        <HalfFullGlyph />
+        <FillingGlyph />
       </span>
     );
   }
@@ -59,8 +78,7 @@ const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>)
 
   return (
     <>
-      <span className="inline-block min-w-[7ch] text-right">{formatNumber(completed)}</span>
-      {` of ${formatNumber(total)}`}
+      {`${formatNumber(completed)} of ${formatNumber(total)}`}
       {estimate && ` · ${estimate}`}
     </>
   );
