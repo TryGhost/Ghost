@@ -99,7 +99,9 @@ export function useEditorLeaveGuard(
   useEffect(() => {
     if (!isBlocked) {
       isDecidingRef.current = false;
-      setIsConfirmingLeave(false);
+      if (!isLeavingRef.current) {
+        setIsConfirmingLeave(false);
+      }
       return;
     }
     if (isDecidingRef.current) {
@@ -126,11 +128,18 @@ export function useEditorLeaveGuard(
     dialogProps: {
       open: isConfirmingLeave,
       onConfirm: () => {
+        if (isLeavingRef.current) {
+          return;
+        }
         isLeavingRef.current = true;
-        setIsConfirmingLeave(false);
         settle.onConfirm();
       },
       onOpenChange: (open: boolean) => {
+        // Radix auto-closes its Action after confirmation. Keep the overlay
+        // until the editor unmounts so a slow exit cannot flash the editor.
+        if (isLeavingRef.current) {
+          return;
+        }
         if (!open) {
           setIsConfirmingLeave(false);
         }

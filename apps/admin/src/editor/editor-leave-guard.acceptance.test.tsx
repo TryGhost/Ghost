@@ -251,20 +251,39 @@ describe('Post editor leave guard', () => {
     SLOW,
   );
 
-  it(
-    'leaves a published post with unsaved changes once the writer confirms',
-    async () => {
+  it.each([
+    { name: 'router link', options: FLAG_ON },
+    { name: 'native hash link', options: { labs: { editorReact: true } } },
+  ])(
+    'keeps the dialog open until leaving through a $name',
+    async ({ options }) => {
       const saveApi = fakeEditablePost({
         status: 'published',
         published_at: '2026-01-01T00:00:00.000Z',
       });
-      await openDirtyEditor();
+      await openDirtyEditor(options);
 
       await editorScreen.backLink('post').click();
       await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      await editorScreen.leaveEditor().click();
+      const dialog = document.querySelector(editorScreen.leaveDialogSelector)!;
+      let beganClosing = false;
+      const recordState = () => {
+        beganClosing ||= dialog.getAttribute('data-state') === 'closed';
+      };
+      const observer = new MutationObserver(recordState);
+      observer.observe(dialog, { attributes: true, attributeFilter: ['data-state'] });
+      try {
+        await editorScreen.leaveEditor().click();
 
-      await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
+        await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
+        await expect(editorScreen.root()).toHaveCount(0);
+        // The dialog must unmount with the editor, without starting its close
+        // animation and revealing the editor on the way to the destination.
+        recordState();
+        expect(beganClosing).toBe(false);
+      } finally {
+        observer.disconnect();
+      }
       // Confirming discards the edit; nothing is written on the way out.
       expect(saveApi.requests.length).toBe(0);
     },
