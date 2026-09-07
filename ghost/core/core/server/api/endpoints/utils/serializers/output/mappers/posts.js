@@ -157,10 +157,6 @@ module.exports = async (model, frame, options = {}) => {
         jsonModel.authors = jsonModel.authors.map((author) => mapUser(author, frame));
       }
 
-      if (relation === 'email' && jsonModel.email) {
-        jsonModel.email = mapEmail(jsonModel.email, frame);
-      }
-
       if (relation === 'email' && _.isEmpty(jsonModel.email)) {
         jsonModel.email = null;
       }
@@ -169,6 +165,11 @@ module.exports = async (model, frame, options = {}) => {
         jsonModel.newsletter = null;
       }
     });
+  }
+
+  // Model hooks can load the email relation even when it was not requested.
+  if (jsonModel.email) {
+    jsonModel.email = mapEmail(jsonModel.email, frame);
   }
 
   if (jsonModel.email && jsonModel.count) {

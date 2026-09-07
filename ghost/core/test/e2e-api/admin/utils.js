@@ -180,7 +180,14 @@ const expectedProperties = {
   theme: ['name', 'package', 'active'],
   invite: _(schema.invites).keys().without('token'),
   webhook: _(schema.webhooks).keys(),
-  email: _(schema.emails).keys(),
+  email: _(schema.emails)
+    .keys()
+    .without(
+      'preflight_email_count',
+      'candidate_count',
+      'preparation_excluded_count',
+      'prepared_at',
+    ),
   email_previews: ['html', 'subject', 'plaintext'],
   email_recipient: _(schema.email_recipients)
     .keys()
