@@ -1,5 +1,3 @@
-import { type AppSettings } from '@tryghost/admin-x-framework';
-
 /**
  * Generate a frontend URL from an attribution path and site URL
  * @param attributionUrl - The path from attribution data (e.g., '/', '/tag/slug/', '/author/slug/')
@@ -119,7 +117,7 @@ export function getClickHandler(
 type GetPostDestinationParams = {
   postId?: string;
   hasEmailData: boolean;
-  analytics?: Pick<AppSettings['analytics'], 'webAnalytics' | 'membersTrackSources'>;
+  analytics?: { webAnalytics: boolean; membersTrackSources: boolean };
 };
 
 export const getPostDestination = ({

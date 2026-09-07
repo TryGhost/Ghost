@@ -16,8 +16,7 @@ import {
   Switch,
   Textarea,
 } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
-import { JSONError } from '@tryghost/admin-x-framework/errors';
+import { HostLimitError, JSONError } from '@tryghost/admin-x-framework/errors';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Text } from '@tryghost/shade/primitives';
@@ -34,7 +33,7 @@ import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseTiers, useEditTier } from '@tryghost/admin-x-framework/api/tiers';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 
@@ -286,18 +285,18 @@ const Connected: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
           Read next
         </Text>
         <a
-          className="mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900"
+          className="mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-gray-200 transition-all hover:border-gray-400 md:flex-row dark:border-gray-900"
           href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin"
           rel="noopener noreferrer"
           target="_blank"
         >
           <div className="order-2 p-4 md:order-1">
             <div className="text-md font-semibold">How to setup and manage your Stripe account</div>
-            <div className="mt-2 text-grey-800 dark:text-grey-500">
+            <div className="mt-2 text-gray-800 dark:text-gray-500">
               Learn how to configure your Stripe account to work with Ghost, from custom branding to
               payment receipt emails.
             </div>
-            <div className="mt-3 flex items-center gap-1 text-grey-800 dark:text-grey-500">
+            <div className="mt-3 flex items-center gap-1 text-gray-800 dark:text-gray-500">
               <img alt="Ghost Logo" className="size-4" src={GhostLogoPink} />
               <span className="font-semibold">Ghost Resources</span>
             </div>

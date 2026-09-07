@@ -4,7 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useTheme } from './use-theme';
 import { useUserPreferences } from './user-preferences';
 import { HttpResponse, http } from 'msw';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import type {
@@ -12,10 +12,13 @@ import type {
   UsersResponseType,
 } from '@tryghost/admin-x-framework/api/users';
 import type { SetupServer } from 'msw/node';
+import * as emberBridge from '@/ember-bridge';
 
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 const themeTest = baseTest.extend<{
   server: SetupServer;
@@ -95,6 +98,19 @@ afterEach(() => {
 
 describe('useTheme (standalone)', () => {
   themeTest(
+    'does not report a ready theme until preferences have loaded',
+    async ({ server, wrapper, animationFrames }) => {
+      mockPreferences(server, 'dark');
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.isThemeReady).toBe(false);
+      await waitFor(() => expect(result.current.isThemeReady).toBe(true));
+      expect(result.current.resolvedTheme).toBe('dark');
+      flushAnimationFrames(animationFrames);
+    },
+  );
+
+  themeTest(
     'applies the persisted theme with transition suppression',
     async ({ server, wrapper, animationFrames }) => {
       mockPreferences(server, 'dark');
@@ -153,6 +169,44 @@ describe('useTheme (standalone)', () => {
 
       expect(html.classList.contains('dark')).toBe(true);
       expect(html.classList.contains('theme-switching')).toBe(false);
+    },
+  );
+});
+
+describe('useTheme (Ember-managed)', () => {
+  themeTest(
+    'tracks system changes without applying the DOM theme',
+    async ({ server, wrapper, animationFrames }) => {
+      mockPreferences(server, 'system');
+      const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
+      const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
+      const managedSpy = vi.spyOn(emberBridge, 'isEmberThemeManaged').mockReturnValue(true);
+      const removeListenerSpy = vi.spyOn(mediaQuery, 'removeEventListener');
+
+      try {
+        const { result, unmount } = renderHook(() => useTheme(), { wrapper });
+        await waitFor(() => expect(result.current.theme).toBe('system'));
+        expect(result.current.resolvedTheme).toBe('light');
+
+        act(() => {
+          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+        });
+        expect(result.current.resolvedTheme).toBe('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+        expect(animationFrames.size).toBe(0);
+
+        act(() => {
+          mediaQuery.dispatchEvent(Object.assign(new Event('change'), { matches: false }));
+        });
+        expect(result.current.resolvedTheme).toBe('light');
+
+        unmount();
+        expect(removeListenerSpy).toHaveBeenCalledWith('change', expect.any(Function));
+      } finally {
+        mediaSpy.mockRestore();
+        managedSpy.mockRestore();
+        removeListenerSpy.mockRestore();
+      }
     },
   );
 });

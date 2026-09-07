@@ -30,6 +30,12 @@ function configWithPublicSiteAccessLimit() {
 async function choose(selectTestId: string, option: string) {
   await settingsScreen.access().getByTestId(selectTestId).click();
   await settingsScreen.selectOptionExact(option).click();
+  // Choosing an option starts the dropdown's close, it does not finish it: the
+  // list stays mounted and the body keeps `pointer-events: none` until the
+  // teardown completes. Anything clicked inside that window races it — the
+  // click is either refused or opens a layer the teardown then dismisses — so
+  // wait the dropdown out before the caller touches the next control.
+  await expect(settingsScreen.selectOptionExact(option)).toHaveCount(0);
 }
 
 describe('Access settings', () => {
@@ -234,8 +240,13 @@ describe('Access settings', () => {
 
     await choose('default-post-access-select', 'Specific tiers');
     await settingsScreen.access().getByTestId('tiers-select').click();
-    await settingsScreen.selectOption(basic.name).click();
-    await settingsScreen.selectOption(premium.name).click();
+    const basicOption = settingsScreen.tierOption(basic.name);
+    await expect.element(basicOption).toBeVisible();
+    await basicOption.click();
+
+    const premiumOption = settingsScreen.tierOption(premium.name);
+    await expect.element(premiumOption).toBeVisible();
+    await premiumOption.click();
     await settingsScreen.access().getByRole('button', { name: 'Save' }).click();
 
     await expect

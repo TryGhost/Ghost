@@ -1,6 +1,8 @@
 import { HttpResponse } from 'msw';
 import type { Action } from '@tryghost/admin-x-framework/api/actions';
 import type { Integration } from '@tryghost/admin-x-framework/api/integrations';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
 import {
   activeThemeResponse,
   browseResponse,
@@ -18,10 +20,17 @@ import {
   type StaffRole,
   type StaffUser,
   type Tag,
+  type Theme,
   type Tier,
 } from '@tryghost/test-data';
 
-import { record418, registerAdminApiHandler, registerRoute } from './worker';
+import {
+  fakeAdminEndpoint,
+  record418,
+  registerAdminApiHandler,
+  registerRoute,
+  type EndpointCapture,
+} from './worker';
 
 export interface BrowseQuery {
   /** Full request URL, for raw assertions on encoding. */
@@ -59,6 +68,12 @@ export type ResourceSemantics<TEntity> =
 export interface ResourceOptions<TEntity> {
   /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
   resource: string;
+  /**
+   * The key the response object is wrapped in, where it is not just the path segment.
+   * Ghost's Admin API usually matches the two ('tags' → `{ tags: [] }`), but not always:
+   * `members/metafields/custom/` returns `{ members_metafields: [] }`.
+   */
+  envelopeKey?: string;
   semantics: ResourceSemantics<TEntity>;
   /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
   skip?: (apiPath: string) => boolean;
@@ -89,7 +104,28 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
     return [];
   }
 
-  return filter.split('+').filter((component) => {
+  const components: string[] = [];
+  let componentStart = 0;
+  let quote: "'" | '"' | undefined;
+
+  for (let index = 0; index < filter.length; index += 1) {
+    const character = filter[index];
+
+    if (quote) {
+      if (character === quote && filter[index - 1] !== '\\') {
+        quote = undefined;
+      }
+    } else if (character === "'" || character === '"') {
+      quote = character;
+    } else if (character === '+') {
+      components.push(filter.slice(componentStart, index));
+      componentStart = index + 1;
+    }
+  }
+
+  components.push(filter.slice(componentStart));
+
+  return components.filter((component) => {
     const key = component.match(/^([\w.]+):/)?.[1];
     return !key || !covers.includes(key);
   });
@@ -114,7 +150,12 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
  *     trivial behaviors; filter components outside `covers` respond 418
  *     instead of silently serving the full world.
  */
-export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
+export function defineResource<TEntity>({
+  resource,
+  envelopeKey = resource,
+  semantics,
+  skip,
+}: ResourceOptions<TEntity>) {
   return function fakeResource(respondWith: RespondWith<TEntity>): ResourceCapture {
     const requests: BrowseQuery[] = [];
 
@@ -152,7 +193,7 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
       }
 
       return HttpResponse.json(
-        browseResponse(resource, matching, {
+        browseResponse(envelopeKey, matching, {
           page: query.page,
           limit: query.limit,
         }),
@@ -168,15 +209,15 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
   };
 }
 
-/** Tags list fake: declared-query semantics covering the `visibility` filter the tags tabs send. */
+/** Tags list fake: declared-query semantics for the tags tabs and remote tag pickers. */
 export const fakeTags = defineResource<Tag>({
   resource: 'tags',
   semantics: {
     kind: 'declared-query',
-    covers: ['visibility'],
+    covers: ['visibility', 'tags.name'],
     select: (tags, { filter }) => {
       const visibility = filter?.match(/(?:^|\+)visibility:(\w+)/)?.[1];
-      return visibility ? tags.filter((t) => t.visibility === visibility) : tags;
+      return visibility ? tags.filter((tag) => tag.visibility === visibility) : tags;
     },
   },
 });
@@ -210,6 +251,38 @@ const membersResource = defineResource<Member>({
   skip: (apiPath) => apiPath === MEMBER_COUNT_PROBE_PATH,
 });
 
+/**
+ * Member custom-field DEFINITIONS fake (passthrough): serves the declared
+ * field definitions (`@tryghost/admin-x-framework/api/member-custom-fields`
+ * shape) for every browse — the plain read and Settings' archived-inclusive
+ * `?filter=status:[active,archived]` variant alike; assert the outgoing
+ * filter, not served subsets. Values ride the member read payload, and the
+ * create/edit/reorder/delete mutations are one-off endpoints — declare those
+ * with `fakeAdminEndpoint`. A spec observing the list grow across a create
+ * declares that growth itself via the function form (`() => fields`).
+ */
+const memberCustomFieldsResource = defineResource<MemberCustomField>({
+  resource: 'members/metafields/custom',
+  envelopeKey: 'members_metafields',
+  semantics: { kind: 'passthrough' },
+});
+
+// Whether a spec declared its own definitions. `fakeMembers` serves an empty list on
+// behalf of the many specs that never mention custom fields, and handlers registered
+// later win, so seeding unconditionally would silently replace a list the spec had
+// already declared — and its capture would then never see a request.
+let memberCustomFieldsDeclared = false;
+
+export const fakeMemberCustomFields: typeof memberCustomFieldsResource = (respondWith) => {
+  memberCustomFieldsDeclared = true;
+  return memberCustomFieldsResource(respondWith);
+};
+
+/** Called by the harness between tests, alongside the fake API reset. */
+export function resetDeclaredResources(): void {
+  memberCustomFieldsDeclared = false;
+}
+
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({
   resource: 'labels',
@@ -229,6 +302,23 @@ const newslettersResource = defineResource<Newsletter>({
  */
 export const fakePosts = defineResource<Post>({
   resource: 'posts',
+  semantics: { kind: 'passthrough' },
+});
+
+/**
+ * Pages list fake (passthrough). The pages list screen browses this endpoint
+ * once per status bucket, exactly as the posts one does — declare the response
+ * (a function of the query, if a test needs each bucket to differ) and assert
+ * the outgoing filters.
+ */
+export const fakePages = defineResource<Post>({
+  resource: 'pages',
+  semantics: { kind: 'passthrough' },
+});
+
+/** Snippets list fake (passthrough): the editor browses this endpoint once on mount. */
+export const fakeSnippets = defineResource<Snippet>({
+  resource: 'snippets',
   semantics: { kind: 'passthrough' },
 });
 
@@ -265,7 +355,14 @@ export interface FakeMembersOptions {
  * Members list fake (passthrough): serves the declared members and captures
  * every browse request for outgoing-NQL assertions. Also serves the page's
  * filter-bar lookups — labels from the declared members plus
- * `options.labels`, tiers from `options.tiers`; offers/newsletters empty.
+ * `options.labels`, tiers from `options.tiers`; offers, newsletters and custom
+ * field definitions empty.
+ *
+ * Every members screen asks the server which custom fields the publisher has defined,
+ * because that list is what decides whether custom fields appear in the filter bar at all.
+ * This harness fails any test that makes a request nothing has stubbed, so an empty list is
+ * stubbed here on behalf of the many specs that have nothing to do with custom fields. A
+ * spec that wants some calls `fakeMemberCustomFields` after this one.
  */
 export function fakeMembers(
   members: RespondWith<Member>,
@@ -278,6 +375,9 @@ export function fakeMembers(
   fakeTiers(tiers);
   fakeOffers([]);
   newslettersResource([]);
+  if (!memberCustomFieldsDeclared) {
+    memberCustomFieldsResource([]);
+  }
   return membersResource(members);
 }
 
@@ -299,10 +399,29 @@ export const fakeRoles = defineResource<StaffRole>({
 const themesResource = defineResource({ resource: 'themes', semantics: { kind: 'passthrough' } });
 /** Themes list fake (passthrough): installed/active state is declared by the spec. */
 export const fakeThemes = themesResource;
+
+/**
+ * Successful theme-archive upload fake: POST /themes/upload/ answers with the
+ * declared themes (gscan errors/warnings included, via the `theme` builder)
+ * and captures every upload request. Error statuses and the
+ * `?copy_settings_from=` variant carry bespoke response semantics — declare
+ * those with `fakeAdminEndpoint`.
+ */
+export function fakeThemeUpload(themes: Theme[]): EndpointCapture {
+  return fakeAdminEndpoint('POST', '/themes/upload/', { themes });
+}
+
 const automatedEmailsResource = defineResource({
   resource: 'automated_emails',
   semantics: { kind: 'passthrough' },
 });
+/**
+ * Automated-emails list fake (passthrough): serves the declared rows
+ * (`@tryghost/admin-x-framework/api/automated-emails` shape) for the browse.
+ * The row mutations and the design/senders/preview/verifications subpaths are
+ * one-off endpoints — declare those with `fakeAdminEndpoint`.
+ */
+export const fakeAutomatedEmails = automatedEmailsResource;
 const recommendationsResource = defineResource({
   resource: 'recommendations',
   semantics: { kind: 'passthrough' },
@@ -366,6 +485,25 @@ export function fakeSettingsScreens(): void {
   });
 }
 
+/**
+ * Declares the chrome every posts/pages list mount reads: the batched
+ * analytics counts the metric columns request, and the tag/author worlds the
+ * filter bar and its slug lookups probe. Screen-specific data a spec asserts
+ * on is declared in the spec — a fake registered after this one wins.
+ */
+export function fakePostsListScreen(): void {
+  fakeAdminEndpoint('POST', '/stats/posts-visitor-counts/', {
+    stats: [{ data: { visitor_counts: {} } }],
+  });
+  fakeAdminEndpoint('POST', '/stats/posts-member-counts/', {
+    stats: [{ data: { member_counts: {} } }],
+  });
+  fakeTags([]);
+  fakeUsers([]);
+  fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, { tags: [] });
+  fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, { users: [] });
+}
+
 type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };
 
 export interface EditSettingsCapture {
@@ -392,7 +530,13 @@ export function fakeEditSettings(): EditSettingsCapture {
     requests.push(body);
 
     const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
-    const response: SettingsResponse = settingsResponse({ settings: overrides });
+    // The fixture accepts Labs separately; otherwise it overwrites the saved
+    // JSON with defaults and a feature toggle immediately appears unchecked.
+    const labs =
+      typeof overrides.labs === 'string'
+        ? (JSON.parse(overrides.labs) as Record<string, boolean>)
+        : undefined;
+    const response: SettingsResponse = settingsResponse({ settings: overrides, labs });
     return HttpResponse.json(response);
   });
 

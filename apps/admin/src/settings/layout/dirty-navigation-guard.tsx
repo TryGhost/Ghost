@@ -1,5 +1,5 @@
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { NavigationType, useBlocker } from 'react-router';
+import { NavigationType, useBlocker } from '@tryghost/admin-x-framework';
 import { useConfirmUnload } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalDirtyState } from '@tryghost/shade/utils';
 import { isOnRouterHistoryEntry } from '@/hooks/use-router-history-entry';

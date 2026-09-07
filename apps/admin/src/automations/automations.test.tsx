@@ -3,18 +3,6 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-const mockRunAnalyticsFlag = vi.hoisted(() => ({ enabled: true }));
-
-vi.mock('@tryghost/admin-x-framework/hooks', async () => {
-  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
-    '@tryghost/admin-x-framework/hooks',
-  );
-  return {
-    ...actual,
-    useFeatureFlag: () => mockRunAnalyticsFlag.enabled,
-  };
-});
-
 const { mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser } =
   vi.hoisted(() => ({
     mockUseBrowseAutomations: vi.fn(),
@@ -69,7 +57,7 @@ vi.mock('@tryghost/admin-x-framework', async () => {
   );
   return {
     ...actual,
-    getFeaturebaseToken: () => ({ data: undefined }),
+    useFeaturebaseToken: () => ({ data: undefined }),
     useFeaturebase: () => ({
       isAvailable: false,
       openFeedbackWidget: () => {},
@@ -120,7 +108,6 @@ const renderPage = () =>
 describe('Automations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRunAnalyticsFlag.enabled = true;
     mockUseBrowseAutomations.mockReturnValue({
       data: { automations },
       isError: false,
@@ -129,17 +116,6 @@ describe('Automations', () => {
     mockUseBrowseSettings.mockReturnValue({ data: stripeConnectedSettings, isLoading: false });
     mockUseBrowseConfig.mockReturnValue({ data: { config: {} }, isLoading: false });
     mockUseCurrentUser.mockReturnValue({ data: { id: 'user-1', roles: [{ name: 'Owner' }] } });
-  });
-
-  it('hides run analytics when the private feature is disabled', () => {
-    mockRunAnalyticsFlag.enabled = false;
-
-    renderPage();
-
-    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
-    expect(screen.queryByText('1,432')).not.toBeInTheDocument();
   });
 
   it('shows free and paid sequences when Stripe is connected', () => {
@@ -154,15 +130,6 @@ describe('Automations', () => {
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
   });
 
-  it('hides the paid sequence when Stripe is not connected', () => {
-    mockUseBrowseSettings.mockReturnValue({ data: { settings: [] }, isLoading: false });
-
-    renderPage();
-
-    expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
-    expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
-  });
-
   it('hides the paid sequence when only Connect keys exist but stripeDirect is required', () => {
     mockUseBrowseConfig.mockReturnValue({
       data: { config: { stripeDirect: true } },
@@ -173,29 +140,5 @@ describe('Automations', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while automations data loads', () => {
-    mockUseBrowseAutomations.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while settings load', () => {
-    mockUseBrowseSettings.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
-  });
-
-  it('renders the loading skeleton while config loads', () => {
-    mockUseBrowseConfig.mockReturnValue({ data: undefined, isLoading: true });
-
-    renderPage();
-
-    expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
   });
 });

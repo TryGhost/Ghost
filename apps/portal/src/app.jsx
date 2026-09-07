@@ -15,6 +15,7 @@ import { getActivePage, isAccountPage, isOfferPage } from './pages';
 import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
+import { clearGiftFormState } from './components/pages/gift/form-state';
 import './app.css';
 import {
   hasRecommendations,
@@ -47,6 +48,16 @@ const safeDecodeURIComponent = (value) => {
   } catch (error) {
     return null;
   }
+};
+
+const parseBooleanQueryParam = (value) => {
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return undefined;
 };
 
 const staleGiftRedemptionRequestResult = {
@@ -201,7 +212,7 @@ export default class App extends React.Component {
       event.preventDefault();
       const target = event.currentTarget;
       const pagePath = target && target.dataset.portal;
-      const linkData = this.getPageFromLinkPath(pagePath);
+      const linkData = this.getPageFromLinkPath(pagePath, this.state.site);
       if (!linkData) {
         return;
       }
@@ -485,6 +496,16 @@ export default class App extends React.Component {
         data.site.portal_button = JSON.parse(value);
       } else if (key === 'name') {
         data.site.portal_name = JSON.parse(value);
+      } else if (key === 'signupGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_signup_gift_promotion = enabled;
+        }
+      } else if (key === 'accountGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_account_gift_promotion = enabled;
+        }
       } else if (key === 'isFree' && JSON.parse(value)) {
         allowedPlans.push('free');
       } else if (key === 'isMonthly' && JSON.parse(value)) {
@@ -639,6 +660,15 @@ export default class App extends React.Component {
       const cadence = qParams.get('gift_cadence');
       const duration = Number(qParams.get('gift_duration'));
       const deliveryMethod = qParams.get('gift_delivery');
+      const deliveryDateParam = qParams.get('gift_delivery_date');
+      const deliveryDate = /^\d{4}-\d{2}-\d{2}$/.test(deliveryDateParam || '')
+        ? deliveryDateParam
+        : null;
+      // Exact send instant in epoch ms; a delivery date without it means
+      // the send already happened.
+      const scheduledAtParam = Number(qParams.get('gift_scheduled_at'));
+      const scheduledAt =
+        Number.isFinite(scheduledAtParam) && scheduledAtParam > 0 ? scheduledAtParam : null;
       clearURLParams([
         'stripe',
         'gift_token',
@@ -646,8 +676,11 @@ export default class App extends React.Component {
         'gift_cadence',
         'gift_duration',
         'gift_delivery',
+        'gift_delivery_date',
+        'gift_scheduled_at',
       ]);
       if (token) {
+        clearGiftFormState();
         return {
           showPopup: true,
           page: 'giftSuccess',
@@ -657,6 +690,8 @@ export default class App extends React.Component {
             cadence,
             duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
             deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link',
+            deliveryDate,
+            scheduledAt,
           },
         };
       }
@@ -1013,6 +1048,11 @@ export default class App extends React.Component {
     }
 
     const { site: linkSite, ...restLinkData } = linkData;
+    const isLeavingGiftPage = this.state.page === 'gift' && restLinkData.page !== 'gift';
+    if (isLeavingGiftPage) {
+      clearGiftFormState();
+    }
+    const shouldCloseGiftPopup = isLeavingGiftPage && !restLinkData.page;
 
     const updatedState = {
       site: {
@@ -1027,6 +1067,7 @@ export default class App extends React.Component {
       },
       ...restLinkData,
       ...restPreviewData,
+      ...(shouldCloseGiftPopup ? { showPopup: false, lastPage: null } : {}),
     };
     this.handleSignupQuery({ site: updatedState.site, pageQuery: updatedState.pageQuery });
     this.setState(updatedState);
@@ -1216,6 +1257,16 @@ export default class App extends React.Component {
     } else if (path === 'gift') {
       return {
         page: 'gift',
+        pageData: {
+          giftStep: 'plan',
+        },
+      };
+    } else if (path === 'gift/delivery') {
+      return {
+        page: 'gift',
+        pageData: {
+          giftStep: 'delivery',
+        },
       };
     } else if (path === 'share') {
       return {

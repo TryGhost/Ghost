@@ -4,7 +4,6 @@ const commands = require('../schema').commands;
 const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
 
 const messages = {
   errorExportingData: 'Error exporting data',
@@ -38,11 +37,10 @@ const doExport = async function doExport(options) {
   try {
     const tables = await commands.getTables(options.transacting);
 
-    const tableData = await sequence(
-      tables.map((tableName) => async () => {
-        return exportTable(tableName, options);
-      }),
-    );
+    const tableData = [];
+    for (const tableName of tables) {
+      tableData.push(await exportTable(tableName, options));
+    }
 
     const exportData = {
       meta: {

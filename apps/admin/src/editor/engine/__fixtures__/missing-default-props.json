@@ -1,0 +1,135 @@
+{
+  "before": {
+    "root": {
+      "children": [
+        {
+          "type": "image",
+          "version": 1,
+          "src": "https://example.com/content/images/photo.jpg",
+          "width": 800,
+          "height": 600,
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "type": "callout",
+          "version": 1,
+          "calloutText": "Heads up"
+        },
+        {
+          "type": "header",
+          "version": 1,
+          "size": "small",
+          "style": "dark",
+          "buttonEnabled": false,
+          "buttonUrl": "",
+          "buttonText": "",
+          "header": "Hello",
+          "subheader": "",
+          "backgroundImageSrc": ""
+        },
+        {
+          "type": "signup",
+          "version": 1,
+          "alignment": "left",
+          "header": "Sign up",
+          "subheader": "",
+          "disclaimer": "",
+          "labels": [],
+          "layout": "wide"
+        },
+        {
+          "type": "button",
+          "version": 1,
+          "buttonText": "Go",
+          "buttonUrl": "https://example.com/",
+          "alignment": "center"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "after": {
+    "root": {
+      "children": [
+        {
+          "type": "image",
+          "version": 1,
+          "src": "https://example.com/content/images/photo.jpg",
+          "width": 800,
+          "height": 600,
+          "title": "",
+          "alt": "",
+          "caption": "",
+          "cardWidth": "regular",
+          "href": ""
+        },
+        {
+          "type": "callout",
+          "version": 1,
+          "calloutText": "<p><span style=\"white-space: pre-wrap;\">Heads up</span></p>",
+          "calloutEmoji": "💡",
+          "backgroundColor": "blue"
+        },
+        {
+          "type": "header",
+          "version": 1,
+          "size": "small",
+          "style": "dark",
+          "buttonEnabled": false,
+          "buttonUrl": "",
+          "buttonText": "",
+          "header": "<span style=\"white-space: pre-wrap;\">Hello</span>",
+          "subheader": "",
+          "backgroundImageSrc": "",
+          "accentColor": "#FF1A75",
+          "alignment": "center",
+          "backgroundColor": "#000000",
+          "backgroundImageWidth": null,
+          "backgroundImageHeight": null,
+          "backgroundSize": "cover",
+          "textColor": "#FFFFFF",
+          "buttonColor": "#ffffff",
+          "buttonTextColor": "#000000",
+          "layout": "full",
+          "swapped": false
+        },
+        {
+          "type": "signup",
+          "version": 1,
+          "alignment": "left",
+          "backgroundColor": "#F0F0F0",
+          "backgroundImageSrc": "",
+          "backgroundSize": "cover",
+          "textColor": "#000000",
+          "buttonColor": "accent",
+          "buttonTextColor": "#FFFFFF",
+          "buttonText": "Subscribe",
+          "disclaimer": "",
+          "header": "<span style=\"white-space: pre-wrap;\">Sign up</span>",
+          "layout": "wide",
+          "subheader": "",
+          "successMessage": "Email sent! Check your inbox to complete your signup.",
+          "swapped": false,
+          "labels": []
+        },
+        {
+          "type": "button",
+          "version": 1,
+          "buttonText": "Go",
+          "alignment": "center",
+          "buttonUrl": "https://example.com/"
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  }
+}

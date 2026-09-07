@@ -12,15 +12,14 @@ export class InviteSignupPage extends AdminPage {
     this.pageUrl = '/ghost/#/signup';
 
     this.nameField = page.getByPlaceholder('Jamie Larson');
-    this.emailField = page.getByPlaceholder('jamie@example.com');
+    this.emailField = page.locator('[data-test-input="email"]');
     this.passwordField = page.getByPlaceholder('At least 10 characters');
     this.createAccountButton = page.getByRole('button', { name: 'Create Account' });
   }
 
-  async acceptInvite(name: string, email: string, password: string): Promise<void> {
+  async acceptInvite(name: string, password: string): Promise<void> {
     await this.nameField.waitFor({ state: 'visible' });
     await this.nameField.fill(name);
-    await this.emailField.fill(email);
     await this.passwordField.fill(password);
     await this.createAccountButton.click();
   }

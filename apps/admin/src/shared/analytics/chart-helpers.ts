@@ -1,10 +1,50 @@
-import moment from 'moment-timezone';
+import moment, { type Moment } from 'moment-timezone';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
-import { getRangeDates } from '@tryghost/shade/app';
 
 export type AggregationType = 'sum' | 'avg' | 'exact';
 
 export type AggregationStrategy = 'none' | 'weekly' | 'monthly';
+
+// Format date for stats query
+export const formatQueryDate = (date: Moment) => {
+  return date.format('YYYY-MM-DD');
+};
+
+// Format cents to Dollars
+export const centsToDollars = (value: number) => {
+  return Math.round(value / 100);
+};
+
+// Return today and startdate for charts
+export const getRangeDates = (range: number) => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const endDate = moment().tz(timezone).endOf('day');
+  let startDate;
+
+  if (range === -1) {
+    // Year to date - use January 1st of current year
+    startDate = moment().tz(timezone).startOf('year');
+  } else {
+    // Regular range calculation
+    startDate = moment()
+      .tz(timezone)
+      .subtract(range - 1, 'days')
+      .startOf('day');
+  }
+
+  return { startDate, endDate, timezone };
+};
+
+// Get range for date
+export const getRangeForStartDate = (startDate: string) => {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const publishedDate = moment(startDate).tz(timezone).startOf('day');
+  const today = moment().tz(timezone).startOf('day');
+  const diffInDays = today.diff(publishedDate, 'days') + 1;
+
+  // Ensure minimum of 1 day to avoid issues with same-day publications
+  return Math.max(diffInDays, 1);
+};
 
 // formatDisplayDateWithRange (Shade) and GhAreaChart derive their tick/tooltip
 // format from a range day count: > 365 renders "MMM YYYY", >= 91 renders

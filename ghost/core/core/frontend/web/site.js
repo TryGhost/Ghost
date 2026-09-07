@@ -82,7 +82,6 @@ module.exports = function setupSiteApp(routerConfig) {
     urlUtils,
     routing,
     api,
-    machinePaymentsService,
   });
 
   siteApp.set('llmsService', llmsService);

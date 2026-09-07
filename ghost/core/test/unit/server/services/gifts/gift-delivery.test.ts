@@ -12,6 +12,7 @@ describe('Gift delivery codec', function () {
       gift_id: 'gift_1',
       recipient_email: 'recipient@example.com',
       status: 'sent',
+      scheduled_at: null,
       started_at: null,
       email_sent_at: '2026-08-11T11:00:00.000Z',
       email_provider_message_id: 'provider-123',

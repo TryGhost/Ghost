@@ -3,6 +3,7 @@ import { describe, it, beforeEach } from 'vitest';
 import type {
   JobsBackendBase,
   JobEnvelope,
+  JobRouting,
   JobsStartOptions,
   JobProcessor,
   RecurringSchedule,
@@ -12,26 +13,33 @@ import {
   JobsService,
   JobsLogger,
   JobsErrorReporter,
+  JobHandlingOptions,
 } from '../../../../../core/server/services/jobs-service/jobs-service';
 import { Job } from '../../../../../core/server/services/jobs-service/job';
 
 class FakeBackend implements JobsBackendBase {
   readonly requiredFns = ['start', 'enqueue', 'scheduleRecurring', 'shutdown'] as const;
   processor: JobProcessor | null = null;
-  enqueued: JobEnvelope[] = [];
-  recurring: { envelope: JobEnvelope; schedule: RecurringSchedule }[] = [];
+  startOptions: JobsStartOptions | null = null;
+  enqueued: { envelope: JobEnvelope; routing?: JobRouting }[] = [];
+  recurring: { envelope: JobEnvelope; schedule: RecurringSchedule; routing?: JobRouting }[] = [];
   shutdownCalls: (JobsShutdownOptions | undefined)[] = [];
 
   start(options: JobsStartOptions): void {
     this.processor = options.processor;
+    this.startOptions = options;
   }
 
-  enqueue(envelope: JobEnvelope): void {
-    this.enqueued.push(envelope);
+  enqueue(envelope: JobEnvelope, routing?: JobRouting): void {
+    this.enqueued.push({ envelope, routing });
   }
 
-  scheduleRecurring(envelope: JobEnvelope, schedule: RecurringSchedule): void {
-    this.recurring.push({ envelope, schedule });
+  scheduleRecurring(
+    envelope: JobEnvelope,
+    schedule: RecurringSchedule,
+    routing?: JobRouting,
+  ): void {
+    this.recurring.push({ envelope, schedule, routing });
   }
 
   shutdown(options?: JobsShutdownOptions): void {
@@ -40,21 +48,18 @@ class FakeBackend implements JobsBackendBase {
 
   async deliver(index = 0): Promise<void> {
     assert.ok(this.processor, 'processor must be wired via start()');
-    await this.processor!(this.enqueued[index]!);
+    await this.processor!(this.enqueued[index]!.envelope);
   }
 }
 
 function makeLogger() {
-  const calls = { error: [] as unknown[][], info: [] as unknown[][], warn: [] as unknown[][] };
+  const calls = { error: [] as unknown[][], info: [] as unknown[][] };
   const logging: JobsLogger = {
     error: (...args) => {
       calls.error.push(args);
     },
     info: (...args) => {
       calls.info.push(args);
-    },
-    warn: (...args) => {
-      calls.warn.push(args);
     },
   };
   return { logging, calls };
@@ -109,6 +114,71 @@ describe('JobsService', function () {
       service.handle(GreetJob, async () => {});
       assert.throws(() => service.handle(GreetJob, async () => {}), /already registered/);
     });
+
+    it('rejects an invalid concurrency at registration', function () {
+      const service = makeService();
+      assert.throws(
+        () => service.handle(GreetJob, async () => {}, { queue: 'slow', concurrency: 0 }),
+        /Invalid concurrency/,
+      );
+      assert.throws(
+        () => service.handle(GreetJob, async () => {}, { queue: 'slow', concurrency: 1.5 }),
+        /Invalid concurrency/,
+      );
+      assert.throws(
+        () =>
+          service.handle(GreetJob, async () => {}, {
+            queue: 'slow',
+          } as unknown as JobHandlingOptions),
+        /Invalid concurrency/,
+      );
+    });
+
+    it('rejects an invalid or missing queue name at registration', function () {
+      const service = makeService();
+      assert.throws(
+        () => service.handle(GreetJob, async () => {}, { queue: '', concurrency: 1 }),
+        /Invalid queue/,
+      );
+      assert.throws(
+        () =>
+          service.handle(GreetJob, async () => {}, {
+            concurrency: 1,
+          } as unknown as JobHandlingOptions),
+        /Invalid queue/,
+      );
+    });
+
+    it('reserves the "default" queue name for the shared lane', function () {
+      const service = makeService();
+      assert.throws(
+        () => service.handle(GreetJob, async () => {}, { queue: 'default', concurrency: 1 }),
+        /reserved for the shared lane/,
+      );
+    });
+
+    it('rejects conflicting concurrency declarations for one queue', function () {
+      const service = makeService();
+      class OtherJob extends Job {
+        static type = 'other';
+      }
+      service.handle(GreetJob, async () => {}, { queue: 'slow', concurrency: 1 });
+      assert.throws(
+        () => service.handle(OtherJob, async () => {}, { queue: 'slow', concurrency: 2 }),
+        /Conflicting concurrency for queue "slow"/,
+      );
+    });
+
+    it('lets a second type join a queue by declaring the same concurrency', function () {
+      const service = makeService();
+      class OtherJob extends Job {
+        static type = 'other';
+      }
+      service.handle(GreetJob, async () => {}, { queue: 'slow', concurrency: 1 });
+      assert.doesNotThrow(() =>
+        service.handle(OtherJob, async () => {}, { queue: 'slow', concurrency: 1 }),
+      );
+    });
   });
 
   describe('dispatch', function () {
@@ -117,7 +187,7 @@ describe('JobsService', function () {
       await service.dispatch(new GreetJob({ name: 'Ada' }));
 
       assert.equal(backend.enqueued.length, 1);
-      const envelope = backend.enqueued[0]!;
+      const envelope = backend.enqueued[0]!.envelope;
       assert.equal(envelope.type, 'greet');
       assert.equal(typeof envelope.payload, 'string');
       assert.deepEqual(JSON.parse(envelope.payload), { name: 'Ada' });
@@ -147,6 +217,57 @@ describe('JobsService', function () {
     });
   });
 
+  describe('queue routing', function () {
+    it('routes a dispatched job to its handler-declared queue', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.deepEqual(backend.enqueued[0]!.routing, { queue: 'greetings' });
+    });
+
+    it('routing stays out of the envelope: no extra envelope fields from queue config', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.deepEqual(Object.keys(backend.enqueued[0]!.envelope).sort(), ['payload', 'type']);
+    });
+
+    it('dispatches with no routing when the type declares no queue', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {});
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.equal(backend.enqueued[0]!.routing, undefined);
+    });
+
+    it('hands declared queues to the backend on start', async function () {
+      const service = makeService();
+      class OtherJob extends Job {
+        static type = 'other';
+      }
+      service.handle(GreetJob, async () => {}, { queue: 'webmentions', concurrency: 1 });
+      service.handle(OtherJob, async () => {}, { queue: 'webmentions', concurrency: 1 });
+
+      await service.start();
+
+      assert.deepEqual(backend.startOptions!.queues, { webmentions: { concurrency: 1 } });
+    });
+
+    it('routes recurring schedules through the same queue mapping', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
+
+      await service.scheduleRecurring(new GreetJob({ name: 'cron' }), { cron: '0 0 3 * * *' });
+
+      assert.deepEqual(backend.recurring[0]!.routing, { queue: 'greetings' });
+    });
+  });
+
   describe('delivery error handling', function () {
     it('captures handler errors with job context and rethrows so the backend sees a failed delivery', async function () {
       const { sentry, captured } = makeSentry();
@@ -163,10 +284,11 @@ describe('JobsService', function () {
       assert.equal(captured.length, 1);
       assert.equal(captured[0]!.err, boom);
       assert.deepEqual(captured[0]!.context, { tags: { job_type: 'greet' } });
-      assert.equal(
-        logger.calls.error.length,
-        0,
-        'delivery failures are logged by the backend, not the service',
+      assert.equal(logger.calls.error.length, 1);
+      assert.equal(logger.calls.error[0]![0], boom);
+      assert.match(
+        String(logger.calls.error[0]![1]),
+        /^\[Background Job\] greet failed after \d+ms$/,
       );
     });
 
@@ -178,6 +300,43 @@ describe('JobsService', function () {
 
       assert.equal(logger.calls.error.length, 1);
       assert.match(String(logger.calls.error[0]![0]), /No handler registered for job type "greet"/);
+    });
+  });
+
+  describe('lifecycle logging', function () {
+    it('logs started and a structured completed event around a successful delivery', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {});
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await backend.deliver();
+
+      assert.equal(logger.calls.info.length, 2);
+      assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
+
+      const [event, message] = logger.calls.info[1]! as [
+        { system: { event: string; job_type: string; duration_ms: number } },
+        string,
+      ];
+      assert.equal(event.system.event, 'job.completed');
+      assert.equal(event.system.job_type, 'greet');
+      assert.equal(typeof event.system.duration_ms, 'number');
+      assert.match(String(message), /^\[Background Job\] greet completed in \d+ms$/);
+    });
+
+    it('does not log a completed event for a failed delivery', async function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {
+        throw new Error('handler exploded');
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await assert.rejects(() => backend.deliver(), /handler exploded/);
+
+      assert.equal(logger.calls.info.length, 1, 'only the started line is logged');
+      assert.equal(logger.calls.error.length, 1);
     });
   });
 
@@ -206,6 +365,26 @@ describe('JobsService', function () {
       const service = makeService();
       await service.shutdown({ timeoutMs: 42 });
       assert.deepEqual(backend.shutdownCalls, [{ timeoutMs: 42 }]);
+    });
+  });
+
+  describe('restart', function () {
+    it('clearHandlers lets a rebooted process register the same job types again', function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {});
+
+      service.clearHandlers();
+
+      service.handle(GreetJob, async () => {});
+    });
+
+    it('clearHandlers resets queue declarations so a reboot can re-declare them', function () {
+      const service = makeService();
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 1 });
+
+      service.clearHandlers();
+
+      service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
     });
   });
 });

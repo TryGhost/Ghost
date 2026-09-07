@@ -112,8 +112,12 @@ module.exports = {
     return apiFramework.pipeline(require('./members'), localUtils);
   },
 
-  get membersCustomFields() {
-    return apiFramework.pipeline(require('./member-custom-fields'), localUtils);
+  get membersMetafields() {
+    return apiFramework.pipeline(require('./member-metafields'), localUtils);
+  },
+
+  get tiersCheckoutConfig() {
+    return apiFramework.pipeline(require('./tiers-checkout-config'), localUtils);
   },
 
   get memberCommenting() {
@@ -306,6 +310,14 @@ module.exports = {
 
   get feedbackMembers() {
     return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+  },
+
+  get membersAccount() {
+    return apiFramework.pipeline(require('./members-account'), localUtils, 'members');
+  },
+
+  get memberMetafieldsMembers() {
+    return apiFramework.pipeline(require('./member-metafields-members'), localUtils, 'members');
   },
 
   get giftsMembers() {

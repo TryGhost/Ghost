@@ -68,7 +68,10 @@ function setupAutomationsSessionReplay(replay, shouldStartRecording) {
         recordingStarted = true;
         clearTimeout(initialRouteCheck);
 
-        replay.stop().then(() => replay.start()).catch((error) => {
+        replay.stop().then(() => {
+            replay.start();
+            Sentry.setTag('replay_area', 'automations');
+        }).catch((error) => {
             try {
                 replay.startBuffering();
             } catch (e) {

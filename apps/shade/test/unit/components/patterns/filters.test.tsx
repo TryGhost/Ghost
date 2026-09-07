@@ -739,4 +739,105 @@ describe('Filters', () => {
       expect(screen.queryByRole('button', { name: 'is' })).toBeNull();
     });
   });
+
+  describe('focus on a newly revealed value input', () => {
+    // The add-filter popover renders a cmdk command menu, which needs both of
+    // these and jsdom provides neither.
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {
+          return undefined;
+        }
+
+        unobserve() {
+          return undefined;
+        }
+
+        disconnect() {
+          return undefined;
+        }
+      } as unknown as typeof ResizeObserver;
+      HTMLElement.prototype.scrollIntoView = vi.fn();
+    });
+
+    function FocusTestFilters({
+      initialFilters = [],
+    }: Readonly<{ initialFilters?: Filter<string>[] }>) {
+      const [filters, setFilters] = useState<Filter<string>[]>(initialFilters);
+      const fields = useMemo(
+        () => [
+          {
+            key: 'name',
+            label: 'Name',
+            type: 'text' as const,
+            operators: [
+              { value: 'is', label: 'is' },
+              { value: 'empty', label: 'is empty' },
+            ],
+            defaultOperator: 'is',
+          },
+          {
+            key: 'count',
+            label: 'Count',
+            type: 'number' as const,
+            operators: [{ value: 'is', label: 'is' }],
+            defaultOperator: 'is',
+          },
+          {
+            key: 'created',
+            label: 'Created',
+            type: 'date' as const,
+            operators: [{ value: 'is', label: 'is' }],
+            defaultOperator: 'is',
+          },
+        ],
+        [],
+      );
+
+      return (
+        <Filters
+          addButtonText="Add filter"
+          allowMultiple={true}
+          fields={fields}
+          filters={filters}
+          showSearchInput={false}
+          onChange={setFilters}
+        />
+      );
+    }
+
+    const addFilterNamed = async (name: string) => {
+      fireEvent.click(screen.getByRole('button', { name: 'Add filter' }));
+      fireEvent.click(await screen.findByRole('option', { name }));
+    };
+
+    it('puts the caret in a newly added text filter so it can be typed into without a click', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Name');
+
+      const input = await screen.findByRole('textbox');
+      await waitFor(() => expect(document.activeElement).toBe(input));
+    });
+
+    it('puts the caret in a newly added number filter', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Count');
+
+      const input = await screen.findByRole('spinbutton');
+      await waitFor(() => expect(document.activeElement).toBe(input));
+    });
+
+    it('leaves a newly added date filter alone, since it is not waiting on typed input', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Created');
+
+      // The date control renders its own input, but it arrives ready to use
+      // rather than empty, so stealing the caret would be noise.
+      await waitFor(() => expect(screen.getByText('Created')).toBeDefined());
+      expect(document.activeElement?.getAttribute('data-slot')).not.toBe('filters-input');
+    });
+  });
 });

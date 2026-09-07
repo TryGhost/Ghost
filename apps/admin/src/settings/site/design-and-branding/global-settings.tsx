@@ -1,3 +1,4 @@
+import '@/settings/custom-fonts.css';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import React, { useState } from 'react';
 import UnsplashSelector from '@/settings/components/selectors/unsplash-selector';

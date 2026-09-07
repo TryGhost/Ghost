@@ -99,7 +99,7 @@ class UpdateCheckService {
     );
 
     err.context = tpl(messages.checkingForUpdatesFailedError);
-    err.help = tpl(messages.checkingForUpdatesFailedHelp, { url: 'https://ghost.org/docs/' });
+    err.help = tpl(messages.checkingForUpdatesFailedHelp, { url: 'https://docs.ghost.org/' });
 
     this.logging.error(
       {
@@ -120,7 +120,7 @@ class UpdateCheckService {
    * Only the Ghost version is sent so the service can return the relevant
    * release and security notifications. No site data is collected.
    *
-   * @see https://ghost.org/docs/concepts/config/#privacy
+   * @see https://docs.ghost.org/concepts/config/#privacy
    * @returns {Promise}
    */
   async updateCheckRequest() {

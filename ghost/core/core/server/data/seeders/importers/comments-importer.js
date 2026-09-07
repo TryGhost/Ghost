@@ -2,7 +2,7 @@ const { faker } = require('@faker-js/faker');
 const { TableImporter } = require('./table-importer');
 const { luck } = require('../utils/random');
 const generateEvents = require('../utils/event-generator');
-const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-date');
+const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class CommentsImporter extends TableImporter {
   static table = 'comments';

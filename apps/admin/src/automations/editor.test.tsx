@@ -1,7 +1,5 @@
 import AutomationEditor from './editor';
 import React from 'react';
-import { AppProvider } from '@tryghost/admin-x-framework';
-import type { AppSettings } from '@tryghost/admin-x-framework';
 import { MAX_AUTOMATION_ACTIONS } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationActionLinksResponseType,
@@ -23,22 +21,24 @@ const { mockToastError } = vi.hoisted(() => ({
 const NON_EMPTY_EMAIL_LEXICAL =
   '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
 
-const createAppSettings = (
-  analyticsOverrides: Partial<AppSettings['analytics']> = {},
-): AppSettings => ({
-  paidMembersEnabled: true,
-  newslettersEnabled: true,
-  analytics: {
-    emailTrackClicks: true,
+// `undefined` mirrors the selector hooks' tri-state: settings not loaded yet.
+const mockEmailTracking = vi.hoisted(
+  (): { emailTrackOpens: boolean | undefined; emailTrackClicks: boolean | undefined } => ({
     emailTrackOpens: true,
-    membersTrackSources: true,
-    outboundLinkTagging: true,
-    webAnalytics: true,
-    ...analyticsOverrides,
-  },
-});
+    emailTrackClicks: true,
+  }),
+);
 
-let mockAppSettings: AppSettings | undefined;
+vi.mock('@tryghost/admin-x-framework/api/settings', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/settings')>(
+    '@tryghost/admin-x-framework/api/settings',
+  );
+  return {
+    ...actual,
+    useEmailTrackOpens: () => mockEmailTracking.emailTrackOpens,
+    useEmailTrackClicks: () => mockEmailTracking.emailTrackClicks,
+  };
+});
 
 vi.mock('sonner', () => ({
   toast: {
@@ -412,11 +412,7 @@ const renderEditor = (initialEntries = ['/automations/automation-id-1']) => {
 
   return {
     router,
-    ...render(
-      <AppProvider appSettings={mockAppSettings}>
-        <RouterProvider router={router} />
-      </AppProvider>,
-    ),
+    ...render(<RouterProvider router={router} />),
   };
 };
 
@@ -507,7 +503,8 @@ describe('AutomationEditor', () => {
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
     mockLabs.current = {};
-    mockAppSettings = createAppSettings();
+    mockEmailTracking.emailTrackOpens = true;
+    mockEmailTracking.emailTrackClicks = true;
   });
 
   it('renders the loading state while the automation is fetching', () => {
@@ -766,7 +763,8 @@ describe('AutomationEditor', () => {
     'shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks',
     ({ emailTrackOpens, emailTrackClicks }) => {
       mockLabs.current = { automationAnalytics: true };
-      mockAppSettings = createAppSettings({ emailTrackOpens, emailTrackClicks });
+      mockEmailTracking.emailTrackOpens = emailTrackOpens;
+      mockEmailTracking.emailTrackClicks = emailTrackClicks;
       mockAutomationWithEmailStats();
 
       renderEditor();
@@ -804,9 +802,10 @@ describe('AutomationEditor', () => {
     },
   );
 
-  it('treats unresolved app settings as untracked', () => {
+  it('treats unresolved tracking settings as untracked', () => {
     mockLabs.current = { automationAnalytics: true };
-    mockAppSettings = undefined;
+    mockEmailTracking.emailTrackOpens = undefined;
+    mockEmailTracking.emailTrackClicks = undefined;
     mockAutomationWithEmailStats();
 
     renderEditor();
@@ -1018,7 +1017,7 @@ describe('AutomationEditor', () => {
 
   it('hides clicked links and skips the request when click tracking is off', () => {
     mockLabs.current = { automationAnalytics: true };
-    mockAppSettings = createAppSettings({ emailTrackClicks: false });
+    mockEmailTracking.emailTrackClicks = false;
     mockAutomationWithEmailStats();
 
     renderEditor();

@@ -1,9 +1,26 @@
 import { HttpResponse, http } from 'msw';
-import { type Post } from '@tryghost/admin-x-framework/api/posts';
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTestWrapper, mockData, mockServer } from '@test-utils/posts-analytics/msw-helpers';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { test as baseTest, beforeEach, describe, expect, vi } from 'vitest';
+import { post, type Post } from '@tryghost/test-data';
+import type { QueryClient } from '@tanstack/react-query';
+import type { SetupServer } from 'msw/node';
+import { serverFixture } from '@test-utils/fixtures/msw';
+import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { usePostSuccessModal } from '@/posts/analytics/hooks/use-post-success-modal';
+
+const { mockUseFeatureFlag } = vi.hoisted(() => ({
+  mockUseFeatureFlag: vi.fn(),
+}));
+
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
+    '@tryghost/admin-x-framework/hooks',
+  );
+  return {
+    ...actual,
+    useFeatureFlag: (flag: string) => mockUseFeatureFlag(flag) as boolean,
+  };
+});
 
 // Mock the shared analytics data hook (not HTTP)
 vi.mock('@/shared/analytics/use-analytics-data', () => ({
@@ -24,9 +41,27 @@ Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
 });
 
+const POSTS_API_URL = '/ghost/api/admin/posts/*';
+
+const buildPost = (overrides: Partial<Post> = {}) => post({ id: 'post-123', ...overrides });
+
+function mockPosts(server: SetupServer, posts: Post[]) {
+  server.use(http.get(POSTS_API_URL, () => HttpResponse.json({ posts })));
+}
+
+const test = baseTest.extend<{
+  server: SetupServer;
+  queryClient: QueryClient;
+  wrapper: TestWrapperComponent;
+}>({
+  ...serverFixture,
+  ...queryClientFixtures,
+});
+
 describe('usePostSuccessModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseFeatureFlag.mockReturnValue(false);
 
     // Default mocks
     mockUseAnalyticsData.mockReturnValue({
@@ -37,17 +72,12 @@ describe('usePostSuccessModal', () => {
     } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
     mockLocalStorage.getItem.mockReturnValue(null);
-
-    // Default MSW setup - no posts data by default
-    mockServer.setup({
-      posts: [],
-    });
   });
 
-  it('initializes with modal closed and no data', () => {
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+  test('initializes with modal closed and no data', ({ server, wrapper }) => {
+    mockPosts(server, []);
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     expect(result.current.isModalOpen).toBe(false);
     expect(result.current.post).toBeUndefined();
@@ -56,54 +86,47 @@ describe('usePostSuccessModal', () => {
     expect(result.current.modalProps).toBe(null);
   });
 
-  it('does not open modal when localStorage is empty', () => {
+  test('does not open modal when localStorage is empty', ({ server, wrapper }) => {
+    mockPosts(server, []);
     mockLocalStorage.getItem.mockReturnValue(null);
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     expect(result.current.isModalOpen).toBe(false);
   });
 
-  it('handles invalid JSON in localStorage gracefully', () => {
+  test('handles invalid JSON in localStorage gracefully', ({ server, wrapper }) => {
+    mockPosts(server, []);
     mockLocalStorage.getItem.mockReturnValue('invalid json');
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     expect(result.current.isModalOpen).toBe(false);
   });
 
-  it('ignores localStorage errors gracefully', () => {
+  test('ignores localStorage errors gracefully', ({ server, wrapper }) => {
+    mockPosts(server, []);
     mockLocalStorage.getItem.mockImplementation(() => {
       throw new Error('LocalStorage error');
     });
 
     expect(() => {
-      renderHook(() => usePostSuccessModal(), {
-        wrapper: createTestWrapper(),
-      });
+      renderHook(() => usePostSuccessModal(), { wrapper });
     }).not.toThrow();
   });
 
-  it('creates modal props when post data is available', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('creates modal props when post data is available', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Test Post',
       url: 'https://example.com/test-post',
       feature_image: 'https://example.com/image.jpg',
       published_at: '2023-12-01T12:00:00Z',
       authors: [{ name: 'John Doe' }],
       email: { email_count: 100, opened_count: 30 },
-      newsletter: { name: 'Weekly Newsletter' },
-    } as unknown as Partial<Post>);
-
-    // Set up MSW to return the post data
-    mockServer.setup({
-      posts: [testPost],
+      newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
     });
+
+    mockPosts(server, [testPost]);
 
     // Simulate localStorage containing published post data
     mockLocalStorage.getItem.mockReturnValue(
@@ -113,9 +136,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.post).toEqual(testPost);
@@ -123,15 +144,12 @@ describe('usePostSuccessModal', () => {
     });
   });
 
-  it('opens modal when localStorage contains valid post data', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('opens modal when localStorage contains valid post data', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Published Post',
     });
 
-    mockServer.setup({
-      posts: [testPost],
-    });
+    mockPosts(server, [testPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -140,24 +158,19 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isModalOpen).toBe(true);
     });
   });
 
-  it('cleans up localStorage when modal opens', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('cleans up localStorage when modal opens', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Test Post',
     });
 
-    mockServer.setup({
-      posts: [testPost],
-    });
+    mockPosts(server, [testPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -166,9 +179,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     // Wait for the modal to open (localStorage data consumed)
     await waitFor(() => {
@@ -187,30 +198,28 @@ describe('usePostSuccessModal', () => {
     expect(result.current.isModalOpen).toBe(false);
   });
 
-  it('handles post count response', async () => {
-    // Setup MSW with custom handlers for count endpoint
-    mockServer.setup({
-      customHandlers: [
-        http.get('/ghost/api/admin/posts/*', ({ request }) => {
-          const url = new URL(request.url);
-          const fields = url.searchParams.get('fields');
+  test('handles post count response', async ({ server, wrapper }) => {
+    // Conditional handler: count endpoint vs regular post data endpoint
+    server.use(
+      http.get(POSTS_API_URL, ({ request }) => {
+        const url = new URL(request.url);
+        const fields = url.searchParams.get('fields');
 
-          if (fields === 'id') {
-            // Post count endpoint
-            return HttpResponse.json({
-              meta: {
-                pagination: {
-                  total: 42,
-                },
+        if (fields === 'id') {
+          // Post count endpoint
+          return HttpResponse.json({
+            meta: {
+              pagination: {
+                total: 42,
               },
-            });
-          }
+            },
+          });
+        }
 
-          // Regular post data endpoint
-          return HttpResponse.json({ posts: [] });
-        }),
-      ],
-    });
+        // Regular post data endpoint
+        return HttpResponse.json({ posts: [] });
+      }),
+    );
 
     // Simulate localStorage containing published post data
     mockLocalStorage.getItem.mockReturnValue(
@@ -220,9 +229,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.postCount).toBe(42);
@@ -230,10 +237,10 @@ describe('usePostSuccessModal', () => {
     });
   });
 
-  it('closes modal correctly', () => {
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+  test('closes modal correctly', ({ server, wrapper }) => {
+    mockPosts(server, []);
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     result.current.closeModal();
 
@@ -241,17 +248,14 @@ describe('usePostSuccessModal', () => {
     expect(result.current.postCount).toBe(null);
   });
 
-  it('handles email-only posts', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('handles email-only posts', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Email Only Post',
       email_only: true,
       email: { email_count: 50, opened_count: 15 },
     });
 
-    mockServer.setup({
-      posts: [testPost],
-    });
+    mockPosts(server, [testPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -260,25 +264,20 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.post?.email_only).toBe(true);
     });
   });
 
-  it('handles multiple authors', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('handles multiple authors', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Test Post',
       authors: [{ name: 'John Doe' }, { name: 'Jane Smith' }, { name: 'Bob Johnson' }],
-    } as unknown as Partial<Post>);
-
-    mockServer.setup({
-      posts: [testPost],
     });
+
+    mockPosts(server, [testPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -287,24 +286,19 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.post?.authors).toHaveLength(3);
     });
   });
 
-  it('handles posts without authors', async () => {
-    const testPost = mockData.post({
-      id: 'post-123',
+  test('handles posts without authors', async ({ server, wrapper }) => {
+    const testPost = buildPost({
       title: 'Test Post',
     });
 
-    mockServer.setup({
-      posts: [testPost],
-    });
+    mockPosts(server, [testPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -313,27 +307,25 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.post?.authors).toBeUndefined();
     });
   });
 
-  it('creates modal props with correct email data for different subscriber counts', async () => {
+  test('creates modal props with correct email data for different subscriber counts', async ({
+    server,
+    wrapper,
+  }) => {
     // Test single subscriber - behavior: modal props should be created
-    const singleSubscriberPost = mockData.post({
-      id: 'post-123',
+    const singleSubscriberPost = buildPost({
       title: 'Single Subscriber Post',
       email: { email_count: 1, opened_count: 0 },
-      newsletter: { name: 'Test Newsletter' },
+      newsletter: { id: 'newsletter-123', name: 'Test Newsletter' },
     });
 
-    mockServer.setup({
-      posts: [singleSubscriberPost],
-    });
+    mockPosts(server, [singleSubscriberPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -342,9 +334,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result: singleResult } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result: singleResult } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(singleResult.current.modalProps).toBeTruthy();
@@ -353,16 +343,14 @@ describe('usePostSuccessModal', () => {
     });
 
     // Test multiple subscribers - behavior: modal props should be created
-    const multipleSubscribersPost = mockData.post({
+    const multipleSubscribersPost = buildPost({
       id: 'post-456',
       title: 'Multiple Subscribers Post',
       email: { email_count: 100, opened_count: 30 },
-      newsletter: { name: 'Test Newsletter' },
+      newsletter: { id: 'newsletter-123', name: 'Test Newsletter' },
     });
 
-    mockServer.setup({
-      posts: [multipleSubscribersPost],
-    });
+    mockPosts(server, [multipleSubscribersPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -371,9 +359,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result: multipleResult } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result: multipleResult } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(multipleResult.current.modalProps).toBeTruthy();
@@ -382,18 +368,16 @@ describe('usePostSuccessModal', () => {
     });
   });
 
-  it('creates appropriate modal props for different post types', async () => {
+  test('creates appropriate modal props for different post types', async ({ server, wrapper }) => {
     // Test email-only post - behavior: should set emailOnly flag
-    const emailOnlyPost = mockData.post({
+    const emailOnlyPost = buildPost({
       id: 'email-post',
       title: 'Email Only Post',
       email_only: true,
       email: { email_count: 50, opened_count: 15 },
     });
 
-    mockServer.setup({
-      posts: [emailOnlyPost],
-    });
+    mockPosts(server, [emailOnlyPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -402,9 +386,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result: emailResult } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result: emailResult } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(emailResult.current.modalProps?.emailOnly).toBe(true);
@@ -412,15 +394,13 @@ describe('usePostSuccessModal', () => {
     });
 
     // Test published post with email - behavior: should not be emailOnly
-    const publishedPost = mockData.post({
+    const publishedPost = buildPost({
       id: 'published-post',
       title: 'Published Post',
       email: { email_count: 100, opened_count: 30 },
     });
 
-    mockServer.setup({
-      posts: [publishedPost],
-    });
+    mockPosts(server, [publishedPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -429,9 +409,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result: publishedResult } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result: publishedResult } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(publishedResult.current.modalProps?.emailOnly).toBeFalsy();
@@ -439,14 +417,12 @@ describe('usePostSuccessModal', () => {
     });
 
     // Test published post without email - behavior: should not be emailOnly
-    const publishedOnlyPost = mockData.post({
+    const publishedOnlyPost = buildPost({
       id: 'published-only',
       title: 'Published Only Post',
     });
 
-    mockServer.setup({
-      posts: [publishedOnlyPost],
-    });
+    mockPosts(server, [publishedOnlyPost]);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -455,9 +431,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result: publishedOnlyResult } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result: publishedOnlyResult } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(publishedOnlyResult.current.modalProps?.emailOnly).toBeFalsy();
@@ -465,24 +439,82 @@ describe('usePostSuccessModal', () => {
     });
   });
 
-  it('handles loading state', () => {
+  test('uses in-progress copy for a post and email when improved sending UI is enabled', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email: { email_count: 100, opened_count: 0 },
+        newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(
+      screen.getByText(/Your post was published on your site and is being sent to/),
+    ).toBeTruthy();
+  });
+
+  test('uses completed copy when the legacy flow has already observed submission', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email: { email_count: 100, opened_count: 0, status: 'submitted' },
+        newsletter: { id: 'newsletter-123', name: 'Weekly Newsletter' },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your post was published on your site and sent to/)).toBeTruthy();
+  });
+
+  test('uses in-progress copy for an email-only send when improved sending UI is enabled', async ({
+    server,
+    wrapper,
+  }) => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockPosts(server, [
+      buildPost({
+        email_only: true,
+        email: { email_count: 50, opened_count: 0 },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
+  });
+
+  test('handles loading state', ({ server, wrapper }) => {
+    mockPosts(server, []);
+
     // Without localStorage data, no API calls are made
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     expect(result.current.post).toBeUndefined();
   });
 
-  it('handles error state', () => {
-    // Test when MSW server returns an error
-    mockServer.setup({
-      customHandlers: [
-        http.get('/ghost/api/admin/posts/*', () => {
-          return HttpResponse.json({ error: 'API Error' }, { status: 500 });
-        }),
-      ],
-    });
+  test('handles error state', ({ server, wrapper }) => {
+    // Test when the mocked API returns an error
+    server.use(
+      http.get(POSTS_API_URL, () => HttpResponse.json({ error: 'API Error' }, { status: 500 })),
+    );
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -491,17 +523,14 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     expect(result.current.post).toBeUndefined();
   });
 
-  it('handles empty posts response', async () => {
-    mockServer.setup({
-      posts: [], // Empty posts array
-    });
+  test('handles empty posts response', async ({ server, wrapper }) => {
+    // Empty posts array
+    mockPosts(server, []);
 
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
@@ -510,9 +539,7 @@ describe('usePostSuccessModal', () => {
       }),
     );
 
-    const { result } = renderHook(() => usePostSuccessModal(), {
-      wrapper: createTestWrapper(),
-    });
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.post).toBeUndefined();

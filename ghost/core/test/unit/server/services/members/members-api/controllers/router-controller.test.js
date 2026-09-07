@@ -84,7 +84,7 @@ describe('RouterController', function () {
       configured: true,
     };
     labsService = {
-      isSet: sinon.stub().callsFake((flag) => flag !== 'giftSubCustomization'),
+      isSet: sinon.stub().returns(true),
     };
     settingsCache = {
       get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz']),
@@ -289,6 +289,63 @@ describe('RouterController', function () {
             ghostSignupContext: 'already_authenticated',
           },
         }),
+      );
+    });
+
+    describe('existing member subscription restrictions', function () {
+      it.each([
+        ['paid', true],
+        ['paid', false],
+        ['free', false],
+        ['comped', false],
+        ['gift', false],
+      ])('blocks a %s member when authenticated is %s', async function (status, isAuthenticated) {
+        const sendEmailWithMagicLink = sinon.stub().resolves();
+        const routerController = new RouterController({ paymentsService, sendEmailWithMagicLink });
+
+        await assert.rejects(
+          routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            email: 'member@example.com',
+            isAuthenticated,
+            metadata: {},
+          }),
+          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+        );
+
+        sinon.assert.notCalled(getPaymentLinkSpy);
+        if (isAuthenticated) {
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        } else {
+          sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+            email: 'member@example.com',
+            requestedType: 'signin',
+          });
+        }
+      });
+
+      it.each(['free', 'comped', 'gift'])(
+        'allows an authenticated %s member to subscribe',
+        async function (status) {
+          const sendEmailWithMagicLink = sinon.stub().resolves();
+          const routerController = new RouterController({
+            paymentsService,
+            sendEmailWithMagicLink,
+          });
+
+          await routerController._createSubscriptionCheckoutSession({
+            tier: { id: 'tier_123' },
+            cadence: 'month',
+            member: { get: (key) => (key === 'status' ? status : undefined) },
+            isAuthenticated: true,
+            metadata: {},
+          });
+
+          sinon.assert.calledOnce(getPaymentLinkSpy);
+          sinon.assert.notCalled(sendEmailWithMagicLink);
+        },
       );
     });
 
@@ -1127,6 +1184,7 @@ describe('RouterController', function () {
               recipientName: 'Recipient',
               buyerName: 'Buyer',
               personalMessage: 'Enjoy this gift',
+              deliveryDate: '2026-12-25',
               metadata: {
                 ghost_gift_id: 'attacker-controlled-id',
                 custom_key: 'preserved',
@@ -1142,6 +1200,7 @@ describe('RouterController', function () {
         assert.equal(input.recipientName, 'Recipient');
         assert.equal(input.buyerName, 'Buyer');
         assert.equal(input.personalMessage, 'Enjoy this gift');
+        assert.equal(input.deliveryDate, '2026-12-25');
         assert.equal('metadata' in input, false);
       });
 

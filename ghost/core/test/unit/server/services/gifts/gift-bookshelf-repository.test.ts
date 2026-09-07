@@ -200,7 +200,7 @@ describe('GiftBookshelfRepository', function () {
       stripeCheckoutSessionId: 'cs_123',
       stripePaymentIntentId: 'pi_456',
       purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-      expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+      expiryTimeZone: 'America/Los_Angeles',
     });
 
     const id = await repository.create(gift, { transacting });
@@ -232,7 +232,7 @@ describe('GiftBookshelfRepository', function () {
       stripeCheckoutSessionId: 'cs_123',
       stripePaymentIntentId: 'pi_456',
       purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-      expiresAt: new Date('2027-08-19T06:59:59.999Z'),
+      expiryTimeZone: 'America/Los_Angeles',
     });
 
     await assert.rejects(() => repository.create(gift), {

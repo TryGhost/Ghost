@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  applyEmberAdminThemePreference,
+  isEmberThemeManaged,
+  preloadEmberAdminThemeStylesheet,
+} from '@/ember-bridge';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -33,26 +38,17 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
   });
 }
 
-// In the embedded admin, Ember owns the DOM theme: it manages both the `dark`
-// class and the dark stylesheet, and installs its own prefers-color-scheme
-// listener. The class-toggling and media-query effects below are only a fallback
-// for running this hook standalone (no EmberBridge), so they must not fight Ember.
-function isEmberManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-async function preloadAdminThemeStylesheet() {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
+// Applying the DOM theme is only a fallback for running without EmberBridge.
+// React still tracks system preference changes so resolvedTheme stays current
+// for consumers even when Ember owns the DOM — see isEmberThemeManaged.
 function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
-  if (window.EmberBridge?.state.applyAdminThemePreference) {
-    void window.EmberBridge.state.applyAdminThemePreference(mode);
-  } else {
+  if (!applyEmberAdminThemePreference(mode)) {
     applyThemeClass(resolvedTheme);
   }
 }
 
+// App code must consume this via ThemeProvider/useThemeContext (src/providers):
+// each extra instance forks the optimistic state and re-runs the DOM effects.
 export function useTheme() {
   const { data: preferences } = useUserPreferences();
   const { mutateAsync: editPreferences, isPending: isEditingPreferences } =
@@ -67,11 +63,7 @@ export function useTheme() {
   const resolvedTheme: ResolvedThemeMode = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
-    if (
-      isEmberManaged() ||
-      typeof window === 'undefined' ||
-      typeof window.matchMedia !== 'function'
-    ) {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return;
     }
 
@@ -97,7 +89,7 @@ export function useTheme() {
   }, []);
 
   useEffect(() => {
-    if (isEmberManaged()) {
+    if (isEmberThemeManaged()) {
       return;
     }
     applyThemeClass(resolvedTheme);
@@ -126,7 +118,7 @@ export function useTheme() {
 
       try {
         const nextResolvedTheme = mode === 'system' ? systemTheme : mode;
-        await preloadAdminThemeStylesheet().catch((error) => {
+        await preloadEmberAdminThemeStylesheet().catch((error) => {
           // eslint-disable-next-line no-console
           console.error('[Theme] Failed to preload admin theme stylesheet:', error);
         });
@@ -148,6 +140,7 @@ export function useTheme() {
   return {
     theme,
     resolvedTheme,
+    isThemeReady: preferences !== undefined,
     setTheme,
     isSettingTheme: isEditingPreferences || isPendingTheme,
   } as const;

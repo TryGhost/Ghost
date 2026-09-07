@@ -260,9 +260,9 @@ describe('Front-end gift links', function () {
   });
 
   it('strips a malformed (non-string) ?gift param without looping', async function () {
-    // `?gift[]=x` parses to an array, not a token. It must canonicalise to
-    // the clean URL — not redirect to itself and loop.
-    const res = await request.get(`/${slug}/?gift[]=x`).redirects(0).expect(301);
+    // Repeated `gift` parameters parse to an array, not a token. They must
+    // canonicalise to the clean URL — not redirect to themselves and loop.
+    const res = await request.get(`/${slug}/?gift=x&gift=y`).redirects(0).expect(301);
 
     assert.match(res.headers.location, new RegExp(`^/${slug}/?$`));
     assert.doesNotMatch(
@@ -320,10 +320,9 @@ describe('Front-end gift links', function () {
   });
 
   describe('markdown variants', function () {
-    // A gift view is html-only. The markdown paths (`.md` URLs and Accept
-    // negotiation) redirect gift requests to the clean URL instead of
-    // serving an unlocked variant — which would carry the llms path's
-    // public Cache-Control and none of the gift headers.
+    // A gift view is html-only. `.md` URLs redirect gift requests to the
+    // clean URL instead of serving an unlocked variant — which would carry
+    // the llms path's public Cache-Control and none of the gift headers.
     it('301s a .md request away from a gift view without unlocking it', async function () {
       const res = await request.get(`/${slug}.md?gift=${token}`).redirects(0).expect(301);
 
@@ -332,32 +331,26 @@ describe('Front-end gift links', function () {
       assert.match(res.headers['cache-control'], /no-store/);
     });
 
-    it('301s an Accept-negotiated markdown request away from a gift view', async function () {
+    it('ignores Accept: text/markdown on a gift HTML URL', async function () {
       const res = await request
         .get(`/${publicGatedBlocksSlug}/?gift=${publicGatedBlocksToken}`)
         .set('Accept', 'text/markdown')
-        .redirects(0)
-        .expect(301);
+        .expect(200)
+        .expect('Content-Type', /html/);
 
-      assert.equal(res.headers.location, `/${publicGatedBlocksSlug}/`);
-      assert.doesNotMatch(
-        res.text || '',
-        /Paid-member gated content/,
-        'the unlocked variant must never be served as markdown',
-      );
+      assert.doesNotMatch(res.text, /## Content Index/);
+      assert.match(res.text, /Paid-member gated content/);
     });
 
-    it('301s an Accept-negotiated markdown request away from a gift view on a gated entry too', async function () {
-      // The redirect is decided from the request alone, before the entry
-      // lookup — a markdown-negotiating client gets the canonical URL,
-      // never a gift view, whatever the entry's visibility.
+    it('ignores Accept: text/markdown on a gated gift HTML URL', async function () {
       const res = await request
         .get(`/${slug}/?gift=${token}`)
         .set('Accept', 'text/markdown')
-        .redirects(0)
-        .expect(301);
+        .expect(200)
+        .expect('Content-Type', /html/)
+        .expect(assertUnlocked);
 
-      assert.equal(res.headers.location, `/${slug}/`);
+      assert.doesNotMatch(res.text, /## Content Index/);
     });
 
     it('serves the gated markdown variant on the clean .md URL', async function () {

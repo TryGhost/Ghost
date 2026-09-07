@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, test as baseTest } from 'vitest';
 import { HttpResponse, http } from 'msw';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { useOnboarding } from './use-onboarding';
@@ -15,6 +15,8 @@ import type {
 
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 const ownerRole = {
   id: 'owner-role',

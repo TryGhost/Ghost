@@ -43,6 +43,14 @@ export const getPortalPreviewUrl = ({
   const settingsParam = new URLSearchParams();
   settingsParam.append('button', getSettingValue(settings, 'portal_button') ? 'true' : 'false');
   settingsParam.append('name', getSettingValue(settings, 'portal_name') ? 'true' : 'false');
+  settingsParam.append(
+    'signupGiftPromotion',
+    getSettingValue(settings, 'portal_signup_gift_promotion') ? 'true' : 'false',
+  );
+  settingsParam.append(
+    'accountGiftPromotion',
+    getSettingValue(settings, 'portal_account_gift_promotion') ? 'true' : 'false',
+  );
   settingsParam.append('isFree', portalPlans.includes('free') ? 'true' : 'false');
   settingsParam.append(
     'isMonthly',

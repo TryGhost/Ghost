@@ -41,10 +41,7 @@ const renderWithRoutes = () =>
   render(
     <MemoryRouter initialEntries={['/automations']}>
       <Routes>
-        <Route
-          element={<AutomationsList automations={automations} showRunAnalytics={true} />}
-          path="/automations"
-        />
+        <Route element={<AutomationsList automations={automations} />} path="/automations" />
         <Route element={<AutomationEditorRoute />} path="/automations/:id" />
       </Routes>
     </MemoryRouter>,
@@ -61,7 +58,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders fetched automations with private beta copy and status labels', () => {
-    renderWithRouter(<AutomationsList automations={automations} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList automations={automations} />);
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
@@ -77,17 +74,21 @@ describe('AutomationsList', () => {
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
-    expect(screen.getByText('14 days ago')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
+    expect(screen.getByText('Jul 21')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
   });
 
   it('renders Never when an automation has no last entry', () => {
-    renderWithRouter(<AutomationsList automations={[automations[1]]} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList automations={[automations[1]]} />);
 
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
-  it('hides run analytics when the feature is disabled', () => {
-    renderWithRouter(<AutomationsList automations={automations} showRunAnalytics={false} />);
+  it('hides run analytics when stats are unavailable', () => {
+    const automationsWithoutStats = automations.map(
+      ({ stats: _stats, ...automation }) => automation,
+    );
+
+    renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
 
     expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
@@ -138,7 +139,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders a table skeleton while loading', () => {
-    renderWithRouter(<AutomationsList isLoading={true} showRunAnalytics={true} />);
+    renderWithRouter(<AutomationsList isLoading={true} />);
 
     expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
   });

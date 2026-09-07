@@ -9,6 +9,7 @@ const models = require('../../../core/server/models');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
 const moment = require('moment');
+const assert = require('node:assert/strict');
 const { anyErrorId } = matchers;
 
 describe('Authentication API', function () {
@@ -33,11 +34,47 @@ describe('Authentication API', function () {
           ],
         });
     });
+
+    it('Cannot generate a reset token for a suspended user', async function () {
+      const suspendedUser = await fixtureManager.get('users', 1);
+
+      await models.User.edit(
+        { status: 'inactive' },
+        { id: suspendedUser.id, context: { internal: true } },
+      );
+
+      try {
+        await agent
+          .post('authentication/password_reset')
+          .body({
+            password_reset: [
+              {
+                email: suspendedUser.email,
+              },
+            ],
+          })
+          .expectStatus(403)
+          .matchBodySnapshot({
+            errors: [
+              {
+                id: anyErrorId,
+              },
+            ],
+          });
+      } finally {
+        await models.User.edit(
+          { status: 'active' },
+          { id: suspendedUser.id, context: { internal: true } },
+        );
+      }
+    });
   });
 
   describe('resetPassword', function () {
+    let mail;
+
     beforeEach(function () {
-      mockMail();
+      mail = mockMail();
     });
 
     afterEach(function () {
@@ -89,6 +126,81 @@ describe('Authentication API', function () {
 
       // Verify we can access protected resources (session is verified)
       await agent.get('/users/me/').expectStatus(200);
+    });
+
+    describe('staff account status', function () {
+      let user;
+
+      beforeEach(async function () {
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('users');
+        const staffUser = fixtureManager.get('users', 1);
+        user = await models.User.getByEmail(staffUser.email, { context: { internal: true } });
+      });
+
+      async function requestResetToken() {
+        await agent
+          .post('authentication/password_reset')
+          .body({ password_reset: [{ email: user.get('email') }] })
+          .expectStatus(200);
+
+        mail.assertSentEmailCount(1);
+        const email = mail.getSentEmail();
+        const resetLink = email.text.match(/\/reset\/([^/]+)\//);
+        assert.ok(resetLink, 'the email should contain a password reset link');
+        return resetLink[1];
+      }
+
+      it('allows a locked user to request and redeem a password reset', async function () {
+        await user.lock({ context: { internal: true } });
+        const token = await requestResetToken();
+        const newPassword = 'thisissupersafe-after-reset';
+
+        await agent
+          .put('authentication/password_reset')
+          .body({
+            password_reset: [{ token, newPassword, ne2Password: newPassword }],
+          })
+          .expectStatus(200);
+
+        const updatedUser = await models.User.getByEmail(user.get('email'), {
+          context: { internal: true },
+        });
+        assert.equal(updatedUser.get('status'), 'active');
+        assert.equal(
+          await security.password.compare(newPassword, updatedUser.get('password')),
+          true,
+        );
+
+        const { body } = await agent.get('/users/me/').expectStatus(200);
+        assert.equal(body.users[0].id, user.id);
+      });
+
+      it('rejects a reset token issued before the user was suspended', async function () {
+        const token = await requestResetToken();
+        const originalPassword = user.get('password');
+        await models.User.edit(
+          { status: 'inactive' },
+          { id: user.id, context: { internal: true } },
+        );
+        const newPassword = 'thisissupersafe-after-reset';
+
+        const { body } = await agent
+          .put('authentication/password_reset')
+          .body({
+            password_reset: [{ token, newPassword, ne2Password: newPassword }],
+          })
+          .expectStatus(403);
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+        assert.equal(body.errors[0].message, 'This account has been suspended.');
+
+        const suspendedUser = await models.User.getByEmail(user.get('email'), {
+          context: { internal: true },
+        });
+        assert.equal(suspendedUser.get('status'), 'inactive');
+        assert.equal(suspendedUser.get('password'), originalPassword);
+        await agent.get('/users/me/').expectStatus(403);
+      });
     });
   });
 });

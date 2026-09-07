@@ -98,7 +98,6 @@ describe('GiftLinksService (integration)', function () {
         gift_link_token: 'second-live-token',
         created_at: new Date(),
       }),
-      // SQLite: "UNIQUE constraint failed"; MySQL: "Duplicate entry ... for key"
       /unique|duplicate/i,
     );
   });

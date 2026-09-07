@@ -508,7 +508,7 @@ const fixtures = {
       'Super Editor': DataGenerator.Content.roles[6].id,
     };
 
-    // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
+    // Avoid an opaque database error from an empty insert.
     if (_.isEmpty(permsToInsert)) {
       return Promise.reject(new Error('no permission found:' + obj));
     }

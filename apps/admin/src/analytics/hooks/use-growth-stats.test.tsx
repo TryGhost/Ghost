@@ -27,8 +27,8 @@ vi.mock('@tryghost/shade/utils', async () => {
   };
 });
 
-vi.mock('@tryghost/shade/app', async () => {
-  const actual = await vi.importActual('@tryghost/shade/app');
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
   return {
     ...actual,
     getRangeDates: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('@tryghost/shade/app', async () => {
 });
 
 import { formatPercentage } from '@tryghost/shade/utils';
-import { getRangeDates } from '@tryghost/shade/app';
+import { getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import {
   useMemberCountHistory,

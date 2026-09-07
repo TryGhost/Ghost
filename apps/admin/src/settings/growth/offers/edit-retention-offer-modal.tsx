@@ -269,12 +269,12 @@ const RetentionOfferSidebar: React.FC<{
     <div className="flex grow flex-col pt-2">
       <FieldGroup className="mb-10 grow gap-8">
         <section>
-          <div className="flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800">
+          <div className="flex flex-col gap-5 rounded-md border border-gray-300 p-4 pb-3.5 dark:border-gray-800">
             <div className="flex flex-col gap-1.5">
               <div className="flex items-end justify-between">
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-sm leading-none font-semibold text-grey-700">
+                    <span className="text-sm leading-none font-semibold text-gray-700">
                       Performance
                     </span>
                     <span>
@@ -283,7 +283,7 @@ const RetentionOfferSidebar: React.FC<{
                   </div>
                   {redemptions > 0 && lastRedeemed ? (
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-sm leading-none font-semibold text-grey-700">
+                      <span className="text-sm leading-none font-semibold text-gray-700">
                         Last redemption
                       </span>
                       <span>{formatOfferTimestamp(lastRedeemed)}</span>

@@ -1,11 +1,13 @@
-import { getTinybirdToken } from '../api/tinybird';
-import { useWebAnalyticsEnabled } from '../providers/app-provider';
+import { useCallback } from 'react';
+import { useTinybirdTokenQuery } from '../api/tinybird';
+import { useWebAnalyticsEnabled } from '../api/settings';
 
 export interface UseTinybirdTokenResult {
   token: string | undefined;
   isLoading: boolean;
   error: Error | null;
-  refetch: () => void;
+  /** Refetches the token query and resolves the fresh token, if any. */
+  refetch: () => Promise<string | undefined>;
 }
 
 export interface UseTinybirdTokenOptions {
@@ -17,10 +19,17 @@ let hasLoggedConfigWarning = false;
 
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
   const { enabled = true } = options;
-  // Web analytics is a global kill-switch read from context, so no call site threads it.
+  // Web analytics is a global kill-switch read from settings, so no call site threads it.
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const effectiveEnabled = enabled && webAnalyticsEnabled;
-  const tinybirdQuery = getTinybirdToken({ enabled: effectiveEnabled });
+  const tinybirdQuery = useTinybirdTokenQuery({ enabled: effectiveEnabled });
+
+  const refetchQuery = tinybirdQuery.refetch;
+  const refetch = useCallback(async () => {
+    const result = await refetchQuery();
+    const freshToken = result.data?.tinybird?.token;
+    return typeof freshToken === 'string' && freshToken ? freshToken : undefined;
+  }, [refetchQuery]);
 
   // A disabled React Query can keep cached data/errors, so return an idle
   // result — else direct consumers (the providers) leak a stale token.
@@ -29,7 +38,7 @@ export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTiny
       token: undefined,
       isLoading: false,
       error: null,
-      refetch: tinybirdQuery.refetch,
+      refetch,
     };
   }
 
@@ -52,6 +61,6 @@ export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTiny
     token: apiToken && typeof apiToken === 'string' ? apiToken : undefined,
     isLoading: tinybirdQuery.isLoading,
     error,
-    refetch: tinybirdQuery.refetch,
+    refetch,
   };
 };

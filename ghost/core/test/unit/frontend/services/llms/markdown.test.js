@@ -6,7 +6,7 @@ const {
   getMarkdownPath,
   getMarkdownUrl,
   getResourcePathFromMarkdownPath,
-  getAcceptedMarkdownContentType,
+  getGatedNotice,
   markdownFromHtml,
   renderEntryMarkdown,
   renderEntryMarkdownBody,
@@ -80,42 +80,6 @@ describe('Unit: frontend/services/llms/markdown', function () {
 
     it('returns null for null', function () {
       assert.equal(getResourcePathFromMarkdownPath(null), null);
-    });
-  });
-
-  describe('getAcceptedMarkdownContentType', function () {
-    function fakeReq(accept) {
-      return {
-        get(header) {
-          if (header === 'Accept') {
-            return accept;
-          }
-          return null;
-        },
-        accepts(types) {
-          if (!accept) {
-            return false;
-          }
-          for (const type of types) {
-            if (accept.includes(type)) {
-              return type;
-            }
-          }
-          return false;
-        },
-      };
-    }
-
-    it('returns text/markdown when accepted', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq('text/markdown')), 'text/markdown');
-    });
-
-    it('returns null for text/html only', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq('text/html')), null);
-    });
-
-    it('returns null when no accept header', function () {
-      assert.equal(getAcceptedMarkdownContentType(fakeReq(null)), null);
     });
   });
 
@@ -196,6 +160,119 @@ describe('Unit: frontend/services/llms/markdown', function () {
 
       assert.match(result, /- Type: page/);
       assert.doesNotMatch(result, /- Tags:/);
+    });
+
+    it('appends notice and CTA for gated previews', function () {
+      const entry = {
+        title: 'Paid Post',
+        url: 'https://example.com/paid/',
+        type: 'post',
+        visibility: 'paid',
+        html: '<p>Free preview</p>',
+        custom_excerpt: 'Teaser',
+        tags: [],
+      };
+
+      const result = renderEntryMarkdown(entry, {
+        llmsIndexUrl: 'https://example.com/llms.txt',
+        notice: getGatedNotice(entry),
+        cta: 'Subscribe: https://example.com/#/portal/signup',
+      });
+
+      assert.match(result, /Free preview/);
+      assert.match(result, /---/);
+      assert.match(result, /_This post is for paying subscribers only\._/);
+      assert.match(result, /Subscribe: https:\/\/example\.com\/#\/portal\/signup/);
+      assert.doesNotMatch(result, /_No content available\._/);
+    });
+
+    it('keeps the excerpt on the Description line only when gated html is empty', function () {
+      const entry = {
+        title: 'Paid Post',
+        url: 'https://example.com/paid/',
+        type: 'post',
+        visibility: 'paid',
+        html: '',
+        custom_excerpt: 'Only the excerpt',
+        tags: [],
+      };
+
+      const result = renderEntryMarkdown(entry, {
+        llmsIndexUrl: 'https://example.com/llms.txt',
+        notice: getGatedNotice(entry),
+      });
+
+      assert.match(result, /- Description: Only the excerpt/);
+      assert.equal(result.match(/Only the excerpt/g).length, 1);
+      assert.match(result, /_This post is for paying subscribers only\._/);
+      assert.doesNotMatch(result, /_No content available\._/);
+    });
+
+    it('omits body for gated entries with no html and no excerpt', function () {
+      const entry = {
+        title: 'Paid Post',
+        url: 'https://example.com/paid/',
+        type: 'post',
+        visibility: 'members',
+        html: '',
+        tags: [],
+      };
+
+      const result = renderEntryMarkdown(entry, {
+        llmsIndexUrl: 'https://example.com/llms.txt',
+        notice: getGatedNotice(entry),
+      });
+
+      assert.match(result, /^# Paid Post$/m);
+      assert.match(result, /_This post is for subscribers only\._/);
+      assert.doesNotMatch(result, /_No content available\._/);
+    });
+  });
+
+  describe('getGatedNotice', function () {
+    it('returns members notice for posts', function () {
+      assert.equal(
+        getGatedNotice({ visibility: 'members', type: 'post' }),
+        'This post is for subscribers only.',
+      );
+    });
+
+    it('returns paid notice for pages', function () {
+      assert.equal(
+        getGatedNotice({ visibility: 'paid', type: 'page' }),
+        'This page is for paying subscribers only.',
+      );
+    });
+
+    it('uses the explicit resourceKind when entry.type is absent', function () {
+      // The content API does not serialize `type`, so callers pass it in.
+      assert.equal(
+        getGatedNotice({ visibility: 'paid' }, 'page'),
+        'This page is for paying subscribers only.',
+      );
+      assert.equal(
+        getGatedNotice({ visibility: 'members' }, 'post'),
+        'This post is for subscribers only.',
+      );
+    });
+
+    it('formats single and multiple tiers', function () {
+      assert.equal(
+        getGatedNotice({
+          visibility: 'tiers',
+          type: 'post',
+          tiers: [{ name: 'Gold' }],
+        }),
+        'This post is for subscribers on the Gold tier only.',
+      );
+      assert.equal(
+        getGatedNotice({
+          visibility: 'tiers',
+          type: 'post',
+          tiers: [{ name: 'Gold' }, { name: 'Silver' }],
+        }),
+        'This post is for subscribers on the Gold and Silver tiers only.',
+      );
     });
   });
 });

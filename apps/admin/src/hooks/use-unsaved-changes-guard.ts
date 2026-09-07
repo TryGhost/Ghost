@@ -1,9 +1,13 @@
 import React from 'react';
-import { NavigationType, useBlocker } from 'react-router';
 import { isOnRouterHistoryEntry } from '@/hooks/use-router-history-entry';
-import { useConfirmUnload, useLocation } from '@tryghost/admin-x-framework';
+import {
+  NavigationType,
+  useBlocker,
+  useConfirmUnload,
+  useLocation,
+} from '@tryghost/admin-x-framework';
 import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
-import type { BlockerFunction } from 'react-router';
+import type { BlockerFunction } from '@tryghost/admin-x-framework';
 
 type BlockerFunctionArgs = Parameters<BlockerFunction>[0];
 

@@ -2,6 +2,7 @@ import React from 'react';
 import ActionButton from '../common/action-button';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
+import SignupGiftPromotion from '../common/signup-gift-promotion';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
@@ -104,10 +105,37 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
 
 .gh-portal-signup-message {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
     margin: 4px 0 0;
+}
+
+.gh-portal-signup-message-stack {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-portal-signup-message-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+}
+
+.gh-portal-signup-message-gift {
+    display: flex;
+    align-items: center;
+}
+
+.gh-portal-signup-message-icon {
+    width: 16px;
+    height: 16px;
+    margin-inline-end: 4px;
+    stroke-width: 2;
 }
 
 .gh-portal-signup-message,
@@ -704,22 +732,28 @@ class SignupPage extends React.Component {
     return null;
   }
 
-  renderLoginMessage() {
+  renderLoginMessage({ showGiftPromotion = true } = {}) {
     const { brandColor, doAction } = this.context;
+
     return (
       <div>
         {this.renderFreeTrialMessage()}
-        <div className="gh-portal-signup-message">
-          <div>{t('Already a member?')}</div>
-          <button
-            data-test-button="signin-switch"
-            data-testid="signin-switch"
-            className="gh-portal-btn gh-portal-btn-link"
-            style={{ color: brandColor }}
-            onClick={() => doAction('switchPage', { page: 'signin' })}
-          >
-            <span>{t('Sign in')}</span>
-          </button>
+        <div className="gh-portal-signup-message gh-portal-signup-message-stack">
+          <div className="gh-portal-signup-message-row">
+            <div>{t('Already a member?')}</div>
+            <button
+              data-test-button="signin-switch"
+              data-testid="signin-switch"
+              className="gh-portal-btn gh-portal-btn-link"
+              style={{ color: brandColor }}
+              onClick={() => doAction('switchPage', { page: 'signin' })}
+            >
+              <span>{t('Sign in')}</span>
+            </button>
+          </div>
+          {showGiftPromotion && (
+            <SignupGiftPromotion className="gh-portal-signup-message-row" lastPage="signup" />
+          )}
         </div>
       </div>
     );
@@ -817,7 +851,7 @@ class SignupPage extends React.Component {
           >
             {t('This site only accepts paid members.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );
@@ -833,7 +867,7 @@ class SignupPage extends React.Component {
           >
             {t('This site is invite-only, contact the owner for access.')}
           </p>
-          {this.renderLoginMessage()}
+          {this.renderLoginMessage({ showGiftPromotion: false })}
         </div>
       </section>
     );

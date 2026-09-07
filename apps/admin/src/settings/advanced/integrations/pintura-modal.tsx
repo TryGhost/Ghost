@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import pinturaScreenshot from '@/settings/assets/images/pintura-screenshot.png';
 import {
@@ -103,7 +103,7 @@ function PinturaModal() {
       />
       <div className="mt-7">
         {!config.pintura && (
-          <div className="mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-50 p-4 md:flex-row md:p-7 dark:bg-grey-950">
+          <div className="mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-gray-50 p-4 md:flex-row md:p-7 dark:bg-gray-950">
             <div className="md:basis-1/2">
               <p className="mb-4 text-md font-semibold">
                 Add advanced image editing to Ghost, with Pintura
@@ -159,7 +159,7 @@ function PinturaModal() {
                 <div className="flex flex-col justify-between gap-1 md:flex-row md:items-center">
                   <div>
                     <div>Upload Pintura script</div>
-                    <div className="text-sm text-grey-600">
+                    <div className="text-sm text-gray-600">
                       Upload the <code>pintura-umd.js</code> file from the Pintura package
                     </div>
                   </div>
@@ -175,7 +175,7 @@ function PinturaModal() {
                 <div className="flex flex-col justify-between gap-1 md:flex-row md:items-center">
                   <div>
                     <div>Upload Pintura styles</div>
-                    <div className="text-sm text-grey-600">
+                    <div className="text-sm text-gray-600">
                       Upload the <code>pintura.css</code> file from the Pintura package
                     </div>
                   </div>

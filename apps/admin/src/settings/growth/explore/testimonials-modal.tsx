@@ -17,6 +17,7 @@ import {
 } from '@tryghost/shade/components';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { SettingsModal } from '@tryghost/shade/patterns';
+import { memberAvatarProps } from '@/members/api';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -63,6 +64,7 @@ const TestimonialsModal = () => {
         throw new Error('Something went wrong, please try again later.');
       }
 
+      // eslint-disable-next-line no-restricted-syntax -- external Ghost Explore service, not the Admin API
       const response = await fetch(exploreTestimonialsUrl, {
         method: 'POST',
         headers: {
@@ -121,9 +123,9 @@ const TestimonialsModal = () => {
     >
       <FieldGroup className="gap-8">
         <div className="flex items-stretch">
-          <div className="hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!">
+          <div className="hidden w-full flex-col justify-between bg-gradient-to-tl from-gray-100/50 to-gray-100/80 p-8 dark:from-gray-900/40 dark:to-gray-900/60 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!">
             <div className="pr-6">
-              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-grey-700 italic shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 dark:before:bg-black">
+              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-gray-700 italic shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-gray-300 dark:before:bg-black">
                 Moving to Ghost has proven to be one of the best business decisions we’ve made as an
                 independent media outlet.
               </div>
@@ -136,13 +138,13 @@ const TestimonialsModal = () => {
                 ></div>
                 <div>
                   <div className="font-medium text-black dark:text-white">Joel Warner</div>
-                  <div className="-mt-0.5 text-grey-700">Lever News</div>
+                  <div className="-mt-0.5 text-gray-700">Lever News</div>
                 </div>
               </div>
             </div>
 
             <div className="mt-8 ml-6">
-              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-grey-700 italic shadow-lg before:absolute before:right-5 before:-bottom-1.5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 dark:before:bg-black">
+              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-gray-700 italic shadow-lg before:absolute before:right-5 before:-bottom-1.5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-gray-300 dark:before:bg-black">
                 It has now been one year since I quit my full-time job to go all in on Tangle.
                 Today, we have 50,000+ paying subscribers. That’s roughly $5M in gross yearly
                 revenue ... it’s the best paying job I’ve ever had.
@@ -150,7 +152,7 @@ const TestimonialsModal = () => {
               <div className="mt-[14px] mr-2 flex items-center justify-end gap-2">
                 <div className="flex flex-col items-end">
                   <div className="font-medium text-black dark:text-white">Isaac Saul</div>
-                  <div className="-mt-0.5 text-grey-700">Tangle</div>
+                  <div className="-mt-0.5 text-gray-700">Tangle</div>
                 </div>
                 <div
                   className="size-9 rounded-full bg-white bg-cover bg-center opacity-90 grayscale"
@@ -162,7 +164,7 @@ const TestimonialsModal = () => {
             </div>
 
             <div className="mt-8 hidden pr-6 [@media(min-width:940px)]:visible! [@media(min-width:940px)]:block!">
-              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-grey-700 italic shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 dark:before:bg-black">
+              <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-gray-700 italic shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-gray-300 dark:before:bg-black">
                 You should be using Ghost because it’s absolutely amazing and I love it. It’s what
                 I’ve been using for all my sites since 2016.
               </div>
@@ -175,7 +177,7 @@ const TestimonialsModal = () => {
                 ></div>
                 <div>
                   <div className="font-medium text-black dark:text-white">Ali Abdaal</div>
-                  <div className="-mt-0.5 text-grey-700">YouTuber</div>
+                  <div className="-mt-0.5 text-gray-700">YouTuber</div>
                 </div>
               </div>
             </div>
@@ -226,15 +228,14 @@ const TestimonialsModal = () => {
                 <div className="flex items-center gap-2">
                   <Avatar
                     className="size-10"
-                    email={staffUserEmail}
-                    name={staffUserName}
+                    {...memberAvatarProps({ name: staffUserName, email: staffUserEmail })}
                     src={staffUserProfileImage}
                   />
                   <div className="flex flex-col">
                     <span className="font-medium">
                       By {staffUserName ? staffUserName : staffUserEmail}
                     </span>
-                    <span className="text-sm text-grey-700">
+                    <span className="text-sm text-gray-700">
                       {staffUserRole} — {siteTitle}
                     </span>
                   </div>

@@ -9,9 +9,10 @@ import {
   Separator,
   Switch,
 } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getSettingValues, isSettingReadOnly } from '@tryghost/admin-x-framework/api/settings';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
@@ -103,7 +104,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         />
       </Field>
       {isWebAnalyticsLimited ? (
-        <div className="mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-900">
+        <div className="mb-5 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-900 dark:bg-gray-900">
           <span className="flex items-start gap-2">
             <span>
               Web analytics is available on the Publisher plan and above.{' '}
@@ -117,7 +118,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           </span>
         </div>
       ) : !isWebAnalyticsConfigured ? (
-        <div className="mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-900">
+        <div className="mb-5 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-900 dark:bg-gray-900">
           <span className="flex items-start gap-2">
             <span>
               Web analytics in Ghost is powered by{' '}

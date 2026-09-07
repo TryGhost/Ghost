@@ -1,14 +1,14 @@
 import moment from 'moment-timezone';
 import buildImportEmail, { type EmailLinks } from './completion-email';
 import { stripFormulaGuard } from '../csv';
-import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/custom-field-types/csv';
+import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/csv';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool, SpooledRows } from './spool';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
-const jobLogging = require('../../../jobs/job-logging');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 // The members CSV importer, sliced into one concern per method. Two entry points by
@@ -105,16 +105,16 @@ export interface EmailNotifications {
 export type FailureReporter = (error: unknown) => void;
 
 // Opaque to the import: planWrite produces it, applyWrite consumes it.
-type CustomFieldPlan = unknown;
+type MetafieldPlan = unknown;
 
-// The custom fields collaborator as the import needs it. activeFields is the field set a
-// custom_fields.* column is read against, empty when the feature is off; planWrite
+// The metafields collaborator as the import needs it. activeFields is the field set a
+// metafields.* column is read against, empty when the feature is off; planWrite
 // validates a row's values (throwing so the row fails whole) and applyWrite persists
 // them, touching only the parts the row named, both on the row's transaction.
-export interface CustomFieldsImport {
+export interface MetafieldsImport {
   activeFields(): Promise<CsvField[]>;
-  planWrite(values: Record<string, unknown>): Promise<CustomFieldPlan[]>;
-  applyWrite(memberId: string, plan: CustomFieldPlan[], executor: Knex): Promise<void>;
+  planWrite(values: Record<string, unknown>): Promise<MetafieldPlan[]>;
+  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex): Promise<void>;
 }
 
 // The collaborators the import depends on, one per concern.
@@ -126,7 +126,7 @@ interface ImporterDeps {
   tiers: TiersRepository;
   stripe: StripeSubscriptions;
   gifts: GiftService;
-  customFields: CustomFieldsImport;
+  metafields: MetafieldsImport;
   email: EmailNotifications;
   report: FailureReporter;
   addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
@@ -159,7 +159,7 @@ interface ImportResult {
 
 interface PreparedRun {
   defaultTier: Tier;
-  activeCustomFields: CsvField[];
+  activeMetafields: CsvField[];
   globalLabels: Label[];
 }
 
@@ -182,6 +182,7 @@ const messages = {
   giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
   giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
   giftReassignFailed: 'Failed to reassign gift to member.',
+  metafieldWriteFailed: 'Failed to save the custom field values for this member.',
 };
 
 // Columns whose presence makes a row slow to import (they reach out to Stripe), so
@@ -220,7 +221,7 @@ class MembersCSVImporter {
   private _tiers: TiersRepository;
   private _stripe: StripeSubscriptions;
   private _gifts: GiftService;
-  private _customFields: CustomFieldsImport;
+  private _metafields: MetafieldsImport;
   private _email: EmailNotifications;
   private _report: FailureReporter;
   private _addJob: (job: { job: () => Promise<void>; offloaded: boolean; name: string }) => void;
@@ -235,7 +236,7 @@ class MembersCSVImporter {
     tiers,
     stripe,
     gifts,
-    customFields,
+    metafields,
     email,
     report,
     addJob,
@@ -249,7 +250,7 @@ class MembersCSVImporter {
     this._tiers = tiers;
     this._stripe = stripe;
     this._gifts = gifts;
-    this._customFields = customFields;
+    this._metafields = metafields;
     this._email = email;
     this._report = report;
     this._addJob = addJob;
@@ -305,7 +306,10 @@ class MembersCSVImporter {
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
     const spooled = await this._spool.write(rows);
 
-    jobLogging.info('[Background Job] members-import queued');
+    logging.info(
+      { event: { name: 'members.import.queued' }, rows: rows.length },
+      'Members import queued',
+    );
     this._addJob({
       job: () =>
         this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
@@ -326,7 +330,7 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
     const startedAt = Date.now();
-    jobLogging.info('[Background Job] members-import started');
+    logging.info({ event: { name: 'members.import.started' } }, 'Members import started');
     // Null until the import produces one: parsing and mapping already happened inside
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
@@ -354,11 +358,20 @@ class MembersCSVImporter {
     );
 
     if (result) {
-      jobLogging.info(
-        `[Background Job] members-import completed in ${Date.now() - startedAt}ms: imported ${result.imported}, ${result.errors.length} row(s) rejected`,
+      logging.info(
+        {
+          event: { name: 'members.import.completed' },
+          durationMs: Date.now() - startedAt,
+          imported: result.imported,
+          rejected: result.errors.length,
+        },
+        'Members import completed',
       );
     } else {
-      jobLogging.info(`[Background Job] members-import failed after ${Date.now() - startedAt}ms`);
+      logging.info(
+        { event: { name: 'members.import.failed' }, durationMs: Date.now() - startedAt },
+        'Members import failed',
+      );
     }
   }
 
@@ -399,7 +412,7 @@ class MembersCSVImporter {
     return {
       defaultTier: await this._tiers.getDefault(),
       // Empty when the feature is off, so a carried-through column is dropped.
-      activeCustomFields: await this._customFields.activeFields(),
+      activeMetafields: await this._metafields.activeFields(),
       globalLabels: [{ name: labelName }, ...extraLabels],
     };
   }
@@ -407,7 +420,7 @@ class MembersCSVImporter {
   // Must not throw: once a row has committed, an import that failed halfway is not one
   // that never ran.
   private async writeRows(rows: MemberImportRow[], prepared: PreparedRun): Promise<WrittenRows> {
-    const { defaultTier, activeCustomFields } = prepared;
+    const { defaultTier, activeMetafields } = prepared;
     const tierIdCache = new Map();
     const archivableStripePriceIds: string[] = [];
     // Copied per row: the member model stamps ids and trims names onto these in
@@ -440,15 +453,15 @@ class MembersCSVImporter {
           }
         }
 
-        // Validate the row's custom field values before the transaction opens.
+        // Validate the row's metafield values before the transaction opens.
         // planWrite only reads, and it throws on an invalid value to fail the row
         // before any member write -- so there is no reason to hold a transaction
         // across it, and doing so would deadlock the single-connection SQLite pool.
-        const customFieldPlan =
-          activeCustomFields.length > 0
+        const metafieldPlan =
+          activeMetafields.length > 0
             ? await namingTheColumn(() =>
-                this._customFields.planWrite(
-                  fieldValuesFromCsvRow(activeCustomFields, row, stripFormulaGuard),
+                this._metafields.planWrite(
+                  fieldValuesFromCsvRow(activeMetafields, row, stripFormulaGuard),
                 ),
               )
             : [];
@@ -569,7 +582,16 @@ class MembersCSVImporter {
         }
 
         // On the row's transaction, so the values commit or roll back with the member.
-        await this._customFields.applyWrite(member.id, customFieldPlan, trx);
+        try {
+          await this._metafields.applyWrite(member.id, metafieldPlan, trx);
+        } catch (writeError) {
+          // planWrite passed every value before the transaction opened, so a failure
+          // here is ours and not the row's. Operators get the original, which a driver
+          // will have written a query into; the publisher gets a sentence instead, in a
+          // file they open next to a spreadsheet.
+          this._report(writeError);
+          throw new errors.DataImportError({ message: tpl(messages.metafieldWriteFailed) });
+        }
 
         await trx.commit();
         imported += 1;
@@ -582,7 +604,7 @@ class MembersCSVImporter {
           .filter((message): message is string => typeof message === 'string');
         const errorMessage = reasons.join('\n');
         // trx is unset if the row failed before the transaction opened (a bad
-        // custom field value or gift combination). A rejected rollback must not
+        // metafield value or gift combination). A rejected rollback must not
         // escape: rows before this one are already committed, and a throw leaving
         // here would be read as an import that never wrote anything.
         if (trx) {

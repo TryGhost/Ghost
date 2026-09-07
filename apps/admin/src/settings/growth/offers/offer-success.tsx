@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import { Button, Input } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -100,7 +100,7 @@ const OfferSuccess: React.FC<{ id: string }> = ({ id }) => {
           label="Offers"
           onBack={() => updateRoute('offers/edit')}
         />
-        <LucideIcon.BadgeCheck className="-mt-4 size-10 text-grey-700" />
+        <LucideIcon.BadgeCheck className="-mt-4 size-10 text-gray-700" />
         <h1 className="mt-6 text-4xl">Your new offer is live!</h1>
         <p className="mt-3 max-w-[510px] text-[1.6rem]">
           You can share the link anywhere. In your newsletter, social media, a podcast, or
@@ -113,7 +113,7 @@ const OfferSuccess: React.FC<{ id: string }> = ({ id }) => {
               {isCopied ? 'Copied!' : 'Copy link'}
             </Button>
           </div>
-          <div className='flex items-center gap-4 text-sm font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>
+          <div className='flex items-center gap-4 text-sm font-medium before:h-px before:grow before:bg-gray-300 before:content-[""] after:h-px after:grow after:bg-gray-300 after:content-[""] dark:before:bg-gray-800 dark:after:bg-gray-800'>
             OR
           </div>
           <div className="flex gap-2">

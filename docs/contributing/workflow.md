@@ -37,17 +37,18 @@ first; ordinary pull requests target `main`.
 
 Add or update automated tests when behavior changes. Run the most focused checks
 for the code you touched, following the README beside that workspace. Before
-handing off a change, use the repository's one-stop lint and test command:
+handing off a change, use the repository's one-stop formatting, lint, and test
+command:
 
 ```bash
 pnpm check
 ```
 
-`pnpm check` runs `pnpm lint` followed by `pnpm test`. It does not include the
-browser E2E suite or Ember Admin tests, so run those separately when the affected
-area requires them. CI uses the Nx affected graph and path filters to select the
-relevant lint, unit, integration, acceptance, build, and browser-test jobs for a
-pull request.
+`pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
+not include the browser E2E suite or Ember Admin tests, so run those separately
+when the affected area requires them. CI uses the Nx affected graph and path
+filters to select the relevant lint, unit, integration, acceptance, build, and
+browser-test jobs for a pull request.
 
 ## Formatting
 

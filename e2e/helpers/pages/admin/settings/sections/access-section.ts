@@ -1,5 +1,10 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  access,
+  siteAccessCode,
+  siteVisibilitySelect,
+} from '@tryghost/test-data/selectors/settings';
 
 export class AccessSection extends BasePage {
   readonly section: Locator;
@@ -10,10 +15,10 @@ export class AccessSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('access');
+    this.section = page.getByTestId(access);
     this.saveButton = this.section.getByRole('button', { name: 'Save' });
-    this.visibilitySelect = this.section.getByTestId('site-visibility-select');
-    this.passwordInput = this.section.getByTestId('site-access-code');
+    this.visibilitySelect = this.section.getByTestId(siteVisibilitySelect);
+    this.passwordInput = this.section.getByTestId(siteAccessCode);
   }
 
   async enablePrivateMode(password: string): Promise<void> {

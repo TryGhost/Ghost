@@ -27,7 +27,7 @@ const UnsplashButton: React.FC<UnsplashButtonProps> = ({ icon, label, ...props }
 
   return (
     <a
-      className="text-grey-700 flex h-8 shrink-0 cursor-pointer items-center rounded-md bg-white px-3 py-2 font-sans text-sm font-medium leading-6 opacity-90 transition-all ease-in-out hover:opacity-100"
+      className="flex h-8 shrink-0 cursor-pointer items-center rounded-md bg-white px-3 py-2 font-sans text-[1.2rem] font-medium leading-[2.4rem] text-gray-700 opacity-90 transition-all ease-in-out hover:opacity-100"
       onClick={(e) => e.stopPropagation()}
       {...props}
     >

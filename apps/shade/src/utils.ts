@@ -4,6 +4,7 @@ export * as LucideIcon from 'lucide-react';
 
 export { default as useGlobalDirtyState } from './hooks/use-global-dirty-state';
 export { useSimplePagination } from './hooks/use-simple-pagination';
+export { useIsMobile } from './hooks/use-mobile';
 
 export {
   cn,
@@ -16,7 +17,10 @@ export {
   formatPercentage,
   formatDisplayDate,
   formatDisplayTime,
+  formatDisplayDateWithRange,
   getCountryFlag,
   stringToHslColor,
   abbreviateNumber,
+  getYRange,
+  calculateYAxisWidth,
 } from './lib/ds-utils';

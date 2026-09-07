@@ -20,6 +20,7 @@ const setup = async ({ site, member = null, newsletters }, loggedOut = false) =>
 
   ghostApi.member.update = vi.fn(({ newsletters: newNewsletters }) => {
     return Promise.resolve({
+      uuid: member?.uuid,
       newsletters: newNewsletters,
       enable_comment_notifications: false,
     });
@@ -265,6 +266,12 @@ describe('Newsletter Subscriptions', () => {
         uuid: FixtureMember.subbedToNewsletter.uuid,
         key: 'hashedMemberUuid',
       });
+      await waitFor(() => {
+        expect(ghostApi.member.update).toHaveBeenCalledWith({
+          newsletters: Newsletters.filter((n) => n.uuid !== Newsletters[0].uuid),
+        });
+      });
+      expect(ghostApi.member.updateNewsletters).not.toHaveBeenCalled();
       // Verify the local state shows the newsletter as unsubscribed
       let checkboxes = popupIframeDocument.querySelectorAll('input[type="checkbox"]');
       let newsletter1Checkbox = checkboxes[0];
@@ -299,6 +306,37 @@ describe('Newsletter Subscriptions', () => {
       newsletter2Checkbox = checkboxes[1];
       expect(newsletter1Checkbox).not.toBeChecked();
       expect(newsletter2Checkbox).toBeChecked();
+    });
+
+    test("unsubscribe via another member's email link while logged in", async () => {
+      const linkMemberUuid = 'link-member-uuid';
+      // Mock window.location: the link belongs to a member other than the logged-in one
+      Object.defineProperty(window, 'location', {
+        value: new URL(
+          `https://portal.localhost/?action=unsubscribe&uuid=${linkMemberUuid}&newsletter=${Newsletters[0].uuid}&key=hashedLinkMemberUuid`,
+        ),
+        writable: true,
+      });
+
+      const { ghostApi, popupIframeDocument } = await setup({
+        site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+        member: FixtureMember.subbedToNewsletter,
+        newsletters: Newsletters,
+      });
+
+      // The request is rejected outright: the link belongs to a different member than
+      // the session, so nobody's preferences are touched
+      await waitFor(() => {
+        expect(
+          within(popupIframeDocument).getByText(/belongs to a different email address/),
+        ).toBeInTheDocument();
+      });
+      expect(within(popupIframeDocument).queryByText(/will no longer receive/)).toBeNull();
+
+      // No reads of the link member's data and no writes against anyone
+      expect(ghostApi.member.newsletters).not.toHaveBeenCalled();
+      expect(ghostApi.member.updateNewsletters).not.toHaveBeenCalled();
+      expect(ghostApi.member.update).not.toHaveBeenCalled();
     });
 
     test('unsubscribe link without a key param', async () => {

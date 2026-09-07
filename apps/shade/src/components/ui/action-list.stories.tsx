@@ -32,7 +32,7 @@ export const Default: Story = {
         <ActionListItem>
           <ActionListItemContent asChild>
             <button className="flex items-center gap-3 py-3 text-left" type="button">
-              <Avatar name="Jamie Wilson" />
+              <Avatar initials="JW" />
               <span>
                 <span className="block font-medium">Jamie Wilson</span>
                 <span className="block text-sm text-muted-foreground">jamie@example.com</span>

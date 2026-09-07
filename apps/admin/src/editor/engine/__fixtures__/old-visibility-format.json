@@ -1,0 +1,103 @@
+{
+  "before": {
+    "root": {
+      "children": [
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>free members only</p>",
+          "visibility": {
+            "showOnEmail": true,
+            "showOnWeb": true,
+            "segment": "status:free"
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email only</p>",
+          "visibility": {
+            "emailOnly": true,
+            "segment": ""
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web only</p>",
+          "visibility": {
+            "showOnEmail": false,
+            "showOnWeb": true,
+            "segment": "status:-free+status:-paid"
+          }
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "after": {
+    "root": {
+      "children": [
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>free members only</p>",
+          "visibility": {
+            "showOnEmail": true,
+            "showOnWeb": true,
+            "segment": "status:free",
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email only</p>",
+          "visibility": {
+            "emailOnly": true,
+            "segment": "",
+            "web": {
+              "nonMember": false,
+              "memberSegment": ""
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web only</p>",
+          "visibility": {
+            "showOnEmail": false,
+            "showOnWeb": true,
+            "segment": "status:-free+status:-paid",
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": ""
+            }
+          }
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  }
+}

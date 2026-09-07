@@ -8,12 +8,24 @@ vi.mock('@tryghost/admin-x-framework', () => ({
 vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: vi.fn(),
 }));
-vi.mock('@tryghost/admin-x-framework/api/settings', () => ({
-  useBrowseSettings: vi.fn(),
-  // Mirror the real helper: pull a setting's value out of the settings array.
-  getSettingValue: (settings: Array<{ key: string; value: unknown }> | null, key: string) =>
-    settings?.find((s) => s.key === key)?.value,
-}));
+vi.mock('@tryghost/admin-x-framework/api/settings', () => {
+  const useBrowseSettings = vi.fn();
+  return {
+    useBrowseSettings,
+    // Mirror the real selector: strict boolean off the settings query, false
+    // while the query has no data.
+    useWebAnalyticsEnabled: () => {
+      const result = useBrowseSettings() as
+        | { data?: { settings?: Array<{ key: string; value: unknown }> } }
+        | undefined;
+      const settings = result?.data?.settings;
+      if (!settings) {
+        return false;
+      }
+      return settings.find((s) => s.key === 'web_analytics_enabled')?.value === true;
+    },
+  };
+});
 
 const TOKEN = 'gift_token_abc';
 

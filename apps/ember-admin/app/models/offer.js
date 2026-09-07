@@ -1,9 +1,6 @@
 import Model, {attr} from '@ember-data/model';
-import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 
-export default Model.extend(ValidationEngine, {
-    validationType: 'offer',
-
+export default Model.extend({
     name: attr('string'),
     code: attr('string'),
     cadence: attr('string'),

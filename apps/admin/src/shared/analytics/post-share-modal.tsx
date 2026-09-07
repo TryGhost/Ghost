@@ -67,6 +67,11 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
           label: 'Share on LinkedIn',
           service: 'linkedin',
         },
+        {
+          href: `https://bsky.app/intent/compose?text=${encodedPostURLTitle}`,
+          label: 'Share on Bluesky',
+          service: 'bluesky',
+        },
       ];
 
   return (

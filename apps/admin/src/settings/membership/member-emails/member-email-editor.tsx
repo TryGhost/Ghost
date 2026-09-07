@@ -134,13 +134,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const { fetchAutocompleteLinks, searchLinks } = useWelcomeEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
-  const { fetchKoenigLexical, darkMode } = useFocusContext();
-  const editorResource = useMemo(() => {
-    if (!fetchKoenigLexical) {
-      throw new Error('Koenig Lexical loader is not available');
-    }
-    return loadKoenig(fetchKoenigLexical);
-  }, [fetchKoenigLexical]);
+  const { darkMode } = useFocusContext();
+  const editorResource = useMemo(() => loadKoenig(), []);
   const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
   const cardConfig = useMemo(

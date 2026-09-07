@@ -1,5 +1,5 @@
 import APIKeys from './api-keys';
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationHeader from './integration-header';
 import ZapierLogo from '@/settings/assets/images/zapier-logo.svg';
 import {
@@ -15,8 +15,7 @@ import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useBrowseIntegrations } from '@tryghost/admin-x-framework/api/integrations';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useEffect, useState } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useRefreshAPIKey } from '@tryghost/admin-x-framework/api/api-keys';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useSettingsApp } from '@/settings/providers/settings-app-context';
@@ -32,14 +31,13 @@ function ZapierModal() {
   const { updateRoute } = useSettingsNavigation();
   const { zapierTemplates } = useSettingsApp();
   const { data: { integrations } = { integrations: [] } } = useBrowseIntegrations();
-  const { config } = useGlobalData();
 
   const { mutateAsync: refreshAPIKey } = useRefreshAPIKey();
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
   const [regenerated, setRegenerated] = useState(false);
 
-  const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+  const zapierDisabled = useHostLimits()?.customIntegrations?.disabled;
   const integration = integrations.find(({ slug }) => slug === 'zapier');
   const adminApiKey = integration?.api_keys?.find((key) => key.type === 'admin');
 

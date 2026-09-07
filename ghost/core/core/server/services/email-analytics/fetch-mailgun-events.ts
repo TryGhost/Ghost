@@ -9,7 +9,7 @@ type FetchMailgunEventsOptions = {
   settings: { get: (key: string) => unknown };
   tags: string[];
   batchHandler: Function;
-  /** Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks. */
+  /** Per-domain soft maximum. We stop fetching a domain after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks. */
   maxEvents?: number;
   begin?: Date;
   end?: Date;

@@ -12,8 +12,7 @@ import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { Switch } from '@tryghost/shade/components';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useLimiter } from '@/settings/hooks/use-limiter';
+import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 

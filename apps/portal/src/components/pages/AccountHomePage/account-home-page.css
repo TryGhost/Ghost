@@ -202,3 +202,14 @@ footer.gh-portal-account-footer {
     justify-content: flex-start;
   }
 }
+
+.gh-portal-gift-card {
+  margin-top: 16px;
+}
+
+.gh-portal-gift-card-icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  stroke-width: 2;
+}

@@ -4,6 +4,7 @@ import {
   Button,
   Command,
   CommandCheck,
+  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -15,9 +16,8 @@ import {
   inputSurfaceClasses,
 } from '@tryghost/shade/components';
 import {
-  FIELD_SOURCES,
-  FIELD_SOURCE_ORDER,
   type FieldTarget,
+  type FieldTargetGroup,
 } from '@/members/components/bulk-action-modals/import-members/custom-fields/field-targets';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useRef } from 'react';
@@ -66,7 +66,13 @@ interface FieldPickerProps {
   value: string | null;
   disabled?: boolean;
   invalid?: boolean;
-  targets: FieldTarget[];
+  // The list as it is shown: sections in order, each already headed and populated. Everything
+  // about where a target sits and how it is named is settled by fieldTargets, so nothing here
+  // re-derives it.
+  targetGroups: FieldTargetGroup[];
+  // Whether the list ends with an offer to make a custom field. Off, a search that matches
+  // nothing says so instead, which the offer had been standing in for.
+  canCreateField: boolean;
   // Open and search are the caller's, not this component's: creating a composite has to
   // reopen this row's picker filtered to the field it just made, so which picker is open and
   // what it is filtered by have to be sayable from outside.
@@ -85,7 +91,8 @@ export function FieldPicker({
   value,
   disabled,
   invalid,
-  targets,
+  targetGroups,
+  canCreateField,
   open,
   search,
   onOpenChange,
@@ -101,9 +108,11 @@ export function FieldPicker({
   // its autoFocus pulled straight back inside. Both are dealt with at teardown, below.
   const openingCreateForm = useRef(false);
 
-  const selected = targets.find((target) => target.value === value);
-  const badge = selected?.contested ? FIELD_SOURCES[selected.source].badge : null;
-  const ariaKind = selected ? FIELD_SOURCES[selected.source].ariaKind : null;
+  const selected = targetGroups
+    .flatMap((group) => group.targets)
+    .find((target) => target.value === value);
+  const badge = selected?.badge ?? null;
+  const ariaKind = selected?.ariaKind ?? null;
 
   const choose = (target: string) => {
     onOpenChange(false);
@@ -266,44 +275,48 @@ export function FieldPicker({
                             and Enter would take whichever the DOM had first. Identity is the
                             target, which is namespaced and so already distinct; the label moves
                             to keywords for scoreByLabel. */}
-            {FIELD_SOURCE_ORDER.map((source) => (
-              <CommandGroup key={source} heading={FIELD_SOURCES[source].heading}>
-                {targets
-                  .filter((target) => target.source === source)
-                  .map((target) => (
-                    <CommandItem
-                      key={target.value}
-                      keywords={[target.label]}
-                      value={target.value}
-                      onSelect={() => choose(target.value)}
-                    >
-                      <TargetIcon target={target} />
-                      <span className="truncate">{target.label}</span>
-                      {value === target.value && <CommandCheck />}
-                    </CommandItem>
-                  ))}
+            {targetGroups.map((group) => (
+              <CommandGroup key={group.source} heading={group.heading}>
+                {group.targets.map((target) => (
+                  <CommandItem
+                    key={target.value}
+                    keywords={[target.label]}
+                    value={target.value}
+                    onSelect={() => choose(target.value)}
+                  >
+                    <TargetIcon target={target} />
+                    <span className="truncate">{target.label}</span>
+                    {value === target.value && <CommandCheck />}
+                  </CommandItem>
+                ))}
               </CommandGroup>
             ))}
-            {/* Its own group because cmdk hands forceMount down to every item in a
-                            group, so among the fields it would have pinned all of them. Search
-                            finding nothing is the strongest signal the field does not exist yet,
-                            which is why nothing else stands in for an empty state. */}
-            <CommandGroup forceMount>
-              {/* A publisher can name a field "New field", so the colour is what
+            {canCreateField ? (
+              /* Its own group because cmdk hands forceMount down to every item in a group, so
+                                among the fields it would have pinned all of them. Search finding nothing
+                                is the strongest signal the field does not exist yet, which is why
+                                nothing else stands in for an empty state while this is offered. */
+              <CommandGroup forceMount>
+                {/* A publisher can name a field "New field", so the colour is what
                                 sets this apart from one. */}
-              <CommandItem
-                className="font-semibold text-green"
-                value="Add custom field"
-                forceMount
-                onSelect={() => {
-                  openingCreateForm.current = true;
-                  onOpenChange(false);
-                }}
-              >
-                <LucideIcon.Plus />
-                <span>Add custom field</span>
-              </CommandItem>
-            </CommandGroup>
+                <CommandItem
+                  className="font-semibold text-green"
+                  value="Add custom field"
+                  forceMount
+                  onSelect={() => {
+                    openingCreateForm.current = true;
+                    onOpenChange(false);
+                  }}
+                >
+                  <LucideIcon.Plus />
+                  <span>Add custom field</span>
+                </CommandItem>
+              </CommandGroup>
+            ) : (
+              // With the offer gone nothing is force-mounted, so a search matching nothing
+              // would otherwise leave the list blank with no account of why.
+              <CommandEmpty>No fields found.</CommandEmpty>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

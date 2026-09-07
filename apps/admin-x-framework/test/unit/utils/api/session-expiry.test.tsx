@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
-import { setupMswServer } from '../../../../src/test/msw-utils';
+import { setupServer } from 'msw/node';
 
 const unauthorizedBody = {
   errors: [
@@ -51,7 +51,7 @@ const forbidden = () =>
     { status: 403 },
   );
 
-setupMswServer([
+const server = setupServer(
   http.get('http://localhost:3000/ghost/api/admin/posts/', expiredSession),
   http.get('http://localhost:3000/ghost/api/admin/posts/401/', unauthorized),
   http.get('http://localhost:3000/ghost/api/admin/members/', forbidden),
@@ -59,7 +59,11 @@ setupMswServer([
   http.post('http://localhost:3000/ghost/api/admin/session/', unauthorized),
   http.put('http://localhost:3000/ghost/api/admin/session/verify/', unauthorized),
   http.get('http://localhost:3000/external/data/', unauthorized),
-]);
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // The redirect-once guard is module state, so each test re-imports a fresh
 // fetch-api module (and its errors module, to keep instanceof checks valid)

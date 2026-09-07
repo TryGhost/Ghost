@@ -12,7 +12,7 @@ vi.mock('@tryghost/admin-x-framework', () => ({
   useMatches: () => useMatchesMock(),
 }));
 
-vi.mock('@/ember-bridge/ember-bridge', () => ({
+vi.mock('@/ember-bridge', () => ({
   useSidebarVisibility: () => useEmberSidebarVisibilityMock(),
 }));
 

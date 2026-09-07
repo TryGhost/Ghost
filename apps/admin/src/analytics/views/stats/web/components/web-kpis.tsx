@@ -14,9 +14,8 @@ import {
   KpiTabValue,
 } from '@tryghost/shade/patterns';
 import { KPI_METRICS } from '@/analytics/views/stats/web/web-kpi-metrics';
-import { formatDuration, formatNumber, formatPercentage } from '@tryghost/shade/utils';
+import { formatDuration, formatNumber, formatPercentage, getYRange } from '@tryghost/shade/utils';
 import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
-import { getYRange } from '@tryghost/shade/app';
 import { useMemo, useState } from 'react';
 
 export interface KpiDataItem {

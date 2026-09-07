@@ -112,23 +112,6 @@ module.exports = function (Bookshelf) {
       },
 
       /**
-       * Delete rows matching a where strategy (e.g. byNQL, byIds, byColumnValues).
-       * Pure data operation — no action logging.
-       *
-       * @param {object} options
-       * @param {Iterable<(qb: import('knex').QueryBuilder) => void>} options.where - Where strategy
-       * @param {object} [options.transacting] - Knex transaction
-       * @param {string} [options.tableName] - Table to delete from (defaults to model's table)
-       * @returns {Promise<number>} Total affected rows
-       */
-      bulkDestroyWhere: async function bulkDestroyWhere({ where, transacting, tableName }) {
-        tableName = tableName || this.prototype.tableName;
-        return bulkWhereOperation(Bookshelf.knex, tableName, { where, transacting }, (qb) =>
-          qb.del(),
-        );
-      },
-
-      /**
        * Edit rows by ID list, with action logging.
        *
        * @param {string[]} ids - IDs (or column values) to match
@@ -189,11 +172,15 @@ module.exports = function (Bookshelf) {
         }
 
         try {
-          await this.bulkDestroyWhere({
-            where: byColumnValues(options.column ?? 'id', ids),
-            transacting: options.transacting,
+          await bulkWhereOperation(
+            Bookshelf.knex,
             tableName,
-          });
+            {
+              where: byColumnValues(options.column ?? 'id', ids),
+              transacting: options.transacting,
+            },
+            (qb) => qb.del(),
+          );
 
           return { successful: ids.length, unsuccessful: 0, errors: [], unsuccessfulData: [] };
         } catch (err) {

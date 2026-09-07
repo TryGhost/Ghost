@@ -517,7 +517,7 @@ describe('Unit: frontend/services/llms/service', function () {
     assert.match(llmsFullTxt, /Append `\.md` to any post or page URL/);
   });
 
-  it('excludes free-members-only posts from the llms.txt index', async function () {
+  it('lists free-members-only posts in the llms.txt index with their teaser', async function () {
     const service = createService({
       pages: [],
       posts: [
@@ -536,11 +536,13 @@ describe('Unit: frontend/services/llms/service', function () {
 
     const llmsTxt = await service.getLlmsTxt();
 
-    assert.doesNotMatch(llmsTxt, /Members Post/);
-    assert.match(llmsTxt, /## Posts\n_No public content available\./);
+    assert.match(
+      llmsTxt,
+      /\[Members Post\]\(https:\/\/example\.com\/members-post\.md\) - Public teaser/,
+    );
   });
 
-  it('lists paid posts in llms.txt only when machine payments are enabled', async function () {
+  it('lists paid posts in llms.txt regardless of machine payments', async function () {
     const posts = [
       {
         id: 'post-p',
@@ -553,22 +555,14 @@ describe('Unit: frontend/services/llms/service', function () {
     ];
     const urlMap = { 'post-p': 'https://example.com/paid-post/' };
 
-    const disabled = createService({ pages: [], posts, urlMap });
-    assert.doesNotMatch(await disabled.getLlmsTxt(), /Paid Post/);
-
-    const enabled = createService({
-      pages: [],
-      posts,
-      urlMap,
-      machinePaymentsService: { isEnabled: () => true },
-    });
+    const service = createService({ pages: [], posts, urlMap });
     assert.match(
-      await enabled.getLlmsTxt(),
+      await service.getLlmsTxt(),
       /\[Paid Post\]\(https:\/\/example\.com\/paid-post\.md\) - Paywalled teaser/,
     );
   });
 
-  it('keeps gated bodies behind notices in llms-full.txt for purchasable paid posts', async function () {
+  it('includes free preview and notice for gated posts in llms-full.txt', async function () {
     const service = createService({
       pages: [],
       posts: [
@@ -577,8 +571,8 @@ describe('Unit: frontend/services/llms/service', function () {
           title: 'Members Post',
           slug: 'members-post',
           custom_excerpt: 'Public teaser',
-          html: '',
-          plaintext: '',
+          html: '<p>Free preview above the wall</p>',
+          plaintext: 'Free preview above the wall',
           visibility: 'members',
           type: 'post',
         },
@@ -597,12 +591,14 @@ describe('Unit: frontend/services/llms/service', function () {
         'post-m': 'https://example.com/members-post/',
         'post-p': 'https://example.com/paid-post/',
       },
-      machinePaymentsService: { isEnabled: () => true },
     });
 
     const llmsFullTxt = await service.getLlmsFullTxt();
 
-    assert.doesNotMatch(llmsFullTxt, /### Members Post/);
+    assert.match(
+      llmsFullTxt,
+      /### Members Post[\s\S]*Free preview above the wall[\s\S]*This post is for subscribers only\./,
+    );
     assert.match(
       llmsFullTxt,
       /### Paid Post[\s\S]*Paywalled teaser[\s\S]*This post is for paying subscribers only\./,

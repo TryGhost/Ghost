@@ -2,10 +2,14 @@ import CustomTooltipContent from '@/analytics/components/chart/custom-tooltip-co
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-// Mock date formatter from @tryghost/shade/app
-vi.mock('@tryghost/shade/app', () => ({
-  formatDisplayDateWithRange: (date: string) => `Formatted: ${date}`,
-}));
+// Mock date formatter from @tryghost/shade/utils
+vi.mock('@tryghost/shade/utils', async () => {
+  const actual = await vi.importActual('@tryghost/shade/utils');
+  return {
+    ...actual,
+    formatDisplayDateWithRange: (date: string) => `Formatted: ${date}`,
+  };
+});
 
 describe('CustomTooltipContent Component', () => {
   it('renders null when not active', () => {

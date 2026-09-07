@@ -8,7 +8,7 @@ This directory contains utilities to improve test reliability and consistency ac
 
 Provides `setupStatsAppMocks()`, a universal mock setup for stats hooks. It returns
 pre-configured mock functions for the stats API hooks and the analytics context,
-seeded with the centralized `responseFixtures` from `@tryghost/admin-x-framework/test/acceptance`.
+seeded with canned responses built from the `@tryghost/test-data` builders.
 
 **Usage:**
 

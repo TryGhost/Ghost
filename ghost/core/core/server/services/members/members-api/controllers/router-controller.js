@@ -140,7 +140,6 @@ module.exports = class RouterController {
    * @param {any} deps.offersAPI
    * @param {any} deps.paymentsService
    * @param {any} deps.memberRepository
-   * @param {any} deps.StripePrice
    * @param {() => boolean} deps.allowSelfSignup
    * @param {any} deps.magicLinkService
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
@@ -160,7 +159,6 @@ module.exports = class RouterController {
     paymentsService,
     tiersService,
     memberRepository,
-    StripePrice,
     allowSelfSignup,
     magicLinkService,
     stripeAPIService,
@@ -180,7 +178,6 @@ module.exports = class RouterController {
     this._paymentsService = paymentsService;
     this._tiersService = tiersService;
     this._memberRepository = memberRepository;
-    this._StripePrice = StripePrice;
     this._allowSelfSignup = allowSelfSignup;
     this._magicLinkService = magicLinkService;
     this._stripeAPIService = stripeAPIService;
@@ -602,11 +599,11 @@ module.exports = class RouterController {
     if (member) {
       options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
 
-      const restrictCheckout = member.get('status') === 'paid';
+      // Existing paid members must manage their subscription instead of creating another.
+      // Other members must prove ownership of the provided email before checking out.
+      const restrictCheckout = member.get('status') === 'paid' || !options.isAuthenticated;
 
       if (restrictCheckout) {
-        // This member is already subscribed to a paid tier
-        // We don't want to create a duplicate subscription
         if (!options.isAuthenticated && options.email) {
           try {
             await this._sendEmailWithMagicLink({ email: options.email, requestedType: 'signin' });
@@ -709,6 +706,7 @@ module.exports = class RouterController {
    * @param {string} [options.recipientName]
    * @param {string} [options.buyerName]
    * @param {string} [options.personalMessage]
+   * @param {string} [options.deliveryDate]
    * @param {string} [options.email]
    * @param {string} options.successUrl
    * @param {string} options.cancelUrl
@@ -734,6 +732,7 @@ module.exports = class RouterController {
         recipientName: options.recipientName,
         buyerName: options.buyerName,
         personalMessage: options.personalMessage,
+        deliveryDate: options.deliveryDate,
         successUrl: options.successUrl,
         cancelUrl: options.cancelUrl,
         buyer: {
@@ -898,6 +897,7 @@ module.exports = class RouterController {
         recipientName: req.body.recipientName,
         buyerName: req.body.buyerName,
         personalMessage: req.body.personalMessage,
+        deliveryDate: req.body.deliveryDate,
         successUrl: siteUrl,
         cancelUrl: options.cancelUrl || siteUrl,
       });

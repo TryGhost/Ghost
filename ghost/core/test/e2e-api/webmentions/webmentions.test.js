@@ -9,21 +9,69 @@ const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const nock = require('nock');
-const jobsService = require('../../../core/server/services/mentions-jobs');
+const sinon = require('sinon');
+const mentionsService = require('../../../core/server/services/mentions');
 const DomainEvents = require('@tryghost/domain-events');
 
-async function allSettled() {
-  await jobsService.allSettled();
+let processedJobs;
+let waiters;
+
+function processedCount(source) {
+  return processedJobs.filter((job) => job.source === source).length;
+}
+
+function recordProcessed(job) {
+  processedJobs.push(job);
+  for (const waiter of [...waiters]) {
+    if (processedCount(waiter.source) >= waiter.count) {
+      waiters.splice(waiters.indexOf(waiter), 1);
+      waiter.resolve();
+    }
+  }
+}
+
+// Wrap the seam the job handler calls: completion here means the job ran,
+// without coupling the test to log output or polling on a timer.
+function trackWebmentionProcessing() {
+  const controller = mentionsService.controller;
+  const original = controller.processWebmention.bind(controller);
+  sinon.stub(controller, 'processWebmention').callsFake(async (job) => {
+    try {
+      return await original(job);
+    } finally {
+      // Recorded in finally: "processed" means the handler finished,
+      // successful or not - the DB assertions decide correctness.
+      recordProcessed(job);
+    }
+  });
+}
+
+async function waitForWebmention(source, count = 1, { timeoutMs = 5000 } = {}) {
+  if (processedCount(source) < count) {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        waiters.splice(
+          waiters.findIndex((waiter) => waiter.resolve === settle),
+          1,
+        );
+        reject(
+          new Error(`Timed out waiting for ${count} webmention(s) from ${source} to be processed`),
+        );
+      }, timeoutMs);
+      const settle = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      waiters.push({ source, count, resolve: settle });
+    });
+  }
   await DomainEvents.allSettled();
 }
 
-async function receiveWebmention(agent, body) {
-  const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
-
+async function receiveWebmention(agent, body, count = 1) {
   await agent.post('/receive').body(body).expectStatus(202);
 
-  await processWebmentionJob;
-  await DomainEvents.allSettled();
+  await waitForWebmention(body.source, count);
 }
 
 describe('Webmentions (receiving)', function () {
@@ -35,12 +83,15 @@ describe('Webmentions (receiving)', function () {
   });
 
   beforeEach(async function () {
-    await allSettled();
+    await DomainEvents.allSettled();
+    processedJobs = [];
+    waiters = [];
+    trackWebmentionProcessing();
     mockManager.disableNetwork();
   });
 
   afterEach(async function () {
-    await allSettled();
+    await DomainEvents.allSettled();
     mockManager.restore();
     await dbUtils.truncate('brute');
   });
@@ -67,7 +118,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({
       source: 'http://testpage.com/external-article/',
@@ -111,7 +162,7 @@ describe('Webmentions (receiving)', function () {
         })
         .expectStatus(202);
 
-      await allSettled();
+      await waitForWebmention(sourceUrl.href);
 
       const mention = await models.Mention.findOne({
         source: 'http://testpage.com/update-mention-test-1/',
@@ -146,7 +197,7 @@ describe('Webmentions (receiving)', function () {
         })
         .expectStatus(202);
 
-      await allSettled();
+      await waitForWebmention(sourceUrl.href, 2);
 
       const mention = await models.Mention.findOne({
         source: 'http://testpage.com/update-mention-test-1/',
@@ -197,10 +248,14 @@ describe('Webmentions (receiving)', function () {
     nock(targetUrl.origin).persist().head(targetUrl.pathname).reply(404);
 
     testUpdatingTheMention: {
-      await receiveWebmention(agent, {
-        source: sourceUrl.href,
-        target: targetUrl.href,
-      });
+      await receiveWebmention(
+        agent,
+        {
+          source: sourceUrl.href,
+          target: targetUrl.href,
+        },
+        2,
+      );
 
       const mention = await models.Mention.findOne({
         source: 'http://testpage.com/update-mention-test-2/',
@@ -238,7 +293,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({
       source: 'http://testpage.com/external-article-2/',
@@ -274,7 +329,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({
       source: 'http://testpage.com/external-article-2/',
@@ -305,7 +360,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({ source: sourceUrl.href });
 
@@ -334,7 +389,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({ source: sourceUrl.href });
 
@@ -363,7 +418,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({ source: sourceUrl.toString() });
 
@@ -392,7 +447,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({
       source: 'http://testpage.com/external-article-2/',
@@ -423,7 +478,7 @@ describe('Webmentions (receiving)', function () {
       })
       .expectStatus(202);
 
-    await allSettled();
+    await waitForWebmention(sourceUrl.href);
 
     const mention = await models.Mention.findOne({
       source: 'http://testpage.com/external-article-2/',
@@ -473,7 +528,7 @@ describe('Webmentions (receiving)', function () {
         payload: {},
       })
       .expectStatus(429);
-    await allSettled();
+    await waitForWebmention(sourceUrl.href, webmentionBlock.freeRetries + 1);
   });
   // NOTE: do not list other tests after the spam prevention test
 });

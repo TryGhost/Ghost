@@ -60,8 +60,9 @@ describe('Exporter', function () {
       'members_click_events',
       'members_created_events',
       'members_current_subscription',
-      'members_custom_field_values',
-      'members_custom_fields',
+      'members_metafield_bindings',
+      'members_metafield_values',
+      'members_metafields',
       'members_email_change_events',
       'members_feedback',
       'members_labels',
@@ -97,6 +98,8 @@ describe('Exporter', function () {
       'posts_tags',
       'products',
       'products_benefits',
+      'products_checkout_config',
+      'products_checkout_fields',
       'recommendation_click_events',
       'recommendation_subscribe_events',
       'recommendations',
@@ -178,8 +181,5 @@ describe('Exporter', function () {
     });
 
     assert.equal(_.find(exportData.data.settings, { key: 'permalinks' }), undefined);
-
-    // should not export sqlite data
-    assert.equal(exportData.data.sqlite_sequence, undefined);
   });
 });

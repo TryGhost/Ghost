@@ -39,7 +39,7 @@ describe('package-json parse', function () {
         assert.equal(err.context, tmpFile.name);
         assert.equal(
           err.help,
-          'This will be required in future. Please see https://ghost.org/docs/themes/',
+          'This will be required in future. Please see https://docs.ghost.org/themes/',
         );
         return true;
       });
@@ -62,7 +62,7 @@ describe('package-json parse', function () {
         assert.equal(err.context, tmpFile.name);
         assert.equal(
           err.help,
-          'This will be required in future. Please see https://ghost.org/docs/themes/',
+          'This will be required in future. Please see https://docs.ghost.org/themes/',
         );
         return true;
       });
@@ -83,7 +83,7 @@ describe('package-json parse', function () {
         assert.equal(err.context, tmpFile.name);
         assert.equal(
           err.help,
-          'This will be required in future. Please see https://ghost.org/docs/themes/',
+          'This will be required in future. Please see https://docs.ghost.org/themes/',
         );
         return true;
       });

@@ -6,9 +6,9 @@ import { once } from 'node:events';
 import { PassThrough, Readable, Writable, pipeline } from 'stream';
 import {
   SiteExporter,
-  EXPORT_COMPONENTS,
   type SiteExporterDeps,
 } from '../../../../../core/server/services/exports/site-exporter';
+import { SYNC_EXPORT_COMPONENTS } from '../../../../../core/server/services/exports/export-components';
 
 // @tryghost/zip ships no types; only `extract` is used here
 const { extract } = require('@tryghost/zip') as {
@@ -101,7 +101,7 @@ function buildDeps(overrides: Partial<SiteExporterDeps> = {}): SiteExporterDeps 
 describe('SiteExporter', function () {
   it('composes every component into one zip', async function () {
     const exporter = new SiteExporter(buildDeps());
-    const archive = exporter.createArchive([...EXPORT_COMPONENTS]);
+    const archive = exporter.createArchive([...SYNC_EXPORT_COMPONENTS]);
 
     const zip = await readZip(await collectArchive(archive));
 
@@ -132,7 +132,7 @@ describe('SiteExporter', function () {
         },
       }),
     );
-    const archive = exporter.createArchive([...EXPORT_COMPONENTS]);
+    const archive = exporter.createArchive([...SYNC_EXPORT_COMPONENTS]);
 
     const zip = await readZip(await collectArchive(archive));
 

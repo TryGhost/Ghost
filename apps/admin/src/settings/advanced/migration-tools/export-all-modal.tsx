@@ -13,9 +13,9 @@ import {
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   downloadSiteExport,
+  useRequestExport,
   type SiteExportComponent,
 } from '@tryghost/admin-x-framework/api/exports';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 export type ExportMode = 'sync' | 'async';
@@ -78,7 +78,7 @@ const ExportAllModal: React.FC<{
   onOpenChange: (open: boolean) => void;
   mode: ExportMode;
 }> = ({ open, onOpenChange, mode }) => {
-  const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: requestExport, isPending: isRequestingExport } = useRequestExport();
   const handleError = useHandleError();
   const [phase, setPhase] = useState<ExportPhase>('select');
   const [selected, setSelected] = useState<Record<ExportComponentKey, boolean>>(() => {
@@ -91,13 +91,17 @@ const ExportAllModal: React.FC<{
   const resetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const abortRef = useRef<AbortController>();
 
-  const email = currentUser?.email;
   const visibleComponents = EXPORT_COMPONENTS.filter(
     (component) => mode === 'async' || !component.asyncOnly,
   );
   const noneSelected = visibleComponents.every((component) => !selected[component.key]);
 
   const handleOpenChange = (next: boolean) => {
+    // The export request is not idempotent: closing mid-flight would
+    // detach the pending promise and let it flip a later session's phase.
+    if (!next && isRequestingExport) {
+      return;
+    }
     onOpenChange(next);
     if (next) {
       clearTimeout(resetTimerRef.current);
@@ -112,8 +116,16 @@ const ExportAllModal: React.FC<{
 
   const startExport = async () => {
     if (mode === 'async') {
-      // Host mode is not wired to a backend yet — mocked confirmation only
-      setPhase('confirmed');
+      try {
+        const components = Object.fromEntries(
+          visibleComponents.map((component) => [component.key, selected[component.key]]),
+        );
+        await requestExport({ components });
+        setPhase('confirmed');
+      } catch (e) {
+        // An older backend without the endpoint 404s into the same path
+        handleError(e);
+      }
       return;
     }
 
@@ -155,7 +167,7 @@ const ExportAllModal: React.FC<{
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
                 {mode === 'async' ? (
-                  'Choose what to include. Your export will be prepared in the background and a download link sent to you by email.'
+                  'Choose what to include. Your export will be prepared in the background and a download link emailed to the site owner.'
                 ) : (
                   <>
                     Your export will be downloaded as a single zip file. Images, videos and files
@@ -195,10 +207,17 @@ const ExportAllModal: React.FC<{
               ))}
             </div>
             <DialogFooter className="gap-2 sm:justify-end">
-              <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              <Button
+                disabled={isRequestingExport}
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
                 Cancel
               </Button>
-              <Button disabled={noneSelected} onClick={() => void startExport()}>
+              <Button
+                disabled={noneSelected || isRequestingExport}
+                onClick={() => void startExport()}
+              >
                 <LucideIcon.Download /> Export
               </Button>
             </DialogFooter>
@@ -213,8 +232,7 @@ const ExportAllModal: React.FC<{
               </DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              A link to download your data will be sent to your email{' '}
-              <span className="font-medium text-foreground">{email}</span> once the export is
+              A link to download your data will be emailed to the site owner once the export is
               complete. The link will be valid for 7 days. You can now close this window.
             </DialogDescription>
             <DialogFooter className="sm:justify-end">

@@ -5,20 +5,26 @@ export type { RenderAdminAppOptions } from './render-admin-app';
 export {
   defineResource,
   fakeActions,
+  fakeAutomatedEmails,
   fakeAutomations,
   fakeComments,
   fakeEditSettings,
   fakeIntegrations,
   fakeInvites,
   fakeLabels,
+  fakeMemberCustomFields,
   fakeMembers,
   fakeNewsletters,
   fakeOffers,
+  fakePages,
   fakePosts,
+  fakePostsListScreen,
   fakeRoles,
   fakeSettingsScreens,
+  fakeSnippets,
   fakeTags,
   fakeThemes,
+  fakeThemeUpload,
   fakeTiers,
   fakeUsers,
 } from './resources';
@@ -48,6 +54,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
+export { unsavedChangesGuarded } from './unsaved-changes-guard';
 
 // Test-data re-exports, so a spec needs a single import surface.
 export {

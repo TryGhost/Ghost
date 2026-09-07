@@ -5,11 +5,11 @@ import { Button } from '@tryghost/shade/components';
 import { type Filter, type FilterFieldConfig, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
-import { useAppContext } from '@tryghost/admin-x-framework';
 import { useAnalyticsData } from './use-analytics-data';
 import { useTinybirdQuery, useWebAnalyticsEnabled } from '@tryghost/admin-x-framework';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useTopContent } from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
@@ -342,7 +342,7 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
   const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -381,10 +381,8 @@ function StatsFilter({
         icon: <LucideIcon.UserPlus className="text-orange" />,
       },
     ];
-    return appSettings?.paidMembersEnabled
-      ? options
-      : options.filter((opt) => opt.value !== 'paid');
-  }, [appSettings?.paidMembersEnabled]);
+    return paidMembersEnabled ? options : options.filter((opt) => opt.value !== 'paid');
+  }, [paidMembersEnabled]);
 
   // Helper: determine if a filter field should fetch options
   // Enable fetching when the field is active OR has an applied filter value (for label display)

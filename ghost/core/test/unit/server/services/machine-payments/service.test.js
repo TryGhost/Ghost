@@ -106,9 +106,35 @@ describe('Unit: server/services/machine-payments/service', function () {
 
     assert.equal(response.status, 402);
     assert.equal(response.headers.get('WWW-Authenticate'), 'Payment realm="mpp"');
+    assert.equal(response.headers.get('Content-Type'), 'application/problem+json');
     sinon.assert.calledOnce(contentLoader.isPurchasable);
     sinon.assert.notCalled(contentLoader.loadFullEntry);
     sinon.assert.notCalled(renderMarkdown);
+  });
+
+  it('returns a markdown preview body on 402 when renderPreviewMarkdown is provided', async function () {
+    const service = createService();
+    const renderPreviewMarkdown = sinon
+      .stub()
+      .returns('# Preview\n\n_This post is for paying subscribers only._');
+
+    const response = await service.challengeOrFulfill(new Request('http://example.com/paid.md'), {
+      entryId: 'post1',
+      resourceType: 'posts',
+      description: 'Paid',
+      contentLocation: '/paid.md',
+      renderMarkdown: () => '# full',
+      renderPreviewMarkdown,
+    });
+
+    assert.equal(response.status, 402);
+    assert.equal(response.headers.get('WWW-Authenticate'), 'Payment realm="mpp"');
+    assert.equal(response.headers.get('Content-Type'), 'text/markdown; charset=utf-8');
+    assert.equal(response.headers.get('Content-Location'), '/paid.md');
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    assert.match(await response.text(), /# Preview/);
+    sinon.assert.calledOnce(renderPreviewMarkdown);
+    sinon.assert.notCalled(contentLoader.loadFullEntry);
   });
 
   it('returns 403 before charging mixed free+paid tier posts', async function () {

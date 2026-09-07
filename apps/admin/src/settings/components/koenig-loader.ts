@@ -1,7 +1,5 @@
 import type React from 'react';
-import { type FetchKoenigLexical } from '@tryghost/shade/app';
-
-export type { FetchKoenigLexical };
+import { fetchKoenigLexical } from '@/utils/fetch-koenig-lexical';
 
 declare global {
   interface Window {
@@ -11,12 +9,15 @@ declare global {
 
 type KoenigComponent = React.ComponentType<Record<string, unknown>>;
 
-// Minimal surface of the untyped @tryghost/koenig-lexical bundle used by the settings editors
+// Minimal surface of the untyped @tryghost/koenig-lexical bundle used by the admin editors
 export type KoenigLexicalModule = {
   KoenigComposer: KoenigComponent;
   KoenigComposableEditor: KoenigComponent;
+  KoenigEditor: KoenigComponent;
   EmojiPickerPlugin: KoenigComponent;
   HtmlOutputPlugin: KoenigComponent;
+  WordCountPlugin: KoenigComponent;
+  TKCountPlugin: KoenigComponent;
   EmailEditor: KoenigComponent;
   DEFAULT_NODES: unknown;
   BASIC_NODES: unknown;
@@ -36,11 +37,14 @@ export type KoenigInstance = {
     getRootElement: () => HTMLElement | null;
   };
   focusEditor: (options?: { position?: 'top' | 'bottom' }) => void;
+  editorIsEmpty: () => boolean;
+  insertParagraphAtTop: (options?: { focus?: boolean }) => void;
   insertParagraphAtBottom: () => void;
+  insertFiles: (files: File[]) => void;
   lastNodeIsDecorator: () => boolean;
 };
 
-export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+export const loadKoenig = function () {
   let status: 'pending' | 'success' | 'error' = 'pending';
   let response: KoenigLexicalModule | undefined;
   let error: unknown;

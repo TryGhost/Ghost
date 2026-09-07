@@ -107,7 +107,7 @@ function harness(
     gifts: {
       reassignRedeemer: async () => {},
     },
-    customFields: {
+    metafields: {
       activeFields: async () => [],
       planWrite: async () => [],
       applyWrite: async () => {},
@@ -243,6 +243,23 @@ describe('members import error handling', function () {
       assert.deepEqual(h.reported, []);
     });
 
+    // The one row failure whose fault is known: the values were validated before the
+    // transaction opened, so nothing left in them can be what threw here.
+    it('keeps a fault of its own out of the error file and sends it to operators', async function () {
+      const h = harness([row('first@example.com')]);
+      const fault = new Error('ER_LOCK_WAIT_TIMEOUT: update `members_metafield_values` set ...');
+      h.deps.metafields.applyWrite = async () => {
+        throw fault;
+      };
+
+      await h.run();
+
+      assert.equal(h.onlyReport(), fault);
+      const attached = h.onlyEmail().attachments[0].content;
+      assert.match(attached, /Failed to save the custom field values for this member/);
+      assert.doesNotMatch(attached, /ER_LOCK_WAIT_TIMEOUT|members_metafield_values/);
+    });
+
     it('reports an import where every row failed as unsuccessful', async function () {
       const h = harness();
       h.deps.members.create = async () => {
@@ -287,7 +304,7 @@ describe('members import error handling', function () {
 
     it('treats an unresolvable custom field set the same way', async function () {
       const h = harness();
-      h.deps.customFields.activeFields = async () => {
+      h.deps.metafields.activeFields = async () => {
         throw new Error('Custom fields unavailable');
       };
 

@@ -4,7 +4,7 @@ interface OperatorOption {
 }
 
 interface CreateOperatorOptionsOptions {
-  labels?: Record<string, string>;
+  labels?: Partial<Record<string, string>>;
 }
 
 export function createOperatorOptions(

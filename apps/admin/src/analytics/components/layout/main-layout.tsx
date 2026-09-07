@@ -4,7 +4,9 @@ const MainLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, 
   return (
     <div className="size-full">
       <div className="relative size-full" {...props}>
-        <div className="mx-auto flex size-full max-w-page flex-col">{children}</div>
+        <div className="mx-auto flex size-full max-w-page flex-col admin7:[&>[data-admin-content-grid]]:grid-cols-[minmax(0,1fr)]">
+          {children}
+        </div>
       </div>
     </div>
   );

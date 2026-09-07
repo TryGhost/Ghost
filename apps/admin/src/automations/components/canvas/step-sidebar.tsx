@@ -1,4 +1,3 @@
-import '@xyflow/react/dist/style.css';
 import React, { useEffect, useRef, useState } from 'react';
 import type {
   AutomationDetail,

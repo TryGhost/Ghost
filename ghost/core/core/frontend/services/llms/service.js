@@ -1,4 +1,9 @@
-const { getMarkdownUrl, renderEntryMarkdownBody, truncateDescription } = require('./markdown');
+const {
+  getGatedNotice,
+  getMarkdownUrl,
+  renderEntryMarkdownBody,
+  truncateDescription,
+} = require('./markdown');
 
 const LLMS_TXT_BUDGET = 50 * 1024;
 const LLMS_FULL_TXT_BUDGET = 5 * 1024 * 1024;
@@ -12,8 +17,6 @@ const LLMS_FULL_TXT_INTRO =
   'Public Ghost content for AI and LLM tooling. This file includes a bounded export of public pages first, then recent public posts.';
 const MARKDOWN_DISCOVERABILITY =
   'Append `.md` to any post or page URL to get the content in Markdown (for example, `/example-post.md`).';
-const MEMBERS_ONLY_NOTICE = 'This post is for subscribers only.';
-const PAID_MEMBERS_ONLY_NOTICE = 'This post is for paying subscribers only.';
 const EMPTY_SECTION = '_No public content available._';
 const LLMS_FULL_TXT_TRUNCATION_FOOTER =
   '\n_Truncated after 5 MiB. Use `/sitemap.xml` for the complete archive of public content._\n';
@@ -27,15 +30,7 @@ const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url,
 const LLMS_FULL_TXT_FIELDS =
   'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt';
 
-function createLlmsService({
-  settingsCache,
-  config,
-  urlUtils,
-  routing,
-  api,
-  machinePaymentsService,
-  fullTxtBudget,
-}) {
+function createLlmsService({ settingsCache, config, urlUtils, routing, api, fullTxtBudget }) {
   const footerBudget = Math.max(
     Buffer.byteLength(LLMS_FULL_TXT_TRUNCATION_FOOTER, 'utf8'),
     Buffer.byteLength(LLMS_FULL_TXT_RECENT_POSTS_FOOTER, 'utf8'),
@@ -47,22 +42,9 @@ function createLlmsService({
   }
 
   function isDiscoverable(entry) {
-    const { isPurchasableEntry } = require('../../../shared/machine-payments');
-
-    if (entry.visibility === 'public' || !entry.visibility) {
-      return true;
-    }
-
-    // Free-members-only stays undiscoverable for agents.
-    if (entry.visibility === 'members') {
-      return false;
-    }
-
-    if (!isPurchasableEntry(entry)) {
-      return false;
-    }
-
-    return machinePaymentsService?.isEnabled?.() === true;
+    // Gated posts now expose a free preview on `.md`, so list them alongside
+    // public content. Only exclude the 404 placeholder page.
+    return Boolean(entry.url) && !entry.url.endsWith('/404/');
   }
 
   async function fetchPublicEntry(resourceType, id, member = null) {
@@ -184,7 +166,7 @@ function createLlmsService({
           break;
         }
 
-        const formattedEntry = buildFullEntry(entry);
+        const formattedEntry = buildFullEntry(entry, type);
         const entryBlock = `${formattedEntry}\n`;
         const entryBytes = Buffer.byteLength(entryBlock, 'utf8');
 
@@ -287,24 +269,25 @@ function createLlmsService({
     return optionalLinks.join('\n');
   }
 
-  function buildMembersOnlyBody(entry) {
-    const notice =
-      entry.visibility === 'paid' || entry.visibility === 'tiers'
-        ? PAID_MEMBERS_ONLY_NOTICE
-        : MEMBERS_ONLY_NOTICE;
+  function buildMembersOnlyBody(entry, resourceKind) {
+    const notice = getGatedNotice(entry, resourceKind);
+    // No `- Description:` line in this format, so the excerpt fallback is the
+    // only way the teaser reaches the reader.
+    const preview = renderEntryMarkdownBody(entry);
     const excerpt = truncateDescription(entry.custom_excerpt);
+    const body = preview || excerpt;
 
-    return excerpt ? `${excerpt}\n\n_${notice}_` : `_${notice}_`;
+    return body ? `${body}\n\n_${notice}_` : `_${notice}_`;
   }
 
-  function buildFullEntry(entry) {
+  function buildFullEntry(entry, resourceKind) {
     const lastUpdated = entry.updated_at || entry.published_at || entry.created_at;
     const lastUpdatedLine = lastUpdated
       ? `Last updated: ${new Date(lastUpdated).toISOString()}`
       : null;
     const isMembersOnly = entry.visibility && entry.visibility !== 'public';
     const markdownBody = isMembersOnly
-      ? buildMembersOnlyBody(entry)
+      ? buildMembersOnlyBody(entry, resourceKind)
       : renderEntryMarkdownBody(entry) || '_No content available._';
 
     return [`### ${entry.title}`, `URL: ${entry.url}`, lastUpdatedLine, '', markdownBody]
@@ -324,9 +307,7 @@ function createLlmsService({
       ...(type === 'page' ? { order: 'id asc' } : { order: 'published_at desc' }),
     });
 
-    const entries = (response?.[responseKey] || [])
-      .filter((entry) => entry.url && !entry.url.endsWith('/404/'))
-      .filter(isDiscoverable);
+    const entries = (response?.[responseKey] || []).filter(isDiscoverable);
 
     return { entries, pagination: response?.meta?.pagination };
   }

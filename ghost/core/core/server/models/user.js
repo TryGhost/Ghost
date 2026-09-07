@@ -43,8 +43,13 @@ const messages = {
 };
 
 /**
- * inactive: owner user before blog setup, suspended users
- * locked user: imported users, they get a random password
+ * `inactive`: suspended staff, who cannot sign in or reset their password.
+ * Also used for the initial owner before site setup is complete.
+ * `locked`: users whose password was randomized by an import or authentication
+ * reset. They must reset their password to regain access.
+ *
+ * Both statuses prevent normal sign-in, so they are grouped here. This is not
+ * a suspension check: isInactive() checks only the literal `inactive` status.
  */
 const inactiveStates = ['inactive', 'locked'];
 
@@ -212,6 +217,8 @@ User = ghostBookshelf.Model.extend(
       return this.save(update, { ...options, patch: true });
     },
 
+    // Checks the literal status, not membership in inactiveStates: locked users
+    // must remain eligible for password resets.
     isInactive: function isInactive() {
       return this.get('status') === 'inactive';
     },

@@ -24,7 +24,7 @@ const baseTinybirdTokenQuery = createQuery<TinybirdTokenResponseType>({
   path: '/tinybird/token/',
 });
 
-export const getTinybirdToken = (options: { enabled?: boolean } = {}) => {
+export const useTinybirdTokenQuery = (options: { enabled?: boolean } = {}) => {
   return baseTinybirdTokenQuery({
     ...TINYBIRD_QUERY_OPTIONS,
     ...options,

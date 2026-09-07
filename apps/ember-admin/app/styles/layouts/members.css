@@ -1891,17 +1891,6 @@ a.gh-members-emailpreview-subscription-link {
     color: var(--darkgrey);
 }
 
-.gh-membertier-offer-cancellation,
-.gh-membertier-offers {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top:1px solid #ECEEF0;
-}
-
-.gh-membertier-offer-cancellation div + div {
-    margin-top: 16px;
-}
-
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
     color: var(--middarkgrey);
     font-size: 1.3rem;

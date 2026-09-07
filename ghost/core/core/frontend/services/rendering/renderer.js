@@ -15,6 +15,14 @@ const messages = {
  * @param {Object} data
  */
 module.exports = function renderer(req, res, data) {
+  // CASE: client hung up while we fetched data. Rendering into a dead socket is
+  // wasted work that lengthens the queue under load. 499 = client closed request.
+  if (res.destroyed && !res.writableEnded) {
+    debug('Client gone before render, skipping: ' + req.originalUrl);
+    res.statusCode = 499;
+    return;
+  }
+
   // Set response context
   setContext(req, res, data);
 
@@ -42,6 +50,13 @@ module.exports = function renderer(req, res, data) {
         );
       }
       return req.next(err);
+    }
+
+    // The render itself can take seconds; the client may have gone in the meantime.
+    if (res.destroyed && !res.writableEnded) {
+      debug('Client gone during render, discarding: ' + req.originalUrl);
+      res.statusCode = 499;
+      return;
     }
 
     // CASE: a {{#get}} or {{#collection}} helper aborted during rendering, so the

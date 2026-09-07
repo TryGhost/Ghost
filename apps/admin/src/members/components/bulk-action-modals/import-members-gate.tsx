@@ -1,5 +1,5 @@
 import { ImportMembersModal as BaselineImportMembersModal } from '@/members/components/bulk-action-modals/import-members-modal';
-import { ImportMembersModal as CustomFieldsImportMembersModal } from '@/members/components/bulk-action-modals/import-members/custom-fields/import-members-modal';
+import { ImportMembersModal as RedesignedImportMembersModal } from '@/members/components/bulk-action-modals/import-members/custom-fields/import-members-modal';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import type { ImportResponse } from '@/members/components/bulk-action-modals/import-members/state';
 
@@ -11,8 +11,8 @@ interface ImportMembersGateProps {
 }
 
 /**
- * Serves the members CSV import from the custom fields experience when the `membersCustomFields`
- * Labs flag is on, and from the import as it shipped otherwise.
+ * Serves the redesigned members CSV import when the `membersImportRedesign` Labs flag is on,
+ * and the import as it shipped otherwise.
  *
  * Two whole implementations rather than one with the flag threaded through it. The mapping step
  * diverges in almost every part — what a row offers, what a row means, what the request carries —
@@ -22,12 +22,15 @@ interface ImportMembersGateProps {
  *
  * The cost is real and worth stating: a fix to the import has to be applied to both, or knowingly
  * to one, until the flag goes and the baseline is deleted.
+ *
+ * Custom fields are not this flag's decision. The redesign ships whether or not custom fields
+ * exist.
  */
 export function ImportMembersGate(props: ImportMembersGateProps) {
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+  const importRedesignEnabled = useFeatureFlag('membersImportRedesign');
 
-  if (customFieldsEnabled) {
-    return <CustomFieldsImportMembersModal {...props} />;
+  if (importRedesignEnabled) {
+    return <RedesignedImportMembersModal {...props} />;
   }
   return <BaselineImportMembersModal {...props} />;
 }

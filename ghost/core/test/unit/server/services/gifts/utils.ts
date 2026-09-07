@@ -34,6 +34,7 @@ export function buildGiftDelivery(overrides: Partial<GiftDeliveryData> = {}): Gi
     giftId: 'gift_1',
     recipientEmail: 'recipient@example.com',
     status: 'pending',
+    scheduledAt: null,
     startedAt: null,
     emailSentAt: null,
     emailProviderMessageId: null,

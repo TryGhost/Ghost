@@ -17,8 +17,7 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { LucideIcon, Recharts, formatNumber } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useSubscriptionStats } from '@tryghost/admin-x-framework/api/stats';
 

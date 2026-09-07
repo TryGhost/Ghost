@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   DropdownMenu,
@@ -19,8 +19,12 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import {
+  type ErrorMessages,
+  useForm,
+  useHandleError,
+  useLimiter,
+} from '@tryghost/admin-x-framework/hooks';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -532,7 +536,7 @@ const UserDetailModalContent: React.FC<{
                               'flex h-8 cursor-pointer items-center justify-center rounded px-3',
                               formState.cover_image
                                 ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
-                                : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white',
+                                : 'border border-gray-300 bg-transparent text-black dark:border-gray-800 dark:text-white',
                             )}
                             type="button"
                           >

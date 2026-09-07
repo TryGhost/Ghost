@@ -9,7 +9,6 @@ import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
 import NewsletterValidator from 'ghost-admin/validators/newsletter';
-import OfferValidator from 'ghost-admin/validators/offer';
 import PostValidator from 'ghost-admin/validators/post';
 import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
@@ -73,7 +72,6 @@ export default Mixin.create({
             label: LabelValidator,
             snippet: SnippetValidator,
             tier: TierValidator,
-            offer: OfferValidator,
             newsletter: NewsletterValidator
         };
     },

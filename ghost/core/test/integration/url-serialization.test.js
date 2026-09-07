@@ -368,8 +368,7 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
   // tags differently per query on MySQL, changing the post's URL under a
   // {primary_tag} permalink (seen as /disaster-preparedness/ vs
   // /claremont-elmwood/). The posts_tags.id tie-break pins it to the
-  // first-attached public tag. Only diverges on MySQL; on sqlite this pins
-  // the expected ordering.
+  // first-attached public tag.
   describe('tied tag sort_order', function () {
     beforeAll(async function () {
       // Two public tags with an internal one between them, all sharing

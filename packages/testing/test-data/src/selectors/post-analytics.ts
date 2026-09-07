@@ -17,6 +17,7 @@ export const giftLinkViews = 'gift-link-views';
 export const giftLinkCardVisitors = 'gift-link-card-visitors';
 export const statsFilterContainer = 'stats-filter-container';
 export const statsFilterClearButton = 'stats-filter-clear-button';
+export const emailSendingStatusBanner = 'email-sending-status-banner';
 /** Per-row testid prefixes; append the source domain / country code. */
 export const sourceRowPrefix = 'source-row-';
 export const locationRowPrefix = 'location-row-';

@@ -1,0 +1,62 @@
+import { page } from 'vitest/browser';
+import {
+  closePreviewButton,
+  copyPreviewLinkButton,
+  desktopPreviewToggle,
+  emailPreviewTab,
+  mobilePreviewToggle,
+  openPreviewInNewTabLink,
+  postPreviewBrowser,
+  postPreviewBrowserFrame,
+  postPreviewEmail,
+  postPreviewEmailFrame,
+  postPreviewEmailFrom,
+  postPreviewEmailSubject,
+  postPreviewModal,
+  postPreviewNewsletterMissing,
+  postPreviewSaveFailed,
+  postPreviewTestEmailInput,
+  postPreviewUnavailable,
+  previewAsSelectLabel,
+  previewNewsletterSelectLabel,
+  previewTierSelectLabel,
+  retryPreviewButton,
+  sendTestEmailButton,
+  testEmailButton,
+  webPreviewTab,
+} from '@tryghost/test-data/selectors/editor';
+
+/** Post preview locators and gestures for acceptance specs; no assertions. */
+export const previewScreen = {
+  modal: () => page.getByTestId(postPreviewModal),
+  webTab: () => page.getByRole('tab', { name: webPreviewTab }),
+  emailTab: () => page.getByRole('tab', { name: emailPreviewTab }),
+  desktopToggle: () => page.getByRole('radio', { name: desktopPreviewToggle }),
+  mobileToggle: () => page.getByRole('radio', { name: mobilePreviewToggle }),
+  segmentSelect: () => page.getByRole('combobox', { name: previewAsSelectLabel }),
+  tierSelect: () => page.getByRole('combobox', { name: previewTierSelectLabel }),
+  newsletterSelect: () => page.getByRole('combobox', { name: previewNewsletterSelectLabel }),
+  option: (name: string) => page.getByRole('option', { name }),
+  copyLinkButton: () => page.getByRole('button', { name: copyPreviewLinkButton }),
+  openInNewTabLink: () => page.getByRole('link', { name: openPreviewInNewTabLink }),
+  closeButton: () => page.getByRole('button', { name: closePreviewButton }),
+  browserFrame: () => page.getByTestId(postPreviewBrowserFrame),
+  browserChrome: () => page.getByTestId(postPreviewBrowser),
+  emailFrame: () => page.getByTestId(postPreviewEmailFrame),
+  emailChrome: () => page.getByTestId(postPreviewEmail),
+  emailFrom: () => page.getByTestId(postPreviewEmailFrom),
+  unavailable: () => page.getByTestId(postPreviewUnavailable),
+  newsletterMissing: () => page.getByTestId(postPreviewNewsletterMissing),
+  saveFailed: () => page.getByTestId(postPreviewSaveFailed),
+  retryButton: () => page.getByRole('button', { name: retryPreviewButton }),
+  toastWithText: (text: string | RegExp) => page.getByText(text),
+  emailSubject: () => page.getByTestId(postPreviewEmailSubject),
+  testEmailButton: () => page.getByRole('button', { name: testEmailButton }),
+  testEmailInput: () => page.getByTestId(postPreviewTestEmailInput),
+  sendTestEmailButton: () => page.getByRole('button', { name: sendTestEmailButton, exact: true }),
+  /** Opens the "preview as" select and picks one of its options. */
+  previewAs: async (option: string) => {
+    await previewScreen.segmentSelect().click();
+    await previewScreen.option(option).click();
+  },
+};

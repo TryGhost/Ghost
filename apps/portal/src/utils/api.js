@@ -713,6 +713,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       recipientName,
       buyerName,
       personalMessage,
+      deliveryDate,
     } = {}) {
       const siteUrlObj = new URL(siteUrl);
       const url = endpointFor({ type: 'members', resource: 'create-stripe-checkout-session' });
@@ -727,7 +728,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       const cancelUrlObj = window.location.href.startsWith(siteUrlObj.href)
         ? new URL(window.location.href)
         : new URL(siteUrl);
-      cancelUrlObj.hash = '#/portal/gift';
+      cancelUrlObj.hash = duration === undefined ? '#/portal/gift' : '#/portal/gift/delivery';
 
       const body = {
         identity,
@@ -742,6 +743,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         ...(recipientName ? { recipientName } : {}),
         ...(buyerName ? { buyerName } : {}),
         ...(personalMessage ? { personalMessage } : {}),
+        ...(deliveryDate ? { deliveryDate } : {}),
         cancelUrl: cancelUrlObj.href,
       };
 

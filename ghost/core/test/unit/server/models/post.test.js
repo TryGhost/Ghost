@@ -973,6 +973,99 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
           sinon.assert.notCalled(mockPostObj.get);
         });
       });
+
+      describe('Destroying', function () {
+        // Note: `sinon.assert.notCalled(mockPostObj.get);` asserts that post status does not matter.
+        it('rejects bulk destroy requests without a specific post', async function () {
+          await assert.rejects(
+            Post.permissible(
+              undefined,
+              'destroy',
+              { user: 1 },
+              {},
+              testUtils.permissions.author,
+              true,
+              true,
+            ),
+            errors.NoPermissionError,
+          );
+        });
+
+        it("rejects if destroying another author's post", async function () {
+          const mockPostObj = {
+            get: sinon.stub(),
+            related: sinon.stub(),
+          };
+          const context = { user: 1 };
+
+          mockPostObj.related.withArgs('authors').returns({ models: [{ id: 2 }] });
+
+          await assert.rejects(
+            Post.permissible(
+              mockPostObj,
+              'destroy',
+              context,
+              {},
+              testUtils.permissions.author,
+              true,
+              true,
+            ),
+            errors.NoPermissionError,
+          );
+          sinon.assert.notCalled(mockPostObj.get);
+          sinon.assert.calledOnce(mockPostObj.related);
+        });
+
+        it('rejects if destroying a post as a secondary author', async function () {
+          const mockPostObj = {
+            get: sinon.stub(),
+            related: sinon.stub(),
+          };
+          const context = { user: 1 };
+
+          mockPostObj.related.withArgs('authors').returns({ models: [{ id: 2 }, { id: 1 }] });
+
+          await assert.rejects(
+            Post.permissible(
+              mockPostObj,
+              'destroy',
+              context,
+              {},
+              testUtils.permissions.author,
+              true,
+              true,
+            ),
+            errors.NoPermissionError,
+          );
+          sinon.assert.notCalled(mockPostObj.get);
+          sinon.assert.calledOnce(mockPostObj.related);
+        });
+
+        it('resolves if destroying own post', function () {
+          const mockPostObj = {
+            get: sinon.stub(),
+            related: sinon.stub(),
+          };
+          const context = { user: 1 };
+
+          mockPostObj.related.withArgs('authors').returns({ models: [{ id: 1 }] });
+
+          return Post.permissible(
+            mockPostObj,
+            'destroy',
+            context,
+            {},
+            testUtils.permissions.author,
+            true,
+            true,
+          ).then((result) => {
+            assertExists(result);
+            assert.deepEqual(result.excludedAttrs, ['authors']);
+            sinon.assert.notCalled(mockPostObj.get);
+            sinon.assert.calledOnce(mockPostObj.related);
+          });
+        });
+      });
     });
 
     describe('Everyone Else', function () {

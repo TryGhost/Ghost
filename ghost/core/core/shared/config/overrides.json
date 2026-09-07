@@ -28,12 +28,14 @@
       ]
     },
     "posts": {
-      "extensions": [".csv"],
+      "extensions": [".csv", ".zip"],
       "contentTypes": [
         "text/csv",
         "application/csv",
         "application/octet-stream",
-        "application/vnd.ms-excel"
+        "application/vnd.ms-excel",
+        "application/zip",
+        "application/x-zip-compressed"
       ]
     },
     "images": {

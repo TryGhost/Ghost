@@ -8,17 +8,19 @@ import SearchableSection from '@/settings/components/searchable-section';
 import SpamFilters from '@/settings/advanced/spam-filters';
 import Tiers from './tiers';
 import TipsAndDonations from '@/settings/growth/tips-and-donations';
-import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  checkStripeEnabled,
+  getSettingValues,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { searchKeywords } from './search-keywords';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 
 const MembershipSettings: React.FC = () => {
   const { config, settings } = useGlobalData();
-  const [hasTipsAndDonations, paidMembersEnabled] = getSettingValues(settings, [
-    'donations_enabled',
-    'paid_members_enabled',
-  ]) as [boolean, boolean];
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
   const hasCustomFields = useFeatureFlag('membersCustomFields');

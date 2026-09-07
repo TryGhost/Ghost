@@ -9,10 +9,14 @@ import { renderHook } from '@testing-library/react';
 import { useTopSourcesGrowth } from '@/analytics/hooks/use-top-sources-growth';
 
 // Mock external dependencies
-vi.mock('@tryghost/shade/app', () => ({
-  formatQueryDate: vi.fn(),
-  getRangeDates: vi.fn(),
-}));
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
+  return {
+    ...actual,
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn(),
+  };
+});
 
 vi.mock('@tryghost/admin-x-framework/api/referrers', () => ({
   useTopSourcesGrowth: vi.fn(),
@@ -22,8 +26,10 @@ vi.mock('@/shared/analytics/audience', () => ({
   getAudienceQueryParam: vi.fn(),
 }));
 
-const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade/app')).formatQueryDate;
-const mockGetRangeDates = vi.mocked(await import('@tryghost/shade/app')).getRangeDates;
+const mockFormatQueryDate = vi.mocked(
+  await import('@/shared/analytics/chart-helpers'),
+).formatQueryDate;
+const mockGetRangeDates = vi.mocked(await import('@/shared/analytics/chart-helpers')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(
   await import('@tryghost/admin-x-framework/api/referrers'),
 ).useTopSourcesGrowth;

@@ -1,5 +1,5 @@
 import { type AdminRouteHandle, useMatches } from '@tryghost/admin-x-framework';
-import { useSidebarVisibility as useEmberSidebarVisibility } from '@/ember-bridge/ember-bridge';
+import { useSidebarVisibility as useEmberSidebarVisibility } from '@/ember-bridge';
 
 function hidesAdminSidebar(handle: unknown): handle is AdminRouteHandle {
   return (

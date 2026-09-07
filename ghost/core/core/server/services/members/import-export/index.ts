@@ -1,24 +1,24 @@
 import type { Knex } from 'knex';
-import type { CsvField } from '@tryghost/custom-field-types/csv';
+import type { CsvField } from '@tryghost/metafield-types/csv';
+import type { WrittenBy } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
   type EmailNotifications,
   type Tier,
-  type CustomFieldsImport,
+  type MetafieldsImport,
   type FailureReporter,
 } from './import/importer';
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
 import MembersCSVExporter, {
   type ExportOptions,
-  type CustomFieldDefinition,
+  type MetafieldDefinition,
 } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
-const labs = require('../../../../shared/labs');
 const logging = require('@tryghost/logging');
 const sentry = require('../../../../shared/sentry');
 
@@ -44,19 +44,23 @@ interface ImporterServices {
   getInlineThreshold(): number;
   stripeAPIService: unknown;
   productRepository: unknown;
-  // The custom fields services the members service hands the import composition root.
-  customFields: {
+  // The metafields services the members service hands the import composition root.
+  metafields: {
     definitions: { browse(): Promise<CsvField[]> };
     values: {
       planWrite(values: Record<string, unknown>): Promise<unknown[]>;
-      applyWrite(memberId: string, plan: unknown[], options?: { executor?: Knex }): Promise<void>;
+      applyWrite(
+        memberId: string,
+        plan: unknown[],
+        options: { writtenBy: WrittenBy; executor?: Knex },
+      ): Promise<void>;
     };
   };
 }
 
-// The custom fields services the members service hands the export composition root.
-interface CustomFieldsServices {
-  definitions: { browse(): Promise<CustomFieldDefinition[]> };
+// The metafields services the members service hands the export composition root.
+interface MetafieldsServices {
+  definitions: { browse(): Promise<MetafieldDefinition[]> };
   values: {
     getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
   };
@@ -111,15 +115,16 @@ export function makeImporter(deps: ImporterServices) {
       }),
   };
 
-  // Gated by the same labs flag as the export, so the two halves round-trip or stay
-  // silent together: off, activeFields resolves empty and every custom_fields.* column
-  // is dropped.
-  const customFields: CustomFieldsImport = {
-    activeFields: async () =>
-      labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : [],
-    planWrite: (values) => deps.customFields.values.planWrite(values),
+  const metafields: MetafieldsImport = {
+    activeFields: async () => deps.metafields.definitions.browse(),
+    planWrite: (values) => deps.metafields.values.planWrite(values),
+    // Every value the import writes came out of the file, whichever column carried it.
+    // An import has no id to give until runs are tracked, so it names its kind only.
     applyWrite: (memberId, plan, executor) =>
-      deps.customFields.values.applyWrite(memberId, plan, { executor }),
+      deps.metafields.values.applyWrite(memberId, plan, {
+        writtenBy: { type: 'import', id: null },
+        executor,
+      }),
   };
 
   // Inline jobs never reach the job manager's Sentry handler, which is wired to the
@@ -150,7 +155,7 @@ export function makeImporter(deps: ImporterServices) {
       productRepository: deps.productRepository,
     }),
     gifts,
-    customFields,
+    metafields,
     email,
     report,
     addJob: deps.addJob,
@@ -160,14 +165,12 @@ export function makeImporter(deps: ImporterServices) {
 }
 
 // Build the members CSV exporter. The same composition root from the other direction:
-// knex and the members id lookup are wired here, and the custom fields definitions and
-// values services are injected (boot builds them before this one). The labs flag alone
-// decides whether custom field columns appear, so nothing flag-shaped leaks into the
-// exporter itself.
+// knex and the members id lookup are wired here, and the metafields definitions and
+// values services are injected (boot builds them before this one).
 export function makeExporter({
   definitions,
   values,
-}: CustomFieldsServices): (options?: ExportOptions) => Promise<NodeJS.ReadableStream> {
+}: MetafieldsServices): (options?: ExportOptions) => Promise<NodeJS.ReadableStream> {
   const exporter = new MembersCSVExporter({
     knex: db.knex,
 
@@ -185,12 +188,10 @@ export function makeExporter({
       },
     },
 
-    customFields: {
+    metafields: {
       // Boot builds the definitions and values services before this one, so they
-      // are always present -- no not-initialised state to guard. The flag decides
-      // whether their columns are included at all.
-      activeDefinitions: async (): Promise<CustomFieldDefinition[]> =>
-        labs.isSet('membersCustomFields') ? definitions.browse() : [],
+      // are always present -- no not-initialised state to guard.
+      activeDefinitions: async (): Promise<MetafieldDefinition[]> => definitions.browse(),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds),
     },
   });

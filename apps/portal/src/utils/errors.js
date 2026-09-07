@@ -15,15 +15,7 @@ export class HumanReadableError extends Error {
     // Bad request + Too many requests
     if (res.status === 400 || res.status === 429) {
       try {
-        const json = await res.json();
-        if (
-          json.errors &&
-          Array.isArray(json.errors) &&
-          json.errors.length > 0 &&
-          json.errors[0].message
-        ) {
-          return new HumanReadableError(json.errors[0].message, { code: json.errors[0].code });
-        }
+        return fromErrorsJSON(await res.json());
       } catch (e) {
         // Failed to decode: ignore
         return undefined;
@@ -37,15 +29,7 @@ export class HumanReadableError extends Error {
       }
 
       try {
-        const json = await res.json();
-        if (
-          json.errors &&
-          Array.isArray(json.errors) &&
-          json.errors.length > 0 &&
-          json.errors[0].message
-        ) {
-          return new HumanReadableError(json.errors[0].message, { code: json.errors[0].code });
-        }
+        return fromErrorsJSON(await res.json());
       } catch (e) {
         // Failed to decode: ignore
         return undefined;
@@ -57,6 +41,17 @@ export class HumanReadableError extends Error {
 
     return undefined;
   }
+}
+
+function fromErrorsJSON(json) {
+  const error = Array.isArray(json.errors) ? json.errors[0] : null;
+  if (!error?.message) {
+    return undefined;
+  }
+
+  return new HumanReadableError(error.message, {
+    code: error.code,
+  });
 }
 
 export const specialMessages = [];

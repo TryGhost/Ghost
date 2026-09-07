@@ -30,6 +30,31 @@ const createBatchCounter = (customHandler) => {
   return batchCounter;
 };
 
+const createEventsPage = ({ domain, nextPage, timestamps }) => ({
+  items: timestamps.map((timestamp, index) => ({
+    event: 'delivered',
+    recipient: `recipient${index}@example.com`,
+    'user-variables': {
+      'email-id': '5fbe5d9607bdfa3765dc3819',
+    },
+    message: {
+      headers: {
+        'message-id': `message-${index}@${domain}`,
+      },
+    },
+    timestamp,
+  })),
+  paging: {
+    next: `https://api.mailgun.net/v3/${domain}/events/${nextPage}`,
+  },
+});
+
+const mockEventsPage = ({ domain, mailgunOptions, nextPage, page, timestamps }) =>
+  nock('https://api.mailgun.net')
+    .get(`/v3/${domain}/events${page ? `/${page}` : ''}`)
+    .query(mailgunOptions)
+    .reply(200, createEventsPage({ domain, nextPage, timestamps }));
+
 describe('MailgunClient', function () {
   let config, settings;
 
@@ -1119,6 +1144,165 @@ describe('MailgunClient', function () {
       nock.cleanAll();
     });
 
+    it('returns the capped fallback cursor when the primary domain is exhausted further ahead', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      const primaryPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-next',
+        timestamps: [begin + 10],
+      });
+      const primaryEmptyPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-next',
+        timestamps: [],
+      });
+      const fallbackPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const fallbackNextPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-unconsumed',
+        timestamps: [begin + 3],
+      });
+
+      const processedTimestamps = [];
+
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        (events) => {
+          processedTimestamps.push(...events.map((event) => event.timestamp));
+        },
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryPageMock.isDone(), true);
+      assert.equal(primaryEmptyPageMock.isDone(), true);
+      assert.equal(fallbackPageMock.isDone(), true);
+      assert.equal(fallbackNextPageMock.isDone(), false);
+      assert.deepEqual(processedTimestamps, [
+        new Date((begin + 10) * 1000),
+        new Date((begin + 1) * 1000),
+        new Date((begin + 2) * 1000),
+      ]);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
+    it('returns the capped primary cursor when the fallback domain is exhausted further ahead', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      const primaryPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const primaryNextPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-unconsumed',
+        timestamps: [begin + 3],
+      });
+      const fallbackPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-next',
+        timestamps: [begin + 10],
+      });
+      const fallbackEmptyPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-next',
+        timestamps: [],
+      });
+
+      const processedTimestamps = [];
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        (events) => {
+          processedTimestamps.push(...events.map((event) => event.timestamp));
+        },
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryPageMock.isDone(), true);
+      assert.equal(primaryNextPageMock.isDone(), false);
+      assert.equal(fallbackPageMock.isDone(), true);
+      assert.equal(fallbackEmptyPageMock.isDone(), true);
+      assert.deepEqual(processedTimestamps, [
+        new Date((begin + 1) * 1000),
+        new Date((begin + 2) * 1000),
+        new Date((begin + 10) * 1000),
+      ]);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
+    it('returns the earliest capped cursor when both domains reach their limits', async function () {
+      setupDomainWarmingConfig(true);
+
+      const begin = 1606399300;
+      const mailgunOptions = { ...MAILGUN_OPTIONS, begin };
+
+      mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-unconsumed',
+        timestamps: [begin + 5, begin + 6],
+      });
+      const primaryNextPageMock = mockEventsPage({
+        domain: 'primary.com',
+        mailgunOptions,
+        nextPage: 'primary-empty',
+        page: 'primary-unconsumed',
+        timestamps: [begin + 7],
+      });
+      mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-unconsumed',
+        timestamps: [begin + 1, begin + 2],
+      });
+      const fallbackNextPageMock = mockEventsPage({
+        domain: 'fallback.com',
+        mailgunOptions,
+        nextPage: 'fallback-empty',
+        page: 'fallback-unconsumed',
+        timestamps: [begin + 3],
+      });
+
+      const result = await new MailgunClient({ config, settings }).fetchEvents(
+        mailgunOptions,
+        () => {},
+        { maxEvents: 2 },
+      );
+
+      assert.equal(primaryNextPageMock.isDone(), false);
+      assert.equal(fallbackNextPageMock.isDone(), false);
+      assert.deepEqual(result, {
+        safeCursor: new Date((begin + 2) * 1000),
+      });
+    });
+
     it('fetches from both primary and fallback domains when enabled', async function () {
       setupDomainWarmingConfig(true);
 
@@ -1141,12 +1325,13 @@ describe('MailgunClient', function () {
 
       const counter = createBatchCounter();
       const mailgunClient = new MailgunClient({ config, settings });
-      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
+      const result = await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler);
 
       assert.equal(primaryMock.isDone(), true);
       assert.equal(fallbackMock.isDone(), true);
       assert.equal(counter.batches, 2);
       assert.equal(counter.events, 6);
+      assert.deepEqual(result, { safeCursor: undefined });
     });
 
     it('only fetches from primary when disabled', async function () {

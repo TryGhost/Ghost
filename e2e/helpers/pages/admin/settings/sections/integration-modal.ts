@@ -1,5 +1,6 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import { integrations } from '@tryghost/test-data/selectors/settings';
 
 export interface IntegrationConfig {
   name: string;
@@ -53,7 +54,7 @@ export class IntegrationModal extends BasePage {
 
     this.config = typeof integration === 'string' ? INTEGRATIONS[integration] : integration;
 
-    this.integrationsSection = page.getByTestId('integrations');
+    this.integrationsSection = page.getByTestId(integrations);
     this.integrationItem = page.getByTestId(this.config.testId);
     this.modal = page.getByTestId(this.config.modalTestId);
     this.enableToggle = this.modal.getByLabel(this.config.toggleLabel);

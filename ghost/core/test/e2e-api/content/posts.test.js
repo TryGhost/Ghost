@@ -29,12 +29,8 @@ const postMatcherShallowIncludes = Object.assign({}, postMatcher, {
   authors: anyArray,
 });
 
-async function trackDb(fn, skip) {
+async function trackDb(fn) {
   const db = require('../../../core/server/data/db');
-  if (db?.knex?.client?.config?.client !== 'better-sqlite3') {
-    return skip();
-  }
-
   /** @type {import('knex').Knex.Client} */
   const client = db.knex.client;
 
@@ -44,18 +40,14 @@ async function trackDb(fn, skip) {
   }
 
   client.on('query', handler);
-
-  await fn();
-
-  client.off('query', handler);
+  try {
+    await fn();
+  } finally {
+    client.off('query', handler);
+  }
 
   return queries;
 }
-
-// trackDb introspects sqlite query traffic, so its tests are sqlite-only; the
-// invalid-filter test is mysql-only. Decided at registration from NODE_ENV
-// (vitest has no runtime this.skip).
-const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Posts Content API', function () {
   let agent;
@@ -146,7 +138,7 @@ describe('Posts Content API', function () {
       });
   });
 
-  it.runIf(isMySQL)('Errors upon invalid filter value', async function () {
+  it('Errors upon invalid filter value', async function () {
     await agent
       .get(`posts/?filter=published_at%3A%3C%271715091791890%27`)
       .expectStatus(422)
@@ -499,31 +491,22 @@ describe('Posts Content API', function () {
     );
   });
 
-  it.skipIf(isMySQL)('Does not select * by default', async function () {
-    let queries = await trackDb(
-      () => agent.get('posts/?limit=all').expectStatus(200),
-      () => {},
-    );
+  it('Does not select * by default', async function () {
+    let queries = await trackDb(() => agent.get('posts/?limit=all').expectStatus(200));
     let postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
       assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
     }
 
-    queries = await trackDb(
-      () => agent.get('posts/?limit=3').expectStatus(200),
-      () => {},
-    );
+    queries = await trackDb(() => agent.get('posts/?limit=3').expectStatus(200));
     postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
       assert(!sqlWithoutCount.includes('*'), 'Query should not select *');
     }
 
-    queries = await trackDb(
-      () => agent.get('posts/?include=tags,authors').expectStatus(200),
-      () => {},
-    );
+    queries = await trackDb(() => agent.get('posts/?include=tags,authors').expectStatus(200));
     postsRelatedQueries = queries.filter((q) => q.sql.includes('`posts`'));
     for (const query of postsRelatedQueries) {
       const sqlWithoutCount = query.sql.replace(/count\(\*\)/g, '');
@@ -531,19 +514,16 @@ describe('Posts Content API', function () {
     }
   });
 
-  it.skipIf(isMySQL)('Can skip pagination counts when skipPagination is true', async function () {
-    const queries = await trackDb(
-      () => {
-        return api.postsPublic.browse({
-          filter: "published_at:>'2015-07-20'",
-          skipPagination: true,
-          limit: 1,
-          order: 'published_at asc',
-          context: {},
-        });
-      },
-      () => {},
-    );
+  it('Can skip pagination counts when skipPagination is true', async function () {
+    const queries = await trackDb(() => {
+      return api.postsPublic.browse({
+        filter: "published_at:>'2015-07-20'",
+        skipPagination: true,
+        limit: 1,
+        order: 'published_at asc',
+        context: {},
+      });
+    });
 
     const postsCountQueries = queries.filter((query) => {
       return query.sql.includes('count(') && query.sql.includes('`posts`');

@@ -8,6 +8,7 @@ import {
 } from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
+import GiveGiftCard from './give-gift-card';
 import TransistorPodcastsAction from './transistor-podcasts-action';
 import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
@@ -87,6 +88,8 @@ const AccountActions = () => {
           />
         )}
       </div>
+
+      <GiveGiftCard />
     </div>
   );
 };

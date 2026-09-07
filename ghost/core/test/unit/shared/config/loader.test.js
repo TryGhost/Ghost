@@ -140,8 +140,6 @@ describe('Config Loader', function () {
 
       assert(!customConfig.get('paths:corePath').includes('try-to-override'));
       assert.equal(customConfig.get('database:client'), 'better-sqlite3');
-      // Note: database:connection:filename is now set via process.env in test/utils/vitest-setup-db.ts
-      // for concurrent test isolation, so we skip asserting the config file value
       assert.equal(customConfig.get('database:debug'), true);
       // Note: url is now set via process.env in test/utils/vitest-setup-db.ts for dynamic port allocation
       assert.equal(customConfig.get('logging:level'), 'error');

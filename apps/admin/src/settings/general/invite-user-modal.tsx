@@ -1,5 +1,5 @@
 import validator from 'validator';
-import { APIError, ValidationError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError, ValidationError } from '@tryghost/admin-x-framework/errors';
 import {
   Field,
   FieldContent,
@@ -12,7 +12,6 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
@@ -20,7 +19,7 @@ import { useAddInvite, useBrowseInvites } from '@tryghost/admin-x-framework/api/
 import { useBrowseRoles } from '@tryghost/admin-x-framework/api/roles';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 import { useEffect, useState } from 'react';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';

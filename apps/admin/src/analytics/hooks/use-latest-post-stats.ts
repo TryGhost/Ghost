@@ -2,16 +2,9 @@ import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts
 import { useMemo } from 'react';
 import { usePostStats } from '@tryghost/admin-x-framework/api/stats';
 
-// Extended Post interface that includes authors and excerpt
-interface ExtendedPost extends Post {
-  authors?: {
-    name: string;
-  }[];
-  excerpt?: string;
-  count?: {
-    clicks?: number;
-  };
-}
+// `Post` now carries authors, excerpt and click counts itself — this alias is
+// kept so the rest of the file reads unchanged.
+type ExtendedPost = Post;
 
 export interface LatestPostWithStats {
   id: string;
@@ -33,7 +26,7 @@ export interface LatestPostWithStats {
     clicks?: number;
   } | null;
   authors?: {
-    name: string;
+    name?: string;
   }[];
   // Analytics data
   recipient_count: number | null;

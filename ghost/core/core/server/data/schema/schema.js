@@ -1033,7 +1033,7 @@ module.exports = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   },
-  members_custom_fields: {
+  members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     key: { type: 'string', maxlength: 191, nullable: false, unique: true },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
@@ -1041,7 +1041,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      // Keep in sync with FIELD_TYPE_IDS in @tryghost/custom-field-types,
+      // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
         isIn: [['short_text', 'long_text', 'address']],
@@ -1064,17 +1064,90 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  members_custom_field_values: {
+  // Where a source sends what it collected. The source is who collects, the port is that
+  // source's own name for the thing, and the destination is the publisher's field, which
+  // they can repoint without the source knowing. The row is the collecting: there is one
+  // and the source writes through it, or there is none and it does not.
+  //
+  // A second kind of source becomes a `source_type` beside a widened id. What it must not
+  // become is a second table holding destinations.
+  members_metafield_bindings: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    port: { type: 'string', maxlength: 191, nullable: false },
+    // Indexed rather than unique: several sources landing in one field is expected.
+    metafield_key: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      references: 'members_metafields.key',
+      cascadeDelete: true,
+    },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+    '@@UNIQUE_CONSTRAINTS@@': [
+      { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
+    ],
+    '@@INDEXES@@': [['metafield_key']],
+  },
+  // How a tier's checkout question is asked. Where the answer lands is the binding it
+  // hangs off.
+  products_checkout_fields: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    binding_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      unique: true,
+      references: 'members_metafield_bindings.id',
+      cascadeDelete: true,
+    },
+    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    // Processors cap a label far shorter than a field name may be. Null asks under the
+    // field's own name.
+    label: { type: 'string', maxlength: 191, nullable: true },
+    optional: { type: 'boolean', nullable: false, defaultTo: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The options a tier's collection needs, and the one thing it collects without keeping.
+  // Whether it collects anything it *does* keep is the binding above.
+  products_checkout_config: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      unique: true,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
+    // without them, and a wrong code fails the session create.
+    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
+    // Stripe keeps a tax number against the customer it invoices, so there is no
+    // destination to bind and nothing to record but whether to ask.
+    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The field's stable key, not its id: a value is addressed by key everywhere it
     // matters (the write names it, a filter names it, the key is immutable), so the row
     // carries it directly and the read and filter paths skip an id-to-key join. Matches
     // the referenced column's 191, as a foreign key must.
-    custom_field_key: {
+    metafield_key: {
       type: 'string',
       maxlength: 191,
       nullable: false,
-      references: 'members_custom_fields.key',
+      references: 'members_metafields.key',
       cascadeDelete: true,
     },
     member_id: {
@@ -1096,16 +1169,33 @@ module.exports = {
     // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
     // exactly is worth more than the schema restating what the write path enforces.
     value_text: { type: 'text', maxlength: 65535, nullable: true },
+    // Who wrote the value that is here now.
+    //
+    // Shaped like `actions`: a type and an id, no foreign key. A type because not every
+    // write comes through a binding — a person edits a member's fields, an import reads a
+    // file — and an id so the writer can be resolved back rather than merely named. A
+    // binding id resolves to the tier, the port and the field it routed into, which is
+    // everything worth knowing about how a value got here.
+    //
+    // No foreign key, because provenance has to outlive its cause: that a value arrived
+    // through a tier's shipping port stays true after someone deletes that binding, even
+    // though it stops being joinable.
+    //
+    // The type is the namespace the id resolves in, so every row carries one. The id is
+    // nullable for the one writer that resolves in no table: an import has none to give
+    // until runs are tracked.
+    written_by_type: { type: 'string', maxlength: 50, nullable: false },
+    written_by_id: { type: 'string', maxlength: 24, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    // Named, because the name knex derives from the table and all three columns
-    // overruns MySQL's 64-character identifier limit. The migration that first
-    // created this table already shortened a column for the same reason; a third
-    // column spends what headroom that bought.
+    // Named rather than derived. The name knex builds from the table and all three
+    // columns used to overrun MySQL's 64-character identifier limit; the shorter table
+    // name now fits, but the index is named in a migration either way, so pinning it
+    // here keeps the two statements of it identical.
     '@@UNIQUE_CONSTRAINTS@@': [
       {
-        columns: ['member_id', 'custom_field_key', 'path'],
-        indexName: 'members_custom_field_values_leaf_unique',
+        columns: ['member_id', 'metafield_key', 'path'],
+        indexName: 'members_metafield_values_leaf_unique',
       },
     ],
     // What a segment filter looks up: every member holding a given value for a
@@ -1113,7 +1203,7 @@ module.exports = {
     // TEXT, so MySQL would need a prefix length, and the schema's index builder
     // applies one length to every column in a composite index rather than to a
     // single chosen one.
-    '@@INDEXES@@': [['custom_field_key', 'path']],
+    '@@INDEXES@@': [['metafield_key', 'path']],
   },
   members_stripe_customers: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2454,6 +2544,7 @@ module.exports = {
         isIn: [['pending', 'sending', 'sent', 'failed', 'cancelled']],
       },
     },
+    scheduled_at: { type: 'dateTime', nullable: true },
     started_at: { type: 'dateTime', nullable: true },
     email_sent_at: { type: 'dateTime', nullable: true },
     email_provider_message_id: { type: 'string', maxlength: 1000, nullable: true },
@@ -2470,6 +2561,7 @@ module.exports = {
     outcome_error: { type: 'text', maxlength: 65535, nullable: true },
     '@@INDEXES@@': [
       ['status', 'started_at'],
+      ['status', 'scheduled_at'],
       { columns: ['email_provider_message_id'], length: 31 },
     ],
   },

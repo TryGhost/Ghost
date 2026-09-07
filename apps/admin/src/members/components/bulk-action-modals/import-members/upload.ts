@@ -1,16 +1,27 @@
 import moment from 'moment-timezone';
+import { z } from 'zod';
 import { type ImportMembersCompleteResponseType } from '@tryghost/admin-x-framework/api/members';
 import { type ImportResponse } from './state';
 import { formatImportError } from './mapping';
 import { unparseErrorCSV } from './csv';
 
+const invalidImportRowSchema = z
+  .object({
+    errors: z.array(z.string()).catch([]),
+  })
+  .catchall(z.unknown());
+
 export function buildImportResponse(importData: ImportMembersCompleteResponseType): ImportResponse {
   const importedCount = importData.meta.stats.imported;
-  const erroredMembers = importData.meta.stats.invalid || [];
+  const erroredMembers = Array.isArray(importData.meta.stats.invalid)
+    ? importData.meta.stats.invalid
+    : [];
   const errorCount = erroredMembers.length;
   const errorListMap: Record<string, { message: string; count: number }> = {};
 
-  const errorsWithFormattedMessages = erroredMembers.map((row) => {
+  const errorsWithFormattedMessages = erroredMembers.map((rawRow) => {
+    const parsedRow = invalidImportRowSchema.safeParse(rawRow);
+    const row = parsedRow.success ? parsedRow.data : { errors: [] };
     const { errors, ...columns } = row;
     const formatted = errors.map((reason) => formatImportError(reason).trim()).filter(Boolean);
     for (const reason of formatted) {

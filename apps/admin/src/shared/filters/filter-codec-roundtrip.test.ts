@@ -1,14 +1,31 @@
-import nql from '@tryghost/nql-lang';
-import { dateCodec, numberCodec, scalarCodec, setCodec, textCodec } from './filter-codecs';
+import { columnAddressing, composeCodec } from './filter-addressing';
+import {
+  dateSemantics,
+  numberSemantics,
+  scalarSemantics,
+  setSemantics,
+  textSemantics,
+} from './semantics';
+import type { ValueConfig } from './semantics';
+import { parseFilterToAst } from './filter-query-core';
+type CodecConfig = ValueConfig & { field?: string };
+const textCodec = (config?: CodecConfig) => composeCodec(columnAddressing(config), textSemantics());
+const scalarCodec = (config?: CodecConfig) =>
+  composeCodec(columnAddressing(config), scalarSemantics(config));
+const setCodec = (config?: CodecConfig) =>
+  composeCodec(columnAddressing(config), setSemantics(config));
+const numberCodec = (config?: CodecConfig) =>
+  composeCodec(columnAddressing(config), numberSemantics());
+const dateCodec = (config?: CodecConfig) => composeCodec(columnAddressing(config), dateSemantics());
+
 import { describe, expect, it } from 'vitest';
 import type { CodecContext, FilterCodec, FilterPredicate } from './filter-types';
 
-// What a saved segment actually relies on: a predicate the publisher built in the UI
-// is serialized to NQL, stored, and read back the next time the page loads. Every
-// codec must survive that trip for every operator it advertises, whatever the value
-// holds — the per-codec tests above assert one direction at a time against hand-written
-// NQL, which is how the anchor readers in this engine and in member-filter-query.ts
-// drifted apart without a test noticing.
+// A filter the publisher saves has to come back meaning the same thing when the page reloads.
+// Writing it and reading it back are separate pieces of code, so they can drift apart and each
+// still look right on its own — that is how values ending in a dollar sign were once lost. The
+// only way to catch that is to send a value out and back and check it survived, which is what
+// these do, using the values most likely to break the trip.
 
 function context(key: string, timezone = 'UTC'): CodecContext {
   return { key, pattern: key, params: {}, timezone };
@@ -21,14 +38,18 @@ function roundTrip(codec: FilterCodec, predicate: Omit<FilterPredicate, 'id'>, c
     throw new Error(`serialize returned null for ${predicate.operator}`);
   }
 
-  const node = nql.parse(clauses.join('+'), { preserveRelativeDates: true });
+  const node = parseFilterToAst(clauses.join('+'));
+
+  if (!node) {
+    throw new Error(`could not parse: ${clauses.join('+')}`);
+  }
 
   return codec.parse(node, ctx);
 }
 
-// Values chosen for what they do to the regex the text codec builds: `$` and `^` are
-// the anchors the parse side reads operators from, so a value containing one is the
-// case where escaping and anchoring have to be told apart.
+// Chosen because they collide with the characters the text codec uses to mean something:
+// `$` and `^` are how "ends with" and "starts with" are marked, so a value containing one
+// is where escaping and marking have to be told apart.
 const TEXT_VALUES = [
   'Ghost',
   'two words',
@@ -44,6 +65,7 @@ const TEXT_VALUES = [
 
 const TEXT_OPERATORS = [
   'is',
+  'is-not',
   'contains',
   'does-not-contain',
   'starts-with',

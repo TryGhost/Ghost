@@ -17,15 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { LucideIcon, Recharts, formatNumber } from '@tryghost/shade/utils';
+import {
+  LucideIcon,
+  Recharts,
+  formatDisplayDateWithRange,
+  formatNumber,
+} from '@tryghost/shade/utils';
 import {
   type AggregationStrategy,
   getEffectiveChartRange,
   getPeriodText,
+  getRangeDates,
   resolveEffectiveRangeDays,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
-import { formatDisplayDateWithRange, getRangeDates } from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
   subscriptionData?: { date: string; signups: number; cancellations: number }[];

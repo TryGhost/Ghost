@@ -56,6 +56,8 @@ const EDITABLE_SETTINGS = [
   'firstpromoter_id',
   'portal_button_icon',
   'portal_button_signup_text',
+  'portal_signup_gift_promotion',
+  'portal_account_gift_promotion',
   'portal_signup_terms_html',
   'portal_signup_checkbox_required',
   'mailgun_api_key',

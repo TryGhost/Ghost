@@ -3,7 +3,6 @@ const _ = require('lodash');
 const models = require('../../models');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
 
 // Listen to settings.timezone.edited and settings.notifications.edited to bind extra logic to settings, similar to the bridge and member service
 const events = require('../../lib/common/events');
@@ -42,41 +41,39 @@ const onTimezoneEdited = function (settingModel, options) {
         return;
       }
 
-      await sequence(
-        results.map((post) => async () => {
-          const newPublishedAtMoment = moment(post.get('published_at')).add(
-            timezoneOffsetDiff,
-            'minutes',
+      for (const post of results) {
+        const newPublishedAtMoment = moment(post.get('published_at')).add(
+          timezoneOffsetDiff,
+          'minutes',
+        );
+
+        /**
+         * CASE:
+         *   - your configured TZ is GMT+01:00
+         *   - now is 10AM +01:00 (9AM UTC)
+         *   - your post should be published 8PM +01:00 (7PM UTC)
+         *   - you reconfigure your blog TZ to GMT+08:00
+         *   - now is 5PM +08:00 (9AM UTC)
+         *   - if we don't change the published_at, 7PM + 8 hours === next day 5AM
+         *   - so we update published_at to 7PM - 480minutes === 11AM UTC
+         *   - 11AM UTC === 7PM +08:00
+         */
+        if (newPublishedAtMoment.isBefore(moment().add(5, 'minutes'))) {
+          post.set('status', 'draft');
+        } else {
+          post.set('published_at', newPublishedAtMoment.toDate());
+        }
+
+        try {
+          await models.Post.edit(post.toJSON(), _.merge({ id: post.id }, options));
+        } catch (err) {
+          logging.error(
+            new errors.InternalServerError({
+              err,
+            }),
           );
-
-          /**
-           * CASE:
-           *   - your configured TZ is GMT+01:00
-           *   - now is 10AM +01:00 (9AM UTC)
-           *   - your post should be published 8PM +01:00 (7PM UTC)
-           *   - you reconfigure your blog TZ to GMT+08:00
-           *   - now is 5PM +08:00 (9AM UTC)
-           *   - if we don't change the published_at, 7PM + 8 hours === next day 5AM
-           *   - so we update published_at to 7PM - 480minutes === 11AM UTC
-           *   - 11AM UTC === 7PM +08:00
-           */
-          if (newPublishedAtMoment.isBefore(moment().add(5, 'minutes'))) {
-            post.set('status', 'draft');
-          } else {
-            post.set('published_at', newPublishedAtMoment.toDate());
-          }
-
-          try {
-            await models.Post.edit(post.toJSON(), _.merge({ id: post.id }, options));
-          } catch (err) {
-            logging.error(
-              new errors.InternalServerError({
-                err,
-              }),
-            );
-          }
-        }),
-      );
+        }
+      }
     } catch (err) {
       logging.error(
         new errors.InternalServerError({

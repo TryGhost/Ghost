@@ -51,6 +51,19 @@ const controller = {
     },
   },
 
+  sendingStatus: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    data: ['id'],
+    permissions: {
+      method: 'read',
+    },
+    async query(frame) {
+      return await emailService.controller.getSendingStatus(frame);
+    },
+  },
+
   retry: {
     headers: {
       cacheInvalidate: false,

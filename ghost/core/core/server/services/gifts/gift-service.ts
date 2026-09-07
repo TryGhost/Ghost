@@ -9,12 +9,18 @@ import type {
   GiftEventBrowseOptions,
   GiftEventPage,
   GiftRepository,
+  RepositoryTransactionOptions,
 } from './gift-bookshelf-repository';
-import type { GiftDeliveryService } from './gift-delivery-service';
-import type { GiftReminderScheduler } from './gift-reminder-scheduler';
+import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
+import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
 import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
-import { GIFT_EXPIRY_DAYS, GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS } from './constants';
+import {
+  GIFT_MAX_SCHEDULE_DAYS,
+  GIFT_REMINDER_FLOOR_DAYS,
+  GIFT_REMINDER_LEAD_DAYS,
+  GIFT_SEND_HOUR,
+} from './constants';
 import {
   resolveGiftDuration,
   validateGiftCheckoutOffer,
@@ -99,6 +105,7 @@ interface GiftEmailService {
     cadence: GiftCadence;
     duration: number;
     expiresAt: Date;
+    scheduledAt: Date | null;
     recipientEmail?: string | null;
   }): Promise<void>;
   sendReminder(data: {
@@ -169,19 +176,20 @@ interface GiftServiceDeps {
   giftRepository: GiftRepository;
   giftDeliveryService: Pick<
     GiftDeliveryService,
-    'createForCheckout' | 'dispatchForGift' | 'cancelPendingForGift'
+    | 'createForCheckout'
+    | 'getRecipientEmailForGift'
+    | 'dispatchForGift'
+    | 'cancelPendingForGift'
+    | 'recoverPending'
   >;
   memberRepository: MemberRepository;
   tiersService: TiersService;
   giftEmailService: GiftEmailService;
   staffServiceEmails: StaffServiceEmails;
-  giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+  giftReminderScheduler: Pick<SignedFlushScheduler, 'scheduleAt'>;
   checkoutAdapter: {
     getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
     createSession(data: GiftCheckoutSession): Promise<{ id: string; url: string }>;
-  };
-  labsService: {
-    isSet(flag: string): boolean;
   };
   settingsCache: {
     get(key: string): unknown;
@@ -211,6 +219,7 @@ export interface StartGiftCheckoutInput {
   recipientName?: unknown;
   buyerName?: unknown;
   personalMessage?: unknown;
+  deliveryDate?: unknown;
   successUrl: string;
   cancelUrl?: string;
   buyer: GiftCheckoutBuyer;
@@ -236,6 +245,7 @@ const GiftCheckoutDeliverySchema = z.discriminatedUnion('deliveryMethod', [
     recipientEmail: EmptyCheckoutStringSchema,
     recipientName: EmptyCheckoutStringSchema,
     personalMessage: EmptyCheckoutStringSchema,
+    deliveryDate: EmptyCheckoutStringSchema,
     buyerName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
   }),
   z.object({
@@ -243,6 +253,13 @@ const GiftCheckoutDeliverySchema = z.discriminatedUnion('deliveryMethod', [
     recipientEmail: z.string().trim().email().max(GIFT_EMAIL_MAX_LENGTH),
     recipientName: NullableCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
     personalMessage: NullableCheckoutStringSchema(GIFT_CHECKOUT_MESSAGE_MAX_LENGTH),
+    deliveryDate: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .nullable()
+      .optional()
+      .default(null),
     buyerName: RequiredCheckoutStringSchema(GIFT_NAME_MAX_LENGTH),
   }),
 ]);
@@ -271,6 +288,7 @@ export interface GiftRedemption {
   amount: number;
   buyer_name: string | null;
   recipient_name: string | null;
+  recipient_email: string | null;
   message: string | null;
   expires_at: Date;
   consumes_at: Date | null;
@@ -311,23 +329,8 @@ export class GiftService {
   }
 
   async startCheckout(input: StartGiftCheckoutInput): Promise<{ url: string }> {
-    const customizationEnabled = this.deps.labsService.isSet('giftSubCustomization');
-    const populatedDeliveryFields = [
-      input.recipientEmail,
-      input.recipientName,
-      input.buyerName,
-      input.personalMessage,
-    ].some((value) => value !== undefined && value !== null && value !== '');
-
-    if (!customizationEnabled && (input.deliveryMethod === 'email' || populatedDeliveryFields)) {
-      throw new errors.BadRequestError({
-        message: 'Bad Request.',
-        context: 'Gift email delivery is not available',
-      });
-    }
-
     const parsedBuyerEmail = CheckoutBuyerEmailSchema.safeParse(input.buyer.email);
-    if (customizationEnabled && !parsedBuyerEmail.success) {
+    if (!parsedBuyerEmail.success) {
       throw new errors.BadRequestError({
         message: 'Bad Request.',
         context: `Invalid gift buyer email: ${parsedBuyerEmail.error.issues[0].message}`,
@@ -335,19 +338,14 @@ export class GiftService {
     }
     const buyerEmail = parsedBuyerEmail.success ? parsedBuyerEmail.data : input.buyer.email;
 
-    const parsedDelivery = GiftCheckoutDeliverySchema.safeParse(
-      customizationEnabled
-        ? {
-            deliveryMethod: input.deliveryMethod ?? 'link',
-            recipientEmail: input.recipientEmail,
-            recipientName: input.recipientName,
-            buyerName: input.buyerName,
-            personalMessage: input.personalMessage,
-          }
-        : {
-            deliveryMethod: 'link',
-          },
-    );
+    const parsedDelivery = GiftCheckoutDeliverySchema.safeParse({
+      deliveryMethod: input.deliveryMethod ?? 'link',
+      recipientEmail: input.recipientEmail,
+      recipientName: input.recipientName,
+      buyerName: input.buyerName,
+      personalMessage: input.personalMessage,
+      deliveryDate: input.deliveryDate,
+    });
 
     if (!parsedDelivery.success) {
       const issue = parsedDelivery.error.issues[0];
@@ -358,6 +356,7 @@ export class GiftService {
     }
 
     const delivery: GiftCheckoutDelivery = parsedDelivery.data;
+    const scheduledDelivery = this.resolveDeliveryDate(delivery.deliveryDate);
 
     if (input.offerId) {
       throw new errors.BadRequestError({
@@ -373,24 +372,7 @@ export class GiftService {
       });
     }
 
-    let resolvedDuration: ResolvedGiftDuration | null = null;
-    let cadence: GiftCadence;
-
-    if (customizationEnabled) {
-      resolvedDuration = resolveGiftDuration(input);
-      cadence = resolvedDuration.cadence;
-    } else {
-      if (input.cadence !== 'month' && input.cadence !== 'year') {
-        const receivedCadence = input.cadence ? `"${input.cadence}"` : input.cadence;
-
-        throw new errors.BadRequestError({
-          message: 'Bad Request.',
-          context: `Expected cadence to be "month" or "year", received ${receivedCadence}`,
-        });
-      }
-
-      cadence = input.cadence;
-    }
+    const resolvedDuration: ResolvedGiftDuration = resolveGiftDuration(input);
 
     let tier: Tier | null;
     try {
@@ -413,22 +395,15 @@ export class GiftService {
       });
     }
 
-    let duration = 1;
-    let totalMonths: number | undefined;
-    let amount = tier.getPrice(cadence);
-
-    if (resolvedDuration) {
-      const plan = validateGiftCheckoutOffer({
-        tier,
-        portalPlans: this.deps.settingsCache.get('portal_plans'),
-        offer: resolvedDuration,
-      });
-
-      cadence = plan.cadence;
-      duration = plan.duration;
-      totalMonths = plan.totalMonths;
-      amount = plan.amount;
-    }
+    const plan = validateGiftCheckoutOffer({
+      tier,
+      portalPlans: this.deps.settingsCache.get('portal_plans'),
+      offer: resolvedDuration,
+    });
+    const cadence = plan.cadence;
+    const duration = plan.duration;
+    const totalMonths = plan.totalMonths;
+    const amount = plan.amount;
 
     const tierId = typeof tier.id === 'string' ? tier.id : tier.id.toHexString();
     const token = this.generateToken();
@@ -439,6 +414,16 @@ export class GiftService {
     successUrl.searchParams.set('gift_tier', tierId);
     successUrl.searchParams.set('gift_cadence', cadence);
     successUrl.searchParams.set('gift_delivery', delivery.deliveryMethod);
+    if (scheduledDelivery.date && scheduledDelivery.scheduledAt) {
+      successUrl.searchParams.set('gift_delivery_date', scheduledDelivery.date);
+      // The exact send instant, so the success page can tell "still
+      // scheduled" from "already sent" without re-deriving the send
+      // hour client-side.
+      successUrl.searchParams.set(
+        'gift_scheduled_at',
+        String(scheduledDelivery.scheduledAt.getTime()),
+      );
+    }
     if (totalMonths !== undefined) {
       successUrl.searchParams.set('gift_duration', String(totalMonths));
     }
@@ -454,6 +439,8 @@ export class GiftService {
       buyerName: delivery.buyerName,
       recipientName: delivery.recipientName,
       personalMessage: delivery.personalMessage,
+      expiryAnchor: scheduledDelivery.scheduledAt,
+      expiryTimeZone: this.siteZone(),
       tierId,
       cadence,
       duration,
@@ -467,6 +454,7 @@ export class GiftService {
           {
             giftId: id,
             recipientEmail: delivery.recipientEmail,
+            scheduledAt: scheduledDelivery.scheduledAt,
           },
           { transacting },
         );
@@ -535,22 +523,56 @@ export class GiftService {
     return this.completeLegacyPurchase(input);
   }
 
-  private getClaimDeadline(purchasedAt: Date): Date {
+  // The publication timezone setting, falling back to UTC when unset or
+  // when the bundled tz data doesn't know the zone — an unknown name would
+  // otherwise resolve to the host's zone and date gift lifecycle values
+  // against the wrong calendar.
+  private siteZone(): string {
     const timezoneSetting = this.deps.settingsCache.get('timezone');
     const zone =
       typeof timezoneSetting === 'string' && timezoneSetting ? timezoneSetting : DEFAULT_TIMEZONE;
-    let purchase = DateTime.fromJSDate(purchasedAt, { zone });
 
-    // A zone name the bundled tz data doesn't know would otherwise resolve
-    // to the host's zone and date the deadline against the wrong calendar.
-    if (!purchase.isValid) {
+    if (zone !== DEFAULT_TIMEZONE && !DateTime.now().setZone(zone).isValid) {
       logging.warn(
-        `Unknown publication timezone "${zone}", dating the gift claim deadline in ${DEFAULT_TIMEZONE}`,
+        `Unknown publication timezone "${zone}", dating gift lifecycle values in ${DEFAULT_TIMEZONE}`,
       );
-      purchase = DateTime.fromJSDate(purchasedAt, { zone: DEFAULT_TIMEZONE });
+      return DEFAULT_TIMEZONE;
     }
 
-    return purchase.plus({ days: GIFT_EXPIRY_DAYS }).endOf('day').toJSDate();
+    return zone;
+  }
+
+  private resolveDeliveryDate(deliveryDate: string | null): {
+    date: string | null;
+    scheduledAt: Date | null;
+  } {
+    if (!deliveryDate) {
+      return { date: null, scheduledAt: null };
+    }
+
+    const zone = this.siteZone();
+    const today = DateTime.now().setZone(zone).startOf('day');
+    const selected = DateTime.fromFormat(deliveryDate, 'yyyy-MM-dd', { zone }).startOf('day');
+
+    if (
+      !selected.isValid ||
+      selected.toMillis() < today.toMillis() ||
+      selected.toMillis() > today.plus({ days: GIFT_MAX_SCHEDULE_DAYS }).toMillis()
+    ) {
+      throw new errors.BadRequestError({
+        message: 'Bad Request.',
+        context: `Gift delivery date must be today or within the next ${GIFT_MAX_SCHEDULE_DAYS} days`,
+      });
+    }
+
+    if (selected.hasSame(today, 'day')) {
+      return { date: null, scheduledAt: null };
+    }
+
+    return {
+      date: deliveryDate,
+      scheduledAt: selected.set({ hour: GIFT_SEND_HOUR }).toJSDate(),
+    };
   }
 
   private async completePendingPurchase(input: GiftPaymentCompletionData): Promise<boolean> {
@@ -565,7 +587,6 @@ export class GiftService {
     }
     const data = parsed.data;
     const purchasedAt = new Date();
-    const expiresAt = this.getClaimDeadline(purchasedAt);
     const member = data.stripeCustomerId
       ? await this.deps.memberRepository.get({ customer_id: data.stripeCustomerId })
       : null;
@@ -612,7 +633,7 @@ export class GiftService {
         stripeCheckoutSessionId: data.stripeCheckoutSessionId,
         stripePaymentIntentId: data.stripePaymentIntentId,
         purchasedAt,
-        expiresAt,
+        expiryTimeZone: this.siteZone(),
       });
       if (!purchased) {
         return null;
@@ -626,9 +647,9 @@ export class GiftService {
       return false;
     }
 
-    let recipientEmail: string | null = null;
+    let delivery: GiftDeliveryDispatchResult | null = null;
     try {
-      recipientEmail = await this.deps.giftDeliveryService.dispatchForGift(data.giftId);
+      delivery = await this.deps.giftDeliveryService.dispatchForGift({ giftId: data.giftId });
     } catch (err) {
       logging.error(
         {
@@ -639,7 +660,7 @@ export class GiftService {
         'Failed to dispatch purchased gift delivery',
       );
     }
-    await this.sendPurchaseNotifications(completed, member, recipientEmail);
+    await this.sendPurchaseNotifications(completed, member, delivery);
     return true;
   }
 
@@ -655,7 +676,6 @@ export class GiftService {
     }
     const data = parsed.data;
     const purchasedAt = new Date();
-    const expiresAt = this.getClaimDeadline(purchasedAt);
 
     if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
       return false;
@@ -677,7 +697,7 @@ export class GiftService {
       stripeCheckoutSessionId: data.stripeCheckoutSessionId,
       stripePaymentIntentId: data.stripePaymentIntentId,
       purchasedAt,
-      expiresAt,
+      expiryTimeZone: this.siteZone(),
     });
 
     await this.deps.giftRepository.create(gift);
@@ -688,7 +708,7 @@ export class GiftService {
   private async sendPurchaseNotifications(
     gift: Gift,
     member: MemberModel | null,
-    recipientEmail: string | null,
+    delivery: GiftDeliveryDispatchResult | null,
   ): Promise<void> {
     let tier: Tier | null;
     try {
@@ -745,7 +765,8 @@ export class GiftService {
         cadence: gift.cadence,
         duration: gift.duration,
         expiresAt: gift.expiresAt!,
-        recipientEmail,
+        scheduledAt: delivery?.scheduledAt ?? null,
+        recipientEmail: delivery?.recipientEmail ?? null,
       });
     } catch (err) {
       logging.error('Failed to send gift purchase confirmation email', err);
@@ -829,7 +850,7 @@ export class GiftService {
         transacting,
         newMember: input.newMember,
       });
-      const redemption = await this.serializeRedemption(redeemed);
+      const redemption = await this.serializeRedemption(redeemed, { transacting });
 
       return { redeemed, member, redemption };
     };
@@ -859,7 +880,12 @@ export class GiftService {
         logging.error('Failed to notify staff of gift redemption', err);
       }
 
-      await this.deps.giftReminderScheduler.scheduleFor(redeemed);
+      const reminderDueAt = redeemed.reminderDueAt();
+      if (reminderDueAt) {
+        await this.deps.giftReminderScheduler.scheduleAt(reminderDueAt.getTime(), {
+          giftToken: redeemed.token,
+        });
+      }
     };
 
     if (input.transacting) {
@@ -1293,6 +1319,89 @@ export class GiftService {
     return { deletedCount };
   }
 
+  async cleanup(): Promise<void> {
+    const startedAt = Date.now();
+    // null, not 0: a phase that throws is caught and skipped, and a zero count
+    // would be indistinguishable from that phase having had nothing to do.
+    let deletedCheckoutCount: number | null = null;
+    let consumedGiftCount: number | null = null;
+    let updatedMemberCount: number | null = null;
+    let expiredGiftCount: number | null = null;
+    let deliverySentCount: number | null = null;
+    let deliverySkippedCount: number | null = null;
+    let deliveryFailedCount: number | null = null;
+
+    const checkoutStart = Date.now();
+    try {
+      const { deletedCount } = await this.processAbandonedCheckouts();
+      deletedCheckoutCount = deletedCount;
+
+      logging.info(
+        `[Background Job] clean-gifts processed abandoned checkouts: deleted ${deletedCount} in ${Date.now() - checkoutStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing abandoned checkouts');
+    }
+
+    const consumedStart = Date.now();
+    try {
+      const { consumedCount, updatedMemberCount: memberCount } = await this.processConsumed();
+      consumedGiftCount = consumedCount;
+      updatedMemberCount = memberCount;
+
+      logging.info(
+        `[Background Job] clean-gifts processed consumed gifts: consumed ${consumedCount}, updated ${memberCount} members in ${Date.now() - consumedStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing consumed gifts');
+    }
+
+    const expiredStart = Date.now();
+    try {
+      const { expiredCount } = await this.processExpired();
+      expiredGiftCount = expiredCount;
+
+      logging.info(
+        `[Background Job] clean-gifts processed expired gifts: expired ${expiredCount} in ${Date.now() - expiredStart}ms`,
+      );
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing expired gifts');
+    }
+
+    try {
+      const { sentCount, skippedCount, failedCount } =
+        await this.deps.giftDeliveryService.recoverPending();
+      deliverySentCount = sentCount;
+      deliverySkippedCount = skippedCount;
+      deliveryFailedCount = failedCount;
+
+      if (sentCount + skippedCount + failedCount > 0) {
+        logging.info(
+          `[Background Job] clean-gifts processed pending gift deliveries: ${sentCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
+        );
+      }
+    } catch (err) {
+      logging.error(err, '[Background Job] clean-gifts error processing pending gift deliveries');
+    }
+
+    logging.info(
+      {
+        system: {
+          event: 'clean_gifts.completed',
+          deleted_checkout_count: deletedCheckoutCount,
+          consumed_count: consumedGiftCount,
+          updated_member_count: updatedMemberCount,
+          expired_count: expiredGiftCount,
+          delivery_sent_count: deliverySentCount,
+          delivery_skipped_count: deliverySkippedCount,
+          delivery_failed_count: deliveryFailedCount,
+          duration_ms: Date.now() - startedAt,
+        },
+      },
+      '[Background Job] clean-gifts finished its cleanup phases',
+    );
+  }
+
   async processReminders(): Promise<{
     remindedCount: number;
     skippedCount: number;
@@ -1415,7 +1524,14 @@ export class GiftService {
     return true;
   }
 
-  private async serializeRedemption(gift: Gift): Promise<GiftRedemption> {
+  private async serializeRedemption(
+    gift: Gift,
+    options: RepositoryTransactionOptions = {},
+  ): Promise<GiftRedemption> {
+    const recipientEmail = await this.deps.giftDeliveryService.getRecipientEmailForGift(
+      gift.token,
+      options,
+    );
     const tier = await this.deps.tiersService.api.read(gift.tierId);
 
     if (!tier) {
@@ -1434,6 +1550,7 @@ export class GiftService {
       amount: gift.amount,
       buyer_name: gift.buyerName,
       recipient_name: gift.recipientName,
+      recipient_email: recipientEmail,
       message: gift.personalMessage,
       expires_at: gift.expiresAt!,
       consumes_at: gift.consumesAt,

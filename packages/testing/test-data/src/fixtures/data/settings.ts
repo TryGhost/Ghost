@@ -72,6 +72,8 @@ export const settingsDefaults: Record<string, SettingValue> = {
   portal_button_signup_text: 'Subscribe',
   portal_signup_terms_html: null,
   portal_signup_checkbox_required: false,
+  portal_signup_gift_promotion: true,
+  portal_account_gift_promotion: true,
   mailgun_domain: null,
   mailgun_api_key: null,
   mailgun_base_url: null,

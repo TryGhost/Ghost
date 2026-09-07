@@ -79,7 +79,12 @@ const userPreferencesQueryKey = (user: User | undefined) =>
 
 function parsePreferences(user: User): Preferences {
   const raw = user.accessibility || '{}';
-  const parsedRaw: unknown = JSON.parse(raw);
+  let parsedRaw: unknown;
+  try {
+    parsedRaw = JSON.parse(raw);
+  } catch {
+    parsedRaw = {};
+  }
   const parsed: Record<string, unknown> =
     parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
       ? (parsedRaw as Record<string, unknown>)

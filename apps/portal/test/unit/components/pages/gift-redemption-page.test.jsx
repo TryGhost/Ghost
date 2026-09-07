@@ -1,6 +1,5 @@
 import { fireEvent, render, waitFor } from '../../../utils/test-utils';
 import GiftRedemptionPage from '../../../../src/components/pages/gift-redemption-page';
-import BetaGiftRedemptionPage from '../../../../src/components/pages/beta-gift-redemption-page';
 import { member, testSite } from '../../../../src/utils/fixtures';
 
 const gift = {
@@ -32,8 +31,7 @@ const renderGiftRedemptionPage = (Page, overrideContext = {}) => {
 };
 
 describe.each([
-  { name: 'GiftRedemptionPage', Page: GiftRedemptionPage, buttonLabel: 'Redeem your membership' },
-  { name: 'BetaGiftRedemptionPage', Page: BetaGiftRedemptionPage, buttonLabel: 'Redeem your gift' },
+  { name: 'GiftRedemptionPage', Page: GiftRedemptionPage, buttonLabel: 'Redeem your gift' },
 ])('$name', ({ Page, buttonLabel }) => {
   beforeEach(() => {
     window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
@@ -122,18 +120,46 @@ describe.each([
   });
 });
 
-describe('BetaGiftRedemptionPage', () => {
-  test('presents the buyer details and prefills the intended recipient name', () => {
+describe('GiftRedemptionPage details', () => {
+  test('shows the intended recipient name when a different member is logged in', () => {
+    const personalizedGift = {
+      ...gift,
+      buyer_name: 'Morgan',
+      recipient_name: 'Taylor',
+    };
+    const { getByText, queryByText } = renderGiftRedemptionPage(GiftRedemptionPage, {
+      member: member.free,
+      pageData: {
+        token: 'gift-token-123',
+        gift: personalizedGift,
+      },
+    });
+
+    expect(getByText('Taylor')).toBeInTheDocument();
+    expect(queryByText(member.free.name)).not.toBeInTheDocument();
+  });
+
+  test('shows the anonymous introduction for a gift without a buyer name', () => {
+    const { container } = renderGiftRedemptionPage(GiftRedemptionPage);
+
+    const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
+    expect(subtitle).toHaveTextContent(
+      "You've been gifted a 1-year Premium membership to The Blueprint",
+    );
+    expect(subtitle).toContainHTML('<strong>1-year</strong>');
+  });
+
+  test('presents the buyer details and prefills the intended recipient details', async () => {
     const personalizedGift = {
       ...gift,
       buyer_name: 'Jamie',
       recipient_name: 'Taylor',
+      recipient_email: 'taylor@example.com',
       message: 'Enjoy this!',
       expires_at: '2030-01-01T00:00:00.000Z',
     };
-    const { container, getByLabelText, getByTestId, getByText } = renderGiftRedemptionPage(
-      BetaGiftRedemptionPage,
-      {
+    const { container, getByLabelText, getByRole, getByTestId, getByText, mockDoActionFn } =
+      renderGiftRedemptionPage(GiftRedemptionPage, {
         site: {
           ...testSite,
           url: 'https://example.com/',
@@ -144,17 +170,29 @@ describe('BetaGiftRedemptionPage', () => {
           token: 'gift-token-123',
           gift: personalizedGift,
         },
-      },
-    );
+      });
 
     expect(getByLabelText(/your name/i)).toHaveValue('Taylor');
+    expect(getByLabelText(/your email/i)).toHaveValue('taylor@example.com');
     expect(getByLabelText(/your email/i)).toHaveFocus();
-    expect(container.querySelector('.gh-portal-gift-checkout-subtitle')).toHaveTextContent(
+    const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
+    expect(subtitle).toHaveTextContent(
       'Jamie has gifted you a 1-year Premium membership to The Blueprint',
     );
+    expect(subtitle).toContainHTML('<strong>1-year</strong>');
     expect(getByTestId('gift-message')).toHaveTextContent('Enjoy this!');
     expect(getByTestId('gift-message')).toHaveTextContent('Jamie');
     expect(getByText(/This gift can only be redeemed once and expires on/i)).toBeInTheDocument();
+
+    fireEvent.click(getByRole('button', { name: 'Redeem your gift' }));
+
+    await waitFor(() => {
+      expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
+        email: 'taylor@example.com',
+        name: 'Taylor',
+        giftToken: 'gift-token-123',
+      });
+    });
   });
 
   test('presents the claim deadline in the publication locale and timezone', () => {
@@ -162,7 +200,7 @@ describe('BetaGiftRedemptionPage', () => {
       ...gift,
       expires_at: '2030-01-01T01:00:00.000Z',
     };
-    const { getByText } = renderGiftRedemptionPage(BetaGiftRedemptionPage, {
+    const { getByText } = renderGiftRedemptionPage(GiftRedemptionPage, {
       site: {
         ...testSite,
         locale: 'en-GB',

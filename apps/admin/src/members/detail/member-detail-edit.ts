@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import validator from 'validator';
 import {
   MEMBER_CUSTOM_FIELD_TYPES,
   memberCustomFieldParts,
@@ -9,6 +10,7 @@ import type {
   MemberCustomField,
   MemberCustomFieldAddress,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { FieldIdentityString } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 // The parts of the address composite, in the order its value schema declares them, each
 // with the label every other surface shows it under.
@@ -46,9 +48,6 @@ interface MemberFieldSource {
   newsletters?: Array<{ id: string }> | null;
 }
 
-// Same shape as the import-members validator already used in this app.
-const MEMBER_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 // Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
 // allows 2000). The counter may go negative, matching the Ember behaviour.
 export const NOTE_MAX_LENGTH = 500;
@@ -73,18 +72,17 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
   };
 }
 
-/**
- * The custom field values from a member's `custom_fields` payload, normalized:
- * strings trimmed, address sub-fields trimmed with empty ones dropped, and
- * empty values ('' / {} / null) collapsing to an absent key — so "no value"
- * reads identically however it's represented. Feeds the read-only value rows
- * and seeds the per-field editor.
- */
 export function getEditableCustomFieldValues(
-  customFields: Record<string, unknown> | null | undefined,
-): Record<string, EditableCustomFieldValue> {
-  const values: Record<string, EditableCustomFieldValue> = {};
-  for (const [key, value] of Object.entries(customFields ?? {})) {
+  metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
+): Record<FieldIdentityString, EditableCustomFieldValue> {
+  const flattened: Record<FieldIdentityString, unknown> = {};
+  for (const [namespace, records] of Object.entries(metafields ?? {})) {
+    for (const [fieldKey, fieldValue] of Object.entries(records ?? {})) {
+      flattened[`${namespace}.${fieldKey}`] = fieldValue;
+    }
+  }
+  const values: Record<FieldIdentityString, EditableCustomFieldValue> = {};
+  for (const [key, value] of Object.entries(flattened)) {
     if (typeof value === 'string' && value.trim() !== '') {
       values[key] = value.trim();
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -143,9 +141,19 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
   return [...subscribedIds, newsletterId].sort();
 }
 
-/** Client-side email sanity check for the save gate; the server remains authoritative. */
-export function isValidMemberEmail(email: string): boolean {
-  return MEMBER_EMAIL_REGEX.test(email.trim());
+/**
+ * Client-side email sanity check for the save gate; the server remains
+ * authoritative. Mirrors the server's update semantics: an email is validated
+ * only when it differs from the stored one, because the server deliberately
+ * grandfathers stored emails that predate stricter validation
+ * (member-repository.js validates the email only when it changed).
+ */
+export function isValidMemberEmail(email: string, storedEmail?: string): boolean {
+  const trimmed = email.trim();
+  if (storedEmail !== undefined && trimmed === storedEmail.trim()) {
+    return true;
+  }
+  return validator.isEmail(trimmed);
 }
 
 /**
@@ -155,14 +163,18 @@ export function isValidMemberEmail(email: string): boolean {
  * validator runs on save-attempt for the same reason
  * (`ghost/admin/app/validators/member.js:15`).
  */
-export function getEmailErrorMessage(email: string, touched: boolean): string | null {
+export function getEmailErrorMessage(
+  email: string,
+  touched: boolean,
+  storedEmail?: string,
+): string | null {
   if (!touched) {
     return null;
   }
   if (email.trim() === '') {
     return 'Email is required.';
   }
-  if (!isValidMemberEmail(email)) {
+  if (!isValidMemberEmail(email, storedEmail)) {
     return 'Invalid email.';
   }
   return null;
@@ -207,13 +219,6 @@ export function getMemberSuppressionInfo(
 }
 
 /**
- * Whether the newsletter section of the member form should render, gated on the
- * `editor_default_email_recipients` setting the same way Ember does: only
- * `'disabled'` hides it. Treating `undefined`/`null` as "show" biases for the
- * common case (sites with emails enabled see no flash) at the cost of a possible
- * flash-out on disabled sites when the setting finishes loading.
- */
-/**
  * Newsletters that Ember auto-subscribes a new member to on save. Ports
  * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
@@ -234,12 +239,6 @@ export function getDefaultNewsletterIdsForNewMember(
   return newsletters
     .filter((nl) => nl.subscribe_on_signup === true && nl.visibility === 'members')
     .map((nl) => nl.id);
-}
-
-export function getMemberNewslettersUiEnabled(
-  editorDefaultEmailRecipients: string | null | undefined,
-): boolean {
-  return editorDefaultEmailRecipients !== 'disabled';
 }
 
 /**
@@ -300,10 +299,13 @@ function customFieldValueToSave(
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  fieldKey: string,
+  field: { namespace: string; key: string },
   value: EditableCustomFieldValue,
 ): EditMemberData {
-  return { id: memberId, custom_fields: { [fieldKey]: customFieldValueToSave(value) ?? null } };
+  return {
+    id: memberId,
+    metafields: { [field.namespace]: { [field.key]: customFieldValueToSave(value) ?? null } },
+  };
 }
 
 /**
@@ -347,12 +349,11 @@ export function getCustomFieldValidationErrors(
 }
 
 /**
- * Field-level errors from a failed member save. The values service names the
- * offending field in `property` as `custom_fields.<key>[.<subfield>]` with the
- * reason in `context` (see members-custom-fields/values-service.ts), so the
- * message can be rendered under the exact input it belongs to. Returns
- * undefined when the failure isn't custom-fields shaped, letting callers fall
- * back to the generic toast.
+ * Field-level errors from a failed member save. The server reports one error per offending
+ * field: `property` holds the field's address — container, namespace, key, and for a
+ * multi-part value the part — and `context` holds the reason. Splitting the address is
+ * what lets the message render under the input it belongs to. Returns undefined for any
+ * other failure shape so callers can fall back to a generic toast.
  */
 export function parseCustomFieldServerErrors(error: unknown): Record<string, string> | undefined {
   const data = (
@@ -368,8 +369,8 @@ export function parseCustomFieldServerErrors(error: unknown): Record<string, str
   )?.data;
   const errors: Record<string, string> = {};
   for (const apiError of data?.errors ?? []) {
-    if (apiError.property?.startsWith('custom_fields.')) {
-      errors[apiError.property.slice('custom_fields.'.length)] =
+    if (apiError.property?.startsWith('metafields.')) {
+      errors[apiError.property.slice('metafields.'.length)] =
         apiError.context || apiError.message || 'Invalid value.';
     }
   }

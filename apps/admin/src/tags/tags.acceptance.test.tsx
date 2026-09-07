@@ -76,6 +76,6 @@ describe('Tags list', () => {
     await expect.poll(() => tagsApi.lastRequest?.page).toBe(2);
     await expect.element(tagsScreen.link('Tag 120')).toBeVisible();
     // Virtualized: only a window of rows is in the DOM at once.
-    expect(tagsScreen.tagRows().all().length).toBeLessThan(120);
+    await expect.poll(() => tagsScreen.tagRows().all().length).toBeLessThan(120);
   });
 });

@@ -7,11 +7,38 @@ import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import { getAvailableProducts } from '../../utils/helpers';
 import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
 import { getGiftPrice } from '../../utils/gift-subscriptions';
+import { getDateString, parseDateValue } from '../../utils/date-time';
 import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
-import { formatGiftValue } from './gift-page';
+import { formatGiftValue } from '../../utils/format-gift-value';
 
 export const GiftSuccessStyle = `
+.gh-portal-gift-success-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 20px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brandcolor) 12%, var(--white));
+    color: var(--brandcolor);
+}
+
+.gh-portal-gift-success-badge svg {
+    width: 26px;
+    height: 26px;
+}
+
+.gh-portal-gift-success-share-label {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--grey6);
+}
+
 .gh-portal-gift-success-link {
     display: flex;
     align-items: center;
@@ -53,6 +80,17 @@ export const GiftSuccessStyle = `
 
 .gh-portal-gift-success-copy:hover {
     opacity: 0.9;
+}
+
+/* Express the "green = done" cue at the moment of success only — the resting
+   button stays on brand. */
+.gh-portal-gift-success-copy.is-copied {
+    background: var(--green);
+}
+
+.gh-portal-gift-success-copy:focus-visible {
+    outline: 2px solid var(--grey0);
+    outline-offset: 2px;
 }
 
 .gh-portal-gift-success-copy svg {
@@ -107,7 +145,10 @@ const GiftSuccessPage = () => {
   const token = pageData?.token;
   const tierId = pageData?.tierId;
   const cadence = pageData?.cadence;
-  const duration = pageData?.duration;
+  const duration = pageData?.duration || 1;
+  const deliveryMethod = pageData?.deliveryMethod;
+  const deliveryDate = pageData?.deliveryDate;
+  const scheduledAt = pageData?.scheduledAt;
   const siteUrl = site?.url || '';
   const siteIcon = site?.icon;
   const siteTitle = site?.title || '';
@@ -122,28 +163,52 @@ const GiftSuccessPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const isEmailed = deliveryMethod === 'email';
+
+  // A delivery date without a future gift_scheduled_at means the server
+  // already sent the gift.
+  const isStillScheduled = isEmailed && deliveryDate && scheduledAt && scheduledAt > Date.now();
+
+  let titleText = t('Your gift is ready');
+  let subtitleText = t("Send the link below to share it with whoever you'd like.");
+  if (isStillScheduled) {
+    const formattedDate = getDateString(parseDateValue(deliveryDate));
+    titleText = t('Your gift is scheduled');
+    subtitleText = t(
+      "We'll email it to the recipient on {deliveryDate}. A copy is in your inbox too.",
+      { deliveryDate: formattedDate },
+    );
+  } else if (isEmailed) {
+    titleText = t('Your gift is on its way');
+    subtitleText = t("We'll email it to the recipient. A copy will be in your inbox too.");
+  }
+
   return (
     <>
-      <CloseButton />
       <div className="gh-portal-content giftSuccess">
+        <CloseButton />
         <div className="gh-portal-gift-checkout">
           <div className="gh-portal-gift-checkout-left">
             <div className="gh-portal-gift-checkout-bg" aria-hidden="true" />
             <div className="gh-portal-gift-checkout-inner">
               <header className="gh-portal-gift-checkout-header">
-                <h1 className="gh-portal-main-title">{t('Your gift is ready')}</h1>
-                <p className="gh-portal-gift-checkout-subtitle">
-                  {t("Send the link below to share it with whoever you'd like.")}
-                </p>
+                <span className="gh-portal-gift-success-badge" aria-hidden="true">
+                  <CheckIcon />
+                </span>
+                <h1 className="gh-portal-main-title">{titleText}</h1>
+                <p className="gh-portal-gift-checkout-subtitle">{subtitleText}</p>
               </header>
 
               <div className="gh-portal-gift-checkout-section">
+                {isEmailed && (
+                  <p className="gh-portal-gift-success-share-label">{t('Share it yourself')}</p>
+                )}
                 <div className="gh-portal-gift-success-link">
                   <span className="gh-portal-gift-success-link-url" data-testid="gift-redeem-link">
                     {redeemUrl}
                   </span>
                   <button
-                    className="gh-portal-gift-success-copy"
+                    className={'gh-portal-gift-success-copy' + (copied ? ' is-copied' : '')}
                     onClick={handleCopy}
                     type="button"
                   >
@@ -151,11 +216,29 @@ const GiftSuccessPage = () => {
                     {copied ? t('Copied') : t('Copy')}
                   </button>
                 </div>
+                <span
+                  aria-live="polite"
+                  style={{
+                    position: 'absolute',
+                    width: '1px',
+                    height: '1px',
+                    padding: 0,
+                    margin: '-1px',
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                    border: 0,
+                  }}
+                >
+                  {copied ? t('Gift link copied to clipboard') : ''}
+                </span>
               </div>
 
-              <p className="gh-portal-gift-success-footer">
-                {t("Not ready to share? We've also emailed a copy to your inbox.")}
-              </p>
+              {!isEmailed && (
+                <p className="gh-portal-gift-success-footer">
+                  {t("Not ready to share? We've also emailed a copy to your inbox.")}
+                </p>
+              )}
             </div>
           </div>
 
@@ -167,8 +250,8 @@ const GiftSuccessPage = () => {
                   duration={
                     tier && cadence
                       ? getGiftDurationLabel({
-                          cadence: duration ? 'month' : cadence,
-                          duration: duration || 1,
+                          cadence: pageData?.duration ? 'month' : cadence,
+                          duration,
                         })
                       : null
                   }
@@ -176,7 +259,7 @@ const GiftSuccessPage = () => {
                   giftValue={
                     tier && cadence
                       ? formatGiftValue(
-                          duration
+                          pageData?.duration
                             ? getGiftPrice(tier, duration)
                             : cadence === 'month'
                               ? tier.monthlyPrice

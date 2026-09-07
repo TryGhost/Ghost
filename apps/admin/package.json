@@ -31,12 +31,14 @@
     "@tanstack/react-virtual": "catalog:",
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/i18n": "workspace:*",
+    "@tryghost/kg-clean-basic-html": "workspace:*",
     "@tryghost/kg-unsplash-selector": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
-    "@tryghost/limit-service": "catalog:",
+    "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
@@ -50,6 +52,7 @@
     "i18n-iso-countries": "7.14.0",
     "jszip": "3.10.1",
     "lucide-react": "catalog:",
+    "microdiff": "catalog:",
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
@@ -66,6 +69,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -164,6 +168,8 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
+              "@tryghost/checkout",
+              "@tryghost/metafield-types",
               "@tryghost/shade"
             ],
             "target": "build"

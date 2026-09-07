@@ -1,4 +1,4 @@
-import FeatureImagePlaceholder from '@/analytics/views/stats/components/feature-image-placeholder';
+import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import React from 'react';
 import {
   Card,
@@ -21,7 +21,15 @@ import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useAppContext, useNavigate } from '@tryghost/admin-x-framework';
+import { useIsEmberOwnedRoute } from '@/routes';
+import { useNavigate } from '@tryghost/admin-x-framework';
+import {
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 
@@ -74,19 +82,20 @@ interface TopPostsProps {
 
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
   const navigate = useNavigate();
+  // Whether `/editor/*` needs a hash navigation depends on the `editorReact`
+  // flag; ownership is the same for every post, so one probe path suffices.
+  const editorIsEmberOwned = useIsEmberOwnedRoute('/editor');
   const { range } = useAnalytics();
   const { settings } = useAnalyticsData();
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   const siteTimezone = getSiteTimezone(settings);
 
   // Show open rate if newsletters are enabled and email tracking is enabled
-  const {
-    webAnalytics: showWebAnalytics = false,
-    membersTrackSources = false,
-    emailTrackClicks: showClickTracking = false,
-    emailTrackOpens: showOpenTracking = false,
-  } = appSettings?.analytics || {};
+  const showWebAnalytics = useWebAnalyticsEnabled();
+  const membersTrackSources = useMembersTrackSources() ?? false;
+  const showClickTracking = useEmailTrackClicks() ?? false;
+  const showOpenTracking = useEmailTrackOpens() ?? false;
 
   const metricClass =
     'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
@@ -121,8 +130,9 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           membersTrackSources,
                         },
                       });
-                      // `/editor/*` is still Ember-owned (EMBER_ROUTES) and needs a hash navigation.
-                      navigate(destination, { crossApp: destination.startsWith('/editor/') });
+                      navigate(destination, {
+                        crossApp: destination.startsWith('/editor/') && editorIsEmberOwned,
+                      });
                     }}
                   >
                     {post.feature_image ? (
@@ -307,7 +317,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                                 post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0',
                             },
                             // Only show paid members if paid members are enabled
-                            ...(appSettings?.paidMembersEnabled
+                            ...(paidMembersEnabled
                               ? [
                                   {
                                     icon: (

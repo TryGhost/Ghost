@@ -9,7 +9,6 @@ import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 import { isIos } from '../../utils/is-ios';
 import { t } from '../../utils/i18n';
 import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
-import { formatGiftValue } from './gift-page';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -360,9 +359,8 @@ export default class MagicLinkPage extends React.Component {
                   <GiftCard
                     duration={getGiftDurationLabel(gift)}
                     tierName={gift.tier?.name}
-                    {...(site?.labs?.giftSubCustomization
-                      ? { toName: submittedName || null, fromName: gift.buyer_name || null }
-                      : { name: submittedName || null, giftValue: formatGiftValue(gift) })}
+                    toName={submittedName || null}
+                    fromName={gift.buyer_name || null}
                     siteIcon={siteIcon}
                     siteTitle={siteTitle}
                   />

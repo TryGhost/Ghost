@@ -24,7 +24,7 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { NotFound } from '@/not-found';
+import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
   generateSlugFromName,
@@ -34,7 +34,7 @@ import {
   validateTagDraft,
 } from './tag-detail-edit';
 import { dequal } from 'dequal';
-import { getTagBySlug, useAddTag, useEditTag } from '@tryghost/admin-x-framework/api/tags';
+import { useTagBySlug, useAddTag, useEditTag } from '@tryghost/admin-x-framework/api/tags';
 import { toast } from 'sonner';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
@@ -58,7 +58,7 @@ const TagDetail: React.FC = () => {
 
   // `include=count.posts` mirrors the Ember route so the delete modal can
   // report how many posts the tag will be removed from.
-  const { data, isLoading, error, refetch } = getTagBySlug(tagSlug, {
+  const { data, isLoading, error, refetch } = useTagBySlug(tagSlug, {
     enabled: !!tagSlug && !isCreating,
     searchParams: { include: 'count.posts' },
     defaultErrorHandler: false,

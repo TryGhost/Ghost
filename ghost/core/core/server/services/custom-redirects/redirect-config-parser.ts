@@ -8,7 +8,7 @@ const messages = {
   jsonInvalid: 'JSON input must be an array of redirect objects.',
   yamlParse: 'Could not parse YAML: {context}.',
   yamlInvalid: 'YAML input is invalid. Check the contents of your YAML file.',
-  redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
+  redirectsHelp: 'https://docs.ghost.org/themes/routing/#redirects',
 };
 
 export const parseJson = (content: string): RedirectConfig[] => {
@@ -98,7 +98,7 @@ export const parseYaml = (content: string): RedirectConfig[] => {
 // Round-trips through parseYaml to []. Avoids a "download → save →
 // re-upload throws on empty body" footgun on fresh installs.
 const EMPTY_DOWNLOAD_TEMPLATE =
-  '# See https://ghost.org/docs/themes/routing/#redirects\n301: {}\n302: {}\n';
+  '# See https://docs.ghost.org/themes/routing/#redirects\n301: {}\n302: {}\n';
 
 export const serializeToYaml = (redirects: RedirectConfig[]): string => {
   const permanent: RedirectConfig[] = [];

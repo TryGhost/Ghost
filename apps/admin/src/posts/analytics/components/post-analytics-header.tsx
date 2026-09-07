@@ -1,5 +1,6 @@
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
+import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
@@ -35,22 +36,25 @@ import {
   formatNumber,
 } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useIsEmberOwnedRoute } from '@/routes';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { giftAccessLabel } from '@/posts/analytics/utils/gift-link';
 import {
-  hasBeenEmailed,
   isEmailOnly,
-  isPublishedAndEmailed,
   isPublishedOnly,
   trackEvent,
   useActiveVisitors,
   useNavigate,
 } from '@tryghost/admin-x-framework';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import {
+  useMembersTrackSources,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -59,7 +63,8 @@ interface PostAnalyticsHeaderProps {
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
   const navigate = useNavigate();
-  const { appSettings } = useAppContext();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const membersTrackSources = useMembersTrackSources();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -67,9 +72,17 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
   const { settings, site, statsConfig } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
+  const { hasNewsletterAnalytics, status: emailSendingStatus } = useEmailSendingStatusContext();
   const canManageGiftLink = useCanManageGiftLink(post);
+  const editorPath = `/editor/post/${postId}`;
+  // Whether the editor needs a hash navigation depends on the `editorReact` flag.
+  const editorIsEmberOwned = useIsEmberOwnedRoute(editorPath);
 
   const siteTimezone = getSiteTimezone(settings);
+  const isPublishedPost = post?.status === 'published';
+  const hasFailedEmail = emailSendingStatus?.sending.status === 'failed';
+  const showPublishedOnSite = isPublishedPost && (!hasNewsletterAnalytics || hasFailedEmail);
+  const showPublishedAndSent = isPublishedPost && hasNewsletterAnalytics && !hasFailedEmail;
 
   // Track once per open — canManageGiftLink can flip while the modal is open
   // (current-user query resolving), which must not re-fire the event.
@@ -93,7 +106,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const { activeVisitors, isLoading: isActiveVisitorsLoading } = useActiveVisitors({
     postUuid: post?.uuid,
     statsConfig,
-    enabled: appSettings?.analytics?.webAnalytics ?? false,
+    enabled: webAnalyticsEnabled,
   });
 
   // Determine which tabs to show based on post type and settings
@@ -104,24 +117,23 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     const tabs = [];
 
     // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
-    const isPublishedOnlyWithoutWebAnalytics =
-      isPublishedOnly(post) && !appSettings?.analytics.webAnalytics;
+    const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post) && !webAnalyticsEnabled;
     if (!isPublishedOnlyWithoutWebAnalytics) {
       tabs.push('Overview');
-      if (!post.email_only && appSettings?.analytics.webAnalytics) {
+      if (!post.email_only && webAnalyticsEnabled) {
         tabs.push('Web');
       }
     }
-    if (hasBeenEmailed(post)) {
+    if (hasNewsletterAnalytics) {
       tabs.push('Newsletter');
     }
     // Only show Growth tab if member source tracking is enabled
-    if (appSettings?.analytics.membersTrackSources) {
+    if (membersTrackSources) {
       tabs.push('Growth');
     }
 
     return tabs;
-  }, [post, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
+  }, [post, webAnalyticsEnabled, membersTrackSources, hasNewsletterAnalytics]);
 
   const handleDeletePost = () => {
     if (!post) {
@@ -148,13 +160,13 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
 
   return (
     <>
-      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background">
+      <header className="z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background admin7:-mx-(--page-gutter)">
         <div
-          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0"
+          className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0 admin7:px-(--page-gutter) admin7:pt-[28px]!"
           data-header="header"
         >
           <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col justify-between md:flex-row md:items-center">
+            <div className="flex w-full flex-col justify-between md:flex-row md:items-center admin7:flex-wrap">
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
@@ -175,7 +187,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 </BreadcrumbList>
               </Breadcrumb>
               <div className="flex w-full items-center gap-2 md:w-auto">
-                {appSettings?.analytics.webAnalytics && !post?.email_only && (
+                {webAnalyticsEnabled && !post?.email_only && (
                   <div className="mr-3 flex grow items-center gap-2 md:grow-0">
                     <div
                       className="flex items-center gap-2 text-muted-foreground"
@@ -200,7 +212,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         canShareAsGift={canManageGiftLink}
                         description=""
                         faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image}
+                        featureImageURL={post?.feature_image ?? undefined}
                         giftAccessLabel={giftAccessLabel(post?.visibility)}
                         open={isShareOpen}
                         postExcerpt={post?.excerpt || ''}
@@ -235,7 +247,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              navigate(`/editor/post/${postId}`, { crossApp: true });
+                              navigate(editorPath, { crossApp: editorIsEmberOwned });
                             }}
                           >
                             <LucideIcon.Pen />
@@ -280,15 +292,16 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                     <div className="mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground">
                       {isEmailOnly(post) &&
                         `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedOnly(post) &&
+                      {showPublishedOnSite &&
                         `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                      {isPublishedAndEmailed(post) &&
+                      {showPublishedAndSent &&
                         `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                     </div>
                   )}
                 </div>
               </div>
             )}
+            <EmailSendingStatusBanner />
           </div>
         </div>
       </header>

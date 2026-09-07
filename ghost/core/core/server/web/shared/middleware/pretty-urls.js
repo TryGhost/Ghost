@@ -10,6 +10,7 @@
 const path = require('path');
 const slashes = require('connect-slashes');
 const config = require('../../../../shared/config');
+const { redirectAmpUrls } = require('./redirect-amp-urls');
 
 const SKIP_SLASH_EXTENSIONS = new Set(['.md', '.txt']);
 
@@ -29,8 +30,4 @@ function skipSlashesForLlmsExtensions(req, res, next) {
   return ensureTrailingSlash(req, res, next);
 }
 
-module.exports = [
-  skipSlashesForLlmsExtensions,
-  require('./redirect-amp-urls'),
-  require('./uncapitalise'),
-];
+module.exports = [skipSlashesForLlmsExtensions, redirectAmpUrls, require('./uncapitalise')];

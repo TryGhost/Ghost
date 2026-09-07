@@ -7,7 +7,7 @@ const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
-const EmailAddressParser = require('../email-address/email-address-parser');
+const emailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 const MailgunClient = require('../lib/mailgun-client');
 const config = require('../../../shared/config');
@@ -152,7 +152,7 @@ class MemberWelcomeEmailService {
       },
     });
 
-    const from = EmailAddressParser.stringify(fromAddresses.from);
+    const from = emailAddressParser.stringify(fromAddresses.from);
     const replyToSetting = newsletter.get('sender_reply_to');
     let replyTo = null;
 
@@ -173,7 +173,7 @@ class MemberWelcomeEmailService {
       });
 
       if (addresses.replyTo) {
-        replyTo = EmailAddressParser.stringify(addresses.replyTo);
+        replyTo = emailAddressParser.stringify(addresses.replyTo);
       }
     }
 
@@ -199,10 +199,10 @@ class MemberWelcomeEmailService {
   async #getEffectiveSenderOptions(automatedSender = {}) {
     const defaultOptions = await this.#getSenderOptions();
     const defaultFrom =
-      EmailAddressParser.parse(defaultOptions.from || '') ||
+      emailAddressParser.parse(defaultOptions.from || '') ||
       emailAddressService.service.defaultFromEmail;
     const defaultReplyTo = defaultOptions.replyTo
-      ? EmailAddressParser.parse(defaultOptions.replyTo)
+      ? emailAddressParser.parse(defaultOptions.replyTo)
       : undefined;
 
     const senderName = trimValue(automatedSender.senderName) || defaultFrom?.name || undefined;
@@ -218,10 +218,10 @@ class MemberWelcomeEmailService {
     });
 
     return {
-      from: EmailAddressParser.stringify(addresses.from),
+      from: emailAddressParser.stringify(addresses.from),
       ...(addresses.replyTo
         ? {
-            replyTo: EmailAddressParser.stringify(addresses.replyTo),
+            replyTo: emailAddressParser.stringify(addresses.replyTo),
           }
         : {}),
     };

@@ -5,7 +5,6 @@ import { automationsScreen } from './automations.screen';
 
 // Automations ships behind the `automations` beta labs flag.
 const AUTOMATIONS_ENABLED = { labs: { automations: true } };
-const RUN_ANALYTICS_ENABLED = { labs: { automations: true, automationRunAnalytics: true } };
 
 describe('Automations list', () => {
   it('renders the automations page', async () => {
@@ -13,7 +12,7 @@ describe('Automations list', () => {
     await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.heading()).toBeVisible();
-    await expect.element(automationsScreen.columnHeader('Last entry')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
   });
 
   it('lists the welcome automations', async () => {
@@ -39,7 +38,7 @@ describe('Automations list', () => {
         },
       }),
     ]);
-    await renderAdminApp('/automations', RUN_ANALYTICS_ENABLED);
+    await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
 
     await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
     await expect.element(automationsScreen.columnHeader('Last entry')).toBeVisible();
@@ -52,5 +51,22 @@ describe('Automations list', () => {
     await expect.element(row).toHaveTextContent('Live');
     // Stripe is disconnected in the default boot, which hides the paid welcome flow.
     await expect(automationsScreen.rows()).toHaveCount(1);
+  });
+
+  it('hides run analytics when the backend does not return stats', async () => {
+    fakeAutomations([
+      automation({
+        name: 'Free member welcome flow',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+        stats: undefined,
+      }),
+    ]);
+    await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
+
+    await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Last entry')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Total entries')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('In progress')).not.toBeInTheDocument();
   });
 });

@@ -11,6 +11,7 @@ import { CommentHeader } from './comment-header';
 import { CommentMenu } from './comment-menu';
 import { CommentMetrics } from './comment-metrics';
 import { buildThreadLink } from './thread-link';
+import { memberAvatarProps } from '@/members/api';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import {
   LoadMoreButton,
@@ -147,8 +148,7 @@ function CommentsList({
                         'mt-0.5 size-6 md:size-8',
                         item.status === 'hidden' && 'opacity-50',
                       )}
-                      email={item.member?.email}
-                      name={item.member?.name}
+                      {...memberAvatarProps(item.member)}
                       src={item.member?.avatar_image}
                     />
 

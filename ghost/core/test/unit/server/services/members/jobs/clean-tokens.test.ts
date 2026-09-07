@@ -23,12 +23,30 @@ describe('clean-tokens job', function () {
         };
       });
 
-      const deleted = await cleanTokens({ db: { knex: knex as never } });
+      const deleted = await cleanTokens({
+        db: { knex: knex as never },
+        logging: { info: sinon.stub() },
+      });
 
       assert.equal(capturedWhere[0], 'created_at');
       assert.equal(capturedWhere[1], '<');
       assert.match(capturedWhere[2]!, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
       assert.equal(deleted, 3);
+    });
+
+    it('logs a structured clean_tokens.completed event with the deleted count', async function () {
+      const knex = sinon.stub().returns({
+        where: () => ({ delete: sinon.stub().resolves(3) }),
+      });
+      const infoStub = sinon.stub();
+
+      await cleanTokens({ db: { knex: knex as never }, logging: { info: infoStub } });
+
+      const completionLog = infoStub
+        .getCalls()
+        .find((call) => call.args[0]?.system?.event === 'clean_tokens.completed');
+      assert.ok(completionLog, 'the task logs a structured clean_tokens.completed event');
+      assert.equal(completionLog!.args[0].system.deleted_count, 3);
     });
   });
 

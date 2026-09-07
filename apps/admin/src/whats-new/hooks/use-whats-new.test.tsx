@@ -3,8 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { useWhatsNew, useDismissWhatsNew } from './use-whats-new';
 import { HttpResponse, http } from 'msw';
-import { mockUser, createRawChangelogEntry } from '@test-utils/factories';
-import { waitForQuerySettled } from '@test-utils/test-helpers';
+import { changelogEntry, staffUser } from '@tryghost/test-data';
 import type {
   UpdateUserRequestBody,
   UsersResponseType,
@@ -19,6 +18,8 @@ import { DEFAULT_NAVIGATION_PREFERENCES } from '@/hooks/user-preferences';
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
 const CHANGELOG_API_URL = 'https://ghost.org/changelog.json';
+
+const mockUser = staffUser();
 
 // Types
 interface SetupQueryOptions {
@@ -45,11 +46,11 @@ const dates = {
 const fixtures = {
   entries: {
     newEntry: () =>
-      createRawChangelogEntry({
+      changelogEntry({
         published_at: dates.current,
       }),
     oldEntry: () =>
-      createRawChangelogEntry({
+      changelogEntry({
         published_at: dates.past,
       }),
   },
@@ -66,6 +67,25 @@ const fixtures = {
 };
 
 // Setup functions
+
+/**
+ * `useWhatsNew` derives its value from the user-preferences and changelog
+ * queries (plus the preference-initializing mutation), so "settled" means
+ * all cached queries have resolved and no mutation is in flight.
+ */
+async function waitForBackingQueriesSettled(queryClient: QueryClient) {
+  await waitFor(() => {
+    const queries = queryClient.getQueryCache().getAll();
+    expect(queries.length).toBeGreaterThan(0);
+    expect(
+      queries.every(
+        (query) => query.state.status !== 'pending' && query.state.fetchStatus === 'idle',
+      ),
+    ).toBe(true);
+    expect(queryClient.isMutating()).toBe(0);
+  });
+}
+
 /**
  * Setup function for testing `useWhatsNew`.
  *
@@ -74,23 +94,21 @@ const fixtures = {
  * 2. Mocking the user mutation endpoint (for initializing preferences)
  * 3. Mocking the changelog API endpoint with customizable changelog data
  * 4. Rendering the hook with the necessary React Query wrapper
- * 5. Waiting for the query to settle (success or error state)
- *
- * Note: The query is disabled until preferences exist (hasWhatsNewPreferences = true).
- * This means the query naturally stays in loading state during initialization, then
- * enables and settles once the mutation completes. Tests only need to wait once.
+ * 5. Waiting for the backing queries and mutations to settle
  *
  * This allows tests to focus on asserting behavior rather than setup logic,
  * making test code more ergonomic and readable.
  *
  * @param server - MSW server instance for mocking API endpoints
  * @param wrapper - React Query wrapper component for hook testing
+ * @param queryClient - Query client backing the wrapper, used to await settling
  * @param options - Test configuration options (accessibility, changelog data)
- * @returns The renderHook result with the query in a settled state
+ * @returns The renderHook result with the backing data loaded
  */
 async function setupQuery(
   server: SetupServer,
   wrapper: TestWrapperComponent,
+  queryClient: QueryClient,
   options: SetupQueryOptions = {},
 ) {
   const { accessibility = null, changelog = {} } = options;
@@ -136,9 +154,7 @@ async function setupQuery(
     wrapper,
   });
 
-  // Wait for query to settle. The query is disabled until preferences are initialized,
-  // so it stays in loading state during the mutation, then enables and settles naturally.
-  await waitForQuerySettled(result);
+  await waitForBackingQueriesSettled(queryClient);
 
   return result;
 }
@@ -150,20 +166,22 @@ async function setupQuery(
  * 1. Mocking the user API endpoint with customizable lastSeenDate
  * 2. Mocking the user mutation endpoint (for updating preferences)
  * 3. Mocking the changelog API endpoint with customizable posts
- * 4. Rendering both the query hook (to read state) and mutation hook (to update state)
- * 5. Waiting for the initial query to settle before tests run
+ * 4. Rendering both the `useWhatsNew` hook (to read state) and mutation hook (to update state)
+ * 5. Waiting for the backing queries to settle before tests run
  *
  * This allows mutation tests to immediately call `mutation.mutateAsync()` without worrying
  * about setup, making test code more ergonomic and focused on the mutation behavior.
  *
  * @param server - MSW server instance for mocking API endpoints
  * @param wrapper - React Query wrapper component for hook testing
+ * @param queryClient - Query client backing the wrapper, used to await settling
  * @param options - Test configuration options (lastSeenDate, posts)
- * @returns Both query and mutation hook results, ready for testing mutations
+ * @returns Both `useWhatsNew` and mutation hook results, ready for testing mutations
  */
 async function setupMutation(
   server: SetupServer,
   wrapper: TestWrapperComponent,
+  queryClient: QueryClient,
   options: SetupMutationOptions = {},
 ) {
   const { lastSeenDate = dates.past, posts = [fixtures.entries.newEntry()] } = options;
@@ -211,7 +229,7 @@ async function setupMutation(
     wrapper,
   });
 
-  await waitForQuerySettled(query.result);
+  await waitForBackingQueriesSettled(queryClient);
 
   return {
     query: query.result,
@@ -228,8 +246,8 @@ const queryTest = baseTest.extend<{
 }>({
   ...serverFixture,
   ...queryClientFixtures,
-  setup: async ({ server, wrapper }, provide) => {
-    await provide((options) => setupQuery(server, wrapper, options));
+  setup: async ({ server, wrapper, queryClient }, provide) => {
+    await provide((options) => setupQuery(server, wrapper, queryClient, options));
   },
 });
 
@@ -241,8 +259,8 @@ const mutationTest = baseTest.extend<{
 }>({
   ...serverFixture,
   ...queryClientFixtures,
-  setup: async ({ server, wrapper }, provide) => {
-    await provide((options) => setupMutation(server, wrapper, options));
+  setup: async ({ server, wrapper, queryClient }, provide) => {
+    await provide((options) => setupMutation(server, wrapper, queryClient, options));
   },
 });
 
@@ -257,7 +275,7 @@ describe('useWhatsNew', () => {
           accessibility: JSON.stringify(fixtures.preferences.withLastSeen(dates.past)),
         });
 
-        expect(result.current.data?.hasNew).toBe(true);
+        expect(result.current.hasNew).toBe(true);
       });
     });
 
@@ -327,7 +345,7 @@ describe('useWhatsNew', () => {
       ].forEach(({ scenario, input }) => {
         queryTest(scenario, async ({ setup }) => {
           const result = await setup(input);
-          expect(result.current.data?.hasNew).toBe(false);
+          expect(result.current.hasNew).toBe(false);
         });
       });
     });
@@ -338,40 +356,40 @@ describe('useDismissWhatsNew', () => {
   mutationTest('changes hasNew from true to false', async ({ setup }) => {
     const { query, mutation } = await setup();
 
-    expect(query.current.data?.hasNew).toBe(true);
+    expect(query.current.hasNew).toBe(true);
 
     await act(async () => {
       await mutation.current.mutateAsync();
     });
 
     await waitFor(() => {
-      expect(query.current.data?.hasNew).toBe(false);
+      expect(query.current.hasNew).toBe(false);
     });
   });
 
   mutationTest('works with multiple entries', async ({ setup }) => {
     const { query, mutation } = await setup({
       posts: [
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.future,
         }),
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.current,
         }),
-        createRawChangelogEntry({
+        changelogEntry({
           published_at: dates.recent,
         }),
       ],
     });
 
-    expect(query.current.data?.hasNew).toBe(true);
+    expect(query.current.hasNew).toBe(true);
 
     await act(async () => {
       await mutation.current.mutateAsync();
     });
 
     await waitFor(() => {
-      expect(query.current.data?.hasNew).toBe(false);
+      expect(query.current.hasNew).toBe(false);
     });
   });
 
@@ -380,14 +398,14 @@ describe('useDismissWhatsNew', () => {
       posts: [],
     });
 
-    expect(query.current.data?.hasNew).toBe(false);
+    expect(query.current.hasNew).toBe(false);
 
     await act(async () => {
       await mutation.current.mutateAsync();
     });
 
     await waitFor(() => {
-      expect(query.current.data?.hasNew).toBe(false);
+      expect(query.current.hasNew).toBe(false);
     });
   });
 });

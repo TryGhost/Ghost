@@ -16,7 +16,12 @@ import { Search, X } from 'lucide-react';
 import { Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
-import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  checkStripeEnabled,
+  getSettingValues,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
 import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
@@ -112,14 +117,15 @@ const Sidebar: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
   const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations, isPrivate, paidMembersEnabled, newslettersEnabled] = getSettingValues(
-    settings,
-    ['donations_enabled', 'is_private', 'paid_members_enabled', 'editor_default_email_recipients'],
-  ) as [boolean, boolean, boolean, string];
+  const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
+    'donations_enabled',
+    'is_private',
+  ]) as [boolean, boolean];
+  const paidMembersEnabled = usePaidMembersEnabled();
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
   const hasCustomFields = useFeatureFlag('membersCustomFields');
-  const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+  const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
   const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
   const visibleMembershipSearchKeywords = React.useMemo(
@@ -255,7 +261,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className="ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]" data-testid="sidebar">
-      <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]">
+      <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
         <InputGroup className="mr-8 rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0">
           <InputGroupAddon align="inline-start">
             <Search aria-hidden="true" className="size-4" />
@@ -289,7 +295,7 @@ const Sidebar: React.FC = () => {
       </div>
       <nav className={navClasses} id="settings-sidebar">
         {noResult && (
-          <div className="ml-2 text-base text-grey-700">
+          <div className="ml-2 text-base text-gray-700">
             <h2 className="mb-2 text-base font-semibold tracking-normal text-black dark:text-white">
               No result
             </h2>
@@ -565,7 +571,7 @@ const Sidebar: React.FC = () => {
 
         {!filter && (
           <a
-            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-900"
+            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
             onClick={() => {
               updateRoute('about');
             }}

@@ -28,7 +28,7 @@ import type * as AutomationsApi from '../automations/automations-api';
 import { AutomationEmailAnalyticsBatchProcessor } from './automation-email-analytics-batch-processor';
 import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-processor';
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
-import { deliveryService as giftDeliveryService } from '../gifts';
+import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
@@ -49,6 +49,7 @@ export const init = ({
   db,
   domainEvents,
   emailSuppressionList,
+  giftDeliveryService,
   membersRepository,
   models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
   metrics,
@@ -63,6 +64,7 @@ export const init = ({
   db: { knex: Knex };
   domainEvents: Pick<DomainEvents, 'subscribe'>;
   emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
+  giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
   membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
   models: {
     Email: Email;
@@ -182,11 +184,6 @@ export const init = ({
     },
     metrics,
     settingsCache,
-    createEventProcessor: () =>
-      new GiftEmailAnalyticsBatchProcessor({
-        giftDeliveryService: {
-          recordOutcome: (data) => giftDeliveryService!.recordOutcome(data),
-        },
-      }),
+    createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
 };

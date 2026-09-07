@@ -1,6 +1,10 @@
 import type { GiftCadence, GiftData, GiftDataInput, GiftStatus } from './gift-schema';
+import { DateTime } from 'luxon';
+import { GIFT_EXPIRY_DAYS, GIFT_REMINDER_LEAD_DAYS } from './constants';
 
 export type { GiftCadence, GiftStatus } from './gift-schema';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export type RedeemableCheckFailureReason =
   | 'payment-pending'
@@ -38,7 +42,7 @@ export type GiftFromPurchaseData = Pick<
   | 'stripePaymentIntentId'
 > & {
   purchasedAt: Date;
-  expiresAt: Date;
+  expiryTimeZone: string;
 };
 
 export type GiftFromCheckoutData = Pick<
@@ -54,7 +58,10 @@ export type GiftFromCheckoutData = Pick<
   | 'buyerName'
   | 'recipientName'
   | 'personalMessage'
->;
+> & {
+  expiryAnchor: Date | null;
+  expiryTimeZone: string;
+};
 
 export interface CompleteGiftPurchaseData {
   buyerEmail: string | null;
@@ -62,7 +69,14 @@ export interface CompleteGiftPurchaseData {
   stripeCheckoutSessionId: string;
   stripePaymentIntentId: string;
   purchasedAt: Date;
-  expiresAt: Date;
+  expiryTimeZone: string;
+}
+
+function calculateGiftExpiration(anchor: Date, timeZone: string): Date {
+  return DateTime.fromJSDate(anchor, { zone: timeZone })
+    .plus({ days: GIFT_EXPIRY_DAYS })
+    .endOf('day')
+    .toJSDate();
 }
 
 export class Gift implements GiftData {
@@ -119,12 +133,14 @@ export class Gift implements GiftData {
   }
 
   static fromPurchase(data: GiftFromPurchaseData) {
+    const { expiryTimeZone, ...giftData } = data;
+
     return new Gift({
-      ...data,
+      ...giftData,
       redeemerMemberId: null,
       consumesAt: null,
       checkoutStartedAt: data.purchasedAt,
-      expiresAt: data.expiresAt,
+      expiresAt: calculateGiftExpiration(data.purchasedAt, expiryTimeZone),
       status: 'purchased',
       purchasedAt: data.purchasedAt,
       redeemedAt: null,
@@ -136,14 +152,16 @@ export class Gift implements GiftData {
   }
 
   static fromCheckout(data: GiftFromCheckoutData) {
+    const { expiryAnchor, expiryTimeZone, ...giftData } = data;
+
     return new Gift({
-      ...data,
+      ...giftData,
       redeemerMemberId: null,
       stripeCheckoutSessionId: null,
       stripePaymentIntentId: null,
       checkoutStartedAt: new Date(),
       consumesAt: null,
-      expiresAt: null,
+      expiresAt: expiryAnchor ? calculateGiftExpiration(expiryAnchor, expiryTimeZone) : null,
       status: 'payment_pending',
       purchasedAt: null,
       redeemedAt: null,
@@ -159,9 +177,12 @@ export class Gift implements GiftData {
       return null;
     }
 
+    const { expiryTimeZone, ...purchaseData } = data;
+
     return new Gift({
       ...this,
-      ...data,
+      ...purchaseData,
+      expiresAt: this.expiresAt ?? calculateGiftExpiration(data.purchasedAt, expiryTimeZone),
       status: 'purchased',
     });
   }
@@ -315,6 +336,14 @@ export class Gift implements GiftData {
       status: 'expired',
       expiredAt: new Date(),
     });
+  }
+
+  /** Returns the reminder time, or null when the gift has no consumption date. */
+  reminderDueAt(): Date | null {
+    if (!this.consumesAt) {
+      return null;
+    }
+    return new Date(this.consumesAt.getTime() - GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY);
   }
 
   remind(): Gift | null {

@@ -2,12 +2,11 @@ import moment from 'moment';
 import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
+import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
 const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils').default;
-const { getSignedAdminToken } = require('../../adapters/scheduling/utils');
 const events = require('../../lib/common/events');
 
 interface PostSchedulingDeps {
@@ -152,19 +151,16 @@ export default class PostScheduling {
     const resource = `${resourceType}s`;
     const publishedAt =
       event === 'unscheduled' ? model.previous('published_at') : model.get('published_at');
-    const signedAdminToken = getSignedAdminToken({ publishedAt, apiUrl: this.#apiUrl, key });
-    const url = `${urlUtils.urlJoin(this.#apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
+    const previousPublishedAt = model.previous('published_at');
 
-    return {
-      // NOTE: The scheduler expects a unix timestamp.
+    return buildSignedJob({
+      apiUrl: this.#apiUrl,
+      path: ['schedules', resource, `${model.get('id')}/`],
       time: moment(publishedAt).valueOf(),
-      url,
+      key,
       extra: {
-        httpMethod: 'PUT',
-        oldTime: model.previous('published_at')
-          ? moment(model.previous('published_at')).valueOf()
-          : null,
+        oldTime: previousPublishedAt ? moment(previousPublishedAt).valueOf() : null,
       },
-    };
+    });
   }
 }

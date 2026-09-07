@@ -41,5 +41,14 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
     data.email_suppression = member.email_suppression;
   }
 
+  // Absent rather than empty on a site that has defined no extra fields, which is
+  // most of them, so those members' accounts read exactly as they did before this
+  // existed. Present but empty means the publisher has defined fields and this
+  // member has answered none, which a client renders as blank inputs rather than
+  // as nothing to fill in.
+  if (member.metafields) {
+    data.metafields = member.metafields;
+  }
+
   return data;
 };

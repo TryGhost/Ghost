@@ -129,6 +129,69 @@ module.exports = {
       },
       to: { path: '^@tryghost/(shade|admin-x-framework)' },
     },
+    // ============================================================
+    // apps/ — admin is an app, not a library
+    // ============================================================
+    {
+      name: 'admin-is-app',
+      comment:
+        'No sibling app or library may depend on @tryghost/admin - whether by package specifier or by relative reach-in. Admin sits at the top of the layer stack.',
+      severity: 'error',
+      from: { path: '^apps/', pathNot: '^apps/admin/' },
+      to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
+    },
+    // ============================================================
+    // apps/admin — domains cross into each other only via api.ts
+    // ============================================================
+    {
+      name: 'admin-domains-cross-via-api-only',
+      comment:
+        "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)$1($|/)',
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+        ],
+      },
+    },
+    // ============================================================
+    // apps/admin — the shell and layout import domains only via api.ts
+    // ============================================================
+    {
+      name: 'admin-shell-into-domains-via-api-only',
+      comment:
+        'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
+      severity: 'error',
+      from: {
+        path: '^apps/admin/src/(?:(?:layout|hooks|providers|ember-bridge|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        pathNot: ['\\.test\\.(ts|tsx)$'],
+      },
+      to: {
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        pathNot: [
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+        ],
+      },
+    },
+    // ============================================================
+    // apps/admin — shared/ must stay domain-free
+    // ============================================================
+    {
+      name: 'admin-shared-no-domains',
+      comment:
+        'apps/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
+      severity: 'error',
+      from: { path: '^apps/admin/src/shared/' },
+      to: {
+        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)($|/)',
+      },
+    },
   ],
   options: {
     doNotFollow: { path: 'node_modules' },

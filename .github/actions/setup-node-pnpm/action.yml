@@ -1,0 +1,57 @@
+name: Set up Node and pnpm
+description: Install pnpm and Node, then install workspace dependencies.
+
+inputs:
+  node-version:
+    description: Node version to install.
+    required: true
+  install:
+    description: Run `pnpm install`. Set to 'false' for jobs that only need the toolchain on PATH.
+    default: 'true'
+  install-args:
+    description: >-
+      Extra arguments appended to `pnpm install --frozen-lockfile`, e.g.
+      `--filter @tryghost/e2e...`, `--force`, `--prod`, `--ignore-scripts`.
+      Word-split, so quote nothing here that a shell would have to strip.
+    default: ''
+  trust-lockfile:
+    description: >-
+      Pass `--trust-lockfile`, which skips re-applying the supply-chain policies in
+      pnpm-workspace.yaml (minimumReleaseAge, trustPolicy, tarball-URL binding, tarball
+      integrity) to every lockfile entry. pnpm runs that pass on every install and
+      `--filter` does not narrow it, so it is pure duplicated work — but only once some
+      earlier job in the same run has verified this exact lockfile. Defaults to off so a
+      new workflow verifies unless it opts out.
+    default: 'false'
+  store-cache:
+    description: Let setup-node restore and save the pnpm store.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      env:
+        FORCE_COLOR: 0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.store-cache == 'true' && 'pnpm' || '' }}
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      shell: bash
+      # Args arrive as env rather than ${{ }} so nothing job-controlled
+      # (a matrix value, a job output) is interpolated into the script.
+      env:
+        INSTALL_ARGS: ${{ inputs.install-args }}
+        TRUST_LOCKFILE: ${{ inputs.trust-lockfile }}
+      run: |
+        args=(--frozen-lockfile)
+        if [ "$TRUST_LOCKFILE" = "true" ]; then
+          args+=(--trust-lockfile)
+        fi
+        # shellcheck disable=SC2206 # deliberate word split: install-args is an argument list
+        args+=($INSTALL_ARGS)
+        pnpm install "${args[@]}"

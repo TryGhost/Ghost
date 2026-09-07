@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
 
 describe('WebhookController', function () {
@@ -29,6 +30,38 @@ describe('WebhookController', function () {
       writeHead: sinon.stub(),
       end: sinon.stub(),
     };
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('logs an error for an event rendered at a different API version and still handles it', async function () {
+    sinon.stub(logging, 'error');
+    deps.webhookManager.parseWebhook.returns({
+      type: 'charge.refunded',
+      api_version: '2025-08-27.basil',
+      data: { object: { id: 'ch_1' } },
+    });
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledWithMatch(logging.error, /2025-08-27\.basil.*expects 2020-08-27/);
+    sinon.assert.calledOnce(deps.chargeRefundedEventService.handleEvent);
+    sinon.assert.calledWith(res.writeHead, 200);
+  });
+
+  it('does not log a version error for an event at the pinned API version', async function () {
+    sinon.stub(logging, 'error');
+    deps.webhookManager.parseWebhook.returns({
+      type: 'charge.refunded',
+      api_version: '2020-08-27',
+      data: { object: { id: 'ch_1' } },
+    });
+
+    await controller.handle(req, res);
+
+    sinon.assert.notCalled(logging.error);
   });
 
   it('should return 400 if request body or signature is missing', async function () {

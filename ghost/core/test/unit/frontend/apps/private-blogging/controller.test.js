@@ -189,6 +189,22 @@ describe('private.hbs template translation', function () {
         );
       });
 
+      it('renders the Ghost version in the generator meta tag', function () {
+        const context = {
+          safeVersion: '6.60',
+          site: {
+            title: 'Test',
+            url: 'http://test.local',
+            locale: 'en',
+            admin_url: 'http://test.local/ghost/',
+          },
+        };
+        const html = renderPrivateTemplate(context);
+
+        assertExists(html);
+        assert(html.includes('<meta name="generator" content="Ghost 6.60">'));
+      });
+
       it('renders the site description below the site title when present', function () {
         const context = {
           site: {
@@ -238,6 +254,32 @@ describe('private.hbs template translation', function () {
         assert(html.includes('Enter access code'));
         assert(html.includes('id="gh-private-config"'));
         assert(html.includes('src="/private.js"'));
+      });
+
+      it('renders the access-code form instead of the signup form for an authenticated member', function () {
+        const context = {
+          member: { email: 'member@example.com' },
+          site: {
+            title: 'Test',
+            url: 'http://test.local',
+            locale: 'en',
+            allow_self_signup: true,
+            admin_url: 'http://test.local/ghost/',
+          },
+        };
+        const html = renderPrivateTemplate(context);
+
+        assertExists(html);
+        assert(!html.includes('data-ghost-private-subscribe-form'));
+        assert.equal(
+          (html.match(/<form class="gh-signin gh-private-signin gh-private-access-form"/g) || [])
+            .length,
+          1,
+        );
+        assert(html.includes('placeholder="Access code"'));
+        assert(html.includes('type="submit"'));
+        assert(!html.includes('id="access"'));
+        assert(!html.includes('data-ghost-private-trigger'));
       });
 
       it('uses the site accent color for the signup button when available', function () {

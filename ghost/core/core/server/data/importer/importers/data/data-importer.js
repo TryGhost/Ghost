@@ -3,7 +3,6 @@ const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
 const { IncorrectUsageError, DataImportError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:data');
-const { sequence } = require('@tryghost/promise');
 const models = require('../../../../models');
 const PostsImporter = require('./posts-importer');
 const TagsImporter = require('./tags-importer');
@@ -100,7 +99,7 @@ DataImporter = {
       return Promise.reject(
         new IncorrectUsageError({
           message: 'Wrong importer structure. `meta` is missing.',
-          help: 'https://ghost.org/docs/migration/custom/',
+          help: 'https://docs.ghost.org/migration/custom/',
         }),
       );
     }
@@ -109,7 +108,7 @@ DataImporter = {
       return Promise.reject(
         new IncorrectUsageError({
           message: 'Wrong importer structure. `meta.version` is missing.',
-          help: 'https://ghost.org/docs/migration/custom/',
+          help: 'https://docs.ghost.org/migration/custom/',
         }),
       );
     }
@@ -120,7 +119,7 @@ DataImporter = {
       return Promise.reject(
         new IncorrectUsageError({
           message: 'Detected unsupported file structure.',
-          help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://ghost.org/docs/update/ or ask for help in our https://forum.ghost.org.',
+          help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://docs.ghost.org/update/ or ask for help in our https://forum.ghost.org.',
         }),
       );
     }
@@ -168,7 +167,7 @@ DataImporter = {
        *   - already exist in the db
        * so we only need to map imported products
        */
-      ops.push(() => {
+      ops.push(async () => {
         const importedStripePrices = importers.stripe_prices.importedData;
         const importedProducts = importers.products.importedData;
         const productOps = [];
@@ -189,10 +188,14 @@ DataImporter = {
           });
         });
 
-        return sequence(productOps);
+        for (const productOp of productOps) {
+          await productOp();
+        }
       });
 
-      await sequence(ops);
+      for (const op of ops) {
+        await op();
+      }
 
       // Errors preventing import:
       if (errors.length > 0) {

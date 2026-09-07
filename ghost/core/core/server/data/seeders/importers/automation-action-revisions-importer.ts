@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
-import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-date';
+import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-types/date';
 import { DEFAULT_EMAIL_DESIGN_SETTING_SLUG } from '../../../services/member-welcome-emails/constants';
 
 type AutomationAction = {

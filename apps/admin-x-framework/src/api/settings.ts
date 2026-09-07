@@ -132,6 +132,68 @@ export function isSettingReadOnly(
   return setting?.is_read_only || false;
 }
 
+// Selectors
+//
+// Named hooks for the settings the Admin UI gates on. Each returns `undefined`
+// while the settings query has no data (the TanStack `data` contract), so
+// callers can tell "not loaded yet" from a settled `false`.
+
+function useSettings(): Setting[] | undefined {
+  const { data } = useBrowseSettings();
+  return data?.settings;
+}
+
+export function usePaidMembersEnabled(): boolean | undefined {
+  const settings = useSettings();
+  if (!settings) {
+    return undefined;
+  }
+  return getSettingValue<boolean>(settings, 'paid_members_enabled') ?? false;
+}
+
+export function useNewslettersEnabled(): boolean | undefined {
+  const settings = useSettings();
+  if (!settings) {
+    return undefined;
+  }
+  return getSettingValue(settings, 'editor_default_email_recipients') !== 'disabled';
+}
+
+export function useMembersTrackSources(): boolean | undefined {
+  const settings = useSettings();
+  if (!settings) {
+    return undefined;
+  }
+  return getSettingValue<boolean>(settings, 'members_track_sources') ?? false;
+}
+
+export function useEmailTrackOpens(): boolean | undefined {
+  const settings = useSettings();
+  if (!settings) {
+    return undefined;
+  }
+  return getSettingValue<boolean>(settings, 'email_track_opens') ?? false;
+}
+
+export function useEmailTrackClicks(): boolean | undefined {
+  const settings = useSettings();
+  if (!settings) {
+    return undefined;
+  }
+  return getSettingValue<boolean>(settings, 'email_track_clicks') ?? false;
+}
+
+// Single source of truth for the web analytics kill-switch. Unlike the
+// selectors above this is a strict boolean: unresolved settings count as off,
+// so data hooks (e.g. Tinybird) never query before the switch is known.
+export function useWebAnalyticsEnabled(): boolean {
+  const settings = useSettings();
+  if (!settings) {
+    return false;
+  }
+  return getSettingValue<boolean>(settings, 'web_analytics_enabled') === true;
+}
+
 export function checkStripeEnabled(settings: Setting[], config: Config) {
   const hasSetting = (key: string) =>
     settings.some((setting) => setting.key === key && setting.value);

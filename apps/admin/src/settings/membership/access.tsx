@@ -34,7 +34,7 @@ import {
 import { toast } from 'sonner';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useLimiter } from '@/settings/hooks/use-limiter';
+import { useHostLimits, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const SITE_VISIBILITY_OPTIONS = [
@@ -134,10 +134,10 @@ const getAccessOptionLabel = (options: Array<{ value: string; label: string }>, 
 
 const Access: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [tiersOpen, setTiersOpen] = React.useState(false);
-  const { settings, config } = useGlobalData();
+  const { settings } = useGlobalData();
   const limiter = useLimiter();
   const isTrialMode = limiter?.isDisabled('publicSiteAccess');
-  const publicSiteAccessLimit = config.hostSettings?.limits?.publicSiteAccess;
+  const publicSiteAccessLimit = useHostLimits()?.publicSiteAccess;
   const preLaunchTitle = publicSiteAccessLimit?.title || DEFAULT_PRELAUNCH_TITLE;
   const preLaunchMessage = publicSiteAccessLimit?.error || DEFAULT_PRELAUNCH_MESSAGE;
   const preLaunchUpgradeUrl = publicSiteAccessLimit?.upgradeUrl || DEFAULT_PRELAUNCH_UPGRADE_URL;

@@ -105,15 +105,17 @@ runs.
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling:
 
-| Command              | Use it when working on                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`           | Ghost Core, Admin, or Portal                                                            |
-| `pnpm dev:public`    | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                    |
-| `pnpm dev:lexical`   | Koenig's Lexical editor inside Ghost Admin                                              |
-| `pnpm dev:analytics` | Tinybird-backed analytics; also exposes Tinybird on port `7181`                         |
-| `pnpm dev:storage`   | S3-compatible storage through MinIO on ports `9000` and `9001`                          |
-| `pnpm dev:stripe`    | Stripe webhooks; requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file |
-| `pnpm dev:full`      | Public app watchers plus analytics, storage, and Stripe                                 |
+| Command                    | Use it when working on                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                  |
+| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                          |
+| `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                    |
+| `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
+| `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
+| `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)  |
+| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                   |
+| `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.
@@ -134,7 +136,8 @@ pnpm reset:data
 This clears the development database while preserving the owner, then creates
 1,000 members and 100 posts. Use `pnpm reset:data:empty` for an empty site. Both
 commands are destructive and require the Docker development environment to be
-running.
+running. See [Working with test data](test-data.md) for larger and custom
+datasets.
 
 When developing a database migration, apply pending migrations to the running
 development database with:
@@ -144,7 +147,8 @@ pnpm migrate:db
 ```
 
 Development email is captured by Mailpit rather than delivered. Open
-[http://localhost:8025](http://localhost:8025) to inspect messages.
+[http://localhost:8025](http://localhost:8025) to inspect messages. For Mailgun
+delivery and automated-test workflows, see [Email testing](testing-email.md).
 
 ## Updating and recovering
 

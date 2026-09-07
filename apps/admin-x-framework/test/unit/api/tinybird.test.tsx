@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import React, { ReactNode } from 'react';
-import { getTinybirdToken } from '../../../src/api/tinybird';
+import { useTinybirdTokenQuery } from '../../../src/api/tinybird';
 import { FrameworkProvider } from '../../../src/providers/framework-provider';
 import { withMockFetch } from '../../utils/mock-fetch';
 
@@ -44,7 +44,7 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   </FrameworkProvider>
 );
 
-describe('getTinybirdToken', () => {
+describe('useTinybirdTokenQuery', () => {
   afterEach(() => {
     queryClient.clear();
     vi.clearAllTimers();
@@ -57,7 +57,7 @@ describe('getTinybirdToken', () => {
         json: { tinybird: { token: 'test-token-123' } },
       },
       async (mock) => {
-        const { result } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -68,18 +68,18 @@ describe('getTinybirdToken', () => {
     );
   });
 
-  it('makes only one request for multiple getTinybirdToken calls (caching)', async () => {
+  it('makes only one request for multiple useTinybirdTokenQuery calls (caching)', async () => {
     await withMockFetch(
       {
         json: { tinybird: { token: 'cached-token' } },
       },
       async (mock) => {
         // First call
-        const { result: result1 } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result: result1 } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
         await waitFor(() => expect(result1.current.isLoading).toBe(false));
 
         // Second call should use cache
-        const { result: result2 } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result: result2 } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
         await waitFor(() => expect(result2.current.isLoading).toBe(false));
 
         // Both should have same data, but only 1 HTTP request
@@ -97,7 +97,7 @@ describe('getTinybirdToken', () => {
         json: { tinybird: { token: 'initial-token' } },
       },
       async (mock) => {
-        const { result } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
         expect(mock.calls.length).toBe(1);
@@ -121,13 +121,13 @@ describe('getTinybirdToken', () => {
       },
       async (mock) => {
         // First call
-        const { result: result1 } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result: result1 } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
         await waitFor(() => expect(result1.current.isLoading).toBe(false));
 
         expect(mock.calls.length).toBe(1);
 
         // Second call immediately after should use cache
-        const { result: result2 } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result: result2 } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
         await waitFor(() => expect(result2.current.isLoading).toBe(false));
 
         // Should still be only 1 request due to built-in stale time
@@ -144,7 +144,7 @@ describe('getTinybirdToken', () => {
       },
       async () => {
         // Should work without any parameters
-        const { result } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -160,7 +160,7 @@ describe('getTinybirdToken', () => {
         json: { tinybird: { token: 'interface-token' } },
       },
       async () => {
-        const { result } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -182,7 +182,7 @@ describe('getTinybirdToken', () => {
         ok: false,
       },
       async () => {
-        const { result } = renderHook(() => getTinybirdToken(), { wrapper });
+        const { result } = renderHook(() => useTinybirdTokenQuery(), { wrapper });
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 

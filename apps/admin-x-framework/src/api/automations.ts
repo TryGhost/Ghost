@@ -19,7 +19,7 @@ export type AutomationStats = {
 };
 
 export type AutomationBrowseItem = Automation & {
-  stats: AutomationStats;
+  stats?: AutomationStats;
 };
 
 export type AutomationWaitAction = {

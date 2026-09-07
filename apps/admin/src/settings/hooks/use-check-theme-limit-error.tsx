@@ -1,6 +1,6 @@
-import { HostLimitError, useLimiter } from './use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useCallback } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useHostLimits, useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 interface UseCheckThemeLimitErrorReturn {
   checkThemeLimitError: (themeName?: string) => Promise<string | null>;
@@ -12,9 +12,8 @@ interface UseCheckThemeLimitErrorReturn {
 
 export const useCheckThemeLimitError = (): UseCheckThemeLimitErrorReturn => {
   const limiter = useLimiter();
-  const { config } = useGlobalData();
 
-  const allowedThemesList = config.hostSettings?.limits?.customThemes?.allowlist;
+  const allowedThemesList = useHostLimits()?.customThemes?.allowlist;
   // Single theme: always error
   const noThemeChangesAllowed = allowedThemesList?.length === 1 || false;
 

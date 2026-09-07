@@ -8,7 +8,7 @@ const messages = {
   onlySingleContentSource: 'Pages can have either a mobiledoc or a lexical property, never both.',
   onlySingleContentSourceContext:
     'Both the mobiledoc and lexical properties are set, one must be null',
-  onlySingleContentSourceHelp: 'https://ghost.org/docs/admin-api/#the-post-object',
+  onlySingleContentSourceHelp: 'https://docs.ghost.org/admin-api/#the-post-object',
 };
 
 const validateVisibility = async function (frame) {

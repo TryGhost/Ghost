@@ -1,4 +1,4 @@
-import { getPostFeedback } from '@tryghost/admin-x-framework/api/feedback';
+import { usePostFeedbackQuery } from '@tryghost/admin-x-framework/api/feedback';
 import { useMemo } from 'react';
 
 export const usePostFeedback = (postId: string, score?: number) => {
@@ -6,7 +6,7 @@ export const usePostFeedback = (postId: string, score?: number) => {
     data: feedbackResponse,
     isLoading,
     error,
-  } = getPostFeedback(postId, {
+  } = usePostFeedbackQuery(postId, {
     searchParams: {
       limit: '50', // Get more data for pagination
       ...(score !== undefined ? { score: score.toString() } : {}),

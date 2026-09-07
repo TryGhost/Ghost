@@ -2402,7 +2402,7 @@ describe('Members API', function () {
     // Note that we explicitly need to ask to include tiers and custom fields
     // while browsing — a read carries both without being asked
     const { body: browseBody } = await agent.get(
-      `/members/?search=${memberWithPaidSubscription.email}&include=tiers,custom_fields`,
+      `/members/?search=${memberWithPaidSubscription.email}&include=tiers,metafields`,
     );
     assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
     const browseMember = browseBody.members[0];

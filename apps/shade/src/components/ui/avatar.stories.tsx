@@ -72,30 +72,21 @@ export const WithIdentityProps: Story = {
     docs: {
       description: {
         story:
-          'Pass `src`, `name`, and/or `email` for the standard Gravatar → initials → user-icon fallback chain.',
+          'Pass `src` and/or `initials` for the standard image → colored-initials → user-icon fallback chain. Callers derive the initials from their own domain data (e.g. a member or staff user name).',
       },
     },
   },
   render: () => (
     <div className="flex items-center gap-4">
-      <Avatar
-        email="aileen@example.com"
-        name="Aileen Greer"
-        src="https://avatars.githubusercontent.com/u/2178663?s=200&v=4"
-      />
-      <Avatar
-        email="aileen@example.com"
-        name="Aileen Greer"
-        src="https://broken-url.example.com/image.jpg"
-      />
+      <Avatar initials="AG" src="https://avatars.githubusercontent.com/u/2178663?s=200&v=4" />
+      <Avatar initials="AG" src="https://broken-url.example.com/image.jpg" />
       {/* Gravatar's d=blank returns a 1x1 transparent PNG with HTTP 200 for emails without a Gravatar account. Initials must remain visible — if this avatar ever shows blank, the dimension check in ValidatedAvatarImage has regressed. */}
       <Avatar
-        email="aileen@example.com"
-        name="Aileen Greer"
+        initials="AG"
         src="https://www.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?d=blank&s=250"
       />
-      <Avatar email="aileen@example.com" name="Aileen Greer" />
-      <Avatar email="anon@example.com" />
+      <Avatar initials="AG" />
+      <Avatar initials="AN" />
       <Avatar />
     </div>
   ),

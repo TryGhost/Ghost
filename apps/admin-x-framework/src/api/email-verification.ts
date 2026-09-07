@@ -10,16 +10,18 @@ export interface EmailVerificationResponseType {
 }
 const dataType = 'SettingsResponseType';
 
-export const verifyEmailToken = createMutation<EmailVerificationResponseType, emailVerification>({
-  path: () => '/settings/verifications',
-  method: 'PUT',
-  body: ({ token }) => ({ token }),
-  updateQueries: {
-    dataType,
-    emberUpdateType: 'createOrUpdate',
-    update: (newData) => ({
-      ...newData,
-      settings: newData.settings,
-    }),
+export const useVerifyEmailToken = createMutation<EmailVerificationResponseType, emailVerification>(
+  {
+    path: () => '/settings/verifications',
+    method: 'PUT',
+    body: ({ token }) => ({ token }),
+    updateQueries: {
+      dataType,
+      emberUpdateType: 'createOrUpdate',
+      update: (newData) => ({
+        ...newData,
+        settings: newData.settings,
+      }),
+    },
   },
-});
+);

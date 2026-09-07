@@ -239,5 +239,35 @@ describe('Public-config Service', function () {
       assert.equal(configProperties.featurebase.jwtSecret, undefined);
       assert.equal(configProperties.featurebase.apiKey, undefined);
     });
+
+    it('should strip webhook secrets from hostSettings', function () {
+      configUtils.set('hostSettings', {
+        siteId: '123',
+        export: {
+          webhookUrl: 'https://example.com/export',
+          webhookSecret: 'export-secret',
+        },
+        emailVerification: {
+          verified: true,
+          webhookType: 'email_verification',
+          webhookUrl: 'https://example.com/verify',
+          webhookSecret: 'verification-secret',
+        },
+      });
+
+      const configProperties = getConfigProperties();
+
+      assert.deepEqual(configProperties.hostSettings, {
+        siteId: '123',
+        export: {
+          webhookUrl: 'https://example.com/export',
+        },
+        emailVerification: {
+          verified: true,
+          webhookType: 'email_verification',
+          webhookUrl: 'https://example.com/verify',
+        },
+      });
+    });
   });
 });

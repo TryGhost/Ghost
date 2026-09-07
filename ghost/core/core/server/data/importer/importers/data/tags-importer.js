@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('importer:tags');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const { sequence } = require('@tryghost/promise');
 
 class TagsImporter extends BaseImporter {
   constructor(allDataFromFile) {
@@ -71,7 +70,9 @@ class TagsImporter extends BaseImporter {
       });
     });
 
-    await sequence(ops);
+    for (const op of ops) {
+      await op();
+    }
   }
 }
 

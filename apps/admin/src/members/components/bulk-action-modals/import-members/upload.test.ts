@@ -151,7 +151,7 @@ describe('buildImportResponse', () => {
     // A reason may quote a cell the publisher wrote, and a CSV cell legally holds
     // both a comma and a newline.
     const punctuated =
-      'custom_fields.home_address.country: Enter a 2-letter country code, like US.';
+      'metafields.custom.home_address.country: Enter a 2-letter country code, like US.';
     const multiline = '"Gold\nPlan" is not a valid tier.';
     const result = buildImportResponse({
       meta: {
@@ -215,6 +215,29 @@ describe('buildImportResponse', () => {
     expect(result.errorList).toEqual([]);
   });
 
+  it('handles malformed invalid rows without crashing the error download', async () => {
+    const result = buildImportResponse({
+      meta: {
+        stats: {
+          imported: 0,
+          invalid: [
+            null as never,
+            {
+              email: 'bad@example.com',
+              errors: 'not-an-array' as never,
+              error: 'bad row',
+            },
+          ],
+        },
+      },
+    });
+
+    const csv = await (mockCreateObjectURL.mock.calls[0][0] as Blob).text();
+    expect(result.errorCount).toBe(2);
+    expect(result.errorList).toEqual([]);
+    expect(csv).toContain('"error"');
+  });
+
   it('creates a downloadable blob URL for the error CSV', () => {
     buildImportResponse({
       meta: {
@@ -237,8 +260,9 @@ describe('buildImportResponse', () => {
     expect(blob.type).toBe('text/csv');
   });
 
-  it('writes the error file with the submitted columns and no others', async () => {
-    // The file echoes the row back, so every key on it becomes a column.
+  it('writes the error file with export columns and submitted custom fields', async () => {
+    // The file uses the members export vocabulary, then carries through custom fields
+    // from the submitted row so the failed data can be fixed and re-uploaded.
     buildImportResponse({
       meta: {
         stats: {
@@ -246,13 +270,13 @@ describe('buildImportResponse', () => {
           invalid: [
             {
               email: 'a@test.com',
-              'custom_fields.home_address.country': 'IRL',
+              'metafields.custom.home_address.country': 'IRL',
               errors: [
                 'Missing email address',
-                'custom_fields.home_address.country: Enter a 2-letter country code, like US.',
+                'metafields.custom.home_address.country: Enter a 2-letter country code, like US.',
               ],
               error:
-                'Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US.',
+                'Missing email address\nmetafields.custom.home_address.country: Enter a 2-letter country code, like US.',
             },
           ],
         },
@@ -264,9 +288,12 @@ describe('buildImportResponse', () => {
     // CRLF between rows; a reason may itself contain a bare newline.
     const [header] = csv.split('\r\n');
 
-    expect(header).toBe('"email","custom_fields.home_address.country","error"');
+    expect(header).toBe(
+      '"email","name","note","stripe_customer_id","created_at","labels","metafields.custom.home_address.country","gift_id","error"',
+    );
+    expect(csv).toContain('"IRL"');
     expect(csv).toContain(
-      '"Missing email address\ncustom_fields.home_address.country: Enter a 2-letter country code, like US."',
+      '"Missing email address\nmetafields.custom.home_address.country: Enter a 2-letter country code, like US."',
     );
   });
 });

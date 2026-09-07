@@ -36,10 +36,9 @@ import {
   getContentTitle,
 } from '@/analytics/utils/content-helpers';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
 import { getClickHandler } from '@/analytics/utils/url-helpers';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
