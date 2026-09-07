@@ -1,7 +1,11 @@
 import { Fragment, type ReactNode, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { canAccessSettings, type User } from '@tryghost/admin-x-framework/api/users';
+import {
+  canAccessSettings,
+  isContributorUser,
+  type User,
+} from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
   settingsExcerptInput,
@@ -12,6 +16,7 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
+import { TagsSection } from './tags-section';
 import { UrlSection } from './url-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
@@ -79,9 +84,11 @@ export function PostSettingsSidebar({
 }: PostSettingsSidebarProps) {
   // Owner, Administrator and Editor: the roles Ember shows these sections to.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
+  const canTag = !!currentUser && !isContributorUser(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
     url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
+    tags: canTag ? <TagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,

@@ -47,6 +47,10 @@ export const settingsUrlPreview = 'settings-url-preview';
 export const settingsVisibilitySelect = 'settings-visibility-select';
 export const settingsTiersPicker = 'settings-tiers-picker';
 export const settingsTiersError = 'settings-tiers-error';
+export const settingsTagsField = 'settings-tags-field';
+export const settingsTagsInput = 'settings-tags-input';
+export const settingsTagsList = 'settings-tags-list';
+export const settingsTagsToken = 'settings-tags-token';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';

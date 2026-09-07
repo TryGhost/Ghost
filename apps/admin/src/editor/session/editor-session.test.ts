@@ -770,6 +770,47 @@ describe('createEditorSession', () => {
       expect(state.acknowledged.custom_excerpt).toBe('Remote');
     });
 
+    it('keeps the writer’s tags when a refetch lands mid-save', async () => {
+      const chosen = [
+        { id: 'tag1', name: 'News' },
+        { id: 'tag2', name: 'Sport' },
+      ];
+      const built = harness(
+        { record: record({ tags: [{ id: 'tag1', name: 'News' }] }) },
+        {
+          duringSave: () => {
+            built.session.recordRefetched(
+              record({
+                tags: [{ id: 'tag3', name: 'Notice' }],
+                updated_at: '2026-01-01T00:00:01.000Z',
+              }),
+            );
+          },
+        },
+      );
+      built.state.acknowledged = record({ tags: chosen });
+
+      built.session.patchFields({ tags: chosen });
+      await built.session.dispatchExplicit();
+
+      // Identity alone: every other column on a tag belongs to the tag.
+      expect(built.state.updates[0].payload.tags).toEqual([{ id: 'tag1' }, { id: 'tag2' }]);
+      expect(built.session.getFields().tags).toEqual(chosen);
+    });
+
+    it('adopts the id the server gave a tag the writer typed', async () => {
+      const created = { id: 'made-1', name: 'Culture', slug: 'culture' };
+      const { session, state } = harness({ record: record({ tags: [] }) });
+      state.acknowledged = record({ tags: [created] });
+
+      session.patchFields({ tags: [{ name: 'Culture' }] });
+      await session.dispatchExplicit();
+
+      expect(state.updates[0].payload.tags).toEqual([{ name: 'Culture' }]);
+      expect(session.getFields().tags).toEqual([created]);
+      expect(session.isDirty()).toBe(false);
+    });
+
     it('compares reverted relations by their editable identity', () => {
       const { session } = harness({ record: record({ authors: [{ id: 'author-1' }] }) });
 
