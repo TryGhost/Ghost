@@ -116,6 +116,8 @@ export interface UseEditorSessionOptions {
   postType: PostType;
   record?: EditorRecord;
   siteUrl: string;
+  /** Authors a post this session creates. */
+  currentUserId?: string;
 }
 
 function reportError(error: unknown): void {
@@ -128,6 +130,7 @@ export function useEditorSession({
   postType,
   record,
   siteUrl,
+  currentUserId,
 }: UseEditorSessionOptions): EditorSessionHandle {
   const fetchApi = useFetchApi();
   const queryClient = useQueryClient();
@@ -155,6 +158,7 @@ export function useEditorSession({
     createEditorSession({
       record,
       siteUrl,
+      currentUserId,
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       onIdAcquired: setPersistedId,
       onError: reportError,

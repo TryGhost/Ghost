@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  currentUserResponse,
   fakeAdminEndpoint,
   fakeMembers,
   fakeNewsletters,
@@ -11,9 +12,11 @@ import {
   fakeSnippets,
   post,
   renderAdminApp,
+  staffRole,
   tag,
   type CapturedEndpointRequest,
   type EndpointCapture,
+  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
@@ -21,6 +24,7 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new789';
+const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
@@ -87,6 +91,36 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 
   return saveApi;
+}
+
+/** A post that does not exist yet, with the create and the follow-up writes answered. */
+function fakeCreatablePost() {
+  editorChrome();
+  fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+  let created = post({
+    id: NEW_POST_ID,
+    title: '(Untitled)',
+    slug: 'untitled',
+    status: 'draft',
+    updated_at: CREATED_AT,
+    published_at: null,
+    tags: [],
+  });
+  const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
+    return { posts: [created] };
+  });
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({ posts: [created] }));
+  fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({ posts: [created] }));
+
+  return createApi;
+}
+
+function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
+  const me = currentUserResponse();
+  me.users[0].roles = [staffRole({ name: role })];
+  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
 async function typeIntoBody(text: string) {
@@ -206,6 +240,24 @@ describe('Post editor saving', () => {
       await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
       expect(bodyElement()).toBe(mountedBody);
       await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    },
+    SLOW,
+  );
+
+  // Core refuses an Author's or Contributor's create unless the payload names
+  // them as the author, so these roles could not start a post without it.
+  it.each(['Contributor', 'Author'] as const)(
+    'names the writer as the author when the %s role creates a post',
+    async (role) => {
+      const createApi = fakeCreatablePost();
+
+      await renderAdminApp('/editor/post', bootAs(role));
+      await expect.element(editorScreen.body()).toBeVisible();
+
+      await typeIntoBody('First words');
+
+      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+      expect(submittedPost(createApi).authors).toEqual([{ id: CURRENT_USER_ID }]);
     },
     SLOW,
   );

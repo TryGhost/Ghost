@@ -186,6 +186,18 @@ describe('createEditorSession', () => {
     expect(state.acquiredIds).toEqual(['created-id']);
   });
 
+  it('authors the create with the current user and leaves updates alone', async () => {
+    const { session, state } = harness({ currentUserId: 'user-1' });
+
+    session.patchLexical(body('First words'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('More words'));
+    await session.dispatchExplicit();
+
+    expect(state.creates[0].authors).toEqual([{ id: 'user-1' }]);
+    expect(state.updates[0].payload).not.toHaveProperty('authors');
+  });
+
   it('keeps the excerpt it was given and clears it back to null', async () => {
     const { session, state } = harness({ record: record() });
 
