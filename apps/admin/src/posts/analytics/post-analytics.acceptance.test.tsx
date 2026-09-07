@@ -274,6 +274,37 @@ describe('Post analytics overview', () => {
     await expect.element(page.getByRole('button', { name: /View members/ }).first()).toBeEnabled();
   });
 
+  it('shows only recipient counts until a sending estimate is available', async () => {
+    seedPostAnalyticsWorld({
+      email: { id: EMAIL_ID, email_count: 1000, opened_count: 0, status: 'submitting' },
+    });
+    let estimate: number | null = null;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: estimate },
+          },
+        },
+      ],
+    }));
+
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Sending emails · 250 of 1,000');
+    estimate = 30;
+    await expect
+      .element(postAnalyticsScreen.emailSendingStatusBanner())
+      .toHaveTextContent('Sending emails · 250 of 1,000 · Less than 1 minute left');
+  });
+
   it('moves a failed send and its retry action into the banner', async () => {
     const postOverrides = {
       email: {
