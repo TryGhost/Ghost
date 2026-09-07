@@ -126,6 +126,41 @@ function fakeCollidingPost(overrides: Partial<SavedPost> = {}) {
   );
 }
 
+/** Only the update carries the server's change; the GET keeps answering as loaded. */
+function fakeAdoptingPost(acknowledged: Partial<SavedPost>) {
+  editorChrome();
+  const loaded = post({
+    id: POST_ID,
+    title: 'Hello from React',
+    slug: 'hello-from-react',
+    status: 'draft',
+    lexical: buildLexicalParagraph('Hello from React'),
+    updated_at: LOADED_AT,
+    published_at: null,
+    featured: false,
+    custom_excerpt: null,
+    tags: [],
+  });
+  let saves = 0;
+
+  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [loaded] }));
+
+  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
+    saves += 1;
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    return {
+      posts: [
+        {
+          ...loaded,
+          ...submitted,
+          ...acknowledged,
+          updated_at: `2026-01-01T00:00:0${saves}.000Z`,
+        },
+      ],
+    };
+  });
+}
+
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
@@ -225,6 +260,45 @@ describe('Post settings sidebar', () => {
       await editorScreen.titleInput().click();
 
       await expect.poll(() => submittedPost(saveApi).custom_excerpt, POLL).toBe('From the sidebar');
+    },
+    SLOW,
+  );
+
+  it(
+    'shows a field the acknowledgement adopted, with no refetch to carry it',
+    async () => {
+      // The writer never touches Featured; the server's copy arrives on the save.
+      const saveApi = fakeAdoptingPost({ featured: true });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+
+      await expect
+        .element(editorScreen.settingsFeatured())
+        .toHaveAttribute('data-state', 'unchecked');
+
+      await editorScreen.settingsExcerpt().fill('From the sidebar');
+      await editorScreen.titleInput().click();
+
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      await expect
+        .element(editorScreen.settingsFeatured())
+        .toHaveAttribute('data-state', 'checked');
+    },
+    SLOW,
+  );
+
+  it(
+    'shows the excerpt the acknowledgement normalized',
+    async () => {
+      const saveApi = fakeAdoptingPost({ custom_excerpt: 'From the server' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+
+      await editorScreen.settingsExcerpt().fill('From the sidebar');
+      await editorScreen.titleInput().click();
+
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      await expect.element(editorScreen.settingsExcerpt()).toHaveValue('From the server');
     },
     SLOW,
   );

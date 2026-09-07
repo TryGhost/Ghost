@@ -796,6 +796,284 @@ describe('createEditorSession', () => {
       expect(built.session.isDirty()).toBe(false);
     });
 
+    // A save hook fires on every request; these cases only describe the first.
+    const once = (hook: () => void) => {
+      let fired = false;
+      return () => {
+        if (fired) {
+          return;
+        }
+        fired = true;
+        hook();
+      };
+    };
+
+    it('adopts the last of two refetches that arrive inside one save', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: once(() => {
+            built.session.recordRefetched(
+              record({ visibility: 'members', updated_at: '2026-01-01T00:00:00.500Z' }),
+            );
+            built.session.recordRefetched(
+              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.700Z' }),
+            );
+          }),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('paid');
+      expect(built.session.isDirty()).toBe(false);
+
+      built.session.patchTitle('A later title edit');
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[1].payload).not.toHaveProperty('visibility');
+    });
+
+    it.each([
+      {
+        field: 'tags' as const,
+        first: [{ id: 'tag-1', name: 'News' }],
+        second: [{ id: 'tag-2', name: 'Tech' }],
+      },
+      {
+        field: 'authors' as const,
+        first: [{ id: 'author-1' }],
+        second: [{ id: 'author-2' }],
+      },
+    ])(
+      'adopts the last of two refetched $field that arrive inside one save',
+      async ({ field, first, second }) => {
+        const built = harness(
+          { record: record({ [field]: [] }) },
+          {
+            duringSave: once(() => {
+              built.session.recordRefetched(
+                record({ [field]: first, updated_at: '2026-01-01T00:00:00.500Z' }),
+              );
+              built.session.recordRefetched(
+                record({ [field]: second, updated_at: '2026-01-01T00:00:00.700Z' }),
+              );
+            }),
+            acknowledge: (acknowledged) => ({ ...acknowledged, [field]: second }),
+          },
+        );
+
+        built.session.patchLexical(body('Changed'));
+        await built.session.dispatchExplicit();
+
+        expect(built.session.getFields()[field]).toEqual(second);
+        expect(built.session.isDirty()).toBe(false);
+
+        built.session.patchTitle('A later title edit');
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[1].payload).not.toHaveProperty(field);
+      },
+    );
+
+    it('lands on the acknowledged value after adopting a refetch inside the save', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: once(() =>
+            built.session.recordRefetched(
+              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
+            ),
+          ),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'members' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('members');
+      expect(built.session.isDirty()).toBe(false);
+    });
+
+    it('keeps an edit made after a refetch was adopted inside the same save', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: once(() => {
+            built.session.recordRefetched(
+              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
+            );
+            built.session.patchFields({ visibility: 'members' });
+          }),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('members');
+      expect(built.session.isDirty()).toBe(true);
+
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[1].payload).toMatchObject({ visibility: 'members' });
+    });
+
+    it.each([
+      { field: 'custom_excerpt' as const, edited: 'Typed while saving', remote: 'Server excerpt' },
+      { field: 'visibility' as const, edited: 'members', remote: 'paid' },
+      {
+        field: 'tags' as const,
+        edited: [{ name: 'News' }],
+        remote: [{ id: 'tag-2', name: 'Tech' }],
+      },
+      {
+        field: 'authors' as const,
+        edited: [{ id: 'author-1' }],
+        remote: [{ id: 'author-2' }],
+      },
+    ])(
+      'keeps an unsubmitted $field edit after a matching refetch and persists it next',
+      async ({ field, edited, remote }) => {
+        const built = harness(
+          { record: record() },
+          {
+            duringSave: once(() => {
+              built.session.patchFields({ [field]: edited });
+              built.session.recordRefetched(
+                record({ [field]: edited, updated_at: '2026-01-01T00:00:00.500Z' }),
+              );
+            }),
+            acknowledge: (acknowledged, count) => ({
+              ...acknowledged,
+              [field]: count === 1 ? remote : edited,
+            }),
+          },
+        );
+
+        built.session.patchTitle('Changed title');
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[0].payload).not.toHaveProperty(field);
+        expect(built.session.getFields()[field]).toEqual(edited);
+        expect(built.session.isDirty()).toBe(true);
+        expect(built.session.hasUnsavedContent()).toBe(true);
+
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[1].payload).toMatchObject({ [field]: edited });
+        expect(built.session.isDirty()).toBe(false);
+      },
+    );
+
+    it('adopts acknowledged tag metadata when an unsubmitted edit matches the server', async () => {
+      const built = harness(
+        { record: record() },
+        {
+          duringSave: once(() => built.session.patchFields({ tags: [{ name: 'News' }] })),
+          acknowledge: (acknowledged) => ({
+            ...acknowledged,
+            tags: [{ id: 'tag-1', name: 'News' }],
+          }),
+        },
+      );
+
+      built.session.patchTitle('Changed title');
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[0].payload).not.toHaveProperty('tags');
+      expect(built.session.getFields().tags).toEqual([{ id: 'tag-1', name: 'News' }]);
+      expect(built.session.isDirty()).toBe(false);
+    });
+
+    it('adopts a refetch after a settings value was re-emitted unmoved', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: once(() => {
+            built.session.patchFields({ visibility: 'public' });
+            built.session.recordRefetched(
+              record({ visibility: 'paid', updated_at: '2026-01-01T00:00:00.500Z' }),
+            );
+          }),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('paid');
+      expect(built.session.isDirty()).toBe(false);
+
+      built.session.patchTitle('A later title edit');
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[1].payload).not.toHaveProperty('visibility');
+    });
+
+    it('adopts a refetch after the same tags were re-emitted as a fresh array', async () => {
+      const loaded = [{ id: 'tag-1', name: 'News' }];
+      const built = harness(
+        { record: record({ tags: loaded }) },
+        {
+          duringSave: once(() => {
+            built.session.patchFields({ tags: loaded.map((tag) => ({ ...tag })) });
+            built.session.recordRefetched(
+              record({
+                tags: [{ id: 'tag-2', name: 'Tech' }],
+                updated_at: '2026-01-01T00:00:00.500Z',
+              }),
+            );
+          }),
+          acknowledge: (acknowledged) => ({
+            ...acknowledged,
+            tags: [{ id: 'tag-2', name: 'Tech' }],
+          }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().tags).toEqual([{ id: 'tag-2', name: 'Tech' }]);
+      expect(built.session.isDirty()).toBe(false);
+
+      built.session.patchTitle('A later title edit');
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[1].payload).not.toHaveProperty('tags');
+    });
+
+    // The writer moved after the request was built, so only closing the request's
+    // window before adopting lets the acknowledged tag ids reach the live document.
+    it('adopts the acknowledged tag ids after the writer retyped the same tag mid-save', async () => {
+      const built = harness(
+        { record: record({ tags: [] }) },
+        {
+          duringSave: once(() => {
+            built.session.patchFields({ tags: [] });
+            built.session.patchFields({ tags: [{ name: 'News' }] });
+          }),
+          acknowledge: (acknowledged) => ({
+            ...acknowledged,
+            tags: [{ id: 'tag-1', name: 'News' }],
+          }),
+        },
+      );
+
+      built.session.patchFields({ tags: [{ name: 'News' }] });
+      await built.session.dispatchExplicit();
+
+      expect(built.state.updates[0].payload).toMatchObject({ tags: [{ name: 'News' }] });
+      expect(built.session.getFields().tags).toEqual([{ id: 'tag-1', name: 'News' }]);
+      expect(built.session.isDirty()).toBe(false);
+    });
+
     it.each([
       { status: 'draft' as const, dispatches: true },
       { status: 'published' as const, dispatches: false },

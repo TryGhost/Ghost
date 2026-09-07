@@ -37,7 +37,18 @@ An outstanding edit keeps the writer's value through a refetch or rejected save.
 An acknowledgement adopts the server's normalized value only where the writer
 has not edited past the submitted value. Undoing a field while its save is in
 flight also stays staged, even if that save's refetch arrives before its
-acknowledgement: the next save persists the undo.
+acknowledgement: the next save persists the undo. Ownership is decided by which
+fields the writer moved and when, never by comparing the live document against a
+pre-save snapshot, so adopting one refetch inside a save window does not stop a
+later one from being adopted too, and re-emitting a value the field already
+holds does not claim it.
+
+An acknowledgement also retains fields edited after submission that the request
+did not carry. A matching refetch may temporarily make such a field look saved,
+but it cannot grant the earlier request ownership of that edit. The session
+reapplies these values to the tracker after its rebase so they remain dirty
+against a disagreeing acknowledgement and enter the next save. A matching
+acknowledgement still releases the edit and supplies server-owned relation metadata.
 
 Three fields are deliberately absent from the settings projection. Status and
 publish time belong to the save engine's command target, which the publish flow

@@ -523,6 +523,61 @@ describe('createChangeTracker', () => {
     });
   });
 
+  describe('isFieldDirty', () => {
+    it('answers for one field at a time and releases it when the edit is undone', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, { visibility: 'paid' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(true);
+      expect(tracker.isFieldDirty('meta_title')).toBe(false);
+
+      tracker.setLive(POST_ID, { visibility: 'public' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('applies the field compare rules: tags by name, relations by identity', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, {
+        tags: [{ name: 'News', id: 'unsaved' } as never],
+        authors: [{ id: 'author-1', name: 'Renamed' } as never],
+      });
+
+      expect(tracker.isFieldDirty('tags')).toBe(false);
+      expect(tracker.isFieldDirty('authors')).toBe(false);
+
+      tracker.setLive(POST_ID, { authors: [{ id: 'author-2' }] });
+
+      expect(tracker.isFieldDirty('authors')).toBe(true);
+    });
+
+    it('never reports the collision token, and answers false with no post loaded', () => {
+      const tracker = loadedTracker(post({ updated_at: T0 }));
+      tracker.setSaved(POST_ID, post({ updated_at: T1 }));
+
+      expect(tracker.isFieldDirty('updated_at')).toBe(false);
+
+      tracker.dispose();
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('releases a field the acknowledgement rebased onto the server value', () => {
+      const tracker = loadedTracker(post({ visibility: 'public', updated_at: T0 }));
+      tracker.setLive(POST_ID, { visibility: 'members' });
+
+      tracker.saveAcknowledged(
+        POST_ID,
+        { visibility: 'members' },
+        post({ visibility: 'paid', updated_at: T1 }),
+      );
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+  });
+
   describe('mutable aliasing', () => {
     it('clones the saved state at ingress', () => {
       const saved = post({ tags: [{ name: 'News' }], feature_image_caption: 'Caption' });

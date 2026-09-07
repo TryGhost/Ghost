@@ -251,6 +251,16 @@ export function useEditorSession({
     [session],
   );
 
+  // An acknowledgement adopts the server's copy of the fields nobody edited
+  // here, and that adoption has no edit of its own to mirror the session on.
+  useEffect(() => {
+    const next = settingsFieldsOf(session.getFields());
+    setSettings((current) =>
+      SETTINGS_FIELD_KEYS.every((key) => current[key] === next[key]) ? current : next,
+    );
+    setExcerpt(next.custom_excerpt ?? '');
+  }, [session, state]);
+
   // The saved record: the same query key the screen loaded with, so an existing
   // post shares one cache entry and a created one starts observing its own.
   const postQuery = useEditorPost(persistedId ?? '', {
