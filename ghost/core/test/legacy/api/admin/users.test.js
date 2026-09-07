@@ -131,10 +131,12 @@ describe('User API', function () {
           },
         });
 
-        await request
+        const res = await request
           .delete(localUtils.API.getApiQuery(`users/${otherAuthor.id}`))
           .set('Origin', config.get('url'))
-          .expect(200);
+          .expect(204);
+
+        assert.deepEqual(res.body, {});
 
         const tags = await otherAuthorPost.related('tags').fetch();
         assert.equal(tags.length, 3);

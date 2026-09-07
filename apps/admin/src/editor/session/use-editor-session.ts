@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
@@ -32,12 +32,15 @@ import {
   DEFAULT_TITLE,
   isCollisionToken,
   type LeaveDecision,
+  type SaveCompletion,
   type SaveEngineState,
 } from '@/editor/engine/save-engine';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
+import { createPublishDispatcher } from './publish-dispatch';
+import type { PublishDispatcher } from '@/editor/publish/use-publish-flow';
 import type { EditorRecord } from './projection';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
@@ -93,8 +96,16 @@ export interface EditorSessionHandle {
   /** Replaces the document with the server's copy, or says why it could not. */
   reload: () => Promise<ReloadOutcome>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
+  /** The post as the engine reads it: identity, status, publish time and title. */
+  getSaveSnapshot: EditorSession['getSaveSnapshot'];
+  /** The body the writer is looking at, which a save has not necessarily seen yet. */
+  getLiveLexical: EditorSession['getLiveLexical'];
   dispatchField: () => void;
   dispatchExplicit: () => void;
+  /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
+  saveExplicit: () => Promise<SaveCompletion>;
+  /** Runs the publish flow's commands through the engine, the only writer. */
+  dispatchPublish: PublishDispatcher;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   /** Resolves once nothing is in flight; `proceed` means leaving loses nothing. */
@@ -329,6 +340,16 @@ export function useEditorSession({
     [session],
   );
 
+  const dispatchPublish = useMemo(
+    () =>
+      createPublishDispatcher({
+        publish: session.dispatchPublish,
+        schedule: session.dispatchSchedule,
+        revert: session.dispatchRevert,
+      }),
+    [session],
+  );
+
   return {
     bind: {
       title,
@@ -351,8 +372,12 @@ export function useEditorSession({
     contentText,
     reload,
     patchFeatureImage: session.patchFeatureImage,
+    getSaveSnapshot: session.getSaveSnapshot,
+    getLiveLexical: session.getLiveLexical,
     dispatchField: session.dispatchField,
     dispatchExplicit: () => void session.dispatchExplicit(),
+    saveExplicit: session.dispatchExplicit,
+    dispatchPublish,
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,
     leaveRequested: session.leaveRequested,

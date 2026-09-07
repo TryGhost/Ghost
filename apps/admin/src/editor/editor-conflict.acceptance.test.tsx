@@ -5,6 +5,8 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -90,6 +92,9 @@ const theirs = (overrides: Partial<ReturnType<typeof mine>> = {}) => ({
 function fakeCollidingPost() {
   fakeSnippets([]);
   fakePosts([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
