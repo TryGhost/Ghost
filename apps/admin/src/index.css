@@ -103,7 +103,7 @@
         #ember-notifications-wormhole
       )
   )
-  :is(.heading-font-features, .gh-publish-title) {
+  :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
