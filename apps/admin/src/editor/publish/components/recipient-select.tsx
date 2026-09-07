@@ -8,6 +8,7 @@ import { Checkbox, Label } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useState } from 'react';
 import {
   publishRecipientFree,
@@ -32,7 +33,7 @@ export interface RecipientSelectProps {
 }
 
 function SegmentCount({ filter }: { filter: string | null }) {
-  const { count } = useMembersCount(filter);
+  const { count } = useMembersCount(filter, { requestOptions: EDITOR_REQUEST_OPTIONS });
 
   if (count === null) {
     return null;

@@ -126,4 +126,22 @@ describe('usePublishInputs', () => {
     expect(newslettersApi.requests).toHaveLength(2);
     expect(new URL(newslettersApi.requests[1].url).searchParams.get('page')).toBe('2');
   });
+
+  it('reports an expired newsletter read instead of leaving the page', async () => {
+    const { pathname } = window.location;
+    fakeBoundaryInputs();
+    fakeMemberCount(20);
+    const newslettersApi = fakeAdminEndpoint(
+      'GET',
+      /^\/newsletters\/\?/,
+      { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    const hook = await renderHook(() => usePublishInputs(), { wrapper: TestWrapper });
+
+    await expect.poll(() => newslettersApi.requests.length).toBeGreaterThan(0);
+    await expect.poll(() => hook.result.current.error !== null).toBe(true);
+    expect(hook.result.current.isReady).toBe(false);
+    expect(window.location.pathname).toBe(pathname);
+  });
 });

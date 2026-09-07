@@ -61,7 +61,7 @@ export const createQuery =
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const result = useQuery<ResponseData>({
       ...query,
@@ -139,7 +139,7 @@ export const createInfiniteQuery =
   }: InfiniteQueryHookOptions<ResponseData, PageData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 

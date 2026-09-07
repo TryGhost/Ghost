@@ -37,7 +37,23 @@ describe('useFeatureFlag', () => {
 
     renderHook(() => useFeatureFlag('myFlag'));
 
-    expect(mockUseBrowseConfig).toHaveBeenCalledWith({ refetchOnMount: false });
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith({
+      refetchOnMount: false,
+      requestOptions: undefined,
+    });
+  });
+
+  it('forwards request options to the config query', () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ myFlag: true }));
+
+    renderHook(() =>
+      useFeatureFlag('myFlag', { requestOptions: { sessionExpiryRedirect: false } }),
+    );
+
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith({
+      refetchOnMount: false,
+      requestOptions: { sessionExpiryRedirect: false },
+    });
   });
 
   it('returns false when the flag is false', () => {
