@@ -2577,4 +2577,12 @@ module.exports = {
       { columns: ['email_provider_message_id'], length: 31 },
     ],
   },
+  tinybird_syncs: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    table_name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    last_synced_updated_at: { type: 'dateTime', nullable: false },
+    last_synced_id: { type: 'string', maxlength: 24, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
 };
