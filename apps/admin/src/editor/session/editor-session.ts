@@ -51,6 +51,8 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
+  /** Access values captured for validation of this request. */
+  access: Pick<EditablePostProjection, 'visibility' | 'tiers'>;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
   payload: EditorWritePayload;
@@ -329,6 +331,7 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
+      access: { visibility: live.visibility, tiers: live.tiers },
       builtAtVersion: version,
       payload,
       options: {
@@ -345,7 +348,7 @@ export function createEditorSession({
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
     // Untouched creates carry null visibility and use the server's default.
     // An explicit tier selection needs a tier, including on the first save.
-    if (tiersIncomplete(prepared.settingsFrom)) {
+    if (tiersIncomplete(prepared.access)) {
       return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
     }
 
