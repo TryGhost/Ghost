@@ -348,7 +348,7 @@ const Newsletter: React.FC = () => {
               <CardTitle>Newsletters</CardTitle>
               <CardDescription>How did this post perform</CardDescription>
             </CardHeader>
-            {isLoading ? (
+            {isLoading && !isNewsletterDataHidden ? (
               <CardContent className="h-[25vw] p-6">
                 <BarChartLoadingIndicator />
               </CardContent>
