@@ -27,7 +27,7 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import { settingsMenuToggle, settingsMenuToggleButton } from '@tryghost/test-data/selectors/editor';
+import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
 import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
@@ -182,7 +182,7 @@ function EditorContent({
           />
           <Button
             aria-expanded={settingsOpen}
-            aria-label={settingsMenuToggleButton}
+            aria-label="Settings"
             data-testid={settingsMenuToggle}
             size="sm"
             variant="ghost"

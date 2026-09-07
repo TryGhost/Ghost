@@ -113,4 +113,3 @@ export const editorUpdateButton = 'Update';
 export const editorSaveButton = 'Save';
 export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
-export const settingsMenuToggleButton = 'Settings';
