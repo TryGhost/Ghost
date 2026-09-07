@@ -18,10 +18,8 @@ function etaMinutes(seconds: number, previous: number | null): number {
 export function useSendingEta(status: EmailSendingStatus | undefined): string | null {
   const sending = status?.sending;
   const key = status ? `${status.id}:${status.sending.status}` : null;
-  const seconds =
-    sending?.status === 'preparing' || sending?.status === 'submitting'
-      ? sending.progress.estimated_seconds_remaining
-      : null;
+  const isActive = sending?.status === 'preparing' || sending?.status === 'submitting';
+  const seconds = isActive ? sending.progress.estimated_seconds_remaining : null;
   const [previous, setPrevious] = useState<{ key: string | null; minutes: number | null }>({
     key: null,
     minutes: null,
@@ -35,7 +33,7 @@ export function useSendingEta(status: EmailSendingStatus | undefined): string | 
   }
 
   if (minutes === null) {
-    return null;
+    return isActive ? 'Calculating time remaining...' : null;
   }
   return minutes === 0
     ? 'Less than 1 minute left'

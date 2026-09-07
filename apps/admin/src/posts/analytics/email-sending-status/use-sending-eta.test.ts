@@ -18,6 +18,19 @@ function status(
 }
 
 describe('useSendingEta', () => {
+  it('shows a calculating label until an active phase has an estimate', () => {
+    const { result, rerender } = renderHook(useSendingEta, {
+      initialProps: undefined as EmailSendingStatus | undefined,
+    });
+    expect(result.current).toBeNull();
+    rerender(status(null, 'preparing'));
+    expect(result.current).toBe('Calculating time remaining...');
+    rerender(status(null, 'submitting'));
+    expect(result.current).toBe('Calculating time remaining...');
+    rerender(status(30));
+    expect(result.current).toBe('Less than 1 minute left');
+  });
+
   it('keeps the less-than-a-minute label through jitter, but allows a real slowdown', () => {
     const { result, rerender } = renderHook(useSendingEta, { initialProps: status(39) });
     for (const seconds of [41, 39, 49, 50]) {
@@ -57,7 +70,7 @@ describe('useSendingEta', () => {
     rerender(status(35, 'submitting', 'email-2'));
     expect(result.current).toBe('Less than 1 minute left');
     rerender(status(null, 'submitting', 'email-2'));
-    expect(result.current).toBeNull();
+    expect(result.current).toBe('Calculating time remaining...');
     rerender(status(45, 'submitting', 'email-2'));
     expect(result.current).toBe('About 1 minute left');
     rerender(status(0, 'submitted', 'email-2'));
