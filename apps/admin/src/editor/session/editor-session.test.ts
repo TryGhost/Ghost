@@ -41,6 +41,8 @@ interface Harness {
 interface HarnessHooks {
   duringSave?: () => void;
   acknowledge?: (record: EditorRecord, saveCount: number) => EditorRecord;
+  /** Answers an update with nothing, which the session reports as a failed save. */
+  failSave?: (saveCount: number) => boolean;
 }
 
 function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
@@ -76,6 +78,9 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
         state.updates.push({ payload, saveRevision: writeOptions.saveRevision });
         hooks.duringSave?.();
         saveCount += 1;
+        if (hooks.failSave?.(saveCount)) {
+          return Promise.resolve(undefined);
+        }
         const next = record({
           ...state.acknowledged,
           title: payload.title as string,
@@ -303,5 +308,91 @@ describe('createEditorSession', () => {
     await session.dispatchExplicit();
 
     expect(state.updates).toHaveLength(0);
+  });
+
+  it('notifies subscribers once per dirtiness flip, not once per edit', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    session.patchLexical(body('Hello and more still'));
+    session.patchLexical(body('Hello and more still again'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('notifies subscribers when the pending baseline lands and settles the post', () => {
+    const { session } = harness({ record: record() });
+    const edited = buildLexicalParagraph('Hello and more');
+    session.patchLexical(JSON.parse(edited));
+    const listener = vi.fn();
+    session.subscribe(listener);
+
+    // Until the hidden editor reports, a diverged body has to be assumed dirty.
+    expect(session.isDirty()).toBe(true);
+
+    session.setBaseline(edited);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('reports a throwing subscriber instead of interrupting the edit', () => {
+    const onError = vi.fn();
+    const { session } = harness({ record: record(), onError });
+    session.setBaseline(record().lexical);
+    session.subscribe(() => {
+      throw new Error('listener blew up');
+    });
+
+    session.patchLexical(body('Hello and more'));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(true);
+  });
+
+  it('notifies subscribers when a retry settles what a failed save left dirty', async () => {
+    let saveFails = true;
+    const { session } = harness({ record: record() }, { failSave: () => saveFails });
+    session.setBaseline(record().lexical);
+    session.patchLexical(body('Hello and more'));
+    const seen: boolean[] = [];
+    session.subscribe(() => seen.push(session.isDirty()));
+
+    await session.dispatchExplicit();
+
+    // A failed save keeps the post dirty and recoverable.
+    expect(session.isDirty()).toBe(true);
+    expect(seen).toContain(true);
+
+    saveFails = false;
+    await session.dispatchExplicit();
+
+    expect(session.isDirty()).toBe(false);
+    expect(seen.at(-1)).toBe(false);
+  });
+
+  it('stops notifying an unsubscribed listener', () => {
+    const { session } = harness({ record: record() });
+    session.setBaseline(record().lexical);
+    const listener = vi.fn();
+    const unsubscribe = session.subscribe(listener);
+
+    session.patchLexical(body('Hello and more'));
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    session.patchLexical(body('Hello'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(session.isDirty()).toBe(false);
   });
 });

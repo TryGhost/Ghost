@@ -887,7 +887,12 @@ export function createSaveEngine<
       if (!snapshot) {
         return 'confirm';
       }
-      if (isTerminal() || frozen) {
+      // A frozen command has not completed even when its input snapshot is
+      // clean (for example, publishing an otherwise unchanged draft).
+      if (frozen) {
+        return 'confirm';
+      }
+      if (isTerminal()) {
         return snapshot.isDirty ? 'confirm' : 'proceed';
       }
       const canSaveOnLeave =
