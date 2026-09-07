@@ -7,11 +7,10 @@ const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../services/auth');
 const invitations = require('../../services/invitations');
-const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
-const userService = new UsersService({ dbBackup, models, auth, apiMail, apiSettings });
+const userService = new UsersService({ models, auth, apiMail, apiSettings });
 const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
