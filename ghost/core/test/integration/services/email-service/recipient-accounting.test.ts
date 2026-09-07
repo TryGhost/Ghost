@@ -542,6 +542,30 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
+  it('reports persisted verification failures during shutdown with unstarted batches', async function () {
+    const {
+      recipientVerificationError,
+    } = require('../../../../core/server/services/email-service/recipient-accounting');
+    const batches = await service.createBatches(data);
+    sender.send.onFirstCall().callsFake(async () => {
+      service.onPreStop();
+      throw recipientVerificationError(email.id, 'provider_recipient_count');
+    });
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((jobEmail) => service.sendBatches({ ...data, email: jobEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+    const reported = sentry.captureException
+      .getCalls()
+      .filter(({ args }) => args[0].code === 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+    assert.equal(reported.length, 1);
+    assert.equal(JSON.parse(reported[0].args[0].errorDetails).reason, 'batch_verification_failed');
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('error'), null);
+    assert.ok((await service.getBatches(email)).some((batch) => batch.get('status') === 'pending'));
+  });
+
   it('reads active mixed-era progress from batch counts including all-excluded submissions', async function () {
     const batches = await service.createBatches(data);
     const full = batches.find((b) => b.get('recipient_count') === 2);
