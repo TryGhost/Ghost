@@ -40,6 +40,7 @@ import {
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
+  settingsSlugError,
   settingsSlugInput,
   settingsTiersError,
   settingsTiersPicker,
@@ -113,6 +114,7 @@ export const editorScreen = {
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
   settingsSlug: () => page.getByTestId(settingsSlugInput),
+  settingsSlugError: () => page.getByTestId(settingsSlugError),
   settingsUrlPreview: () => page.getByTestId(settingsUrlPreview),
   settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
   settingsVisibilityOption: (label: string) =>

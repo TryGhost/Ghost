@@ -170,6 +170,57 @@ describe('Post settings URL', () => {
   );
 
   it(
+    'reverts the slug and says so when the generator fails',
+    async () => {
+      fakeAdminEndpoint('GET', /^\/slugs\/post\//, { errors: [] }, { status: 500 });
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+
+      await editorScreen.settingsSlug().fill('new-slug');
+      await userEvent.keyboard('{Enter}');
+
+      await expect
+        .element(editorScreen.settingsSlugError())
+        .toHaveTextContent('Couldn’t update the URL.');
+      await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
+      await expect
+        .element(editorScreen.settingsUrlPreview())
+        .toHaveTextContent('test.com/hello-from-react/');
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'holds the input shut until the generator answers',
+    async () => {
+      let answerGenerator: () => void = () => {};
+      const answered = new Promise<void>((resolve) => {
+        answerGenerator = resolve;
+      });
+      fakeAdminEndpoint('GET', /^\/slugs\/post\//, async () => {
+        await answered;
+        return { slugs: [{ slug: 'new-slug' }] };
+      });
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+
+      await editorScreen.settingsSlug().fill('new-slug');
+      await userEvent.keyboard('{Enter}');
+
+      await expect.element(editorScreen.settingsSlug()).toBeDisabled();
+
+      answerGenerator();
+
+      await expect.element(editorScreen.settingsSlug()).toBeEnabled();
+      await expect.element(editorScreen.settingsSlug()).toHaveValue('new-slug');
+    },
+    SLOW,
+  );
+
+  it(
     'asks for nothing when the field is left as the post already reads',
     async () => {
       const slugApi = fakeSlugs();

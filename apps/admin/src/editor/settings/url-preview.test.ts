@@ -15,8 +15,4 @@ describe('formatUrlPreview', () => {
   it('shows the site on its own until the post has a slug', () => {
     expect(formatUrlPreview('https://example.com/', '')).toBe('example.com/');
   });
-
-  it('reads as a path while the site URL is still loading', () => {
-    expect(formatUrlPreview('', 'my-post')).toBe('/my-post/');
-  });
 });

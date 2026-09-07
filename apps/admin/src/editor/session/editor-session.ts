@@ -36,6 +36,9 @@ import {
 
 export type EditorWritePayload = Record<string, unknown>;
 
+/** What a manual slug edit did, so the input can revert and report a failure. */
+type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
+
 /** The full acknowledged record travels with the result so reconcile can rebase on it. */
 export interface EditorSaveResult extends SaveResult {
   post: EditorRecord;
@@ -105,7 +108,7 @@ export interface EditorSession {
   /** The slug the machine holds, which a title commit moves without a field patch. */
   getSlug: () => string;
   /** Routes a manual slug edit through the slug machine, then the same save policy. */
-  editSlug: (input: string) => Promise<void>;
+  editSlug: (input: string) => Promise<SlugEditOutcome>;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -472,16 +475,18 @@ export function createEditorSession({
 
   // A stale proposal was superseded by newer slug work, and every other
   // `unchanged` reason means the machine kept the slug it already had.
-  async function editSlug(input: string): Promise<void> {
+  async function editSlug(input: string): Promise<SlugEditOutcome> {
     const proposal = await machine.slugEdited(input);
     if (proposal.source === 'unchanged') {
       if (proposal.reason === 'error') {
         onError(proposal.error);
+        return 'failed';
       }
-      return;
+      return 'unchanged';
     }
     patchLive({ slug: proposal.slug });
     commitField();
+    return 'applied';
   }
 
   return {

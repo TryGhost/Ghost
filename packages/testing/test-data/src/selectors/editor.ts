@@ -42,6 +42,7 @@ export const settingsMenuToggle = 'settings-menu-toggle';
 export const settingsExcerptInput = 'settings-excerpt-input';
 export const settingsFeaturedToggle = 'settings-featured-toggle';
 export const settingsSlugInput = 'settings-slug-input';
+export const settingsSlugError = 'settings-slug-error';
 export const settingsUrlPreview = 'settings-url-preview';
 export const settingsVisibilitySelect = 'settings-visibility-select';
 export const settingsTiersPicker = 'settings-tiers-picker';

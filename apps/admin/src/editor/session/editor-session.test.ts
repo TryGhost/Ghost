@@ -88,6 +88,8 @@ interface HarnessHooks {
   failSave?: (saveCount: number) => boolean;
   failUpdateWith?: Error;
   failSlugWith?: Error;
+  /** Replaces the generator, so a test can hold a slug request open. */
+  generateSlug?: (text: string) => Promise<string>;
 }
 
 function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHooks = {}) {
@@ -145,8 +147,14 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
         state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
         return Promise.resolve(state.acknowledged);
       },
-      generateSlug: (text) =>
-        hooks.failSlugWith ? Promise.reject(hooks.failSlugWith) : Promise.resolve(slugify(text)),
+      generateSlug: (text) => {
+        if (hooks.generateSlug) {
+          return hooks.generateSlug(text);
+        }
+        return hooks.failSlugWith
+          ? Promise.reject(hooks.failSlugWith)
+          : Promise.resolve(slugify(text));
+      },
     },
     ...options,
   });
@@ -1306,13 +1314,54 @@ describe('createEditorSession', () => {
         { failSlugWith: failure },
       );
 
-      await session.editSlug('A New Slug');
+      const outcome = await session.editSlug('A New Slug');
       await settle();
 
+      expect(outcome).toBe('failed');
       expect(session.getSlug()).toBe('hello');
       expect(engineSpy.dispatched).toEqual([]);
       expect(state.updates).toHaveLength(0);
       expect(errors).toEqual([failure]);
+    });
+
+    it('drops an edit a reload superseded rather than writing it onto the new document', async () => {
+      let answerGenerator: (slug: string) => void = () => {};
+      const { session, state } = harness(
+        { record: record() },
+        {
+          failUpdateWith: updateCollision(),
+          generateSlug: () =>
+            new Promise<string>((resolve) => {
+              answerGenerator = resolve;
+            }),
+        },
+      );
+
+      // A reload is only accepted out of a conflict, so the save has to fail first.
+      session.patchLexical(body('Mine'));
+      await session.dispatchExplicit();
+      engineSpy.dispatched.length = 0;
+
+      const edit = session.editSlug('A New Slug');
+      expect(
+        session.recordReloaded(
+          record({
+            title: 'Their title',
+            slug: 'their-slug',
+            updated_at: '2026-01-02T00:00:00.000Z',
+          }),
+        ),
+      ).toBe(true);
+      answerGenerator('a-new-slug');
+
+      const outcome = await edit;
+      await settle();
+
+      expect(session.getFields().slug).toBe('their-slug');
+      expect(session.getSlug()).toBe('their-slug');
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(1);
+      expect(outcome).toBe('unchanged');
     });
 
     it('notifies subscribers when a title commit regenerates the slug', async () => {

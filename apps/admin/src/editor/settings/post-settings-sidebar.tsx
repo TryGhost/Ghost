@@ -59,6 +59,8 @@ function FeaturedSection({
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
+  /** The site's homepage URL, which the URL section previews the slug under. */
+  siteUrl: string;
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
@@ -71,6 +73,7 @@ export interface PostSettingsSidebarProps {
 export function PostSettingsSidebar({
   session,
   postType,
+  siteUrl,
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
@@ -78,7 +81,7 @@ export function PostSettingsSidebar({
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
-    url: <UrlSection postType={postType} session={session} />,
+    url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,
