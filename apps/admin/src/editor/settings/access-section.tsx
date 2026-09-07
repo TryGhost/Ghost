@@ -94,7 +94,10 @@ export interface AccessSectionProps {
  */
 export function AccessSection({ session, postType }: AccessSectionProps) {
   const selectId = useId();
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useBrowseSettings({
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const defaultContentVisibility = getSettingValue<string>(
     settingsData?.settings ?? null,
     'default_content_visibility',

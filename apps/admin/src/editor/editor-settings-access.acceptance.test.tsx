@@ -227,6 +227,9 @@ describe('Post settings access', () => {
       // Archived paid tiers are offered after the active ones; free tiers are not.
       await expect.element(editorScreen.settingsTier('Bronze')).toBeVisible();
       await expect(editorScreen.settingsTier('Free')).toHaveCount(0);
+      // Staged rather than refused, so the writer sees no save error for it.
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
 
       await editorScreen.settingsTier('Gold').click();
 
@@ -330,7 +333,7 @@ describe('Post settings access', () => {
 
       await editorScreen.settingsTier('Tier 01').click();
 
-      // A tier the browse never returned must survive a toggle of another one.
+      // The last tier survives the toggle only because the browse loaded past page one.
       await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
       expect(submittedPost(saveApi).tiers).toEqual([{ id: MANY_TIERS[0].id }, { id: last.id }]);
     },
