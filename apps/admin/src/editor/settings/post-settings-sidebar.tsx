@@ -73,7 +73,7 @@ export function PostSettingsSidebar({
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
-  // Owner, Administrator and Editor: the roles Ember shows these sections to.
+  // Owner, Administrator and Editor manage featured and access.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
