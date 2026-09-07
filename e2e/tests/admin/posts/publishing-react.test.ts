@@ -42,13 +42,7 @@ async function getNewsletters(request: APIRequestContext): Promise<{ id: string 
 async function addSubscribedMember(page: Page, email: string) {
   const memberFactory = createMemberFactory(page.request);
   const newsletters = await getNewsletters(page.request);
-  // The factory types `newsletters` as ids, but the Admin API attaches the
-  // relation only from objects; bare ids subscribe the member to nothing.
-  await memberFactory.create({
-    email,
-    name: 'React publishing member',
-    newsletters: newsletters as never,
-  });
+  await memberFactory.create({ email, name: 'React publishing member', newsletters });
 }
 
 async function startDraft(page: Page, { title, body }: { title: string; body: string }) {
