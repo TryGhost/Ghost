@@ -77,6 +77,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('id').primary();
     table.text('table_name').notNullable().unique();
     table.text('last_synced_updated_at').notNullable();
+    table.text('last_synced_id');
     table.text('created_at').notNullable();
     table.text('updated_at');
   });
@@ -123,6 +124,11 @@ const receivedIds = () => received.flatMap((request) => request.lines.map((line)
 const watermark = async () => {
   const row = await knex('tinybird_syncs').where({ table_name: TARGET.table }).first();
   return row?.last_synced_updated_at ?? null;
+};
+
+const watermarkId = async () => {
+  const row = await knex('tinybird_syncs').where({ table_name: TARGET.table }).first();
+  return row?.last_synced_id ?? null;
 };
 
 beforeAll(async () => {
@@ -259,27 +265,47 @@ describe('syncTableToTinybird', () => {
     assert.equal(await watermark(), null);
   });
 
-  it('records the newest synced updated_at as the watermark', async () => {
+  it('records the newest synced updated_at and id as the watermark', async () => {
     await insertRun(minutesBeforeNow(30));
-    await insertRun(minutesBeforeNow(20));
+    const newestId = await insertRun(minutesBeforeNow(20));
 
     await sync();
 
     assert.equal(await watermark(), '2026-03-01 11:40:00');
+    assert.equal(await watermarkId(), newestId);
   });
 
-  it('only sends rows at or after the watermark on later runs', async () => {
+  it('resumes after the watermark row on later runs, even within the same second', async () => {
     await insertRun(minutesBeforeNow(30));
-    const boundaryId = await insertRun(minutesBeforeNow(20));
+    await insertRun(minutesBeforeNow(20), { id: 'run-a' });
     await sync();
     received = [];
 
+    await insertRun(minutesBeforeNow(20), { id: 'run-b' });
     const newerId = await insertRun(minutesBeforeNow(10));
     await insertRun(minutesBeforeNow(40));
     const sent = await sync();
 
     assert.equal(sent, 2);
-    assert.deepEqual(receivedIds().sort(), [boundaryId, newerId].sort());
+    assert.deepEqual(receivedIds(), ['run-b', newerId]);
+  });
+
+  it('restarts inclusively at the watermark second when no id was recorded', async () => {
+    await insertRun(minutesBeforeNow(20), { id: 'run-a' });
+    await knex('tinybird_syncs').insert({
+      id: ObjectId().toHexString(),
+      table_name: TARGET.table,
+      last_synced_updated_at: '2026-03-01 11:40:00',
+      last_synced_id: null,
+      created_at: '2026-03-01 11:41:00',
+      updated_at: '2026-03-01 11:41:00',
+    });
+
+    const sent = await sync();
+
+    assert.equal(sent, 1);
+    assert.deepEqual(receivedIds(), ['run-a']);
+    assert.equal(await watermarkId(), 'run-a');
   });
 
   it('holds back rows updated within the safety lag until a later run', async () => {
@@ -291,7 +317,7 @@ describe('syncTableToTinybird', () => {
 
     received = [];
     await sync({ now: () => new Date(NOW.getTime() + SAFETY_LAG_MS) });
-    assert.deepEqual(receivedIds(), [oldId, freshId]);
+    assert.deepEqual(receivedIds(), [freshId]);
   });
 
   it('pages through rows in batches ordered by updated_at then id', async () => {
