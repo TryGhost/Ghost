@@ -7,6 +7,7 @@ import {
   editorConflictBanner,
   editorReauthBanner,
   editorSecondaryInstance,
+  editorStatus,
   editorTitleInput,
   postsBackLink,
 } from '@tryghost/test-data/selectors/editor';
@@ -154,8 +155,6 @@ class PublishFlow extends BasePage {
 export type PostEditorImplementation = 'ember' | 'react';
 
 export class PostEditorPage extends AdminPage {
-  private readonly implementation: PostEditorImplementation;
-
   readonly titleInput: Locator;
   readonly postStatus: Locator;
   readonly previewButton: Locator;
@@ -187,7 +186,6 @@ export class PostEditorPage extends AdminPage {
     { implementation = 'ember' }: { implementation?: PostEditorImplementation } = {},
   ) {
     super(page);
-    this.implementation = implementation;
     this.pageUrl = '/ghost/#/editor/post/';
 
     const react = implementation === 'react';
@@ -195,9 +193,10 @@ export class PostEditorPage extends AdminPage {
     this.titleInput = react
       ? page.getByTestId(editorTitleInput)
       : page.locator('[data-test-editor-title-input]');
-    // React has no save-state chip yet; `waitForSaved` refuses rather than
-    // resolving this against nothing.
-    this.postStatus = page.locator('[data-test-editor-post-status]');
+    // Both editors write the same chip text; only the attribute differs.
+    this.postStatus = react
+      ? page.getByTestId(editorStatus)
+      : page.locator('[data-test-editor-post-status]');
     this.previewButton = page.getByRole('button', { name: 'Preview' });
     this.previewModal = new PostPreviewModal(page);
     this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
@@ -271,13 +270,8 @@ export class PostEditorPage extends AdminPage {
     await this.page.keyboard.type(body);
   }
 
+  /** React holds "Saving…" for a minimum display window, so this outlasts it. */
   async waitForSaved(): Promise<void> {
-    if (this.implementation === 'react') {
-      // The React editor renders no save-state chip, so there is nothing to
-      // read; wait on the save request or the persisted record instead.
-      throw new Error('waitForSaved reads the Ember status chip; the React editor has none');
-    }
-
     await this.postStatus.filter({ hasText: /Saved/ }).waitFor({ timeout: 30000 });
   }
 
