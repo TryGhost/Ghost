@@ -1182,6 +1182,7 @@ class BatchSendingService {
     logging.info({
       event: { name: 'email.submission.unverified' }, email_id: email.id,
       batch_count: batches.length, reason: 'submission_counts_unavailable',
+      unverified_batch_ids: batches.filter(batch => batch.get('submitted_count') === null && batch.get('submission_excluded_count') === null).map(batch => batch.id),
     }, 'All email batches submitted; submission recipient counts are unavailable');
   }
 
@@ -1416,7 +1417,7 @@ class BatchSendingService {
       if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
         logging.error(err);
         if (this.#sentry) {
-          // Log the original error to Sentry
+          // Log the original provider error to Sentry.
           this.#sentry.captureException(err);
         }
       } else {
@@ -1428,8 +1429,8 @@ class BatchSendingService {
         });
 
         logging.error(ghostError);
-        if (this.#sentry) {
-          // Log the original error to Sentry
+        if (this.#sentry && err.code !== VERIFICATION_CODE) {
+          // Integrity failures are reported once by emailJob after persisted verification.
           this.#sentry.captureException(err);
         }
       }
