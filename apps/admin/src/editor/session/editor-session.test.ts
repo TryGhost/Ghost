@@ -133,7 +133,9 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
           title: payload.title as string,
           slug: payload.slug as string,
           lexical: payload.lexical as string,
-          custom_excerpt: (payload.custom_excerpt ?? null) as string | null,
+          custom_excerpt: ('custom_excerpt' in payload
+            ? payload.custom_excerpt
+            : (state.acknowledged.custom_excerpt ?? null)) as string | null,
           featured: ('featured' in payload
             ? payload.featured
             : state.acknowledged.featured) as boolean,
@@ -689,7 +691,7 @@ describe('createEditorSession', () => {
       expect(session.getFields().meta_title).toBe('Different meta');
     });
 
-    it('sends only the fields this session edited', async () => {
+    it('sends only settings with outstanding edits', async () => {
       const { session, state } = harness({
         record: record({ featured: false, meta_title: 'Untouched', visibility: 'public' }),
       });
@@ -701,6 +703,97 @@ describe('createEditorSession', () => {
       expect(state.updates[0].payload).not.toHaveProperty('meta_title');
       expect(state.updates[0].payload).not.toHaveProperty('visibility');
       expect(session.isDirty()).toBe(false);
+    });
+
+    it('adopts remote settings after the local edit was saved without resending it', async () => {
+      const { session, state } = harness({ record: record({ featured: false }) });
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+      expect(session.isDirty()).toBe(false);
+
+      state.acknowledged = {
+        ...state.acknowledged,
+        featured: false,
+        updated_at: '2026-01-01T00:00:01.500Z',
+      };
+      session.recordRefetched(state.acknowledged);
+
+      expect(session.getFields().featured).toBe(false);
+      expect(session.isDirty()).toBe(false);
+
+      session.patchTitle('A later title edit');
+      await session.dispatchExplicit();
+      expect(state.updates[1].payload).not.toHaveProperty('featured');
+      expect(state.acknowledged.featured).toBe(false);
+    });
+
+    it('releases a Featured edit that was undone before saving', () => {
+      const { session } = harness({ record: record({ featured: false }) });
+
+      session.patchFields({ featured: true });
+      session.patchFields({ featured: false });
+      session.recordRefetched(record({ featured: true, updated_at: '2026-01-02T00:00:00.000Z' }));
+
+      expect(session.getFields().featured).toBe(true);
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('releases a reverted excerpt and omits untouched excerpts from saves', async () => {
+      const { session, state } = harness({ record: record({ custom_excerpt: 'Original' }) });
+
+      session.patchExcerpt('Temporary');
+      session.patchExcerpt('Original');
+      state.acknowledged = record({
+        custom_excerpt: 'Remote',
+        updated_at: '2026-01-01T00:00:00.500Z',
+      });
+      session.recordRefetched(state.acknowledged);
+
+      expect(session.getFields().custom_excerpt).toBe('Remote');
+      expect(session.isDirty()).toBe(false);
+
+      session.patchTitle('A later title edit');
+      await session.dispatchExplicit();
+      expect(state.updates[0].payload).not.toHaveProperty('custom_excerpt');
+      expect(state.acknowledged.custom_excerpt).toBe('Remote');
+    });
+
+    it('compares reverted relations by their editable identity', () => {
+      const { session } = harness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+      session.patchFields({ authors: [{ id: 'author-2' }] });
+      session.patchFields({ authors: [{ id: 'author-1' }] });
+      session.recordRefetched(
+        record({ authors: [{ id: 'author-3' }], updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields().authors).toEqual([{ id: 'author-3' }]);
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps an undo made during a save even when its refetch arrives before the acknowledgement', async () => {
+      const built = harness(
+        { record: record({ featured: false }) },
+        {
+          duringSave: () => {
+            built.session.patchFields({ featured: false });
+            built.session.recordRefetched(
+              record({ featured: true, updated_at: '2026-01-01T00:00:01.000Z' }),
+            );
+          },
+        },
+      );
+
+      built.session.patchFields({ featured: true });
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().featured).toBe(false);
+      expect(built.session.isDirty()).toBe(true);
+
+      await built.session.dispatchExplicit();
+      expect(built.state.updates[1].payload).toMatchObject({ featured: false });
+      expect(built.session.isDirty()).toBe(false);
     });
 
     it.each([

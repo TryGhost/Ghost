@@ -116,6 +116,8 @@ export interface ChangeTracker {
   clearSaveError(): void;
   revisionRestored(postId: PostId, restored: RestoredRevision): void;
   verdict(options?: VerdictOptions): ChangeVerdict;
+  /** Compares one editable field with the latest saved value using the dirty-check rules. */
+  isFieldDirty(key: keyof EditablePostProjection): boolean;
   hasChangedSinceRevision(latestRevision: RevisionProjection | null | undefined): boolean;
   dispose(): void;
 }
@@ -502,6 +504,10 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       }
 
       return result;
+    },
+
+    isFieldDirty(key) {
+      return !!saved && !!live && key !== 'updated_at' && !sameField(key, saved[key], live[key]);
     },
 
     hasChangedSinceRevision(latestRevision) {

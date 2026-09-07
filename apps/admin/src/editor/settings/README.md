@@ -28,15 +28,16 @@ to the conflict banner, and only the writer choosing the server's copy discards
 what they staged.
 
 The sections are added one at a time. A field a section does not yet own is
-carried in the session's projection but never sent: a field enters the save
-payload once this session has edited it, so a value the session merely opened
-with can never overwrite a change made elsewhere. The reverse also holds — a
-field the writer has not moved past adopts the value the server acknowledges or
-a refetch brings back, so a value normalized on the way through or changed by
-someone else does not read as a local edit for good. Enrolment outlives a
-successful save and is cleared only by a reload, so a field the writer edited
-once is never adopted from a refetch again this session and every later save
-re-sends their value: last writer wins.
+carried in the session's projection but never sent. Settings, including the
+excerpt, enter the save payload only while they differ from the saved copy.
+Successful saves and reverted edits release ownership, so a later refetch can
+adopt someone else's change and an unrelated save cannot overwrite it.
+
+An outstanding edit keeps the writer's value through a refetch or rejected save.
+An acknowledgement adopts the server's normalized value only where the writer
+has not edited past the submitted value. Undoing a field while its save is in
+flight also stays staged, even if that save's refetch arrives before its
+acknowledgement: the next save persists the undo.
 
 Three fields are deliberately absent from the settings projection. Status and
 publish time belong to the save engine's command target, which the publish flow

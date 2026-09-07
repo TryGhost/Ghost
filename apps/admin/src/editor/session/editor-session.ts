@@ -93,7 +93,7 @@ export interface EditorSession {
       Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
     >,
   ) => void;
-  /** Stages settings-sidebar fields in the live document and enrols them in the save payload. */
+  /** Stages settings-sidebar fields; outstanding changes enter the next save payload. */
   patchFields: (patch: EditorSettingsPatch) => void;
   /** The live value of every settings field, for the sidebar's inputs. */
   getFields: () => EditablePostProjection;
@@ -151,9 +151,8 @@ export function createEditorSession({
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
-  // A field is sent only once this session has edited it. Resending a value the
-  // session merely opened with would overwrite whatever changed elsewhere.
-  const editedFields = new Set<SettingsFieldKey>();
+  // Refetches must also preserve an undo of a value the current request is writing.
+  let inFlightSettings: EditorSettingsFields | null = null;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -260,7 +259,6 @@ export function createEditorSession({
       title: request.title,
       slug: request.slug,
       lexical: live.lexical,
-      custom_excerpt: live.custom_excerpt,
       feature_image: live.feature_image,
       feature_image_alt: live.feature_image_alt,
       feature_image_caption: live.feature_image_caption,
@@ -271,7 +269,6 @@ export function createEditorSession({
       title: projection.title,
       slug: projection.slug,
       lexical: projection.lexical,
-      custom_excerpt: projection.custom_excerpt,
       feature_image: projection.feature_image,
       feature_image_alt: projection.feature_image_alt,
       feature_image_caption: projection.feature_image_caption,
@@ -285,9 +282,11 @@ export function createEditorSession({
     }
 
     const staged = projection as Record<string, unknown>;
-    for (const key of editedFields) {
-      staged[key] = live[key];
-      payload[key] = live[key];
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (tracker.isFieldDirty(key)) {
+        staged[key] = live[key];
+        payload[key] = live[key];
+      }
     }
     if (!isCreate) {
       if (!projection.updated_at) {
@@ -322,12 +321,14 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
+    inFlightSettings = prepared.settingsFrom;
     try {
       const saved = prepared.isCreate
         ? await transport.create(prepared.payload)
         : await transport.update(prepared.payload, prepared.options);
 
       if (!saved) {
+        inFlightSettings = null;
         return { ok: false, error: { kind: 'unknown', message: saveFailureMessage } };
       }
 
@@ -341,6 +342,7 @@ export function createEditorSession({
         },
       };
     } catch (error) {
+      inFlightSettings = null;
       return { ok: false, error: toSaveError(error, saveFailureMessage) };
     }
   }
@@ -356,6 +358,7 @@ export function createEditorSession({
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
     adoptSettings(acknowledged, (key) => live[key] === prepared.settingsFrom[key]);
+    inFlightSettings = null;
     machine.saveAcknowledged(submitted, {
       title: acknowledged.title,
       slug: acknowledged.slug,
@@ -409,20 +412,10 @@ export function createEditorSession({
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
-    // The excerpt is a settings field wherever it is typed, so an edit here
-    // enrols it the way the sidebar's own fields are enrolled.
-    patchExcerpt: (excerpt) => {
-      editedFields.add('custom_excerpt');
-      patchLive({ custom_excerpt: excerpt === '' ? null : excerpt });
-    },
+    patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
     patchFeatureImage: (patch) => patchLive(patch),
 
-    patchFields: (patch) => {
-      for (const key of Object.keys(patch) as SettingsFieldKey[]) {
-        editedFields.add(key);
-      }
-      patchLive(patch);
-    },
+    patchFields: patchLive,
     getFields: () => live,
 
     // The one place the sidebar's save policy lives. A draft persists a settings
@@ -467,10 +460,18 @@ export function createEditorSession({
       ) {
         return false;
       }
-      tracker.setSaved(next.id, projectionOf(next));
-      // A refetch is the server's own copy, so a settings field this session
-      // never edited takes it; an edited one keeps what the writer staged.
-      adoptSettings(projectionOf(next), (key) => !editedFields.has(key));
+      // Decide against the old saved copy before the refetch replaces it. Saved
+      // and undone edits no longer own a field; only outstanding changes do.
+      const adoptable = new Set(
+        SETTINGS_FIELD_KEYS.filter(
+          (key) =>
+            !tracker.isFieldDirty(key) &&
+            (!inFlightSettings || live[key] === inFlightSettings[key]),
+        ),
+      );
+      const projection = projectionOf(next);
+      tracker.setSaved(next.id, projection);
+      adoptSettings(projection, (key) => adoptable.has(key));
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
@@ -500,7 +501,7 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
-      editedFields.clear();
+      inFlightSettings = null;
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
