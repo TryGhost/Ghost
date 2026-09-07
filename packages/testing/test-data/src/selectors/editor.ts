@@ -36,6 +36,12 @@ export const editorLeaveDialog = 'editor-leave-dialog';
 export const editorHeaderActions = 'editor-header-actions';
 export const editorPublishInputsError = 'editor-publish-inputs-error';
 
+// settings sidebar testids
+export const postSettingsSidebar = 'post-settings-sidebar';
+export const settingsMenuToggle = 'settings-menu-toggle';
+export const settingsExcerptInput = 'settings-excerpt-input';
+export const settingsFeaturedToggle = 'settings-featured-toggle';
+
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
 export const publishFlowOptions = 'publish-flow-options';

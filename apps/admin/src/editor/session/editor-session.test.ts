@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
@@ -8,6 +8,30 @@ import {
   type EditorWritePayload,
 } from './editor-session';
 import type { EditorRecord } from './projection';
+
+type SaveEngineModule = typeof import('@/editor/engine/save-engine');
+
+// A pass-through wrapper. The engine refuses a background save on anything but
+// a draft anyway, so `commitField`'s gate is only observable at the dispatch.
+const engineSpy = vi.hoisted(() => ({ dispatched: [] as string[] }));
+
+vi.mock('@/editor/engine/save-engine', async (importOriginal) => {
+  const actual = await importOriginal<SaveEngineModule>();
+  const createSaveEngine = ((ports: never) => {
+    const engine = actual.createSaveEngine(ports);
+    const dispatch = (kind: string, options?: never) => {
+      engineSpy.dispatched.push(kind);
+      return engine.dispatch(kind as 'publish', options);
+    };
+    return { ...engine, dispatch };
+  }) as unknown as SaveEngineModule['createSaveEngine'];
+
+  return { ...actual, createSaveEngine };
+});
+
+beforeEach(() => {
+  engineSpy.dispatched.length = 0;
+});
 
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 
@@ -109,7 +133,12 @@ function harness(options: Partial<EditorSessionOptions> = {}, hooks: HarnessHook
           title: payload.title as string,
           slug: payload.slug as string,
           lexical: payload.lexical as string,
-          custom_excerpt: (payload.custom_excerpt ?? null) as string | null,
+          custom_excerpt: ('custom_excerpt' in payload
+            ? payload.custom_excerpt
+            : (state.acknowledged.custom_excerpt ?? null)) as string | null,
+          featured: ('featured' in payload
+            ? payload.featured
+            : state.acknowledged.featured) as boolean,
           updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
         });
         state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
@@ -627,6 +656,301 @@ describe('createEditorSession', () => {
 
     expect(session.isDirty()).toBe(false);
     expect(seen.at(-1)).toBe(false);
+  });
+
+  describe('settings fields', () => {
+    const PUBLISHED_AT = '2025-12-01T00:00:00.000Z';
+
+    // A field save awaits the slug port and the transport before it lands.
+    const settle = () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+    it('carries every settings field through the projection into the dirty compare', () => {
+      const { session } = harness({
+        record: record({
+          featured: false,
+          visibility: 'public',
+          meta_title: 'Meta',
+          codeinjection_head: null,
+        }),
+      });
+
+      expect(session.getFields()).toMatchObject({
+        featured: false,
+        visibility: 'public',
+        meta_title: 'Meta',
+        codeinjection_head: null,
+      });
+      expect(session.isDirty()).toBe(false);
+
+      session.patchFields({ meta_title: 'Different meta' });
+
+      expect(session.isDirty()).toBe(true);
+      expect(session.getFields().meta_title).toBe('Different meta');
+    });
+
+    it('sends only settings with outstanding edits', async () => {
+      const { session, state } = harness({
+        record: record({ featured: false, meta_title: 'Untouched', visibility: 'public' }),
+      });
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      expect(state.updates[0].payload).toMatchObject({ featured: true });
+      expect(state.updates[0].payload).not.toHaveProperty('meta_title');
+      expect(state.updates[0].payload).not.toHaveProperty('visibility');
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('adopts remote settings after the local edit was saved without resending it', async () => {
+      const { session, state } = harness({ record: record({ featured: false }) });
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+      expect(session.isDirty()).toBe(false);
+
+      state.acknowledged = {
+        ...state.acknowledged,
+        featured: false,
+        updated_at: '2026-01-01T00:00:01.500Z',
+      };
+      session.recordRefetched(state.acknowledged);
+
+      expect(session.getFields().featured).toBe(false);
+      expect(session.isDirty()).toBe(false);
+
+      session.patchTitle('A later title edit');
+      await session.dispatchExplicit();
+      expect(state.updates[1].payload).not.toHaveProperty('featured');
+      expect(state.acknowledged.featured).toBe(false);
+    });
+
+    it('releases a Featured edit that was undone before saving', () => {
+      const { session } = harness({ record: record({ featured: false }) });
+
+      session.patchFields({ featured: true });
+      session.patchFields({ featured: false });
+      session.recordRefetched(record({ featured: true, updated_at: '2026-01-02T00:00:00.000Z' }));
+
+      expect(session.getFields().featured).toBe(true);
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('releases a reverted excerpt and omits untouched excerpts from saves', async () => {
+      const { session, state } = harness({ record: record({ custom_excerpt: 'Original' }) });
+
+      session.patchExcerpt('Temporary');
+      session.patchExcerpt('Original');
+      state.acknowledged = record({
+        custom_excerpt: 'Remote',
+        updated_at: '2026-01-01T00:00:00.500Z',
+      });
+      session.recordRefetched(state.acknowledged);
+
+      expect(session.getFields().custom_excerpt).toBe('Remote');
+      expect(session.isDirty()).toBe(false);
+
+      session.patchTitle('A later title edit');
+      await session.dispatchExplicit();
+      expect(state.updates[0].payload).not.toHaveProperty('custom_excerpt');
+      expect(state.acknowledged.custom_excerpt).toBe('Remote');
+    });
+
+    it('compares reverted relations by their editable identity', () => {
+      const { session } = harness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+      session.patchFields({ authors: [{ id: 'author-2' }] });
+      session.patchFields({ authors: [{ id: 'author-1' }] });
+      session.recordRefetched(
+        record({ authors: [{ id: 'author-3' }], updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields().authors).toEqual([{ id: 'author-3' }]);
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps an undo made during a save even when its refetch arrives before the acknowledgement', async () => {
+      const built = harness(
+        { record: record({ featured: false }) },
+        {
+          duringSave: () => {
+            built.session.patchFields({ featured: false });
+            built.session.recordRefetched(
+              record({ featured: true, updated_at: '2026-01-01T00:00:01.000Z' }),
+            );
+          },
+        },
+      );
+
+      built.session.patchFields({ featured: true });
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().featured).toBe(false);
+      expect(built.session.isDirty()).toBe(true);
+
+      await built.session.dispatchExplicit();
+      expect(built.state.updates[1].payload).toMatchObject({ featured: false });
+      expect(built.session.isDirty()).toBe(false);
+    });
+
+    it.each([
+      { status: 'draft' as const, dispatches: true },
+      { status: 'published' as const, dispatches: false },
+      { status: 'scheduled' as const, dispatches: false },
+      { status: 'sent' as const, dispatches: false },
+    ])('$status: commitField reaches the engine=$dispatches', ({ status, dispatches }) => {
+      const { session } = harness({
+        record: record({ status, published_at: status === 'draft' ? null : PUBLISHED_AT }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+
+      expect(engineSpy.dispatched).toEqual(dispatches ? ['field'] : []);
+    });
+
+    it.each([
+      { status: 'draft' as const, persists: true },
+      { status: 'published' as const, persists: false },
+      { status: 'scheduled' as const, persists: false },
+      { status: 'sent' as const, persists: false },
+    ])('$status: commitField persists=$persists', async ({ status, persists }) => {
+      const { session, state } = harness({
+        record: record({
+          status,
+          published_at: status === 'draft' ? null : PUBLISHED_AT,
+        }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+      await settle();
+
+      expect(state.updates).toHaveLength(persists ? 1 : 0);
+      expect(session.isDirty()).toBe(!persists);
+    });
+
+    it('stages a field on a published post until an explicit save', async () => {
+      const { session, state } = harness({
+        record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+      await settle();
+
+      expect(state.updates).toHaveLength(0);
+      expect(session.getFields().featured).toBe(true);
+
+      await session.dispatchExplicit();
+
+      expect(state.updates).toHaveLength(1);
+      expect(state.updates[0].payload).toMatchObject({ featured: true, status: 'published' });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps a staged field after a rejected save', async () => {
+      const { session, state } = harness(
+        { record: record({ status: 'published', published_at: PUBLISHED_AT }) },
+        { failUpdateWith: updateCollision() },
+      );
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      expect(state.updates).toHaveLength(1);
+      expect(session.getFields().featured).toBe(true);
+      expect(session.isDirty()).toBe(true);
+    });
+
+    it('adopts a settings value the acknowledgement came back with', async () => {
+      const { session } = harness(
+        { record: record({ visibility: 'public' }) },
+        { acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }) },
+      );
+
+      session.patchLexical(body('Changed'));
+      await session.dispatchExplicit();
+
+      expect(session.getFields().visibility).toBe('paid');
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps a settings field edited while the save was in flight', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: () => built.session.patchFields({ visibility: 'members' }),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('members');
+      expect(built.session.isDirty()).toBe(true);
+    });
+
+    it('adopts a refetched settings value it never edited', () => {
+      const { session } = harness({ record: record({ visibility: 'public', featured: false }) });
+
+      const accepted = session.recordRefetched(
+        record({ visibility: 'paid', featured: true, updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(accepted).toBe(true);
+      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('leaves a field it edited alone when a refetch disagrees', () => {
+      const { session } = harness({ record: record({ visibility: 'public', featured: false }) });
+
+      session.patchFields({ featured: true });
+      session.recordRefetched(
+        record({ visibility: 'paid', featured: false, updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
+      expect(session.isDirty()).toBe(true);
+    });
+
+    it('leaves a typed excerpt alone when a refetch disagrees', () => {
+      const { session } = harness({ record: record({ custom_excerpt: 'Opened with' }) });
+
+      session.patchExcerpt('typing…');
+      session.recordRefetched(
+        record({ custom_excerpt: 'From elsewhere', updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields().custom_excerpt).toBe('typing…');
+    });
+
+    it('discards staged fields when the server copy replaces the document', async () => {
+      const { session } = harness(
+        { record: record({ status: 'published', published_at: PUBLISHED_AT, featured: false }) },
+        { failUpdateWith: updateCollision() },
+      );
+
+      session.patchFields({ featured: true });
+      await session.dispatchExplicit();
+
+      const reloaded = session.recordReloaded(
+        record({
+          status: 'published',
+          published_at: PUBLISHED_AT,
+          featured: false,
+          updated_at: '2026-01-02T00:00:00.000Z',
+        }),
+      );
+
+      expect(reloaded).toBe(true);
+      expect(session.getFields().featured).toBe(false);
+    });
   });
 
   it('stops notifying an unsubscribed listener', () => {

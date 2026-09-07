@@ -26,6 +26,12 @@ import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
+import {
+  SETTINGS_FIELD_KEYS,
+  type EditorSettingsFields,
+  type EditorSettingsPatch,
+  type SettingsFieldKey,
+} from './settings-fields';
 
 export type EditorWritePayload = Record<string, unknown>;
 
@@ -44,6 +50,8 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
+  /** The same, for the settings fields, so the acknowledgement can be adopted. */
+  settingsFrom: EditorSettingsFields;
   payload: EditorWritePayload;
   options: PostWriteOptions;
   isCreate: boolean;
@@ -85,6 +93,12 @@ export interface EditorSession {
       Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
     >,
   ) => void;
+  /** Stages settings-sidebar fields; outstanding changes enter the next save payload. */
+  patchFields: (patch: EditorSettingsPatch) => void;
+  /** The live value of every settings field, for the sidebar's inputs. */
+  getFields: () => EditablePostProjection;
+  /** The one save policy gate for settings fields; see the README. */
+  commitField: () => void;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -137,6 +151,8 @@ export function createEditorSession({
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
+  // Refetches must also preserve an undo of a value the current request is writing.
+  let inFlightSettings: EditorSettingsFields | null = null;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -193,6 +209,34 @@ export function createEditorSession({
     }
   }
 
+  function settingsSnapshot(): EditorSettingsFields {
+    const fields = {} as Record<string, unknown>;
+    for (const key of SETTINGS_FIELD_KEYS) {
+      fields[key] = live[key];
+    }
+    return fields as EditorSettingsFields;
+  }
+
+  // The server's copy of a settings field the writer has not moved past wins,
+  // the same rule the authored fields use: without it a value the server
+  // normalized or someone else changed reads as a local edit for good.
+  function adoptSettings(
+    next: EditablePostProjection,
+    isAdoptable: (key: SettingsFieldKey) => boolean,
+  ): void {
+    const patch: Record<string, unknown> = {};
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (isAdoptable(key) && live[key] !== next[key]) {
+        patch[key] = next[key];
+      }
+    }
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    live = { ...live, ...patch };
+    tracker.setLive(identity.id, patch);
+  }
+
   function getSnapshot(): EditorSaveSnapshot {
     return buildSaveSnapshot({
       identity,
@@ -211,13 +255,10 @@ export function createEditorSession({
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
-    // Tags are left out: nothing here edits them, and resending the set this
-    // session opened with would overwrite tags changed elsewhere.
     const projection: EditablePostPatch = {
       title: request.title,
       slug: request.slug,
       lexical: live.lexical,
-      custom_excerpt: live.custom_excerpt,
       feature_image: live.feature_image,
       feature_image_alt: live.feature_image_alt,
       feature_image_caption: live.feature_image_caption,
@@ -228,7 +269,6 @@ export function createEditorSession({
       title: projection.title,
       slug: projection.slug,
       lexical: projection.lexical,
-      custom_excerpt: projection.custom_excerpt,
       feature_image: projection.feature_image,
       feature_image_alt: projection.feature_image_alt,
       feature_image_caption: projection.feature_image_caption,
@@ -239,6 +279,14 @@ export function createEditorSession({
     // (core/server/models/relations/authors.js). Updates never resend it.
     if (isCreate && currentUserId) {
       payload.authors = [{ id: currentUserId }];
+    }
+
+    const staged = projection as Record<string, unknown>;
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (tracker.isFieldDirty(key)) {
+        staged[key] = live[key];
+        payload[key] = live[key];
+      }
     }
     if (!isCreate) {
       if (!projection.updated_at) {
@@ -259,6 +307,7 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
+      settingsFrom: settingsSnapshot(),
       payload,
       options: {
         saveRevision: request.saveRevision,
@@ -272,12 +321,14 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
+    inFlightSettings = prepared.settingsFrom;
     try {
       const saved = prepared.isCreate
         ? await transport.create(prepared.payload)
         : await transport.update(prepared.payload, prepared.options);
 
       if (!saved) {
+        inFlightSettings = null;
         return { ok: false, error: { kind: 'unknown', message: saveFailureMessage } };
       }
 
@@ -291,6 +342,7 @@ export function createEditorSession({
         },
       };
     } catch (error) {
+      inFlightSettings = null;
       return { ok: false, error: toSaveError(error, saveFailureMessage) };
     }
   }
@@ -305,6 +357,8 @@ export function createEditorSession({
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
+    adoptSettings(acknowledged, (key) => live[key] === prepared.settingsFrom[key]);
+    inFlightSettings = null;
     machine.saveAcknowledged(submitted, {
       title: acknowledged.title,
       slug: acknowledged.slug,
@@ -360,6 +414,18 @@ export function createEditorSession({
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
     patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
     patchFeatureImage: (patch) => patchLive(patch),
+
+    patchFields: patchLive,
+    getFields: () => live,
+
+    // The one place the sidebar's save policy lives. A draft persists a settings
+    // field the way the body does; every other status stages it until Update.
+    commitField: () => {
+      if (status !== 'draft') {
+        return;
+      }
+      void engine.dispatch('field');
+    },
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
@@ -394,7 +460,18 @@ export function createEditorSession({
       ) {
         return false;
       }
-      tracker.setSaved(next.id, projectionOf(next));
+      // Decide against the old saved copy before the refetch replaces it. Saved
+      // and undone edits no longer own a field; only outstanding changes do.
+      const adoptable = new Set(
+        SETTINGS_FIELD_KEYS.filter(
+          (key) =>
+            !tracker.isFieldDirty(key) &&
+            (!inFlightSettings || live[key] === inFlightSettings[key]),
+        ),
+      );
+      const projection = projectionOf(next);
+      tracker.setSaved(next.id, projection);
+      adoptSettings(projection, (key) => adoptable.has(key));
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
@@ -424,6 +501,7 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
+      inFlightSettings = null;
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });

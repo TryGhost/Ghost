@@ -27,12 +27,14 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
+import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
 import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
@@ -133,6 +135,9 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  // Closed on every editor entry, as the menu it replaces was.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const acceptedRecord = session.loadedRecord;
@@ -166,13 +171,26 @@ function EditorContent({
           record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
-        <EditorHeaderActions
-          currentUser={currentUser}
-          postType={postType}
-          session={session}
-          siteUrl={cardConfig.siteUrl}
-          tkCount={tkCount}
-        />
+        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
+        <Inline className="ml-auto" gap="sm">
+          <EditorHeaderActions
+            currentUser={currentUser}
+            postType={postType}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+            tkCount={tkCount}
+          />
+          <Button
+            aria-expanded={settingsOpen}
+            aria-label="Settings"
+            data-testid={settingsMenuToggle}
+            size="sm"
+            variant="ghost"
+            onClick={toggleSettings}
+          >
+            <LucideIcon.PanelRight />
+          </Button>
+        </Inline>
       </EditorHeader>
       <SessionBanners
         contentText={session.contentText}
@@ -183,18 +201,28 @@ function EditorContent({
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
-      <div className="min-h-0 flex-1">
-        <PostEditor
-          key={session.contentKey}
-          {...session.bind}
-          autofocusTitle={!record}
-          cardConfig={currentCardConfig}
-          featureImage={featureImage}
-          postType={postType}
-          showExcerpt={showExcerpt}
-          onTkCountChange={setTkCount}
-        />
-      </div>
+      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
+        <div className="min-h-0 min-w-0 flex-1">
+          <PostEditor
+            key={session.contentKey}
+            {...session.bind}
+            autofocusTitle={!record}
+            cardConfig={currentCardConfig}
+            featureImage={featureImage}
+            postType={postType}
+            showExcerpt={showExcerpt}
+            onTkCountChange={setTkCount}
+          />
+        </div>
+        {settingsOpen ? (
+          <PostSettingsSidebar
+            currentUser={currentUser}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            session={session}
+          />
+        ) : null}
+      </Inline>
       {snippetDialog}
       <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
     </Stack>

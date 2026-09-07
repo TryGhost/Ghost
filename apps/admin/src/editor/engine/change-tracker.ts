@@ -37,6 +37,10 @@ export interface PostTagLike {
   name?: string;
 }
 
+export interface PostRelationLike {
+  id?: string;
+}
+
 // Client-owned editable fields only; other server metadata lives with the save engine.
 export interface EditablePostProjection {
   title: string;
@@ -47,6 +51,24 @@ export interface EditablePostProjection {
   feature_image: string | null;
   feature_image_alt: string | null;
   feature_image_caption: string | null;
+  featured: boolean;
+  visibility: string | null;
+  tiers: ReadonlyArray<PostRelationLike>;
+  authors: ReadonlyArray<PostRelationLike>;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
+  custom_template: string | null;
+  codeinjection_head: string | null;
+  codeinjection_foot: string | null;
+  og_image: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  twitter_image: string | null;
+  twitter_title: string | null;
+  twitter_description: string | null;
+  /** Pages only; the write contract strips it from post payloads. */
+  show_title_and_feature_image: boolean | null;
   /** Server collision token: carried and rebased, never a dirty signal. */
   updated_at: string | null;
 }
@@ -94,6 +116,8 @@ export interface ChangeTracker {
   clearSaveError(): void;
   revisionRestored(postId: PostId, restored: RestoredRevision): void;
   verdict(options?: VerdictOptions): ChangeVerdict;
+  /** Compares one editable field with the latest saved value using the dirty-check rules. */
+  isFieldDirty(key: keyof EditablePostProjection): boolean;
   hasChangedSinceRevision(latestRevision: RevisionProjection | null | undefined): boolean;
   dispose(): void;
 }
@@ -109,8 +133,28 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'feature_image',
   'feature_image_alt',
   'feature_image_caption',
+  'featured',
+  'visibility',
+  'tiers',
+  'authors',
+  'meta_title',
+  'meta_description',
+  'canonical_url',
+  'custom_template',
+  'codeinjection_head',
+  'codeinjection_foot',
+  'og_image',
+  'og_title',
+  'og_description',
+  'twitter_image',
+  'twitter_title',
+  'twitter_description',
+  'show_title_and_feature_image',
   'updated_at',
 ];
+
+/** Relations compare by identity; the rest of a related record is server-owned. */
+const RELATION_KEYS: ReadonlySet<ProjectionKey> = new Set(['tiers', 'authors']);
 
 const RUNG_KEYS: ReadonlySet<ProjectionKey> = new Set(['title', 'lexical', 'tags', 'updated_at']);
 
@@ -172,6 +216,10 @@ function tagNames(tags: ReadonlyArray<PostTagLike> | undefined): string[] {
   return (tags ?? []).map((tag) => tag.name ?? '');
 }
 
+function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): string[] {
+  return (related ?? []).map((entry) => entry.id ?? '');
+}
+
 function isOlderToken(candidate: string | null, held: string | null): boolean {
   if (candidate === null || held === null) {
     return false;
@@ -208,6 +256,12 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       return dequal(
         tagNames(a as ReadonlyArray<PostTagLike>),
         tagNames(b as ReadonlyArray<PostTagLike>),
+      );
+    }
+    if (RELATION_KEYS.has(key)) {
+      return dequal(
+        relationIds(a as ReadonlyArray<PostRelationLike>),
+        relationIds(b as ReadonlyArray<PostRelationLike>),
       );
     }
     return dequal(a, b);
@@ -450,6 +504,10 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
       }
 
       return result;
+    },
+
+    isFieldDirty(key) {
+      return !!saved && !!live && key !== 'updated_at' && !sameField(key, saved[key], live[key]);
     },
 
     hasChangedSinceRevision(latestRevision) {
