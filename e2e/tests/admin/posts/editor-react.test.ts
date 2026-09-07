@@ -48,6 +48,21 @@ function recordPostWrites(page: Page): PostWrite[] {
   return writes;
 }
 
+/** Requests are recorded at dispatch time so an in-flight duplicate cannot hide between waits. */
+function recordPostWriteRequests(page: Page): PostWrite[] {
+  const requests: PostWrite[] = [];
+
+  page.on('request', (request) => {
+    const method = request.method();
+
+    if ((method === 'POST' || method === 'PUT') && request.url().includes(POSTS_API)) {
+      requests.push({ method, url: request.url(), body: request.postData() ?? '' });
+    }
+  });
+
+  return requests;
+}
+
 function writesCarrying(writes: PostWrite[], text: string): PostWrite[] {
   return writes.filter((write) => write.body.includes(text));
 }
@@ -178,6 +193,7 @@ test.describe('Ghost Admin - Post editor (React)', () => {
 
     await editor.gotoPost(created.id);
     await expect(editor.lexicalEditor).toBeVisible();
+    const writeRequests = recordPostWriteRequests(page);
     await editor.appendToBody(` ${addition}`);
     // The edit is on screen, so the session holds it and the autosave is armed
     await expect(editor.lexicalEditor).toContainText(addition);
@@ -186,13 +202,14 @@ test.describe('Ghost Admin - Post editor (React)', () => {
 
     // The explicit save cancels the armed autosave rather than following it,
     // so the edit reaches the server once, carrying a revision
-    await expect.poll(() => writes.length, { timeout: 20000 }).toBe(1);
-    expect(writes[0].method).toBe('PUT');
-    expect(writes[0].url).toContain('save_revision=true');
-    expect(writes[0].body).toContain(addition);
+    await expect.poll(() => writeRequests.length, { timeout: 20000 }).toBe(1);
+    expect(writeRequests[0].method).toBe('PUT');
+    expect(writeRequests[0].url).toContain('save_revision=true');
+    expect(writeRequests[0].body).toContain(addition);
 
     await editor.waitForSaved();
     await expectNoFurtherWrites(page);
+    expect(writeRequests).toHaveLength(1);
 
     await page.reload();
     await expect(editor.titleInput).toHaveValue(created.title);
