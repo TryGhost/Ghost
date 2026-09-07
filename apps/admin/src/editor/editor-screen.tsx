@@ -199,7 +199,7 @@ function EditorContent({
         onRetrySave={session.dispatchExplicit}
       />
       <Inline className="min-h-0 flex-1 items-stretch" gap="none">
-        <div className="min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1">
           <PostEditor
             key={session.contentKey}
             {...session.bind}
