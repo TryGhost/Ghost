@@ -86,27 +86,35 @@ function ConflictBanner({
   return (
     <>
       <Banner
-        className="mx-4 mb-2 shrink-0"
+        className="mx-4 mb-2 shrink-0 bg-destructive text-destructive-foreground"
         data-testid="editor-conflict-banner"
         role="alert"
         size="sm"
         variant="destructive"
       >
-        <Inline align="center" gap="sm">
-          <Text>{gone ? GONE : CONFLICT}</Text>
-          {!gone && (
+        <Inline align="center" gap="sm" justify="center" wrap>
+          <Text className="text-center text-inherit">{gone ? GONE : CONFLICT}</Text>
+          <Inline align="center" gap="sm" justify="center">
+            {!gone && (
+              <Button
+                className="border-destructive-foreground/40 text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
+                disabled={reloading}
+                size="sm"
+                variant="outline"
+                onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
+              >
+                Reload
+              </Button>
+            )}
             <Button
-              disabled={reloading}
+              className="text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
               size="sm"
-              variant="outline"
-              onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
+              variant="ghost"
+              onClick={() => void copyContent()}
             >
-              Reload
+              Copy content
             </Button>
-          )}
-          <Button size="sm" variant="ghost" onClick={() => void copyContent()}>
-            Copy content
-          </Button>
+          </Inline>
         </Inline>
       </Banner>
       <AlertDialog open={confirming} onOpenChange={setConfirming}>

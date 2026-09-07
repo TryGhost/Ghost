@@ -74,6 +74,12 @@ describe('SessionBanners', () => {
     renderBanners(CONFLICT);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.getByRole('alert')).toHaveClass('bg-destructive', 'text-destructive-foreground');
+    expect(screen.getByRole('alert').firstElementChild).toHaveClass('justify-center', 'flex-wrap');
+    expect(screen.getByText(/Someone else is editing this post/)).toHaveClass(
+      'text-center',
+      'text-inherit',
+    );
     expect(screen.getByRole('button', { name: 'Reload' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
   });
