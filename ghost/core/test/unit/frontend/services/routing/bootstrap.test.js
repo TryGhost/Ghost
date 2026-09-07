@@ -5,7 +5,7 @@ const registry = require('../../../../../core/frontend/services/routing/registry
 
 const RESOURCE_CONFIG = { QUERY: { post: { controller: 'postsPublic', resource: 'posts' } } };
 
-describe('UNIT: services/routing/router-manager', function () {
+describe('services/routing/router-manager', function () {
   let routerUpdatedSpy;
   let routerCreatedSpy;
 

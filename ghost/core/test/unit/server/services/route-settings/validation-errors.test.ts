@@ -9,7 +9,7 @@ import {
 
 const errorFor = (schema: z.ZodType, value: unknown) => schema.safeParse(value).error as z.ZodError;
 
-describe('UNIT: services/route-settings/validation-errors', function () {
+describe('services/route-settings/validation-errors', function () {
   describe('formatLocation', function () {
     it('names the file when there is no path', function () {
       assert.equal(formatLocation([]), 'routes.yaml');

@@ -16,7 +16,7 @@ const { RouteSettingsStoreBase } = require('@tryghost/adapter-base-route-setting
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../utils/config-utils');
 
-describe('UNIT: adapter-manager route-settings wiring', function () {
+describe('adapter-manager route-settings wiring', function () {
   afterEach(async function () {
     await configUtils.restore();
     adapterManager.clearCache();

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 1: [html 1] 1`] = `
+exports[`Settings BREAD Service edit setting members_support_address triggers email verification 1: [html 1] 1`] = `
 "
 <!doctype html>
 <html>
@@ -169,7 +169,7 @@ exports[`UNIT > Settings BREAD Service: edit setting members_support_address tri
 "
 `;
 
-exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 2: [text 1] 1`] = `
+exports[`Settings BREAD Service edit setting members_support_address triggers email verification 2: [text 1] 1`] = `
 "
                 Hey there,
 
@@ -186,7 +186,7 @@ exports[`UNIT > Settings BREAD Service: edit setting members_support_address tri
                 "
 `;
 
-exports[`UNIT > Settings BREAD Service: edit setting members_support_address triggers email verification 3: [metadata 1] 1`] = `
+exports[`Settings BREAD Service edit setting members_support_address triggers email verification 3: [metadata 1] 1`] = `
 Object {
   "encoding": "base64",
   "from": "\\"Ghost at 127.0.0.1\\" <noreply@example.com>",

@@ -18,7 +18,7 @@ function throwsValidation(fn: () => void, expectedMessage?: string) {
   });
 }
 
-describe('UNIT: services/route-settings/validation (via parseRouteSettings)', function () {
+describe('services/route-settings/validation (via parseRouteSettings)', function () {
   it('accepts valid empty input', function () {
     assert.doesNotThrow(() => parse({}));
   });

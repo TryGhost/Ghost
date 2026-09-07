@@ -46,7 +46,7 @@ const sampleSettings = (): RouteSettings =>
 // bytes (comments, ordering, formatting) rather than a re-serialised model.
 const fromYaml = (yaml: string): RouteSettings => parseRouteSettings(parseYaml(yaml), yaml);
 
-describe('UNIT: route-settings FileStore', function () {
+describe('route-settings FileStore', function () {
   let basePath: string;
   let defaultsPath: string;
 

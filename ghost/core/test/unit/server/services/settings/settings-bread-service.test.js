@@ -6,7 +6,8 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { mockManager } = require('../../../../utils/e2e-framework');
 const emailAddress = require('../../../../../core/server/services/email-address');
 const logging = require('@tryghost/logging');
-describe('UNIT > Settings BREAD Service:', function () {
+
+describe('Settings BREAD Service', function () {
   let emailMockReceiver;
 
   beforeEach(function () {

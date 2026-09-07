@@ -4,7 +4,7 @@ const {
   generatePrivateSiteAccessCode,
 } = require('../../../../../core/server/services/settings/private-site-access-code');
 
-describe('UNIT > private-site-access-code', function () {
+describe('private-site-access-code', function () {
   it('returns a curated word with a three-digit suffix', function () {
     for (let i = 0; i < 50; i++) {
       const code = generatePrivateSiteAccessCode();

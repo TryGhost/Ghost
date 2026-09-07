@@ -5,7 +5,7 @@ const controllers = require('../../../../../core/frontend/services/routing/contr
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/static-routes-router');
 const configUtils = require('../../../../utils/config-utils');
 
-describe('UNIT - services/routing/StaticRoutesRouter', function () {
+describe('services/routing/StaticRoutesRouter', function () {
   let req;
   let res;
   let next;
