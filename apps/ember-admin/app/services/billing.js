@@ -14,6 +14,11 @@ const NEWSLETTERS_DESTINATION = 'newsletters';
 const NEWSLETTERS_ROUTE_WITH_AUTOMATIONS = '/settings/emails';
 const NEWSLETTERS_ROUTE = '/settings/newsletters';
 
+// Not a route: asks Admin to go back to the page the user was on before the
+// billing screen. Sent by the payment page's return flow after a successful
+// payment, so a "Pay now" click from e.g. the editor lands back in the editor.
+const PREVIOUS_PAGE_DESTINATION = 'previousPage';
+
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
 // Billing app never sends raw URLs or routes. A null-prototype, frozen object is
@@ -132,6 +137,18 @@ export default class BillingService extends Service {
             return;
         }
 
+        if (destination === PREVIOUS_PAGE_DESTINATION) {
+            // Still only semantic navigation: no route or URL crosses the
+            // iframe boundary. Falls back to the billing overview when there
+            // is nothing to go back to (a deep link in a fresh tab).
+            if (this._hasPageToReturnTo()) {
+                window.history.back();
+            } else {
+                this.router.transitionTo('pro');
+            }
+            return;
+        }
+
         const route = this._resolveAdminDestinationRoute(destination);
 
         if (!route) {
@@ -139,6 +156,10 @@ export default class BillingService extends Service {
         }
 
         this.router.transitionTo(route);
+    }
+
+    _hasPageToReturnTo() {
+        return window.history.length > 1;
     }
 
     _resolveAdminDestinationRoute(destination) {

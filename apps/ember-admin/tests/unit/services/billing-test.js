@@ -434,6 +434,32 @@ describe('Unit: Service: billing', function () {
         expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
     });
 
+    it('navigates back in history for the previousPage destination', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        const historyBack = sinon.stub(window.history, 'back');
+        sinon.stub(service, '_hasPageToReturnTo').returns(true);
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(historyBack.calledOnce).to.be.true;
+        expect(transitionTo.called).to.be.false;
+    });
+
+    it('falls back to the billing overview when there is no page to return to', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        const historyBack = sinon.stub(window.history, 'back');
+        sinon.stub(service, '_hasPageToReturnTo').returns(false);
+
+        service.navigateToAdminDestination('previousPage');
+
+        expect(historyBack.called).to.be.false;
+        expect(transitionTo.calledOnceWithExactly('pro')).to.be.true;
+    });
+
     it('ignores destinations that are not approved keys', function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;

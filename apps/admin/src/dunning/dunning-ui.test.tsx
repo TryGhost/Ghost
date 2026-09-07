@@ -111,7 +111,7 @@ describe('dunning UI', () => {
       expect(screen.getByText(/26 days left/)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute(
         'href',
-        '#/pro/update-card',
+        '#/pro/update-card/return',
       );
     });
 
@@ -162,7 +162,7 @@ describe('dunning UI', () => {
       expect(screen.getByText(/avoid suspension/)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Pay now' })).toHaveAttribute(
         'href',
-        '#/pro/update-card',
+        '#/pro/update-card/return',
       );
       expect(screen.getByRole('link', { name: 'Download my data' })).toHaveAttribute(
         'href',
