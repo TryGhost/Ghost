@@ -28,6 +28,7 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
+import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
@@ -109,6 +110,7 @@ interface EditorContentProps {
   record?: EditorRecord;
   createdId?: string;
   cardConfig: PostCardConfig;
+  currentUser?: User;
   showExcerpt: boolean;
   snippetDialog: ReactNode;
 }
@@ -120,10 +122,12 @@ function EditorContent({
   record,
   createdId,
   cardConfig,
+  currentUser,
   showExcerpt,
   snippetDialog,
 }: EditorContentProps) {
   const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
+  const [tkCount, setTkCount] = useState(0);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const acceptedRecord = session.loadedRecord;
@@ -157,6 +161,13 @@ function EditorContent({
           record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
+        <EditorHeaderActions
+          currentUser={currentUser}
+          postType={postType}
+          session={session}
+          siteUrl={cardConfig.siteUrl}
+          tkCount={tkCount}
+        />
       </EditorHeader>
       <SessionBanners
         contentText={session.contentText}
@@ -176,6 +187,7 @@ function EditorContent({
           featureImage={featureImage}
           postType={postType}
           showExcerpt={showExcerpt}
+          onTkCountChange={setTkCount}
         />
       </div>
       {snippetDialog}
@@ -228,6 +240,7 @@ function EditorSurface({
     <EditorContent
       cardConfig={cardConfig}
       createdId={createdId}
+      currentUser={currentUser}
       postType={postType}
       record={record}
       showExcerpt={showExcerpt}

@@ -215,7 +215,7 @@ It reads the newsletter from the post rather than from the options machine, beca
 
 Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
 
-That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the flow's own reads ask only for `include: 'email'`, and the framework's `Email` type carries no created date yet. Without those fields the copy degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
+That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
 
 ## Not yet ported
 

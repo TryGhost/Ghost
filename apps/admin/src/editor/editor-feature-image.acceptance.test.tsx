@@ -4,6 +4,8 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -31,6 +33,9 @@ function submittedPost(capture: EndpointCapture): Record<string, unknown> {
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   fakeSnippets([]);
   fakePosts([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
   let current = post({
     id: POST_ID,
     title: 'Hello from React',

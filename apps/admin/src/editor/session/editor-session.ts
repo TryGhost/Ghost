@@ -7,7 +7,9 @@ import {
   type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
+  type PublishOptions,
   type SaveCompletion,
+  type ScheduleOptions,
   type SaveEngineState,
   type SaveOutcome,
   type SaveRequest,
@@ -88,6 +90,9 @@ export interface EditorSession {
   dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
+  dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
+  dispatchSchedule: (options: ScheduleOptions) => Promise<SaveCompletion>;
+  dispatchRevert: () => Promise<SaveCompletion>;
   getLiveLexical: () => string | null;
   recordRefetched: (record: EditorRecord) => boolean;
   /** Replaces the whole document when the server copy safely advances this session. */
@@ -366,6 +371,9 @@ export function createEditorSession({
     dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    dispatchPublish: (options) => engine.dispatch('publish', options),
+    dispatchSchedule: (options) => engine.dispatch('schedule', options),
+    dispatchRevert: () => engine.dispatch('revert'),
     getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
