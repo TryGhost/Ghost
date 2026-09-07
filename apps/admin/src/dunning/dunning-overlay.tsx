@@ -60,15 +60,16 @@ export function DunningOverlay() {
       data-testid="dunning-overlay"
       role="alertdialog"
     >
+      {/* Same close treatment as the full-screen Settings view's exit button */}
       <Button
         aria-label="Dismiss"
-        className="absolute top-6 right-6"
+        className="absolute top-6 right-6 text-muted-foreground hover:text-foreground"
         size="icon"
         title="Dismiss"
-        variant="outline"
+        variant="ghost"
         onClick={() => dismissLock(state)}
       >
-        <LucideIcon.X className="size-5" />
+        <LucideIcon.X className="size-6!" />
       </Button>
       <Stack align="center" className="text-center" gap="lg">
         <div className="flex size-14 items-center justify-center rounded-full bg-state-danger/10">
