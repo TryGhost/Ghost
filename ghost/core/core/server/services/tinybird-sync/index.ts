@@ -57,18 +57,11 @@ async function syncAll(): Promise<void> {
   }
 
   const { knex } = require('../../data/db');
-  const config = require('../../../shared/config');
-  const maxRows = Number(config.get('tinybird:sync:maxRowsPerRun')) || undefined;
 
   const results = await Promise.allSettled(
     AUTOMATION_SYNC_TARGETS.map(async (target) => {
-      const sent = await syncTableToTinybird(target, { knex, maxRows, ...ingest });
-      if (maxRows && sent >= maxRows) {
-        logging.info(
-          { system: { event: 'tinybird.sync.limited', table: target.table, sent } },
-          `[Tinybird sync] ${target.table}: sent ${sent} rows and stopped at the per-run limit`,
-        );
-      } else if (sent) {
+      const sent = await syncTableToTinybird(target, { knex, ...ingest });
+      if (sent) {
         logging.info(
           { system: { event: 'tinybird.sync.completed', table: target.table, sent } },
           `[Tinybird sync] ${target.table}: sent ${sent} rows`,

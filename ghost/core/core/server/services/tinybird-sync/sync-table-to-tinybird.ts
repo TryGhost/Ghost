@@ -17,9 +17,6 @@ export interface TinybirdSyncOptions {
   siteUuid: string;
   now?: () => Date;
   batchSize?: number;
-  // Stop after this many rows and leave the rest for the next run. Unset means run
-  // until the table is caught up.
-  maxRows?: number;
   maxPayloadBytes?: number;
   requestTimeoutMs?: number;
 }
@@ -169,16 +166,15 @@ async function writeWatermark(knex: Knex, table: string, cursor: Cursor): Promis
 
 async function readBatch(
   { table, columns }: TinybirdSyncTarget,
-  { knex }: TinybirdSyncOptions,
+  { knex, batchSize = DEFAULT_BATCH_SIZE }: TinybirdSyncOptions,
   cursor: Cursor | null,
   cutoff: string,
-  limit: number,
 ): Promise<Row[]> {
   const query = knex(table)
     .select(columns)
     .where('updated_at', '<', cutoff)
     .orderBy([{ column: 'updated_at' }, { column: 'id' }])
-    .limit(limit);
+    .limit(batchSize);
 
   if (cursor) {
     query.andWhere((builder) =>
@@ -200,16 +196,14 @@ export async function syncTableToTinybird(
     siteUuid,
     now = () => new Date(),
     batchSize = DEFAULT_BATCH_SIZE,
-    maxRows = Infinity,
     maxPayloadBytes = DEFAULT_MAX_PAYLOAD_BYTES,
   } = options;
   const cutoff = toDatabaseDate(new Date(now().getTime() - SAFETY_LAG_MS));
   let cursor = await readWatermark(knex, target.table);
   let sent = 0;
 
-  while (sent < maxRows) {
-    const limit = Math.min(batchSize, maxRows - sent);
-    const rows = await readBatch(target, options, cursor, cutoff, limit);
+  while (true) {
+    const rows = await readBatch(target, options, cursor, cutoff);
     if (!rows.length) {
       return sent;
     }
@@ -224,7 +218,7 @@ export async function syncTableToTinybird(
     await writeWatermark(knex, target.table, cursor);
     sent += rows.length;
 
-    if (rows.length < limit) {
+    if (rows.length < batchSize) {
       return sent;
     }
 
@@ -232,6 +226,4 @@ export async function syncTableToTinybird(
     // batch is serialised.
     await flushEventLoop();
   }
-
-  return sent;
 }
