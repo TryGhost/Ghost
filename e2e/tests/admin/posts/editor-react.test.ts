@@ -17,8 +17,8 @@ import type { Page } from '@playwright/test';
  * `/editor/post` with its hidden secondary instance) is already asserted
  * there, so it is not repeated.
  *
- * Autosaves are observed through the network, because the status chip reads
- * the same before and after one; only an explicit save is asserted on the chip.
+ * Autosaves are observed through the network: the chip says a save landed, not
+ * which edit it carried. Only the explicit save is asserted on the chip.
  */
 
 const POSTS_API = '/ghost/api/admin/posts/';

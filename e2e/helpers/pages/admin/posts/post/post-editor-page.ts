@@ -193,7 +193,7 @@ export class PostEditorPage extends AdminPage {
     this.titleInput = react
       ? page.getByTestId(editorTitleInput)
       : page.locator('[data-test-editor-title-input]');
-    // Both editors write the same chip text; only the attribute differs.
+    // Both chips settle on a "Saved" reading; only the attribute differs.
     this.postStatus = react
       ? page.getByTestId(editorStatus)
       : page.locator('[data-test-editor-post-status]');
