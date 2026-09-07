@@ -9,6 +9,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { AccessSection } from './access-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 
 function SettingsSection({ children }: { children: ReactNode }) {
@@ -83,10 +84,16 @@ export function PostSettingsSidebar({
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
   const canFeature = !!currentUser && !isAuthorOrContributor(currentUser);
+  const canSetAccess = !!currentUser && !isAuthorOrContributor(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canFeature ? <FeaturedSection postType={postType} session={session} /> : null,
+    access: canSetAccess ? (
+      <SettingsSection>
+        <AccessSection postType={postType} session={session} />
+      </SettingsSection>
+    ) : null,
   };
 
   return (

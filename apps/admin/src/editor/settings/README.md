@@ -73,6 +73,28 @@ The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.
 
+## Access
+
+Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
+Administrator or Editor sees them. A post carries no visibility until its first
+save applies the site default, so the select shows `default_content_visibility`
+until then; choosing that same value explicitly is still an edit and still
+saves. Choosing anything other than `Specific tier(s)` clears the tiers it
+granted. The tier list is the site's paid tiers, active ones before archived,
+and it loads only while `Specific tier(s)` is the choice.
+
+The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
+so sending that pairing would be answered with the post's unchanged visibility
+and the writer's choice would snap back. The section therefore holds an empty
+tier selection locally, asking for at least one tier, and commits the visibility
+and the tiers together once one is picked. Everything that is committed goes
+through the same gate as the rest of the sidebar, so a draft saves it and every
+other status stages it.
+
+Koenig cards read the post's access from the editor's card config, which follows
+the live field rather than the saved record: a staged visibility changes what
+the cards describe before any save.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

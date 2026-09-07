@@ -41,6 +41,9 @@ export const postSettingsSidebar = 'post-settings-sidebar';
 export const settingsMenuToggle = 'settings-menu-toggle';
 export const settingsExcerptInput = 'settings-excerpt-input';
 export const settingsFeaturedToggle = 'settings-featured-toggle';
+export const settingsVisibilitySelect = 'settings-visibility-select';
+export const settingsTiersPicker = 'settings-tiers-picker';
+export const settingsTiersError = 'settings-tiers-error';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
