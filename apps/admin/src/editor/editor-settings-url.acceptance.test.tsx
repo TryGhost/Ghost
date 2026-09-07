@@ -183,6 +183,12 @@ describe('Post settings URL', () => {
       await expect
         .element(editorScreen.settingsSlugError())
         .toHaveTextContent('Couldn’t update the URL.');
+      // The message is the input's own error, not loose text beside it.
+      const input = editorScreen.settingsSlug().element();
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input.getAttribute('aria-describedby')).toBe(
+        editorScreen.settingsSlugError().element().id,
+      );
       await expect.element(editorScreen.settingsSlug()).toHaveValue('hello-from-react');
       await expect
         .element(editorScreen.settingsUrlPreview())

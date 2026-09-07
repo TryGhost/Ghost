@@ -28,6 +28,7 @@ export function UrlSection({
   siteUrl: string;
 }) {
   const inputId = useId();
+  const errorId = useId();
   const [draft, setDraft] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -62,6 +63,8 @@ export function UrlSection({
     <SettingsSection>
       <Label htmlFor={inputId}>{postType === 'page' ? 'Page' : 'Post'} URL</Label>
       <Input
+        aria-describedby={failed ? errorId : undefined}
+        aria-invalid={failed}
         data-testid={settingsSlugInput}
         disabled={pending}
         id={inputId}
@@ -71,7 +74,13 @@ export function UrlSection({
         onKeyDown={onKeyDown}
       />
       {failed ? (
-        <Text className="text-destructive" data-testid={settingsSlugError} role="alert" size="sm">
+        <Text
+          className="text-destructive"
+          data-testid={settingsSlugError}
+          id={errorId}
+          role="alert"
+          size="sm"
+        >
           {EDIT_FAILED}
         </Text>
       ) : null}
