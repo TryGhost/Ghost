@@ -1,6 +1,7 @@
 [
   { "code": "af", "label": "Afrikaans" },
   { "code": "ar", "label": "Arabic" },
+  { "code": "az", "label": "Azerbaijani" },
   { "code": "bg", "label": "Bulgarian" },
   { "code": "bn", "label": "Bengali" },
   { "code": "bs", "label": "Bosnian" },
