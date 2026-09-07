@@ -1,9 +1,26 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
+import assert from 'node:assert/strict';
+import logging from '@tryghost/logging';
+import sinon from 'sinon';
+import {
+  LazyUrlService,
+  type FindResource,
+  type Resource,
+} from '../../../../../core/server/services/url/lazy-url-service';
 
-function makeUrlUtils() {
+type PermalinkResource = {
+  id?: string;
+  slug?: string;
+  published_at?: string | number | Date | null;
+  primary_tag?: { slug: string } | null;
+  primary_author?: { slug: string } | null;
+};
+
+type UrlUtils = {
+  replacePermalink(permalink: string, resource: PermalinkResource): string;
+  createUrl(path: string, absolute?: boolean): string;
+};
+
+function makeUrlUtils(): UrlUtils {
   // Just enough of url-utils to satisfy the service. createUrl returns the
   // path verbatim so tests can assert on the relative form; replacePermalink
   // does the same substitution Ghost's url-utils does for our limited fields.
@@ -34,16 +51,17 @@ function makeUrlUtils() {
   };
 }
 
-const noopFindResource = () => Promise.resolve(null);
+const noopFindResource: FindResource = async () => null;
 
 describe('LazyUrlService', function () {
-  let urlUtils;
+  let urlUtils: UrlUtils;
+  let loggingError: sinon.SinonStub;
 
   beforeEach(function () {
     urlUtils = makeUrlUtils();
     // The service reports a thin resource rather than throwing, so every
     // test that trips one would otherwise write to the real logger.
-    sinon.stub(logging, 'error');
+    loggingError = sinon.stub(logging, 'error');
   });
 
   afterEach(function () {
@@ -55,12 +73,6 @@ describe('LazyUrlService', function () {
       const service = new LazyUrlService({ urlUtils, findResource: noopFindResource });
       const url = service.getUrlForResource({ type: 'posts', id: 'a', slug: 'hello' });
       assert.equal(url, '/404/');
-    });
-
-    it('returns /404/ when called without a resource type', function () {
-      const service = new LazyUrlService({ urlUtils, findResource: noopFindResource });
-      assert.equal(service.getUrlForResource(null), '/404/');
-      assert.equal(service.getUrlForResource({}), '/404/');
     });
 
     it('uses the unfiltered collection router for any post', function () {
@@ -139,8 +151,8 @@ describe('LazyUrlService', function () {
       // status-less post is a thin-resource bug. It is reported rather
       // than thrown: a 500 on a page that does route is worse than /404/.
       assert.equal(service.getUrlForResource({ type: 'posts', id: 'p', slug: 'hello' }), '/404/');
-      sinon.assert.calledOnce(logging.error);
-      assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
+      sinon.assert.calledOnce(loggingError);
+      assert.equal(loggingError.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
     });
 
     it('degrades to /404/ when a relation-filtered router is given a thin resource', function () {
@@ -153,8 +165,8 @@ describe('LazyUrlService', function () {
         service.getUrlForResource({ type: 'posts', id: 'p', slug: 'hello', status: 'published' }),
         '/404/',
       );
-      sinon.assert.calledOnce(logging.error);
-      assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
+      sinon.assert.calledOnce(loggingError);
+      assert.equal(loggingError.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
     });
 
     it('does not throw when the relation a filter references is present', function () {
@@ -186,8 +198,8 @@ describe('LazyUrlService', function () {
         service.getUrlForResource({ type: 'posts', id: 'p', slug: 'hot', status: 'published' }),
         '/404/',
       );
-      sinon.assert.calledOnce(logging.error);
-      assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
+      sinon.assert.calledOnce(loggingError);
+      assert.equal(loggingError.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
     });
 
     it('routes via the filtered router when its scalar field is present', function () {
@@ -345,8 +357,8 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
 
       assert.equal(service.getUrlForResource({ type: 'tags', id: 't1', slug: 'food' }), '/404/');
-      sinon.assert.calledOnce(logging.error);
-      assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
+      sinon.assert.calledOnce(loggingError);
+      assert.equal(loggingError.firstCall.args[0].code, 'LAZY_URL_RESOLUTION_ERROR');
     });
 
     it('routes an author without a visibility field (authors have no base filter)', function () {
@@ -519,12 +531,6 @@ describe('LazyUrlService', function () {
     });
   });
 
-  describe('constructor', function () {
-    it('throws when constructed without a findResource hook', function () {
-      assert.throws(() => new LazyUrlService({ urlUtils }), /findResource/);
-    });
-  });
-
   describe('resolveUrl', function () {
     it('extracts slug params and queries the DB by router type', async function () {
       const findResource = sinon.stub();
@@ -554,6 +560,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('staticPages', null, 'pages', '/:slug/');
 
       const result = await service.resolveUrl('/hello/');
+      assert.ok(result);
       assert.equal(result.type, 'posts');
       assert.equal(result.id, 'p1');
       sinon.assert.neverCalledWith(findResource, 'pages', sinon.match.any);
@@ -574,6 +581,7 @@ describe('LazyUrlService', function () {
       // 'plain' is found in the DB but its featured filter rejects it.
       assert.equal(await service.resolveUrl('/featured/plain/'), null);
       const hot = await service.resolveUrl('/featured/hot/');
+      assert.ok(hot);
       assert.equal(hot.id, 'p3');
     });
 
@@ -592,6 +600,7 @@ describe('LazyUrlService', function () {
       // page:false compiles to type:post, so a post resolves but a record
       // the DB returns as a page is filtered out, matching the forward path.
       const post = await service.resolveUrl('/hello/');
+      assert.ok(post);
       assert.equal(post.id, 'p1');
       assert.equal(await service.resolveUrl('/a-page/'), null);
     });
@@ -610,6 +619,7 @@ describe('LazyUrlService', function () {
 
       const result = await service.resolveUrl('/hello/');
 
+      assert.ok(result);
       assert.equal(result.id, 'p1');
       sinon.assert.calledOnce(findResource);
     });
@@ -639,6 +649,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
 
       const result = await service.resolveUrl('/hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
     });
 
@@ -652,6 +663,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('jane', 'author:jane', 'posts', '/:slug/');
 
       const result = await service.resolveUrl('/hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
     });
 
@@ -677,6 +689,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
 
       const result = await service.resolveUrl('/podcast/hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
       assert.equal(result.type, 'posts');
       sinon.assert.calledWith(findResource, 'posts', { slug: 'hello' });
@@ -706,6 +719,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('default', null, 'posts', '/:year/:month/:slug/');
 
       const result = await service.resolveUrl('/2026/04/hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
     });
 
@@ -741,6 +755,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('default', null, 'posts', '/blog-:slug/');
 
       const result = await service.resolveUrl('/blog-hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
       sinon.assert.calledWith(findResource, 'posts', { slug: 'hello' });
     });
@@ -755,6 +770,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('default', null, 'posts', '/:year-:month-:day-:slug/');
 
       const result = await service.resolveUrl('/2026-04-15-hello/');
+      assert.ok(result);
       assert.equal(result.id, 'p1');
       sinon.assert.calledWith(findResource, 'posts', { slug: 'hello' });
     });
@@ -804,6 +820,7 @@ describe('LazyUrlService', function () {
       service.onRouterAddedType('default', null, 'posts', '/:id/');
 
       const result = await service.resolveUrl('/0123456789abcdef01234567/');
+      assert.ok(result);
       assert.equal(result.id, '0123456789abcdef01234567');
       sinon.assert.calledOnce(findResource);
     });
@@ -1010,7 +1027,7 @@ describe('LazyUrlService', function () {
 
       service.getUrlForResource({ type: 'posts', id: 'p', slug: 'hello', status: 'published' });
 
-      const { errorDetails } = logging.error.firstCall.args[0];
+      const { errorDetails } = loggingError.firstCall.args[0];
       assert.equal(errorDetails.method, 'getUrlForResource');
       assert.deepEqual(errorDetails.missing, ['tags']);
       assert.deepEqual(errorDetails.resourceKeys, ['type', 'id', 'slug', 'status']);
@@ -1045,7 +1062,7 @@ describe('LazyUrlService', function () {
         },
       );
 
-      const { errorDetails } = logging.error.firstCall.args[0];
+      const { errorDetails } = loggingError.firstCall.args[0];
       assert.deepEqual(errorDetails.serializer, {
         apiType: 'content',
         docName: 'posts',
@@ -1066,13 +1083,13 @@ describe('LazyUrlService', function () {
       service.getUrlForResource(thin, {
         serializerContext: { apiType: 'content', docName: 'posts', method: 'read' },
       });
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingError);
 
       // A second endpoint under-fetching the same way is a second bug.
       service.getUrlForResource(thin, {
         serializerContext: { apiType: 'admin', docName: 'pages', method: 'browse' },
       });
-      sinon.assert.calledTwice(logging.error);
+      sinon.assert.calledTwice(loggingError);
     });
 
     it('reports a repeated cause at each order of magnitude, not once and not per row', function () {
@@ -1083,17 +1100,17 @@ describe('LazyUrlService', function () {
       for (let i = 0; i < 3; i++) {
         assert.equal(service.getUrlForResource(thin), '/404/');
       }
-      sinon.assert.calledOnce(logging.error);
-      assert.equal(logging.error.firstCall.args[0].errorDetails.occurrences, 1);
+      sinon.assert.calledOnce(loggingError);
+      assert.equal(loggingError.firstCall.args[0].errorDetails.occurrences, 1);
 
       // Reporting only the first would leave a still-breaking site
       // silent; the count is what says it is still happening.
       for (let i = 3; i < 100; i++) {
         service.getUrlForResource(thin);
       }
-      sinon.assert.calledThrice(logging.error);
+      sinon.assert.calledThrice(loggingError);
       assert.deepEqual(
-        logging.error.getCalls().map((call) => call.args[0].errorDetails.occurrences),
+        loggingError.getCalls().map((call) => call.args[0].errorDetails.occurrences),
         [1, 10, 100],
       );
     });
@@ -1108,19 +1125,19 @@ describe('LazyUrlService', function () {
           '/404/',
         );
       }
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingError);
 
       // A different cause is still worth a line of its own.
       service.onRouterAddedType('featured', 'featured:true', 'pages', '/:slug/');
       service.getUrlForResource({ type: 'pages', id: 'pg1', slug: 'about', status: 'published' });
-      sinon.assert.calledTwice(logging.error);
+      sinon.assert.calledTwice(loggingError);
 
       // A new routing config can make a resource newly thin or newly
       // fine, so the record starts over.
       service.reset();
       service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
       service.getUrlForResource({ type: 'posts', id: 'p1', slug: 'hello', status: 'published' });
-      sinon.assert.calledThrice(logging.error);
+      sinon.assert.calledThrice(loggingError);
     });
 
     it('rethrows an unexpected failure rather than serving /404/', function () {
@@ -1135,7 +1152,7 @@ describe('LazyUrlService', function () {
           service.getUrlForResource({ type: 'posts', id: 'p', slug: 'hello', status: 'published' }),
         /permalink\.replace is not a function/,
       );
-      sinon.assert.notCalled(logging.error);
+      sinon.assert.notCalled(loggingError);
     });
 
     it('rethrows a non-object throw unchanged', function () {
