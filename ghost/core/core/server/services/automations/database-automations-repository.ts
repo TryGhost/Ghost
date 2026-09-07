@@ -53,29 +53,29 @@ const messages = {
 
 const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
-interface AutomationRow {
+type AutomationRow = {
   id: string;
   slug: string;
   name: string;
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
-}
+};
 
-interface AutomationBrowseRow extends AutomationRow {
+type AutomationBrowseRow = AutomationRow & {
   last_run_created_at: DatabaseDate | null;
   total_run_count: string | number | null;
   in_progress_run_count: string | number | null;
-}
+};
 
-interface ActionRow {
+type ActionRow = {
   id: string;
   type: 'wait' | 'send_email';
   wait_hours: number | null;
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
-}
+};
 
 type ActionStatsRow = {
   action_id: string;
@@ -98,10 +98,10 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-interface EdgeRow {
+type EdgeRow = {
   source_action_id: string;
   target_action_id: string;
-}
+};
 
 type NextActionRevisionRow = {
   automation_id: string;
