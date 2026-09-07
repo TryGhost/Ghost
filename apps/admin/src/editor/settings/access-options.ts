@@ -43,13 +43,18 @@ export function tierOptions(tiers: Tier[] | undefined): TierOption[] {
   }));
 }
 
-/** The post's tiers as ids, dropping the relations the server sent without one. */
-export function selectedTierIds(tiers: ReadonlyArray<PostRelationLike>): string[] {
-  return tiers.map((tier) => tier.id).filter((id): id is string => !!id);
+type PostTier = PostRelationLike & { type?: string };
+
+/** Public/member reads include the free tier, which cannot grant specific-tier access. */
+export function selectedTierIds(tiers: ReadonlyArray<PostTier>): string[] {
+  return tiers
+    .filter((tier) => tier.type !== 'free')
+    .map((tier) => tier.id)
+    .filter((id): id is string => !!id);
 }
 
 /** The post's own tiers as relations, for a write that keeps them as they are. */
-export function postTiers(tiers: ReadonlyArray<PostRelationLike>): PostRelationLike[] {
+export function postTiers(tiers: ReadonlyArray<PostTier>): PostRelationLike[] {
   return selectedTierIds(tiers).map((id) => ({ id }));
 }
 

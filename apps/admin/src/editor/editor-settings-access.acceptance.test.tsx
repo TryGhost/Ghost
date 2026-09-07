@@ -150,6 +150,69 @@ describe('Post settings access', () => {
   );
 
   it(
+    'keeps specific-tier access when the paid tier IDs have not changed',
+    async () => {
+      const saveApi = fakeSavablePost({ visibility: 'paid', tiers: [GOLD, SILVER] });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAccess();
+
+      await chooseVisibility('Specific tier(s)');
+
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({
+        visibility: 'tiers',
+        tiers: [{ id: GOLD.id }, { id: SILVER.id }],
+      });
+      await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+    },
+    SLOW,
+  );
+
+  it(
+    'requires a paid tier when a public post only carries the free tier',
+    async () => {
+      const saveApi = fakeSavablePost({ visibility: 'public', tiers: [FREE] });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAccess();
+
+      await chooseVisibility('Specific tier(s)');
+
+      await expect.element(editorScreen.settingsTiersError()).toBeVisible();
+      expect(saveApi.requests).toHaveLength(0);
+      await editorScreen.settingsTier('Gold').click();
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({
+        visibility: 'tiers',
+        tiers: [{ id: GOLD.id }],
+      });
+    },
+    SLOW,
+  );
+
+  it(
+    'refuses the first save until an explicitly selected tier access has a tier',
+    async () => {
+      editorChrome();
+      const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, {
+        posts: [post({ id: NEW_POST_ID, visibility: 'public' })],
+      });
+      await renderAdminApp('/editor/post', FLAG_ON);
+      await openAccess();
+
+      await chooseVisibility('Specific tier(s)');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect
+        .element(editorScreen.saveErrorBanner())
+        .toHaveTextContent('Please select at least one tier');
+      expect(createApi.requests).toHaveLength(0);
+      await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+    },
+    SLOW,
+  );
+
+  it(
     'sends the visibility and the tiers together once a tier is picked',
     async () => {
       const saveApi = fakeSavablePost();

@@ -82,6 +82,8 @@ until then; choosing that same value explicitly is still an edit and still
 saves. Choosing anything other than `Specific tier(s)` clears the tiers it
 granted. The tier list is every one of the site's paid tiers, active ones
 before archived, and it loads only while `Specific tier(s)` is the choice.
+The free tier returned with Public and Members posts is excluded from the
+selection; a tier ID without type metadata is preserved.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -91,9 +93,15 @@ tier, a field change does not save while the pairing is incomplete, and a save
 the writer asks for is refused with the same message, which the status line and
 the save banner carry. Because the pairing is staged rather than held in the
 panel, it survives closing the sidebar, enables Update and is what the leave
-guard asks about. A create is exempt, as the server settles the visibility of a
-post that has none. Everything that is committed goes through the same gate as
-the rest of the sidebar, so a draft saves it and every other status stages it.
+guard asks about. A create with untouched access settings still uses the server
+default; an explicit tier selection must include a tier even on the first save.
+Everything that is committed goes through the same gate as the rest of the
+sidebar, so a draft saves it and every other status stages it.
+
+When either access field changes to specific tiers, the save submits both
+visibility and the tier list, including unchanged tier IDs. The API also returns
+tier relations for Public and Paid posts, so changing visibility alone can leave
+those IDs unchanged. Once saved, an unrelated edit sends neither access field.
 
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what

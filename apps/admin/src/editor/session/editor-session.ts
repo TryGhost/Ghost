@@ -301,6 +301,15 @@ export function createEditorSession({
         payload[key] = live[key];
       }
     }
+    // The write contract requires the pair even when only one field changed.
+    // Reads include tier relations for Public and Paid posts too, so switching
+    // to specific tiers can leave the relation IDs unchanged.
+    if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+      projection.visibility = live.visibility;
+      payload.visibility = live.visibility;
+      projection.tiers = live.tiers;
+      payload.tiers = live.tiers;
+    }
     if (!isCreate) {
       if (!projection.updated_at) {
         // Without the token the server skips its collision check entirely and the
@@ -334,9 +343,9 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
-    // A create has no visibility of its own to preserve, so the server's default
-    // settles it; every later save is refused as Ember's validator refuses it.
-    if (!prepared.isCreate && tiersIncomplete(live)) {
+    // Untouched creates carry null visibility and use the server's default.
+    // An explicit tier selection needs a tier, including on the first save.
+    if (tiersIncomplete(prepared.settingsFrom)) {
       return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
     }
 

@@ -61,6 +61,17 @@ describe('access options', () => {
   });
 
   describe('selection', () => {
+    it('excludes the free tier returned with public posts while preserving unknown tier IDs', () => {
+      const relations = [
+        { id: 'free', type: 'free' },
+        { id: 'paid', type: 'paid' },
+        { id: 'unlisted' },
+      ];
+
+      expect(selectedTierIds(relations)).toEqual(['paid', 'unlisted']);
+      expect(postTiers(relations)).toEqual([{ id: 'paid' }, { id: 'unlisted' }]);
+    });
+
     it('reads the post’s tier ids and drops relations without one', () => {
       expect(selectedTierIds([{ id: 'a' }, {}, { id: 'b' }])).toEqual(['a', 'b']);
       expect(postTiers([{ id: 'a' }, {}])).toEqual([{ id: 'a' }]);
