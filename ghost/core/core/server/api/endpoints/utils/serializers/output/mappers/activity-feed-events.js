@@ -1,4 +1,5 @@
 const mapComment = require('./comments');
+const stripEmailAccounting = require('../utils/strip-email-accounting');
 const url = require('../utils/url');
 const _ = require('lodash');
 
@@ -135,6 +136,9 @@ const activityFeedMapper = (event, frame) => {
     event.data.attribution = serializeAttribution(event.data.attribution);
   }
   // TODO: add dedicated mappers for other event types
+  if (event.data?.email) {
+    stripEmailAccounting(event.data.email);
+  }
   if (event.data?.batch_id) {
     delete event.data.batch_id;
   }
