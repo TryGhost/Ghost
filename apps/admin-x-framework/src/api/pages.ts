@@ -37,6 +37,8 @@ export interface PageResponseType {
 
 const dataType = 'PagesResponseType';
 
+export const pagesDataType = dataType;
+
 export const useBrowsePages = createQuery<PagesResponseType>({
   dataType,
   path: '/pages/',

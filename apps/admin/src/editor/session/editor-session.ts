@@ -3,6 +3,7 @@ import { createSlugMachine } from '@/editor/engine/slug-machine';
 import {
   DEFAULT_TITLE,
   createSaveEngine,
+  isCollisionToken,
   type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
@@ -71,6 +72,8 @@ export interface EditorSession {
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
   isDirty: () => boolean;
+  /** Dirty for a reason other than the failed save itself: work a reload would discard. */
+  hasUnsavedContent: () => boolean;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
   patchFeatureImage: (
@@ -85,14 +88,18 @@ export interface EditorSession {
   dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
-  recordRefetched: (record: EditorRecord) => void;
+  getLiveLexical: () => string | null;
+  recordRefetched: (record: EditorRecord) => boolean;
+  /** Replaces the whole document when the server copy safely advances this session. */
+  recordReloaded: (record: EditorRecord) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
 }
 
-function isOlder(candidate: string, held: string | null): boolean {
+/** Whether a record's collision token predates the one already held. */
+export function isOlderToken(candidate: string, held: string | null): boolean {
   if (!held) {
     return false;
   }
@@ -121,6 +128,7 @@ export function createEditorSession({
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
+  let disposed = false;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -331,6 +339,8 @@ export function createEditorSession({
     },
     getSaveSnapshot: getSnapshot,
     isDirty: () => getSnapshot().isDirty,
+    hasUnsavedContent: () =>
+      tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
@@ -356,22 +366,53 @@ export function createEditorSession({
     dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      if (identity.id !== next.id) {
-        return;
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
       }
       tracker.setSaved(next.id, projectionOf(next));
-      const updatedAt = next.updated_at ?? '';
-      if (isOlder(updatedAt, identity.updatedAt)) {
-        dirtyChanged();
-        return;
-      }
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       dirtyChanged();
+      return true;
+    },
+
+    // A document boundary, not a refetch: the tracker reloads, so the baseline
+    // the hidden instance reported for the old document is discarded with it.
+    recordReloaded: (next) => {
+      // The read outlives a session the writer navigated away from.
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
+      }
+      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+        return false;
+      }
+      identity = { id: next.id, updatedAt };
+      status = next.status ?? 'draft';
+      publishedAt = next.published_at ?? null;
+      latestRevision = latestRevisionOf(next);
+      live = projectionOf(next);
+      version += 1;
+      tracker.load(identity.id, live);
+      machine.loaded({ slug: live.slug, title: live.title });
+      dirtyChanged();
+      return true;
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),
@@ -379,6 +420,7 @@ export function createEditorSession({
     leaveRequested: () => engine.leaveRequested(),
 
     dispose: () => {
+      disposed = true;
       engine.dispose();
       tracker.dispose();
     },

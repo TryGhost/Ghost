@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
@@ -124,8 +124,28 @@ function EditorContent({
   snippetDialog,
 }: EditorContentProps) {
   const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
-  const featureImage = useFeatureImageBinding(session, record);
+  const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
+  const acceptedRecord = session.loadedRecord;
+  const currentCardConfig = useMemo(() => {
+    if (!acceptedRecord || !cardConfig.post) {
+      return cardConfig;
+    }
+
+    // Use the session's accepted metadata, which also rejects stale refetches,
+    // so cards describe the access of the document the editor now holds.
+    return {
+      ...cardConfig,
+      post: {
+        ...cardConfig.post,
+        visibility: acceptedRecord.visibility ?? cardConfig.post.visibility,
+        showTitleAndFeatureImage:
+          'show_title_and_feature_image' in acceptedRecord
+            ? (acceptedRecord.show_title_and_feature_image ?? true)
+            : true,
+      },
+    };
+  }, [acceptedRecord, cardConfig]);
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -134,21 +154,25 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
+          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
       </EditorHeader>
       <SessionBanners
+        contentText={session.contentText}
+        hasUnsavedContent={session.hasUnsavedContent}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
+        onReload={session.reload}
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
       <div className="min-h-0 flex-1">
         <PostEditor
+          key={session.contentKey}
           {...session.bind}
           autofocusTitle={!record}
-          cardConfig={cardConfig}
+          cardConfig={currentCardConfig}
           featureImage={featureImage}
           postType={postType}
           showExcerpt={showExcerpt}
