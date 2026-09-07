@@ -473,13 +473,16 @@ export function createEditorSession({
     void engine.dispatch('field');
   }
 
-  // A stale proposal was superseded by newer slug work, and every other
-  // `unchanged` reason means the machine kept the slug it already had.
+  // An `unchanged` proposal means the machine kept the slug it already had. A
+  // rejected or blank generator answer lost the writer's edit, so it reports.
   async function editSlug(input: string): Promise<SlugEditOutcome> {
     const proposal = await machine.slugEdited(input);
     if (proposal.source === 'unchanged') {
       if (proposal.reason === 'error') {
         onError(proposal.error);
+        return 'failed';
+      }
+      if (proposal.reason === 'empty-result') {
         return 'failed';
       }
       return 'unchanged';

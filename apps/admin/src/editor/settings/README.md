@@ -72,9 +72,10 @@ the part that is left out.
 The URL section edits the slug, which is not a settings field: a manual edit
 goes to the slug machine, and only a proposal the machine applies reaches the
 live document, where the save policy above then decides whether it is persisted
-or staged. A superseded proposal is ignored, and a failed generator leaves the
-slug alone: the input reverts to whatever the machine still holds and the
-section says the URL could not be updated, so a lost edit is never silent. The
+or staged. A superseded proposal is ignored, and a generator that fails or
+answers blank leaves the slug alone: the input reverts to whatever the machine
+still holds and the section says the URL could not be updated, so a lost edit is
+never silent. The
 input is disabled while a proposal is in flight. Because an applied edit makes
 the slug the writer's, a later title change no longer moves it. The preview
 under the input is the site URL without its scheme, then the slug, both

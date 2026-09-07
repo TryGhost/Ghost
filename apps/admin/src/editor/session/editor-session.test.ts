@@ -1324,6 +1324,23 @@ describe('createEditorSession', () => {
       expect(errors).toEqual([failure]);
     });
 
+    it('keeps the slug and reports a failure when the generator answers blank', async () => {
+      const errors: unknown[] = [];
+      const { session, state } = harness(
+        { record: record(), onError: (error) => errors.push(error) },
+        { generateSlug: () => Promise.resolve('   ') },
+      );
+
+      const outcome = await session.editSlug('A New Slug');
+      await settle();
+
+      expect(outcome).toBe('failed');
+      expect(session.getSlug()).toBe('hello');
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(0);
+      expect(errors).toEqual([]);
+    });
+
     it('drops an edit a reload superseded rather than writing it onto the new document', async () => {
       let answerGenerator: (slug: string) => void = () => {};
       const { session, state } = harness(
