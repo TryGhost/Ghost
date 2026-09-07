@@ -20,7 +20,7 @@ import {
 } from '@tryghost/shade/components';
 import { HTable } from '@tryghost/shade/primitives';
 import { KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue } from '@tryghost/shade/patterns';
-import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import {
   NewsletterRadialChart,
   type NewsletterRadialChartData,
@@ -133,11 +133,11 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
       ) : (
         <CardContent>
           <PendingSendEmpty
-            className={`${fullWidth && 'grid grid-cols-2'}`}
+            className={cn(fullWidth && 'grid gap-6 md:grid-cols-2 md:gap-0')}
             description="Opens and clicks will appear once every email has been sent"
             title="This newsletter is still sending"
           >
-            <div className={`${fullWidth && 'border-r pr-6'}`}>
+            <div className={cn(fullWidth && 'md:border-r md:pr-6')}>
               <div className="grid grid-cols-2 gap-6">
                 <KpiCardHeader className="group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0">
                   <div className="flex grow flex-col gap-1.5 border-none pb-0">
@@ -173,7 +173,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               </div>
             </div>
 
-            <div className={`${fullWidth && 'pl-6'}`}>
+            <div className={cn(fullWidth && 'border-t pt-6 md:border-t-0 md:pt-0 md:pl-6')}>
               {!fullWidth && <Separator />}
               <div className={fullWidth ? '' : 'pt-3'}>
                 <div
@@ -229,7 +229,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
                     </DataListBody>
                   </DataList>
                 ) : (
-                  <div className="py-20 text-center text-sm text-gray-700">
+                  <div className="py-20 text-center text-sm text-muted-foreground">
                     You have no links in your post.
                   </div>
                 )}

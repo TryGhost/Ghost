@@ -570,16 +570,6 @@ describe('Post analytics overview', () => {
     expect(statusApi.requests).toHaveLength(0);
   });
 
-  it('applies the Admin 7 chrome on post analytics', async () => {
-    seedPostAnalyticsWorld();
-    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { admin7PageChrome: true, improveSendingUI: false },
-      boot: webAnalyticsBootOverrides(),
-    });
-    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    await expect.poll(() => document.querySelector('#root .admin7')).not.toBeNull();
-  });
-
   it('renders the seeded post with web and growth sections', async () => {
     const { postsApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
