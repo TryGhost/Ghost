@@ -1358,7 +1358,10 @@ class BatchSendingService {
         ...(recipientAccounting ? { recipientAccounting: true, batchId: batch.id } : {}),
       };
       const message = recipientAccounting
-        ? await this.#sendingService.buildMessage(messageData, messageOptions)
+        ? await this.retryDb(() => this.#sendingService.buildMessage(messageData, messageOptions), {
+            ...this.#getMailgunRetryConfig(),
+            description: `Constructing email batch ${originalBatch.id}`,
+          })
         : null;
       const response = await this.retryDb(
         () =>

@@ -752,49 +752,58 @@ describe('Batch Sending Service', function () {
       sinon.assert.notCalled(read);
     });
 
-    it('reuses the intended payload on provider retry and persists absolute counts with status', async function () {
-      const batch = createModel({ status: 'pending', recipient_count: 2 });
-      const provider = {
-        getMaximumRecipients: () => 5,
-        send: sinon.stub().resolves({ id: 'accepted' }),
-      };
-      provider.send.onFirstCall().rejects(new Error('Response lost'));
-      const renderer = {
-        renderBody: sinon.stub().resolves({ html: 'Hello', plaintext: 'Hello', replacements: [] }),
-        getSubject: () => 'Hello',
-        getFromAddress: () => 'sender@example.com',
-        getReplyToAddress: () => null,
-      };
-      const service = new BatchSendingService({
-        models: { EmailRecipient },
-        sendingService: new SendingService({
-          emailProvider: provider,
-          emailRenderer: renderer,
-          emailAddressService: {},
-        }),
-        MAILGUN_API_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+    for (const renderFails of [false, true]) {
+      it(`reuses the intended payload and persists absolute counts after ${renderFails ? 'render and provider retries' : 'a provider retry'}`, async function () {
+        const batch = createModel({ status: 'pending', recipient_count: 2 });
+        const provider = {
+          getMaximumRecipients: () => 5,
+          send: sinon.stub().resolves({ id: 'accepted' }),
+        };
+        provider.send.onFirstCall().rejects(new Error('Response lost'));
+        const renderer = {
+          renderBody: sinon
+            .stub()
+            .resolves({ html: 'Hello', plaintext: 'Hello', replacements: [] }),
+          getSubject: () => 'Hello',
+          getFromAddress: () => 'sender@example.com',
+          getReplyToAddress: () => null,
+        };
+        if (renderFails) {
+          renderer.renderBody
+            .onFirstCall()
+            .rejects(new Error('Latest-post query temporarily unavailable'));
+        }
+        const service = new BatchSendingService({
+          models: { EmailRecipient },
+          sendingService: new SendingService({
+            emailProvider: provider,
+            emailRenderer: renderer,
+            emailAddressService: {},
+          }),
+          MAILGUN_API_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+        });
+        sinon.stub(service, 'updateStatusLock').resolves(batch);
+        const save = sinon.spy(batch, 'save');
+        assert.equal(
+          await service.sendBatch({
+            email: createModel({ preflight_email_count: 2 }),
+            batch,
+            post: createModel({}),
+            newsletter: createModel({}),
+          }),
+          true,
+        );
+        sinon.assert.calledTwice(provider.send);
+        assert.equal(provider.send.firstCall.args[0], provider.send.secondCall.args[0]);
+        sinon.assert.callCount(renderer.renderBody, renderFails ? 2 : 1);
+        sinon.assert.calledWithMatch(save, {
+          status: 'submitted',
+          mailgun_message_id: 'accepted',
+          submitted_count: 2,
+          submission_excluded_count: 0,
+        });
       });
-      sinon.stub(service, 'updateStatusLock').resolves(batch);
-      const save = sinon.spy(batch, 'save');
-      assert.equal(
-        await service.sendBatch({
-          email: createModel({ preflight_email_count: 2 }),
-          batch,
-          post: createModel({}),
-          newsletter: createModel({}),
-        }),
-        true,
-      );
-      sinon.assert.calledTwice(provider.send);
-      assert.equal(provider.send.firstCall.args[0], provider.send.secondCall.args[0]);
-      sinon.assert.calledOnce(renderer.renderBody);
-      sinon.assert.calledWithMatch(save, {
-        status: 'submitted',
-        mailgun_message_id: 'accepted',
-        submitted_count: 2,
-        submission_excluded_count: 0,
-      });
-    });
+    }
 
     it('Does not send if already submitted', async function () {
       const EmailBatch = createModelClass({
