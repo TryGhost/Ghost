@@ -380,6 +380,21 @@ describe('createEditorSession', () => {
     expect(session.getLiveLexical()).toBe(reloaded.lexical);
   });
 
+  it('notifies leave-guard subscribers when a reload clears unsaved work', async () => {
+    const { session } = harness({ record: record() }, { failUpdateWith: updateCollision() });
+    session.patchTitle('My unsaved title');
+    await session.dispatchExplicit();
+    expect(session.isDirty()).toBe(true);
+    const seen: boolean[] = [];
+    session.subscribe(() => seen.push(session.isDirty()));
+
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+
+    expect(session.isDirty()).toBe(false);
+    expect(seen.at(-1)).toBe(false);
+    expect(await session.leaveRequested()).toBe('proceed');
+  });
+
   it('sends the reloaded collision token on the next save', async () => {
     const { session, state } = harness({ record: record() }, { failUpdateWith: updateCollision() });
 

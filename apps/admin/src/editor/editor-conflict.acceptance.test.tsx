@@ -3,11 +3,13 @@ import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  currentRoute,
   fakeAdminEndpoint,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  unsavedChangesGuarded,
   type CapturedEndpointRequest,
   type EndpointCapture,
 } from '@test-utils/acceptance';
@@ -180,6 +182,35 @@ describe('Post editor update collision', () => {
       expect(readApi.requests.length).toBe(readsBefore);
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
       await expect.element(editorScreen.conflictBanner()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'protects conflicted work on leave and clears the guard after reloading',
+    async () => {
+      const { saveApi } = fakeCollidingPost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, postsListReact: true },
+      });
+      await collide(saveApi);
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+
+      await editorScreen.backLink('post').click();
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      await editorScreen.stayInEditor().click();
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+
+      await editorScreen.reloadAfterConflict().click();
+      await editorScreen.confirmConflictReload().click();
+      await expect.element(editorScreen.body()).toHaveTextContent('Their version of the body');
+      await expect.poll(unsavedChangesGuarded).toBe(false);
+      await editorScreen.backLink('post').click();
+
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      expect(saveApi.requests.length).toBe(1);
     },
     SLOW,
   );
