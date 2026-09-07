@@ -30,12 +30,18 @@ what they staged.
 The sections are added one at a time. A field a section does not yet own is
 carried in the session's projection but never sent: a field enters the save
 payload once this session has edited it, so a value the session merely opened
-with can never overwrite a change made elsewhere.
+with can never overwrite a change made elsewhere. The reverse also holds — a
+field the writer has not moved past adopts the value the server acknowledges or
+a refetch brings back, so a value normalized on the way through or changed by
+someone else does not read as a local edit for good.
 
-Two fields are deliberately absent from the settings projection. Status and
+Three fields are deliberately absent from the settings projection. Status and
 publish time belong to the save engine's command target, which the publish flow
 owns; a publish-date section reads and writes them through that command, not
-through a field patch.
+through a field patch. The slug belongs to the slug machine, which authors it on
+every save; the URL section routes a manual edit through the machine's
+`slugEdited`, so a slug written as a field patch would be dropped before the
+request is built.
 
 ## Sections
 
@@ -48,8 +54,15 @@ Role gates live with the section, not with the frame: every role that can open
 the editor can open the sidebar, and a section the writer's role cannot write is
 the part that is left out.
 
+The excerpt is the one field with two homes. When the inline excerpt is on it
+renders under the title and the sidebar leaves it out; when it is off the
+sidebar owns it. Either way the same session binding is behind it.
+
 ## Open and closed
 
-The toggle sits in the editor header. Its state is remembered per browser, so
-the next post opens the way the writer left the last one. A browser that refuses
-storage costs the preference and nothing else.
+The toggle sits in the editor header, and the panel starts closed on every
+editor entry. There is no keyboard shortcut for it.
+
+Below the `lg` breakpoint the panel overlays the editor from the right rather
+than narrowing it, and below 500px it takes the full width. Above it the panel
+sits in the flow beside the editor at a fixed 350px.

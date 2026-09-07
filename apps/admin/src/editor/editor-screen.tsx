@@ -35,7 +35,6 @@ import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
-import { useSettingsSidebar } from './settings/use-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
@@ -136,7 +135,9 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
-  const settingsSidebar = useSettingsSidebar();
+  // Closed on every editor entry, as the menu it replaces was.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const acceptedRecord = session.loadedRecord;
@@ -170,24 +171,26 @@ function EditorContent({
           record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
-        <EditorHeaderActions
-          currentUser={currentUser}
-          postType={postType}
-          session={session}
-          siteUrl={cardConfig.siteUrl}
-          tkCount={tkCount}
-        />
-        <Button
-          aria-expanded={settingsSidebar.isOpen}
-          aria-label={settingsMenuToggleButton}
-          className="ml-auto"
-          data-testid={settingsMenuToggle}
-          size="sm"
-          variant="ghost"
-          onClick={settingsSidebar.toggle}
-        >
-          <LucideIcon.PanelRight />
-        </Button>
+        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
+        <Inline className="ml-auto" gap="sm">
+          <EditorHeaderActions
+            currentUser={currentUser}
+            postType={postType}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+            tkCount={tkCount}
+          />
+          <Button
+            aria-expanded={settingsOpen}
+            aria-label={settingsMenuToggleButton}
+            data-testid={settingsMenuToggle}
+            size="sm"
+            variant="ghost"
+            onClick={toggleSettings}
+          >
+            <LucideIcon.PanelRight />
+          </Button>
+        </Inline>
       </EditorHeader>
       <SessionBanners
         contentText={session.contentText}
@@ -198,7 +201,7 @@ function EditorContent({
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
-      <Inline className="min-h-0 flex-1 items-stretch" gap="none">
+      <Inline className="relative min-h-0 flex-1 items-stretch" gap="none">
         <div className="min-h-0 min-w-0 flex-1">
           <PostEditor
             key={session.contentKey}
@@ -211,8 +214,13 @@ function EditorContent({
             onTkCountChange={setTkCount}
           />
         </div>
-        {settingsSidebar.isOpen ? (
-          <PostSettingsSidebar currentUser={currentUser} postType={postType} session={session} />
+        {settingsOpen ? (
+          <PostSettingsSidebar
+            currentUser={currentUser}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            session={session}
+          />
         ) : null}
       </Inline>
       {snippetDialog}

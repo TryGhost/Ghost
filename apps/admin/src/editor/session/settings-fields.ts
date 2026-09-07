@@ -1,11 +1,11 @@
 import type { EditablePostProjection } from '@/editor/engine/change-tracker';
 
 /**
- * The projection keys the settings sidebar may write. Status and publish time
- * are absent on purpose: the save engine's command target owns both.
+ * The projection keys the settings sidebar may write. Slug, status and publish
+ * time are absent on purpose: the slug machine and the save engine's command
+ * target own them, and a field patch would be dropped before the request.
  */
 export const SETTINGS_FIELD_KEYS = [
-  'slug',
   'tags',
   'authors',
   'custom_excerpt',

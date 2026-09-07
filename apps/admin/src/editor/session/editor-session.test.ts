@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
@@ -8,6 +8,30 @@ import {
   type EditorWritePayload,
 } from './editor-session';
 import type { EditorRecord } from './projection';
+
+type SaveEngineModule = typeof import('@/editor/engine/save-engine');
+
+// A pass-through wrapper. The engine refuses a background save on anything but
+// a draft anyway, so `commitField`'s gate is only observable at the dispatch.
+const engineSpy = vi.hoisted(() => ({ dispatched: [] as string[] }));
+
+vi.mock('@/editor/engine/save-engine', async (importOriginal) => {
+  const actual = await importOriginal<SaveEngineModule>();
+  const createSaveEngine = ((ports: never) => {
+    const engine = actual.createSaveEngine(ports);
+    const dispatch = (kind: string, options?: never) => {
+      engineSpy.dispatched.push(kind);
+      return engine.dispatch(kind as 'publish', options);
+    };
+    return { ...engine, dispatch };
+  }) as unknown as SaveEngineModule['createSaveEngine'];
+
+  return { ...actual, createSaveEngine };
+});
+
+beforeEach(() => {
+  engineSpy.dispatched.length = 0;
+});
 
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 
@@ -680,6 +704,22 @@ describe('createEditorSession', () => {
     });
 
     it.each([
+      { status: 'draft' as const, dispatches: true },
+      { status: 'published' as const, dispatches: false },
+      { status: 'scheduled' as const, dispatches: false },
+      { status: 'sent' as const, dispatches: false },
+    ])('$status: commitField reaches the engine=$dispatches', ({ status, dispatches }) => {
+      const { session } = harness({
+        record: record({ status, published_at: status === 'draft' ? null : PUBLISHED_AT }),
+      });
+
+      session.patchFields({ featured: true });
+      session.commitField();
+
+      expect(engineSpy.dispatched).toEqual(dispatches ? ['field'] : []);
+    });
+
+    it.each([
       { status: 'draft' as const, persists: true },
       { status: 'published' as const, persists: false },
       { status: 'scheduled' as const, persists: false },
@@ -730,6 +770,59 @@ describe('createEditorSession', () => {
 
       expect(state.updates).toHaveLength(1);
       expect(session.getFields().featured).toBe(true);
+      expect(session.isDirty()).toBe(true);
+    });
+
+    it('adopts a settings value the acknowledgement came back with', async () => {
+      const { session } = harness(
+        { record: record({ visibility: 'public' }) },
+        { acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }) },
+      );
+
+      session.patchLexical(body('Changed'));
+      await session.dispatchExplicit();
+
+      expect(session.getFields().visibility).toBe('paid');
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('keeps a settings field edited while the save was in flight', async () => {
+      const built = harness(
+        { record: record({ visibility: 'public' }) },
+        {
+          duringSave: () => built.session.patchFields({ visibility: 'members' }),
+          acknowledge: (acknowledged) => ({ ...acknowledged, visibility: 'paid' }),
+        },
+      );
+
+      built.session.patchLexical(body('Changed'));
+      await built.session.dispatchExplicit();
+
+      expect(built.session.getFields().visibility).toBe('members');
+      expect(built.session.isDirty()).toBe(true);
+    });
+
+    it('adopts a refetched settings value it never edited', () => {
+      const { session } = harness({ record: record({ visibility: 'public', featured: false }) });
+
+      const accepted = session.recordRefetched(
+        record({ visibility: 'paid', featured: true, updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(accepted).toBe(true);
+      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('leaves a field it edited alone when a refetch disagrees', () => {
+      const { session } = harness({ record: record({ visibility: 'public', featured: false }) });
+
+      session.patchFields({ featured: true });
+      session.recordRefetched(
+        record({ visibility: 'paid', featured: false, updated_at: '2026-01-02T00:00:00.000Z' }),
+      );
+
+      expect(session.getFields()).toMatchObject({ visibility: 'paid', featured: true });
       expect(session.isDirty()).toBe(true);
     });
 

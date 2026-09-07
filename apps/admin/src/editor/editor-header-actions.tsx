@@ -99,7 +99,7 @@ export function EditorHeaderActions({
   }
 
   return (
-    <Inline className="ml-auto" data-testid={editorHeaderActions} gap="sm">
+    <Inline data-testid={editorHeaderActions} gap="sm">
       {isDraft ? (
         <Button size="sm" variant="outline" onClick={openPreview}>
           Preview

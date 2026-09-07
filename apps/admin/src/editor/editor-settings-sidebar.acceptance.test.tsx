@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -24,7 +24,8 @@ const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
-const SIDEBAR_KEY = 'ghost-editor-settings-sidebar';
+// The suite's own viewport, restored after the case that narrows it.
+const WIDE_VIEWPORT = { width: 1280, height: 800 };
 
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
@@ -130,8 +131,12 @@ async function openSidebar() {
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
 }
 
-afterEach(() => {
-  localStorage.removeItem(SIDEBAR_KEY);
+function editorWidthPx(): number {
+  return editorScreen.root().element().getBoundingClientRect().width;
+}
+
+afterEach(async () => {
+  await page.viewport(WIDE_VIEWPORT.width, WIDE_VIEWPORT.height);
 });
 
 /**
@@ -210,43 +215,48 @@ describe('Post settings sidebar', () => {
   );
 
   it(
-    'keeps the sidebar excerpt and the body excerpt in step',
+    'saves the sidebar excerpt when the inline one is off',
     async () => {
       const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, {
-        labs: { editorReact: true, editorExcerpt: true },
-      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await openSidebar();
 
       await editorScreen.settingsExcerpt().fill('From the sidebar');
-
-      await expect.element(editorScreen.excerptInput()).toHaveValue('From the sidebar');
-
-      await editorScreen.excerptInput().fill('From the body');
-
-      await expect.element(editorScreen.settingsExcerpt()).toHaveValue('From the body');
-
-      await editorScreen.settingsExcerpt().click();
       await editorScreen.titleInput().click();
 
-      await expect.poll(() => submittedPost(saveApi).custom_excerpt, POLL).toBe('From the body');
+      await expect.poll(() => submittedPost(saveApi).custom_excerpt, POLL).toBe('From the sidebar');
     },
     SLOW,
   );
 
   it(
-    'reopens the editor with the sidebar the writer left open',
+    'leaves the excerpt out of the sidebar when it renders under the title',
     async () => {
-      localStorage.setItem(SIDEBAR_KEY, 'open');
       fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, editorExcerpt: true },
+      });
+      await openSidebar();
+
+      await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
+      await expect.element(editorScreen.excerptInput()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'overlays the editor rather than narrowing it on a narrow viewport',
+    async () => {
+      fakeSavablePost();
+      await page.viewport(900, 800);
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await expect.element(editorScreen.root()).toBeVisible();
 
-      await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+      const editorWidth = editorWidthPx();
 
-      await editorScreen.settingsToggle().click();
+      await openSidebar();
 
-      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
-      expect(localStorage.getItem(SIDEBAR_KEY)).toBe('closed');
+      expect(editorWidthPx()).toBe(editorWidth);
     },
     SLOW,
   );

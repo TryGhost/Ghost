@@ -273,6 +273,11 @@ export function useEditorSession({
     // non-older collision token may replace what the screen describes.
     if (session.recordRefetched(saved)) {
       setLoadedRecord(saved);
+      // The session adopts the server's copy of the fields nobody edited here,
+      // so the inputs mirroring them are re-read rather than left behind.
+      const fields = session.getFields();
+      setSettings(settingsFieldsOf(fields));
+      setExcerpt(fields.custom_excerpt ?? '');
     }
   }, [saved, session]);
 

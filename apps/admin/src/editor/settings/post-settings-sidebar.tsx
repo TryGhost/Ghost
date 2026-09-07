@@ -68,27 +68,34 @@ export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
   currentUser?: User;
+  /** The excerpt renders under the title instead, so the sidebar leaves it out. */
+  hasInlineExcerpt?: boolean;
 }
 
 /**
  * The post settings panel. Nothing here writes to the API: every field goes
  * through the session, which owns when it is persisted (see the README).
  */
-export function PostSettingsSidebar({ session, postType, currentUser }: PostSettingsSidebarProps) {
+export function PostSettingsSidebar({
+  session,
+  postType,
+  currentUser,
+  hasInlineExcerpt = false,
+}: PostSettingsSidebarProps) {
   const canFeature = !!currentUser && !isAuthorOrContributor(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
-    excerpt: <ExcerptSection session={session} />,
+    excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canFeature ? <FeaturedSection postType={postType} session={session} /> : null,
   };
 
   return (
     <aside
       aria-label={`${postType === 'page' ? 'Page' : 'Post'} settings`}
-      className="w-[350px] shrink-0 overflow-y-auto border-l border-border bg-background"
+      className="absolute inset-y-0 right-0 z-10 w-[350px] overflow-y-auto border-l border-border bg-background shadow-lg max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none"
       data-testid={postSettingsSidebar}
     >
-      <Text className="px-5 py-4 font-semibold" size="md">
+      <Text as="h4" className="px-5 py-4" size="md" weight="semibold">
         {postType === 'page' ? 'Page' : 'Post'} settings
       </Text>
       <Separator />

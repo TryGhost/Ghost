@@ -114,6 +114,3 @@ export const editorSaveButton = 'Save';
 export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
 export const settingsMenuToggleButton = 'Settings';
-export const settingsExcerptLabel = 'Excerpt';
-export const featurePostLabel = 'Feature this post';
-export const featurePageLabel = 'Feature this page';

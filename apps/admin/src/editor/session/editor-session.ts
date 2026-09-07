@@ -26,7 +26,12 @@ import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
-import type { EditorSettingsPatch, SettingsFieldKey } from './settings-fields';
+import {
+  SETTINGS_FIELD_KEYS,
+  type EditorSettingsFields,
+  type EditorSettingsPatch,
+  type SettingsFieldKey,
+} from './settings-fields';
 
 export type EditorWritePayload = Record<string, unknown>;
 
@@ -45,6 +50,8 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
+  /** The same, for the settings fields, so the acknowledgement can be adopted. */
+  settingsFrom: EditorSettingsFields;
   payload: EditorWritePayload;
   options: PostWriteOptions;
   isCreate: boolean;
@@ -203,6 +210,34 @@ export function createEditorSession({
     }
   }
 
+  function settingsSnapshot(): EditorSettingsFields {
+    const fields = {} as Record<string, unknown>;
+    for (const key of SETTINGS_FIELD_KEYS) {
+      fields[key] = live[key];
+    }
+    return fields as EditorSettingsFields;
+  }
+
+  // The server's copy of a settings field the writer has not moved past wins,
+  // the same rule the authored fields use: without it a value the server
+  // normalized or someone else changed reads as a local edit for good.
+  function adoptSettings(
+    next: EditablePostProjection,
+    isAdoptable: (key: SettingsFieldKey) => boolean,
+  ): void {
+    const patch: Record<string, unknown> = {};
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (isAdoptable(key) && live[key] !== next[key]) {
+        patch[key] = next[key];
+      }
+    }
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    live = { ...live, ...patch };
+    tracker.setLive(identity.id, patch);
+  }
+
   function getSnapshot(): EditorSaveSnapshot {
     return buildSaveSnapshot({
       identity,
@@ -249,12 +284,8 @@ export function createEditorSession({
       payload.authors = [{ id: currentUserId }];
     }
 
-    // The engine authors the slug itself, so it is never taken from `live` here.
     const staged = projection as Record<string, unknown>;
     for (const key of editedFields) {
-      if (key === 'slug') {
-        continue;
-      }
       staged[key] = live[key];
       payload[key] = live[key];
     }
@@ -277,6 +308,7 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
+      settingsFrom: settingsSnapshot(),
       payload,
       options: {
         saveRevision: request.saveRevision,
@@ -323,6 +355,7 @@ export function createEditorSession({
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
+    adoptSettings(acknowledged, (key) => live[key] === prepared.settingsFrom[key]);
     machine.saveAcknowledged(submitted, {
       title: acknowledged.title,
       slug: acknowledged.slug,
@@ -376,7 +409,12 @@ export function createEditorSession({
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
-    patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
+    // The excerpt is a settings field wherever it is typed, so an edit here
+    // enrols it the way the sidebar's own fields are enrolled.
+    patchExcerpt: (excerpt) => {
+      editedFields.add('custom_excerpt');
+      patchLive({ custom_excerpt: excerpt === '' ? null : excerpt });
+    },
     patchFeatureImage: (patch) => patchLive(patch),
 
     patchFields: (patch) => {
@@ -430,6 +468,9 @@ export function createEditorSession({
         return false;
       }
       tracker.setSaved(next.id, projectionOf(next));
+      // A refetch is the server's own copy, so a settings field this session
+      // never edited takes it; an edited one keeps what the writer staged.
+      adoptSettings(projectionOf(next), (key) => !editedFields.has(key));
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
