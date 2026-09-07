@@ -197,6 +197,7 @@ run this command from the Ghost repository root:
     TryGhost/Ghost \
     <pr-number> \
     <source-split-tip> \
+    <dry-run-head-sha> \
     --confirm
 ```
 
@@ -207,8 +208,9 @@ behalf, even if its current GitHub session appears to have sufficient access.
 
 Every merge-checkpoint handoff must repeat the warning and render a directly
 copyable `--confirm` command containing the actual PR number and recorded source
-split tip; do not leave placeholders for the administrator to infer. Include
-the successful dry-run evidence and explain that the command temporarily
+split tip plus the exact head SHA reported by the dry run; do not leave
+placeholders for the administrator to infer. Include the successful dry-run
+evidence and explain that the command rejects a changed head, temporarily
 enables merge commits, merges the pinned PR head, restores the original setting
 and verifies the ancestry. Explicitly say not to use GitHub's normal
 squash/rebase buttons and not to remove `[Don't merge]` manually.

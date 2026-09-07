@@ -6,15 +6,16 @@ usage() {
     cat <<'EOF'
 Usage:
   merge-history-pr OWNER/REPO PR_NUMBER SOURCE_SPLIT_TIP --dry-run
-  merge-history-pr OWNER/REPO PR_NUMBER SOURCE_SPLIT_TIP --confirm
+  merge-history-pr OWNER/REPO PR_NUMBER SOURCE_SPLIT_TIP EXPECTED_HEAD --confirm
 
 Safely merge a Ghost history-import PR with a merge commit. The script records
 the repository's merge-commit setting, enables it only when needed, restores it
 on every exit path, and verifies that SOURCE_SPLIT_TIP remains reachable.
 
 --dry-run  Agent preflight; no settings are changed and no merge is performed.
---confirm  Human administrator checkpoint; temporarily enable merge commits,
-           merge the PR, restore the setting, and verify the imported history.
+--confirm  Human administrator checkpoint; require the head validated by the
+           dry run, temporarily enable merge commits, merge the PR, restore the
+           setting, and verify the imported history.
 EOF
 }
 
@@ -23,7 +24,7 @@ fail() {
     exit 1
 }
 
-[[ $# -eq 4 ]] || {
+[[ $# -eq 4 || $# -eq 5 ]] || {
     usage >&2
     exit 2
 }
@@ -31,7 +32,13 @@ fail() {
 repo=$1
 pr_number=$2
 split_tip=$3
-mode=$4
+if [[ $# -eq 4 ]]; then
+    expected_head=''
+    mode=$4
+else
+    expected_head=$4
+    mode=$5
+fi
 
 [[ $repo =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] ||
     fail "repository must be OWNER/REPO"
@@ -40,7 +47,10 @@ mode=$4
 [[ $split_tip =~ ^[0-9a-fA-F]{40}$ ]] ||
     fail "source split tip must be a full 40-character Git SHA"
 [[ $mode == --dry-run || $mode == --confirm ]] ||
-    fail "fourth argument must be --dry-run or --confirm"
+    fail "final argument must be --dry-run or --confirm"
+[[ $mode == --dry-run && -z $expected_head ]] ||
+    [[ $mode == --confirm && $expected_head =~ ^[0-9a-fA-F]{40}$ ]] ||
+    fail "--confirm requires the full PR head SHA reported by --dry-run"
 
 command -v gh >/dev/null || fail "gh is required"
 
@@ -52,6 +62,10 @@ is_draft=$(gh pr view "$pr_number" --repo "$repo" --json isDraft --jq '.isDraft'
 mergeable=$(gh pr view "$pr_number" --repo "$repo" --json mergeable --jq '.mergeable')
 merge_state=$(gh pr view "$pr_number" --repo "$repo" --json mergeStateStatus --jq '.mergeStateStatus')
 head_sha=$(gh pr view "$pr_number" --repo "$repo" --json headRefOid --jq '.headRefOid')
+
+if [[ $mode == --confirm && $head_sha != "$expected_head" ]]; then
+    fail "PR head changed after dry-run (expected: $expected_head, current: $head_sha)"
+fi
 
 [[ $state == OPEN ]] || fail "PR is not open (state: $state)"
 [[ $is_draft == false ]] || fail "PR is still a draft"

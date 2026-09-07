@@ -185,21 +185,25 @@ Once it passes, a human Ghost repository administrator—not the agent—runs:
     TryGhost/Ghost \
     <pr-number> \
     <source-split-tip> \
+    <dry-run-head-sha> \
     --confirm
 ```
 
-The handoff must substitute the real PR number and source split tip; placeholders
-are not acceptable. Include the successful dry-run result so the administrator
-can verify the expected PR head and ancestry before running the command. Do not
-use GitHub's normal squash/rebase buttons or manually remove the `[Don't merge]`
-prefix.
+The handoff must substitute the real PR number, source split tip and head SHA
+reported by the successful dry run; placeholders are not acceptable. The
+script rejects `--confirm` if the PR head has changed, so any intervening push
+returns control to the agent for a fresh review and preflight. Include the
+dry-run result so the administrator can verify the expected PR head and ancestry
+before running the command. Do not use GitHub's normal squash/rebase buttons or
+manually remove the `[Don't merge]` prefix.
 
 The script:
 
 1. verifies authentication, PR state, checks and imported-history reachability;
 2. records the current `allow_merge_commit` setting;
 3. enables merge commits only when necessary;
-4. merges with `--merge --match-head-commit`;
+4. rejects any head other than the SHA validated by the dry run and merges with
+   `--merge --match-head-commit`;
 5. restores the setting through an exit trap;
 6. verifies the merged commit has two parents;
 7. verifies the source split tip remains an ancestor of the merged result.

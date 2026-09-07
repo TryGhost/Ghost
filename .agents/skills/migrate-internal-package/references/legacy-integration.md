@@ -107,6 +107,7 @@ afterward and commit purely mechanical output separately from behavioral
 integration changes. Verify the focused path and the repository gate:
 
 ```bash
+pnpm exec oxfmt packages/<package>
 pnpm exec oxfmt --check packages/<package>
 pnpm format:check
 ```
