@@ -206,6 +206,7 @@ function EditorContent({
             featureImage={featureImage}
             postType={postType}
             showExcerpt={showExcerpt}
+            onExcerptBlur={session.commitSettings}
             onTkCountChange={setTkCount}
           />
         </div>

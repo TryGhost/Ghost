@@ -56,6 +56,13 @@ export function identityFor(key: SettingsFieldKey, value: unknown): unknown {
   return value;
 }
 
+/** The column widths the schema gives these fields. */
+export const META_TITLE_MAX = 300;
+export const META_DESCRIPTION_MAX = 500;
+
+export const META_TITLE_TOO_LONG = `Meta Title cannot be longer than ${META_TITLE_MAX} characters.`;
+export const META_DESCRIPTION_TOO_LONG = `Meta Description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
+
 /** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
 export function tiersIncomplete(
   fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
@@ -77,4 +84,28 @@ export function publishedAtInFuture(
   }
   const time = Date.parse(publishedAt);
   return !Number.isNaN(time) && time >= now;
+}
+
+/** Counted as symbols, so a multibyte character counts once. */
+export function overLength(value: string | null, max: number): boolean {
+  return Array.from(value ?? '').length > max;
+}
+
+export type ValidatedSettingsFields = Pick<
+  EditorSettingsFields,
+  'visibility' | 'tiers' | 'meta_title' | 'meta_description'
+>;
+
+/** The first rule the settings fields break, in the post validator's order. */
+export function settingsFieldError(fields: ValidatedSettingsFields): string | null {
+  if (tiersIncomplete(fields)) {
+    return TIERS_REQUIRED;
+  }
+  if (overLength(fields.meta_title, META_TITLE_MAX)) {
+    return META_TITLE_TOO_LONG;
+  }
+  if (overLength(fields.meta_description, META_DESCRIPTION_MAX)) {
+    return META_DESCRIPTION_TOO_LONG;
+  }
+  return null;
 }

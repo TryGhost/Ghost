@@ -79,7 +79,6 @@ export interface EditorSessionBinding {
   onTitleChange: (title: string) => void;
   onTitleBlur: () => void;
   onExcerptChange: (excerpt: string) => void;
-  onExcerptBlur: () => void;
   onLexicalChange: (lexical: unknown) => void;
   onSecondaryChange: (lexical: unknown) => void;
   onSecondaryError: (error: unknown) => void;
@@ -106,6 +105,13 @@ export interface EditorSessionHandle {
   settings: EditorSettingsFields;
   /** Stages a settings field, then applies the sidebar's save policy. */
   editSettings: (patch: EditorSettingsPatch) => void;
+  /** Stages a settings field the writer is still typing into, committing nothing. */
+  stageSettings: (patch: EditorSettingsPatch) => void;
+  /**
+   * Applies the sidebar's save policy to what is staged, on the blur that ends
+   * an edit. The excerpt is a settings field wherever it is rendered.
+   */
+  commitSettings: () => void;
   /** The slug the machine holds, which the URL section's input reads. */
   slug: string;
   /** Routes a manual slug edit through the slug machine, then the save policy. */
@@ -272,11 +278,10 @@ export function useEditorSession({
   // settings fields are: an edit is not an engine state change.
   const [publishTime, setPublishTime] = useState<PublishTimeView>(() => publishTimeOf(session));
 
-  const editSettings = useCallback(
+  const stageSettings = useCallback(
     (patch: EditorSettingsPatch) => {
       session.patchFields(patch);
       setSettings(settingsFieldsOf(session.getFields()));
-      session.commitField();
     },
     [session],
   );
@@ -294,6 +299,16 @@ export function useEditorSession({
       session.commitField();
     },
     [session],
+  );
+
+  const commitSettings = useCallback(() => session.commitField(), [session]);
+
+  const editSettings = useCallback(
+    (patch: EditorSettingsPatch) => {
+      stageSettings(patch);
+      session.commitField();
+    },
+    [session, stageSettings],
   );
 
   // An acknowledgement adopts the server's copy of the fields nobody edited
@@ -421,10 +436,6 @@ export function useEditorSession({
     session.dispatchField();
   }, [session, title]);
 
-  // The excerpt is a settings field wherever it is rendered, so it goes through
-  // the same policy gate as the rest of the sidebar.
-  const onExcerptBlur = useCallback(() => session.commitField(), [session]);
-
   const onLexicalChange = useCallback(
     (lexical: unknown) => {
       session.patchLexical(lexical);
@@ -461,7 +472,6 @@ export function useEditorSession({
       onTitleChange,
       onTitleBlur,
       onExcerptChange,
-      onExcerptBlur,
       onLexicalChange,
       onSecondaryChange,
       onSecondaryError,
@@ -477,6 +487,8 @@ export function useEditorSession({
     patchFeatureImage: session.patchFeatureImage,
     settings,
     editSettings,
+    stageSettings,
+    commitSettings,
     slug,
     editSlug: session.editSlug,
     publishTime,
