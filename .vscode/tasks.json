@@ -13,7 +13,7 @@
     {
       "label": "Ghost: Frontend dev servers",
       "type": "shell",
-      "command": "pnpm nx run-many -t dev --projects=@tryghost/admin,@tryghost/portal,@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar",
+      "command": "pnpm nx run-many -t dev --projects=@tryghost/admin,@tryghost/portal,@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search",
       "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "presentation": { "panel": "dedicated", "group": "dev" },

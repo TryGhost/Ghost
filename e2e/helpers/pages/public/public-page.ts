@@ -62,6 +62,10 @@ export class PublicPage extends BasePage {
   public readonly portalIframe: Locator;
   public readonly portalPopupFrame: Locator;
   public readonly portalScript: Locator;
+  public readonly bodyChildren: Locator;
+  public readonly announcementBar: Locator;
+  public readonly announcementBarContent: Locator;
+  public readonly announcementBarCloseButton: Locator;
   private readonly subscribeLink: Locator;
   private readonly signInLink: Locator;
 
@@ -72,6 +76,12 @@ export class PublicPage extends BasePage {
 
     this.portal = new PortalSection(page);
     this.portalRoot = this.portal.portalRoot;
+    this.bodyChildren = page.locator('body > *');
+    this.announcementBar = page.locator('#announcement-bar-root');
+    this.announcementBarContent = page.locator(
+      '#announcement-bar-root .gh-announcement-bar-content',
+    );
+    this.announcementBarCloseButton = this.announcementBar.getByRole('button', { name: 'close' });
     this.portalIframe = page.locator('#ghost-portal-root div iframe');
     this.portalPopupFrame = page.locator('[data-testid="portal-popup-frame"]');
     this.portalScript = page.locator('script[data-ghost][data-key][data-api]');

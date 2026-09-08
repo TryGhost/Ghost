@@ -10,6 +10,8 @@ export interface SettingsResponse {
 }
 
 export type CommentsEnabled = 'all' | 'paid' | 'off';
+export type AnnouncementAudience = 'visitors' | 'free_members' | 'paid_members';
+export type AnnouncementBackground = 'accent' | 'dark' | 'light';
 export type MembersSignupAccess = 'all' | 'invite' | 'paid' | 'none';
 export type PortalPlan = 'free' | 'monthly' | 'yearly';
 
@@ -45,6 +47,27 @@ export class SettingsService {
 
     // Settings API expects the data directly without the extra 'data' wrapper
     return await this.updateSettings(updatedSettings);
+  }
+
+  /**
+   * Set the announcement bar's content, audience and background.
+   * @param audience - who sees the bar; an empty list hides it from everyone,
+   * which is Ghost's default
+   */
+  async setAnnouncement({
+    content,
+    audience,
+    background = 'accent',
+  }: {
+    content: string;
+    audience: AnnouncementAudience[];
+    background?: AnnouncementBackground;
+  }) {
+    return await this.updateSettings([
+      { key: 'announcement_content', value: content },
+      { key: 'announcement_visibility', value: JSON.stringify(audience) },
+      { key: 'announcement_background', value: background },
+    ]);
   }
 
   /**

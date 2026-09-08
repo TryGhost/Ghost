@@ -1,7 +1,7 @@
 /* eslint-env node */
 /**
  * Shared Vite config factory for Ghost's public UMD apps — portal,
- * comments-ui, sodo-search, announcement-bar, signup-form, admin-toolbar.
+ * comments-ui, sodo-search, signup-form, admin-toolbar.
  *
  * Each app loads as a <script src> from a Ghost theme and ships as a UMD
  * (or IIFE) bundle in <app>/umd/<app>.min.js. This factory captures the

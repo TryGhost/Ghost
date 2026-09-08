@@ -117,7 +117,7 @@
 		# would swallow admin asset paths (e.g. /ghost/assets/built/foo.css)
 		# before they could fall through to the admin dev server below.
 		# Adding a new public app = add its name to the alternation.
-		@public_app path_regexp public_app ^/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/(.*)$
+		@public_app path_regexp public_app ^/(portal|comments-ui|signup-form|sodo-search|admin-toolbar)/(.*)$
 		handle @public_app {
 			rewrite * /{re.public_app.2}
 			root * /srv/apps/{re.public_app.1}/umd

@@ -20,11 +20,6 @@
     "configKey": "signupForm"
   },
   {
-    "packageName": "@tryghost/announcement-bar",
-    "path": "apps/announcement-bar",
-    "configKey": "announcementBar"
-  },
-  {
     "packageName": "@tryghost/admin-toolbar",
     "path": "apps/admin-toolbar",
     "configKey": "adminToolbar"

@@ -127,6 +127,7 @@ test/functional/*.png
 /ghost/core/package
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
+/ghost/core/core/frontend/public/announcement-bar.min.js
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
@@ -169,8 +170,6 @@ Caddyfile
 /apps/signup-form/playwright-report/
 /apps/signup-form/playwright/.cache/
 
-# Announcement-Bar
-/apps/announcement-bar/umd
 
 # Build files
 /apps/*/build
