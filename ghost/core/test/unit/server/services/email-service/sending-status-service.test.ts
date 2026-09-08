@@ -120,8 +120,8 @@ describe('SendingStatusService', function () {
   });
 
   it('reads accounted progress and historical submission fallbacks without scanning recipients', async function () {
-    await addEmail({ status: 'submitting', emailCount: 25, updatedAt: '2026-09-02 12:01:00' });
-    await knex('emails').update({ preflight_email_count: 30 });
+    await addEmail({ status: 'submitting', emailCount: 35, updatedAt: '2026-09-02 12:01:00' });
+    await knex('emails').update({ preflight_email_count: 40 });
     await addBatch({
       status: 'submitted',
       createdAt: '2026-09-02 12:00:00',
@@ -132,20 +132,26 @@ describe('SendingStatusService', function () {
       createdAt: '2026-09-02 12:00:10',
       updatedAt: '2026-09-02 12:01:20',
     });
-    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:20', recipientCount: 5 });
+    // Three distinct completions provide the two measured intervals required for an ETA.
+    await addBatch({
+      status: 'submitted',
+      createdAt: '2026-09-02 12:00:20',
+      updatedAt: '2026-09-02 12:01:30',
+    });
+    await addBatch({ status: 'pending', createdAt: '2026-09-02 12:00:30', recipientCount: 5 });
     await knex('email_batches')
-      .whereIn('id', ['batch-1', 'batch-2'])
+      .whereIn('id', ['batch-1', 'batch-2', 'batch-3'])
       .update({ recipient_count: 10 });
     await knex('email_batches')
       .where('id', 'batch-1')
       .update({ submitted_count: 7, submission_excluded_count: 3 });
-    await knex('email_batches').where('id', 'batch-3').update({ recipient_count: 5 });
+    await knex('email_batches').where('id', 'batch-4').update({ recipient_count: 5 });
     aggregateCountsAsStrings = true;
     const queries: string[] = [];
     knex.on('query', ({ sql }: { sql: string }) => queries.push(sql));
     assert.deepEqual((await service.statusFor('email-id'))?.sending, {
       status: 'submitting',
-      progress: { completed: 20, total: 25, estimatedSecondsRemaining: 5 },
+      progress: { completed: 30, total: 35, estimatedSecondsRemaining: 5 },
     });
     assert.ok(queries.every((sql) => !sql.includes('email_recipients')));
     assert.equal(
