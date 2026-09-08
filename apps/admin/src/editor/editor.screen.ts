@@ -42,8 +42,15 @@ import {
   settingsMenuToggle,
   settingsShowTitleToggle,
   settingsShowTitleWarning,
+  settingsSlugError,
+  settingsSlugInput,
+  settingsTagsField,
+  settingsTagsInput,
+  settingsTagsList,
+  settingsTagsToken,
   settingsTiersError,
   settingsTiersPicker,
+  settingsUrlPreview,
   settingsVisibilitySelect,
   showTitleLearnMoreLink,
   stayInEditorButton,
@@ -117,6 +124,9 @@ export const editorScreen = {
   settingsShowTitleWarning: () => page.getByTestId(settingsShowTitleWarning),
   settingsShowTitleLearnMore: () =>
     page.getByTestId(settingsShowTitleWarning).getByRole('link', { name: showTitleLearnMoreLink }),
+  settingsSlug: () => page.getByTestId(settingsSlugInput),
+  settingsSlugError: () => page.getByTestId(settingsSlugError),
+  settingsUrlPreview: () => page.getByTestId(settingsUrlPreview),
   settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
   settingsVisibilityOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
@@ -124,6 +134,15 @@ export const editorScreen = {
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
   settingsTiersError: () => page.getByTestId(settingsTiersError),
+  settingsTagsField: () => page.getByTestId(settingsTagsField),
+  settingsTagsInput: () => page.getByTestId(settingsTagsInput),
+  settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
+  settingsTagOption: (name: string | RegExp) =>
+    page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  removeSettingsTag: (name: string) =>
+    page
+      .getByTestId(settingsTagsField)
+      .getByRole('button', { name: `Remove ${name}`, exact: true }),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

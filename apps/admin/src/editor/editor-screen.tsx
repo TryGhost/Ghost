@@ -215,6 +215,7 @@ function EditorContent({
             hasInlineExcerpt={showExcerpt}
             postType={postType}
             session={session}
+            siteUrl={cardConfig.siteUrl}
           />
         ) : null}
       </Inline>

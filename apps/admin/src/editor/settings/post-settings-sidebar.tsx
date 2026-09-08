@@ -1,7 +1,11 @@
 import { Fragment, type ReactNode, useId } from 'react';
 import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { canAccessSettings, type User } from '@tryghost/admin-x-framework/api/users';
+import {
+  canAccessSettings,
+  isContributorUser,
+  type User,
+} from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
   settingsExcerptInput,
@@ -13,6 +17,8 @@ import { AccessSection } from './access-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { ShowTitleSection } from './show-title-section';
+import { TagsSection } from './tags-section';
+import { UrlSection } from './url-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
   const inputId = useId();
@@ -59,6 +65,8 @@ function FeaturedSection({
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
+  /** The site's homepage URL, which the URL section previews the slug under. */
+  siteUrl: string;
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
@@ -71,13 +79,17 @@ export interface PostSettingsSidebarProps {
 export function PostSettingsSidebar({
   session,
   postType,
+  siteUrl,
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
   // Owner, Administrator and Editor: the roles Ember shows these sections to.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
+  const canTag = !!currentUser && !isContributorUser(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
+    url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
+    tags: canTag ? <TagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,

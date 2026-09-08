@@ -69,6 +69,48 @@ Role gates live with the section, not with the frame: every role that can open
 the editor can open the sidebar, and a section the writer's role cannot write is
 the part that is left out.
 
+The URL section edits the slug, which is not a settings field: a manual edit
+goes to the slug machine, and only a proposal the machine applies reaches the
+live document, where the save policy above then decides whether it is persisted
+or staged. A superseded proposal is ignored, and a generator that fails or
+answers blank leaves the slug alone: the input reverts to whatever the machine
+still holds and the section says the URL could not be updated, marking the input
+itself invalid, so a lost edit is never silent. The input is disabled while a
+proposal is in flight. Because an applied edit makes the slug the writer's, a
+later title change no longer moves it. The preview
+under the input is the site URL without its scheme, then the slug, both
+slash-terminated. The section is the slug and that preview and nothing else: it
+does not link out to a published post, and a sent post previews its site URL
+like any other rather than the separate email URL it also has.
+
+A manual proposal participates in the save engine's slug wait, so Update or
+Cmd-S cannot save the old URL while the generator is still answering. Pending
+manual edits count as unsaved work for the navigation and tab-close guards.
+A draft's save on leave waits for the proposal; other statuses ask before
+discarding it. A document reload releases waits on obsolete requests, and a
+response arriving after reload or disposal cannot patch the live document.
+
+Tags are a relation rather than a value, and the section writes them as one:
+the field holds the post's tags in order, because that order is the
+`sort_order` Ghost stores and the first public tag is the post's primary tag.
+Contributors do not get the section.
+
+Each tag reaches the save as its identity and nothing else — the id of one the
+site already has, or the bare name of one the writer typed. The server keeps a
+tag relation's name and slug and writes them onto the tag row, so sending back
+the record the post was read with reverts a rename made since; the record stays
+in the field, where the chips are drawn from, and never enters the payload. A typed name is created
+by the post's own save, so an abandoned edit leaves nothing behind, and a
+leading `#` reads as an internal tag in the field before the save because that
+is the rule the server applies. Two tags can share a name and differ only by
+slug, so what makes them the same tag is the id whenever both sides have one.
+
+The list offers the first hundred tags matching what is typed, in name order.
+Narrowing the search is how the rest are reached. Enter takes the highlighted
+row, and so does Tab once something is typed; Tab through an empty field moves
+on. Escape closes the list and leaves the term where it was typed. A chip is
+removed by clicking it, or with Backspace on an empty field.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.

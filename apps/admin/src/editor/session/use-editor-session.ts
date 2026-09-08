@@ -105,6 +105,10 @@ export interface EditorSessionHandle {
   settings: EditorSettingsFields;
   /** Stages a settings field, then applies the sidebar's save policy. */
   editSettings: (patch: EditorSettingsPatch) => void;
+  /** The slug the machine holds, which the URL section's input reads. */
+  slug: string;
+  /** Routes a manual slug edit through the slug machine, then the save policy. */
+  editSlug: EditorSession['editSlug'];
   /** The post as the engine reads it: identity, status, publish time and title. */
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
@@ -235,6 +239,7 @@ export function useEditorSession({
 
   const state = useSyncExternalStore(session.subscribe, session.getState);
   const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
+  const slug = useSyncExternalStore(session.subscribe, session.getSlug);
 
   // Mirrored into React state, as the title and excerpt are: the session
   // notifies on engine and dirtiness changes, not on every field edit.
@@ -428,6 +433,8 @@ export function useEditorSession({
     patchFeatureImage: session.patchFeatureImage,
     settings,
     editSettings,
+    slug,
+    editSlug: session.editSlug,
     getSaveSnapshot: session.getSaveSnapshot,
     getLiveLexical: session.getLiveLexical,
     dispatchField: session.dispatchField,
