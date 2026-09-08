@@ -70,8 +70,22 @@ module.exports = createNonTransactionalMigration(
           continue;
         }
 
-        await knex('posts').where({ id }).update(updates);
-        updated += 1;
+        // Guard each column with whereNull so a concurrent write-path save
+        // that filled the field between read and update is not overwritten.
+        let changed = 0;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [column, value] of Object.entries(updates)) {
+          changed += await knex('posts')
+            .where({ id })
+            .whereNull(column)
+            .update({ [column]: value });
+        }
+
+        if (changed > 0) {
+          updated += 1;
+        } else {
+          skipped += 1;
+        }
       } catch (err) {
         logging.warn(`Failed to backfill auto_excerpt/reading_time for post ${id}: ${err.message}`);
         skipped += 1;
