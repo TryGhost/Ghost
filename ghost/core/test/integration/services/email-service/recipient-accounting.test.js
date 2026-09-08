@@ -132,7 +132,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     }
   });
 
-  it('retains legacy acknowledgement-loss retries without introducing recovery', async function () {
+  it('uses legacy preparation retries when preflight_email_count is null', async function () {
     await email.save({ preflight_email_count: null }, { patch: true });
     const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
     let lost = false;
@@ -145,8 +145,19 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return result;
     });
     await service.createBatches(data);
-    assert.equal((await service.getBatches(email)).length, 4);
+    const batches = await service.getBatches(email);
+    assert.equal(batches.length, 4);
     assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 6);
+    assert.ok(batches.every((batch) => batch.get('recipient_count') === null));
+    await email.refresh();
+    for (const field of [
+      'preflight_email_count',
+      'candidate_count',
+      'preparation_excluded_count',
+      'prepared_at',
+    ]) {
+      assert.equal(email.get(field), null, `Legacy preparation should leave ${field} unknown`);
+    }
   });
 
   it('rejects extra batch recipients belonging to another email', async function () {
