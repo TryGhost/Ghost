@@ -667,22 +667,38 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(batches[0].get('recipient_count'), null);
   });
 
-  it('leaves legacy submission counts unknown and preserves the prepared email count', async function () {
-    await email.save({ preflight_email_count: null }, { patch: true });
+  it('leaves already-started legacy submission counts unknown and preserves the intended count', async function () {
+    await createLegacyBatches(['submitted', 'pending', 'pending', 'pending']);
+    await email.save({ email_count: 4 }, { patch: true });
     const batches = await service.createBatches(data);
-    const intendedCount = email.get('email_count');
     await db
       .knex('email_recipients')
-      .where({ batch_id: batches.find((b) => b.get('fallback_sending_domain')).id })
+      .where({ batch_id: batches.find((batch) => batch.get('status') === 'pending').id })
       .update({ member_email: 'invalid' });
     await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
-    assert.equal(email.get('email_count'), intendedCount);
+    assert.equal(email.get('email_count'), 4);
+    assert.equal(email.get('preflight_email_count'), null);
     for (const batch of await service.getBatches(email)) {
       assert.equal(batch.get('submitted_count'), null);
       assert.equal(batch.get('submission_excluded_count'), null);
     }
+  });
+
+  it('verifies submission counts for an unsent legacy email rebuilt with accounting', async function () {
+    await createLegacyBatches(['pending']);
+    await runEmailJob(await service.createBatches(data));
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('preflight_email_count'), 10);
+    assert.equal(email.get('email_count'), 4);
+    const batches = await service.getBatches(email);
+    assert.equal(
+      batches.reduce((sum, batch) => sum + batch.get('submitted_count'), 0),
+      4,
+    );
+    assert.ok(batches.every((batch) => batch.get('submission_excluded_count') === 0));
   });
 
   it('rejects changed candidate totals while every submitted batch remains internally consistent', async function () {
