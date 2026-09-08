@@ -206,6 +206,39 @@ Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
 
+## Authors
+
+Authors is a token field: a chip per credited staff member and a list of
+everyone else, and everyone except an Author or Contributor sees it, in the
+page editor as well as the post editor. Users are never created here, so the list only
+offers people the site already has. It is read once, when the list is first
+opened, rather than on every editor entry, and the chips are named from the
+post's own relations until then — including the chips an edit leaves behind, so
+removing one never leaves the rest reading as bare ids.
+
+A failed staff lookup shows an error and a Retry action in the list. Retrying
+keeps the selected authors and returns focus to the search field.
+
+The list narrows as the writer types, matching a name, slug or email and
+ignoring case and accents, and it leaves out anyone already credited. Arrow keys
+move the highlight, Enter takes the highlighted row and so does Tab once
+something has been typed, Escape closes the list and keeps the term, and both
+clicking away and moving focus out of the field close it and discard the term. A
+chip goes with its own remove button, and Backspace in an empty field drops the
+last one and opens the list on the staff it can offer again. A pick that empties
+the row under the highlight moves it to the last row rather than losing it.
+
+Order is meaningful and the field keeps it: a new author joins the end of the
+list, and the post is written with its authors' identities alone, in that order.
+The whole staff record stays in the field and the request is what reduces it.
+A post always needs one. A new post is credited to whoever started it, which is
+what the first save sends; emptying the list instead leaves the field asking for
+an author, holds a field save back and refuses a save the writer asks for with
+the same message, which the save banner and the publish flow both carry. The
+field itself is marked invalid and points at that message. The list is otherwise committed
+through the same gate as the rest of the sidebar, so a draft saves it and every
+other status stages it.
+
 ## Template
 
 The theme decides which templates a post may render with, so the section is the

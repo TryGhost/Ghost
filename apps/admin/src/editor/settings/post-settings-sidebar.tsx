@@ -3,6 +3,7 @@ import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import {
   canAccessSettings,
+  isAuthorOrContributor,
   isContributorUser,
   type User,
 } from '@tryghost/admin-x-framework/api/users';
@@ -15,6 +16,7 @@ import type { PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
+import { AuthorsSection } from './authors-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { ShowTitleSection } from './show-title-section';
@@ -88,6 +90,8 @@ export function PostSettingsSidebar({
   // Owner, Administrator and Editor manage featured and access.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
   const canTag = !!currentUser && !isContributorUser(currentUser);
+  // Ember hides the authors field from Authors and Contributors alike.
+  const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
     url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
@@ -96,6 +100,9 @@ export function PostSettingsSidebar({
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,
+    authors: canCreditOthers ? (
+      <AuthorsSection currentUser={currentUser} session={session} />
+    ) : null,
     'show-title-and-feature-image':
       postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
     template: <TemplateSection postType={postType} session={session} />,

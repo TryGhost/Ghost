@@ -1,5 +1,6 @@
-import type { EditablePostProjection } from '@/editor/engine/change-tracker';
+import type { EditablePostProjection, PostRelationLike } from '@/editor/engine/change-tracker';
 import type { PostStatus } from '@/editor/engine/save-engine';
+import { tagIdentities, type TagLike } from '@/shared/tags/tag-selection';
 
 /**
  * The projection keys the settings sidebar may write. Slug, status and publish
@@ -35,6 +36,25 @@ export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey
 export type EditorSettingsPatch = Partial<EditorSettingsFields>;
 
 export const TIERS_REQUIRED = 'Please select at least one tier';
+
+/** Ember's post validator refuses an empty author list (validators/post.js). */
+export const AUTHORS_REQUIRED = 'At least one author is required.';
+
+/**
+ * What a settings field writes. A relation travels as identity alone, so the
+ * field can hold the whole record and still send nothing but order.
+ */
+export function identityFor(key: SettingsFieldKey, value: unknown): unknown {
+  if (key === 'authors') {
+    return (value as ReadonlyArray<PostRelationLike>).map(({ id }) => ({ id }));
+  }
+  // The field holds the tag records the field displays; the relation is
+  // written by identity alone.
+  if (key === 'tags') {
+    return tagIdentities(value as ReadonlyArray<TagLike>);
+  }
+  return value;
+}
 
 /** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
 export function tiersIncomplete(

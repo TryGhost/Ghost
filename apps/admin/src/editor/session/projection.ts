@@ -4,7 +4,8 @@ import type { EditablePostProjection, RevisionProjection } from '@/editor/engine
 
 export type EditorRecord = PostEditorRecord | PageEditorRecord;
 
-export function newPostProjection(): EditablePostProjection {
+/** A post the writer has not saved yet, credited to whoever is creating it. */
+export function newPostProjection(currentUserId?: string): EditablePostProjection {
   return {
     title: '',
     slug: '',
@@ -17,7 +18,7 @@ export function newPostProjection(): EditablePostProjection {
     featured: false,
     visibility: null,
     tiers: [],
-    authors: [],
+    authors: currentUserId ? [{ id: currentUserId }] : [],
     meta_title: null,
     meta_description: null,
     canonical_url: null,
