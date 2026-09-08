@@ -37,16 +37,21 @@ The sending phase a failed newsletter email was in when sending stopped.
 _Avoid_: Failure step
 
 **Candidate recipient**:
-A member consumed by the audience sweep, counted once before a page is split into batches. The lookahead row is not consumed until its own page.
+A member selected for a newsletter email's audience before preparation exclusions. Selection does not mean the member has been prepared or submitted.
+_Avoid_: Subscriber count, delivered recipient
 
 **Preparation exclusion**:
-A candidate omitted because required recipient data is missing. Candidates equal persisted recipients plus preparation exclusions.
+A candidate explicitly omitted from a newsletter email's prepared audience because required recipient data is unavailable.
+_Avoid_: Failed delivery, silently skipped recipient
 
 **Accounted email**:
-An email created with `preflight_email_count` present, including zero, using the verified preparation protocol. A legacy email has a null preflight count and retains historical behavior.
+A newsletter email whose candidate audience, prepared recipients, and exclusions are verified against one another.
+_Avoid_: Delivered email, reconciled delivery
 
 **Frozen preparation**:
-The verified batch membership established by `prepared_at`. Retries reuse this membership; an incomplete preparation is discarded and rebuilt.
+The verified recipient membership retained for subsequent attempts to submit the same newsletter email.
+_Avoid_: Live audience, refreshed audience
 
 **Recovered batch**:
-A batch found after a creation error whose stable ID, metadata, and exact recipient data match the original operation. Recovery avoids inserting the same intended batch again.
+A previously committed batch identified and verified after the outcome of its creation was uncertain.
+_Avoid_: Rebuilt batch, resent batch

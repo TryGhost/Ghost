@@ -30,7 +30,7 @@ plus exclusions. The verified database read supplies the batches for submission.
 The preflight estimate can legitimately differ from the consumed audience; a
 difference of at least 1% emits a warning and a Sentry message without failing
 preparation. Verification failures emit structured error logs with their reason
-and counts; the alerting contract below distinguishes confirmed count mismatches. The email job reports terminal verification failures to Sentry
+and counts; the event contract below distinguishes confirmed count mismatches. The email job reports terminal verification failures to Sentry
 once, including during shutdown while leaving the email resumable. Failures during
 safely rebuildable preparation ask the user to retry; frozen or possibly submitted batches require investigation.
 
@@ -49,10 +49,15 @@ equation. Provider retries after an uncertain response can cause additional
 accepted submissions, and database failover can lose preparation or submission
 records. This protocol does not provide exactly-once delivery.
 
-## Recipient accounting alerts
+Rolling back to code without recipient accounting can start submitting an
+accounted email without establishing its preparation boundary. After rolling
+forward, that email cannot safely rebuild or complete preparation automatically;
+its recorded state requires reconciliation. Resending after a lost preparation
+boundary can also duplicate submissions already accepted by the provider.
 
-[BER-3898](https://linear.app/ghost/issue/BER-3898/alert-when-there-is-a-discrepancy-between-emailsemail-count-email)
-should trigger P1 incidents only on error-level records with
+## Recipient accounting events
+
+Confirmed recipient-count discrepancies emit error-level records with
 `event.name = email.recipient_count.mismatch`. This event requires known, valid,
 nonnegative integer `expected` and `actual` counts that differ, in either direction.
 Checks that retry emit it only after those retries are exhausted.
@@ -78,14 +83,20 @@ identifies a batch. Counts describe the failed check:
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                                                                                                          |
 | `preparation_totals`      | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
-| `batch_recovery_conflict` | `expected`, `actual` rows; only unequal counts trigger the P1 event                                                                                                                                          |
+| `batch_recovery_conflict` | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                           |
 
 Unknown or invalid counts, conflicting identities with equal counts, and ownership
 or lifecycle failures use `email.verification.failed`. Both events retain the
 internal code `BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED` for error handling; that
-code alone is too broad for a P1 alert. Retries or a later verification can observe the same failure
-again: group alerts by site, `email_id`, and `batch_id` when present. Treat events
-as integrity observations, not a counter of missing recipients.
+code alone does not distinguish count discrepancies from other integrity failures.
+Ownership is checked in both directions before counts, so cross-email references
+always report `cross_email_recipient`. The same failure can be observed more than
+once; events describe observations, not a counter of missing recipients.
+
+Verification errors carry `retryable: false`, and their persisted details record
+`can_rebuild` and `count_mismatch`. Automatic database retries do not retry a
+terminal verification failure. These markers describe recovery within Ghost;
+they do not imply that the provider accepted or delivered an email.
 
 A legitimate preflight audience change emits `email.preparation.audience_drift`
 at warning level. An explicitly excluded invalid member has its own error log;

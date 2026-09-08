@@ -2636,10 +2636,10 @@ describe('Batch Sending Service', function () {
       const Email = createModelClass({ findOne: { status: 'pending' } });
       const sentry = { captureException: sinon.stub() };
       const service = new BatchSendingService({ models: { Email }, sentry });
-      const failure = new errors.EmailError({
-        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
-        message: 'Newsletter recipient verification failed. Contact support to investigate.',
-      });
+      const {
+        recipientVerificationError,
+      } = require('../../../../../core/server/services/email-service/recipient-accounting');
+      const failure = recipientVerificationError('123', 'preparation_totals');
       let interruptedEmail;
       sinon.stub(service, 'sendEmail').callsFake(async (email) => {
         interruptedEmail = email;
