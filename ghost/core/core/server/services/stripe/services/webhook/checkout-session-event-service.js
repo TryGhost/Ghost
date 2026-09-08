@@ -253,7 +253,19 @@ module.exports = class CheckoutSessionEventService {
     await donationRepository.save(data);
 
     const staffServiceEmails = this.deps.staffServiceEmails;
-    await staffServiceEmails.notifyDonationReceived({ donationPaymentEvent: data });
+    try {
+      await staffServiceEmails.notifyDonationReceived({ donationPaymentEvent: data });
+    } catch (err) {
+      // Staff notifications are best-effort; the donation has already been recorded.
+      logging.error(
+        {
+          event: { name: 'stripe_checkout.donation_notification_failed' },
+          err,
+          stripeCheckoutSessionId: session.id,
+        },
+        'Failed to send donation notification',
+      );
+    }
   }
 
   /**
