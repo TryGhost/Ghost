@@ -8,11 +8,10 @@ const messages = {
   emailError: 'An unexpected error occurred, please retry sending your newsletter.',
   // The newsletter banner displays emails.error, which persists only the message.
   // Keep recovery guidance here until that interface supports a separate help field.
-  preparationError:
-    'Newsletter recipient preparation failed. Retry sending to rebuild the recipient batches.',
-  verificationError: 'Newsletter recipient verification failed. Contact support to investigate.',
-  submissionUncertain:
-    'Newsletter submission could not be confirmed. Contact support to reconcile the affected batches before retrying.',
+  preparationError: 'An error occurred while preparing your newsletter. Please try again.',
+  verificationError:
+    'An error occurred while checking your newsletter’s recipients. Sending has stopped.',
+  submissionUncertain: 'We couldn’t confirm whether your newsletter finished sending.',
 };
 
 const MAX_SENDING_CONCURRENCY = 2;
