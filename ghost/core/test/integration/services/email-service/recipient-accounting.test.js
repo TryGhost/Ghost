@@ -77,7 +77,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     sinon.assert.calledOnce(sentry.captureMessage);
     sinon.assert.neverCalledWithMatch(logging.error, {
-      event: { name: 'email.verification.failed' },
+      event: { name: 'email.recipient_count.mismatch' },
     });
   });
 
@@ -387,7 +387,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return true;
     });
     sinon.assert.calledWithMatch(logging.error, {
-      event: { name: 'email.verification.failed' },
+      event: { name: 'email.recipient_count.mismatch' },
       code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
       reason: 'batch_recipient_count',
       email_id: email.id,
@@ -397,6 +397,22 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     await email.refresh();
     assert.equal(email.get('prepared_at'), null);
+  });
+
+  it('reports unknown batch counts without triggering a count mismatch incident', async function () {
+    const batches = await service.createBatches(data);
+    await db.knex('email_batches').where({ id: batches[0].id }).update({ recipient_count: null });
+    await assert.rejects(service.createBatches(data), {
+      code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+    });
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.verification.failed' },
+      reason: 'batch_recipient_count',
+      expected: null,
+    });
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+    });
   });
 
   it('accounts for an invalid member and reports it while preparing the remaining recipients', async function () {
@@ -417,7 +433,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         code: 'BULK_EMAIL_INVALID_RECIPIENT',
       });
       sinon.assert.neverCalledWithMatch(logging.error, {
-        event: { name: 'email.verification.failed' },
+        event: { name: 'email.recipient_count.mismatch' },
       });
     } finally {
       await db.knex('members').where({ id: memberId }).update({ uuid: originalMember.uuid });
@@ -764,6 +780,20 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         await email.refresh();
         assert.equal(email.get('prepared_at'), null);
         assert.equal((await service.getBatches(email)).length, 1);
+        if (fault === 'missing-recipients') {
+          sinon.assert.calledWithMatch(logging.error, {
+            event: { name: 'email.recipient_count.mismatch' },
+            reason: 'batch_recovery_conflict',
+          });
+        } else {
+          sinon.assert.calledWithMatch(logging.error, {
+            event: { name: 'email.verification.failed' },
+            reason: 'batch_recovery_conflict',
+          });
+          sinon.assert.neverCalledWithMatch(logging.error, {
+            event: { name: 'email.recipient_count.mismatch' },
+          });
+        }
       }
     });
   }
@@ -799,10 +829,13 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return true;
     });
     sinon.assert.calledWithMatch(logging.error, {
-      event: { name: 'email.verification.failed' },
+      event: { name: 'email.recipient_count.mismatch' },
       code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
       email_id: email.id,
       reason: 'preparation_totals',
+      count_check: 'candidate_total',
+      expected: 4,
+      actual: 6,
       candidate_count: 4,
       preparation_excluded_count: 0,
       recipient_count: 6,
