@@ -56,6 +56,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
 
+  // The dunning takeover is positioned against the scrollable inset, so the
+  // inset must not scroll (and must sit at the top) while the takeover is up —
+  // otherwise the covered page scrolls back into view from underneath it
+  const insetRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (dunningLocked) {
+      insetRef.current?.scrollTo?.(0, 0);
+    }
+  }, [dunningLocked]);
+
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (
@@ -89,7 +99,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         />
       )}
       <SidebarInset
-        className={`relative overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}
+        ref={insetRef}
+        className={cn(
+          'relative bg-background sidebar:max-h-full',
+          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+        )}
       >
         <DunningBanner />
         <main className={cn('flex-1', sidebarVisible && pageChromeClassName)}>

@@ -127,7 +127,9 @@ export function useDunningState(): DunningState | null {
 
   const dunning = config?.config.hostSettings?.billing?.dunning;
 
-  if (!dunning?.active) {
+  // Strict comparison: the /config/ response isn't runtime-validated, and a
+  // misconfigured host sending e.g. active: "false" must stay a no-op
+  if (dunning?.active !== true) {
     return null;
   }
 

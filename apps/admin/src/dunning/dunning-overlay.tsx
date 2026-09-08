@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -50,16 +51,28 @@ export function DunningOverlay() {
   // the one case that renders the owner card (staff seeing the takeover)
   const owner = useOwnerUser({ enabled: takeover && Boolean(currentUser) && !isOwner });
 
+  // Move keyboard focus into the dialog when it takes over, so keyboard and
+  // screen-reader users land on the message rather than the covered page
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (takeover) {
+      dialogRef.current?.focus();
+    }
+  }, [takeover]);
+
   if (!state || !currentUser || !takeover) {
     return null;
   }
 
   return (
     <div
+      ref={dialogRef}
+      aria-labelledby="dunning-overlay-title"
       aria-modal="true"
-      className="absolute inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-background px-10 py-16"
+      className="absolute inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-background px-10 py-16 outline-hidden"
       data-testid="dunning-overlay"
       role="alertdialog"
+      tabIndex={-1}
     >
       {/* Same close treatment as the full-screen Settings view's exit button */}
       <Button
@@ -76,7 +89,10 @@ export function DunningOverlay() {
         <div className="flex size-14 items-center justify-center rounded-full bg-state-danger/10">
           <LucideIcon.TriangleAlert className="size-6 text-state-danger" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1
+          className="text-3xl font-bold tracking-tight text-foreground"
+          id="dunning-overlay-title"
+        >
           {lockedHeadline(state.daysLeft)}
         </h1>
         <Text className="max-w-[620px]" leading="relaxed" size="md" tone="secondary">
