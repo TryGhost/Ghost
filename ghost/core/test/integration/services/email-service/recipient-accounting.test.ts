@@ -42,6 +42,7 @@ function verificationDetails(error: unknown) {
 describe('Recipient accounting through MySQL and Bookshelf', function () {
   let email: Email;
   let fixtureEmailIds: string[];
+  let addedMemberIds: string[];
   let memberRestorations: { id: string; attributes: Record<string, unknown> }[];
   let service: {
     createBatch: (...args: CreateBatchArgs) => Promise<Batch>;
@@ -84,6 +85,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   beforeEach(async function () {
     fixtureEmailIds = [];
+    addedMemberIds = [];
     memberRestorations = [];
     sinon.stub(logging, 'info');
     sinon.stub(logging, 'error');
@@ -130,6 +132,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .del();
     await db.knex('email_batches').whereIn('email_id', emailIds).del();
     await db.knex('emails').whereIn('id', emailIds).del();
+    await db.knex('members').whereIn('id', addedMemberIds).del();
   });
 
   async function corruptMember(id: string, patch: Record<string, unknown>) {
@@ -384,23 +387,211 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
-  it('uses legacy preparation retries when preflight_email_count is null', async function () {
+  async function addMember(id = ObjectID().toHexString()) {
+    const template = await db.knex('members').first();
+    addedMemberIds.push(id);
+    await db.knex('members').insert({
+      ...template,
+      id,
+      uuid: crypto.randomUUID(),
+      transient_id: crypto.randomUUID(),
+      email: `${id}@example.com`,
+      created_at: new Date('2020-01-01'),
+    });
+    return id;
+  }
+
+  it('excludes newly added members even when their creation timestamp is backdated', async function () {
+    const query = models.Member.getFilteredCollectionQuery.bind(models.Member);
+    const audience = sinon.stub(models.Member, 'getFilteredCollectionQuery').callsFake(query);
+    const createBatch = service.createBatch.bind(service);
+    let newMemberId: string;
+    sinon.stub(service, 'createBatch').callsFake(async (...args) => {
+      const batch = await createBatch(...args);
+      if (!args[3]?.transacting && !newMemberId) {
+        newMemberId = await addMember();
+      }
+      return batch;
+    });
+    await service.createBatches(data);
+    assert.ok(audience.callCount > 1);
+    assert.equal(email.get('candidate_count'), 4);
+    const recipients = await db.knex('email_recipients').where({ email_id: email.id });
+    assert.equal(recipients.length, 4);
+    assert.ok(recipients.every((row) => row.member_id !== newMemberId));
+  });
+
+  it('keeps a large numeric member ID as a string at the pagination boundary', async function () {
+    await addMember('650706040078550001536020');
+    await addMember('65070957007855000153605b');
+    await service.createBatches(data);
+    const actual = await db
+      .knex('email_recipients')
+      .where({ email_id: email.id })
+      .orderBy('member_id')
+      .pluck('member_id');
+    assert.deepEqual(actual, await db.knex('members').orderBy('id').pluck('id'));
+    assert.equal(email.get('candidate_count'), 6);
+  });
+
+  for (const [enabled, limit, primaryCount] of [
+    [false, 0, 4],
+    [true, 0, 0],
+    [true, 2, 2],
+    [true, 4, 4],
+    [true, 10, 4],
+    [true, null, 4],
+  ] as const) {
+    it(`preserves warming allocation and its stored allowance (${enabled}, ${limit})`, async function () {
+      await email.save({ csd_email_count: limit }, { patch: true });
+      service = new BatchSendingService({
+        db,
+        models,
+        sentry,
+        emailRenderer: renderer,
+        emailSegmenter: segmenter,
+        domainWarmingService: { isEnabled: () => enabled },
+        sendingService: sender,
+      });
+      const batches = await service.createBatches(data);
+      assert.equal(
+        batches
+          .filter((batch) => !batch.get('fallback_sending_domain'))
+          .reduce((sum, batch) => sum + batch.get('recipient_count'), 0),
+        primaryCount,
+      );
+      assert.equal(
+        batches.reduce((sum, batch) => sum + batch.get('recipient_count'), 0),
+        4,
+      );
+      assert.equal(email.get('email_count'), 4);
+      assert.equal(email.get('csd_email_count'), limit);
+    });
+  }
+
+  it('prepares disjoint segments without duplicating or omitting members', async function () {
+    await corruptMember('000000000000000000000001', { status: 'paid' });
+    await corruptMember('000000000000000000000002', { status: 'paid' });
+    renderer.getSegments.resolves(['status:free', 'status:paid']);
+    segmenter.getMemberFilterForSegment.callsFake((_newsletter, _filter, segment) => segment);
+    const batches = await service.createBatches(data);
+    for (const segment of ['status:free', 'status:paid']) {
+      assert.equal(
+        batches
+          .filter((batch) => batch.get('member_segment') === segment)
+          .reduce((sum, batch) => sum + batch.get('recipient_count'), 0),
+        2,
+      );
+    }
+    const actual = await db
+      .knex('email_recipients')
+      .where({ email_id: email.id })
+      .orderBy('member_id')
+      .pluck('member_id');
+    assert.deepEqual(actual, await db.knex('members').orderBy('id').pluck('id'));
+    assert.equal(email.get('candidate_count'), 4);
+  });
+
+  async function createLegacyBatches(statuses: string[]) {
+    await email.save({ preflight_email_count: null }, { patch: true });
+    const members = await db.knex('members').orderBy('id', 'desc');
+    const batches = [];
+    for (const [index, status] of statuses.entries()) {
+      const batch = await service.createBatch(email, null, [members[index]], {
+        useFallbackDomain: false,
+      });
+      await batch.save({ status }, { patch: true });
+      batches.push(batch);
+    }
+    return batches;
+  }
+
+  for (const pendingCount of [0, 2, 4]) {
+    it(`rebuilds unsent legacy preparation against current eligibility (${pendingCount} pending batches)`, async function () {
+      const old = await createLegacyBatches(Array(pendingCount).fill('pending'));
+      await corruptMember('000000000000000000000004', { status: 'paid' });
+      const batches = await service.createBatches(data);
+      assert.ok(batches.every((batch) => !old.some((previous) => previous.id === batch.id)));
+      const recipients = await db.knex('email_recipients').where({ email_id: email.id });
+      assert.equal(recipients.length, 3);
+      assert.ok(recipients.every((row) => row.member_id !== '000000000000000000000004'));
+      await email.refresh();
+      assert.equal(email.get('preflight_email_count'), 10);
+      assert.equal(email.get('candidate_count'), 3);
+      assert.equal(email.get('email_count'), 3);
+      assert.equal(email.get('csd_email_count'), 3);
+      assert.equal(email.get('preparation_excluded_count'), 0);
+      assert.ok(email.get('prepared_at'));
+      assert.equal(
+        batches.reduce((sum, batch) => sum + batch.get('recipient_count'), 0),
+        3,
+      );
+      const audience = sinon
+        .stub(models.Member, 'getFilteredCollectionQuery')
+        .throws(new Error('Frozen'));
+      assert.deepEqual(
+        (await service.createBatches(data)).map((batch) => batch.id),
+        batches.map((batch) => batch.id),
+      );
+      sinon.assert.notCalled(audience);
+    });
+  }
+
+  for (const status of ['submitting', 'submitted', 'failed']) {
+    it(`preserves all legacy batches when one has started submission (${status})`, async function () {
+      await createLegacyBatches([status, 'pending']);
+      const before = await db.knex('email_batches').where({ email_id: email.id }).orderBy('id');
+      const recipients = await db
+        .knex('email_recipients')
+        .where({ email_id: email.id })
+        .orderBy('id');
+      const audience = sinon
+        .stub(models.Member, 'getFilteredCollectionQuery')
+        .throws(new Error('Already started'));
+      const batches = await service.createBatches(data);
+      assert.equal(batches.length, 2);
+      assert.deepEqual(
+        await db.knex('email_batches').where({ email_id: email.id }).orderBy('id'),
+        before,
+      );
+      assert.deepEqual(
+        await db.knex('email_recipients').where({ email_id: email.id }).orderBy('id'),
+        recipients,
+      );
+      await email.refresh();
+      assert.equal(email.get('preflight_email_count'), null);
+      assert.equal(email.get('candidate_count'), null);
+      assert.equal(email.get('prepared_at'), null);
+      sinon.assert.notCalled(audience);
+    });
+  }
+
+  it('recovers an uncertain commit after opting an unsent legacy email into accounting', async function () {
     await email.save({ preflight_email_count: null }, { patch: true });
     loseCommitAcknowledgementOnce();
-    await service.createBatches(data);
-    const batches = await service.getBatches(email);
-    assert.equal(batches.length, 4);
-    assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 6);
-    assert.ok(batches.every((batch) => batch.get('recipient_count') === null));
+    const batches = await service.createBatches(data);
+    assert.equal(batches.length, 3);
+    assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
+    assert.ok(batches.every((batch) => batch.get('recipient_count') !== null));
     await email.refresh();
-    for (const field of [
-      'preflight_email_count',
-      'candidate_count',
-      'preparation_excluded_count',
-      'prepared_at',
-    ]) {
-      assert.equal(email.get(field), null, `Legacy preparation should leave ${field} unknown`);
-    }
+    assert.equal(email.get('preflight_email_count'), 10);
+    assert.ok(email.get('prepared_at'));
+  });
+
+  it('rebuilds after a crash between legacy opt-in and batch creation', async function () {
+    const old = await createLegacyBatches(['pending']);
+    const create = sinon
+      .stub(service, 'createBatch')
+      .rejects(new Error('Interrupted after opt-in'));
+    await assert.rejects(service.createBatches(data), /Interrupted after opt-in/);
+    await email.refresh();
+    assert.equal(email.get('preflight_email_count'), 10);
+    assert.equal(email.get('prepared_at'), null);
+    create.restore();
+    const batches = await service.createBatches(data);
+    assert.ok(batches.every((batch) => batch.id !== old[0].id));
+    assert.equal(email.get('candidate_count'), 4);
+    assert.ok(email.get('prepared_at'));
   });
 
   it('rejects extra batch recipients belonging to another email', async function () {
@@ -819,17 +1010,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     );
   });
 
-  it('preserves the legacy outcome for the same omitted-batch scenario', async function () {
-    await email.save({ preflight_email_count: null }, { patch: true });
+  it('retains legacy submission accounting for a send that already started', async function () {
+    await createLegacyBatches(['submitted', 'pending', 'pending']);
     const batches = await service.createBatches(data);
-    const dispatched = batches.slice(0, 2);
-    await db
-      .knex('email_batches')
-      .whereIn(
-        'id',
-        dispatched.map((b) => b.id),
-      )
-      .update({ status: 'submitted' });
+    const dispatched = batches.filter((batch) => batch.get('status') === 'submitted');
     sinon.stub(service, 'sendBatch').resolves(true);
     await service.sendBatches({ ...data, batches: dispatched });
     assert.ok(batches.every((batch) => batch.get('recipient_count') === null));
@@ -837,7 +1021,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(email.get('prepared_at'), null);
     assert.equal(
       (await service.getBatches(email)).filter((batch) => batch.get('status') === 'pending').length,
-      1,
+      2,
     );
   });
 
