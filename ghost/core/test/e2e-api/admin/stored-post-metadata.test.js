@@ -46,7 +46,7 @@ describe('Admin API stored post metadata', function () {
     await agent.loginAsOwner();
   });
 
-  async function assertResourceParity(resource, id) {
+  async function assertStoredParity(resource, id) {
     const row = await models.Base.knex('posts')
       .where({ id })
       .select(
@@ -59,35 +59,31 @@ describe('Admin API stored post metadata', function () {
       )
       .first();
 
+    assert.notEqual(row.auto_excerpt, null);
+    assert.notEqual(row.reading_time, null);
+
     const { body } = await agent.get(`/${resource}/${id}/`).expectStatus(200);
     const item = body[resource][0];
 
     assert.equal(Object.prototype.hasOwnProperty.call(item, 'auto_excerpt'), false);
-
-    const expectedExcerpt =
-      row.custom_excerpt || row.auto_excerpt || computeAutoExcerpt(row.plaintext);
-    assert.equal(item.excerpt, expectedExcerpt);
-
-    const expectedReadingTime =
-      row.reading_time !== null && row.reading_time !== undefined
-        ? row.reading_time
-        : computeReadingTime(row.html, row.feature_image);
-    assert.equal(item.reading_time, expectedReadingTime);
+    assert.equal(item.excerpt, row.custom_excerpt || row.auto_excerpt);
+    assert.equal(item.reading_time, row.reading_time);
   }
 
-  it('matches stored excerpt and reading_time for fixture posts', async function () {
-    await assertResourceParity('posts', fixtureManager.get('posts', 0).id);
-    await assertResourceParity('posts', fixtureManager.get('posts', 1).id);
+  it('returns stored excerpt and reading_time for fixture posts', async function () {
+    await assertStoredParity('posts', fixtureManager.get('posts', 0).id);
+    await assertStoredParity('posts', fixtureManager.get('posts', 1).id);
   });
 
-  it('matches stored excerpt and reading_time for fixture pages', async function () {
+  it('returns stored excerpt and reading_time for fixture pages', async function () {
     const pageFixture = fixtureManager.get('posts', 5);
     assert.equal(pageFixture.type, 'page');
-    await assertResourceParity('pages', pageFixture.id);
+    await assertStoredParity('pages', pageFixture.id);
   });
 
   it('returns parity excerpt and reading_time on post create and feature_image update', async function () {
-    const lexical = createLexical(`Admin parity ${'word '.repeat(300)}content`);
+    // ~380–410 words is just under 1.5 minutes; +1 image rounds to 2.
+    const lexical = createLexical(`Admin parity ${'word '.repeat(390)}content`);
 
     const { body: createBody } = await agent
       .post('/posts/?formats=lexical,html,plaintext')
@@ -107,6 +103,7 @@ describe('Admin API stored post metadata', function () {
     assert.equal(Object.prototype.hasOwnProperty.call(created, 'auto_excerpt'), false);
     assert.equal(created.excerpt, computeAutoExcerpt(created.plaintext));
     assert.equal(created.reading_time, computeReadingTime(created.html, created.feature_image));
+    assert.equal(created.reading_time, 1);
 
     const rowAfterCreate = await models.Base.knex('posts')
       .where({ id: created.id })
@@ -114,6 +111,9 @@ describe('Admin API stored post metadata', function () {
       .first();
     assert.equal(rowAfterCreate.auto_excerpt, created.excerpt);
     assert.equal(rowAfterCreate.reading_time, created.reading_time);
+
+    // Sentinel proves feature_image-only edits refresh reading_time on save.
+    await models.Base.knex('posts').where({ id: created.id }).update({ reading_time: 999 });
 
     const { body: updateBody } = await agent
       .put(`/posts/${created.id}/?formats=lexical,html,plaintext`)
@@ -128,16 +128,25 @@ describe('Admin API stored post metadata', function () {
       .expectStatus(200);
 
     const updated = updateBody.posts[0];
+    const expectedReadingTime = computeReadingTime(updated.html, 'https://example.com/feature.jpg');
+
     assert.equal(updated.excerpt, created.excerpt);
-    assert.equal(
-      updated.reading_time,
-      computeReadingTime(updated.html, 'https://example.com/feature.jpg'),
-    );
-    assert.ok(updated.reading_time >= created.reading_time);
+    assert.equal(updated.reading_time, expectedReadingTime);
+    assert.equal(updated.reading_time, 2);
+    assert.ok(updated.reading_time > created.reading_time);
+
+    const rowAfterUpdate = await models.Base.knex('posts')
+      .where({ id: created.id })
+      .select('auto_excerpt', 'reading_time', 'feature_image')
+      .first();
+    assert.equal(rowAfterUpdate.feature_image, 'https://example.com/feature.jpg');
+    assert.equal(rowAfterUpdate.auto_excerpt, created.excerpt);
+    assert.notEqual(rowAfterUpdate.reading_time, 999);
+    assert.equal(rowAfterUpdate.reading_time, expectedReadingTime);
   });
 
   it('returns parity excerpt and reading_time on page create', async function () {
-    const lexical = createLexical(`Admin page parity ${'word '.repeat(300)}content`);
+    const lexical = createLexical(`Admin page parity ${'word '.repeat(390)}content`);
 
     const { body } = await agent
       .post('/pages/?formats=lexical,html,plaintext')
@@ -167,6 +176,35 @@ describe('Admin API stored post metadata', function () {
     assert.equal(row.reading_time, page.reading_time);
   });
 
+  it('lets custom_excerpt win over stored auto_excerpt', async function () {
+    const { body: createBody } = await agent
+      .post('/posts/?formats=lexical,html,plaintext')
+      .body({
+        posts: [
+          {
+            title: 'Admin custom excerpt wins',
+            status: 'draft',
+            custom_excerpt: 'custom wins',
+            mobiledoc: null,
+            lexical: createLexical('Body plaintext for auto excerpt'),
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const created = createBody.posts[0];
+
+    await models.Base.knex('posts').where({ id: created.id }).update({
+      auto_excerpt: 'should-not-appear',
+    });
+
+    const { body } = await agent
+      .get(`/posts/${created.id}/?formats=lexical,html,plaintext`)
+      .expectStatus(200);
+
+    assert.equal(body.posts[0].excerpt, 'custom wins');
+  });
+
   it('prefers stored values when they diverge from compute', async function () {
     const { body: createBody } = await agent
       .post('/posts/?formats=lexical,html,plaintext')
@@ -176,7 +214,7 @@ describe('Admin API stored post metadata', function () {
             title: 'Admin divergent stored metadata',
             status: 'draft',
             mobiledoc: null,
-            lexical: createLexical(`Divergent ${'word '.repeat(300)}content`),
+            lexical: createLexical(`Divergent ${'word '.repeat(390)}content`),
           },
         ],
       })
