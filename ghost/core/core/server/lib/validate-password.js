@@ -7,7 +7,8 @@ const settingsCache = require('../../shared/settings-cache');
 const urlUtils = require('../../shared/url-utils').default;
 
 const messages = {
-  passwordDoesNotComplyLength: 'Your password must be at least {minLength} characters long.',
+  passwordTooShort: 'Your password must be at least {minLength} characters long.',
+  passwordTooLong: 'Your password is too long.',
   passwordDoesNotComplySecurity: 'Sorry, you cannot use an insecure password.',
 };
 
@@ -56,6 +57,11 @@ function characterOccurance(stringToTest) {
  * valid password: `validationResult: {isValid: true}`
  */
 function validatePassword(password, email, blogTitle) {
+  // password cannot be longer than 256 code units, for performance
+  if (password.length > 256) {
+    return { isValid: false, message: tpl(messages.passwordTooLong) };
+  }
+
   const validationResult = { isValid: true };
   const disallowedPasswords = ['password', 'ghost', 'passw0rd'];
   let blogUrl = urlUtils.urlFor('home', true);
@@ -77,7 +83,7 @@ function validatePassword(password, email, blogTitle) {
   // password must be longer than 10 characters
   if (!validator.isLength(password, 10)) {
     validationResult.isValid = false;
-    validationResult.message = tpl(messages.passwordDoesNotComplyLength, { minLength: 10 });
+    validationResult.message = tpl(messages.passwordTooShort, { minLength: 10 });
 
     return validationResult;
   }
