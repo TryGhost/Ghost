@@ -88,6 +88,23 @@ describe('createSlugPort', () => {
     expect(machine.getState().slug).toBe('second');
   });
 
+  it('keeps the slug for a title the writer did not type, and stops following', async () => {
+    const { port, titleReplaced, machine, generateSlug } = harness();
+
+    titleReplaced('An Older Title');
+
+    await expect(port.fromTitle('An Older Title', null, signal())).resolves.toEqual({
+      slug: 'original',
+      source: 'unchanged',
+    });
+    await expect(port.fromTitle('Something Else', null, signal())).resolves.toEqual({
+      slug: 'original',
+      source: 'unchanged',
+    });
+    expect(machine.getState().slug).toBe('original');
+    expect(generateSlug).not.toHaveBeenCalled();
+  });
+
   it('settles immediately when nothing was submitted', async () => {
     const { port } = harness();
 

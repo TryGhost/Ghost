@@ -280,6 +280,33 @@ describe('createEditorSession', () => {
     expect(state.updates[2].payload.slug).toBe('another-name');
   });
 
+  it('follows the title again once a refused restore is rolled back', async () => {
+    const { session, state } = harness(
+      { record: record() },
+      { failSave: (saveCount) => saveCount === 1 },
+    );
+
+    await session.restoreRevision({
+      lexical: buildLexicalParagraph('The published words'),
+      title: 'Published at last',
+      custom_excerpt: null,
+      feature_image: null,
+      feature_image_alt: null,
+      feature_image_caption: null,
+    });
+
+    session.patchTitle('Another Name');
+    session.commitTitle('Another Name');
+    await session.dispatchExplicit();
+
+    // The rollback put the post's own title back beside its slug, so the slug
+    // reads derived again and the next typed title regenerates it.
+    expect(state.updates[1].payload).toMatchObject({
+      title: 'Another Name',
+      slug: 'another-name',
+    });
+  });
+
   it('lands clean after a new post is saved under the default title', async () => {
     const { session, state } = harness();
 
@@ -1397,6 +1424,47 @@ describe('createEditorSession', () => {
         expect(session.isDirty()).toBe(false);
       },
     );
+
+    it('releases the barrier when a restore lands on a pending manual edit', async () => {
+      const held = deferred<string>();
+      let requests = 0;
+      const { session, state } = harness(
+        { record: record() },
+        {
+          generateSlug: (text) => {
+            requests += 1;
+            return requests === 1 ? held.promise : Promise.resolve(slugify(text));
+          },
+        },
+      );
+
+      const edit = session.editSlug('A New Slug');
+      const restored = await session.restoreRevision({
+        lexical: buildLexicalParagraph('The published words'),
+        title: 'Published at last',
+        custom_excerpt: null,
+        feature_image: null,
+        feature_image_alt: null,
+        feature_image_caption: null,
+      });
+
+      // The restore is a document boundary, so it did not wait on the edit and
+      // saved the slug the post still holds.
+      expect(restored).toBe(true);
+      expect(state.updates[0].payload).toMatchObject({
+        title: 'Published at last',
+        slug: 'hello',
+      });
+
+      held.resolve('a-new-slug');
+      expect(await edit).toBe('unchanged');
+
+      // Nothing is stuck behind the released barrier: a later edit still applies.
+      expect(await session.editSlug('Another Slug')).toBe('applied');
+      await settle();
+      expect(session.getSlug()).toBe('another-slug');
+      expect(state.updates[1].payload).toMatchObject({ slug: 'another-slug' });
+    });
 
     it('protects a draft while its manual slug is generated and saves it before leaving', async () => {
       const generated = deferred<string>();

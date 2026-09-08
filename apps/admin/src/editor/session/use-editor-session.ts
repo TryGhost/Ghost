@@ -36,6 +36,7 @@ import {
   type PostStatus,
   type SaveEngineState,
 } from '@/editor/engine/save-engine';
+import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
@@ -100,6 +101,8 @@ export interface EditorSessionHandle {
   contentText: () => string;
   /** Replaces the document with the server's copy, or says why it could not. */
   reload: () => Promise<ReloadOutcome>;
+  /** Puts a revision's content back into the editor and saves it; true once persisted. */
+  restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   patchFeatureImage: EditorSession['patchFeatureImage'];
   /** The live settings fields, re-read on every sidebar edit. */
   settings: EditorSettingsFields;
@@ -409,6 +412,30 @@ export function useEditorSession({
     return 'reloaded';
   }, [fetchApi, persistedId, postType, queryClient, session]);
 
+  // The editor surface re-seeds from the restored content in one commit with the
+  // record it was saved onto, so the feature image is read back from that record.
+  // A restore that did not persist leaves the surface as it was.
+  const restoreRevision = useCallback(
+    async (restored: RestoredRevision): Promise<boolean> => {
+      const persisted = await session.restoreRevision(restored);
+      if (!persisted) {
+        return false;
+      }
+      // The session normalizes a blank restored title, so the surface reads it back.
+      const fields = session.getFields();
+      setTitle(fields.title === DEFAULT_TITLE ? '' : fields.title);
+      setExcerpt(fields.custom_excerpt ?? '');
+      setSettings(settingsFieldsOf(fields));
+      setInitialLexical(restored.lexical);
+      setLoadedRecord((current) =>
+        current ? { ...current, ...restored, title: fields.title } : current,
+      );
+      setContentKey((key) => key + 1);
+      return true;
+    },
+    [session],
+  );
+
   const contentText = useCallback(
     () => contentToText(title, session.getLiveLexical()),
     [session, title],
@@ -484,6 +511,7 @@ export function useEditorSession({
     hasUnsavedContent: session.hasUnsavedContent,
     contentText,
     reload,
+    restoreRevision,
     patchFeatureImage: session.patchFeatureImage,
     settings,
     editSettings,

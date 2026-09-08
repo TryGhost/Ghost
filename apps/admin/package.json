@@ -49,6 +49,7 @@
     "@xyflow/react": "12.11.2",
     "clsx": "catalog:",
     "dequal": "catalog:",
+    "dompurify": "catalog:",
     "i18n-iso-countries": "7.14.0",
     "jszip": "3.10.1",
     "lucide-react": "catalog:",

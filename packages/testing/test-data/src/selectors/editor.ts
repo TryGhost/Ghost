@@ -70,6 +70,17 @@ export const settingsSubviewPane = 'settings-subview-pane';
 export const settingsMetaTitleInput = 'settings-meta-title-input';
 export const settingsMetaDescriptionInput = 'settings-meta-description-input';
 export const settingsSerpPreview = 'settings-serp-preview';
+export const settingsPostHistoryButton = 'settings-post-history-button';
+
+// post history testids
+export const postHistoryModal = 'post-history-modal';
+export const postHistoryRevisionList = 'post-history-revision-list';
+export const postHistoryPreview = 'post-history-preview';
+export const postHistoryPreviewTitle = 'post-history-preview-title';
+export const postHistoryPreviewExcerpt = 'post-history-preview-excerpt';
+export const postHistoryPreviewFeatureImage = 'post-history-preview-feature-image';
+export const postHistoryPreviewBody = 'post-history-preview-body';
+export const postHistoryRestoreConfirm = 'post-history-restore-confirm';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -149,3 +160,7 @@ export const publishTypeEmailOnlyOption = 'Email only';
 export const publishAtScheduleOption = 'Schedule for later';
 export const settingsDeleteCancelButton = 'Cancel';
 export const settingsDeleteConfirmButton = 'Delete';
+export const postHistoryLatestText = 'Latest';
+export const postHistoryPublishedText = 'Published';
+export const postHistoryUnpublishedText = 'Unpublished';
+export const restoreRevisionButton = 'Restore';
