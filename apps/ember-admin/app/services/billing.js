@@ -19,6 +19,10 @@ const NEWSLETTERS_ROUTE = '/settings/newsletters';
 // payment, so a "Pay now" click from e.g. the editor lands back in the editor.
 const PREVIOUS_PAGE_DESTINATION = 'previousPage';
 
+// Written by the React admin's dunning "Pay now" CTAs (apps/admin/src/dunning)
+// with the route the CTA was clicked on; consumed once per payment return.
+const PAY_RETURN_ROUTE_STORAGE_KEY = 'ghost-dunning-pay-return-route';
+
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
 // Billing app never sends raw URLs or routes. A null-prototype, frozen object is
@@ -139,10 +143,14 @@ export default class BillingService extends Service {
 
         if (destination === PREVIOUS_PAGE_DESTINATION) {
             // Still only semantic navigation: no route or URL crosses the
-            // iframe boundary. Falls back to the billing overview when there
-            // is nothing to go back to (a deep link in a fresh tab).
-            if (this._hasPageToReturnTo()) {
-                window.history.back();
+            // iframe boundary — the Admin side records where "Pay now" was
+            // clicked. Without a recorded route (a direct deep link to the
+            // payment page) the billing overview is the fallback; never
+            // history.back(), whose previous entry can lie outside Admin.
+            const returnRoute = this._takePayNowReturnRoute();
+
+            if (returnRoute) {
+                this.router.transitionTo(returnRoute);
             } else {
                 this.router.transitionTo('pro');
             }
@@ -158,8 +166,15 @@ export default class BillingService extends Service {
         this.router.transitionTo(route);
     }
 
-    _hasPageToReturnTo() {
-        return window.history.length > 1;
+    _takePayNowReturnRoute() {
+        try {
+            const route = window.sessionStorage.getItem(PAY_RETURN_ROUTE_STORAGE_KEY);
+            window.sessionStorage.removeItem(PAY_RETURN_ROUTE_STORAGE_KEY);
+            return route && route.startsWith('/') ? route : null;
+        } catch (e) {
+            // Storage can be unavailable; fall back to the billing overview
+            return null;
+        }
     }
 
     _resolveAdminDestinationRoute(destination) {
