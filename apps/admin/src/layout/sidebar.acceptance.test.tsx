@@ -371,7 +371,7 @@ describe('Theme error notification', () => {
     code: 'GS110-NO-MISSING-PAGE-BUILDER-USAGE',
     rule: 'Check page builder usage',
     details: 'Missing page builder helper usage.',
-    failures: [{ ref: 'post.hbs', message: 'show_title_and_feature_image' }],
+    failures: [{ ref: 'post.hbs', message: '{{@page.show_title_and_feature_image}} is not used' }],
     fatal: false,
     level: 'error',
   };

@@ -8,6 +8,7 @@ import {
   buildCardConfigPost,
   buildPostCardConfig,
   getCardVisibilitySettings,
+  withLiveSettings,
 } from './card-config';
 
 const settingsFrom = (values: Record<string, Setting['value']>): Setting[] =>
@@ -192,5 +193,24 @@ describe('buildPostCardConfig', () => {
 
     expect(cardConfig.pinturaConfig).toBe(pinturaConfig);
     expect(cardConfig.snippets).toBe(snippets);
+  });
+});
+
+describe('withLiveSettings', () => {
+  it('overrides the loaded show title and feature image with the live value', () => {
+    const cardConfig = buildPostCardConfig(
+      sources({
+        post: buildCardConfigPost(
+          { displayName: 'page', showTitleAndFeatureImage: true, visibility: 'public' },
+          'public',
+        ),
+      }),
+      ports,
+    );
+
+    const live = withLiveSettings(cardConfig, { showTitleAndFeatureImage: false });
+
+    expect(live.post?.showTitleAndFeatureImage).toBe(false);
+    expect(cardConfig.post?.showTitleAndFeatureImage).toBe(true);
   });
 });

@@ -134,3 +134,28 @@ export function buildPostCardConfig(
     visibilitySettings: getCardVisibilitySettings(sources.post),
   };
 }
+
+export interface LiveCardConfigSettings {
+  visibility?: string | null;
+  showTitleAndFeatureImage?: boolean | null;
+}
+
+// The live settings fields, not the saved record: a visibility or a hidden
+// title the writer has only staged still decides what the cards describe.
+export function withLiveSettings(
+  cardConfig: PostCardConfig,
+  live: LiveCardConfigSettings,
+): PostCardConfig {
+  if (!cardConfig.post) {
+    return cardConfig;
+  }
+
+  return {
+    ...cardConfig,
+    post: {
+      ...cardConfig.post,
+      visibility: live.visibility || cardConfig.post.visibility,
+      showTitleAndFeatureImage: live.showTitleAndFeatureImage ?? true,
+    },
+  };
+}
