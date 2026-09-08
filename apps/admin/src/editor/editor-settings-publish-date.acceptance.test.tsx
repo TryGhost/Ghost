@@ -239,6 +239,13 @@ describe('Post settings publish date', () => {
         .element(editorScreen.saveErrorBanner())
         .toHaveTextContent('Please choose a past date and time.');
       expect(saveApi.requests).toHaveLength(0);
+
+      // The banner outlives the panel: closing it does not hide the reason.
+      await editorScreen.settingsToggle().click();
+      await expect(editorScreen.settingsPublishDateError()).toHaveCount(0);
+      await expect
+        .element(editorScreen.saveErrorBanner())
+        .toHaveTextContent('Please choose a past date and time.');
     },
     SLOW,
   );
@@ -276,6 +283,7 @@ describe('Post settings publish date', () => {
       await setTime('07:45');
 
       // A sent post stages like a published one, so nothing is sent until Update.
+      await expect.poll(unsavedChangesGuarded).toBe(true);
       expect(saveApi.requests).toHaveLength(0);
       await userEvent.keyboard('{Meta>}s{/Meta}');
 
