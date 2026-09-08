@@ -39,7 +39,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
     });
 
     for (const includeEmail of [false, true]) {
-      it(`only renders an attached email when requested (includeEmail=${includeEmail})`, async function () {
+      it(`strips internal email accounting fields without changing rendering (includeEmail=${includeEmail})`, async function () {
         const emailService = require('../../../../../../../core/server/services/email-service');
         const replaceDefinitions = sinon.stub().returns('Rendered preview');
         sinon.define(emailService, 'renderer', {
