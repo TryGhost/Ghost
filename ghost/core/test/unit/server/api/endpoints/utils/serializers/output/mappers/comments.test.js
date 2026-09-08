@@ -88,4 +88,85 @@ describe('Unit: endpoints/utils/serializers/output/mappers/comments', function (
     const [resource] = getUrlForResourceStub.firstCall.args;
     assert.equal(resource.type, 'posts');
   });
+
+  describe('post excerpt', function () {
+    let labsStub;
+
+    beforeEach(function () {
+      const labs = require('../../../../../../../../../core/shared/labs');
+      labsStub = sinon.stub(labs, 'isSet').returns(false);
+    });
+
+    it('prefers custom_excerpt over plaintext and stored auto_excerpt', function () {
+      const mapped = commentMapper(
+        makeComment({
+          id: 'post-id',
+          uuid: 'post-uuid',
+          title: 'A post',
+          type: 'post',
+          custom_excerpt: 'custom wins',
+          plaintext: 'plaintext body',
+          auto_excerpt: 'stored should not win',
+        }),
+        makeFrame(),
+      );
+
+      assert.equal(mapped.post.excerpt, 'custom wins');
+    });
+
+    it('slices plaintext when storedPostMetadata is off', function () {
+      labsStub.withArgs('storedPostMetadata').returns(false);
+      const plaintext = 'a'.repeat(600);
+
+      const mapped = commentMapper(
+        makeComment({
+          id: 'post-id',
+          uuid: 'post-uuid',
+          title: 'A post',
+          type: 'post',
+          plaintext,
+          auto_excerpt: 'stored should be ignored',
+        }),
+        makeFrame(),
+      );
+
+      assert.equal(mapped.post.excerpt, 'a'.repeat(500));
+    });
+
+    it('prefers stored auto_excerpt when storedPostMetadata is on', function () {
+      labsStub.withArgs('storedPostMetadata').returns(true);
+
+      const mapped = commentMapper(
+        makeComment({
+          id: 'post-id',
+          uuid: 'post-uuid',
+          title: 'A post',
+          type: 'post',
+          plaintext: 'plaintext body that should be ignored',
+          auto_excerpt: 'stored excerpt for comments',
+        }),
+        makeFrame(),
+      );
+
+      assert.equal(mapped.post.excerpt, 'stored excerpt for comments');
+    });
+
+    it('falls back to plaintext when stored auto_excerpt is null with flag on', function () {
+      labsStub.withArgs('storedPostMetadata').returns(true);
+
+      const mapped = commentMapper(
+        makeComment({
+          id: 'post-id',
+          uuid: 'post-uuid',
+          title: 'A post',
+          type: 'post',
+          plaintext: 'fallback plaintext excerpt',
+          auto_excerpt: null,
+        }),
+        makeFrame(),
+      );
+
+      assert.equal(mapped.post.excerpt, 'fallback plaintext excerpt');
+    });
+  });
 });
