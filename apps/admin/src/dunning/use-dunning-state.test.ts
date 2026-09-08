@@ -80,6 +80,8 @@ describe('useDunningState', () => {
   test.each([
     ['unparseable dates', { active: true, paymentFailedAt: 'nope', suspendsAt: 'also nope' }],
     ['missing dates', { active: true }],
+    // A misconfigured host may send a truthy non-boolean; only `true` activates
+    ['a non-boolean active value', { ...dunningWindow(2), active: 'false' }],
     [
       'an inverted window',
       {
