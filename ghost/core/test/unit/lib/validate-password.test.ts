@@ -1,4 +1,5 @@
 // secretlint-disable
+import { range } from 'lodash';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
@@ -154,6 +155,12 @@ describe('password validation', function () {
     assertValidPassword('A1b2C3d4E5');
     assertValidPassword('åß∂ƒ©˙∆˚¬…');
     assertValidPassword('😀😃😄😁😆😅😂🤣☺️😊');
+  });
+
+  it('allows passwords at exactly the maximum length', function () {
+    const codePoints = range(33, 289);
+    const password = String.fromCodePoint(...codePoints);
+    assertValidPassword(password);
   });
 
   it("allows passwords that contain the user's email address but are not equal", function () {
