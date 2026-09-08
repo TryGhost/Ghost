@@ -54,7 +54,14 @@ export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
   return {
     port: { settled, fromTitle },
     commitTitle: (title) => void track(machine.titleCommitted(title)),
-    editSlug: (input) => track(machine.slugEdited(input)),
+    editSlug: (input) => {
+      const slug = machine.getState().slug;
+      const invalidated = boundary.promise;
+      return Promise.race([
+        track(machine.slugEdited(input)),
+        invalidated.then(() => ({ slug, source: 'unchanged' as const, reason: 'stale' as const })),
+      ]);
+    },
     // A document boundary like a reload: release the waiters first, then re-read
     // ownership from the slug it already holds, so a slug the new title does not
     // slugify to reads custom and stops following the title.

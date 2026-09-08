@@ -56,6 +56,10 @@ describe('canViewPostHistory', () => {
 });
 
 describe('revisionEntries', () => {
+  it.each([null, {}, [null], [{ title: 42 }]])('ignores malformed revision data: %j', (input) => {
+    expect(revisionEntries(input)).toEqual([]);
+  });
+
   it('orders the versions newest first', () => {
     const entries = revisionEntries([
       revision({ id: 'old', created_at: '2026-01-01T00:00:00.000Z' }),
@@ -139,6 +143,9 @@ describe('revisionEntries', () => {
 });
 
 describe('revisionDate', () => {
+  it.each([null, 42, 'Invalid/Zone'])('uses UTC for an invalid timezone: %j', (timezone) => {
+    expect(revisionDate('2026-03-04T22:30:00.000Z', timezone)).toBe('4 Mar 2026, 22:30');
+  });
   it('reads in the site timezone', () => {
     expect(revisionDate('2026-03-04T22:30:00.000Z', 'Etc/UTC')).toBe('4 Mar 2026, 22:30');
     expect(revisionDate('2026-03-04T22:30:00.000Z', 'Australia/Sydney')).toBe('5 Mar 2026, 09:30');

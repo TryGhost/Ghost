@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -31,6 +31,7 @@ export function PostHistorySection({
   showExcerpt,
 }: PostHistorySectionProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const { darkMode } = useFocusContext();
   const { data: settingsData } = useBrowseSettings({
     defaultErrorHandler: false,
@@ -62,6 +63,7 @@ export function PostHistorySection({
   return (
     <SettingsSection>
       <button
+        ref={triggerRef}
         className="-mx-2 rounded-md px-2 py-1 text-left hover:bg-surface-elevated-2"
         data-testid={settingsPostHistoryButton}
         type="button"
@@ -84,9 +86,19 @@ export function PostHistorySection({
           isPublished={record?.status === 'published'}
           open={open}
           postType={postType}
+          restoreError={
+            (session.state.kind === 'error' && session.state.error.kind === 'session-invalid') ||
+            session.state.kind === 'reauth-pending'
+              ? 'Your session expired. Sign in again in a new tab, then try restoring again.'
+              : undefined
+          }
           revisions={revisions}
           showExcerpt={showExcerpt}
           timezone={timezone}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            triggerRef.current?.focus();
+          }}
           onOpenChange={setOpen}
           onRestore={restore}
         />

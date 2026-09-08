@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { JSONError } from '@tryghost/admin-x-framework/errors';
+import { JSONError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { deferred } from '@/utils/deferred';
@@ -305,6 +305,25 @@ describe('createEditorSession', () => {
       title: 'Another Name',
       slug: 'another-name',
     });
+  });
+
+  it('rolls back a restore when reauthentication would wait behind the history modal', async () => {
+    const { session } = harness(
+      { record: record() },
+      { failUpdateWith: new SessionExpiredError(new Response(null, { status: 401 }), undefined) },
+    );
+    const restored = session.restoreRevision({
+      lexical: buildLexicalParagraph('Older words'),
+      title: 'Older title',
+      custom_excerpt: null,
+      feature_image: null,
+      feature_image_alt: null,
+      feature_image_caption: null,
+    });
+    await expect.poll(() => session.getState().kind).toBe('error');
+    expect(await restored).toBe(false);
+    expect(session.getFields().title).toBe('Hello');
+    expect(session.getLiveLexical()).toBe(record().lexical);
   });
 
   it('lands clean after a new post is saved under the default title', async () => {
@@ -1456,11 +1475,12 @@ describe('createEditorSession', () => {
         slug: 'hello',
       });
 
-      held.resolve('a-new-slug');
       expect(await edit).toBe('unchanged');
+      expect(session.isDirty()).toBe(false);
 
       // Nothing is stuck behind the released barrier: a later edit still applies.
       expect(await session.editSlug('Another Slug')).toBe('applied');
+      held.resolve('a-new-slug');
       await settle();
       expect(session.getSlug()).toBe('another-slug');
       expect(state.updates[1].payload).toMatchObject({ slug: 'another-slug' });

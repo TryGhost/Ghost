@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import type { PostRevision } from '@tryghost/admin-x-framework/api/posts';
+import { parsePostRevisions, revisionTime } from '@/editor/post-revisions';
 import type { EditorRecord } from '@/editor/session/projection';
 
 /** The label a revision carries beside its date; a revision has at most one. */
@@ -22,11 +22,6 @@ export interface RevisionEntry {
 
 /** An author the API no longer resolves, shown in place of a name. */
 export const DELETED_AUTHOR = 'Deleted staff user';
-
-function revisionTime(revision: PostRevision): number {
-  const time = Date.parse(revision.created_at ?? '');
-  return Number.isNaN(time) ? 0 : time;
-}
 
 /**
  * Whether the post has a history to show: never for one that has not been
@@ -51,8 +46,8 @@ export function canViewPostHistory(record: EditorRecord | undefined): boolean {
  * `latest`, one that first took the post to published is `published`, and one
  * written because the post was unpublished is `unpublished`.
  */
-export function revisionEntries(revisions: readonly PostRevision[] = []): RevisionEntry[] {
-  const ordered = [...revisions].sort((a, b) => revisionTime(b) - revisionTime(a));
+export function revisionEntries(revisions: unknown = []): RevisionEntry[] {
+  const ordered = parsePostRevisions(revisions).sort((a, b) => revisionTime(b) - revisionTime(a));
 
   return ordered.map((revision, index) => {
     const newPublish =
@@ -86,7 +81,8 @@ export function revisionEntries(revisions: readonly PostRevision[] = []): Revisi
 }
 
 /** A revision's date in the site's timezone. */
-export function revisionDate(createdAt: string, timezone: string): string {
-  const time = moment.tz(createdAt, timezone);
+export function revisionDate(createdAt: string, timezone: unknown): string {
+  const zone = typeof timezone === 'string' && moment.tz.zone(timezone) ? timezone : 'Etc/UTC';
+  const time = moment.tz(createdAt, zone);
   return time.isValid() ? time.format('D MMM YYYY, HH:mm') : '';
 }

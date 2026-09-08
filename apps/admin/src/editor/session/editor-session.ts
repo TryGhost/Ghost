@@ -642,6 +642,9 @@ export function createEditorSession({
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
 
     restoreRevision: async (restored) => {
+      if (disposed || restored.lexical === null || engine.getState().kind === 'reauth-pending') {
+        return false;
+      }
       // A blank title persists as the default, the same as one the writer types.
       const revision: RestoredRevision = {
         ...restored,
@@ -661,7 +664,14 @@ export function createEditorSession({
       // restore leaves the URL alone.
       slug.titleReplaced(revision.title);
 
-      const completion = await engine.dispatch('explicit');
+      // The reauth controls are behind the history modal. Fail and roll back
+      // this restore instead of leaving it frozen with no accessible way out.
+      const stop = engine.subscribe(() => {
+        if (engine.getState().kind === 'reauth-pending') {
+          engine.reauthAbandoned();
+        }
+      });
+      const completion = await engine.dispatch('explicit').finally(stop);
       if (completion.kind !== 'saved') {
         // The editor surface never adopted the revision, so nothing may keep it.
         patchLive(previous);

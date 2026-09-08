@@ -22,6 +22,7 @@ import {
   type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
@@ -157,6 +158,25 @@ async function openHistory() {
 
 /** The sidebar's Post history row and the versions it opens. */
 describe('Post settings post history', () => {
+  it.each([null, {}, [null], [{ title: 42 }]])(
+    'keeps the editor usable when the API returns malformed history %j',
+    async (postRevisions) => {
+      editorChrome();
+      fakeAdminEndpoint('GET', ROUTE, {
+        posts: [{ ...savedPost(), post_revisions: postRevisions }],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openHistory();
+
+      await expect
+        .element(editorScreen.postHistoryPreview())
+        .toHaveTextContent('This post has no saved versions yet.');
+      await userEvent.keyboard('{Escape}');
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    },
+    SLOW,
+  );
+
   it(
     'leaves the row out until the post has been saved',
     async () => {
@@ -363,6 +383,57 @@ describe('Post settings post history', () => {
   );
 
   it(
+    'does not offer to restore a version with missing body content',
+    async () => {
+      const saveApi = fakeSavablePost({
+        post_revisions: [NEWEST, { ...OLDEST, lexical: null }],
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openHistory();
+      await editorScreen.postHistoryRevision(1).select().click();
+
+      await expect
+        .element(editorScreen.postHistoryPreview())
+        .toHaveTextContent('This version has no body content to restore.');
+      await expect(editorScreen.postHistoryRevision(1).restore()).toHaveCount(0);
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the restore confirmation open until its save finishes',
+    async () => {
+      fakeSavablePost();
+      const response = deferred<void>();
+      const saveApi = fakeAdminEndpoint('PUT', ROUTE, async ({ body }) => {
+        await response.promise;
+        const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+        return { posts: [savedPost({ ...submitted, updated_at: '2026-01-01T00:00:01.000Z' })] };
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openHistory();
+      await editorScreen.postHistoryRevision(1).select().click();
+      await editorScreen.postHistoryRevision(1).restore().click();
+      await editorScreen.confirmRestore().click();
+
+      try {
+        await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+        await expect
+          .element(editorScreen.restoreConfirm().getByRole('button', { name: 'Cancel' }))
+          .toBeDisabled();
+        await userEvent.keyboard('{Escape}');
+        await expect.element(editorScreen.restoreConfirm()).toBeVisible();
+      } finally {
+        response.resolve();
+      }
+      await expect(editorScreen.postHistoryModal()).toHaveCount(0);
+      await expect.element(editorScreen.body(), POLL).toHaveTextContent('The published words');
+    },
+    SLOW,
+  );
+
+  it(
     'leaves the post’s slug alone when the restored title differs',
     async () => {
       const saveApi = fakeSavablePost();
@@ -430,6 +501,36 @@ describe('Post settings post history', () => {
       await expect.element(page.getByText('Failed to restore revision.')).toBeVisible();
       await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
       await expect.element(editorScreen.postHistoryModal()).toBeVisible();
+      await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    },
+    SLOW,
+  );
+
+  it(
+    'releases an expired-session restore and keeps the original content',
+    async () => {
+      fakeSavablePost();
+      fakeAdminEndpoint(
+        'PUT',
+        ROUTE,
+        { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openHistory();
+      await editorScreen.postHistoryRevision(1).select().click();
+      await editorScreen.postHistoryRevision(1).restore().click();
+      await editorScreen.confirmRestore().click();
+
+      await expect
+        .element(editorScreen.postHistoryModal().getByRole('alert'))
+        .toHaveTextContent(
+          'Your session expired. Sign in again in a new tab, then try restoring again.',
+        );
+      await expect(editorScreen.restoreConfirm()).toHaveCount(0);
+      await userEvent.keyboard('{Escape}');
+      await expect(editorScreen.postHistoryModal()).toHaveCount(0);
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     },
     SLOW,
@@ -506,6 +607,7 @@ describe('Post settings post history', () => {
 
       await expect(editorScreen.postHistoryModal()).toHaveCount(0);
       await expect.element(editorScreen.settingsPostHistory()).toBeVisible();
+      await expect.element(editorScreen.settingsPostHistory()).toHaveFocus();
     },
     SLOW,
   );

@@ -108,6 +108,8 @@ export interface PostHistoryModalProps {
   currentExcerpt: string | null;
   onRestore: (revision: RevisionEntry) => Promise<boolean>;
   onOpenChange: (open: boolean) => void;
+  onCloseAutoFocus: (event: Event) => void;
+  restoreError?: string;
 }
 
 /**
@@ -128,6 +130,8 @@ export function PostHistoryModal({
   currentExcerpt,
   onRestore,
   onOpenChange,
+  onCloseAutoFocus,
+  restoreError,
 }: PostHistoryModalProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [confirming, setConfirming] = useState<RevisionEntry | null>(null);
@@ -154,10 +158,11 @@ export function PostHistoryModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !restoring && onOpenChange(next)}>
       <DialogContent
         className="top-0 left-0 grid h-dvh w-dvw max-w-none translate-x-0 grid-rows-[auto_1fr] gap-0 rounded-none p-0"
         data-testid={postHistoryModal}
+        onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="flex-row items-center gap-4 border-b border-border-default p-4">
           <DialogTitle className="text-lg">
@@ -185,11 +190,16 @@ export function PostHistoryModal({
             className="w-[320px] shrink-0 overflow-y-auto border-l border-border p-3"
             gap="none"
           >
+            {restoreError ? (
+              <Text className="mb-3 text-destructive" role="alert" size="sm">
+                {restoreError}
+              </Text>
+            ) : null}
             <ul data-testid={postHistoryRevisionList}>
               {revisions.map((revision, index) => (
                 <RevisionRow
                   key={revision.id}
-                  restorable={index !== 0}
+                  restorable={index !== 0 && revision.lexical !== null}
                   revision={revision}
                   selected={index === selectedIndex}
                   timezone={timezone}
@@ -202,7 +212,10 @@ export function PostHistoryModal({
         </Inline>
       </DialogContent>
 
-      <AlertDialog open={!!confirming} onOpenChange={(next) => !next && setConfirming(null)}>
+      <AlertDialog
+        open={!!confirming}
+        onOpenChange={(next) => !next && !restoring && setConfirming(null)}
+      >
         <AlertDialogContent
           className="z-[1100]"
           data-testid={postHistoryRestoreConfirm}
@@ -220,7 +233,9 @@ export function PostHistoryModal({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button disabled={restoring} variant="outline">
+                Cancel
+              </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
               <Button disabled={restoring} onClick={(event) => void confirmRestore(event)}>

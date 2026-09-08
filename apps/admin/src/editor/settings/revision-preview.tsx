@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { Suspense, useCallback, useMemo } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import { koenigFileUploadTypes, useKoenigFileUpload } from '@tryghost/admin-x-framework/hooks';
 import {
   postHistoryPreview,
@@ -102,9 +103,9 @@ export function RevisionPreview({
       <ErrorBoundary name="this version">
         <Suspense
           fallback={
-            <div className="flex justify-center py-10">
+            <Inline className="py-10" justify="center">
               <LoadingIndicator size="lg" />
-            </div>
+            </Inline>
           }
         >
           {revision.featureImage ? (
@@ -141,13 +142,17 @@ export function RevisionPreview({
               {excerpt ? <hr className="mt-4 mb-6 border-border" /> : null}
             </>
           ) : null}
-          <RevisionBody
-            key={revision.id}
-            cardConfig={cardConfig}
-            darkMode={darkMode}
-            editor={editor}
-            lexical={revision.lexical}
-          />
+          {revision.lexical === null ? (
+            <Text tone="secondary">This version has no body content to restore.</Text>
+          ) : (
+            <RevisionBody
+              key={revision.id}
+              cardConfig={cardConfig}
+              darkMode={darkMode}
+              editor={editor}
+              lexical={revision.lexical}
+            />
+          )}
         </Suspense>
       </ErrorBoundary>
     </div>
