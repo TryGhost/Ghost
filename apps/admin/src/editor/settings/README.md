@@ -90,6 +90,27 @@ A draft's save on leave waits for the proposal; other statuses ask before
 discarding it. A document reload releases waits on obsolete requests, and a
 response arriving after reload or disposal cannot patch the live document.
 
+Tags are a relation rather than a value, and the section writes them as one:
+the field holds the post's tags in order, because that order is the
+`sort_order` Ghost stores and the first public tag is the post's primary tag.
+Contributors do not get the section.
+
+Each tag reaches the save as its identity and nothing else — the id of one the
+site already has, or the bare name of one the writer typed. The server keeps a
+tag relation's name and slug and writes them onto the tag row, so sending back
+the record the post was read with reverts a rename made since; the record stays
+in the field, where the chips are drawn from, and never enters the payload. A typed name is created
+by the post's own save, so an abandoned edit leaves nothing behind, and a
+leading `#` reads as an internal tag in the field before the save because that
+is the rule the server applies. Two tags can share a name and differ only by
+slug, so what makes them the same tag is the id whenever both sides have one.
+
+The list offers the first hundred tags matching what is typed, in name order.
+Narrowing the search is how the rest are reached. Enter takes the highlighted
+row, and so does Tab once something is typed; Tab through an empty field moves
+on. Escape closes the list and leaves the term where it was typed. A chip is
+removed by clicking it, or with Backspace on an empty field.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.

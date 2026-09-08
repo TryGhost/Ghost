@@ -22,6 +22,7 @@ import type {
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
+import { tagIdentities } from '@/shared/tags/tag-selection';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
@@ -327,7 +328,9 @@ export function createEditorSession({
     for (const key of SETTINGS_FIELD_KEYS) {
       if (tracker.isFieldDirty(key)) {
         staged[key] = live[key];
-        payload[key] = live[key];
+        // The field holds the tag records the field displays; the relation is
+        // written by identity alone.
+        payload[key] = key === 'tags' ? tagIdentities(live.tags) : live[key];
       }
     }
     // The write contract requires the pair even when only one field changed.

@@ -7,18 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tryghost/shade/components';
-import { TagPicker } from '@/posts/list/components/modals/tag-picker';
-import { tagKey, type TagToAdd } from '@/posts/list/components/modals/tag-selection';
-import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
-import { useMemo, useState } from 'react';
-import { useDebounce } from 'use-debounce';
-import { escapeNqlString } from '@tryghost/nql-string';
-
-export type { TagToAdd };
+import { TagPicker } from '@/shared/tags/tag-picker';
+import { tagKey, type PickedTag } from '@/shared/tags/tag-selection';
+import { useState } from 'react';
 
 interface AddTagModalProps {
   isRunning: boolean;
-  onConfirm: (tags: TagToAdd[]) => void;
+  onConfirm: (tags: PickedTag[]) => void;
   onCancel: () => void;
 }
 
@@ -36,32 +31,8 @@ interface AddTagModalProps {
  * only what you are adding, and so does this.
  */
 export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps) {
-  const [selected, setSelected] = useState<TagToAdd[]>([]);
+  const [selected, setSelected] = useState<PickedTag[]>([]);
   const [search, setSearch] = useState('');
-  const term = search.trim();
-  const [debouncedTerm] = useDebounce(term, 250);
-
-  const { data: tagsData, isFetching } = useBrowseTags({
-    searchParams: {
-      limit: '100',
-      order: 'name asc',
-      ...(debouncedTerm ? { filter: `tags.name:~${escapeNqlString(debouncedTerm)}` } : {}),
-    },
-    filter: {},
-  });
-  const tags = useMemo(() => tagsData?.tags ?? [], [tagsData]);
-
-  // Keyed on the id, not the name: two tags can share a name and differ only
-  // by slug, and comparing names ticked and unticked both at once.
-  const toggle = (tag: TagToAdd) => {
-    const key = tagKey(tag);
-
-    setSelected((current) =>
-      current.some((item) => tagKey(item) === key)
-        ? current.filter((item) => tagKey(item) !== key)
-        : [...current, tag],
-    );
-  };
 
   return (
     <Dialog
@@ -92,11 +63,15 @@ export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps
         </DialogHeader>
 
         <TagPicker
-          allowCreation={!isFetching && term === debouncedTerm}
+          inputLabel="Search tags"
           selected={selected}
-          tags={tags}
+          onAdd={(tag) => {
+            setSelected((current) => [...current, tag]);
+          }}
+          onRemove={(key) => {
+            setSelected((current) => current.filter((tag) => tagKey(tag) !== key));
+          }}
           onSearchChange={setSearch}
-          onToggle={toggle}
         />
 
         <DialogFooter>

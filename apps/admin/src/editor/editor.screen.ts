@@ -42,6 +42,10 @@ import {
   settingsMenuToggle,
   settingsSlugError,
   settingsSlugInput,
+  settingsTagsField,
+  settingsTagsInput,
+  settingsTagsList,
+  settingsTagsToken,
   settingsTiersError,
   settingsTiersPicker,
   settingsUrlPreview,
@@ -123,6 +127,15 @@ export const editorScreen = {
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
   settingsTiersError: () => page.getByTestId(settingsTiersError),
+  settingsTagsField: () => page.getByTestId(settingsTagsField),
+  settingsTagsInput: () => page.getByTestId(settingsTagsInput),
+  settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
+  settingsTagOption: (name: string | RegExp) =>
+    page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  removeSettingsTag: (name: string) =>
+    page
+      .getByTestId(settingsTagsField)
+      .getByRole('button', { name: `Remove ${name}`, exact: true }),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
