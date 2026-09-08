@@ -10,6 +10,7 @@ interface CacheKeyFrame {
     [key: string]: unknown;
     context?: {
       member?: {
+        uuid?: string;
         status?: string;
         products?: Array<{ slug: string }>;
       };
@@ -41,10 +42,13 @@ export function generateOptionsData(
 
 export function generateAuthData(
   frame: CacheKeyFrame,
-): { free: boolean; tiers: string[] | undefined } | undefined {
+): { uuid: string | null; free: boolean; tiers: string[] | undefined } | undefined {
   const member = frame.options?.context?.member;
   if (member) {
     return {
+      // Transistor embeds contain the individual member UUID. Use null for
+      // UUID-less shims so they also avoid old entitlement-only cache entries.
+      uuid: member.uuid ?? null,
       free: member.status === 'free',
       tiers: member.products?.map((product) => product.slug).sort(),
     };
