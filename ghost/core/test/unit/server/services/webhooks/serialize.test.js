@@ -137,6 +137,40 @@ describe('WebhookService - Serialize', function () {
     );
   });
 
+  it('includes previous.reading_time when the stored column changed, but never auto_excerpt', async function () {
+    // reading_time is a public field and a DB column now, so content / feature_image
+    // saves put it in _changed and previous gains the prior value. That is an
+    // intentional payload change vs pre-column Ghost. auto_excerpt stays internal.
+    const post = fixtureManager.get('posts', 1);
+    const postModel = new Post({
+      ...post,
+      reading_time: 2,
+      auto_excerpt: 'should-not-leak',
+    });
+    sinon.stub(postModel, 'load').resolves(postModel);
+
+    postModel._previousAttributes = {
+      ...postModel.attributes,
+      reading_time: 1,
+      auto_excerpt: 'previous-should-not-leak',
+      title: post.title,
+    };
+    postModel._changed = {
+      title: 'Edited title',
+      reading_time: 2,
+      auto_excerpt: 'should-not-leak',
+    };
+    postModel.attributes.title = 'Edited title';
+
+    const result = await serialize('post.edited', postModel);
+
+    assert.equal(result.post.current.title, 'Edited title');
+    assert.equal(result.post.previous.title, post.title);
+    assert.equal(result.post.previous.reading_time, 1);
+    assert.equal(Object.prototype.hasOwnProperty.call(result.post.current, 'auto_excerpt'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(result.post.previous, 'auto_excerpt'), false);
+  });
+
   it('can serialize reconstructed member.edited model event state', async function () {
     const previousUpdatedAt = new Date('2026-04-28T15:55:45.000Z');
     const currentUpdatedAt = new Date('2026-05-29T00:00:00.000Z');

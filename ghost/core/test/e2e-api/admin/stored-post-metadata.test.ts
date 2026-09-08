@@ -5,7 +5,7 @@ import { beforeAll } from 'vitest';
 
 const models = require('../../../core/server/models');
 const { computeAutoExcerpt, computeReadingTime } = require('../../../core/server/lib/post-meta');
-const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 
 type StoredMetaRow = {
   html?: string | null;
@@ -258,5 +258,75 @@ describe('Admin API stored post metadata', function () {
 
     assert.equal(body.posts[0].excerpt, 'admin-divergent-stored-excerpt');
     assert.equal(body.posts[0].reading_time, 99);
+  });
+
+  it('computes excerpt and reading_time when storedPostMetadata is off', async function () {
+    // Production default is flag-off; e2e otherwise enables every private flag.
+    const { body: createBody } = await agent
+      .post('/posts/?formats=lexical,html,plaintext')
+      .body({
+        posts: [
+          {
+            title: 'Admin flag-off compute path',
+            status: 'draft',
+            mobiledoc: null,
+            lexical: createLexical(`Flag off ${'word '.repeat(390)}content`),
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const created = createBody.posts[0] as ApiResource;
+
+    await models.Base.knex('posts').where({ id: created.id }).update({
+      auto_excerpt: 'admin-flag-off-should-ignore',
+      reading_time: 99,
+    });
+
+    mockManager.mockLabsDisabled('storedPostMetadata');
+    try {
+      const { body } = await agent
+        .get(`/posts/${created.id}/?formats=lexical,html,plaintext`)
+        .expectStatus(200);
+
+      const post = body.posts[0] as ApiResource;
+      assert.equal(post.excerpt, computeAutoExcerpt(post.plaintext));
+      assert.equal(post.reading_time, computeReadingTime(post.html, post.feature_image));
+      assert.notEqual(post.excerpt, 'admin-flag-off-should-ignore');
+      assert.notEqual(post.reading_time, 99);
+    } finally {
+      mockManager.restore();
+    }
+  });
+
+  it('uses stored auto_excerpt for ?fields=excerpt without loading html', async function () {
+    const { body: createBody } = await agent
+      .post('/posts/?formats=lexical,html,plaintext')
+      .body({
+        posts: [
+          {
+            title: 'Admin fields excerpt stored path',
+            status: 'draft',
+            mobiledoc: null,
+            lexical: createLexical('Body for fields=excerpt stored path'),
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const created = createBody.posts[0] as ApiResource;
+
+    await models.Base.knex('posts').where({ id: created.id }).update({
+      auto_excerpt: 'fields-excerpt-stored-value',
+      // Poison plaintext so a plaintext fallback would fail the assertion.
+      plaintext: 'plaintext-fallback-should-not-win',
+    });
+
+    const { body } = await agent.get(`/posts/${created.id}/?fields=excerpt`).expectStatus(200);
+
+    assert.equal(body.posts[0].excerpt, 'fields-excerpt-stored-value');
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'auto_excerpt'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'plaintext'), false);
   });
 });
