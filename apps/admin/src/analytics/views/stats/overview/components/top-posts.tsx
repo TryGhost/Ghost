@@ -142,7 +142,12 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                       <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
                     )}
                     <div className="flex flex-col gap-0.5">
-                      <span className="line-clamp-2 text-md font-semibold">{post.title}</span>
+                      {/* wrap-anywhere, not break-words: a title can be one unbroken
+                          word wider than the column, and only `anywhere` also shrinks
+                          the intrinsic width the layout reserves for it. */}
+                      <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
+                        {post.title}
+                      </span>
                       <span className="text text-muted-foreground">
                         By {post.authors} &ndash;{' '}
                         {formatDisplayDate(post.published_at, siteTimezone)}

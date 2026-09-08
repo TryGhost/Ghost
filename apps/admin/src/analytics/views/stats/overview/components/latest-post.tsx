@@ -147,7 +147,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
               )}
               <div className="flex grow flex-col items-start justify-center self-stretch">
                 <div
-                  className="text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75"
+                  className="text-md leading-tighter font-semibold tracking-tight wrap-anywhere hover:cursor-pointer hover:opacity-75"
                   onClick={() => {
                     if (!isLoading && latestPostStats) {
                       navigate(postDestination, { crossApp: destinationIsEmberOwned });
