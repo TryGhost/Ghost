@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const validator = require('@tryghost/validator');
 
 const tpl = require('@tryghost/tpl');
@@ -19,31 +17,20 @@ const messages = {
  * @return {boolean}
  */
 function characterOccurrence(stringToTest) {
-  const chars = {};
-  let allowedOccurancy;
-  let valid = true;
+  const limit = stringToTest.length / 2;
+  /** @type {Map<string, number>} */
+  const counts = new Map();
 
-  stringToTest = _.toString(stringToTest);
-  allowedOccurancy = stringToTest.length / 2;
-
-  // Loop through string and accumulate character counts
-  _.each(stringToTest, function (char) {
-    if (!chars[char]) {
-      chars[char] = 1;
-    } else {
-      chars[char] += 1;
+  for (let i = 0; i < stringToTest.length; i++) {
+    const char = stringToTest[i];
+    const count = (counts.get(char) || 0) + 1;
+    if (count >= limit) {
+      return false;
     }
-  });
+    counts.set(char, count);
+  }
 
-  // check if any of the accumulated chars exceed the allowed occurancy
-  // of 50% of the words' length.
-  _.forIn(chars, function (charCount) {
-    if (charCount >= allowedOccurancy) {
-      valid = false;
-    }
-  });
-
-  return valid;
+  return true;
 }
 
 /**
