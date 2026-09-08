@@ -16,7 +16,7 @@ const messages = {
 /**
  * Counts repeated characters in a string. When 50% or more characters are the same,
  * we return false and therefore invalidate the string.
- * @param {string} stringToTest The password string to check.
+ * @param {string} stringToTest
  * @return {boolean}
  */
 function characterOccurrence(stringToTest) {
@@ -38,9 +38,9 @@ function characterOccurrence(stringToTest) {
 
 /**
  * Validation against simple password rules
- * @param {string} password The password string to check.
- * @param {string} email The users email address to validate agains password.
- * @param {string} [siteTitle] Optional siteTitle value, when site title is not set yet, e. g. in setup process.
+ * @param {string} password
+ * @param {string} email
+ * @param {string} [siteTitle]
  * @return {PasswordValidationResult}
  */
 function validatePassword(password, email, siteTitle) {
