@@ -154,6 +154,28 @@ describe('useDunningState', () => {
     expect(result.current).not.toBeNull();
   });
 
+  test('stands down entirely once a payment settled after the failure', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(8)));
+    // Written by the Ember billing service on the post-payment return
+    window.sessionStorage.setItem('ghost-dunning-payment-settled-at', NOW.toISOString());
+
+    const { result } = renderHook(() => useDunningState());
+
+    expect(result.current).toBeNull();
+  });
+
+  test('ignores a payment that settled before the current failure', () => {
+    mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(2)));
+    window.sessionStorage.setItem(
+      'ghost-dunning-payment-settled-at',
+      new Date(NOW.getTime() - 5 * DAY_MS).toISOString(),
+    );
+
+    const { result } = renderHook(() => useDunningState());
+
+    expect(result.current).toMatchObject({ phase: 'warning' });
+  });
+
   test('records a lock dismissal for the current episode', () => {
     mockUseBrowseConfig.mockReturnValue(withDunning(dunningWindow(22)));
 
