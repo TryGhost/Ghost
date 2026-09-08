@@ -82,10 +82,7 @@ function validatePassword(password, email, siteTitle) {
 
   // password must be longer than 10 characters
   if (!validator.isLength(password, 10)) {
-    validationResult.isValid = false;
-    validationResult.message = tpl(messages.passwordTooShort, { minLength: 10 });
-
-    return validationResult;
+    return { isValid: false, message: tpl(messages.passwordTooShort, { minLength: 10 }) };
   }
 
   // dissallow password from badPasswords list (e. g. '1234567890')
