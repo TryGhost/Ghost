@@ -83,7 +83,12 @@ describe('Sending service', function () {
       });
       assert.equal(sendStub.firstCall.args[1].expectedRecipientCount, 1);
       sinon.assert.calledOnce(sentry.captureException);
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnceWithMatch(logging.error, {
+        event: { name: 'email.submission.excluded' },
+        email_id: 'email',
+        member_id: 'invalid',
+        reason: 'invalid_email_address',
+      });
     });
 
     it('completes an all-excluded accounted message without calling the provider', async function () {
