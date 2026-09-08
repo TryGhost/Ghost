@@ -1,0 +1,10 @@
+SCHEMA >
+    `site_uuid` UUID,
+    `id` String,
+    `automation_run_id` String,
+    `is_pending` UInt8,
+    `updated_at` DateTime
+
+ENGINE ReplacingMergeTree
+ENGINE_SORTING_KEY site_uuid, id
+ENGINE_VER updated_at

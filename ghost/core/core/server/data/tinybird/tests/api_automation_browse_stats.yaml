@@ -1,0 +1,18 @@
+- name: automation_browse_stats
+  description: Uses latest run and step versions for automation browse statistics
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d
+  expected_result: |
+    {"automation_id":"automation-1","last_run_created_at":"2020-02-01 01:00:00","total_run_count":4,"in_progress_run_count":2}
+    {"automation_id":"automation-2","last_run_created_at":"2020-01-01 01:00:00","total_run_count":1,"in_progress_run_count":0}
+
+- name: automation_browse_stats_other_site
+  description: Restricts statistics to one site
+  parameters: site_uuid=6cce57c1-c0df-4771-bb86-53cbf494f90f
+  expected_result: |
+    {"automation_id":"automation-1","last_run_created_at":"2020-01-01 01:00:00","total_run_count":1,"in_progress_run_count":0}
+
+- name: automation_browse_stats_missing_site_uuid
+  description: Requires site UUID
+  expected_http_status: 400
+  parameters: ''
+  expected_result: ''
