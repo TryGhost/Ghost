@@ -18,7 +18,7 @@ const messages = {
  * @param {string} stringToTest The password string to check.
  * @return {boolean}
  */
-function characterOccurance(stringToTest) {
+function characterOccurrence(stringToTest) {
   const chars = {};
   let allowedOccurancy;
   let valid = true;
@@ -118,7 +118,7 @@ function validatePassword(password, email, siteTitle) {
   }
 
   // dissallow passwords where 50% or more of characters are the same
-  if (!characterOccurance(password)) {
+  if (!characterOccurrence(password)) {
     return invalidValidationResult;
   }
 
