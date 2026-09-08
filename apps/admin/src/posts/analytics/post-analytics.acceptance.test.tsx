@@ -411,12 +411,11 @@ describe('Post analytics overview', () => {
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
-    let postRequestCount = 0;
+    let preparationFailed = false;
     const { postsApi } = seedPostAnalyticsWorld(postOverrides, () => {
-      postRequestCount += 1;
       return [
         seededPost(
-          postRequestCount === 1
+          !preparationFailed
             ? postOverrides
             : {
                 email: {
@@ -438,21 +437,20 @@ describe('Post analytics overview', () => {
         email_statuses: [
           {
             id: EMAIL_ID,
-            sending:
-              statusRequestCount === 1
-                ? {
-                    status: 'preparing',
-                    progress: { completed: 100, total: 1000, estimated_seconds_remaining: 30 },
-                  }
-                : {
-                    status: 'failed',
-                    failed_during: 'preparing',
-                    progress: {
-                      completed: 250,
-                      total: 1000,
-                      estimated_seconds_remaining: null,
-                    },
+            sending: !preparationFailed
+              ? {
+                  status: 'preparing',
+                  progress: { completed: 100, total: 1000, estimated_seconds_remaining: 30 },
+                }
+              : {
+                  status: 'failed',
+                  failed_during: 'preparing',
+                  progress: {
+                    completed: 250,
+                    total: 1000,
+                    estimated_seconds_remaining: null,
                   },
+                },
           },
         ],
       };
@@ -464,8 +462,15 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(page.getByText('Preparing emails')).toBeVisible();
-    await expect.poll(() => statusRequestCount, { timeout: 3500 }).toBeGreaterThan(1);
-    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+    // Advance the fake server only after the initial state is visible: extra
+    // mount-time requests must not race the assertion straight into failure.
+    const initialStatusRequests = statusRequestCount;
+    const initialPostRequests = postsApi.requests.length;
+    preparationFailed = true;
+    await expect
+      .poll(() => statusRequestCount, { timeout: 3500 })
+      .toBeGreaterThan(initialStatusRequests);
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(initialPostRequests);
     await expect.element(page.getByText('Emails failed to send')).toBeVisible();
     await expect
       .element(page.getByText(/None of the 1,000 emails were sent\. Preparation failed\./))
