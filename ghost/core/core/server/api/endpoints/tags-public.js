@@ -1,12 +1,16 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const pick = require('lodash/pick');
 const models = require('../../models');
 const tagsPublicService = require('../../services/tags-public');
+const { rejectTagsContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['count.posts'];
+const ALLOWED_READ_FIELDS = ['id', 'slug', 'visibility'];
 
 const messages = {
   tagNotFound: 'Tag not found.',
+  missingIdentifier: 'A tag id or slug is required.',
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -28,7 +32,11 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return models.TagPublic.findPage(frame.options);
+      const options = {
+        ...frame.options,
+        mongoTransformer: rejectTagsContentApiRestrictedFieldsTransformer,
+      };
+      return models.TagPublic.findPage(options);
     },
   },
 
@@ -37,7 +45,7 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['include', 'filter', 'fields', 'debug'],
-    data: ['id', 'slug', 'visibility'],
+    data: ALLOWED_READ_FIELDS,
     validation: {
       options: {
         include: {
@@ -47,7 +55,18 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const model = await models.TagPublic.findOne(frame.data, frame.options);
+      // GET bodies bypass the framework's declared data fields. Preserve the
+      // public visibility constraint, but require an actual tag identifier.
+      const data = pick(frame.data, ALLOWED_READ_FIELDS);
+      if (![data.id, data.slug].some(Boolean)) {
+        throw new errors.BadRequestError({ message: tpl(messages.missingIdentifier) });
+      }
+
+      const options = {
+        ...frame.options,
+        mongoTransformer: rejectTagsContentApiRestrictedFieldsTransformer,
+      };
+      const model = await models.TagPublic.findOne(data, options);
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.tagNotFound),
