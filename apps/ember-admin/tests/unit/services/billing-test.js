@@ -34,6 +34,8 @@ describe('Unit: Service: billing', function () {
         billingService?.clearBillingAppLoadMonitor();
         billingService = null;
         sinon.restore();
+        window.sessionStorage.removeItem('ghost-dunning-pay-return-route');
+        window.sessionStorage.removeItem('ghost-dunning-payment-settled-at');
     });
 
     it('retries loading the billing app before reporting', async function () {
@@ -445,6 +447,18 @@ describe('Unit: Service: billing', function () {
         expect(transitionTo.calledOnceWithExactly('/editor/post/abc123')).to.be.true;
         // consumed: a later return without a fresh "Pay now" click must not reuse it
         expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).to.be.null;
+    });
+
+    it('records the settled payment so the dunning warnings stand down', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        sinon.stub(service.router, 'transitionTo');
+
+        service.navigateToAdminDestination('previousPage');
+
+        const settledAt = window.sessionStorage.getItem('ghost-dunning-payment-settled-at');
+        expect(settledAt).to.be.ok;
+        expect(new Date(settledAt).getTime()).to.be.closeTo(Date.now(), 5000);
     });
 
     it('falls back to the billing overview without a recorded return route', function () {

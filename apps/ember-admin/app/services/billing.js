@@ -23,6 +23,12 @@ const PREVIOUS_PAGE_DESTINATION = 'previousPage';
 // with the route the CTA was clicked on; consumed once per payment return.
 const PAY_RETURN_ROUTE_STORAGE_KEY = 'ghost-dunning-pay-return-route';
 
+// Written when the billing app reports a completed payment (its previousPage
+// request only follows one); read by the React admin's dunning UI so the
+// warnings stand down immediately instead of lingering until the
+// webhook-settled subscription state arrives seconds later.
+const DUNNING_PAYMENT_SETTLED_STORAGE_KEY = 'ghost-dunning-payment-settled-at';
+
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
 // Billing app never sends raw URLs or routes. A null-prototype, frozen object is
@@ -142,6 +148,8 @@ export default class BillingService extends Service {
         }
 
         if (destination === PREVIOUS_PAGE_DESTINATION) {
+            this._markDunningPaymentSettled();
+
             // Still only semantic navigation: no route or URL crosses the
             // iframe boundary — the Admin side records where "Pay now" was
             // clicked. Without a recorded route (a direct deep link to the
@@ -164,6 +172,18 @@ export default class BillingService extends Service {
         }
 
         this.router.transitionTo(route);
+    }
+
+    _markDunningPaymentSettled() {
+        try {
+            window.sessionStorage.setItem(
+                DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+                new Date().toISOString()
+            );
+        } catch (e) {
+            // Without storage the warnings stand down when the refreshed
+            // subscription state arrives instead
+        }
     }
 
     _takePayNowReturnRoute() {

@@ -99,6 +99,24 @@ export function markPayNowReturnRoute(route: string): void {
   }
 }
 
+/**
+ * Written by the Ember billing service when the billing app reports a
+ * completed payment (its `previousPage` return request only follows one).
+ * Read here so the warnings stand down the moment the user lands back,
+ * rather than lingering until the webhook-settled subscription state
+ * arrives seconds later. The return navigation triggers the render that
+ * picks the value up — no notification needed.
+ */
+const PAYMENT_SETTLED_KEY = 'ghost-dunning-payment-settled-at';
+
+function readPaymentSettledAt(): string | null {
+  try {
+    return window.sessionStorage.getItem(PAYMENT_SETTLED_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function parseDate(value: string | undefined): Date | null {
   if (!value) {
     return null;
@@ -137,6 +155,7 @@ export function useDunningState(): DunningState | null {
   }, []);
 
   const lockDismissedFor = useSyncExternalStore(subscribeLockDismissed, readLockDismissedFor);
+  const paymentSettledAt = useSyncExternalStore(subscribeLockDismissed, readPaymentSettledAt);
 
   if (!dunningWarningsEnabled) {
     return null;
@@ -160,6 +179,15 @@ export function useDunningState(): DunningState | null {
   // The billing app reported a live, active subscription: payment went
   // through, only the restart-scoped config is stale.
   if (subscriptionStatus?.subscription?.status === 'active') {
+    return null;
+  }
+
+  // A payment completed this session, after this failure: the billing app is
+  // still settling webhooks in the background, but the outcome is known — no
+  // warning should greet the user on their way back. A later failure carries
+  // a newer paymentFailedAt and re-arms everything.
+  const settledAt = parseDate(paymentSettledAt ?? undefined);
+  if (settledAt && settledAt.getTime() > paymentFailedAt.getTime()) {
     return null;
   }
 
