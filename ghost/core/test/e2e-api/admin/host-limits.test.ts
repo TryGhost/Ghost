@@ -344,6 +344,29 @@ describe('Host limits', function () {
       assert.equal(body.errors?.[0].type, 'HostLimitError');
     });
 
+    // Which kind of limit a name becomes is read off the shape a host configured, not
+    // declared anywhere, so the same name can arrive as either kind. Emails is the only
+    // limit whose counter needs the period, and a host writing `max` instead of
+    // `maxPeriodic` gets a counter asked to count without one.
+    it('counts emails when the host caps them outright rather than per period', async function () {
+      await hostLimits.setHostLimits({ emails: { max: 0 } });
+
+      const { body: created } = await agent
+        .post('posts/')
+        .body({ posts: [{ title: 'Capped outright', status: 'draft' }] })
+        .expectStatus(201);
+
+      const post = created.posts?.[0];
+      assert.ok(post, 'expected the draft to have been created');
+
+      const { body } = await agent
+        .put(`posts/${post.id}/?newsletter=${newsletterSlug}`)
+        .body({ posts: [{ ...post, status: 'published' }] })
+        .expectStatus(403);
+
+      assert.equal(body.errors?.[0].type, 'HostLimitError');
+    });
+
     // A periodic limit needs a period, and without one the service refuses to build it.
     // Core catches that and warns rather than failing to boot, which leaves the site
     // unlimited. Pinned because it is the shape of a limit that is configured, paid for and

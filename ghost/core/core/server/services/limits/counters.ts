@@ -33,10 +33,17 @@ export const counters: Record<string, Counter> = {
 
   emails: async ({ transacting, periodStart } = {}) => {
     const knex = (transacting ?? db.knex) as ReturnType<typeof require>;
-    const result = await knex('emails')
-      .sum('email_count', { as: 'count' })
-      .where('created_at', '>=', periodStart)
-      .first();
+    const query = knex('emails').sum('email_count', { as: 'count' });
+
+    // Only a limit that resets has a period to count within. A host capping emails outright
+    // configures `max` instead, and the whole history is what that caps, so there is nothing
+    // to narrow by. Passing the missing date to the query builder anyway makes it refuse to
+    // compile, which reaches the publisher as a failed send rather than a refused one.
+    if (periodStart) {
+      query.where('created_at', '>=', periodStart);
+    }
+
+    const result = await query.first();
 
     // A sum over no rows is null, and some drivers return these aggregates as strings.
     // Either would be compared against the limit as something other than a number.
