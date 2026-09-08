@@ -24,7 +24,7 @@ const ToggleGroup = React.forwardRef<
       ref={ref}
       className={cn(
         'inline-flex items-center justify-center gap-0.5 bg-muted p-0.5 dark:border dark:border-border dark:bg-background',
-        resolvedShape === 'pill' ? 'rounded-full' : 'rounded-(--input-group-radius)',
+        resolvedShape === 'pill' ? 'rounded-full' : 'rounded-control',
         className,
       )}
       data-control-shape={resolvedShape}

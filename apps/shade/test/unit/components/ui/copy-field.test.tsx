@@ -43,7 +43,7 @@ describe('CopyField Components', () => {
 
     assert.match(content.className, /border-control-border/);
     assert.match(content.className, /bg-control-readonly-surface/);
-    assert.match(content.className, /rounded-md/);
+    assert.match(content.className, /rounded-control/);
     assert.match(content.className, /h-\(--control-height\)/);
     assert.doesNotMatch(content.className, /border-b/);
     assert.match(value.className, /text-muted-foreground/);

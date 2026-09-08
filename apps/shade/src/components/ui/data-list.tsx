@@ -97,7 +97,7 @@ const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(
       <div
         ref={ref}
         className={cn(
-          'group/row relative flex items-center justify-between gap-3 py-0.5 before:absolute before:-inset-x-0.5 before:inset-y-0.5 before:z-0 before:rounded-[6px] before:bg-muted/60 before:opacity-0 hover:before:opacity-100',
+          'group/row relative flex items-center justify-between gap-3 py-0.5 before:absolute before:-inset-x-0.5 before:inset-y-0.5 before:z-0 before:rounded-control before:bg-muted/60 before:opacity-0 hover:before:opacity-100',
           className,
         )}
         {...props}

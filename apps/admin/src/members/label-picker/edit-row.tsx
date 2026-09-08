@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@tryghost/shade/components';
+import { Button, Input } from '@tryghost/shade/components';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
@@ -62,10 +62,10 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
   };
 
   return (
-    <div className="flex flex-col gap-2 py-1.5" data-edit-row>
-      <input
+    <div className="flex flex-col gap-2 pt-1 pb-2" data-edit-row>
+      <Input
         ref={inputRef}
-        className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50"
+        className="h-7 rounded-control-sm! px-2 text-sm"
         disabled={isBusy}
         type="text"
         value={name}

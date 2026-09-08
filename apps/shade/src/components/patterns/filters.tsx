@@ -1680,7 +1680,7 @@ function SelectOptionsList<T = unknown>({
           {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
           <div className="p-1.5">
             <button
-              className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
+              className="flex w-full items-center justify-center rounded-menu-item px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
               disabled={isLoadingMore}
               type="button"
               onClick={onLoadMore}

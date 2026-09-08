@@ -29,7 +29,7 @@ const buttonVariants = cva(
         icon: 'size-9',
       },
       shape: {
-        rounded: 'rounded-md',
+        rounded: 'rounded-control',
         pill: 'rounded-full',
       },
     },

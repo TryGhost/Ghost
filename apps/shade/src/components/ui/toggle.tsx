@@ -19,7 +19,7 @@ const toggleVariants = cva(
         button: 'h-[calc(var(--control-height)-2px)] min-w-[32px] px-3',
       },
       shape: {
-        rounded: 'rounded-md',
+        rounded: 'rounded-control',
         pill: 'rounded-full data-[state=off]:hover:bg-transparent',
       },
     },

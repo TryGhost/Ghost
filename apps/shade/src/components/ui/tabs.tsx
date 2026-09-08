@@ -102,12 +102,13 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       variant: {
-        segmented: 'h-7 rounded-md text-control font-medium data-[state=active]:shadow-md',
-        'segmented-sm': 'h-[26px] rounded-md text-sm font-medium data-[state=active]:shadow-md',
+        segmented: 'h-7 rounded-control text-control font-medium data-[state=active]:shadow-md',
+        'segmented-sm':
+          'h-[26px] rounded-control text-sm font-medium data-[state=active]:shadow-md',
         button:
-          'h-(--control-height) gap-1.5 rounded-md py-2 text-control font-medium hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:hover:bg-tab-active',
+          'h-(--control-height) gap-1.5 rounded-control py-2 text-control font-medium hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:hover:bg-tab-active',
         'button-sm':
-          'h-6 gap-1.5 rounded-md p-2 text-sm font-medium text-text-secondary hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
+          'h-6 gap-1.5 rounded-control p-2 text-sm font-medium text-text-secondary hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
         underline:
           'relative h-9 px-0 text-control font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
         navbar:
@@ -227,7 +228,7 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
     return (
       <div
         className={cn(
-          'relative rounded-md hover:bg-tab-hover',
+          'relative rounded-control hover:bg-tab-hover',
           variant === 'button-sm' && controlShape === 'pill' && 'rounded-full',
         )}
       >

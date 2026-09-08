@@ -320,9 +320,13 @@
   --radius-3xl: 2.4rem;
   --radius-full: 9999px;
   --radius-control: var(--radius-md);
+  --radius-control-sm: var(--radius-sm);
+  --radius-menu: var(--radius-md);
+  --radius-menu-item: var(--radius-xs);
   --radius-surface: var(--radius-lg);
   --radius-badge: var(--radius-full);
   --radius-pill: var(--radius-full);
+  --radius-trend-badge: var(--radius-xs);
 
   /* Animation */
   /* ---------------------------------------------------------------------- */

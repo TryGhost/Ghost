@@ -12,7 +12,10 @@ describe('Button Component', () => {
 
     assert.ok(button, 'Button should be rendered');
     assert.ok(button.className.includes('bg-primary'), 'Should have default variant class');
-    assert.ok(button.className.includes('rounded-md'), 'Should use the rounded shape by default');
+    assert.ok(
+      button.className.includes('rounded-control'),
+      'Should use the rounded control shape by default',
+    );
   });
 
   it('supports app-level pills, local overrides, link buttons, and square icon-only pills', () => {
@@ -34,11 +37,11 @@ describe('Button Component', () => {
       'Should inherit the app-level pill shape',
     );
     assert.ok(
-      screen.getByRole('button', { name: 'Local rounded' }).className.includes('rounded-md'),
+      screen.getByRole('button', { name: 'Local rounded' }).className.includes('rounded-control'),
       'Should let an explicit Button shape override the app setting',
     );
     assert.ok(
-      screen.getByRole('button', { name: 'Link button' }).className.includes('rounded-md'),
+      screen.getByRole('button', { name: 'Link button' }).className.includes('rounded-control'),
       'Should keep link buttons visually unchanged',
     );
 

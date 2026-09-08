@@ -146,7 +146,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     <>
       {!showCreate && visibleLabels.length === 0 && <CommandEmpty>No labels found</CommandEmpty>}
       {visibleLabels.length > 0 && (
-        <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+        <CommandGroup className="p-0 [&_[cmdk-group-heading]]:hidden">
           {visibleLabels.map((label) =>
             editingLabelId === label.id ? (
               <EditRow
@@ -170,7 +170,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </CommandGroup>
       )}
       {showCreate && (
-        <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+        <CommandGroup className="p-0 [&_[cmdk-group-heading]]:hidden">
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
             <LucideIcon.Plus className="size-4" />
             {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
@@ -333,7 +333,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     <div ref={containerRef} className="relative">
       <div
         className={cn(
-          'flex min-h-9 w-full cursor-text flex-wrap items-center rounded-md border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
+          'flex min-h-9 w-full cursor-text flex-wrap items-center rounded-control border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
           isAdmin7Pill ? 'gap-1 p-1' : 'gap-1.5 px-3 py-1',
         )}
         role="combobox"
@@ -362,7 +362,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         />
       </div>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-menu border bg-white shadow-md dark:bg-gray-950">
           {optionSource.isInitialLoad ? (
             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
               Loading labels...
