@@ -14,6 +14,7 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
@@ -225,6 +226,7 @@ describe('Post settings delete', () => {
       await editorScreen.cancelSettingsDelete().click();
 
       await expect(editorScreen.settingsDeleteDialog()).toHaveCount(0);
+      await expect.element(editorScreen.settingsDelete()).toHaveFocus();
       expect(deleteApi.requests.length).toBe(0);
       expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
@@ -276,6 +278,40 @@ describe('Post settings delete', () => {
       await editorScreen.cancelSettingsDelete().click();
 
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps unsaved work editable when the delete is refused by an expired session',
+    async () => {
+      const { saveApi } = fakeDeletablePost();
+      fakeAdminEndpoint(
+        'DELETE',
+        `/posts/${POST_ID}/`,
+        { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await typeIntoBody(' and more');
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+      await openDeleteDialog();
+      await editorScreen.confirmSettingsDelete().click();
+
+      await expect
+        .element(editorScreen.settingsDeleteError())
+        .toHaveTextContent(
+          'Your session expired. Sign in again in a new tab, then try deleting again.',
+        );
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await editorScreen.cancelSettingsDelete().click();
+      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+
+      await typeIntoBody(' after refusal');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect
+        .poll(() => JSON.stringify(saveApi.lastRequest?.body), POLL)
+        .toContain('after refusal');
     },
     SLOW,
   );

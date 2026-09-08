@@ -7,12 +7,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
   Button,
 } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
-import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { getErrorMessage, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { pagesDataType, useDeletePage } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useQueryClient } from '@tanstack/react-query';
@@ -53,8 +54,11 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
 
   const title = session.bind.title.trim() || session.loadedRecord?.title || DEFAULT_TITLE;
 
-  const close = () => {
-    setIsOpen(false);
+  const changeOpen = (open: boolean) => {
+    if (isDeleting) {
+      return;
+    }
+    setIsOpen(open);
     setError(null);
   };
 
@@ -66,7 +70,11 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
         ? deletePage({ id: postId, sessionExpiryRedirect: false })
         : deletePost({ id: postId, sessionExpiryRedirect: false }));
     } catch (deleteError) {
-      setError(getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`));
+      setError(
+        deleteError instanceof SessionExpiredError
+          ? 'Your session expired. Sign in again in a new tab, then try deleting again.'
+          : getErrorMessage(deleteError, `Couldn’t delete this ${noun}.`),
+      );
       setIsDeleting(false);
       return;
     }
@@ -87,17 +95,17 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
 
   return (
     <SettingsSection>
-      <Button
-        className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-        data-testid={settingsDeleteButton}
-        variant="outline"
-        onClick={() => setIsOpen(true)}
-      >
-        <LucideIcon.Trash />
-        Delete {noun}
-      </Button>
-
-      <AlertDialog open={isOpen} onOpenChange={(open) => !open && !isDeleting && close()}>
+      <AlertDialog open={isOpen} onOpenChange={changeOpen}>
+        <AlertDialogTrigger asChild>
+          <Button
+            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            data-testid={settingsDeleteButton}
+            variant="outline"
+          >
+            <LucideIcon.Trash />
+            Delete {noun}
+          </Button>
+        </AlertDialogTrigger>
         <AlertDialogContent data-testid={settingsDeleteDialog}>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this {noun}?</AlertDialogTitle>
