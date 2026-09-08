@@ -168,5 +168,19 @@ describe('Unit: endpoints/utils/serializers/output/mappers/comments', function (
 
       assert.equal(mapped.post.excerpt, 'fallback plaintext excerpt');
     });
+
+    it('omits excerpt when no excerpt source is available', function () {
+      const mapped = commentMapper(
+        makeComment({
+          id: 'post-id',
+          uuid: 'post-uuid',
+          title: 'A post',
+          type: 'post',
+        }),
+        makeFrame(),
+      );
+
+      assert.equal(Object.prototype.hasOwnProperty.call(mapped.post, 'excerpt'), false);
+    });
   });
 });

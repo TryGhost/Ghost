@@ -121,14 +121,19 @@ const commentMapper = (model, frame) => {
 
     // Same excerpt resolution as Posts/Pages (custom_excerpt wins; stored
     // auto_excerpt preferred behind storedPostMetadata; else plaintext slice).
+    // Omit the key when unresolved so comments/activity-feed payloads stay
+    // unchanged for posts without excerpt sources.
     if (jsonModel.post.custom_excerpt) {
       response.post.excerpt = jsonModel.post.custom_excerpt;
     } else {
-      response.post.excerpt = resolveAutoExcerpt({
+      const excerpt = resolveAutoExcerpt({
         get(attr) {
           return jsonModel.post[attr];
         },
       });
+      if (excerpt !== null && excerpt !== undefined) {
+        response.post.excerpt = excerpt;
+      }
     }
   }
 
