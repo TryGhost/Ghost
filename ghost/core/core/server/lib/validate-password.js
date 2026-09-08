@@ -1,5 +1,4 @@
 const validator = require('@tryghost/validator');
-
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../shared/settings-cache');
 const urlUtils = require('../../shared/url-utils').default;
@@ -9,6 +8,10 @@ const messages = {
   passwordTooLong: 'Your password is too long.',
   passwordDoesNotComplySecurity: 'Sorry, you cannot use an insecure password.',
 };
+
+/**
+ * @typedef {{isValid: true} | {isValid: false; message: string}} PasswordValidationResult
+ */
 
 /**
  * Counts repeated characters in a string. When 50% or more characters are the same,
@@ -35,13 +38,10 @@ function characterOccurrence(stringToTest) {
 
 /**
  * Validation against simple password rules
- * Returns false when validation fails and true for a valid password
  * @param {string} password The password string to check.
  * @param {string} email The users email address to validate agains password.
  * @param {string} [siteTitle] Optional siteTitle value, when site title is not set yet, e. g. in setup process.
- * @return {Object} example for returned validation Object:
- * invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
- * valid password: `validationResult: {isValid: true}`
+ * @return {PasswordValidationResult}
  */
 function validatePassword(password, email, siteTitle) {
   // password cannot be longer than 256 code units, for performance
