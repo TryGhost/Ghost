@@ -66,6 +66,7 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'navigationUrlSuggestions',
   'apps',
+  'storedPostMetadata',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

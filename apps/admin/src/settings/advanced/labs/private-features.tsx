@@ -118,6 +118,12 @@ const features: Feature[] = [
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
   },
+  {
+    title: 'Stored post metadata',
+    description:
+      'Prefer persisted auto_excerpt and reading_time on Posts/Pages API responses instead of recomputing them on every request',
+    flag: 'storedPostMetadata',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
