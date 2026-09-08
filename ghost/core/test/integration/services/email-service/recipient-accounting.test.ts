@@ -3,8 +3,10 @@ import crypto from 'node:crypto';
 import ObjectID from 'bson-objectid';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
+import { recipientVerificationError } from '../../../../core/server/services/email-service/recipient-accounting';
 import { SendingStatusService } from '../../../../core/server/services/email-service/sending-status-service';
 
+const mapBatch = require('../../../../core/server/api/endpoints/utils/serializers/output/mappers/email-batches');
 const logging = require('@tryghost/logging');
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
@@ -169,6 +171,23 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       }
       return found;
     });
+  }
+
+  async function runEmailJob(batches: Batch[]) {
+    sinon
+      .stub(service, 'sendEmail')
+      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
+    await service.emailJob({ emailId: email.id });
+  }
+
+  function useRealMailgunProvider() {
+    const client = { send: sinon.stub().resolves({ id: '<accepted>' }) };
+    const provider = new MailgunEmailProvider({
+      mailgunClient: client,
+      config: { get: () => undefined },
+    });
+    sender.send.callsFake(provider.send.bind(provider));
+    return client;
   }
 
   async function corruptMember(id: string, patch: Record<string, unknown>) {
@@ -548,18 +567,12 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   }
 
   it('reports persisted verification failures during shutdown with unstarted batches', async function () {
-    const {
-      recipientVerificationError,
-    } = require('../../../../core/server/services/email-service/recipient-accounting');
     const batches = await service.createBatches(data);
     sender.send.onFirstCall().callsFake(async () => {
       service.onPreStop();
-      throw recipientVerificationError(email.id, 'provider_recipient_count');
+      throw recipientVerificationError(email.id, 'provider_payload_count');
     });
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((jobEmail) => service.sendBatches({ ...data, email: jobEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     const reported = sentry.captureException
       .getCalls()
       .filter(
@@ -630,10 +643,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .knex('email_recipients')
       .where({ batch_id: batches.find((b) => b.get('fallback_sending_domain')).id })
       .update({ member_email: 'invalid' });
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
     assert.equal(email.get('email_count'), intendedCount);
@@ -651,10 +661,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await assert.rejects(
       service.sendBatches({ ...data, batches: await service.getBatches(email) }),
       (error) => {
-        assertVerificationError(error);
-        assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+        const details = verificationDetails(error);
+        assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
         // The preparation identity catches this before the redundant submission sum.
-        assert.equal(JSON.parse(error.errorDetails).reason, 'preparation_totals');
+        assert.equal(details.reason, 'preparation_totals');
         return true;
       },
     );
@@ -676,9 +686,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     );
     sinon.stub(service, 'sendBatch').resolves(false);
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
-      assertVerificationError(error);
-      assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-      assert.equal(JSON.parse(error.errorDetails).batch_id, batches[1].id);
+      const details = verificationDetails(error);
+      assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      assert.equal(details.batch_id, batches[1].id);
       return true;
     });
   });
@@ -1224,10 +1234,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .knex('email_recipients')
       .where({ batch_id: excludedBatch.id })
       .update({ member_email: 'invalid' });
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
     assert.equal(email.get('email_count'), 3);
@@ -1261,7 +1268,6 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.assert.neverCalledWithMatch(logging.error, {
       event: { name: 'email.recipient_count.mismatch' },
     });
-    const mapBatch = require('../../../../core/server/api/endpoints/utils/serializers/output/mappers/email-batches');
     const response = mapBatch(excludedBatch, { options: {} });
     assert.equal(response.status, 'submitted');
     assert.equal(response.mailgun_message_id, null);
@@ -1275,16 +1281,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .knex('email_recipients')
       .where({ batch_id: duplicateBatch.id })
       .update({ member_email: 'duplicate@example.com' });
-    const client = { send: sinon.stub().resolves({ id: '<accepted>' }) };
-    const provider = new MailgunEmailProvider({
-      mailgunClient: client,
-      config: { get: () => undefined },
-    });
-    sender.send.callsFake(provider.send.bind(provider));
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    const client = useRealMailgunProvider();
+    await runEmailJob(batches);
     await duplicateBatch.refresh();
     assert.equal(duplicateBatch.get('status'), 'failed');
     assert.equal(
@@ -1310,34 +1308,36 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   });
 
-  it('preserves an explicit ownership diagnosis when replaying a persisted failure', async function () {
-    const batches = await service.createBatches(data);
-    await batches[0].save(
-      {
-        status: 'failed',
-        error_data: JSON.stringify({
-          code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
-          reason: 'cross_email_recipient',
-          expected: 2,
-          actual: 1,
-          count_mismatch: false,
-        }),
-      },
-      { patch: true },
-    );
-    sinon.stub(service, 'sendBatch').resolves(false);
-    await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
-      assertVerificationError(error);
-      const details = JSON.parse(error.errorDetails);
-      assert.equal(details.reason, 'batch_verification_failed');
-      assert.equal(details.count_mismatch, false);
-      assert.equal(details.batch_error.reason, 'cross_email_recipient');
-      return true;
+  for (const countMismatch of [false, undefined]) {
+    it(`does not infer a count mismatch from persisted ownership diagnostics (${countMismatch})`, async function () {
+      const batches = await service.createBatches(data);
+      await batches[0].save(
+        {
+          status: 'failed',
+          error_data: JSON.stringify({
+            code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+            reason: 'cross_email_recipient',
+            expected: 2,
+            actual: 1,
+            count_mismatch: countMismatch,
+          }),
+        },
+        { patch: true },
+      );
+      sinon.stub(service, 'sendBatch').resolves(false);
+      await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+        const details = verificationDetails(error);
+
+        assert.equal(details.reason, 'batch_verification_failed');
+        assert.equal(details.count_mismatch, false);
+        assert.equal(details.batch_error.reason, 'cross_email_recipient');
+        return true;
+      });
+      sinon.assert.neverCalledWithMatch(logging.error, {
+        event: { name: 'email.recipient_count.mismatch' },
+      });
     });
-    sinon.assert.neverCalledWithMatch(logging.error, {
-      event: { name: 'email.recipient_count.mismatch' },
-    });
-  });
+  }
 
   it('logs a payload discrepancy before a failed batch status write can hide it', async function () {
     const batches = await service.createBatches(data);
@@ -1346,12 +1346,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .knex('email_recipients')
       .where({ batch_id: duplicateBatch.id })
       .update({ member_email: 'duplicate@example.com' });
-    const client = { send: sinon.stub().resolves({ id: '<accepted>' }) };
-    const provider = new MailgunEmailProvider({
-      mailgunClient: client,
-      config: { get: () => undefined },
-    });
-    sender.send.callsFake(provider.send.bind(provider));
+    useRealMailgunProvider();
     // Status persistence fails independently of the payload check. Disable backoff
     // so the test exercises the exhausted-write outcome without waiting for retries.
     sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
@@ -1414,10 +1409,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   it('completes mixed preparation-era submissions without inventing historical counts', async function () {
     const batches = await service.createBatches(data);
     await batches[0].save({ status: 'submitted' }, { patch: true });
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
     assert.equal(email.get('email_count'), 4);
@@ -1486,10 +1478,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   it('keeps ordinary provider failures retry-oriented', async function () {
     const batches = await service.createBatches(data);
     sender.send.rejects(new Error('Provider unavailable'));
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'failed');
     assert.match(email.get('error'), /retry/i);
@@ -1503,10 +1492,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await email.save({ recipient_filter: "email:'nobody@example.com'" }, { patch: true });
     const batches = await service.createBatches(data);
     assert.equal(batches.length, 0);
-    sinon
-      .stub(service, 'sendEmail')
-      .callsFake((lockedEmail) => service.sendBatches({ ...data, email: lockedEmail, batches }));
-    await service.emailJob({ emailId: email.id });
+    await runEmailJob(batches);
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
     assert.equal(email.get('candidate_count'), 0);
