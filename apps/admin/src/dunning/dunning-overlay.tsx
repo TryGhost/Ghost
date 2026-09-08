@@ -59,12 +59,24 @@ export function DunningOverlay() {
   const owner = useOwnerUser({ enabled: takeover && Boolean(currentUser) && !isOwner });
 
   // Move keyboard focus into the dialog when it takes over, so keyboard and
-  // screen-reader users land on the message rather than the covered page
+  // screen-reader users land on the message rather than the covered page —
+  // and hand focus back to where it was once the takeover stands down. The
+  // layout makes the covered regions inert meanwhile, so Tab cannot leave
+  // the dialog for the covered page.
   const dialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (takeover) {
-      dialogRef.current?.focus();
+    if (!takeover) {
+      return;
     }
+
+    const previouslyFocused = document.activeElement;
+    dialogRef.current?.focus();
+
+    return () => {
+      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+        previouslyFocused.focus();
+      }
+    };
   }, [takeover]);
 
   if (!state || !currentUser || !takeover) {

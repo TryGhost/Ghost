@@ -215,6 +215,38 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
     });
 
+    test('moves focus into the dialog and hands it back on dismissal', () => {
+      // Start outside the locked phase with focus on a page control
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(2));
+      const view = render(
+        <>
+          <button data-testid="page-control" type="button">
+            page control
+          </button>
+          <DunningOverlay />
+        </>,
+      );
+      screen.getByTestId('page-control').focus();
+
+      // The window crosses into the locked phase: the takeover appears and
+      // takes keyboard focus so Tab starts inside the dialog
+      mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
+      view.rerender(
+        <>
+          <button data-testid="page-control" type="button">
+            page control
+          </button>
+          <DunningOverlay />
+        </>,
+      );
+      expect(screen.getByTestId('dunning-overlay')).toHaveFocus();
+
+      // Dismissing hands focus back to the control that had it
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+      expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      expect(screen.getByTestId('page-control')).toHaveFocus();
+    });
+
     test('dismissing drops back to the urgent warning banner', () => {
       mockUseBrowseConfig.mockReturnValue(configWithDunning(22));
 

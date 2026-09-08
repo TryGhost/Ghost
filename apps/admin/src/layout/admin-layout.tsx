@@ -66,15 +66,34 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, [dunningLocked]);
 
+  // The covered regions become `inert` while the takeover is up: aria-modal is
+  // only a semantic hint, so without this the covered page stays reachable by
+  // keyboard and assistive technology. Applied through refs because React 18
+  // has no first-class inert prop. Whichever refs the active layout branch
+  // doesn't render stay null and are skipped.
+  const sidebarRef = React.useRef<HTMLDivElement>(null);
+  const mainRef = React.useRef<HTMLElement>(null);
+  const contributorMenuRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
+      if (region) {
+        region.inert = dunningLocked;
+      }
+    }
+  }, [dunningLocked]);
+
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main className="flex h-full flex-col overflow-y-auto">
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
           <DunningBanner />
           <div className="flex-1">{children}</div>
         </main>
-        <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
+        <div
+          ref={contributorMenuRef}
+          className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8"
+        >
           <ContributorUserMenu />
         </div>
         <DunningOverlay />
@@ -93,8 +112,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     >
       {sidebarVisible && (
         <AppSidebar
-          aria-hidden={dunningLocked || undefined}
-          className={cn(dunningLocked && 'pointer-events-none opacity-40')}
+          ref={sidebarRef}
+          className={cn(dunningLocked && 'opacity-40')}
           variant="floating"
         />
       )}
@@ -107,12 +126,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         )}
       >
         <DunningBanner />
-        <main className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
+        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
           <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
             {children}
           </ActivityPubHostLayoutProvider>
         </main>
-        <MobileNavBar />
+        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+            inset) and its sheet opens in a portal, so it unmounts entirely
+            rather than relying on inert */}
+        {!dunningLocked && <MobileNavBar />}
         <DunningOverlay />
       </SidebarInset>
     </SidebarProvider>
