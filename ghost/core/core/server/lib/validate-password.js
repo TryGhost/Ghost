@@ -51,12 +51,12 @@ function characterOccurance(stringToTest) {
  * Returns false when validation fails and true for a valid password
  * @param {string} password The password string to check.
  * @param {string} email The users email address to validate agains password.
- * @param {string} [blogTitle] Optional blogTitle value, when blog title is not set yet, e. g. in setup process.
+ * @param {string} [siteTitle] Optional siteTitle value, when site title is not set yet, e. g. in setup process.
  * @return {Object} example for returned validation Object:
  * invalid password: `validationResult: {isValid: false, message: 'Sorry, you cannot use an insecure password.'}`
  * valid password: `validationResult: {isValid: true}`
  */
-function validatePassword(password, email, blogTitle) {
+function validatePassword(password, email, siteTitle) {
   // password cannot be longer than 256 code units, for performance
   if (password.length > 256) {
     return { isValid: false, message: tpl(messages.passwordTooLong) };
@@ -64,7 +64,7 @@ function validatePassword(password, email, blogTitle) {
 
   const validationResult = { isValid: true };
   const disallowedPasswords = ['password', 'ghost', 'passw0rd'];
-  let blogUrl = urlUtils.urlFor('home', true);
+  let siteUrl = urlUtils.urlFor('home', true);
 
   const badPasswords = [
     '1234567890',
@@ -77,8 +77,8 @@ function validatePassword(password, email, blogTitle) {
     '12345asdfg',
   ];
 
-  blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
-  blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
+  siteTitle = siteTitle ? siteTitle : settingsCache.get('title');
+  siteUrl = siteUrl.replace(/^http(s?):\/\//, '');
 
   // password must be longer than 10 characters
   if (!validator.isLength(password, 10)) {
@@ -107,16 +107,16 @@ function validatePassword(password, email, blogTitle) {
     }
   });
 
-  // password must not match with blog title
-  if (blogTitle && blogTitle.toLowerCase() === password.toLowerCase()) {
+  // password must not match with site title
+  if (siteTitle && siteTitle.toLowerCase() === password.toLowerCase()) {
     validationResult.isValid = false;
   }
 
-  // password must not match with blog URL (without protocol, with or without trailing slash)
+  // password must not match with site URL (without protocol, with or without trailing slash)
   if (
-    blogUrl &&
-    (blogUrl.toLowerCase() === password.toLowerCase() ||
-      blogUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())
+    siteUrl &&
+    (siteUrl.toLowerCase() === password.toLowerCase() ||
+      siteUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())
   ) {
     validationResult.isValid = false;
   }
