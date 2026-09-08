@@ -412,6 +412,17 @@ Tab, so the next Tab moves on to the footer editor and out of the pane rather
 than indenting. The back button, or Escape from anywhere else in the pane,
 still closes the pane.
 
+## Keyboard shortcuts
+
+A pane every role that can open the panel can open, and the one thing in the
+sidebar that edits nothing: the chords and slash commands the editor answers to,
+grouped as Formatting, Editing, Application and Inserting, with the keys shown
+against each. The modifiers are drawn as the writer's own platform draws them —
+the Mac glyphs for a Mac writer, the key names for everyone else — read from the
+user agent as the pane renders. Hovering a glyph names the key it stands for;
+a key already shown as its name carries no tooltip. A slash command reads the
+same wherever it is typed.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

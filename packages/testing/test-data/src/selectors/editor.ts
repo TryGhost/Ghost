@@ -71,6 +71,7 @@ export const settingsMetaTitleInput = 'settings-meta-title-input';
 export const settingsMetaDescriptionInput = 'settings-meta-description-input';
 export const settingsSerpPreview = 'settings-serp-preview';
 export const settingsPostHistoryButton = 'settings-post-history-button';
+export const settingsShortcutRow = 'settings-shortcut-row';
 
 // post history testids
 export const postHistoryModal = 'post-history-modal';

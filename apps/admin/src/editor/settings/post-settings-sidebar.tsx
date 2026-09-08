@@ -20,6 +20,7 @@ import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
+import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
@@ -119,6 +120,7 @@ export function PostSettingsSidebar({
     delete: <DeleteSection postType={postType} session={session} />,
     'code-injection': <CodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
+    'keyboard-shortcuts': <KeyboardShortcutsSection />,
     'post-history': (
       <PostHistorySection
         cardConfig={cardConfig}

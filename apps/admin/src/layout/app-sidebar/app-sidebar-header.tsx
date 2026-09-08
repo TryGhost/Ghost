@@ -5,8 +5,9 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { isMacPlatform } from '@/utils/is-mac-platform';
 
-const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
+const ctrlOrCmd = isMacPlatform() ? 'command' : 'ctrl';
 const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
 
 // Search is currently handled by the Ember app, firing a keyboard event avoids needing to sync state
