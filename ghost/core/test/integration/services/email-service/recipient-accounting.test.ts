@@ -566,6 +566,38 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
+  it('reports persisted verification failure when marking recipients processed subsequently fails', async function () {
+    const batches = await service.createBatches(data);
+    const failedBatch = batches.find((batch) => batch.get('recipient_count') === 2);
+    await db
+      .knex('email_recipients')
+      .where({ batch_id: failedBatch.id })
+      .update({ member_email: 'duplicate@example.com' });
+    useRealMailgunProvider();
+    // Exercise the exhausted-write result without retry backoff.
+    sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
+    const processedError = new Error('Unable to mark recipients processed');
+    const processedSave = sinon.stub().rejects(processedError);
+    sinon
+      .stub(models.EmailRecipient, 'where')
+      .callThrough()
+      .withArgs({ batch_id: failedBatch.id })
+      .returns({ save: processedSave });
+    await runEmailJob(batches);
+    sinon.assert.calledOnce(processedSave);
+    await failedBatch.refresh();
+    assert.equal(failedBatch.get('status'), 'failed');
+    assert.equal(JSON.parse(failedBatch.get('error_data')).reason, 'provider_payload_count');
+    await email.refresh();
+    assert.equal(email.get('status'), 'failed');
+    assert.match(email.get('error'), /checking your newsletter’s recipients/);
+    sinon.assert.calledOnce(sentry.captureException);
+    const details = verificationDetails(sentry.captureException.firstCall.args[0]);
+    assert.equal(details.reason, 'batch_verification_failed');
+    assert.equal(details.batch_id, failedBatch.id);
+    assert.equal(details.batch_error.reason, 'provider_payload_count');
+  });
+
   it('reports persisted verification failures during shutdown with unstarted batches', async function () {
     const batches = await service.createBatches(data);
     sender.send.onFirstCall().callsFake(async () => {
