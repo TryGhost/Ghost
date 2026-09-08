@@ -31,6 +31,7 @@ const {
  * @prop {boolean} openTrackingEnabled
  * @prop {Date} deliveryTime
  * @prop {number} [expectedRecipientCount]
+ * @prop {string} [batchId]
  */
 
 /**
@@ -157,6 +158,7 @@ class MailgunEmailProvider {
         Object.keys(recipientData).length !== options.expectedRecipientCount
       ) {
         throw recipientVerificationError(emailId, 'provider_payload_count', {
+          batch_id: options.batchId,
           expected: options.expectedRecipientCount,
           actual: Object.keys(recipientData).length,
         });
