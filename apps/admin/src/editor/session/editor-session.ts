@@ -4,6 +4,8 @@ import {
   DEFAULT_TITLE,
   createSaveEngine,
   isCollisionToken,
+  isStatusIntent,
+  zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
@@ -28,8 +30,10 @@ import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
+  PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
   TIERS_REQUIRED,
+  publishedAtInFuture,
   tiersIncomplete,
   type EditorSettingsPatch,
   type SettingsFieldKey,
@@ -104,6 +108,13 @@ export interface EditorSession {
   patchFields: (patch: EditorSettingsPatch) => void;
   /** The live value of every settings field, for the sidebar's inputs. */
   getFields: () => EditablePostProjection;
+  /**
+   * Stages the publish time. It is the save engine's command target rather than
+   * a settings field, so it has its own writer instead of `patchFields`.
+   */
+  editPublishedAt: (publishedAt: string | null) => void;
+  /** The publish time the writer is looking at, staged edit included. */
+  getPublishedAt: () => string | null;
   /** The one save policy gate for settings fields; see the README. */
   commitField: () => void;
   /** The slug the machine holds, which a title commit moves without a field patch. */
@@ -158,6 +169,9 @@ export function createEditorSession({
     : { id: null, updatedAt: null };
   let status: PostStatus = record?.status ?? 'draft';
   let publishedAt: string | null = record?.published_at ?? null;
+  // The publish time the writer moved to, or null when they have not moved it.
+  let stagedPublishedAt: { value: string | null } | null = null;
+  let publishedAtEditedAt = 0;
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
@@ -169,6 +183,10 @@ export function createEditorSession({
   const writerEdits = new Map<SettingsFieldKey, number>();
   // The version the in-flight request was built at, or null when none is.
   let inFlightSince: number | null = null;
+
+  function livePublishedAt(): string | null {
+    return stagedPublishedAt ? stagedPublishedAt.value : publishedAt;
+  }
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -281,7 +299,8 @@ export function createEditorSession({
     return buildSaveSnapshot({
       identity,
       status,
-      publishedAt,
+      publishedAt: livePublishedAt(),
+      publishedAtDirty: stagedPublishedAt !== null,
       title: live.title,
       slug: machine.getState().slug,
       slugIsCustom: machine.getState().mode === 'custom',
@@ -381,6 +400,14 @@ export function createEditorSession({
     if (tiersIncomplete(prepared.access)) {
       return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
     }
+    // A status command carries its own deliberate publish time; only the time
+    // the sidebar staged is checked here.
+    if (
+      !isStatusIntent(prepared.command.kind) &&
+      publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)
+    ) {
+      return { ok: false, error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST } };
+    }
 
     inFlightSince = prepared.builtAtVersion;
     try {
@@ -442,6 +469,9 @@ export function createEditorSession({
     identity = { id: result.id, updatedAt: result.updatedAt };
     status = result.status;
     publishedAt = result.post.published_at ?? null;
+    if (publishedAtEditedAt <= prepared.builtAtVersion) {
+      stagedPublishedAt = null;
+    }
     latestRevision = latestRevisionOf(result.post);
     live = { ...live, updated_at: result.updatedAt };
 
@@ -473,7 +503,11 @@ export function createEditorSession({
   function commitField(): void {
     // execute() refuses an incomplete tier pairing on every path; this only
     // keeps a field save from being dispatched for it.
-    if (status !== 'draft' || tiersIncomplete(live)) {
+    if (
+      status !== 'draft' ||
+      tiersIncomplete(live) ||
+      publishedAtInFuture(status, livePublishedAt())
+    ) {
       return;
     }
     void engine.dispatch('field');
@@ -529,6 +563,7 @@ export function createEditorSession({
     getSaveSnapshot: getSnapshot,
     isDirty: () => getSnapshot().isDirty,
     hasUnsavedContent: () =>
+      stagedPublishedAt !== null ||
       pendingSlugEdits.size > 0 ||
       tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
@@ -544,6 +579,18 @@ export function createEditorSession({
     commitField,
     getSlug: () => machine.getState().slug,
     editSlug,
+
+    // Staged rather than patched: the engine reads the publish time off the
+    // snapshot, so a status command's own target still wins over this.
+    editPublishedAt: (next) => {
+      const normalized = zeroMilliseconds(next);
+      stagedPublishedAt =
+        normalized === zeroMilliseconds(publishedAt) ? null : { value: normalized };
+      version += 1;
+      publishedAtEditedAt = version;
+      dirtyChanged();
+    },
+    getPublishedAt: livePublishedAt,
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
@@ -586,6 +633,9 @@ export function createEditorSession({
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
+      if (stagedPublishedAt && stagedPublishedAt.value === zeroMilliseconds(publishedAt)) {
+        stagedPublishedAt = null;
+      }
       latestRevision = latestRevisionOf(next);
       dirtyChanged();
       return true;
@@ -612,6 +662,8 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
+      stagedPublishedAt = null;
+      publishedAtEditedAt = 0;
       pendingSlugEdits.clear();
       writerEdits.clear();
       inFlightSince = null;

@@ -33,6 +33,7 @@ import {
   isCollisionToken,
   type LeaveDecision,
   type SaveCompletion,
+  type PostStatus,
   type SaveEngineState,
 } from '@/editor/engine/save-engine';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
@@ -109,6 +110,10 @@ export interface EditorSessionHandle {
   slug: string;
   /** Routes a manual slug edit through the slug machine, then the save policy. */
   editSlug: EditorSession['editSlug'];
+  /** The status and publish time the sidebar's date field reads. */
+  publishTime: PublishTimeView;
+  /** Stages the publish time, then applies the sidebar's save policy. */
+  editPublishedAt: (publishedAt: string | null) => void;
   /** The post as the engine reads it: identity, status, publish time and title. */
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
@@ -131,6 +136,20 @@ export interface UseEditorSessionOptions {
   siteUrl: string;
   /** Authors a post this session creates. */
   currentUserId?: string;
+}
+
+export interface PublishTimeView {
+  status: PostStatus;
+  publishedAt: string | null;
+}
+
+function publishTimeOf(session: EditorSession): PublishTimeView {
+  const snapshot = session.getSaveSnapshot();
+  return { status: snapshot.status, publishedAt: snapshot.publishedAt };
+}
+
+function samePublishTime(a: PublishTimeView, b: PublishTimeView): boolean {
+  return a.status === b.status && a.publishedAt === b.publishedAt;
 }
 
 function settingsFieldsOf(projection: EditorSettingsFields): EditorSettingsFields {
@@ -247,10 +266,23 @@ export function useEditorSession({
     settingsFieldsOf(session.getFields()),
   );
 
+  // The engine's own status and publish time, mirrored for the same reason the
+  // settings fields are: an edit is not an engine state change.
+  const [publishTime, setPublishTime] = useState<PublishTimeView>(() => publishTimeOf(session));
+
   const editSettings = useCallback(
     (patch: EditorSettingsPatch) => {
       session.patchFields(patch);
       setSettings(settingsFieldsOf(session.getFields()));
+      session.commitField();
+    },
+    [session],
+  );
+
+  const editPublishedAt = useCallback(
+    (next: string | null) => {
+      session.editPublishedAt(next);
+      setPublishTime(publishTimeOf(session));
       session.commitField();
     },
     [session],
@@ -264,6 +296,8 @@ export function useEditorSession({
       SETTINGS_FIELD_KEYS.every((key) => current[key] === next[key]) ? current : next,
     );
     setExcerpt(next.custom_excerpt ?? '');
+    const time = publishTimeOf(session);
+    setPublishTime((current) => (samePublishTime(current, time) ? current : time));
   }, [session, state]);
 
   // The saved record: the same query key the screen loaded with, so an existing
@@ -293,6 +327,7 @@ export function useEditorSession({
       const fields = session.getFields();
       setSettings(settingsFieldsOf(fields));
       setExcerpt(fields.custom_excerpt ?? '');
+      setPublishTime(publishTimeOf(session));
     }
   }, [saved, session]);
 
@@ -344,6 +379,7 @@ export function useEditorSession({
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
     setExcerpt(fresh.custom_excerpt ?? '');
     setSettings(settingsFieldsOf(session.getFields()));
+    setPublishTime(publishTimeOf(session));
     setInitialLexical(fresh.lexical ?? null);
     setLoadedRecord(fresh);
     setContentKey((key) => key + 1);
@@ -435,6 +471,8 @@ export function useEditorSession({
     editSettings,
     slug,
     editSlug: session.editSlug,
+    publishTime,
+    editPublishedAt,
     getSaveSnapshot: session.getSaveSnapshot,
     getLiveLexical: session.getLiveLexical,
     dispatchField: session.dispatchField,

@@ -1,0 +1,198 @@
+import { describe, expect, it, vi } from 'vitest';
+import { createEditorSession, type EditorWritePayload } from './editor-session';
+import type { EditorRecord } from './projection';
+import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from './settings-fields';
+
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
+const PAST = '2020-06-01T10:00:00.000Z';
+const OLDER = '2019-03-04T08:30:00.000Z';
+
+/** Milliseconds zeroed, as the engine's own target is. */
+function future(): string {
+  const time = Date.now() + 60 * 60 * 1000;
+  return new Date(time - (time % 1000)).toISOString();
+}
+
+function publishTimeSession(status: EditorRecord['status'], publishedAt: string | null) {
+  let saved: EditorRecord = {
+    id: 'post-id',
+    uuid: 'post-uuid',
+    url: 'https://example.com/post/',
+    title: 'Post',
+    slug: 'post',
+    status,
+    visibility: 'public',
+    tiers: [],
+    lexical: null,
+    updated_at: LOADED_AT,
+    published_at: publishedAt,
+    tags: [],
+  };
+  let saves = 0;
+  const persist = (payload: EditorWritePayload) => {
+    saves += 1;
+    saved = { ...saved, ...payload, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
+    return Promise.resolve(saved);
+  };
+  const create = vi.fn(persist);
+  const update = vi.fn(persist);
+  const session = createEditorSession({
+    record: saved,
+    saveFailureMessage: 'Saving failed',
+    onIdAcquired: vi.fn(),
+    onError: vi.fn(),
+    transport: { create, update, generateSlug: () => Promise.resolve('post') },
+  });
+  session.setBaseline(null);
+  return { session, create, update };
+}
+
+describe('publishedAtInFuture', () => {
+  it.each(['draft', 'published'] as const)(
+    'refuses a %s post a publish time yet to come',
+    (status) => {
+      expect(publishedAtInFuture(status, '2026-01-02T00:00:00.000Z', Date.parse(LOADED_AT))).toBe(
+        true,
+      );
+    },
+  );
+
+  it.each(['draft', 'published'] as const)(
+    'accepts a %s post a publish time in the past',
+    (status) => {
+      expect(publishedAtInFuture(status, PAST, Date.parse(LOADED_AT))).toBe(false);
+    },
+  );
+
+  it('refuses the current instant, as Ember’s isSameOrAfter does', () => {
+    expect(publishedAtInFuture('draft', LOADED_AT, Date.parse(LOADED_AT))).toBe(true);
+  });
+
+  it.each(['scheduled', 'sent'] as const)('leaves a %s post’s publish time alone', (status) => {
+    expect(publishedAtInFuture(status, '2026-01-02T00:00:00.000Z', Date.parse(LOADED_AT))).toBe(
+      false,
+    );
+  });
+
+  it('has nothing to check without a publish time', () => {
+    expect(publishedAtInFuture('draft', null, Date.parse(LOADED_AT))).toBe(false);
+  });
+});
+
+describe('staging the publish time', () => {
+  it('sends a draft’s edited publish time as a UTC instant', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+
+    session.editPublishedAt(PAST);
+    expect(session.getPublishedAt()).toBe(PAST);
+    expect(session.isDirty()).toBe(true);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[0][0]).toMatchObject({ published_at: PAST, status: 'draft' });
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('re-times a published post without moving its status', async () => {
+    const { session, update } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[0][0]).toMatchObject({ published_at: OLDER, status: 'published' });
+  });
+
+  it('is clean again once the writer returns the saved time', () => {
+    const { session } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+    expect(session.isDirty()).toBe(true);
+
+    session.editPublishedAt(PAST);
+    expect(session.isDirty()).toBe(false);
+    expect(session.hasUnsavedContent()).toBe(false);
+  });
+
+  it('counts a staged time as the writer’s unsaved work', () => {
+    const { session } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+
+    expect(session.hasUnsavedContent()).toBe(true);
+  });
+
+  it('refuses a save whose publish time has not passed', async () => {
+    const { session, update } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(future());
+
+    expect(await session.dispatchExplicit()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST },
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('holds back a draft’s field save while the publish time has not passed', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+
+    session.editPublishedAt(future());
+    session.commitField();
+    await Promise.resolve();
+
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('leaves a status command’s own publish time untouched', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+    const scheduledAt = future();
+
+    expect(await session.dispatchSchedule({ publishedAt: scheduledAt })).toMatchObject({
+      kind: 'saved',
+    });
+    expect(update.mock.calls[0][0]).toMatchObject({
+      published_at: scheduledAt,
+      status: 'scheduled',
+    });
+  });
+
+  it('keeps a staged time through a refetch that does not carry it', () => {
+    const { session } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+    session.recordRefetched({
+      id: 'post-id',
+      uuid: 'post-uuid',
+      url: 'https://example.com/post/',
+      title: 'Post',
+      slug: 'post',
+      status: 'published',
+      lexical: null,
+      updated_at: '2026-01-01T00:00:05.000Z',
+      published_at: PAST,
+      tags: [],
+    });
+
+    expect(session.getPublishedAt()).toBe(OLDER);
+    expect(session.isDirty()).toBe(true);
+  });
+
+  it('releases a staged time a refetch has caught up with', () => {
+    const { session } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(OLDER);
+    session.recordRefetched({
+      id: 'post-id',
+      uuid: 'post-uuid',
+      url: 'https://example.com/post/',
+      title: 'Post',
+      slug: 'post',
+      status: 'published',
+      lexical: null,
+      updated_at: '2026-01-01T00:00:05.000Z',
+      published_at: OLDER,
+      tags: [],
+    });
+
+    expect(session.isDirty()).toBe(false);
+  });
+});
