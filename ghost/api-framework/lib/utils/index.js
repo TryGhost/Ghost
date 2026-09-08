@@ -1,5 +1,5 @@
 module.exports = {
-    get options() {
-        return require('./options');
-    },
+  get options() {
+    return require('./options');
+  },
 };

@@ -10,23 +10,23 @@ const { IncorrectUsageError } = require('@tryghost/errors');
  * @return {Array}
  */
 const trimAndLowerCase = (params) => {
-    params = params || '';
+  params = params || '';
 
-    if (_.isString(params)) {
-        params = params.split(',');
-    }
+  if (_.isString(params)) {
+    params = params.split(',');
+  }
 
-    // If we don't have an array at this point, something is wrong, so we should throw an
-    // error to avoid trying to .map over something else
-    if (!_.isArray(params)) {
-        throw new IncorrectUsageError({
-            message: 'Params must be a string or array',
-        });
-    }
-
-    return params.map((item) => {
-        return item.trim().toLowerCase();
+  // If we don't have an array at this point, something is wrong, so we should throw an
+  // error to avoid trying to .map over something else
+  if (!_.isArray(params)) {
+    throw new IncorrectUsageError({
+      message: 'Params must be a string or array',
     });
+  }
+
+  return params.map((item) => {
+    return item.trim().toLowerCase();
+  });
 };
 
 module.exports.trimAndLowerCase = trimAndLowerCase;
