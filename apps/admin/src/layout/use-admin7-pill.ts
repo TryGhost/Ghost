@@ -1,40 +1,16 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
-const approvedRoutePatterns = [
-  /^\/members\/?$/,
-  /^\/members\/import\/?$/,
-  /^\/tags\/?$/,
-  /^\/comments\/?$/,
-  /^\/posts\/?$/,
-  /^\/pages\/?$/,
-  /^\/analytics(?:\/(?:web|growth|newsletters))?\/?$/,
-];
-const memberDetailRoutePattern = /^\/members\/[0-9a-f]{24}\/?$/i;
-const tagDetailRoutePattern = /^\/tags\/([^/]+)\/?$/;
 const editorRoutePattern = /^\/editor(?:\/|$)/;
 
-function isApprovedTagDetailRoute(pathname: string): boolean {
-  const match = tagDetailRoutePattern.exec(pathname);
-  return !!match && match[1] !== 'new';
-}
-
-export function isAdmin7PillApprovedRoute(pathname: string): boolean {
-  if (editorRoutePattern.test(pathname)) {
-    return false;
-  }
-
-  return (
-    approvedRoutePatterns.some((pattern) => pattern.test(pathname)) ||
-    memberDetailRoutePattern.test(pathname) ||
-    isApprovedTagDetailRoute(pathname)
-  );
+export function isAdmin7PillAllowedRoute(pathname: string): boolean {
+  return !editorRoutePattern.test(pathname);
 }
 
 export function useAdmin7Pill() {
   const enabledByFlag = useFeatureFlag('admin7Pill');
   const { pathname } = useLocation();
-  const enabledForRoute = isAdmin7PillApprovedRoute(pathname);
+  const enabledForRoute = isAdmin7PillAllowedRoute(pathname);
 
   return {
     enabled: enabledByFlag && enabledForRoute,

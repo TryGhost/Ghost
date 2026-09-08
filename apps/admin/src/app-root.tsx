@@ -3,19 +3,23 @@ import {
   FrameworkProvider,
   RouterProvider,
   type TopLevelFrameworkProps,
+  useLocation,
 } from '@tryghost/admin-x-framework';
 import { ShadeApp } from '@tryghost/shade/app';
 import { cn } from '@tryghost/shade/utils';
 
 import App from './app.tsx';
-import { routes } from './routes.tsx';
+import { routes, useIsEmberOwnedRoute } from './routes.tsx';
 import { useAdmin7Pill } from './layout/use-admin7-pill';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
-  const { enabled: admin7PillEnabled } = useAdmin7Pill();
+  const { pathname } = useLocation();
+  const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
+  const { enabled: admin7PillAllowed } = useAdmin7Pill();
+  const admin7PillEnabled = admin7PillAllowed && !isEmberOwnedRoute;
 
   return (
     <ShadeApp

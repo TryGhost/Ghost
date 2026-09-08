@@ -78,6 +78,15 @@ describe('Sidebar navigation', () => {
     expect(adminRoot()).not.toHaveClass('admin7-pill');
   });
 
+  it('keeps pill styles off on Ember-owned routes', async () => {
+    await renderAdminApp('/site', {
+      labs: { admin7Pill: true },
+    });
+
+    await expect.poll(adminRoot).not.toBeNull();
+    expect(adminRoot()).not.toHaveClass('admin7-pill');
+  });
+
   it('renders navigation without waiting for Labs config', async () => {
     fakeTags([]);
     let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;
