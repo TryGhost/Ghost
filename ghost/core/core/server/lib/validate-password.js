@@ -62,10 +62,39 @@ function validatePassword(password, email, siteTitle) {
     return { isValid: false, message: tpl(messages.passwordTooLong) };
   }
 
-  const validationResult = { isValid: true };
-  const disallowedPasswords = ['password', 'ghost', 'passw0rd'];
-  let siteUrl = urlUtils.urlFor('home', true);
+  // password must be longer than 10 characters
+  if (!validator.isLength(password, 10)) {
+    return { isValid: false, message: tpl(messages.passwordTooShort, { minLength: 10 }) };
+  }
 
+  const invalidValidationResult = {
+    isValid: false,
+    message: tpl(messages.passwordDoesNotComplySecurity),
+  };
+
+  // password must not match with users' email
+  if (email && email.toLowerCase() === password.toLowerCase()) {
+    return invalidValidationResult;
+  }
+
+  // password must not match with site title
+  siteTitle = siteTitle ? siteTitle : settingsCache.get('title');
+  if (siteTitle && siteTitle.toLowerCase() === password.toLowerCase()) {
+    return invalidValidationResult;
+  }
+
+  // password must not match with site URL (without protocol, with or without trailing slash)
+  let siteUrl = urlUtils.urlFor('home', true);
+  siteUrl = siteUrl.replace(/^http(s?):\/\//, '');
+  if (
+    siteUrl &&
+    (siteUrl.toLowerCase() === password.toLowerCase() ||
+      siteUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())
+  ) {
+    return invalidValidationResult;
+  }
+
+  // disallow password from badPasswords list (e. g. '1234567890')
   const badPasswords = [
     '1234567890',
     'qwertyuiop',
@@ -76,59 +105,24 @@ function validatePassword(password, email, siteTitle) {
     '1q2w3e4r5t',
     '12345asdfg',
   ];
-
-  siteTitle = siteTitle ? siteTitle : settingsCache.get('title');
-  siteUrl = siteUrl.replace(/^http(s?):\/\//, '');
-
-  // password must be longer than 10 characters
-  if (!validator.isLength(password, 10)) {
-    return { isValid: false, message: tpl(messages.passwordTooShort, { minLength: 10 }) };
-  }
-
-  // dissallow password from badPasswords list (e. g. '1234567890')
-  _.each(badPasswords, function (badPassword) {
-    if (badPassword === password) {
-      validationResult.isValid = false;
-    }
-  });
-
-  // password must not match with users' email
-  if (email && email.toLowerCase() === password.toLowerCase()) {
-    validationResult.isValid = false;
+  if (badPasswords.includes(password)) {
+    return invalidValidationResult;
   }
 
   // password must not contain the words 'ghost', 'password', or 'passw0rd'
-  _.each(disallowedPasswords, function (disallowedPassword) {
-    if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
-      validationResult.isValid = false;
+  const disallowedPasswords = ['password', 'ghost', 'passw0rd'];
+  for (const disallowedPassword of disallowedPasswords) {
+    if (password.toLowerCase().includes(disallowedPassword)) {
+      return invalidValidationResult;
     }
-  });
-
-  // password must not match with site title
-  if (siteTitle && siteTitle.toLowerCase() === password.toLowerCase()) {
-    validationResult.isValid = false;
-  }
-
-  // password must not match with site URL (without protocol, with or without trailing slash)
-  if (
-    siteUrl &&
-    (siteUrl.toLowerCase() === password.toLowerCase() ||
-      siteUrl.toLowerCase().replace(/\/$/, '') === password.toLowerCase())
-  ) {
-    validationResult.isValid = false;
   }
 
   // dissallow passwords where 50% or more of characters are the same
   if (!characterOccurance(password)) {
-    validationResult.isValid = false;
+    return invalidValidationResult;
   }
 
-  // Generic error message for the rules where no dedicated error massage is set
-  if (!validationResult.isValid && !validationResult.message) {
-    validationResult.message = tpl(messages.passwordDoesNotComplySecurity);
-  }
-
-  return validationResult;
+  return { isValid: true };
 }
 
 module.exports = validatePassword;
