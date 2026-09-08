@@ -111,8 +111,8 @@ from the dispatched list. Expected recipients must equal submitted recipients
 plus exclusions, and candidates must equal submitted recipients plus both kinds
 of exclusions. Complete the email with the verified submitted total as
 `email_count`. Integrity errors retain their distinct code through persisted
-batch errors and the final verification, so the Admin banner asks for
-investigation instead of another identical retry.
+batch errors and the final verification, so the Admin banner explains that sending stopped without recommending another
+identical retry.
 
 Emails spanning the preparation-only deployment may contain submitted batches
 whose submission counts are null. Verify their rows and statuses, preserve the
