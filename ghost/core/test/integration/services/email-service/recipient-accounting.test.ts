@@ -1310,6 +1310,35 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   });
 
+  it('preserves an explicit ownership diagnosis when replaying a persisted failure', async function () {
+    const batches = await service.createBatches(data);
+    await batches[0].save(
+      {
+        status: 'failed',
+        error_data: JSON.stringify({
+          code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+          reason: 'cross_email_recipient',
+          expected: 2,
+          actual: 1,
+          count_mismatch: false,
+        }),
+      },
+      { patch: true },
+    );
+    sinon.stub(service, 'sendBatch').resolves(false);
+    await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+      assertVerificationError(error);
+      const details = JSON.parse(error.errorDetails);
+      assert.equal(details.reason, 'batch_verification_failed');
+      assert.equal(details.count_mismatch, false);
+      assert.equal(details.batch_error.reason, 'cross_email_recipient');
+      return true;
+    });
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+    });
+  });
+
   it('logs a payload discrepancy before a failed batch status write can hide it', async function () {
     const batches = await service.createBatches(data);
     const duplicateBatch = batches.find((batch) => batch.get('recipient_count') === 2);
