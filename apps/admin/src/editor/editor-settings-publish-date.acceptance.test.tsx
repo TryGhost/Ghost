@@ -142,17 +142,18 @@ describe('Post settings publish date', () => {
       await openPublishDate();
 
       // A draft carries no publish time, so the field stands at today in site time.
+      // Midnight is the one time of day that is never ahead of the clock.
       const chosen = (editorScreen.settingsPublishDate().element() as HTMLInputElement).value;
 
-      await setTime('06:30');
+      await setTime('00:00');
 
       await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // 06:30 in Sydney is the same instant as the ISO string the payload carries.
+      // 00:00 in Sydney is the same instant as the ISO string the payload carries.
       expect(submittedPost(saveApi)).toMatchObject({
-        published_at: moment.tz(`${chosen} 06:30`, SYDNEY).toISOString(),
+        published_at: moment.tz(`${chosen} 00:00`, SYDNEY).toISOString(),
         status: 'draft',
       });
-      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('06:30');
+      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('00:00');
     },
     SLOW,
   );
