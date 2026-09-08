@@ -3,6 +3,17 @@ import { customThemeSettingsDataType } from './custom-theme-settings';
 
 // Types
 
+/** A theme's custom template. Only the active theme carries these. */
+export type ThemeTemplate = {
+  /** The template file without its extension, e.g. `custom-full-feature`. */
+  filename: string;
+  name: string;
+  /** The content types the template applies to, e.g. `['post']` for `post-*.hbs`. */
+  for?: string[];
+  /** The slug a `post-*.hbs`/`page-*.hbs` template is bound to; null for `custom-*.hbs`. */
+  slug?: string | null;
+};
+
 export type Theme = {
   active: boolean;
   name: string;
@@ -14,7 +25,7 @@ export type Theme = {
       name?: string;
     };
   };
-  templates?: string[];
+  templates?: ThemeTemplate[];
 };
 
 export type InstalledTheme = Theme & {

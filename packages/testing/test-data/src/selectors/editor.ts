@@ -53,6 +53,8 @@ export const settingsTagsField = 'settings-tags-field';
 export const settingsTagsInput = 'settings-tags-input';
 export const settingsTagsList = 'settings-tags-list';
 export const settingsTagsToken = 'settings-tags-token';
+export const settingsTemplateSelect = 'settings-template-select';
+export const settingsTemplateSlugMatch = 'settings-template-slug-match';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';

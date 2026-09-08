@@ -147,6 +147,7 @@ export type {
   SubscriptionStat,
   Tag,
   Theme,
+  ThemeTemplate,
   Tier,
   TinybirdPipeName,
   TinybirdPipeRows,
