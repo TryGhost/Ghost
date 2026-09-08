@@ -23,8 +23,9 @@ export class SendingStatusService {
     }
 
     const email = DbEmailSendingRow.parse(row);
-    // Completion persists the verified submitted count (legacy sends retain their
-    // intended count), so finished sends need no batch or recipient aggregation.
+    // Completion persists the verified submitted count. Emails with null
+    // preflight_email_count, or batches submitted before submission counts were
+    // recorded, retain their intended count. Neither needs aggregation once finished.
     const batches =
       email.status === 'submitted'
         ? []

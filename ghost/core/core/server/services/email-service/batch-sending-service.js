@@ -1410,7 +1410,8 @@ class BatchSendingService {
         const members = recipientAccounting
           ? await this.getBatchMembers(batch.id, expectedCount)
           : await this.getBatchMembers(batch.id);
-        // Preserve the legacy retry for an empty read after a database switch.
+        // Emails with null preflight_email_count have no verified expected count;
+        // retain their empty-read retry after a database switch.
         if (members.length === 0) {
           throw new errors.EmailError({
             message: `No members found for batch ${batch.id}, possible replication lag`,
@@ -1458,8 +1459,8 @@ class BatchSendingService {
       emailBodyCache,
       ...(recipientAccounting ? { recipientAccounting: true, batchId: batch.id } : {}),
     };
-    // Accounted payloads are built once before provider retries; legacy retries
-    // still render and submit together through send().
+    // With preflight_email_count set, build the payload once before provider retries.
+    // When it is null, each retry still renders and submits together through send().
     let submit = () => this.#sendingService.send(data, options);
     if (recipientAccounting) {
       const message = await this.retryDb(() => this.#sendingService.buildMessage(data, options), {

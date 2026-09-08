@@ -211,8 +211,8 @@ Active accounted sends read the small batch table: preparation progress sums
 `recipient_count`; submission progress sums submitted and excluded counts for
 submitted batches. Unknown preparation-era submission counts fall back to the
 batch's expected count at read time only. The submission total remains the sum
-of expected batch counts, so exclusions cannot leave progress short. Legacy
-sends retain their indexed recipient-count queries. Actual recipient verification
+of expected batch counts, so exclusions cannot leave progress short. Emails with
+null `preflight_email_count` retain their indexed recipient-count queries. Actual recipient verification
 runs at lifecycle boundaries, not on the polling path.
 
 The phase is read from the batches: an email is submitting once any batch has
