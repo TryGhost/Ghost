@@ -805,10 +805,15 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
+      // When migrating, generatedFields above allows explicit writes. Do not
+      // recompute over values the migration supplied, even if html/plaintext
+      // also changed on the same save (e.g. force_rerender + metadata).
+      const migratingSetAutoExcerpt = options.migrating && this.hasChanged('auto_excerpt');
       const shouldUpdateAutoExcerpt =
-        this.hasChanged('html') ||
-        this.hasChanged('plaintext') ||
-        this.get('auto_excerpt') === null;
+        !migratingSetAutoExcerpt &&
+        (this.hasChanged('html') ||
+          this.hasChanged('plaintext') ||
+          this.get('auto_excerpt') === null);
       if (shouldUpdateAutoExcerpt) {
         const autoExcerpt = computeAutoExcerpt(this.get('plaintext'));
         if (autoExcerpt !== this.get('auto_excerpt')) {
@@ -816,10 +821,12 @@ Post = ghostBookshelf.Model.extend(
         }
       }
 
+      const migratingSetReadingTime = options.migrating && this.hasChanged('reading_time');
       const shouldUpdateReadingTime =
-        this.hasChanged('html') ||
-        this.hasChanged('feature_image') ||
-        this.get('reading_time') === null;
+        !migratingSetReadingTime &&
+        (this.hasChanged('html') ||
+          this.hasChanged('feature_image') ||
+          this.get('reading_time') === null);
       if (shouldUpdateReadingTime) {
         const readingTime = computeReadingTime(this.get('html'), this.get('feature_image'));
         if (readingTime !== this.get('reading_time')) {
