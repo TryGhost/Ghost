@@ -48,6 +48,14 @@ describe('password validation', function () {
     assertTooShortPassword('😀😃😄😁😆😅😂🤣☺️');
   });
 
+  it('disallows long passwords', function () {
+    const password = 'x'.repeat(257);
+    assert.deepEqual(validatePassword(password), {
+      isValid: false,
+      message: 'Your password is too long.',
+    });
+  });
+
   it('disallows specific known insecure passwords', function () {
     const passwords = [
       '0987654321',
