@@ -5,7 +5,7 @@ import { beforeAll } from 'vitest';
 
 const models = require('../../../core/server/models');
 const { computeAutoExcerpt, computeReadingTime } = require('../../../core/server/lib/post-meta');
-const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 
 type StoredMetaRow = {
   id?: string;
@@ -178,5 +178,116 @@ describe('Content API stored post metadata', function () {
 
     const { body } = await agent.get(`posts/${post.id}/`).expectStatus(200);
     assert.equal(body.posts[0].excerpt, 'custom wins');
+  });
+
+  it('computes excerpt and reading_time when storedPostMetadata is off', async function () {
+    const post = await models.Post.add(
+      {
+        title: 'Content flag-off compute path',
+        status: 'published',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              {
+                children: [
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: `Flag off ${'word '.repeat(390)}content`,
+                    type: 'text',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        }),
+      },
+      { context: { internal: true } },
+    );
+
+    await models.Base.knex('posts').where({ id: post.id }).update({
+      auto_excerpt: 'content-flag-off-should-ignore',
+      reading_time: 42,
+    });
+
+    mockManager.mockLabsDisabled('storedPostMetadata');
+    try {
+      const { body } = await agent.get(`posts/${post.id}/`).expectStatus(200);
+      const response = body.posts[0] as ApiResource;
+
+      assert.equal(response.excerpt, computeAutoExcerpt(post.get('plaintext')));
+      assert.equal(
+        response.reading_time,
+        computeReadingTime(post.get('html'), post.get('feature_image')),
+      );
+      assert.notEqual(response.excerpt, 'content-flag-off-should-ignore');
+      assert.notEqual(response.reading_time, 42);
+    } finally {
+      mockManager.restore();
+    }
+  });
+
+  it('uses stored auto_excerpt for ?fields=excerpt without loading html', async function () {
+    const post = await models.Post.add(
+      {
+        title: 'Content fields excerpt stored path',
+        status: 'published',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              {
+                children: [
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'Body for fields=excerpt stored path',
+                    type: 'text',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        }),
+      },
+      { context: { internal: true } },
+    );
+
+    await models.Base.knex('posts').where({ id: post.id }).update({
+      auto_excerpt: 'content-fields-excerpt-stored',
+      plaintext: 'plaintext-fallback-should-not-win',
+    });
+
+    const { body } = await agent.get(`posts/${post.id}/?fields=excerpt`).expectStatus(200);
+
+    assert.equal(body.posts[0].excerpt, 'content-fields-excerpt-stored');
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'auto_excerpt'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'plaintext'), false);
   });
 });
