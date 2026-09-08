@@ -256,11 +256,7 @@ describe('Batch Sending Service', function () {
   });
 
   describe('sendEmail', function () {
-    it('always reconciles via createBatches, passing existing batches (idempotent resume)', async function () {
-      // Existing batches from a prior run are handed to createBatches, which is
-      // idempotent: it resumes any un-built tail rather than being skipped. The old
-      // behaviour skipped creation entirely when batches existed, silently abandoning
-      // the tail of a creation interrupted by a container restart.
+    it('always prepares through createBatches before submitting the returned batches', async function () {
       const existingBatches = [createModel({}), createModel({})];
       const EmailBatch = createModelClass({
         findAll: existingBatches,
@@ -286,9 +282,6 @@ describe('Batch Sending Service', function () {
       assert.equal(result, undefined);
       sinon.assert.calledOnce(sendBatches);
       sinon.assert.calledOnce(createBatches);
-
-      // createBatches receives the existing batches so it can resume from their watermark
-      assert.equal(createBatches.firstCall.args[0].existingBatches.length, 2);
 
       // sendBatches gets the reconciled set
       const argument = sendBatches.firstCall.args[0];
@@ -863,13 +856,15 @@ describe('Batch Sending Service', function () {
         });
 
         const existingBatches = [createModel({}), createModel({})];
+        const getBatches = sinon.stub(service, 'getBatches').resolves(existingBatches);
         const batches = await service.createBatches({
           email,
           post: createModel({}),
           newsletter,
-          existingBatches,
         });
 
+        sinon.assert.calledOnceWithExactly(getBatches, email);
+        assert.deepEqual(batches, existingBatches);
         // No new recipients inserted; returned set is exactly the existing batches
         assert.equal(insert.getCalls().length, 0);
         assert.equal(batches.length, 2);
@@ -2062,6 +2057,20 @@ describe('Batch Sending Service', function () {
   });
 
   describe('retryDb', function () {
+    it('does not retry an error marked non-retryable regardless of its code', async function () {
+      const service = new BatchSendingService({});
+      const error = Object.assign(new Error('Terminal failure'), {
+        code: 'ANOTHER_TERMINAL_ERROR',
+        retryable: false,
+      });
+      const action = sinon.stub().rejects(error);
+      await assert.rejects(
+        service.retryDb(action, { maxRetries: 2, sleep: 0, description: 'terminal failure' }),
+        (e) => e === error,
+      );
+      sinon.assert.calledOnce(action);
+    });
+
     it('Does retry', async function () {
       const service = new BatchSendingService({});
       let callCount = 0;

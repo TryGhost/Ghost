@@ -34,13 +34,18 @@ function assertVerificationError(
   assert.equal(typeof error.errorDetails, 'string');
 }
 
+function verificationDetails(error: unknown) {
+  assertVerificationError(error);
+  return JSON.parse(error.errorDetails);
+}
+
 describe('Recipient accounting through MySQL and Bookshelf', function () {
   let email: Email;
   let fixtureEmailIds: string[];
   let memberRestorations: { id: string; attributes: Record<string, unknown> }[];
   let service: {
     createBatch: (...args: CreateBatchArgs) => Promise<Batch>;
-    createBatches: (data: SendData & { existingBatches?: Batch[] }) => Promise<Batch[]>;
+    createBatches: (data: SendData) => Promise<Batch[]>;
     getBatches: (email: Email) => Promise<Batch[]>;
     sendBatch: (data: { batch: Batch }) => Promise<boolean>;
     sendBatches: (data: SendData & { batches: Batch[] }) => Promise<void>;
@@ -136,13 +141,14 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('members').where({ id }).update(patch);
   }
 
-  function loseCommitAcknowledgementOnce() {
+  function loseCommitAcknowledgementOnce(afterCommit?: (batch: Batch) => Promise<void>) {
     const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
     let lost = false;
     return sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
       const result = await transaction(handler);
       if (!lost) {
         lost = true;
+        await afterCommit?.(result);
         throw new Error('Commit acknowledgement lost');
       }
       return result;
@@ -178,6 +184,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       await service.emailJob({ emailId: email.id });
       await email.refresh();
       assert.equal(email.get('status'), 'submitted');
+      assert.equal(email.get('email_count'), emptyAudience ? 0 : 4);
       assert.equal(email.get('candidate_count'), emptyAudience ? 0 : 4);
       assert.equal(email.get('preparation_excluded_count'), 0);
       assert.equal(email.get('preflight_email_count'), 0);
@@ -190,19 +197,6 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       }
     });
   }
-
-  it('does not retry an error marked non-retryable regardless of its code', async function () {
-    const error = Object.assign(new Error('Terminal failure'), {
-      code: 'ANOTHER_TERMINAL_ERROR',
-      retryable: false,
-    });
-    const action = sinon.stub().rejects(error);
-    await assert.rejects(
-      service.retryDb(action, { maxRetries: 2, sleep: 0, description: 'terminal failure' }),
-      (e) => e === error,
-    );
-    sinon.assert.calledOnce(action);
-  });
 
   it('detects email-owned recipient rows omitted from every batch count', async function () {
     await service.createBatches(data);
@@ -223,8 +217,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     const reads = sinon.spy(service, 'getBatches');
     await assert.rejects(service.createBatches(data), (error) => {
-      assertVerificationError(error);
-      const details = JSON.parse(error.errorDetails);
+      const details = verificationDetails(error);
+
       assert.equal(details.reason, 'preparation_totals');
       assert.equal(details.count_check, 'recipient_rows');
       assert.equal(details.expected, 4);
@@ -345,26 +339,50 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.assert.calledOnce(sentry.captureException);
   });
 
-  it('counts exclusions once when recovering a committed preparation batch', async function () {
-    const memberId = '000000000000000000000004';
-    await corruptMember(memberId, { uuid: '' });
-    loseCommitAcknowledgementOnce();
-    const batches = await service.createBatches(data);
-    assert.deepEqual(
-      batches
-        .map((batch) => [batch.get('fallback_sending_domain'), batch.get('recipient_count')])
-        .sort(),
+  for (const [warmupLimit, memberId, expectedBatches] of [
+    [
+      3,
+      '000000000000000000000004',
       [
         [false, 1],
         [false, 1],
         [true, 1],
       ],
-    );
-    assert.equal(email.get('candidate_count'), 4);
-    assert.equal(email.get('preparation_excluded_count'), 1);
-    assert.equal(email.get('email_count'), 3);
-    assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 3);
-  });
+    ],
+    [
+      1,
+      '000000000000000000000004',
+      [
+        [true, 1],
+        [true, 2],
+      ],
+    ],
+    [
+      1,
+      '000000000000000000000003',
+      [
+        [false, 1],
+        [true, 2],
+      ],
+    ],
+  ] as const) {
+    it(`counts exclusions once across warming slices and commit recovery (${warmupLimit}, ${memberId})`, async function () {
+      await email.save({ csd_email_count: warmupLimit }, { patch: true });
+      await corruptMember(memberId, { uuid: '' });
+      loseCommitAcknowledgementOnce();
+      const batches = await service.createBatches(data);
+      assert.deepEqual(
+        batches
+          .map((batch) => [batch.get('fallback_sending_domain'), batch.get('recipient_count')])
+          .sort(),
+        expectedBatches,
+      );
+      assert.equal(email.get('candidate_count'), 4);
+      assert.equal(email.get('preparation_excluded_count'), 1);
+      assert.equal(email.get('email_count'), 3);
+      assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 3);
+    });
+  }
 
   it('uses legacy preparation retries when preflight_email_count is null', async function () {
     await email.save({ preflight_email_count: null }, { patch: true });
@@ -391,16 +409,11 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const extraId = ObjectID().toHexString();
     const otherEmail = await createOtherEmail();
     await db.knex('email_recipients').insert({ ...row, id: extraId, email_id: otherEmail.id });
-    try {
-      await assert.rejects(service.createBatches(data), (error) => {
-        assertVerificationError(error);
-        assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
-        return true;
-      });
-    } finally {
-      await db.knex('email_recipients').where({ id: extraId }).del();
-      await db.knex('emails').where({ id: otherEmail.id }).del();
-    }
+    await assert.rejects(service.createBatches(data), (error) => {
+      const details = verificationDetails(error);
+      assert.equal(details.reason, 'cross_email_recipient');
+      return true;
+    });
   });
 
   it('classifies reverse ownership corruption as an ownership failure on frozen preparation', async function () {
@@ -416,12 +429,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .update({ email_id: email.id });
     const getBatches = sinon.spy(service, 'getBatches');
     await assert.rejects(service.createBatches(data), (error) => {
-      assertVerificationError(error);
-      assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
-      assert.equal(JSON.parse(error.errorDetails).batch_id, otherBatch.id);
+      const details = verificationDetails(error);
+      assert.equal(details.reason, 'cross_email_recipient');
+      assert.equal(details.batch_id, otherBatch.id);
       return true;
     });
     sinon.assert.calledOnce(getBatches);
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.verification.failed' },
+      reason: 'cross_email_recipient',
+      batch_id: otherBatch.id,
+    });
     sinon.assert.neverCalledWithMatch(logging.error, {
       event: { name: 'email.recipient_count.mismatch' },
     });
@@ -467,8 +485,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return true;
     });
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
-      assertVerificationError(error);
-      assert.equal(JSON.parse(error.errorDetails).reason, 'batch_after_preparation');
+      const details = verificationDetails(error);
+      assert.equal(details.reason, 'batch_after_preparation');
       return true;
     });
   });
@@ -495,21 +513,16 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const row = await db.knex('email_recipients').where({ batch_id: batch.id }).first();
     const extraId = ObjectID().toHexString();
     await db.knex('email_recipients').insert({ ...row, id: extraId, email_id: otherEmail.id });
-    try {
-      await assert.rejects(service.createBatches(data), (error) => {
-        assertVerificationError(error);
-        assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-        assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
-        assert.equal(JSON.parse(error.errorDetails).batch_id, batch.id);
-        assert.equal(JSON.parse(error.errorDetails).can_rebuild, false);
-        return true;
-      });
-      assert.equal((await db.knex('email_recipients').where({ batch_id: batch.id })).length, 2);
-      assert.equal((await service.getBatches(email)).length, 1);
-    } finally {
-      await db.knex('email_recipients').where({ id: extraId }).del();
-      await db.knex('emails').where({ id: otherEmail.id }).del();
-    }
+    await assert.rejects(service.createBatches(data), (error) => {
+      const details = verificationDetails(error);
+      assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      assert.equal(details.reason, 'cross_email_recipient');
+      assert.equal(details.batch_id, batch.id);
+      assert.equal(details.can_rebuild, false);
+      return true;
+    });
+    assert.equal((await db.knex('email_recipients').where({ batch_id: batch.id })).length, 2);
+    assert.equal((await service.getBatches(email)).length, 1);
   });
 
   for (const hasOwnBatch of [false, true]) {
@@ -533,27 +546,21 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         .whereIn('email_id', emailIds)
         .orderBy('id');
       const batches = await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id');
-      try {
-        await assert.rejects(service.createBatches(data), (error) => {
-          assertVerificationError(error);
-          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-          assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
-          assert.equal(JSON.parse(error.errorDetails).batch_id, otherBatch.id);
-          return true;
-        });
-        assert.deepEqual(
-          await db.knex('email_recipients').whereIn('email_id', emailIds).orderBy('id'),
-          recipients,
-        );
-        assert.deepEqual(
-          await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id'),
-          batches,
-        );
-      } finally {
-        await db.knex('email_recipients').whereIn('email_id', emailIds).del();
-        await db.knex('email_batches').where({ email_id: otherEmail.id }).del();
-        await db.knex('emails').where({ id: otherEmail.id }).del();
-      }
+      await assert.rejects(service.createBatches(data), (error) => {
+        const details = verificationDetails(error);
+        assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+        assert.equal(details.reason, 'cross_email_recipient');
+        assert.equal(details.batch_id, otherBatch.id);
+        return true;
+      });
+      assert.deepEqual(
+        await db.knex('email_recipients').whereIn('email_id', emailIds).orderBy('id'),
+        recipients,
+      );
+      assert.deepEqual(
+        await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id'),
+        batches,
+      );
     });
   }
 
@@ -580,19 +587,13 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
           .where({ id: ownRow.id })
           .update({ batch_id: otherBatch.id });
       }
-      try {
-        await assert.rejects(service.createBatches(data), (error) => {
-          assertVerificationError(error);
-          assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-          assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
-          return true;
-        });
-        sinon.assert.notCalled(sender.send);
-      } finally {
-        await db.knex('email_recipients').whereIn('email_id', [email.id, otherEmail.id]).del();
-        await db.knex('email_batches').where({ email_id: otherEmail.id }).del();
-        await db.knex('emails').where({ id: otherEmail.id }).del();
-      }
+      await assert.rejects(service.createBatches(data), (error) => {
+        const details = verificationDetails(error);
+        assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+        assert.equal(details.reason, 'cross_email_recipient');
+        return true;
+      });
+      sinon.assert.notCalled(sender.send);
     });
   }
 
@@ -623,9 +624,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return batch;
     });
     await assert.rejects(service.createBatches(data), (error) => {
-      assertVerificationError(error);
-      assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-      assert.equal(JSON.parse(error.errorDetails).can_rebuild, true);
+      const details = verificationDetails(error);
+      assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      assert.equal(details.can_rebuild, true);
       return true;
     });
     sinon.assert.calledWithMatch(logging.error, {
@@ -640,6 +641,21 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await email.refresh();
     assert.equal(email.get('prepared_at'), null);
   });
+
+  for (const field of ['candidate_count', 'preparation_excluded_count']) {
+    it(`identifies invalid ${field} as candidate metadata rather than a rows mismatch`, async function () {
+      await service.createBatches(data);
+      email.set(field, null);
+      await assert.rejects(service.createBatches(data), (error) => {
+        const details = verificationDetails(error);
+
+        assert.equal(details.count_check, 'candidate_total');
+        assert.equal(details[field], null);
+        assert.equal(details.count_mismatch, false);
+        return true;
+      });
+    });
+  }
 
   it('reports unknown batch counts without triggering a count mismatch incident', async function () {
     const batches = await service.createBatches(data);
@@ -714,7 +730,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(email.get('prepared_at'), null);
     audience.restore();
 
-    const rebuilt = await service.createBatches({ ...data, existingBatches: partial });
+    const rebuilt = await service.createBatches(data);
     assert.equal(rebuilt.length, 3);
     assert.ok(rebuilt.every((batch) => batch.id !== partial[0].id));
     assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
@@ -830,9 +846,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.stub(service, 'sendBatch').resolves(false);
     await db.knex('email_recipients').where({ batch_id: batches[0].id }).del();
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
-      assertVerificationError(error);
-      assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-      assert.equal(JSON.parse(error.errorDetails).can_rebuild, false);
+      const details = verificationDetails(error);
+      assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      assert.equal(details.can_rebuild, false);
       return true;
     });
     sinon.stub(service, 'sendEmail').callsFake(() => service.sendBatches({ ...data, batches }));
@@ -1001,28 +1017,20 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   for (const fault of ['recovery-read', 'metadata', 'identity', 'missing-recipients']) {
     it(`handles ${fault} after an uncertain commit`, async function () {
-      const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
-      let interrupted = false;
-      sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
-        const batch = await transaction(handler);
-        if (!interrupted) {
-          interrupted = true;
-          if (fault === 'metadata') {
-            await db
-              .knex('email_batches')
-              .where({ id: batch.id })
-              .update({ fallback_sending_domain: true });
-          } else if (fault === 'identity') {
-            await db
-              .knex('email_recipients')
-              .where({ batch_id: batch.id })
-              .update({ member_uuid: crypto.randomUUID() });
-          } else if (fault === 'missing-recipients') {
-            await db.knex('email_recipients').where({ batch_id: batch.id }).del();
-          }
-          throw new Error('Commit acknowledgement lost');
+      loseCommitAcknowledgementOnce(async (batch) => {
+        if (fault === 'metadata') {
+          await db
+            .knex('email_batches')
+            .where({ id: batch.id })
+            .update({ fallback_sending_domain: true });
+        } else if (fault === 'identity') {
+          await db
+            .knex('email_recipients')
+            .where({ batch_id: batch.id })
+            .update({ member_uuid: crypto.randomUUID() });
+        } else if (fault === 'missing-recipients') {
+          await db.knex('email_recipients').where({ batch_id: batch.id }).del();
         }
-        return batch;
       });
       if (fault === 'recovery-read') {
         const findOne = models.EmailBatch.findOne.bind(models.EmailBatch);
@@ -1082,9 +1090,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return batch;
     });
     await assert.rejects(service.createBatches(data), (error) => {
-      assertVerificationError(error);
-      assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-      const details = JSON.parse(error.errorDetails);
+      const details = verificationDetails(error);
+      assert.equal(details.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+
       assert.equal(details.reason, 'preparation_totals');
       assert.equal(details.candidate_count, 4);
       assert.equal(details.recipient_count, 6);

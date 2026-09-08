@@ -89,12 +89,14 @@ Unknown or invalid counts, conflicting identities with equal counts, and ownersh
 or lifecycle failures use `email.verification.failed`. Both events retain the
 internal code `BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED` for error handling; that
 code alone does not distinguish count discrepancies from other integrity failures.
-Ownership is checked in both directions before counts, so cross-email references
-always report `cross_email_recipient`. The same failure can be observed more than
+Preparation verification and cleanup check ownership in both directions before
+counts and report `cross_email_recipient`. Recovery compares exact recipient
+identities, including email ownership, and reports `batch_recovery_conflict`. The same failure can be observed more than
 once; events describe observations, not a counter of missing recipients.
 
-Verification errors carry `retryable: false`, and their persisted details record
-`can_rebuild` and `count_mismatch`. Automatic database retries do not retry a
+Verification errors carry `retryable: false`, and their logged error details record
+`can_rebuild` and `count_mismatch`. Only the user-facing message is persisted to
+`emails.error`. Automatic database retries do not retry a
 terminal verification failure. These markers describe recovery within Ghost;
 they do not imply that the provider accepted or delivered an email.
 

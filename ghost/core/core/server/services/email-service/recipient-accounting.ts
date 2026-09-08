@@ -30,6 +30,7 @@ export function recipientVerificationError(
   { canRebuild = false, countMismatch = false } = {},
 ): EmailError & { retryable: false } {
   const confirmedCountMismatch = countMismatch && countsDiffer(details.expected, details.actual);
+  // Read retryable on the raw error: GhostError wrapping drops false-valued properties.
   const error = Object.assign(
     new EmailError({
       code: RECIPIENT_VERIFICATION_CODE,
@@ -62,5 +63,21 @@ export function recipientVerificationError(
     },
     'Newsletter recipient verification failed',
   );
+  return error;
+}
+
+export function excludedRecipientError(
+  emailId: string | null,
+  eventName: 'email.preparation.excluded' | 'email.submission.excluded',
+  reason: string,
+  details: Record<string, unknown>,
+): EmailError {
+  const fields = { ...details, email_id: emailId, reason };
+  const error = new EmailError({
+    code: 'BULK_EMAIL_INVALID_RECIPIENT',
+    message: 'Member excluded from newsletter due to invalid recipient data',
+    errorDetails: JSON.stringify(fields),
+  });
+  logging.error({ err: error, event: { name: eventName }, ...fields }, error.message);
   return error;
 }
