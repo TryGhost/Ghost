@@ -34,18 +34,16 @@ export function PublishAtOptions({
       </RadioGroup>
 
       {state.isScheduled ? (
-        <Stack gap="sm">
-          <DateTimePicker
-            dateLabel="Publish date"
-            dateTestId={publishScheduleDate}
-            minDate={state.minScheduledAt}
-            timeLabel="Publish time"
-            timeTestId={publishScheduleTime}
-            timezone={timezone}
-            value={state.scheduledAt}
-            onChange={onSetScheduledAt}
-          />
-        </Stack>
+        <DateTimePicker
+          dateLabel="Publish date"
+          dateTestId={publishScheduleDate}
+          minDate={state.minScheduledAt}
+          timeLabel="Publish time"
+          timeTestId={publishScheduleTime}
+          timezone={timezone}
+          value={state.scheduledAt}
+          onChange={onSetScheduledAt}
+        />
       ) : null}
     </Stack>
   );

@@ -29,6 +29,8 @@ export interface DateTimePickerProps {
   timeTestId: string;
   invalid?: boolean;
   describedBy?: string;
+  /** Names the pair as a group, for a caller whose own label is not on a field. */
+  labelledBy?: string;
   onChange: (date: Date) => void;
 }
 
@@ -48,6 +50,7 @@ export function DateTimePicker({
   timeTestId,
   invalid = false,
   describedBy,
+  labelledBy,
   onChange,
 }: DateTimePickerProps) {
   const current = moment.tz(value, timezone);
@@ -92,7 +95,7 @@ export function DateTimePicker({
   const describedByProps = describedBy ? { 'aria-describedby': describedBy } : {};
 
   return (
-    <Inline gap="sm">
+    <Inline aria-labelledby={labelledBy} gap="sm" role={labelledBy ? 'group' : undefined}>
       <Popover open={calendarOpen && !disabled} onOpenChange={setCalendarOpen}>
         <PopoverTrigger asChild>
           <Input

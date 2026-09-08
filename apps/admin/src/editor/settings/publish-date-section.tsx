@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { Label } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -27,6 +27,7 @@ export interface PublishDateSectionProps {
  */
 export function PublishDateSection({ session }: PublishDateSectionProps) {
   const errorId = useId();
+  const labelId = useId();
   const { data: settingsData } = useBrowseSettings({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -34,8 +35,9 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
   const timezone = getSettingValue<string>(settingsData?.settings ?? null, 'timezone') ?? 'Etc/UTC';
 
   const { status, publishedAt } = session.publishTime;
-  // Held so the writer sees, and can correct, a time the session refuses.
-  const [now] = useState(() => new Date().toISOString());
+  // Read per render: a value fixed at mount goes stale, and the calendar's cap
+  // with it, as soon as the site's day turns over.
+  const now = new Date().toISOString();
   const value = publishedAt ?? now;
 
   const isScheduled = status === 'scheduled';
@@ -44,13 +46,16 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
 
   return (
     <SettingsSection>
-      <Label>{isScheduled && !isPastScheduled ? 'Scheduled date' : 'Publish date'}</Label>
+      <Label id={labelId}>
+        {isScheduled && !isPastScheduled ? 'Scheduled date' : 'Publish date'}
+      </Label>
       <DateTimePicker
         dateLabel="Publish date"
         dateTestId={settingsPublishDate}
         describedBy={invalid ? errorId : undefined}
         disabled={isScheduled}
         invalid={invalid}
+        labelledBy={labelId}
         // Ember caps the calendar at today; a past publish time is the rule.
         maxDate={now}
         timeLabel="Publish time"
