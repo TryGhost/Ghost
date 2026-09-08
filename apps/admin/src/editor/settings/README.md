@@ -268,6 +268,30 @@ theme report's errors and warnings alike; a backend that reports nothing is
 taken to support the helper, so no warning is shown. The report is only read
 once the choice is off, and never for a Contributor, who cannot read it.
 
+## Delete
+
+Deleting is the one thing in the panel that does not go through the session: it
+calls the API itself. A post has nothing to delete until its first save gives it
+an ID, so the button appears only once the post exists, and every role that can
+open the editor is offered it — which posts each of them may actually delete is
+the API's answer, not the panel's.
+
+Confirming names the post and says the deletion is permanent. Cancelling returns
+focus to the Delete button. An expired session asks the writer to sign in in a
+new tab before retrying, so their draft stays open. A refusal keeps
+the dialog, shows the sentence the API gave for it and leaves the editor as it
+was, so unsaved work is still the writer's to save. A deletion that succeeds
+ends the editing session before leaving for the list: the save in flight is
+abandoned and every later one is dropped, including the save the leave guard
+would otherwise make on the way out, so nothing is written after the delete
+lands. The writer is not asked about unsaved changes, and the list replaces the
+editor in history rather than stacking on top of it.
+
+The list the delete lands on is refetched rather than served from the cache it
+was left with, which would still carry the deleted row. The refetch is left to
+the list's own mount: the editor's read of the post it just deleted is still
+mounted at that moment, and refetching that would answer 404.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

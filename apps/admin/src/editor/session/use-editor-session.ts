@@ -128,6 +128,8 @@ export interface EditorSessionHandle {
   reauthAbandoned: () => void;
   /** Resolves once nothing is in flight; `proceed` means leaving loses nothing. */
   leaveRequested: () => Promise<LeaveDecision>;
+  /** Ends the session: aborts what is in flight and refuses every later write. */
+  dispose: () => void;
 }
 
 export interface UseEditorSessionOptions {
@@ -488,5 +490,6 @@ export function useEditorSession({
     reauthSucceeded: session.reauthSucceeded,
     reauthAbandoned: session.reauthAbandoned,
     leaveRequested: session.leaveRequested,
+    dispose: session.dispose,
   };
 }

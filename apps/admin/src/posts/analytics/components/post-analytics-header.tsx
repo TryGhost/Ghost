@@ -149,7 +149,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
       return;
     }
     try {
-      await deletePost(postId);
+      await deletePost({ id: postId });
       setShowDeleteDialog(false);
       // Navigate back to posts list
       navigate('/posts/', { crossApp: true });

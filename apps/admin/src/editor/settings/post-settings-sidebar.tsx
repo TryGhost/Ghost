@@ -17,6 +17,7 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
+import { DeleteSection } from './delete-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { ShowTitleSection } from './show-title-section';
@@ -106,6 +107,7 @@ export function PostSettingsSidebar({
     'show-title-and-feature-image':
       postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
     template: <TemplateSection postType={postType} session={session} />,
+    delete: <DeleteSection postType={postType} session={session} />,
   };
 
   return (

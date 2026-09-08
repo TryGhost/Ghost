@@ -41,6 +41,11 @@ import {
   settingsAuthorsError,
   settingsAuthorsList,
   settingsAuthorsPicker,
+  settingsDeleteButton,
+  settingsDeleteCancelButton,
+  settingsDeleteConfirmButton,
+  settingsDeleteDialog,
+  settingsDeleteError,
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
@@ -177,6 +182,17 @@ export const editorScreen = {
       .getByTestId(settingsAuthorChip)
       .elements()
       .map((chip) => chip.textContent?.trim() ?? ''),
+  settingsDelete: () => page.getByTestId(settingsDeleteButton),
+  settingsDeleteDialog: () => page.getByTestId(settingsDeleteDialog),
+  confirmSettingsDelete: () =>
+    page
+      .getByTestId(settingsDeleteDialog)
+      .getByRole('button', { name: settingsDeleteConfirmButton, exact: true }),
+  cancelSettingsDelete: () =>
+    page
+      .getByTestId(settingsDeleteDialog)
+      .getByRole('button', { name: settingsDeleteCancelButton, exact: true }),
+  settingsDeleteError: () => page.getByTestId(settingsDeleteError),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
