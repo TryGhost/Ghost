@@ -394,6 +394,40 @@ describe('Batch Sending Service', function () {
   });
 
   describe('sendBatches', function () {
+    for (const lookupFails of [false, true]) {
+      it(`preserves the worker error without a readable integrity failure (lookupFails=${lookupFails})`, async function () {
+        const service = new BatchSendingService({
+          sendingService: { getTargetDeliveryWindow: () => 0 },
+          AFTER_RETRY_CONFIG: { maxRetries: 0, sleep: 0 },
+        });
+        const email = createModel({ preflight_email_count: 1 });
+        const batch = createModel({
+          status: 'submitted',
+          recipient_count: 1,
+          submitted_count: 1,
+          submission_excluded_count: 0,
+        });
+        const originalError = new Error('Unable to mark recipients processed');
+        sinon.stub(service, 'sendBatch').rejects(originalError);
+        const getBatches = sinon.stub(service, 'getBatches');
+        if (lookupFails) {
+          getBatches.rejects(new Error('Batch lookup unavailable'));
+        } else {
+          getBatches.resolves([batch]);
+        }
+        await assert.rejects(
+          service.sendBatches({
+            email,
+            batches: [batch],
+            post: createModel({}),
+            newsletter: createModel({}),
+          }),
+          (error) => error === originalError,
+        );
+        sinon.assert.calledOnceWithExactly(getBatches, email);
+      });
+    }
+
     it('Works for a single batch', async function () {
       const service = new BatchSendingService({
         sendingService: {

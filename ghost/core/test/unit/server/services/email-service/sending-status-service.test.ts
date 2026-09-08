@@ -160,6 +160,27 @@ describe('SendingStatusService', function () {
     );
   });
 
+  for (const missingField of ['submitted_count', 'submission_excluded_count']) {
+    it(`does not credit a submitted batch with missing ${missingField}`, async function () {
+      await addEmail({ status: 'failed', emailCount: 10 });
+      await knex('emails').update({ preflight_email_count: 10 });
+      await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00' });
+      await knex('email_batches').update({
+        recipient_count: 10,
+        submitted_count: 7,
+        submission_excluded_count: 3,
+        [missingField]: null,
+      });
+      const result = await service.statusFor('email-id');
+      assert.equal(result?.sending.status, 'failed');
+      assert.deepEqual(result?.sending.progress, {
+        completed: 0,
+        total: 10,
+        estimatedSecondsRemaining: null,
+      });
+    });
+  }
+
   it('derives the sending status of an unsubmitted email from its batches and their recipient counts', async function () {
     await addEmail({ status: 'submitting', emailCount: 50, updatedAt: '2026-09-02 12:01:00' });
     await addBatch({

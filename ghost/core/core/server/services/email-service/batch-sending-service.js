@@ -1142,13 +1142,7 @@ class BatchSendingService {
         // A worker may have persisted an integrity failure while shutdown left
         // other batches unstarted. Check the small batch rows before interrupting
         // so emailJob still reports it; do not rescan recipients during the drain.
-        await this.retryDb(
-          async () => this.#verifySubmissionCounts(email, await this.getBatches(email)),
-          {
-            ...this.#getAfterRetryConfig(),
-            description: `verify interrupted batches for email ${email.id}`,
-          },
-        );
+        await this.#verifyPersistedSubmissionCounts(email);
       }
       throw new errors.InternalServerError({
         code: SHUTDOWN_CODE,
@@ -1158,13 +1152,39 @@ class BatchSendingService {
 
     const failedWorker = workerResults.find((result) => result.status === 'rejected');
     if (failedWorker) {
-      throw failedWorker.reason;
+      await this.#rethrowWorkerFailure(email, failedWorker.reason);
     }
 
     if (this.#usesRecipientAccounting(email)) {
       return this.#verifySubmittedBatches(email);
     }
     this.#assertSubmissionComplete(succeededCount, batches.length);
+  }
+
+  async #verifyPersistedSubmissionCounts(email) {
+    return this.retryDb(
+      async () => this.#verifySubmissionCounts(email, await this.getBatches(email)),
+      {
+        ...this.#getAfterRetryConfig(),
+        description: `verify persisted submission counts for email ${email.id}`,
+      },
+    );
+  }
+
+  async #rethrowWorkerFailure(email, workerError) {
+    if (this.#usesRecipientAccounting(email)) {
+      try {
+        // A later processed_at write can fail after an integrity failure was saved.
+        // Prefer that recorded failure without rescanning the recipient table.
+        await this.#verifyPersistedSubmissionCounts(email);
+      } catch (error) {
+        if (error.retryable === false) {
+          throw error;
+        }
+        // The lookup can also fail; retain the original worker error in that case.
+      }
+    }
+    throw workerError;
   }
 
   async #verifySubmittedBatches(email) {
