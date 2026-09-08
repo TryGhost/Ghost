@@ -45,13 +45,14 @@ export function DunningOverlay() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
   const takeover = useDunningLockTakeover();
-  const owner = useOwnerUser();
+  const isOwner = Boolean(currentUser && isOwnerUser(currentUser));
+  // This component mounts on every Admin page; only fetch the user list in
+  // the one case that renders the owner card (staff seeing the takeover)
+  const owner = useOwnerUser({ enabled: takeover && Boolean(currentUser) && !isOwner });
 
   if (!state || !currentUser || !takeover) {
     return null;
   }
-
-  const isOwner = isOwnerUser(currentUser);
 
   return (
     <div

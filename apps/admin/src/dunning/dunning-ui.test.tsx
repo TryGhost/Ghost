@@ -151,6 +151,9 @@ describe('dunning UI', () => {
       render(<DunningOverlay />);
 
       expect(screen.queryByTestId('dunning-overlay')).not.toBeInTheDocument();
+      // Mounted on every Admin page, so the user list must not be fetched
+      // outside the staff-facing takeover
+      expect(mockUseBrowseUsers).toHaveBeenCalledWith({ enabled: false });
     });
 
     test('takes over for the owner in the locked phase', () => {
@@ -188,6 +191,7 @@ describe('dunning UI', () => {
       expect(screen.getByText('Aileen (Owner)')).toBeInTheDocument();
       expect(screen.getByText('owner@example.com')).toBeInTheDocument();
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(mockUseBrowseUsers).toHaveBeenCalledWith({ enabled: true });
     });
 
     test('degrades to copy only when staff cannot resolve the owner', () => {
