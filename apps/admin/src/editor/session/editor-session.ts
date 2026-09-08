@@ -36,6 +36,9 @@ import {
 
 export type EditorWritePayload = Record<string, unknown>;
 
+/** What a manual slug edit did, so the input can revert and report a failure. */
+type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
+
 /** The full acknowledged record travels with the result so reconcile can rebase on it. */
 export interface EditorSaveResult extends SaveResult {
   post: EditorRecord;
@@ -83,7 +86,7 @@ export interface EditorSessionOptions {
 
 export interface EditorSession {
   getState: () => SaveEngineState;
-  /** Notified on engine state changes and whenever the post's dirtiness flips. */
+  /** Notified on engine state changes and whenever dirtiness or the slug moves. */
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
   isDirty: () => boolean;
@@ -102,6 +105,10 @@ export interface EditorSession {
   getFields: () => EditablePostProjection;
   /** The one save policy gate for settings fields; see the README. */
   commitField: () => void;
+  /** The slug the machine holds, which a title commit moves without a field patch. */
+  getSlug: () => string;
+  /** Routes a manual slug edit through the slug machine, then the same save policy. */
+  editSlug: (input: string) => Promise<SlugEditOutcome>;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -154,6 +161,8 @@ export function createEditorSession({
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
+  // A proposal is unsaved work before it becomes a sanitized document field.
+  const pendingSlugEdits = new Set<symbol>();
   // The version each settings field was last edited at by the writer. Adopting
   // is not an edit, so a snapshot of the live values could not answer this.
   const writerEdits = new Map<SettingsFieldKey, number>();
@@ -173,8 +182,19 @@ export function createEditorSession({
 
   // The engine reports its own state, but an edit the engine drops (a
   // published post never autosaves) still changes whether the post is dirty.
-  const dirtyListeners = new Set<() => void>();
+  const changeListeners = new Set<() => void>();
   let lastDirty: boolean;
+  let lastSlug = machine.getState().slug;
+
+  function notifyChanged(): void {
+    for (const listener of changeListeners) {
+      try {
+        listener();
+      } catch (error) {
+        onError(error);
+      }
+    }
+  }
 
   function dirtyChanged(): void {
     const next = getSnapshot().isDirty;
@@ -182,13 +202,16 @@ export function createEditorSession({
       return;
     }
     lastDirty = next;
-    for (const listener of dirtyListeners) {
-      try {
-        listener();
-      } catch (error) {
-        onError(error);
-      }
+    notifyChanged();
+  }
+
+  function slugChanged(): void {
+    const next = machine.getState().slug;
+    if (next === lastSlug) {
+      return;
     }
+    lastSlug = next;
+    notifyChanged();
   }
 
   function patchLive(patch: EditablePostPatch): void {
@@ -253,6 +276,7 @@ export function createEditorSession({
   }
 
   function getSnapshot(): EditorSaveSnapshot {
+    const verdict = tracker.verdict();
     return buildSaveSnapshot({
       identity,
       status,
@@ -260,13 +284,16 @@ export function createEditorSession({
       title: live.title,
       slug: machine.getState().slug,
       slugIsCustom: machine.getState().mode === 'custom',
-      verdict: tracker.verdict(),
+      verdict: { ...verdict, dirty: verdict.dirty || pendingSlugEdits.size > 0 },
       changedSinceLastRevision: tracker.hasChangedSinceRevision(latestRevision),
       version,
     });
   }
 
   lastDirty = getSnapshot().isDirty;
+  // A title commit and a load move the machine's slug without a field patch, so
+  // the URL input hears about them through the session's own subscribers.
+  const stopSlugNotifications = machine.subscribe(slugChanged);
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
@@ -438,19 +465,68 @@ export function createEditorSession({
     onListenerError: onError,
   });
 
+  // The one place the sidebar's save policy lives. A draft persists a settings
+  // field the way the body does; every other status stages it until Update.
+  function commitField(): void {
+    // Ember validates the field before saving it, so an incomplete tier
+    // selection stays staged rather than failing a save the writer sees.
+    if (status !== 'draft' || tiersIncomplete(live)) {
+      return;
+    }
+    void engine.dispatch('field');
+  }
+
+  // An `unchanged` proposal means the machine kept the slug it already had. A
+  // rejected or blank generator answer lost the writer's edit, so it reports.
+  async function editSlug(input: string): Promise<SlugEditOutcome> {
+    if (disposed) {
+      return 'unchanged';
+    }
+    const edit = Symbol();
+    pendingSlugEdits.add(edit);
+    // Register the request before notifying listeners that may save or leave.
+    const submission = slug.editSlug(input);
+    dirtyChanged();
+    try {
+      const proposal = await submission;
+      if (disposed || !pendingSlugEdits.has(edit)) {
+        return 'unchanged';
+      }
+      if (proposal.source === 'unchanged') {
+        if (proposal.reason === 'error') {
+          onError(proposal.error);
+          return 'failed';
+        }
+        if (proposal.reason === 'empty-result') {
+          return 'failed';
+        }
+        return 'unchanged';
+      }
+      patchLive({ slug: proposal.slug });
+      commitField();
+      return 'applied';
+    } finally {
+      pendingSlugEdits.delete(edit);
+      if (!disposed) {
+        dirtyChanged();
+      }
+    }
+  }
+
   return {
     getState: () => engine.getState(),
     subscribe: (listener) => {
       const stopEngine = engine.subscribe(listener);
-      dirtyListeners.add(listener);
+      changeListeners.add(listener);
       return () => {
         stopEngine();
-        dirtyListeners.delete(listener);
+        changeListeners.delete(listener);
       };
     },
     getSaveSnapshot: getSnapshot,
     isDirty: () => getSnapshot().isDirty,
     hasUnsavedContent: () =>
+      pendingSlugEdits.size > 0 ||
       tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
@@ -462,16 +538,9 @@ export function createEditorSession({
     patchFields: patchLive,
     getFields: () => live,
 
-    // The one place the sidebar's save policy lives. A draft persists a settings
-    // field the way the body does; every other status stages it until Update.
-    commitField: () => {
-      // Ember validates the field before saving it, so an incomplete tier
-      // selection stays staged rather than failing a save the writer sees.
-      if (status !== 'draft' || tiersIncomplete(live)) {
-        return;
-      }
-      void engine.dispatch('field');
-    },
+    commitField,
+    getSlug: () => machine.getState().slug,
+    editSlug,
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
@@ -540,11 +609,13 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
+      pendingSlugEdits.clear();
       writerEdits.clear();
       inFlightSince = null;
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
+      slug.reset();
       dirtyChanged();
       return true;
     },
@@ -555,8 +626,12 @@ export function createEditorSession({
 
     dispose: () => {
       disposed = true;
+      pendingSlugEdits.clear();
+      stopSlugNotifications();
+      slug.reset();
       engine.dispose();
       tracker.dispose();
+      changeListeners.clear();
     },
   };
 }

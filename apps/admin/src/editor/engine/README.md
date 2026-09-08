@@ -377,4 +377,8 @@ The wiring hook owns everything the three modules deliberately do not:
 - Regenerate when there is no slug, for any status, before save, including
   after `(Untitled)` substitution.
 - `(Untitled)` substitution for a blank title before save.
-- No save for a new post on a manual edit; the first explicit save persists it.
+- Manual edits go through the session's slug adapter so saves wait for them.
+  Pending edits count as unsaved work, including before the proposal reaches
+  the live document. A draft persists an applied edit through the sidebar's
+  field-save policy, including on a new post; other statuses stage it until
+  the next explicit save. Reload and disposal release obsolete slug waits.
