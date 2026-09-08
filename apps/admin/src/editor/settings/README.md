@@ -83,6 +83,13 @@ slash-terminated. The section is the slug and that preview and nothing else: it
 does not link out to a published post, and a sent post previews its site URL
 like any other rather than the separate email URL it also has.
 
+A manual proposal participates in the save engine's slug wait, so Update or
+Cmd-S cannot save the old URL while the generator is still answering. Pending
+manual edits count as unsaved work for the navigation and tab-close guards.
+A draft's save on leave waits for the proposal; other statuses ask before
+discarding it. A document reload releases waits on obsolete requests, and a
+response arriving after reload or disposal cannot patch the live document.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.

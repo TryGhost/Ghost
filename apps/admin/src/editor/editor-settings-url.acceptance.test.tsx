@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  currentRoute,
   fakeAdminEndpoint,
   fakeMembers,
   fakeNewsletters,
@@ -10,9 +11,11 @@ import {
   fakeSnippets,
   post,
   renderAdminApp,
+  unsavedChangesGuarded,
   type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
@@ -81,6 +84,71 @@ async function openSidebar() {
  * through the slug machine rather than written as a settings field.
  */
 describe('Post settings URL', () => {
+  it(
+    'saves the focused URL edit with Cmd-S while generation is pending',
+    async () => {
+      const generated = deferred<{ slugs: { slug: string }[] }>();
+      const slugApi = fakeAdminEndpoint('GET', /^\/slugs\/post\//, () => generated.promise);
+      // Keep the body empty so only the pending URL edit can dirty this post.
+      const saveApi = fakeSavablePost({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        lexical: null,
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+
+      await editorScreen.settingsSlug().fill('new-slug');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => slugApi.requests.length, POLL).toBe(1);
+      await expect.element(editorScreen.settingsSlug()).toBeDisabled();
+
+      generated.resolve({ slugs: [{ slug: 'new-slug-2' }] });
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({ slug: 'new-slug-2', status: 'published' });
+      await expect.element(editorScreen.settingsSlug()).toHaveValue('new-slug-2');
+      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    },
+    SLOW,
+  );
+
+  it(
+    'guards navigation and tab closing while a manual URL is still being generated',
+    async () => {
+      const generated = deferred<{ slugs: { slug: string }[] }>();
+      fakeAdminEndpoint('GET', /^\/slugs\/post\//, () => generated.promise);
+      const saveApi = fakeSavablePost({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        lexical: null,
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, postsListReact: true },
+      });
+      await openSidebar();
+
+      await editorScreen.settingsSlug().fill('new-slug');
+      await userEvent.keyboard('{Enter}');
+      await expect.element(editorScreen.settingsSlug()).toBeDisabled();
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+      const unload = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(unload);
+      expect(unload.defaultPrevented).toBe(true);
+
+      await editorScreen.backLink('post').click();
+      await expect.element(editorScreen.leaveDialog()).toBeVisible();
+      await editorScreen.stayInEditor().click();
+      await expect(editorScreen.leaveDialog()).toHaveCount(0);
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+
+      generated.resolve({ slugs: [{ slug: 'new-slug' }] });
+      await expect.element(editorScreen.settingsSlug()).toHaveValue('new-slug');
+      await expect.element(editorScreen.updateButton()).toBeEnabled();
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
   it(
     'persists a draft’s edited slug and previews the deduped value',
     async () => {

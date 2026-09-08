@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { deferred } from '@/utils/deferred';
 import {
   createEditorSession,
   type EditorSessionOptions,
@@ -1250,6 +1251,82 @@ describe('createEditorSession', () => {
         setTimeout(resolve, 0);
       });
 
+    it.each(['published', 'scheduled', 'sent'] as const)(
+      'waits for a pending manual slug before explicitly saving a %s post',
+      async (status) => {
+        const generated = deferred<string>();
+        const { session, state } = harness(
+          { record: record({ status, published_at: PUBLISHED_AT }) },
+          { generateSlug: () => generated.promise },
+        );
+
+        const edit = session.editSlug('A New Slug');
+        const save = session.dispatchExplicit();
+        await settle();
+        expect(state.updates).toHaveLength(0);
+
+        generated.resolve('a-new-slug');
+        await edit;
+        expect(await save).toMatchObject({ kind: 'saved' });
+        expect(state.updates).toHaveLength(1);
+        expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug', status });
+        expect(session.isDirty()).toBe(false);
+      },
+    );
+
+    it('protects a draft while its manual slug is generated and saves it before leaving', async () => {
+      const generated = deferred<string>();
+      const { session, state } = harness(
+        { record: record() },
+        { generateSlug: () => generated.promise },
+      );
+      const listener = vi.fn();
+      session.subscribe(listener);
+
+      const edit = session.editSlug('A New Slug');
+      expect(session.isDirty()).toBe(true);
+      expect(session.hasUnsavedContent()).toBe(true);
+      expect(listener).toHaveBeenCalled();
+      let left = false;
+      const leave = session.leaveRequested().then((decision) => {
+        left = true;
+        return decision;
+      });
+      await settle();
+      expect(left).toBe(false);
+      expect(state.updates).toHaveLength(0);
+
+      generated.resolve('a-new-slug');
+      await edit;
+      expect(await leave).toBe('proceed');
+      expect(state.updates).toHaveLength(1);
+      expect(state.updates[0].payload).toMatchObject({ slug: 'a-new-slug' });
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it.each(['published', 'scheduled', 'sent'] as const)(
+      'asks before abandoning a pending manual slug on a %s post',
+      async (status) => {
+        const generated = deferred<string>();
+        const { session, state } = harness(
+          { record: record({ status, published_at: PUBLISHED_AT }) },
+          { generateSlug: () => generated.promise },
+        );
+
+        const edit = session.editSlug('A New Slug');
+        expect(session.isDirty()).toBe(true);
+        expect(await session.leaveRequested()).toBe('confirm');
+        session.dispose();
+        const listener = vi.fn();
+        session.subscribe(listener);
+        generated.resolve('a-new-slug');
+        expect(await edit).toBe('unchanged');
+        expect(state.updates).toHaveLength(0);
+        expect(session.getFields().slug).toBe('hello');
+        expect(listener).not.toHaveBeenCalled();
+      },
+    );
+
     it('takes a draft’s manual edit custom and persists it on its own', async () => {
       const { session, state } = harness({ record: record() });
 
@@ -1322,6 +1399,8 @@ describe('createEditorSession', () => {
       expect(engineSpy.dispatched).toEqual([]);
       expect(state.updates).toHaveLength(0);
       expect(errors).toEqual([failure]);
+      expect(session.isDirty()).toBe(false);
+      expect(session.hasUnsavedContent()).toBe(false);
     });
 
     it('keeps the slug and reports a failure when the generator answers blank', async () => {
@@ -1339,6 +1418,7 @@ describe('createEditorSession', () => {
       expect(engineSpy.dispatched).toEqual([]);
       expect(state.updates).toHaveLength(0);
       expect(errors).toEqual([]);
+      expect(session.isDirty()).toBe(false);
     });
 
     it('drops an edit a reload superseded rather than writing it onto the new document', async () => {
@@ -1369,6 +1449,8 @@ describe('createEditorSession', () => {
           }),
         ),
       ).toBe(true);
+      expect(session.isDirty()).toBe(false);
+      expect(session.hasUnsavedContent()).toBe(false);
       answerGenerator('a-new-slug');
 
       const outcome = await edit;
@@ -1379,6 +1461,59 @@ describe('createEditorSession', () => {
       expect(engineSpy.dispatched).toEqual([]);
       expect(state.updates).toHaveLength(1);
       expect(outcome).toBe('unchanged');
+    });
+
+    it('can save the reloaded document before an obsolete slug request answers', async () => {
+      const generated = deferred<string>();
+      const hooks: HarnessHooks = {
+        failUpdateWith: updateCollision(),
+        generateSlug: () => generated.promise,
+      };
+      const { session, state } = harness(
+        { record: record({ status: 'published', published_at: PUBLISHED_AT }) },
+        hooks,
+      );
+      await session.dispatchExplicit();
+      const edit = session.editSlug('Obsolete');
+      const reloaded = record({
+        status: 'published',
+        published_at: PUBLISHED_AT,
+        slug: 'their-slug',
+        updated_at: '2026-01-02T00:00:00.000Z',
+      });
+      expect(session.recordReloaded(reloaded)).toBe(true);
+      hooks.failUpdateWith = undefined;
+      state.acknowledged = reloaded;
+
+      const save = session.dispatchExplicit();
+      await settle();
+      expect(state.updates).toHaveLength(2);
+      expect(state.updates[1].payload).toMatchObject({ slug: 'their-slug' });
+      expect(await save).toMatchObject({ kind: 'saved' });
+
+      generated.resolve('obsolete');
+      expect(await edit).toBe('unchanged');
+      expect(session.getSlug()).toBe('their-slug');
+      expect(session.isDirty()).toBe(false);
+    });
+
+    it('releases a save and leave waiting on a slug when the session is disposed', async () => {
+      const generated = deferred<string>();
+      const { session, state } = harness(
+        { record: record() },
+        { generateSlug: () => generated.promise },
+      );
+      const edit = session.editSlug('A New Slug');
+      const save = session.dispatchExplicit();
+      const leave = session.leaveRequested();
+      await settle();
+
+      session.dispose();
+      expect(await save).toMatchObject({ kind: 'dropped', reason: 'disposed' });
+      expect(await leave).toBe('proceed');
+      generated.resolve('a-new-slug');
+      expect(await edit).toBe('unchanged');
+      expect(state.updates).toHaveLength(0);
     });
 
     it('notifies subscribers when a title commit regenerates the slug', async () => {

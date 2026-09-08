@@ -161,6 +161,8 @@ export function createEditorSession({
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
+  // A proposal is unsaved work before it becomes a sanitized document field.
+  const pendingSlugEdits = new Set<symbol>();
   // The version each settings field was last edited at by the writer. Adopting
   // is not an edit, so a snapshot of the live values could not answer this.
   const writerEdits = new Map<SettingsFieldKey, number>();
@@ -274,6 +276,7 @@ export function createEditorSession({
   }
 
   function getSnapshot(): EditorSaveSnapshot {
+    const verdict = tracker.verdict();
     return buildSaveSnapshot({
       identity,
       status,
@@ -281,7 +284,7 @@ export function createEditorSession({
       title: live.title,
       slug: machine.getState().slug,
       slugIsCustom: machine.getState().mode === 'custom',
-      verdict: tracker.verdict(),
+      verdict: { ...verdict, dirty: verdict.dirty || pendingSlugEdits.size > 0 },
       changedSinceLastRevision: tracker.hasChangedSinceRevision(latestRevision),
       version,
     });
@@ -290,7 +293,7 @@ export function createEditorSession({
   lastDirty = getSnapshot().isDirty;
   // A title commit and a load move the machine's slug without a field patch, so
   // the URL input hears about them through the session's own subscribers.
-  machine.subscribe(slugChanged);
+  const stopSlugNotifications = machine.subscribe(slugChanged);
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
@@ -476,20 +479,38 @@ export function createEditorSession({
   // An `unchanged` proposal means the machine kept the slug it already had. A
   // rejected or blank generator answer lost the writer's edit, so it reports.
   async function editSlug(input: string): Promise<SlugEditOutcome> {
-    const proposal = await machine.slugEdited(input);
-    if (proposal.source === 'unchanged') {
-      if (proposal.reason === 'error') {
-        onError(proposal.error);
-        return 'failed';
-      }
-      if (proposal.reason === 'empty-result') {
-        return 'failed';
-      }
+    if (disposed) {
       return 'unchanged';
     }
-    patchLive({ slug: proposal.slug });
-    commitField();
-    return 'applied';
+    const edit = Symbol();
+    pendingSlugEdits.add(edit);
+    // Register the request before notifying listeners that may save or leave.
+    const submission = slug.editSlug(input);
+    dirtyChanged();
+    try {
+      const proposal = await submission;
+      if (disposed || !pendingSlugEdits.has(edit)) {
+        return 'unchanged';
+      }
+      if (proposal.source === 'unchanged') {
+        if (proposal.reason === 'error') {
+          onError(proposal.error);
+          return 'failed';
+        }
+        if (proposal.reason === 'empty-result') {
+          return 'failed';
+        }
+        return 'unchanged';
+      }
+      patchLive({ slug: proposal.slug });
+      commitField();
+      return 'applied';
+    } finally {
+      pendingSlugEdits.delete(edit);
+      if (!disposed) {
+        dirtyChanged();
+      }
+    }
   }
 
   return {
@@ -505,6 +526,7 @@ export function createEditorSession({
     getSaveSnapshot: getSnapshot,
     isDirty: () => getSnapshot().isDirty,
     hasUnsavedContent: () =>
+      pendingSlugEdits.size > 0 ||
       tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
@@ -587,11 +609,13 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       live = projectionOf(next);
+      pendingSlugEdits.clear();
       writerEdits.clear();
       inFlightSince = null;
       version += 1;
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
+      slug.reset();
       dirtyChanged();
       return true;
     },
@@ -602,8 +626,12 @@ export function createEditorSession({
 
     dispose: () => {
       disposed = true;
+      pendingSlugEdits.clear();
+      stopSlugNotifications();
+      slug.reset();
       engine.dispose();
       tracker.dispose();
+      changeListeners.clear();
     },
   };
 }
