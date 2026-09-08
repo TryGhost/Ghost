@@ -112,4 +112,4 @@ function validatePassword(password, email, siteTitle) {
   return { isValid: true };
 }
 
-module.exports = validatePassword;
+exports.validatePassword = validatePassword;
