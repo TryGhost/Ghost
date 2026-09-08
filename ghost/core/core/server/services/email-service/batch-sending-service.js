@@ -563,6 +563,8 @@ class BatchSendingService {
     logging.info(
       `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`,
     );
+    // Each page reads live filter attributes; the ID cutoff only excludes newer members.
+    // Counts cover candidates consumed in this attempt, not a point-in-time audience snapshot.
     // Avoid Bookshelf on the audience read for performance.
     return this.#models.Member.getFilteredCollectionQuery({ filter })
       .orderByRaw('id DESC')
@@ -852,7 +854,8 @@ class BatchSendingService {
   }
 
   async #createBatchWithRecovery(email, { segment, members, useFallbackDomain }, attemptId) {
-    // Retain the operation identity and recipient snapshot across all retries.
+    // Retain this operation's identity and recipient snapshot across its database retries.
+    // Restarting preparation reselects the audience until prepared_at freezes membership.
     const operation = {
       email,
       segment,
