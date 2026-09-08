@@ -63,6 +63,9 @@ export const settingsAuthorsPicker = 'settings-authors-picker';
 export const settingsAuthorsList = 'settings-authors-list';
 export const settingsAuthorsError = 'settings-authors-error';
 export const settingsAuthorChip = 'settings-author-chip';
+export const settingsDeleteButton = 'settings-delete-button';
+export const settingsDeleteDialog = 'settings-delete-dialog';
+export const settingsDeleteError = 'settings-delete-error';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -140,3 +143,5 @@ export const publishTypePublishAndEmailOption = 'Publish and email';
 export const publishTypePublishOnlyOption = 'Publish only';
 export const publishTypeEmailOnlyOption = 'Email only';
 export const publishAtScheduleOption = 'Schedule for later';
+export const settingsDeleteCancelButton = 'Cancel';
+export const settingsDeleteConfirmButton = 'Delete';
