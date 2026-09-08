@@ -7,21 +7,25 @@ batches to the configured email provider. Domain terms live in
 ## Recipient preparation
 
 New emails record `preflight_email_count` when they are created. Its presence,
-including zero, selects recipient accounting. Historical emails with null are
-opted in before rebuilding if every existing batch is pending (or no batches
-exist). Their stored `email_count` supplies the preflight estimate. This opt-in
-is saved before any preparation writes, so interrupted conversions use the same
-rebuild protocol on retry.
+including zero, selects recipient accounting. Emails with null
+`preflight_email_count` are opted in before rebuilding if every existing batch
+is pending (or no batches exist). Their stored `email_count` supplies the
+preflight estimate. This opt-in is saved before any preparation writes, so
+interrupted conversions use the same rebuild protocol on retry.
 
-A historical email with any batch in `submitting`, `submitted`, or `failed`
-reuses its entire existing batch set without selecting the audience again or
-inventing accounting metadata. Legacy submission starts only after all batch
-creation completes. These already-started sends retain their legacy completion
-checks; they do not need a separate preparation algorithm.
+A null `preflight_email_count` identifies an email created before recipient
+accounting was introduced that has not opted in. If any of its batches is in
+`submitting`, `submitted`, or `failed`, the email reuses its entire existing
+batch set without selecting the audience again or inventing accounting metadata.
+For these emails, all batch creation finishes before any batch is submitted to
+the email provider. Completion requires every batch in that reused set to submit
+successfully, without the new persisted recipient-count verification; they do
+not need a separate preparation algorithm.
 
-For historical emails with only pending batches, rebuilding may refresh the
-eligible audience even if preparation finished immediately before a crash. No
-submission has started. After `prepared_at` is saved, the audience stays frozen.
+For emails with null `preflight_email_count` and only pending batches,
+rebuilding may refresh the eligible audience even if preparation finished
+immediately before a crash. No submission has started. After `prepared_at` is
+saved, the audience stays frozen.
 
 Count candidates once per consumed page, excluding the lookahead row and before
 splitting a page for domain warming. Invalid member data is an explicit
@@ -127,8 +131,8 @@ batches with their recipient counts; `SendingStatusService` reads those rows
 and `sending-status-serializers.ts` shapes the response. Submitted is terminal and the batch aggregation only
 describes a send that is still in progress or has failed, so submitted emails answer with the email's stored
 `email_count` as both completed and total; accounted preparation verifies that
-column against the recipient rows it built. Already-started legacy sends retain
-their stored intended total. That also keeps reads of long-finished
+column against the recipient rows it built. Emails with null
+`preflight_email_count` retain their stored intended total. That also keeps reads of long-finished
 emails cheap, with no query over the batches or recipients. The endpoint is always available; Admin decides
 whether to poll it while a send is active.
 

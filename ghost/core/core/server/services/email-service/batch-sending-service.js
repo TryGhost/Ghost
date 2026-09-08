@@ -375,7 +375,8 @@ class BatchSendingService {
       },
     );
 
-    // Preparation is rebuilt until frozen; legacy sends that already started reuse their batches.
+    // Rebuild until prepared_at is saved. Emails with null preflight_email_count
+    // whose submission has already started reuse their existing batches instead.
     const batches = await this.createBatches({ email, newsletter, post });
     await this.sendBatches({ email, batches, post, newsletter });
   }
@@ -411,8 +412,9 @@ class BatchSendingService {
         ...this.#getBeforeRetryConfig(email),
         description: `get legacy batches for email ${email.id}`,
       });
-      // Legacy submission starts only after all preparation writes finish.
-      // Once any batch has started, preserve the whole set and its unknown counts.
+      // For emails with null preflight_email_count, all batch creation finishes
+      // before any batch is submitted to the email provider. A non-pending batch
+      // therefore means the entire set was prepared; preserve it without inventing counts.
       if (batches.some((batch) => batch.get('status') !== 'pending')) {
         return batches;
       }
