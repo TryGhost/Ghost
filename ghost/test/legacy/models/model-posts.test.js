@@ -1678,6 +1678,33 @@ describe('Post Model', function () {
         assert.equal(migrated.get('reading_time'), 42);
       });
 
+      it('keeps migrating-supplied auto_excerpt and reading_time when content also changes', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Migrating with content change',
+            lexical: markdownToLexical('Original migrating content'),
+          },
+          context,
+        );
+
+        const migrated = await models.Post.edit(
+          {
+            lexical: markdownToLexical(`Rerendered ${'word '.repeat(300)}content`),
+            auto_excerpt: 'explicit migrated excerpt',
+            reading_time: 77,
+          },
+          _.extend({}, context, { id: added.id, migrating: true }),
+        );
+
+        assert.equal(migrated.get('auto_excerpt'), 'explicit migrated excerpt');
+        assert.equal(migrated.get('reading_time'), 77);
+        assert.match(migrated.get('plaintext'), /^Rerendered/);
+        assert.notEqual(
+          migrated.get('auto_excerpt'),
+          computeAutoExcerpt(migrated.get('plaintext')),
+        );
+      });
+
       it('fills null auto_excerpt and reading_time on an otherwise unrelated save', async function () {
         const added = await models.Post.add(
           {
