@@ -419,7 +419,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.contextMenuItem('Add a tag').click();
       await postsListScreen.tagPickerField().click();
 
-      // First closes the list, second reaches the dialog.
+      // With nothing typed one Escape does both: the dialog's guard stands
+      // aside and the list closes under it. The second has nothing left to do.
       await userEvent.keyboard('{Escape}');
       await userEvent.keyboard('{Escape}');
 

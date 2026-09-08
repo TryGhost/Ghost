@@ -43,7 +43,7 @@ export function TagsSection({ session }: { session: EditorSessionHandle }) {
           field: settingsTagsField,
           input: settingsTagsInput,
           list: settingsTagsList,
-          token: settingsTagsToken,
+          chip: settingsTagsToken,
         }}
         deferSearch
         hideSelected

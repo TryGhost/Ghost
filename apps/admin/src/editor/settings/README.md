@@ -251,7 +251,7 @@ ignoring case and accents, and it leaves out anyone already credited. Arrow keys
 move the highlight, Enter takes the highlighted row and so does Tab once
 something has been typed, Escape closes the list and keeps the term, and both
 clicking away and moving focus out of the field close it and discard the term. A
-chip goes with its own remove button, and Backspace in an empty field drops the
+chip is removed by clicking it, and Backspace in an empty field drops the
 last one and opens the list on the staff it can offer again. A pick that empties
 the row under the highlight moves it to the last row rather than losing it.
 
