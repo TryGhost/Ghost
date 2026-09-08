@@ -25,6 +25,8 @@ const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
+// What a real publish stamps: seconds the minute-granular fields cannot show.
+const STAMPED_AT = '2025-12-01T10:00:37.000Z';
 const SYDNEY = 'Australia/Sydney';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
@@ -151,6 +153,32 @@ describe('Post settings publish date', () => {
         status: 'draft',
       });
       await expect.element(editorScreen.settingsPublishTime()).toHaveValue('06:30');
+    },
+    SLOW,
+  );
+
+  it(
+    'leaves the seconds a publish stamped alone while the minute stands',
+    async () => {
+      const saveApi = fakeSavablePost({ status: 'published', published_at: STAMPED_AT });
+      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+      await openPublishDate();
+
+      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+
+      // Tabbing out commits the minute the field already shows.
+      await editorScreen.settingsPublishTime().click();
+      await userEvent.tab();
+      await expect.element(editorScreen.updateButton()).toBeDisabled();
+
+      // A move away and back lands on that minute again, seconds intact.
+      await setTime('21:05');
+      await expect.element(editorScreen.updateButton()).toBeEnabled();
+      await setTime('21:00');
+
+      await expect.element(editorScreen.updateButton()).toBeDisabled();
+      expect(unsavedChangesGuarded()).toBe(false);
+      expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,
   );

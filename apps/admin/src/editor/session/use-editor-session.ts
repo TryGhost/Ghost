@@ -113,7 +113,7 @@ export interface EditorSessionHandle {
   /** The status and publish time the sidebar's date field reads. */
   publishTime: PublishTimeView;
   /** Stages the publish time, then applies the sidebar's save policy. */
-  editPublishedAt: (publishedAt: string | null) => void;
+  editPublishedAt: (publishedAt: string) => void;
   /** The post as the engine reads it: identity, status, publish time and title. */
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
@@ -280,9 +280,15 @@ export function useEditorSession({
   );
 
   const editPublishedAt = useCallback(
-    (next: string | null) => {
+    (next: string) => {
+      const before = publishTimeOf(session);
       session.editPublishedAt(next);
-      setPublishTime(publishTimeOf(session));
+      const after = publishTimeOf(session);
+      // The field commits on blur, so most commits carry the time already held.
+      if (samePublishTime(before, after)) {
+        return;
+      }
+      setPublishTime(after);
       session.commitField();
     },
     [session],

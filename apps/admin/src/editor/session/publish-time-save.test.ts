@@ -6,6 +6,9 @@ import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from './settings-field
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PAST = '2020-06-01T10:00:00.000Z';
 const OLDER = '2019-03-04T08:30:00.000Z';
+// What a real publish stamps: the same minute as PAST, with seconds of its own.
+const STAMPED = '2020-06-01T10:00:37.000Z';
+const NEXT_MINUTE = '2020-06-01T10:01:00.000Z';
 
 /** Milliseconds zeroed, as the engine's own target is. */
 function future(): string {
@@ -110,6 +113,31 @@ describe('staging the publish time', () => {
     session.editPublishedAt(PAST);
     expect(session.isDirty()).toBe(false);
     expect(session.hasUnsavedContent()).toBe(false);
+  });
+
+  it('keeps the stored seconds when the field returns the minute already saved', async () => {
+    const { session, update } = publishTimeSession('published', STAMPED);
+
+    // What the field commits on blur: the same minute, with seconds zeroed.
+    session.editPublishedAt(PAST);
+
+    expect(session.getPublishedAt()).toBe(STAMPED);
+    expect(session.isDirty()).toBe(false);
+    expect(session.hasUnsavedContent()).toBe(false);
+
+    session.commitField();
+    await Promise.resolve();
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('sends the chosen minute once the writer moves off the saved one', async () => {
+    const { session, update } = publishTimeSession('published', STAMPED);
+
+    session.editPublishedAt(NEXT_MINUTE);
+    expect(session.isDirty()).toBe(true);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[0][0]).toMatchObject({ published_at: NEXT_MINUTE });
   });
 
   it('counts a staged time as the writer’s unsaved work', () => {

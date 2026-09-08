@@ -123,7 +123,9 @@ instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
 server. The date is chosen from a calendar and the time typed as `HH:mm`; an
 unparseable time returns to the value already held. Both fields commit at minute
-granularity, so a change never leaves stale seconds behind.
+granularity, and the seconds a publish stamped are kept whenever the committed
+minute is the one already saved, so tabbing through the fields or returning to
+that minute is not an edit and cannot backdate the post by up to a minute.
 
 A staged time is the writer's unsaved work like any other field: the post reads
 dirty, Update enables and the leave guard asks. What persists it is the same

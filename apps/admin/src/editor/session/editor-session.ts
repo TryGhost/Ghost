@@ -112,7 +112,7 @@ export interface EditorSession {
    * Stages the publish time. It is the save engine's command target rather than
    * a settings field, so it has its own writer instead of `patchFields`.
    */
-  editPublishedAt: (publishedAt: string | null) => void;
+  editPublishedAt: (publishedAt: string) => void;
   /** The publish time the writer is looking at, staged edit included. */
   getPublishedAt: () => string | null;
   /** The one save policy gate for settings fields; see the README. */
@@ -139,6 +139,19 @@ export interface EditorSession {
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
+}
+
+/**
+ * Whether two publish times name the same minute. The fields commit at minute
+ * granularity, so the seconds a save stamped are not a difference the writer made.
+ */
+function sameMinute(left: string | null, right: string | null): boolean {
+  if (left === null || right === null) {
+    return left === right;
+  }
+  const a = Date.parse(left);
+  const b = Date.parse(right);
+  return !Number.isNaN(a) && !Number.isNaN(b) && Math.floor(a / 60000) === Math.floor(b / 60000);
 }
 
 /** Whether a record's collision token predates the one already held. */
@@ -170,7 +183,7 @@ export function createEditorSession({
   let status: PostStatus = record?.status ?? 'draft';
   let publishedAt: string | null = record?.published_at ?? null;
   // The publish time the writer moved to, or null when they have not moved it.
-  let stagedPublishedAt: { value: string | null } | null = null;
+  let stagedPublishedAt: string | null = null;
   let publishedAtEditedAt = 0;
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
@@ -185,7 +198,7 @@ export function createEditorSession({
   let inFlightSince: number | null = null;
 
   function livePublishedAt(): string | null {
-    return stagedPublishedAt ? stagedPublishedAt.value : publishedAt;
+    return stagedPublishedAt ?? publishedAt;
   }
 
   const tracker = createChangeTracker({ siteUrl });
@@ -583,9 +596,13 @@ export function createEditorSession({
     // Staged rather than patched: the engine reads the publish time off the
     // snapshot, so a status command's own target still wins over this.
     editPublishedAt: (next) => {
-      const normalized = zeroMilliseconds(next);
-      stagedPublishedAt =
-        normalized === zeroMilliseconds(publishedAt) ? null : { value: normalized };
+      // The saved seconds are kept when the chosen minute is the one already
+      // saved, so returning to it is not an edit and cannot backdate the post.
+      const staged = sameMinute(next, publishedAt) ? null : zeroMilliseconds(next);
+      if (staged === stagedPublishedAt) {
+        return;
+      }
+      stagedPublishedAt = staged;
       version += 1;
       publishedAtEditedAt = version;
       dirtyChanged();
@@ -633,7 +650,7 @@ export function createEditorSession({
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
-      if (stagedPublishedAt && stagedPublishedAt.value === zeroMilliseconds(publishedAt)) {
+      if (sameMinute(stagedPublishedAt, publishedAt)) {
         stagedPublishedAt = null;
       }
       latestRevision = latestRevisionOf(next);
