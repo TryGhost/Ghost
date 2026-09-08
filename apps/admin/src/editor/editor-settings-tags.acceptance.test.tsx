@@ -241,6 +241,26 @@ describe('Post settings tags', () => {
   );
 
   it(
+    'drops an uncommitted term when leaving the field after Escape',
+    async () => {
+      const { saveApi } = fakeTaggablePost();
+      fakeTags([NEWS]);
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openSidebar();
+      await openTagList();
+
+      await editorScreen.settingsTagsInput().fill('Culture');
+      await userEvent.keyboard('{Escape}');
+      await expect.element(editorScreen.settingsTagsInput()).toHaveValue('Culture');
+      await editorScreen.titleInput().click();
+
+      await expect.element(editorScreen.settingsTagsInput()).toHaveValue('');
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
     'commits the highlighted row on Tab, comma and all',
     async () => {
       const { saveApi } = fakeTaggablePost();
@@ -274,6 +294,10 @@ describe('Post settings tags', () => {
 
       // Nothing was typed, so there is nothing to commit and nothing to lose.
       await expect(editorScreen.settingsTagsTokens()).toHaveCount(0);
+      await expect.element(editorScreen.settingsTagsInput()).not.toHaveFocus();
+      await expect
+        .element(editorScreen.settingsTagsInput())
+        .toHaveAttribute('aria-expanded', 'false');
     },
     SLOW,
   );

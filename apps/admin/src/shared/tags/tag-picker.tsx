@@ -139,6 +139,9 @@ export function TagPicker({
     }
 
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) {
+        return;
+      }
       if (event.key === 'Escape') {
         close();
       }
@@ -194,6 +197,12 @@ export function TagPicker({
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    // IME confirmation and candidate navigation belong to the input method.
+    // Safari can end composition before its confirmation keydown, reporting 229.
+    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+      return;
+    }
+
     // Backspace on an empty field removes the last chip, as the members picker
     // does — the chips are otherwise only removable by mouse.
     if (event.key === 'Backspace' && search === '' && selected.length > 0) {
@@ -232,7 +241,15 @@ export function TagPicker({
   const optionId = (index: number) => `${listId}-option-${index}`;
 
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          closeAndDiscard();
+        }
+      }}
+    >
       <div
         className={cn(
           inputSurface('within'),
