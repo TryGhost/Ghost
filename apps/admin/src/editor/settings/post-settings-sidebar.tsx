@@ -12,6 +12,7 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
+import { ShowTitleSection } from './show-title-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
   const inputId = useId();
@@ -80,6 +81,8 @@ export function PostSettingsSidebar({
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,
+    'show-title-and-feature-image':
+      postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
   };
 
   return (

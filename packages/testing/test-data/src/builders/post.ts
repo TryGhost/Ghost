@@ -36,6 +36,8 @@ export interface Post {
   codeinjection_head: string | null;
   codeinjection_foot: string | null;
   custom_template: string | null;
+  /** Pages only: whether the page renders its own title and feature image. */
+  show_title_and_feature_image?: boolean;
   canonical_url: string | null;
   og_image: string | null;
   og_title: string | null;

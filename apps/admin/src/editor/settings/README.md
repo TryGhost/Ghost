@@ -107,6 +107,21 @@ Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
 
+## Show title and feature image
+
+A page can render without its own title and feature image, and only a page: the
+field has no meaning for a post, so the section is left out there. Every role
+that can open the editor sees it. The field goes through the same gate as the
+rest of the sidebar, so a draft saves it and every other status stages it, and
+the editor's cards read the live value rather than the saved one.
+
+Honouring the choice is the theme's job. When the active theme's report says its
+page-builder helper is missing and the writer has turned the setting off, the
+section says so and links to the theme documentation. The signal comes from the
+theme report's errors and warnings alike; a backend that reports nothing is
+taken to support the helper, so no warning is shown. The report is only read
+once the choice is off, and never for a Contributor, who cannot read it.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

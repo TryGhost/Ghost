@@ -40,9 +40,12 @@ import {
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
+  settingsShowTitleToggle,
+  settingsShowTitleWarning,
   settingsTiersError,
   settingsTiersPicker,
   settingsVisibilitySelect,
+  showTitleLearnMoreLink,
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
@@ -110,6 +113,10 @@ export const editorScreen = {
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
+  settingsShowTitle: () => page.getByTestId(settingsShowTitleToggle),
+  settingsShowTitleWarning: () => page.getByTestId(settingsShowTitleWarning),
+  settingsShowTitleLearnMore: () =>
+    page.getByTestId(settingsShowTitleWarning).getByRole('link', { name: showTitleLearnMoreLink }),
   settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
   settingsVisibilityOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),

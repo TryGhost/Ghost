@@ -35,6 +35,19 @@ export type ThemeProblem<Level extends string = 'error' | 'warning' | 'recommend
   rule: string;
 };
 
+export const PAGE_BUILDER_PROBLEM_CODE = 'GS110-NO-MISSING-PAGE-BUILDER-USAGE';
+
+/** Whether a gscan problem says the theme never asks for the named page-builder attribute. */
+export function missesPageBuilderAttribute(
+  problem: ThemeProblem<string>,
+  attribute: string,
+): boolean {
+  return (
+    problem.code === PAGE_BUILDER_PROBLEM_CODE &&
+    (problem.failures ?? []).some(({ message }) => message?.includes(`@page.${attribute}`))
+  );
+}
+
 export interface ThemesResponseType {
   themes: Theme[];
 }
