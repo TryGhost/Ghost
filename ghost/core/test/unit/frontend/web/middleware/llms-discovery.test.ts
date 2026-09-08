@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import express, { type Express } from 'express';
 import request from 'supertest';
-// @ts-expect-error This module lacks type definitions.
 import { createLlmsDiscovery } from '../../../../../core/frontend/web/middleware/llms-discovery';
 
 type Settings = {
