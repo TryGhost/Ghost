@@ -3,13 +3,12 @@ import crypto from 'node:crypto';
 import ObjectID from 'bson-objectid';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
+import { SendingStatusService } from '../../../../core/server/services/email-service/sending-status-service';
+
 const logging = require('@tryghost/logging');
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
-const {
-  SendingStatusService,
-} = require('../../../../core/server/services/email-service/sending-status-service');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
 const SendingService = require('../../../../core/server/services/email-service/sending-service');
 const MailgunEmailProvider = require('../../../../core/server/services/email-service/mailgun-email-provider');
@@ -112,9 +111,11 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     };
     renderer = { getSegments: sinon.stub().resolves([null]) };
     segmenter = {
-      getMemberFilterForSegment: sinon.stub().callsFake((_newsletter, filter) =>
-        filter === 'all' ? 'status:free' : filter,
-      ),
+      getMemberFilterForSegment: sinon
+        .stub()
+        .callsFake((_newsletter: unknown, filter: string) =>
+          filter === 'all' ? 'status:free' : filter,
+        ),
     };
     service = createService();
     data = { email, post: {}, newsletter: {} };
@@ -533,6 +534,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         await assert.rejects(
           service.sendBatches({ ...data, batches: await service.getBatches(email) }),
           (error) => {
+            assert.ok(error instanceof Error && 'code' in error);
             assert.equal(error.code, 'BULK_EMAIL_SUBMISSION_UNCERTAIN');
             assert.match(error.message, /Contact support/);
             return true;
@@ -557,7 +559,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await service.emailJob({ emailId: email.id });
     const reported = sentry.captureException
       .getCalls()
-      .filter(({ args }) => args[0].code === 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
+      .filter(
+        ({ args }: sinon.SinonSpyCall) =>
+          args[0].code === 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      );
     assert.equal(reported.length, 1);
     assert.equal(JSON.parse(reported[0].args[0].errorDetails).reason, 'batch_verification_failed');
     await email.refresh();
@@ -577,11 +582,12 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       { patch: true },
     );
     const statusService = new SendingStatusService({ knex: db.knex });
-    const queries = [];
-    const recordQuery = ({ sql }) => queries.push(sql);
+    const queries: string[] = [];
+    const recordQuery = ({ sql }: { sql: string }) => queries.push(sql);
     db.knex.on('query', recordQuery);
     try {
       const active = await statusService.statusFor(email.id);
+      assert.ok(active);
       assert.equal(active.sending.status, 'submitting');
       assert.equal(active.sending.progress.completed, 3);
       assert.equal(active.sending.progress.total, 4);
@@ -597,6 +603,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       { patch: true },
     );
     const done = await statusService.statusFor(email.id);
+    assert.ok(done);
     assert.equal(done.sending.progress.completed, 4);
     assert.equal(done.sending.progress.total, 4);
   });
@@ -606,6 +613,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await email.save({ status: 'failed' }, { patch: true });
     await batches[0].save({ status: 'failed', recipient_count: null }, { patch: true });
     const result = await new SendingStatusService({ knex: db.knex }).statusFor(email.id);
+    assert.ok(result);
     assert.equal(result.sending.status, 'failed');
     await batches[0].refresh();
     assert.equal(batches[0].get('recipient_count'), null);
@@ -640,6 +648,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await assert.rejects(
       service.sendBatches({ ...data, batches: await service.getBatches(email) }),
       (error) => {
+        assertVerificationError(error);
         assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
         // The preparation identity catches this before the redundant submission sum.
         assert.equal(JSON.parse(error.errorDetails).reason, 'preparation_totals');
@@ -664,6 +673,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     );
     sinon.stub(service, 'sendBatch').resolves(false);
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+      assertVerificationError(error);
       assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
       assert.equal(JSON.parse(error.errorDetails).batch_id, batches[1].id);
       return true;
@@ -1311,8 +1321,18 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     // so the test exercises the exhausted-write outcome without waiting for retries.
     sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
     const save = models.EmailBatch.prototype.save;
-    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (attributes, ...args) {
-      if (this.id === duplicateBatch.id && attributes?.status === 'failed') {
+    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (
+      this: Batch,
+      attributes,
+      ...args
+    ) {
+      if (
+        this.id === duplicateBatch.id &&
+        attributes &&
+        typeof attributes === 'object' &&
+        'status' in attributes &&
+        attributes.status === 'failed'
+      ) {
         sinon.assert.calledWithMatch(logging.error, {
           event: { name: 'email.recipient_count.mismatch' },
           code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
@@ -1335,7 +1355,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(duplicateBatch.get('error_data'), null);
     const alerts = logging.error
       .getCalls()
-      .filter(({ args }) => args[0]?.event?.name === 'email.recipient_count.mismatch');
+      .filter(
+        ({ args }: sinon.SinonSpyCall) => args[0]?.event?.name === 'email.recipient_count.mismatch',
+      );
     assert.equal(alerts.length, 1);
   });
 
