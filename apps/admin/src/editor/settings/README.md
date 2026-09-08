@@ -120,12 +120,13 @@ sidebar owns it. Either way the same session binding is behind it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then; choosing that same value explicitly is still an edit and still
-saves. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid tiers, active ones
-before archived, and it loads only while `Specific tier(s)` is the choice.
-The free tier returned with Public and Members posts is excluded from the
-selection; a tier ID without type metadata is preserved.
+until then. Re-choosing the value already shown is not an edit and sends
+nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
+granted. The tier list is every one of the site's paid
+tiers, active ones before archived, and it loads only while `Specific tier(s)`
+is the choice. Reads carry tier relations for Public, Members and Paid posts;
+the free tier that comes with Public and Members reads is excluded from the
+selection, and a tier ID without type metadata is preserved.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -141,9 +142,12 @@ Everything that is committed goes through the same gate as the rest of the
 sidebar, so a draft saves it and every other status stages it.
 
 When either access field changes to specific tiers, the save submits both
-visibility and the tier list, including unchanged tier IDs. The API also returns
-tier relations for Public and Paid posts, so changing visibility alone can leave
-those IDs unchanged. Once saved, an unrelated edit sends neither access field.
+visibility and the tier list, including tier IDs the writer never touched. A
+Public or Members read carries every tier the site has and a Paid read carries
+every paid tier, archived ones included, so switching one of those posts to
+`Specific tier(s)` selects every paid tier on the site, which a draft grants in
+the save that follows the switch. Once saved, an unrelated edit sends neither
+access field.
 
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what

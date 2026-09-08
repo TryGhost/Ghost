@@ -471,8 +471,8 @@ export function createEditorSession({
   // The one place the sidebar's save policy lives. A draft persists a settings
   // field the way the body does; every other status stages it until Update.
   function commitField(): void {
-    // Ember validates the field before saving it, so an incomplete tier
-    // selection stays staged rather than failing a save the writer sees.
+    // execute() refuses an incomplete tier pairing on every path; this only
+    // keeps a field save from being dispatched for it.
     if (status !== 'draft' || tiersIncomplete(live)) {
       return;
     }
