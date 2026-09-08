@@ -1,5 +1,6 @@
 import type { PageEditorRecord } from '@tryghost/admin-x-framework/api/pages';
-import type { PostEditorRecord, PostRevision } from '@tryghost/admin-x-framework/api/posts';
+import type { PostEditorRecord } from '@tryghost/admin-x-framework/api/posts';
+import { parsePostRevisions, revisionTime } from '@/editor/post-revisions';
 import type { EditablePostProjection, RevisionProjection } from '@/editor/engine/change-tracker';
 
 export type EditorRecord = PostEditorRecord | PageEditorRecord;
@@ -70,14 +71,9 @@ export function projectionOf(record: EditorRecord): EditablePostProjection {
   };
 }
 
-function revisionTime(revision: PostRevision): number {
-  const time = Date.parse(revision.created_at ?? '');
-  return Number.isNaN(time) ? 0 : time;
-}
-
 /** The newest revision the server sent, or null when the record carries none. */
 export function latestRevisionOf(record: EditorRecord | undefined): RevisionProjection | null {
-  const revisions = record?.post_revisions ?? [];
+  const revisions = parsePostRevisions(record?.post_revisions);
   if (revisions.length === 0) {
     return null;
   }

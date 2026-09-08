@@ -8,6 +8,8 @@ export interface SlugPortAdapter {
   commitTitle: (title: string) => void;
   /** Manual submissions participate in the same settling barrier as title commits. */
   editSlug: SlugMachine['slugEdited'];
+  /** A title the post took on without the writer typing it: the slug keeps its value. */
+  titleReplaced: (title: string) => void;
   /** Releases old waiters at a document reload or disposal. */
   reset: () => void;
 }
@@ -42,15 +44,31 @@ export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
       : { slug: machine.getState().slug, source: 'unchanged' };
   }
 
+  function reset(): void {
+    latest = Promise.resolve();
+    const previous = boundary;
+    boundary = deferred<void>();
+    previous.resolve();
+  }
+
   return {
     port: { settled, fromTitle },
     commitTitle: (title) => void track(machine.titleCommitted(title)),
-    editSlug: (input) => track(machine.slugEdited(input)),
-    reset: () => {
-      latest = Promise.resolve();
-      const previous = boundary;
-      boundary = deferred<void>();
-      previous.resolve();
+    editSlug: (input) => {
+      const slug = machine.getState().slug;
+      const invalidated = boundary.promise;
+      return Promise.race([
+        track(machine.slugEdited(input)),
+        invalidated.then(() => ({ slug, source: 'unchanged' as const, reason: 'stale' as const })),
+      ]);
     },
+    // A document boundary like a reload: release the waiters first, then re-read
+    // ownership from the slug it already holds, so a slug the new title does not
+    // slugify to reads custom and stops following the title.
+    titleReplaced: (title) => {
+      reset();
+      machine.loaded({ slug: machine.getState().slug, title });
+    },
+    reset,
   };
 }
