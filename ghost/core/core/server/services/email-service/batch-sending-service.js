@@ -414,69 +414,91 @@ class BatchSendingService {
     const accounting = this.#usesRecipientAccounting(email)
       ? { excludedCount: 0, attemptId: ObjectID().toHexString() }
       : null;
-    let candidateCount = 0;
     if (accounting && (email.get('prepared_at') ?? null) !== null) {
-      const verified = await this.retryDb(
-        () =>
-          this.#verifyPreparedRecipients(
-            email,
-            email.get('candidate_count'),
-            email.get('preparation_excluded_count'),
-          ),
-        {
-          ...this.#getBeforeRetryConfig(email),
-          description: `verify frozen preparation for email ${email.id}`,
-        },
-      );
-      return verified.batches;
+      return this.#getFrozenPreparation(email);
     }
     if (accounting) {
-      await this.retryDb(() => this.#discardIncompletePreparation(email), {
-        ...this.#getBeforeRetryConfig(email),
-        description: `discard incomplete preparation for email ${email.id}`,
-      });
+      await this.#startPreparation(email, accounting);
       existingBatches = [];
-      logging.info(
-        {
-          event: { name: 'email.preparation.started' },
-          email_id: email.id,
-          attempt_id: accounting.attemptId,
-        },
-        'Starting email preparation',
-      );
     }
 
-    // Infinity implies all emails should be sent from the primary domain
-    let domainWarmupLimit = Infinity;
-    if (this.#domainWarmingService.isEnabled()) {
-      domainWarmupLimit = Number.isInteger(email.get('csd_email_count'))
-        ? email.get('csd_email_count')
-        : Infinity;
-    }
-
-    // Legacy coverage resumes from each segment watermark. New preparation starts
-    // with no coverage after discarding any incomplete attempt.
+    const domainWarmupLimit = this.#getDomainWarmupLimit(email);
     const coverage = accounting
       ? new Map()
-      : await this.retryDb(
-          async () => {
-            return await this.#getExistingCoverage(email.id);
-          },
-          {
-            ...this.#getBeforeRetryConfig(email),
-            description: `getExistingCoverage for email ${email.id}`,
-          },
-        );
+      : await this.retryDb(() => this.#getExistingCoverage(email.id), {
+          ...this.#getBeforeRetryConfig(email),
+          description: `getExistingCoverage for email ${email.id}`,
+        });
+    const { batches, candidateCount, totalCount } = await this.#prepareSegments({
+      email,
+      post,
+      newsletter,
+      coverage,
+      domainWarmupLimit,
+      existingBatches,
+      accounting,
+    });
 
-    const segments = await this.#emailRenderer.getSegments(post);
-    // Seed with existing batches so the returned set and the domain-warmup accounting
-    // below span existing + newly created.
-    const batches = [...existingBatches];
-    const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
-    let totalCount = 0;
-    for (const { count } of coverage.values()) {
-      totalCount += count;
+    if (accounting) {
+      return this.#completePreparation(email, candidateCount, accounting);
     }
+    await this.#reconcileLegacyRecipientCount(email, totalCount, domainWarmupLimit);
+    return batches;
+  }
+
+  async #getFrozenPreparation(email) {
+    const verified = await this.retryDb(
+      () =>
+        this.#verifyPreparedRecipients(
+          email,
+          email.get('candidate_count'),
+          email.get('preparation_excluded_count'),
+        ),
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `verify frozen preparation for email ${email.id}`,
+      },
+    );
+    return verified.batches;
+  }
+
+  async #startPreparation(email, accounting) {
+    await this.retryDb(() => this.#discardIncompletePreparation(email), {
+      ...this.#getBeforeRetryConfig(email),
+      description: `discard incomplete preparation for email ${email.id}`,
+    });
+    logging.info(
+      {
+        event: { name: 'email.preparation.started' },
+        email_id: email.id,
+        attempt_id: accounting.attemptId,
+      },
+      'Starting email preparation',
+    );
+  }
+
+  #getDomainWarmupLimit(email) {
+    // Infinity implies all emails should be sent from the primary domain.
+    if (this.#domainWarmingService.isEnabled() && Number.isInteger(email.get('csd_email_count'))) {
+      return email.get('csd_email_count');
+    }
+    return Infinity;
+  }
+
+  async #prepareSegments({
+    email,
+    post,
+    newsletter,
+    coverage,
+    domainWarmupLimit,
+    existingBatches,
+    accounting,
+  }) {
+    const segments = await this.#emailRenderer.getSegments(post);
+    const batchSize = this.#sendingService.getMaximumRecipients();
+    const batches = [...existingBatches];
+    let totalCount = [...coverage.values()].reduce((sum, { count }) => sum + count, 0);
+    let candidateCount = 0;
     if (totalCount > 0) {
       logging.info(
         `Resuming batch creation for email ${email.id}: ${totalCount} recipient(s) across ${coverage.size} segment(s) already built`,
@@ -484,150 +506,169 @@ class BatchSendingService {
     }
 
     for (const segment of segments) {
-      logging.info(`Creating batches for email ${email.id} segment ${segment}`);
-
-      const segmentFilter = this.#emailSegmenter.getMemberFilterForSegment(
+      const prepared = await this.#prepareSegment({
+        email,
         newsletter,
-        email.get('recipient_filter'),
         segment,
-      );
-
-      // Avoiding Bookshelf for performance reasons
-      let members;
-
-      // Start with the id of the email, which is an objectId. We'll only fetch members that are created before the email. This is a special property of ObjectIds.
-      // Note: we use ID and not created_at, because imported members could set a created_at in the future or past and avoid limit checking.
-      // On a resume, start below this segment's watermark so we only build the un-built
-      // tail (coverage is a contiguous id-descending prefix, so nothing is skipped).
-      const segmentCoverage = coverage.get(segment ?? null);
-      let lastId = segmentCoverage ? segmentCoverage.minMemberId : email.id;
-
-      while (!members || lastId) {
-        // Stop claiming new creation work on shutdown. Bailing at a batch boundary
-        // (createBatch is atomic) leaves a consistent partial that resumes next boot;
-        // SHUTDOWN_CODE keeps the email in `submitting` rather than sending it incomplete.
-        if (this.#shuttingDown) {
-          throw new errors.InternalServerError({
-            code: SHUTDOWN_CODE,
-            message: 'Email batch creation stopped because the container is shutting down',
-          });
-        }
-
-        logging.info(
-          `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`,
-        );
-
-        const filter = segmentFilter + `+id:<'${lastId}'`;
-        logging.info(
-          `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`,
-        );
-
-        members = await this.#models.Member.getFilteredCollectionQuery({ filter })
-          .orderByRaw('id DESC')
-          .select('members.id', 'members.uuid', 'members.email', 'members.name')
-          .limit(BATCH_SIZE + 1);
-
-        if (members.length > 0) {
-          // Determine how many members to include in this batch
-          const remainingCustomDomainCapacity = domainWarmupLimit - totalCount;
-          const membersToProcess = Math.min(members.length, BATCH_SIZE);
-          candidateCount += membersToProcess;
-
-          const shouldSplitBatch =
-            remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < membersToProcess;
-          if (shouldSplitBatch) {
-            // Split batch: some via custom domain, rest via fallback
-            totalCount += await this.#createBatchWithRetry({
-              email,
-              segment,
-              members: members.slice(0, remainingCustomDomainCapacity),
-              useFallbackDomain: false,
-              batches,
-              accounting,
-            });
-            totalCount += await this.#createBatchWithRetry({
-              email,
-              segment,
-              members: members.slice(remainingCustomDomainCapacity, membersToProcess),
-              useFallbackDomain: true,
-              batches,
-              accounting,
-            });
-          } else {
-            // Single batch: all members use same domain
-            totalCount += await this.#createBatchWithRetry({
-              email,
-              segment,
-              members: members.slice(0, membersToProcess),
-              useFallbackDomain: totalCount >= domainWarmupLimit,
-              batches,
-              accounting,
-            });
-          }
-        }
-
-        if (members.length > BATCH_SIZE) {
-          lastId = members[members.length - 2].id;
-        } else {
-          break;
-        }
+        accounting,
+        segmentCoverage: coverage.get(segment ?? null),
+        batchSize,
+        remainingCustomDomainCapacity: domainWarmupLimit - totalCount,
+      });
+      for (const batch of prepared.batches) {
+        batches.push(batch);
       }
+      candidateCount += prepared.candidateCount;
+      totalCount += prepared.candidateCount;
     }
-
     logging.info(
       `Created ${batches.length} batches for email ${email.id} with ${totalCount} recipients`,
     );
+    return { batches, candidateCount, totalCount };
+  }
 
-    if (accounting) {
-      const verified = await this.retryDb(
-        () => this.#verifyPreparedRecipients(email, candidateCount, accounting.excludedCount),
-        {
-          ...this.#getBeforeRetryConfig(email),
-          description: `verify preparation for email ${email.id}`,
-        },
+  async #prepareSegment({
+    email,
+    newsletter,
+    segment,
+    accounting,
+    segmentCoverage,
+    batchSize,
+    remainingCustomDomainCapacity,
+  }) {
+    logging.info(`Creating batches for email ${email.id} segment ${segment}`);
+    const segmentFilter = this.#emailSegmenter.getMemberFilterForSegment(
+      newsletter,
+      email.get('recipient_filter'),
+      segment,
+    );
+    const batches = [];
+    let candidateCount = 0;
+    // ObjectIds bound membership to members created before the email, even when
+    // imported created_at values are backdated. Legacy resumes below its watermark.
+    let lastId = segmentCoverage ? segmentCoverage.minMemberId : email.id;
+    do {
+      const members = await this.#fetchPreparationPage(
+        email,
+        segment,
+        segmentFilter,
+        lastId,
+        batchSize,
       );
-      const preparation = {
-        candidate_count: candidateCount,
-        preparation_excluded_count: accounting.excludedCount,
-        email_count: verified.recipientCount,
-        prepared_at: new Date(),
-      };
-      await this.retryDb(
-        () => email.save(preparation, { patch: true, require: false, autoRefresh: false }),
-        {
-          ...this.#getBeforeRetryConfig(email),
-          description: `save preparation boundary for email ${email.id}`,
-        },
-      );
-      logging.info(
-        {
-          event: { name: 'email.preparation.completed' },
-          email_id: email.id,
-          attempt_id: accounting.attemptId,
-          preflight_email_count: email.get('preflight_email_count'),
-          ...preparation,
-        },
-        'Verified email preparation',
-      );
-      const preflightCount = email.get('preflight_email_count');
-      const drift = Math.abs(candidateCount - preflightCount);
-      if (drift > 0 && (preflightCount === 0 || drift / preflightCount >= 0.01)) {
-        logging.warn(
-          {
-            event: { name: 'email.preparation.audience_drift' },
-            email_id: email.id,
-            preflight_email_count: preflightCount,
-            candidate_count: candidateCount,
-          },
-          'Newsletter candidate audience differs from the preflight estimate',
-        );
-        this.#sentry?.captureMessage(
-          `Email ${email.id} candidate count ${candidateCount} differs from preflight count ${preflightCount}.`,
-        );
+      const candidates = members.slice(0, batchSize);
+      // Count the consumed page once, before splitting or retrying, without lookahead.
+      candidateCount += candidates.length;
+      const pageBatches = await this.#preparePage({
+        email,
+        segment,
+        members: candidates,
+        accounting,
+        remainingCustomDomainCapacity,
+      });
+      batches.push(...pageBatches);
+      // Warming capacity counts candidates, including explicit exclusions.
+      remainingCustomDomainCapacity -= candidates.length;
+      if (members.length <= batchSize) {
+        break;
       }
-      return verified.batches;
-    }
+      lastId = members[members.length - 2].id;
+    } while (lastId);
+    return { batches, candidateCount };
+  }
 
+  async #fetchPreparationPage(email, segment, segmentFilter, lastId, batchSize) {
+    // Stop only at an atomic batch boundary; shutdown leaves the send resumable.
+    if (this.#shuttingDown) {
+      throw new errors.InternalServerError({
+        code: SHUTDOWN_CODE,
+        message: 'Email batch creation stopped because the container is shutting down',
+      });
+    }
+    const filter = segmentFilter + `+id:<'${lastId}'`;
+    logging.info(
+      `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`,
+    );
+    // Avoid Bookshelf on the audience read for performance.
+    return this.#models.Member.getFilteredCollectionQuery({ filter })
+      .orderByRaw('id DESC')
+      .select('members.id', 'members.uuid', 'members.email', 'members.name')
+      .limit(batchSize + 1);
+  }
+
+  async #preparePage({ email, segment, members, accounting, remainingCustomDomainCapacity }) {
+    const shouldSplit =
+      remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < members.length;
+    const slices = shouldSplit
+      ? [
+          { members: members.slice(0, remainingCustomDomainCapacity), useFallbackDomain: false },
+          { members: members.slice(remainingCustomDomainCapacity), useFallbackDomain: true },
+        ]
+      : [{ members, useFallbackDomain: remainingCustomDomainCapacity <= 0 }];
+    const batches = [];
+    for (const slice of slices) {
+      const batch = await this.#createBatchWithRetry({ email, segment, accounting, ...slice });
+      if (batch) {
+        batches.push(batch);
+      }
+    }
+    return batches;
+  }
+
+  async #completePreparation(email, candidateCount, accounting) {
+    const verified = await this.retryDb(
+      () => this.#verifyPreparedRecipients(email, candidateCount, accounting.excludedCount),
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `verify preparation for email ${email.id}`,
+      },
+    );
+    const preparation = {
+      candidate_count: candidateCount,
+      preparation_excluded_count: accounting.excludedCount,
+      email_count: verified.recipientCount,
+      prepared_at: new Date(),
+    };
+    await this.retryDb(
+      () => email.save(preparation, { patch: true, require: false, autoRefresh: false }),
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `save preparation boundary for email ${email.id}`,
+      },
+    );
+    logging.info(
+      {
+        event: { name: 'email.preparation.completed' },
+        email_id: email.id,
+        attempt_id: accounting.attemptId,
+        preflight_email_count: email.get('preflight_email_count'),
+        ...preparation,
+      },
+      'Verified email preparation',
+    );
+    this.#reportAudienceDrift(email, candidateCount);
+    return verified.batches;
+  }
+
+  #reportAudienceDrift(email, candidateCount) {
+    const preflightCount = email.get('preflight_email_count');
+    const drift = Math.abs(candidateCount - preflightCount);
+    if (drift > 0 && (preflightCount === 0 || drift / preflightCount >= 0.01)) {
+      logging.warn(
+        {
+          event: { name: 'email.preparation.audience_drift' },
+          email_id: email.id,
+          preflight_email_count: preflightCount,
+          candidate_count: candidateCount,
+        },
+        'Newsletter candidate audience differs from the preflight estimate',
+      );
+      this.#sentry?.captureMessage(
+        `Email ${email.id} candidate count ${candidateCount} differs from preflight count ${preflightCount}.`,
+      );
+    }
+  }
+
+  async #reconcileLegacyRecipientCount(email, totalCount, domainWarmupLimit) {
     if (email.get('email_count') !== totalCount) {
       logging.error(
         `Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}. Updating the model.`,
@@ -656,7 +697,6 @@ class BatchSendingService {
 
       await email.save(newEmailUpdate, { patch: true, require: false, autoRefresh: false });
     }
-    return batches;
   }
 
   #usesRecipientAccounting(email) {
@@ -703,9 +743,27 @@ class BatchSendingService {
     if (batches.some((batch) => batch.get('status') !== 'pending')) {
       throw this.#verificationFailure(email, 'incomplete_preparation_already_submitting');
     }
+    await this.#verifyCleanupOwnership(email, batches.length > 0);
+    // Awaited preparation writes have settled before cleanup. Delete recipients
+    // before batches, in bounded chunks that can restart after interruption.
+    await this.#deletePreparationRows(email, 'email_recipients');
+    await this.#deletePreparationRows(email, 'email_batches');
+    if (batches.length > 0) {
+      logging.info(
+        {
+          event: { name: 'email.preparation.discarded' },
+          email_id: email.id,
+          batch_count: batches.length,
+        },
+        'Discarded incomplete email preparation',
+      );
+    }
+  }
+
+  async #verifyCleanupOwnership(email, hasBatches) {
     // A row owned by another email cannot be discarded as part of this send.
     // Detect it before cleanup reaches the batch foreign-key restriction.
-    if (batches.length > 0) {
+    if (hasBatches) {
       const foreignRecipient = await this.#db
         .knex('email_recipients as recipient')
         .join('email_batches as batch', 'batch.id', 'recipient.batch_id')
@@ -731,48 +789,50 @@ class BatchSendingService {
         batch_id: foreignBatchRecipient.batch_id,
       });
     }
-    // Preparation is sequential today. Its awaited writes have settled before a
-    // retry enters here. Keep deletion bounded and restartable between chunks.
-    for (const table of ['email_recipients', 'email_batches']) {
-      while (true) {
-        if (this.#shuttingDown) {
-          throw new errors.InternalServerError({
-            code: SHUTDOWN_CODE,
-            message: 'Email preparation cleanup stopped because the container is shutting down',
-          });
-        }
-        const rows = await this.#db
-          .knex(table)
-          .where({ email_id: email.id })
-          .select('id')
-          .limit(1000);
-        if (rows.length === 0) {
-          break;
-        }
-        await this.#db
-          .knex(table)
-          .where({ email_id: email.id })
-          .whereIn(
-            'id',
-            rows.map((row) => row.id),
-          )
-          .del();
+  }
+
+  async #deletePreparationRows(email, table) {
+    while (true) {
+      if (this.#shuttingDown) {
+        throw new errors.InternalServerError({
+          code: SHUTDOWN_CODE,
+          message: 'Email preparation cleanup stopped because the container is shutting down',
+        });
       }
-    }
-    if (batches.length > 0) {
-      logging.info(
-        {
-          event: { name: 'email.preparation.discarded' },
-          email_id: email.id,
-          batch_count: batches.length,
-        },
-        'Discarded incomplete email preparation',
-      );
+      const rows = await this.#db
+        .knex(table)
+        .where({ email_id: email.id })
+        .select('id')
+        .limit(1000);
+      if (rows.length === 0) {
+        break;
+      }
+      await this.#db
+        .knex(table)
+        .where({ email_id: email.id })
+        .whereIn(
+          'id',
+          rows.map((row) => row.id),
+        )
+        .del();
     }
   }
 
   async #verifyPreparedRecipients(email, candidateCount, excludedCount) {
     const batches = await this.getBatches(email);
+    this.#verifyPreparationBoundary(email, batches);
+    const { counts, actualCount } = await this.#readPreparationCounts(email);
+    const recipientCount = this.#verifyBatchRecipientCounts(email, batches, counts);
+    this.#verifyPreparationTotals(email, {
+      candidateCount,
+      excludedCount,
+      recipientCount,
+      actualCount,
+    });
+    return { batches, recipientCount };
+  }
+
+  #verifyPreparationBoundary(email, batches) {
     const preparedAt = email.get('prepared_at') ?? null;
     for (const batch of batches) {
       if (preparedAt !== null && new Date(batch.get('created_at')) > new Date(preparedAt)) {
@@ -784,6 +844,9 @@ class BatchSendingService {
         });
       }
     }
+  }
+
+  async #readPreparationCounts(email) {
     const rows = await this.#db
       .knex('email_recipients as recipient')
       .join('email_batches as batch', 'recipient.batch_id', 'batch.id')
@@ -815,6 +878,10 @@ class BatchSendingService {
         batch_id: foreignRecipient.batch_id,
       });
     }
+    return { counts, actualCount };
+  }
+
+  #verifyBatchRecipientCounts(email, batches, counts) {
     let recipientCount = 0;
     for (const batch of batches) {
       const expected = batch.get('recipient_count');
@@ -831,6 +898,10 @@ class BatchSendingService {
       }
       recipientCount += expected;
     }
+    return recipientCount;
+  }
+
+  #verifyPreparationTotals(email, { candidateCount, excludedCount, recipientCount, actualCount }) {
     if (
       !Number.isSafeInteger(candidateCount) ||
       candidateCount < 0 ||
@@ -857,7 +928,6 @@ class BatchSendingService {
         actual_count: actualCount,
       });
     }
-    return { batches, recipientCount };
   }
 
   /**
@@ -890,141 +960,28 @@ class BatchSendingService {
   }
 
   /**
-   * Creates a batch with retry logic and adds it to the batches array
-   * @param {object} params
-   * @param {Email} params.email
-   * @param {import('./email-renderer').Segment} params.segment
-   * @param {object[]} params.members
-   * @param {boolean} params.useFallbackDomain
-   * @param {EmailBatch[]} params.batches
-   * @param {{excludedCount: number, attemptId: string}|null} [params.accounting]
-   * @returns {Promise<number>} Candidates consumed, including explicit exclusions
+   * Retain the operation ID and recipient snapshot across all database retries.
+   * Returns null for an empty or entirely excluded slice.
    */
-  async #createBatchWithRetry({ email, segment, members, useFallbackDomain, batches, accounting }) {
-    if (members.length === 0) {
-      return 0;
-    }
-
-    const candidateCount = members.length;
+  async #createBatchWithRetry({ email, segment, members, useFallbackDomain, accounting }) {
     if (accounting) {
-      members = members.filter((member) => {
-        const missing = ['id', 'uuid', 'email'].filter((field) => !member[field]);
-        if (missing.length === 0) {
-          return true;
-        }
-        accounting.excludedCount += 1;
-        const error = new errors.EmailError({
-          code: 'BULK_EMAIL_INVALID_RECIPIENT',
-          message: 'Member excluded from newsletter preparation due to missing data',
-          errorDetails: JSON.stringify({
-            email_id: email.id,
-            attempt_id: accounting.attemptId,
-            member_id: member.id,
-            missing_fields: missing,
-          }),
-        });
-        logging.error(
-          {
-            err: error,
-            event: { name: 'email.preparation.excluded' },
-            email_id: email.id,
-            attempt_id: accounting.attemptId,
-            member_id: member.id,
-            reason: 'missing_fields',
-            missing_fields: missing,
-          },
-          'Member excluded from newsletter preparation',
-        );
-        this.#sentry?.captureException(error);
-        return false;
-      });
-      if (members.length === 0) {
-        return candidateCount;
-      }
-      // Freeze the intended data before any transaction or retry can run.
-      members = members.map(({ id, uuid, email: address, name }) => ({
-        id,
-        uuid,
-        email: address,
-        name,
-      }));
+      members = this.#snapshotPreparationMembers(email, members, accounting);
     }
-
-    const batchId = accounting ? ObjectID().toHexString() : undefined;
-    const batch = await this.retryDb(
-      async () => {
-        try {
-          return await this.createBatch(email, segment, members, {
-            useFallbackDomain,
-            ...(accounting ? { batchId } : {}),
-          });
-        } catch (error) {
-          if (!accounting) {
-            throw error;
-          }
-          logging.info(
-            {
-              err: error,
-              event: { name: 'email.batch.recovery.started' },
-              email_id: email.id,
-              batch_id: batchId,
-            },
-            'Checking the outcome of email batch creation',
-          );
-          // The transaction handler has settled (including its rollback) before
-          // this read. A failed acknowledgement does not prove a failed commit.
-          const committed = await this.#models.EmailBatch.findOne({ id: batchId });
-          if (!committed) {
-            throw error;
-          }
-          const recipients = await this.#db.knex('email_recipients').where({ batch_id: batchId });
-          const identities = recipients
-            .map((row) =>
-              JSON.stringify([
-                row.email_id,
-                row.member_id,
-                row.member_uuid,
-                row.member_email,
-                row.member_name ?? null,
-              ]),
-            )
-            .sort();
-          const intended = members
-            .map((member) =>
-              JSON.stringify([email.id, member.id, member.uuid, member.email, member.name ?? null]),
-            )
-            .sort();
-          if (
-            committed.get('email_id') !== email.id ||
-            (committed.get('member_segment') ?? null) !== (segment ?? null) ||
-            Boolean(committed.get('fallback_sending_domain')) !== Boolean(useFallbackDomain) ||
-            committed.get('recipient_count') !== members.length ||
-            JSON.stringify(identities) !== JSON.stringify(intended)
-          ) {
-            throw this.#verificationFailure(email, 'batch_recovery_conflict', {
-              batch_id: batchId,
-              expected: members.length,
-              actual: recipients.length,
-            });
-          }
-          logging.info(
-            {
-              event: { name: 'email.batch.recovered' },
-              email_id: email.id,
-              attempt_id: accounting.attemptId,
-              batch_id: batchId,
-            },
-            'Recovered committed email batch',
-          );
-          return committed;
-        }
-      },
-      {
-        ...this.#getBeforeRetryConfig(email),
-        description: `createBatch email ${email.id} segment ${segment}${useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`,
-      },
-    );
-    batches.push(batch);
+    if (members.length === 0) {
+      return null;
+    }
+    const operation = {
+      email,
+      segment,
+      members,
+      useFallbackDomain,
+      batchId: accounting ? ObjectID().toHexString() : undefined,
+      attemptId: accounting?.attemptId,
+    };
+    const batch = await this.retryDb(() => this.#createOrRecoverBatch(operation), {
+      ...this.#getBeforeRetryConfig(email),
+      description: `createBatch email ${email.id} segment ${segment}${useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`,
+    });
     if (accounting) {
       logging.info(
         {
@@ -1037,7 +994,134 @@ class BatchSendingService {
         'Prepared email batch',
       );
     }
-    return candidateCount;
+    return batch;
+  }
+
+  #snapshotPreparationMembers(email, members, accounting) {
+    const validMembers = members.filter((member) => {
+      const missing = ['id', 'uuid', 'email'].filter((field) => !member[field]);
+      if (missing.length === 0) {
+        return true;
+      }
+      this.#excludePreparationMember(email, accounting, member, missing);
+      return false;
+    });
+    // Copy the intended data before any transaction or retry can run.
+    return validMembers.map(({ id, uuid, email: address, name }) => ({
+      id,
+      uuid,
+      email: address,
+      name,
+    }));
+  }
+
+  #excludePreparationMember(email, accounting, member, missing) {
+    accounting.excludedCount += 1;
+    const error = new errors.EmailError({
+      code: 'BULK_EMAIL_INVALID_RECIPIENT',
+      message: 'Member excluded from newsletter preparation due to missing data',
+      errorDetails: JSON.stringify({
+        email_id: email.id,
+        attempt_id: accounting.attemptId,
+        member_id: member.id,
+        missing_fields: missing,
+      }),
+    });
+    logging.error(
+      {
+        err: error,
+        event: { name: 'email.preparation.excluded' },
+        email_id: email.id,
+        attempt_id: accounting.attemptId,
+        member_id: member.id,
+        reason: 'missing_fields',
+        missing_fields: missing,
+      },
+      'Member excluded from newsletter preparation',
+    );
+    this.#sentry?.captureException(error);
+  }
+
+  async #createOrRecoverBatch(operation) {
+    const { email, segment, members, useFallbackDomain, batchId } = operation;
+    try {
+      return await this.createBatch(email, segment, members, {
+        useFallbackDomain,
+        ...(batchId ? { batchId } : {}),
+      });
+    } catch (error) {
+      if (!batchId) {
+        throw error;
+      }
+      return this.#recoverCommittedBatch(operation, error);
+    }
+  }
+
+  async #recoverCommittedBatch(operation, error) {
+    const { email, batchId, attemptId } = operation;
+    logging.info(
+      {
+        err: error,
+        event: { name: 'email.batch.recovery.started' },
+        email_id: email.id,
+        batch_id: batchId,
+      },
+      'Checking the outcome of email batch creation',
+    );
+    // The transaction handler has settled (including its rollback) before
+    // this read. A failed acknowledgement does not prove a failed commit.
+    const committed = await this.#models.EmailBatch.findOne({ id: batchId });
+    if (!committed) {
+      throw error;
+    }
+    const recipients = await this.#db.knex('email_recipients').where({ batch_id: batchId });
+    this.#verifyRecoveredBatch(operation, committed, recipients);
+    logging.info(
+      {
+        event: { name: 'email.batch.recovered' },
+        email_id: email.id,
+        attempt_id: attemptId,
+        batch_id: batchId,
+      },
+      'Recovered committed email batch',
+    );
+    return committed;
+  }
+
+  #verifyRecoveredBatch(
+    { email, batchId, segment, members, useFallbackDomain },
+    committed,
+    recipients,
+  ) {
+    const identities = recipients
+      .map((row) =>
+        JSON.stringify([
+          row.email_id,
+          row.member_id,
+          row.member_uuid,
+          row.member_email,
+          row.member_name ?? null,
+        ]),
+      )
+      .sort();
+    const intended = members
+      .map((member) =>
+        JSON.stringify([email.id, member.id, member.uuid, member.email, member.name ?? null]),
+      )
+      .sort();
+    if (
+      committed.get('email_id') !== email.id ||
+      (committed.get('member_segment') ?? null) !== (segment ?? null) ||
+      Boolean(committed.get('fallback_sending_domain')) !== Boolean(useFallbackDomain) ||
+      committed.get('recipient_count') !== members.length ||
+      JSON.stringify(identities) !== JSON.stringify(intended)
+    ) {
+      throw this.#verificationFailure(email, 'batch_recovery_conflict', {
+        batch_id: batchId,
+        expected: members.length,
+        actual: recipients.length,
+      });
+    }
   }
 
   /**
