@@ -115,6 +115,31 @@ describe('Models: crud', function () {
 
       assert.equal(fetchStub.args[0][0].lock, 'forUpdate');
     });
+
+    it('selects plaintext, custom_excerpt, and auto_excerpt when columns include excerpt', async function () {
+      const data = {
+        id: 670,
+      };
+      const unfilteredOptions = {
+        columns: ['excerpt'],
+      };
+      const model = Base.Model.forge({});
+      const fetchedModel = Base.Model.forge({});
+      sinon.stub(Base.Model, 'forge').returns(model);
+      sinon
+        .stub(Base.Model.prototype, 'permittedAttributes')
+        .returns(['excerpt', 'plaintext', 'custom_excerpt', 'auto_excerpt']);
+      const fetchStub = sinon.stub(model, 'fetch').resolves(fetchedModel);
+
+      await Base.Model.findOne(data, unfilteredOptions);
+
+      assert.deepEqual(fetchStub.args[0][0].columns, [
+        'excerpt',
+        'plaintext',
+        'custom_excerpt',
+        'auto_excerpt',
+      ]);
+    });
   });
 
   describe('edit', function () {
