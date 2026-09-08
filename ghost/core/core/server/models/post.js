@@ -808,8 +808,7 @@ Post = ghostBookshelf.Model.extend(
       const shouldUpdateAutoExcerpt =
         this.hasChanged('html') ||
         this.hasChanged('plaintext') ||
-        this.get('auto_excerpt') === null ||
-        this.get('auto_excerpt') === undefined;
+        this.get('auto_excerpt') === null;
       if (shouldUpdateAutoExcerpt) {
         const autoExcerpt = computeAutoExcerpt(this.get('plaintext'));
         if (autoExcerpt !== this.get('auto_excerpt')) {
@@ -820,8 +819,7 @@ Post = ghostBookshelf.Model.extend(
       const shouldUpdateReadingTime =
         this.hasChanged('html') ||
         this.hasChanged('feature_image') ||
-        this.get('reading_time') === null ||
-        this.get('reading_time') === undefined;
+        this.get('reading_time') === null;
       if (shouldUpdateReadingTime) {
         const readingTime = computeReadingTime(this.get('html'), this.get('feature_image'));
         if (readingTime !== this.get('reading_time')) {
