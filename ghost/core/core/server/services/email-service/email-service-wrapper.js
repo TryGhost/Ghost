@@ -26,6 +26,7 @@ class EmailServiceWrapper {
     const EmailRenderer = require('./email-renderer');
     const SendingService = require('./sending-service');
     const BatchSendingService = require('./batch-sending-service');
+    const { validatePreparationConcurrency } = require('./recipient-preparation');
     const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
     const MailgunEmailProvider = require('./mailgun-email-provider');
@@ -36,6 +37,9 @@ class EmailServiceWrapper {
     const getRequiredUrlRelations = () => urlService.getRequiredRelations();
     const MailgunClient = require('../../lib/mailgun/mailgun-client');
     const configService = require('../../../shared/config');
+    const batchCreationConcurrency = validatePreparationConcurrency(
+      configService.get('bulkEmail:batchCreationConcurrency'),
+    );
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
     const membersService = require('../members');
@@ -129,6 +133,7 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
+      batchCreationConcurrency,
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
