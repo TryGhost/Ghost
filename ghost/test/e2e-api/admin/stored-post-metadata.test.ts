@@ -1,9 +1,34 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+// beforeAll isn't in the mocha globals that tsc resolves project-wide; this
+// suite runs under vitest, so import it explicitly for type-checking.
+import { beforeAll } from 'vitest';
+
 const models = require('../../../core/server/models');
 const { computeAutoExcerpt, computeReadingTime } = require('../../../core/server/lib/post-meta');
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 
-const createLexical = (text) =>
+type StoredMetaRow = {
+  html?: string | null;
+  plaintext?: string | null;
+  feature_image: string | null;
+  custom_excerpt: string | null;
+  auto_excerpt: string | null;
+  reading_time: number | null;
+  type?: string;
+};
+
+type ApiResource = {
+  id: string;
+  excerpt: string | null;
+  reading_time: number | null;
+  plaintext?: string | null;
+  html?: string | null;
+  feature_image?: string | null;
+  updated_at: string;
+  auto_excerpt?: string;
+};
+
+const createLexical = (text: string) =>
   JSON.stringify({
     root: {
       children: [
@@ -38,7 +63,7 @@ const createLexical = (text) =>
  * Admin API parity for storedPostMetadata (enabled for all private flags in e2e).
  */
 describe('Admin API stored post metadata', function () {
-  let agent;
+  let agent: any;
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -46,8 +71,8 @@ describe('Admin API stored post metadata', function () {
     await agent.loginAsOwner();
   });
 
-  async function assertStoredParity(resource, id) {
-    const row = await models.Base.knex('posts')
+  async function assertStoredParity(resource: 'posts' | 'pages', id: string) {
+    const row = (await models.Base.knex('posts')
       .where({ id })
       .select(
         'html',
@@ -57,13 +82,13 @@ describe('Admin API stored post metadata', function () {
         'auto_excerpt',
         'reading_time',
       )
-      .first();
+      .first()) as StoredMetaRow;
 
     assert.notEqual(row.auto_excerpt, null);
     assert.notEqual(row.reading_time, null);
 
     const { body } = await agent.get(`/${resource}/${id}/`).expectStatus(200);
-    const item = body[resource][0];
+    const item = body[resource][0] as ApiResource;
 
     assert.equal(Object.prototype.hasOwnProperty.call(item, 'auto_excerpt'), false);
     assert.equal(item.excerpt, row.custom_excerpt || row.auto_excerpt);
@@ -99,16 +124,16 @@ describe('Admin API stored post metadata', function () {
       })
       .expectStatus(201);
 
-    const created = createBody.posts[0];
+    const created = createBody.posts[0] as ApiResource;
     assert.equal(Object.prototype.hasOwnProperty.call(created, 'auto_excerpt'), false);
     assert.equal(created.excerpt, computeAutoExcerpt(created.plaintext));
     assert.equal(created.reading_time, computeReadingTime(created.html, created.feature_image));
     assert.equal(created.reading_time, 1);
 
-    const rowAfterCreate = await models.Base.knex('posts')
+    const rowAfterCreate = (await models.Base.knex('posts')
       .where({ id: created.id })
       .select('auto_excerpt', 'reading_time')
-      .first();
+      .first()) as StoredMetaRow;
     assert.equal(rowAfterCreate.auto_excerpt, created.excerpt);
     assert.equal(rowAfterCreate.reading_time, created.reading_time);
 
@@ -127,18 +152,18 @@ describe('Admin API stored post metadata', function () {
       })
       .expectStatus(200);
 
-    const updated = updateBody.posts[0];
+    const updated = updateBody.posts[0] as ApiResource;
     const expectedReadingTime = computeReadingTime(updated.html, 'https://example.com/feature.jpg');
 
     assert.equal(updated.excerpt, created.excerpt);
     assert.equal(updated.reading_time, expectedReadingTime);
     assert.equal(updated.reading_time, 2);
-    assert.ok(updated.reading_time > created.reading_time);
+    assert.ok((updated.reading_time as number) > (created.reading_time as number));
 
-    const rowAfterUpdate = await models.Base.knex('posts')
+    const rowAfterUpdate = (await models.Base.knex('posts')
       .where({ id: created.id })
       .select('auto_excerpt', 'reading_time', 'feature_image')
-      .first();
+      .first()) as StoredMetaRow;
     assert.equal(rowAfterUpdate.feature_image, 'https://example.com/feature.jpg');
     assert.equal(rowAfterUpdate.auto_excerpt, created.excerpt);
     assert.notEqual(rowAfterUpdate.reading_time, 999);
@@ -162,15 +187,15 @@ describe('Admin API stored post metadata', function () {
       })
       .expectStatus(201);
 
-    const page = body.pages[0];
+    const page = body.pages[0] as ApiResource;
     assert.equal(Object.prototype.hasOwnProperty.call(page, 'auto_excerpt'), false);
     assert.equal(page.excerpt, computeAutoExcerpt(page.plaintext));
     assert.equal(page.reading_time, computeReadingTime(page.html, page.feature_image));
 
-    const row = await models.Base.knex('posts')
+    const row = (await models.Base.knex('posts')
       .where({ id: page.id })
       .select('auto_excerpt', 'reading_time', 'type')
-      .first();
+      .first()) as StoredMetaRow;
     assert.equal(row.type, 'page');
     assert.equal(row.auto_excerpt, page.excerpt);
     assert.equal(row.reading_time, page.reading_time);
@@ -192,7 +217,7 @@ describe('Admin API stored post metadata', function () {
       })
       .expectStatus(201);
 
-    const created = createBody.posts[0];
+    const created = createBody.posts[0] as ApiResource;
 
     await models.Base.knex('posts').where({ id: created.id }).update({
       auto_excerpt: 'should-not-appear',
@@ -220,7 +245,7 @@ describe('Admin API stored post metadata', function () {
       })
       .expectStatus(201);
 
-    const created = createBody.posts[0];
+    const created = createBody.posts[0] as ApiResource;
 
     await models.Base.knex('posts').where({ id: created.id }).update({
       auto_excerpt: 'admin-divergent-stored-excerpt',
