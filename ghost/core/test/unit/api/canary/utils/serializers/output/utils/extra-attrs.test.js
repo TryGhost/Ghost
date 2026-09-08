@@ -142,7 +142,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         assert.equal(attrs.excerpt, 'custom excerpt');
       });
 
-      it('returns null excerpt when stored auto_excerpt is missing (no plaintext fallback)', function () {
+      it('falls back to computing excerpt when stored auto_excerpt is missing', function () {
         modelGetStub.withArgs('auto_excerpt').returns(null);
         modelGetStub.withArgs('custom_excerpt').returns(null);
         modelGetStub.withArgs('plaintext').returns(new Array(5000).join('A'));
@@ -150,7 +150,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
 
         extraAttrsUtil.forPost({}, model, attrs);
 
-        assert.equal(attrs.excerpt, null);
+        assert.equal(attrs.excerpt, new Array(501).join('A'));
       });
 
       it('prefers stored reading_time even when html is absent', function () {
