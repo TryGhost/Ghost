@@ -2751,6 +2751,7 @@ export function Filters<T = unknown>({
 }: FiltersProps<T>) {
   const { controlShape } = useShade();
   const isInFilterBar = useFilterBarContext();
+  const isPillFilterBar = isInFilterBar && controlShape === 'pill';
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -3059,6 +3060,7 @@ export function Filters<T = unknown>({
       <div
         className={cn(
           filtersContainerVariants({ variant, size }),
+          isPillFilterBar && 'static',
           filters.length > 0 && 'w-full',
           showClearButton && filters.length > 0 && 'sm:pr-24',
           className,
@@ -3076,7 +3078,7 @@ export function Filters<T = unknown>({
               className={cn(
                 filterItemVariants({ variant }),
                 controlShape === 'pill' &&
-                  'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm! [&_[data-slot=filters-input-wrapper]:hover]:bg-button-hover! [&_[data-slot=filters-value]:hover]:bg-button-hover! [&>button:hover]:bg-button-hover!',
+                  'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
               )}
               data-slot="filter-item"
             >
@@ -3140,9 +3142,7 @@ export function Filters<T = unknown>({
                 addButton
               ) : (
                 <button
-                  aria-label={
-                    controlShape === 'pill' && filters.length > 0 ? addButtonLabel : undefined
-                  }
+                  aria-label={isPillFilterBar && filters.length > 0 ? addButtonLabel : undefined}
                   className={cn(
                     filterAddButtonVariants({
                       variant: variant,
@@ -3150,23 +3150,20 @@ export function Filters<T = unknown>({
                       cursorPointer: cursorPointer,
                       radius: controlRadius,
                     }),
-                    controlShape === 'pill' && 'h-7 text-sm! [&_svg]:size-3',
+                    isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
                     controlShape === 'pill' &&
-                      (filters.length > 0
-                        ? cn('border-0 shadow-none', isInFilterBar && 'aspect-square !px-0')
+                      (isPillFilterBar && filters.length > 0
+                        ? 'aspect-square border-0 !px-0 shadow-none'
                         : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
                     addButtonClassName,
                   )}
                   data-control-shape={controlShape}
+                  data-slot="filters-add"
                   title={mergedI18n.addFilterTitle}
                   type="button"
                 >
-                  {controlShape === 'pill' && filters.length > 0 ? (
-                    <Plus />
-                  ) : (
-                    addButtonIcon || <Plus />
-                  )}
-                  {!(controlShape === 'pill' && filters.length > 0) && addButtonLabel}
+                  {isPillFilterBar && filters.length > 0 ? <Plus /> : addButtonIcon || <Plus />}
+                  {!(isPillFilterBar && filters.length > 0) && addButtonLabel}
                 </button>
               )}
             </PopoverTrigger>
@@ -3297,7 +3294,8 @@ export function Filters<T = unknown>({
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
                 controlShape === 'pill' &&
                   'px-3 shadow-control-outline active:shadow-control-outline-pressed',
-                'sm:absolute sm:top-0 sm:right-0',
+                'sm:absolute',
+                isPillFilterBar ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
               data-control-shape={controlShape}

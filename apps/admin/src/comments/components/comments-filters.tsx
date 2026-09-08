@@ -27,23 +27,17 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
 
-  const outlinedClearButton = isAdmin7Pill ? (
-    <FilterBar.Action
-      className="sm:absolute sm:top-0 sm:right-0"
-      type="button"
-      variant="outline"
-      onClick={() => onFiltersChange([])}
-    >
-      Clear
-    </FilterBar.Action>
+  const filterBarActions = isAdmin7Pill ? (
+    <FilterBar.Actions>
+      <FilterBar.Action type="button" variant="ghost" onClick={() => onFiltersChange([])}>
+        Clear
+      </FilterBar.Action>
+    </FilterBar.Actions>
   ) : undefined;
 
   return (
     <Filters
-      addButtonClassName={cn(
-        hasFilters && !isAdmin7Pill && 'border-none',
-        isAdmin7Pill && !hasFilters && 'h-(--control-height) text-base! [&_svg]:size-4',
-      )}
+      addButtonClassName={cn(hasFilters && !isAdmin7Pill && 'border-none')}
       addButtonIcon={
         isAdmin7Pill ? (
           hasFilters ? (
@@ -60,7 +54,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
-      clearButton={outlinedClearButton}
+      clearButton={filterBarActions}
       clearButtonClassName="font-normal text-muted-foreground"
       clearButtonIcon={<LucideIcon.X />}
       clearButtonText="Clear"

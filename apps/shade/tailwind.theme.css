@@ -203,6 +203,8 @@
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
   --color-interactive-hover: var(--interactive-hover);
+  --color-filter-bar-background: var(--filter-bar-background);
+  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
   --color-table-row-hover: var(--table-row-hover);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);

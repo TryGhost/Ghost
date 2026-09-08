@@ -47,20 +47,20 @@ export function PostsFilters({
   const hasFilters = filters.length > 0;
   const showIconOnlyTrigger = iconOnly && !hasFilters;
 
-  // Outlined and pinned right: inline it read as another chip's own X, and
-  // in normal flow wrapping chips would drag it down off the first row.
+  // Pinned right: inline it would read as another chip's own X, and wrapping
+  // chips would drag it down off the first row.
   const trailingActions = hasFilters ? (
-    <Inline className="shrink-0 sm:absolute sm:top-0 sm:right-0" gap="sm">
+    <FilterBar.Actions>
       <FilterBar.Action
-        className="hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex"
+        className="hidden items-center lg:inline-flex"
         type="button"
-        variant="outline"
+        variant="ghost"
         onClick={() => onFiltersChange([])}
       >
         Clear
       </FilterBar.Action>
       {viewActions}
-    </Inline>
+    </FilterBar.Actions>
   ) : undefined;
 
   return (

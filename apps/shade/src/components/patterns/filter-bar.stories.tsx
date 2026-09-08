@@ -7,7 +7,7 @@ import {
   type Filter,
   type FilterFieldConfig,
 } from '@/components/patterns/filters';
-import { Circle, X } from 'lucide-react';
+import { Circle } from 'lucide-react';
 
 const meta = {
   title: 'Patterns / Filter Bar',
@@ -58,14 +58,19 @@ export const WithFilters: Story = {
       <FilterBar>
         <Filters
           addButtonText="Add filter"
-          clearButtonIcon={<X className="size-4" />}
-          clearButtonText="Clear"
+          clearButton={
+            <FilterBar.Actions>
+              <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+                Clear
+              </FilterBar.Action>
+              <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+            </FilterBar.Actions>
+          }
           fields={memberStatusFields}
           filters={filters}
           showClearButton={true}
           onChange={setFilters}
         />
-        <FilterBar.Action variant="ghost">Save view</FilterBar.Action>
       </FilterBar>
     );
   },

@@ -80,6 +80,8 @@
   --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --button-hover: var(--color-gray-100);
   --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--color-gray-100);
+  --filter-bar-item-hover: var(--color-gray-50);
   --control-surface: var(--surface-elevated);
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
@@ -120,6 +122,8 @@
   --tab-active: color-mix(in oklab, oklch(36.77% 0.006 248.2) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--surface-elevated-2);
+  --filter-bar-item-hover: var(--tab-hover);
   --control-surface: transparent;
   --control-readonly-surface: var(--color-gray-950);
   --control-disabled-surface: var(--color-gray-950);
