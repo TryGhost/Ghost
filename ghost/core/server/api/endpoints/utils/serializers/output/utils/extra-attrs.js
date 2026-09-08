@@ -3,7 +3,8 @@ const { computeAutoExcerpt, computeReadingTime } = require('../../../../../../li
 
 /**
  * Automatic excerpt for API output.
- * When storedPostMetadata is on, prefer the persisted column (no plaintext read).
+ * When storedPostMetadata is on, prefer the persisted column; fall back to the
+ * plaintext slice when still null (partial backfill / fixture holes).
  * When off, keep today's request-time plaintext slice.
  *
  * @param {import('../../../../../../models/post')} model
@@ -12,7 +13,9 @@ const { computeAutoExcerpt, computeReadingTime } = require('../../../../../../li
 function resolveAutoExcerpt(model) {
   if (labs.isSet('storedPostMetadata')) {
     const stored = model.get('auto_excerpt');
-    return stored === undefined ? null : stored;
+    if (stored !== null && stored !== undefined) {
+      return stored;
+    }
   }
 
   return computeAutoExcerpt(model.get('plaintext'));
