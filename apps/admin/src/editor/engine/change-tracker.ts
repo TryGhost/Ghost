@@ -441,9 +441,13 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         heldIds.add(id);
       }
       postId = id;
+      // A field save can finish while Koenig is still normalizing the loaded
+      // body. Keep that baseline when the persisted body has not changed.
+      if (!sameField('lexical', saved.lexical, next.lexical)) {
+        baseline = { status: 'ready', lexical: next.lexical };
+      }
       saved = next;
       live = rebased as unknown as EditablePostProjection;
-      baseline = { status: 'ready', lexical: next.lexical };
       saveError = null;
     },
 

@@ -673,6 +673,36 @@ describe('createChangeTracker', () => {
       expect(tracker.verdict().dirty).toBe(false);
     });
 
+    it.each(['before', 'during', 'after'] as const)(
+      'keeps untouched content clean when a field save finishes %s body initialization',
+      (timing) => {
+        const tracker = createChangeTracker();
+        tracker.load(POST_ID, post({ lexical: null }));
+        tracker.setLive(POST_ID, { slug: 'new-slug' });
+        const submitted = post({ lexical: null, slug: 'new-slug' });
+        const initialize = () => {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        };
+
+        if (timing === 'after') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+        }
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+        if (timing === 'before') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        }
+
+        expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+        tracker.setLive(POST_ID, { lexical: serialize(doc([paragraph('An actual edit')])) });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      },
+    );
+
     it('re-baselines on an acknowledged save', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;
       const tracker = createChangeTracker();
