@@ -14,6 +14,7 @@ import {
 import type { PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
+import { PublishDateSection } from './publish-date-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { ShowTitleSection } from './show-title-section';
@@ -90,6 +91,7 @@ export function PostSettingsSidebar({
 
   const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
     url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
+    'publish-date': <PublishDateSection session={session} />,
     tags: canTag ? <TagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,

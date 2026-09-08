@@ -55,6 +55,10 @@ export const settingsTagsList = 'settings-tags-list';
 export const settingsTagsToken = 'settings-tags-token';
 export const settingsTemplateSelect = 'settings-template-select';
 export const settingsTemplateSlugMatch = 'settings-template-slug-match';
+export const settingsPublishDate = 'settings-publish-date';
+export const settingsPublishTime = 'settings-publish-time';
+export const settingsPublishDateError = 'settings-publish-date-error';
+export const settingsPublishDateNote = 'settings-publish-date-note';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';

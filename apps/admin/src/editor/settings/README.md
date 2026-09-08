@@ -15,6 +15,13 @@ What that gate does depends on the post's status.
 | `draft`                          | dispatches the save engine's `field` intent, as a title or excerpt commit does | the field save itself                  |
 | `published`, `scheduled`, `sent` | nothing — the value is staged in the live document                             | the next explicit save (Update, Cmd-S) |
 
+The gate also holds a draft's field save back while a value it would send is not
+yet valid: an incomplete tier pairing, or a publish time that has not passed. The
+value stays staged, the section says why, and the next save the writer asks for
+is refused with the same message. A draft's body autosave is refused for that
+reason too while such a value stands, and the save banner carries the message
+whether or not the sidebar is open, so closing the panel does not hide it.
+
 Staging is not a weaker form of saving. A staged value lives in the same live
 document as the body, so it counts everywhere unsaved work counts: the post
 reads dirty, the Update button enables, and the leave guard asks before the
@@ -51,12 +58,13 @@ against a disagreeing acknowledgement and enter the next save. A matching
 acknowledgement still releases the edit and supplies server-owned relation metadata.
 
 Three fields are deliberately absent from the settings projection. Status and
-publish time belong to the save engine's command target, which the publish flow
-owns; a publish-date section reads and writes them through that command, not
-through a field patch. The slug belongs to the slug machine, which authors it on
-every save; the URL section routes a manual edit through the machine's
-`slugEdited`, so a slug written as a field patch would be dropped before the
-request is built.
+publish time belong to the save engine's command target: every request reads the
+publish time off the session's snapshot rather than the projection, so a field
+patch would be overwritten before the request is built. The Publish date section
+therefore stages the publish time on the session itself, which the snapshot then
+reports. The slug belongs to the slug machine, which authors it on every save;
+the URL section routes a manual edit through the machine's `slugEdited`, so a
+slug written as a field patch would be dropped before the request is built.
 
 ## Sections
 
@@ -114,6 +122,51 @@ removed by clicking it, or with Backspace on an empty field.
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.
+
+## Publish date
+
+When the post is published, edited in the site's timezone and carried as a UTC
+instant. A post that has no publish time yet shows the current moment, and only
+an edit stages a value, so an untouched draft still leaves the time to the
+server. The date is chosen from a calendar and the time typed as `HH:mm`; an
+unparseable time returns to the value already held. Both fields commit at minute
+granularity, and the seconds a publish stamped are kept whenever the committed
+minute is the one already saved. Tabbing through an untouched time, retyping it,
+or choosing the displayed calendar day does not commit a value.
+
+A staged time is the writer's unsaved work like any other field: the post reads
+dirty, Update enables and the leave guard asks. What persists it is the same
+gate as the rest of the sidebar, so a draft saves it on its own and every other
+status holds it until Update.
+
+An edit made during a save stays staged until that save settles, even if the
+writer returns to the saved minute or a refetch already carries the chosen time.
+An older response cannot discard that choice. Once the saved time agrees and no
+older save can overwrite it, the staged edit is released.
+
+The calendar stops at today, and a draft's or published post's time may not be
+the current moment or later. Choosing one leaves the value staged and shown with
+`Please choose a past date and time.` beside the fields; no field save runs while
+it stands, and a save the writer asks for is refused with the same message, which
+the status line and the save banner carry. A sent post is exempt from the rule
+and is re-timed like a published one.
+
+A status command cannot carry a time the section refuses either. Publishing and
+unpublishing take the staged time when they have none of their own, so both are
+refused with the same message while it is still to come; a staged time already in
+the past is carried, and the post is backdated to it. Scheduling carries the
+publish flow's own time and releases whatever the sidebar staged. The flow's
+picker is not pre-filled from a staged time: its floor is ahead of now and a
+staged time is always in the past, so there would be nothing left to keep.
+
+A scheduled post's fields are disabled and carry `Use the publish menu to
+re-schedule`: its time is the publish flow's to move, and the section says so
+rather than offering a second route to it. Once a scheduled time has passed the
+section reads `Publish date` again and drops the note, though the fields stay
+disabled until the server moves the post to published.
+
+Every role that can open the sidebar can set the publish date. It is not one of
+the Owner, Administrator and Editor fields.
 
 ## Access
 

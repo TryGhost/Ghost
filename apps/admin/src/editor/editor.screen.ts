@@ -40,6 +40,10 @@ import {
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
+  settingsPublishDate,
+  settingsPublishDateError,
+  settingsPublishDateNote,
+  settingsPublishTime,
   settingsShowTitleToggle,
   settingsShowTitleWarning,
   settingsSlugError,
@@ -149,6 +153,12 @@ export const editorScreen = {
   settingsTemplateOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
+  settingsPublishDate: () => page.getByTestId(settingsPublishDate),
+  settingsPublishTime: () => page.getByTestId(settingsPublishTime),
+  settingsPublishDateError: () => page.getByTestId(settingsPublishDateError),
+  settingsPublishDateNote: () => page.getByTestId(settingsPublishDateNote),
+  settingsPublishDateLabel: () =>
+    page.getByTestId(postSettingsSidebar).getByText(/^(Publish|Scheduled) date$/),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

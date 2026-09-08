@@ -1,4 +1,5 @@
 import type { EditablePostProjection } from '@/editor/engine/change-tracker';
+import type { PostStatus } from '@/editor/engine/save-engine';
 
 /**
  * The projection keys the settings sidebar may write. Slug, status and publish
@@ -40,4 +41,20 @@ export function tiersIncomplete(
   fields: Pick<EditorSettingsFields, 'visibility' | 'tiers'>,
 ): boolean {
   return fields.visibility === 'tiers' && fields.tiers.length === 0;
+}
+
+/** Ember's post validator refuses the same publish time (validators/post.js). */
+export const PUBLISHED_AT_MUST_BE_PAST = 'Please choose a past date and time.';
+
+/** A draft's or published post's publish time may not be now or later. */
+export function publishedAtInFuture(
+  status: PostStatus,
+  publishedAt: string | null,
+  now: number = Date.now(),
+): boolean {
+  if (publishedAt === null || (status !== 'draft' && status !== 'published')) {
+    return false;
+  }
+  const time = Date.parse(publishedAt);
+  return !Number.isNaN(time) && time >= now;
 }
