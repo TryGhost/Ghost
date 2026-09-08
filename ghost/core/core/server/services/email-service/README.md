@@ -32,8 +32,17 @@ splitting a page for domain warming. Invalid member data is an explicit
 preparation exclusion with error logging and Sentry reporting. Every nonempty
 batch stores `recipient_count` in the same transaction as its recipients.
 
+Audience pages read live member data. The member-ID cutoff excludes newer
+members but does not freeze filter attributes. The candidate/recipient/exclusion
+equation accounts for candidates consumed during that preparation attempt; it
+does not establish a point-in-time snapshot of everyone matching the filter.
+
 Each batch creation operation retains its ID and intended recipient data across
-database retries. After a transaction error, recovery reads through the normal
+database retries of that operation. Restarting incomplete preparation before
+`prepared_at` is saved reselects the audience, which may have changed. Once
+`prepared_at` is persisted, subsequent attempts reuse the frozen recipient set.
+
+After a transaction error, recovery reads through the normal
 database pool and accepts a committed batch only if its metadata and exact
 recipient data match. A retry insert uses the same primary key, including when
 the first recovery read failed. The transaction must settle or roll back before
