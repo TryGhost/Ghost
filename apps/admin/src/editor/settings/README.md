@@ -216,6 +216,9 @@ opened, rather than on every editor entry, and the chips are named from the
 post's own relations until then — including the chips an edit leaves behind, so
 removing one never leaves the rest reading as bare ids.
 
+A failed staff lookup shows an error and a Retry action in the list. Retrying
+keeps the selected authors and returns focus to the search field.
+
 The list narrows as the writer types, matching a name, slug or email and
 ignoring case and accents, and it leaves out anyone already credited. Arrow keys
 move the highlight, Enter takes the highlighted row and so does Tab once

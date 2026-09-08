@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Badge, inputSurface } from '@tryghost/shade/components';
+import { Badge, Button, inputSurface } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import {
   settingsAuthorChip,
@@ -18,6 +19,8 @@ export interface AuthorsPickerProps {
   /** Everyone else, already narrowed by the typed term. */
   suggestions: AuthorOption[];
   loading: boolean;
+  loadError: boolean;
+  onRetry: () => void;
   onChange: (next: AuthorOption[]) => void;
   /** The first open; the staff browse starts here rather than on every editor entry. */
   onOpen: () => void;
@@ -37,6 +40,8 @@ export function AuthorsPicker({
   selected,
   suggestions,
   loading,
+  loadError,
+  onRetry,
   onChange,
   onOpen,
   onSearch,
@@ -49,6 +54,7 @@ export function AuthorsPicker({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const showLoadError = loadError && !loading;
 
   // The term goes with the list when the writer leaves the field: left behind,
   // it reads as an edit that nothing will ever commit.
@@ -147,7 +153,7 @@ export function AuthorsPicker({
     }
 
     const commits = event.key === 'Enter' || (event.key === 'Tab' && term.trim().length > 0);
-    if (commits && open && suggestions[highlightedIndex]) {
+    if (commits && open && !showLoadError && suggestions[highlightedIndex]) {
       event.preventDefault();
       choose(suggestions[highlightedIndex]);
     }
@@ -193,7 +199,9 @@ export function AuthorsPicker({
         <input
           ref={inputRef}
           aria-activedescendant={
-            open && suggestions[highlightedIndex] ? optionId(highlightedIndex) : undefined
+            open && !showLoadError && suggestions[highlightedIndex]
+              ? optionId(highlightedIndex)
+              : undefined
           }
           aria-autocomplete="list"
           aria-controls={listId}
@@ -214,46 +222,60 @@ export function AuthorsPicker({
         <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </div>
       {open && (
-        <div
-          ref={listRef}
-          className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30"
-          data-testid={settingsAuthorsList}
-          id={listId}
-          role="listbox"
-        >
-          {suggestions.length === 0 && (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              {loading ? 'Loading authors...' : 'No authors found'}
-            </div>
-          )}
-          {suggestions.map((option, index) => {
-            const isHighlighted = index === highlightedIndex;
-
-            return (
-              <div
-                key={option.id}
-                // Never true: the list leaves out everyone the post already credits.
-                aria-selected={false}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
-                  isHighlighted && 'bg-accent text-accent-foreground',
-                )}
-                data-highlighted={isHighlighted}
-                id={optionId(index)}
-                role="option"
-                onClick={() => choose(option)}
-                // Keeps focus in the input, which clicking a plain div would
-                // otherwise drop, so the writer can keep typing after picking.
-                onMouseDown={(event) => event.preventDefault()}
-                onMouseEnter={() => setHighlighted(index)}
+        <div className="absolute top-full left-0 z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30">
+          {showLoadError && (
+            <Stack align="start" className="p-2" gap="sm">
+              <Text role="alert" size="sm">
+                Couldn’t load authors.
+              </Text>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  inputRef.current?.focus();
+                  onRetry();
+                }}
               >
-                <span className="truncate">{option.name}</span>
-                <span className="ms-auto truncate text-xs text-muted-foreground">
-                  {option.email}
-                </span>
+                Retry
+              </Button>
+            </Stack>
+          )}
+          <div ref={listRef} data-testid={settingsAuthorsList} id={listId} role="listbox">
+            {!showLoadError && suggestions.length === 0 && (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                {loading ? 'Loading authors...' : 'No authors found'}
               </div>
-            );
-          })}
+            )}
+            {!showLoadError &&
+              suggestions.map((option, index) => {
+                const isHighlighted = index === highlightedIndex;
+
+                return (
+                  <div
+                    key={option.id}
+                    // Never true: the list leaves out everyone the post already credits.
+                    aria-selected={false}
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                      isHighlighted && 'bg-accent text-accent-foreground',
+                    )}
+                    data-highlighted={isHighlighted}
+                    id={optionId(index)}
+                    role="option"
+                    onClick={() => choose(option)}
+                    // Keeps focus in the input, which clicking a plain div would
+                    // otherwise drop, so the writer can keep typing after picking.
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setHighlighted(index)}
+                  >
+                    <span className="truncate">{option.name}</span>
+                    <span className="ms-auto truncate text-xs text-muted-foreground">
+                      {option.email}
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
     </div>

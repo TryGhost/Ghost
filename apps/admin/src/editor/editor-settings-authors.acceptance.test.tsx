@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -127,6 +127,37 @@ async function openAuthorList() {
  * from the site's existing staff.
  */
 describe('Post settings authors', () => {
+  it(
+    'reports a failed staff lookup and lets the writer retry without losing authors',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeAdminEndpoint(
+        'GET',
+        /^\/users\/\?/,
+        { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAuthors();
+      await editorScreen.settingsAuthorsInput().click();
+
+      await expect.element(page.getByRole('alert')).toHaveTextContent('Couldn’t load authors.');
+      expect(editorScreen.settingsAuthorNames()).toEqual(['Owner User']);
+      expect(saveApi.requests).toHaveLength(0);
+
+      // Once the session is restored, retry the lookup in the existing editor.
+      fakeUsers([NADIA, JOSE]);
+      await page.getByRole('button', { name: 'Retry', exact: true }).click();
+      await expect.element(editorScreen.settingsAuthorOption('Nadia Ahmed')).toBeVisible();
+      await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+      await userEvent.keyboard('nadia{Enter}');
+
+      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+      expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: NADIA.id }]);
+    },
+    SLOW,
+  );
+
   it(
     'credits another author on a draft as soon as one is picked',
     async () => {

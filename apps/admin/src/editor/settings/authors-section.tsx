@@ -32,7 +32,7 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
   const [browsing, setBrowsing] = useState(false);
   const [term, setTerm] = useState('');
 
-  const { data, isLoading } = useBrowseUsers({
+  const { data, isFetching, isError, refetch } = useBrowseUsers({
     defaultErrorHandler: false,
     enabled: browsing,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -57,12 +57,14 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
         describedBy={invalid ? errorId : undefined}
         inputId={inputId}
         invalid={invalid}
-        loading={isLoading}
+        loadError={isError}
+        loading={isFetching}
         selected={selected}
         suggestions={authorSuggestions(data?.users, selected, term)}
         term={term}
         onChange={change}
         onOpen={() => setBrowsing(true)}
+        onRetry={() => void refetch()}
         onSearch={setTerm}
       />
       {invalid ? (
