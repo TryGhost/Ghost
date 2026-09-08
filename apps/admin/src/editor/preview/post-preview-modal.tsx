@@ -70,6 +70,8 @@ interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Awaited before the preview renders, so the caller can save the draft first. */
   onBeforeOpen?: () => Promise<void>;
+  /** Supplied while a publish flow is open behind the preview, which this returns to. */
+  onReturnToPublish?: () => void;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -80,6 +82,7 @@ export function PostPreviewModal({
   isPost = true,
   newsletterSlug,
   onBeforeOpen,
+  onReturnToPublish,
   onOpenChange,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
@@ -381,7 +384,13 @@ export function PostPreviewModal({
                 Open in new tab
               </Button>
             )}
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
+            <Button
+              variant={onReturnToPublish ? 'outline' : 'default'}
+              onClick={() => onOpenChange(false)}
+            >
+              Close
+            </Button>
+            {onReturnToPublish ? <Button onClick={onReturnToPublish}>Publish</Button> : null}
           </Inline>
         </DialogHeader>
         <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">

@@ -94,12 +94,12 @@ const failureDetail = (
 
 const EmailSendingStatusBanner = () => {
   const { post } = usePostAnalytics();
-  const { status, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
+  const { status, isNewsletterDataHidden, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
     useEmailSendingStatusContext();
   const sending = status?.sending;
   const estimate = useSendingEta(status);
 
-  if (!sending || sending.status === 'submitted') {
+  if (!sending || (sending.status === 'submitted' && !isNewsletterDataHidden)) {
     return null;
   }
 

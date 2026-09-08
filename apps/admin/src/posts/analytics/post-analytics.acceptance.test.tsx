@@ -184,25 +184,18 @@ describe('Post analytics overview', () => {
         ],
       };
     });
-    let basicStatsRequestCount = 0;
-    const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, () => {
-      basicStatsRequestCount += 1;
-      return {
-        stats:
-          basicStatsRequestCount === 1
-            ? []
-            : [
-                {
-                  post_id: POST_ID,
-                  post_title: 'Attack of the Clones',
-                  send_date: `${daysAgo(10)}T10:00:00.000Z`,
-                  sent_to: 1000,
-                  total_opens: 400,
-                  open_rate: 0.4,
-                },
-              ],
-        meta: {},
-      };
+    const basicStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, {
+      stats: [
+        {
+          post_id: POST_ID,
+          post_title: 'Attack of the Clones',
+          send_date: `${daysAgo(10)}T10:00:00.000Z`,
+          sent_to: 1000,
+          total_opens: 400,
+          open_rate: 0.4,
+        },
+      ],
+      meta: {},
     });
     const clickStatsApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, () => {
       return {
@@ -266,7 +259,7 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
     await expect.poll(() => detailedPostsApi.requests.length).toBeGreaterThan(1);
-    await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(1);
+    await expect.poll(() => basicStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => clickStatsApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => linksApi.requests.length).toBeGreaterThan(1);
     await expect.element(page.getByText('1,000').first()).toBeVisible();

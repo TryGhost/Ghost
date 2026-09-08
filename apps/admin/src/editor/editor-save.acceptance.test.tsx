@@ -4,14 +4,19 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentRoute,
+  currentUserResponse,
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
   renderAdminApp,
+  staffRole,
   tag,
   type CapturedEndpointRequest,
   type EndpointCapture,
+  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
@@ -19,6 +24,7 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new789';
+const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
@@ -46,6 +52,9 @@ function submittedBody(capture: EndpointCapture): string {
 function editorChrome() {
   fakeSnippets([]);
   fakePosts([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
 }
 
 /**
@@ -82,6 +91,36 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 
   return saveApi;
+}
+
+/** A post that does not exist yet, with the create and the follow-up writes answered. */
+function fakeCreatablePost() {
+  editorChrome();
+  fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
+  let created = post({
+    id: NEW_POST_ID,
+    title: '(Untitled)',
+    slug: 'untitled',
+    status: 'draft',
+    updated_at: CREATED_AT,
+    published_at: null,
+    tags: [],
+  });
+  const createApi = fakeAdminEndpoint('POST', /^\/posts\/\?/, ({ body }) => {
+    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
+    created = { ...created, ...submitted, id: NEW_POST_ID, updated_at: CREATED_AT };
+    return { posts: [created] };
+  });
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({ posts: [created] }));
+  fakeAdminEndpoint('PUT', new RegExp(`^/posts/${NEW_POST_ID}/\\?`), () => ({ posts: [created] }));
+
+  return createApi;
+}
+
+function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
+  const me = currentUserResponse();
+  me.users[0].roles = [staffRole({ name: role })];
+  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
 async function typeIntoBody(text: string) {
@@ -205,6 +244,24 @@ describe('Post editor saving', () => {
     SLOW,
   );
 
+  // Core refuses an Author's or Contributor's create unless the payload names
+  // them as the author, so these roles could not start a post without it.
+  it.each(['Contributor', 'Author'] as const)(
+    'names the writer as the author when the %s role creates a post',
+    async (role) => {
+      const createApi = fakeCreatablePost();
+
+      await renderAdminApp('/editor/post', bootAs(role));
+      await expect.element(editorScreen.body()).toBeVisible();
+
+      await typeIntoBody('First words');
+
+      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+      expect(submittedPost(createApi).authors).toEqual([{ id: CURRENT_USER_ID }]);
+    },
+    SLOW,
+  );
+
   it(
     'keeps typing that lands while the create is in flight and updates the new post',
     async () => {
@@ -324,6 +381,38 @@ describe('Post editor saving', () => {
 
       await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Saving');
       await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Draft - Saved');
+    },
+    SLOW,
+  );
+
+  it(
+    'reports a status the post reached elsewhere once a save refetches it',
+    async () => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+
+      // A later handler for the same route wins: from here the read answers
+      // with the post as someone else has just published it.
+      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+        posts: [
+          post({
+            id: POST_ID,
+            title: 'Hello from React',
+            slug: 'hello-from-react',
+            status: 'published',
+            lexical: buildLexicalParagraph('Hello from React'),
+            updated_at: '2026-01-01T00:01:00.000Z',
+            published_at: '2026-01-01T00:01:00.000Z',
+            tags: [],
+          }),
+        ],
+      });
+      await typeIntoBody(' and more');
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+
+      await expect.element(editorScreen.status(), SAVE_POLL).toHaveTextContent('Published');
     },
     SLOW,
   );

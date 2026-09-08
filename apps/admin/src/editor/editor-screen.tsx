@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
@@ -27,11 +27,14 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
+import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
 import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
+import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
@@ -109,6 +112,7 @@ interface EditorContentProps {
   record?: EditorRecord;
   createdId?: string;
   cardConfig: PostCardConfig;
+  currentUser?: User;
   showExcerpt: boolean;
   snippetDialog: ReactNode;
 }
@@ -120,12 +124,43 @@ function EditorContent({
   record,
   createdId,
   cardConfig,
+  currentUser,
   showExcerpt,
   snippetDialog,
 }: EditorContentProps) {
-  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
-  const featureImage = useFeatureImageBinding(session, record);
+  const session = useEditorSession({
+    postType,
+    record,
+    siteUrl: cardConfig.siteUrl,
+    currentUserId: currentUser?.id,
+  });
+  const [tkCount, setTkCount] = useState(0);
+  // Closed on every editor entry, as the menu it replaces was.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
+  const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
+  const acceptedRecord = session.loadedRecord;
+  const liveVisibility = session.settings.visibility;
+  const currentCardConfig = useMemo(() => {
+    if (!cardConfig.post) {
+      return cardConfig;
+    }
+
+    // The live settings field, not the saved record: a visibility the writer has
+    // only staged still decides what the cards describe.
+    return {
+      ...cardConfig,
+      post: {
+        ...cardConfig.post,
+        visibility: liveVisibility || cardConfig.post.visibility,
+        showTitleAndFeatureImage:
+          acceptedRecord && 'show_title_and_feature_image' in acceptedRecord
+            ? (acceptedRecord.show_title_and_feature_image ?? true)
+            : cardConfig.post.showTitleAndFeatureImage,
+      },
+    };
+  }, [acceptedRecord, cardConfig, liveVisibility]);
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -134,26 +169,61 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
+          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
+        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
+        <Inline className="ml-auto" gap="sm">
+          <EditorHeaderActions
+            currentUser={currentUser}
+            postType={postType}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+            tkCount={tkCount}
+          />
+          <Button
+            aria-expanded={settingsOpen}
+            aria-label="Settings"
+            data-testid={settingsMenuToggle}
+            size="sm"
+            variant="ghost"
+            onClick={toggleSettings}
+          >
+            <LucideIcon.PanelRight />
+          </Button>
+        </Inline>
       </EditorHeader>
       <SessionBanners
+        contentText={session.contentText}
+        hasUnsavedContent={session.hasUnsavedContent}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
+        onReload={session.reload}
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
-      <div className="min-h-0 flex-1">
-        <PostEditor
-          {...session.bind}
-          autofocusTitle={!record}
-          cardConfig={cardConfig}
-          featureImage={featureImage}
-          postType={postType}
-          showExcerpt={showExcerpt}
-        />
-      </div>
+      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
+        <div className="min-h-0 min-w-0 flex-1">
+          <PostEditor
+            key={session.contentKey}
+            {...session.bind}
+            autofocusTitle={!record}
+            cardConfig={currentCardConfig}
+            featureImage={featureImage}
+            postType={postType}
+            showExcerpt={showExcerpt}
+            onTkCountChange={setTkCount}
+          />
+        </div>
+        {settingsOpen ? (
+          <PostSettingsSidebar
+            currentUser={currentUser}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            session={session}
+          />
+        ) : null}
+      </Inline>
       {snippetDialog}
       <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
     </Stack>
@@ -204,6 +274,7 @@ function EditorSurface({
     <EditorContent
       cardConfig={cardConfig}
       createdId={createdId}
+      currentUser={currentUser}
       postType={postType}
       record={record}
       showExcerpt={showExcerpt}

@@ -3,7 +3,7 @@ const express = require('express');
 const request = require('supertest');
 const middleware = require('../../../../../../core/frontend/services/routing/middleware');
 
-describe('UNIT: services/routing/middleware/page-param', function () {
+describe('services/routing/middleware/page-param', function () {
   const app = express();
   app.param('page', middleware.pageParam);
   app.get('/blog/page/:page/', (req, res) => {

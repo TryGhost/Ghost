@@ -1,12 +1,12 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const {
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import {
   EXPANSIONS,
   routerTypeOf,
   buildFilter,
   filterMatches,
-} = require('../../../../../core/server/services/url/router-filter');
+} from '../../../../../core/server/services/url/router-filter';
 
 describe('router-filter', function () {
   describe('routerTypeOf', function () {
@@ -41,7 +41,7 @@ describe('router-filter', function () {
 
     it('returns a compiled matcher for a non-empty filter', function () {
       const compiled = buildFilter('featured:true');
-      assert.equal(typeof compiled.queryJSON, 'function');
+      assert.equal(typeof compiled?.queryJSON, 'function');
     });
   });
 

@@ -5,6 +5,8 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -32,6 +34,9 @@ type SavedPost = ReturnType<typeof post>;
 function editorChrome() {
   fakeSnippets([]);
   fakePosts([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
 }
 
 function fakeEditablePost(overrides: Partial<SavedPost> = {}, { failSaves = false } = {}) {

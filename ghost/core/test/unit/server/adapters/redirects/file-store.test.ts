@@ -10,7 +10,7 @@ import { runStoreContract } from '../../services/custom-redirects/helpers/store-
 const writeJson = (filePath: string, data: unknown): Promise<void> =>
   fs.writeFile(filePath, JSON.stringify(data), 'utf-8');
 
-describe('UNIT: FileStore', function () {
+describe('FileStore', function () {
   let basePath: string;
 
   beforeEach(async function () {

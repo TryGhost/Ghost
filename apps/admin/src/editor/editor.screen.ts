@@ -1,13 +1,26 @@
 import { page } from 'vitest/browser';
 import {
   addFeatureImageLabel,
+  conflictCancelReloadButton,
+  conflictCopyContentButton,
+  conflictDiscardAndReloadButton,
+  conflictReloadButton,
   editorBody,
   editorConflictBanner,
+  editorConflictReloadConfirm,
   editorExcerptInput,
   editorFeatureImage,
   editorFeatureImageCaption,
+  editorHeaderActions,
   editorLeaveDialog,
   editorLoadError,
+  editorPreviewButton,
+  editorPublishButton,
+  editorPublishInputsError,
+  editorSaveButton,
+  editorUnpublishButton,
+  editorUnscheduleButton,
+  editorUpdateButton,
   editorReauthBanner,
   editorScheduleCountdown,
   editorSaveErrorBanner,
@@ -21,8 +34,15 @@ import {
   leaveEditorButton,
   pagesBackLink,
   postEditor,
+  postSettingsSidebar,
   postsBackLink,
   removeFeatureImageButton,
+  settingsExcerptInput,
+  settingsFeaturedToggle,
+  settingsMenuToggle,
+  settingsTiersError,
+  settingsTiersPicker,
+  settingsVisibilitySelect,
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
@@ -41,7 +61,37 @@ export const editorScreen = {
   reauthBanner: () => page.getByTestId(editorReauthBanner),
   retryReauth: () => page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Retry' }),
   conflictBanner: () => page.getByTestId(editorConflictBanner),
+  reloadAfterConflict: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictReloadButton }),
+  copyConflictedContent: () =>
+    page.getByTestId(editorConflictBanner).getByRole('button', { name: conflictCopyContentButton }),
+  conflictReloadConfirm: () => page.getByTestId(editorConflictReloadConfirm),
+  confirmConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictDiscardAndReloadButton }),
+  cancelConflictReload: () =>
+    page
+      .getByTestId(editorConflictReloadConfirm)
+      .getByRole('button', { name: conflictCancelReloadButton }),
   status: () => page.getByTestId(editorStatus),
+
+  headerActions: () => page.getByTestId(editorHeaderActions),
+  previewButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
+  publishButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPublishButton }),
+  updateButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUpdateButton }),
+  saveButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorSaveButton }),
+  unpublishButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnpublishButton }),
+  unscheduleButton: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorUnscheduleButton }),
+  publishInputsError: () => page.getByTestId(editorPublishInputsError),
+  retryPublishInputs: () =>
+    page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
   saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),
@@ -55,6 +105,18 @@ export const editorScreen = {
     page.getByTestId(editorReauthBanner).getByRole('button', { name: 'Dismiss' }),
   notFound: () => page.getByRole('heading', { name: 'Page not found' }),
   titleTkIndicator: () => page.getByTestId(tkIndicator),
+
+  settingsToggle: () => page.getByTestId(settingsMenuToggle),
+  settingsSidebar: () => page.getByTestId(postSettingsSidebar),
+  settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
+  settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
+  settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
+  settingsVisibilityOption: (label: string) =>
+    page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
+  settingsTiers: () => page.getByTestId(settingsTiersPicker),
+  settingsTier: (name: string) =>
+    page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
+  settingsTiersError: () => page.getByTestId(settingsTiersError),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

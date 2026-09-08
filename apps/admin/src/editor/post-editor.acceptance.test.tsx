@@ -6,6 +6,8 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -26,6 +28,9 @@ const MOBILEDOC =
 // link toolbar preload, the five latest published posts.
 function fakeEditorChrome() {
   fakeSnippets([]);
+  // The header's publish inputs read the site's member total and newsletter list.
+  fakeMembers([]);
+  fakeNewsletters([]);
   return fakePosts([]);
 }
 

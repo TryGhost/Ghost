@@ -13,6 +13,7 @@ export const editorWordCount = 'editor-word-count';
 export const editorLoadError = 'editor-load-error';
 export const editorReauthBanner = 'editor-reauth-banner';
 export const editorConflictBanner = 'editor-conflict-banner';
+export const editorConflictReloadConfirm = 'editor-conflict-reload-confirm';
 export const editorStatus = 'editor-status';
 export const editorScheduleCountdown = 'editor-schedule-countdown';
 export const editorFeatureImage = 'editor-feature-image';
@@ -32,6 +33,17 @@ export const postPreviewNewsletterMissing = 'post-preview-newsletter-missing';
 export const postPreviewSaveFailed = 'post-preview-save-failed';
 export const featureImageTkIndicator = 'feature-image-tk-indicator';
 export const editorLeaveDialog = 'editor-leave-dialog';
+export const editorHeaderActions = 'editor-header-actions';
+export const editorPublishInputsError = 'editor-publish-inputs-error';
+
+// settings sidebar testids
+export const postSettingsSidebar = 'post-settings-sidebar';
+export const settingsMenuToggle = 'settings-menu-toggle';
+export const settingsExcerptInput = 'settings-excerpt-input';
+export const settingsFeaturedToggle = 'settings-featured-toggle';
+export const settingsVisibilitySelect = 'settings-visibility-select';
+export const settingsTiersPicker = 'settings-tiers-picker';
+export const settingsTiersError = 'settings-tiers-error';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';
@@ -94,3 +106,17 @@ export const removeFeatureImageButton = 'Remove feature image';
 export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';
 export const stayInEditorButton = 'Stay';
 export const leaveEditorButton = 'Leave';
+export const conflictReloadButton = 'Reload';
+export const conflictCopyContentButton = 'Copy content';
+export const conflictDiscardAndReloadButton = 'Discard and reload';
+export const conflictCancelReloadButton = 'Cancel';
+export const editorPreviewButton = 'Preview';
+export const editorPublishButton = 'Publish';
+export const editorUpdateButton = 'Update';
+export const editorSaveButton = 'Save';
+export const editorUnpublishButton = 'Unpublish';
+export const editorUnscheduleButton = 'Unschedule';
+export const publishTypePublishAndEmailOption = 'Publish and email';
+export const publishTypePublishOnlyOption = 'Publish only';
+export const publishTypeEmailOnlyOption = 'Email only';
+export const publishAtScheduleOption = 'Schedule for later';

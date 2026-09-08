@@ -1,12 +1,15 @@
-import { createChangeTracker } from '@/editor/engine/change-tracker';
+import { createChangeTracker, sameFieldValue } from '@/editor/engine/change-tracker';
 import { createSlugMachine } from '@/editor/engine/slug-machine';
 import {
   DEFAULT_TITLE,
   createSaveEngine,
+  isCollisionToken,
   type LeaveDecision,
   type PersistedIdentity,
   type PostStatus,
+  type PublishOptions,
   type SaveCompletion,
+  type ScheduleOptions,
   type SaveEngineState,
   type SaveOutcome,
   type SaveRequest,
@@ -23,6 +26,13 @@ import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
+import {
+  SETTINGS_FIELD_KEYS,
+  TIERS_REQUIRED,
+  tiersIncomplete,
+  type EditorSettingsPatch,
+  type SettingsFieldKey,
+} from './settings-fields';
 
 export type EditorWritePayload = Record<string, unknown>;
 
@@ -41,6 +51,10 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
+  /** Access values captured for validation of this request. */
+  access: Pick<EditablePostProjection, 'visibility' | 'tiers'>;
+  /** The edit version the request was built at, for the settings adoption guard. */
+  builtAtVersion: number;
   payload: EditorWritePayload;
   options: PostWriteOptions;
   isCreate: boolean;
@@ -58,6 +72,8 @@ export interface EditorSessionTransport {
 export interface EditorSessionOptions {
   record?: EditorRecord;
   siteUrl?: string;
+  /** Authors the create. Core rejects an Author's or Contributor's create without it. */
+  currentUserId?: string;
   saveFailureMessage: string;
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
@@ -71,6 +87,8 @@ export interface EditorSession {
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
   isDirty: () => boolean;
+  /** Dirty for a reason other than the failed save itself: work a reload would discard. */
+  hasUnsavedContent: () => boolean;
   patchTitle: (title: string) => void;
   patchExcerpt: (excerpt: string) => void;
   patchFeatureImage: (
@@ -78,6 +96,12 @@ export interface EditorSession {
       Pick<EditablePostProjection, 'feature_image' | 'feature_image_alt' | 'feature_image_caption'>
     >,
   ) => void;
+  /** Stages settings-sidebar fields; outstanding changes enter the next save payload. */
+  patchFields: (patch: EditorSettingsPatch) => void;
+  /** The live value of every settings field, for the sidebar's inputs. */
+  getFields: () => EditablePostProjection;
+  /** The one save policy gate for settings fields; see the README. */
+  commitField: () => void;
   patchLexical: (lexical: unknown) => void;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
@@ -85,14 +109,21 @@ export interface EditorSession {
   dispatchField: () => void;
   dispatchAutosave: () => void;
   dispatchExplicit: () => Promise<SaveCompletion>;
-  recordRefetched: (record: EditorRecord) => void;
+  dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
+  dispatchSchedule: (options: ScheduleOptions) => Promise<SaveCompletion>;
+  dispatchRevert: () => Promise<SaveCompletion>;
+  getLiveLexical: () => string | null;
+  recordRefetched: (record: EditorRecord) => boolean;
+  /** Replaces the whole document when the server copy safely advances this session. */
+  recordReloaded: (record: EditorRecord) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
 }
 
-function isOlder(candidate: string, held: string | null): boolean {
+/** Whether a record's collision token predates the one already held. */
+export function isOlderToken(candidate: string, held: string | null): boolean {
   if (!held) {
     return false;
   }
@@ -108,6 +139,7 @@ function isOlder(candidate: string, held: string | null): boolean {
 export function createEditorSession({
   record,
   siteUrl,
+  currentUserId,
   saveFailureMessage,
   transport,
   onIdAcquired,
@@ -121,6 +153,12 @@ export function createEditorSession({
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
+  let disposed = false;
+  // The version each settings field was last edited at by the writer. Adopting
+  // is not an edit, so a snapshot of the live values could not answer this.
+  const writerEdits = new Map<SettingsFieldKey, number>();
+  // The version the in-flight request was built at, or null when none is.
+  let inFlightSince: number | null = null;
 
   const tracker = createChangeTracker({ siteUrl });
   tracker.load(identity.id, live);
@@ -154,8 +192,16 @@ export function createEditorSession({
   }
 
   function patchLive(patch: EditablePostPatch): void {
+    const before = live;
     live = { ...live, ...patch };
     version += 1;
+    for (const key of SETTINGS_FIELD_KEYS) {
+      // Re-emitting a value the field already holds is not an edit, and a
+      // relation re-emitted as a fresh array holds the same value.
+      if (patch[key] !== undefined && !sameFieldValue(key, before[key], patch[key])) {
+        writerEdits.set(key, version);
+      }
+    }
     tracker.setLive(identity.id, patch);
     dirtyChanged();
   }
@@ -177,6 +223,35 @@ export function createEditorSession({
     }
   }
 
+  // The one rule both adoption paths ask, so a refetch and an acknowledgement
+  // cannot disagree about who owns a field.
+  function isAdoptable(key: SettingsFieldKey): boolean {
+    if (tracker.isFieldDirty(key)) {
+      return false;
+    }
+    return inFlightSince === null || (writerEdits.get(key) ?? 0) <= inFlightSince;
+  }
+
+  // The server's copy of a settings field the writer has not moved past wins,
+  // the same rule the authored fields use: without it a value the server
+  // normalized or someone else changed reads as a local edit for good.
+  function adoptSettings(
+    next: EditablePostProjection,
+    adoptable: (key: SettingsFieldKey) => boolean,
+  ): void {
+    const patch: Record<string, unknown> = {};
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (adoptable(key) && live[key] !== next[key]) {
+        patch[key] = next[key];
+      }
+    }
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    live = { ...live, ...patch };
+    tracker.setLive(identity.id, patch);
+  }
+
   function getSnapshot(): EditorSaveSnapshot {
     return buildSaveSnapshot({
       identity,
@@ -195,13 +270,10 @@ export function createEditorSession({
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
     const isCreate = request.snapshot.id === null;
-    // Tags are left out: nothing here edits them, and resending the set this
-    // session opened with would overwrite tags changed elsewhere.
     const projection: EditablePostPatch = {
       title: request.title,
       slug: request.slug,
       lexical: live.lexical,
-      custom_excerpt: live.custom_excerpt,
       feature_image: live.feature_image,
       feature_image_alt: live.feature_image_alt,
       feature_image_caption: live.feature_image_caption,
@@ -212,13 +284,34 @@ export function createEditorSession({
       title: projection.title,
       slug: projection.slug,
       lexical: projection.lexical,
-      custom_excerpt: projection.custom_excerpt,
       feature_image: projection.feature_image,
       feature_image_alt: projection.feature_image_alt,
       feature_image_caption: projection.feature_image_caption,
       status: request.target.status,
       published_at: request.target.publishedAt,
     };
+    // An Author's or Contributor's create is refused unless `authors` names them
+    // (core/server/models/relations/authors.js). Updates never resend it.
+    if (isCreate && currentUserId) {
+      payload.authors = [{ id: currentUserId }];
+    }
+
+    const staged = projection as Record<string, unknown>;
+    for (const key of SETTINGS_FIELD_KEYS) {
+      if (tracker.isFieldDirty(key)) {
+        staged[key] = live[key];
+        payload[key] = live[key];
+      }
+    }
+    // The write contract requires the pair even when only one field changed.
+    // Reads include tier relations for Public and Paid posts too, so switching
+    // to specific tiers can leave the relation IDs unchanged.
+    if (live.visibility === 'tiers' && ('visibility' in payload || 'tiers' in payload)) {
+      projection.visibility = live.visibility;
+      payload.visibility = live.visibility;
+      projection.tiers = live.tiers;
+      payload.tiers = live.tiers;
+    }
     if (!isCreate) {
       if (!projection.updated_at) {
         // Without the token the server skips its collision check entirely and the
@@ -238,6 +331,8 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
+      access: { visibility: live.visibility, tiers: live.tiers },
+      builtAtVersion: version,
       payload,
       options: {
         saveRevision: request.saveRevision,
@@ -251,12 +346,20 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
+    // Untouched creates carry null visibility and use the server's default.
+    // An explicit tier selection needs a tier, including on the first save.
+    if (tiersIncomplete(prepared.access)) {
+      return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
+    }
+
+    inFlightSince = prepared.builtAtVersion;
     try {
       const saved = prepared.isCreate
         ? await transport.create(prepared.payload)
         : await transport.update(prepared.payload, prepared.options);
 
       if (!saved) {
+        inFlightSince = null;
         return { ok: false, error: { kind: 'unknown', message: saveFailureMessage } };
       }
 
@@ -270,6 +373,7 @@ export function createEditorSession({
         },
       };
     } catch (error) {
+      inFlightSince = null;
       return { ok: false, error: toSaveError(error, saveFailureMessage) };
     }
   }
@@ -281,9 +385,24 @@ export function createEditorSession({
     };
     adoptWhereUnchanged(prepared.authoredFrom, submitted);
 
+    // A matching refetch can make an unsubmitted edit look saved. Preserve
+    // those edits through the rebase, whose fallback base is the latest saved
+    // copy. Submitted fields already have a stable base in the request.
+    const unsubmittedEdits = Object.fromEntries(
+      SETTINGS_FIELD_KEYS.filter(
+        (key) =>
+          prepared.projection[key] === undefined &&
+          (writerEdits.get(key) ?? 0) > prepared.builtAtVersion,
+      ).map((key) => [key, live[key]]),
+    );
     const acknowledged = projectionOf(result.post);
     tracker.saveAcknowledged(result.id, prepared.projection, acknowledged);
+    tracker.setLive(result.id, unsubmittedEdits);
     adoptWhereUnchanged(submitted, { title: acknowledged.title, slug: acknowledged.slug });
+    // The tracker now holds the retained edits as well as the rebase, so its
+    // compare can decide adoption after the request's window closes.
+    inFlightSince = null;
+    adoptSettings(acknowledged, isAdoptable);
     machine.saveAcknowledged(submitted, {
       title: acknowledged.title,
       slug: acknowledged.slug,
@@ -331,12 +450,28 @@ export function createEditorSession({
     },
     getSaveSnapshot: getSnapshot,
     isDirty: () => getSnapshot().isDirty,
+    hasUnsavedContent: () =>
+      tracker.verdict().reasons.some((reason) => reason.code !== 'POST_HAS_ERROR'),
 
     // A blank title persists as the default, so the live projection carries it
     // even while the input stays empty.
     patchTitle: (title) => patchLive({ title: title.trim() ? title : DEFAULT_TITLE }),
     patchExcerpt: (excerpt) => patchLive({ custom_excerpt: excerpt === '' ? null : excerpt }),
     patchFeatureImage: (patch) => patchLive(patch),
+
+    patchFields: patchLive,
+    getFields: () => live,
+
+    // The one place the sidebar's save policy lives. A draft persists a settings
+    // field the way the body does; every other status stages it until Update.
+    commitField: () => {
+      // Ember validates the field before saving it, so an incomplete tier
+      // selection stays staged rather than failing a save the writer sees.
+      if (status !== 'draft' || tiersIncomplete(live)) {
+        return;
+      }
+      void engine.dispatch('field');
+    },
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
@@ -356,22 +491,62 @@ export function createEditorSession({
     dispatchField: () => void engine.dispatch('field'),
     dispatchAutosave: () => void engine.dispatch('autosave'),
     dispatchExplicit: () => engine.dispatch('explicit'),
+    dispatchPublish: (options) => engine.dispatch('publish', options),
+    dispatchSchedule: (options) => engine.dispatch('schedule', options),
+    dispatchRevert: () => engine.dispatch('revert'),
+    getLiveLexical: () => live.lexical,
 
     recordRefetched: (next) => {
-      if (identity.id !== next.id) {
-        return;
-      }
-      tracker.setSaved(next.id, projectionOf(next));
       const updatedAt = next.updated_at ?? '';
-      if (isOlder(updatedAt, identity.updatedAt)) {
-        dirtyChanged();
-        return;
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
       }
+      // Decide against the old saved copy before the refetch replaces it.
+      const adoptable = new Set(SETTINGS_FIELD_KEYS.filter(isAdoptable));
+      const projection = projectionOf(next);
+      tracker.setSaved(next.id, projection);
+      adoptSettings(projection, (key) => adoptable.has(key));
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
       latestRevision = latestRevisionOf(next);
       dirtyChanged();
+      return true;
+    },
+
+    // A document boundary, not a refetch: the tracker reloads, so the baseline
+    // the hidden instance reported for the old document is discarded with it.
+    recordReloaded: (next) => {
+      // The read outlives a session the writer navigated away from.
+      const updatedAt = next.updated_at ?? '';
+      if (
+        disposed ||
+        identity.id !== next.id ||
+        !isCollisionToken(updatedAt) ||
+        isOlderToken(updatedAt, identity.updatedAt)
+      ) {
+        return false;
+      }
+      if (engine.getState().kind !== 'conflict' || !engine.contentReloaded(updatedAt)) {
+        return false;
+      }
+      identity = { id: next.id, updatedAt };
+      status = next.status ?? 'draft';
+      publishedAt = next.published_at ?? null;
+      latestRevision = latestRevisionOf(next);
+      live = projectionOf(next);
+      writerEdits.clear();
+      inFlightSince = null;
+      version += 1;
+      tracker.load(identity.id, live);
+      machine.loaded({ slug: live.slug, title: live.title });
+      dirtyChanged();
+      return true;
     },
 
     reauthSucceeded: () => engine.reauthSucceeded(),
@@ -379,6 +554,7 @@ export function createEditorSession({
     leaveRequested: () => engine.leaveRequested(),
 
     dispose: () => {
+      disposed = true;
       engine.dispose();
       tracker.dispose();
     },

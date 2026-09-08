@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
-const path = require('node:path');
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 
 describe('MigratorConfig', function () {
   it('loads in a bare Node process', function () {

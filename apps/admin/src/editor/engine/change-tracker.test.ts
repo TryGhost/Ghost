@@ -73,6 +73,23 @@ function post(overrides: Partial<EditablePostProjection> = {}): EditablePostProj
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
+    featured: false,
+    visibility: 'public',
+    tiers: [],
+    authors: [{ id: 'author-1' }],
+    meta_title: null,
+    meta_description: null,
+    canonical_url: null,
+    custom_template: null,
+    codeinjection_head: null,
+    codeinjection_foot: null,
+    og_image: null,
+    og_title: null,
+    og_description: null,
+    twitter_image: null,
+    twitter_title: null,
+    twitter_description: null,
+    show_title_and_feature_image: null,
     updated_at: T0,
     ...overrides,
   };
@@ -503,6 +520,61 @@ describe('createChangeTracker', () => {
       tracker.setLive(POST_ID, { updated_at: T2 });
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+  });
+
+  describe('isFieldDirty', () => {
+    it('answers for one field at a time and releases it when the edit is undone', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, { visibility: 'paid' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(true);
+      expect(tracker.isFieldDirty('meta_title')).toBe(false);
+
+      tracker.setLive(POST_ID, { visibility: 'public' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('applies the field compare rules: tags by name, relations by identity', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, {
+        tags: [{ name: 'News', id: 'unsaved' } as never],
+        authors: [{ id: 'author-1', name: 'Renamed' } as never],
+      });
+
+      expect(tracker.isFieldDirty('tags')).toBe(false);
+      expect(tracker.isFieldDirty('authors')).toBe(false);
+
+      tracker.setLive(POST_ID, { authors: [{ id: 'author-2' }] });
+
+      expect(tracker.isFieldDirty('authors')).toBe(true);
+    });
+
+    it('never reports the collision token, and answers false with no post loaded', () => {
+      const tracker = loadedTracker(post({ updated_at: T0 }));
+      tracker.setSaved(POST_ID, post({ updated_at: T1 }));
+
+      expect(tracker.isFieldDirty('updated_at')).toBe(false);
+
+      tracker.dispose();
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('releases a field the acknowledgement rebased onto the server value', () => {
+      const tracker = loadedTracker(post({ visibility: 'public', updated_at: T0 }));
+      tracker.setLive(POST_ID, { visibility: 'members' });
+
+      tracker.saveAcknowledged(
+        POST_ID,
+        { visibility: 'members' },
+        post({ visibility: 'paid', updated_at: T1 }),
+      );
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
     });
   });
 

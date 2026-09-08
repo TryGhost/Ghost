@@ -71,12 +71,6 @@ export interface PasswordUpdateResponseType {
   ];
 }
 
-export interface DeleteUserResponse {
-  meta: {
-    filename: string;
-  };
-}
-
 // Requests
 
 const dataType = usersDataType;
@@ -129,7 +123,7 @@ export const useEditUser = createMutation<UsersResponseType, User>({
   },
 });
 
-export const useDeleteUser = createMutation<DeleteUserResponse, string>({
+export const useDeleteUser = createMutation<void, string>({
   method: 'DELETE',
   path: (id) => `/users/${id}/`,
   updateQueries: {

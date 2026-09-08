@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import S3RedirectsStore from '../../../../../core/server/adapters/redirects/S3RedirectsStore';
 
-describe('UNIT: S3RedirectsStore', function () {
+describe('S3RedirectsStore', function () {
   describe('constructor validation', function () {
     it('throws when no bucket is provided', function () {
       assert.throws(() => new S3RedirectsStore({} as never), {
