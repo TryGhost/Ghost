@@ -293,6 +293,53 @@ describe('CheckoutSessionEventService', function () {
   });
 
   describe('handleDonationEvent', function () {
+    it('logs notification failures without failing the webhook', async function () {
+      const service = createService();
+      const session = {
+        id: 'cs_notification_failure',
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: 'true' },
+        amount_total: 1000,
+        currency: 'usd',
+        customer_details: { name: 'Donor', email: 'donor@example.com' },
+      };
+      const error = new Error('Temporary SMTP failure');
+      staffServiceEmails.notifyDonationReceived.rejects(error);
+      const logStub = sinon.stub(logging, 'error');
+
+      try {
+        await service.handleEvent(session);
+
+        sinon.assert.calledOnce(donationRepository.save);
+        sinon.assert.calledOnce(staffServiceEmails.notifyDonationReceived);
+        sinon.assert.calledOnce(logStub);
+        assert.equal(logStub.firstCall.args[0].err, error);
+        assert.equal(logStub.firstCall.args[0].stripeCheckoutSessionId, session.id);
+      } finally {
+        logStub.restore();
+      }
+    });
+
+    it('still fails the webhook when saving the donation fails', async function () {
+      const service = createService();
+      const session = {
+        id: 'cs_save_failure',
+        mode: 'payment',
+        payment_status: 'paid',
+        metadata: { ghost_donation: 'true' },
+        amount_total: 1000,
+        currency: 'usd',
+        customer_details: { name: 'Donor', email: 'donor@example.com' },
+      };
+      const error = new Error('Database unavailable');
+      donationRepository.save.rejects(error);
+
+      await assert.rejects(service.handleEvent(session), error);
+
+      sinon.assert.notCalled(staffServiceEmails.notifyDonationReceived);
+    });
+
     it('does not save or notify staff when the checkout session already exists', async function () {
       const service = createService();
       const session = { id: 'cs_existing_donation' };
