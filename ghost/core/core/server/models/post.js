@@ -12,6 +12,7 @@ const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
+const { computeAutoExcerpt, computeReadingTime } = require('../lib/post-meta');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils').default;
 const { Tag } = require('./tag');
@@ -584,7 +585,7 @@ Post = ghostBookshelf.Model.extend(
       const prevSlug = this.previous('slug');
       const publishedAt = this.get('published_at');
       const publishedAtHasChanged = this.hasDateChanged('published_at', { beforeWrite: true });
-      const generatedFields = ['html', 'plaintext'];
+      const generatedFields = ['html', 'plaintext', 'auto_excerpt', 'reading_time'];
       let tagsToSave;
       const ops = [];
 
@@ -801,6 +802,30 @@ Post = ghostBookshelf.Model.extend(
         //        value was modified.
         if (plaintext || plaintext !== this.get('plaintext')) {
           this.set('plaintext', plaintext);
+        }
+      }
+
+      const shouldUpdateAutoExcerpt =
+        this.hasChanged('html') ||
+        this.hasChanged('plaintext') ||
+        this.get('auto_excerpt') === null ||
+        this.get('auto_excerpt') === undefined;
+      if (shouldUpdateAutoExcerpt) {
+        const autoExcerpt = computeAutoExcerpt(this.get('plaintext'));
+        if (autoExcerpt !== this.get('auto_excerpt')) {
+          this.set('auto_excerpt', autoExcerpt);
+        }
+      }
+
+      const shouldUpdateReadingTime =
+        this.hasChanged('html') ||
+        this.hasChanged('feature_image') ||
+        this.get('reading_time') === null ||
+        this.get('reading_time') === undefined;
+      if (shouldUpdateReadingTime) {
+        const readingTime = computeReadingTime(this.get('html'), this.get('feature_image'));
+        if (readingTime !== this.get('reading_time')) {
+          this.set('reading_time', readingTime);
         }
       }
 

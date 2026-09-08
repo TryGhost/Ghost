@@ -1,4 +1,4 @@
-const readingMinutes = require('@tryghost/helpers').utils.readingMinutes;
+const { computeAutoExcerpt, computeReadingTime } = require('../../../../../../lib/post-meta');
 
 /**
  *
@@ -23,12 +23,7 @@ module.exports.forPost = (options, model, attrs) => {
   // 1. Gets excerpt from post's plaintext. If custom_excerpt exists, it overrides the excerpt but the key remains excerpt.
   if (columnsIncludesExcerpt) {
     if (!attrs.custom_excerpt) {
-      let plaintext = model.get('plaintext');
-      if (plaintext) {
-        attrs.excerpt = plaintext.substring(0, 500);
-      } else {
-        attrs.excerpt = null;
-      }
+      attrs.excerpt = computeAutoExcerpt(model.get('plaintext'));
     } else {
       attrs.excerpt = attrs.custom_excerpt;
     }
@@ -54,12 +49,7 @@ module.exports.forPost = (options, model, attrs) => {
     if (customExcerpt !== null) {
       attrs.excerpt = customExcerpt;
     } else {
-      const plaintext = model.get('plaintext');
-      if (plaintext) {
-        attrs.excerpt = plaintext.substring(0, 500);
-      } else {
-        attrs.excerpt = null;
-      }
+      attrs.excerpt = computeAutoExcerpt(model.get('plaintext'));
     }
   }
 
@@ -69,12 +59,7 @@ module.exports.forPost = (options, model, attrs) => {
   delete attrs.reading_time;
   if (noColumnsRequested || columnsIncludesReadingTime) {
     if (attrs.html) {
-      let additionalImages = 0;
-
-      if (attrs.feature_image) {
-        additionalImages += 1;
-      }
-      attrs.reading_time = readingMinutes(attrs.html, additionalImages);
+      attrs.reading_time = computeReadingTime(attrs.html, attrs.feature_image);
     }
   }
 };
