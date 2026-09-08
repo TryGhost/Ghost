@@ -19,6 +19,7 @@ describe('Recipient verification errors', function () {
       actual: 1,
     });
     assert.equal(error.retryable, false);
+    assert.match(error.message, /Sending has stopped/);
     assert.equal(JSON.parse(error.errorDetails ?? '{}').count_mismatch, false);
     sinon.assert.calledOnceWithMatch(errorLog, {
       event: { name: 'email.verification.failed' },
@@ -35,6 +36,7 @@ describe('Recipient verification errors', function () {
     const details = JSON.parse(error.errorDetails ?? '{}');
     assert.equal(error.retryable, false);
     assert.equal(details.can_rebuild, true);
+    assert.match(error.message, /Please try again/);
     assert.equal(details.count_mismatch, true);
     sinon.assert.calledOnceWithMatch(errorLog, {
       event: { name: 'email.recipient_count.mismatch' },
