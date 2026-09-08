@@ -5,7 +5,7 @@ const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 
 /**
  * Content API parity for storedPostMetadata (enabled for all private flags in e2e).
- * Asserts public excerpt / reading_time match stored columns (or compute helpers).
+ * Asserts public excerpt / reading_time come from populated stored columns.
  */
 describe('Content API stored post metadata', function () {
   let agent;
@@ -16,9 +16,9 @@ describe('Content API stored post metadata', function () {
     await agent.authenticate();
   });
 
-  async function assertPostParity(postId) {
+  async function assertStoredParity(resource, id) {
     const row = await models.Base.knex('posts')
-      .where({ id: postId })
+      .where({ id })
       .select(
         'id',
         'html',
@@ -30,58 +30,27 @@ describe('Content API stored post metadata', function () {
       )
       .first();
 
-    const { body } = await agent.get(`posts/${postId}/`).expectStatus(200);
-    const post = body.posts[0];
+    assert.notEqual(row.auto_excerpt, null);
+    assert.notEqual(row.reading_time, null);
 
-    assert.equal(Object.prototype.hasOwnProperty.call(post, 'auto_excerpt'), false);
+    const { body } = await agent.get(`${resource}/${id}/`).expectStatus(200);
+    const item = body[resource][0];
 
-    const expectedExcerpt =
-      row.custom_excerpt || row.auto_excerpt || computeAutoExcerpt(row.plaintext);
-    assert.equal(post.excerpt, expectedExcerpt);
-
-    const expectedReadingTime =
-      row.reading_time !== null && row.reading_time !== undefined
-        ? row.reading_time
-        : computeReadingTime(row.html, row.feature_image);
-    assert.equal(post.reading_time, expectedReadingTime);
+    assert.equal(Object.prototype.hasOwnProperty.call(item, 'auto_excerpt'), false);
+    assert.equal(item.excerpt, row.custom_excerpt || row.auto_excerpt);
+    assert.equal(item.reading_time, row.reading_time);
   }
 
-  it('matches stored excerpt and reading_time for fixture posts', async function () {
-    // Fixture index 0 is a published post with custom_excerpt; index with null custom still has content.
-    await assertPostParity(fixtureManager.get('posts', 0).id);
-    await assertPostParity(fixtureManager.get('posts', 1).id);
+  it('returns stored excerpt and reading_time for fixture posts', async function () {
+    // Fixture index 0 is a published post with custom_excerpt; index 1 still has content.
+    await assertStoredParity('posts', fixtureManager.get('posts', 0).id);
+    await assertStoredParity('posts', fixtureManager.get('posts', 1).id);
   });
 
-  it('matches stored excerpt and reading_time for fixture pages via pages API', async function () {
+  it('returns stored excerpt and reading_time for fixture pages', async function () {
     const pageFixture = fixtureManager.get('posts', 5);
     assert.equal(pageFixture.type, 'page');
-
-    const row = await models.Base.knex('posts')
-      .where({ id: pageFixture.id })
-      .select(
-        'html',
-        'plaintext',
-        'feature_image',
-        'custom_excerpt',
-        'auto_excerpt',
-        'reading_time',
-      )
-      .first();
-
-    const { body } = await agent.get(`pages/${pageFixture.id}/`).expectStatus(200);
-    const page = body.pages[0];
-
-    assert.equal(Object.prototype.hasOwnProperty.call(page, 'auto_excerpt'), false);
-    assert.equal(
-      page.excerpt,
-      row.custom_excerpt || row.auto_excerpt || computeAutoExcerpt(row.plaintext),
-    );
-    assert.equal(
-      page.reading_time,
-      row.reading_time !== null && row.reading_time !== undefined
-        ? row.reading_time
-        : computeReadingTime(row.html, row.feature_image),
-    );
+    await assertStoredParity('pages', pageFixture.id);
   });
 
   it('prefers stored auto_excerpt and reading_time over compute when they diverge', async function () {
@@ -99,7 +68,7 @@ describe('Content API stored post metadata', function () {
                     format: 0,
                     mode: 'normal',
                     style: '',
-                    text: `Parity ${'word '.repeat(300)}content`,
+                    text: `Parity ${'word '.repeat(390)}content`,
                     type: 'text',
                     version: 1,
                   },
