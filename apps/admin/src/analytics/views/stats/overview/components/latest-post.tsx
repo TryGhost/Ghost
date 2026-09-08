@@ -29,6 +29,7 @@ import {
   useWebAnalyticsEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 import { useIsEmberOwnedRoute } from '@/routes';
 
 // Import the interface from the hook
@@ -57,6 +58,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
   const emailTrackOpensEnabled = useEmailTrackOpens();
   const webAnalytics = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources() ?? false;
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
 
   // The stats-overview share modal never offers gift links today.
   useEffect(() => {
@@ -189,7 +191,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   )}
                   <Button
                     className={latestPostStats.email_only ? 'w-full' : ''}
-                    variant="outline"
+                    variant={isAdmin7Pill && !shouldGoToEditor ? 'ghost' : 'outline'}
                     onClick={() => {
                       navigate(postDestination, { crossApp: destinationIsEmberOwned });
                     }}

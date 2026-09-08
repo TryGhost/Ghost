@@ -4,6 +4,7 @@ import { DropdownMenuTrigger } from './dropdown-menu';
 
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
+import { type ControlShape, useShade } from '@/providers/shade-provider';
 
 type TabsVariant =
   | 'segmented'
@@ -15,7 +16,15 @@ type TabsVariant =
   | 'pill'
   | 'kpis';
 
-const TabsVariantContext = React.createContext<TabsVariant>('segmented');
+interface TabsContextValue {
+  variant: TabsVariant;
+  controlShape: ControlShape;
+}
+
+const TabsContext = React.createContext<TabsContextValue>({
+  variant: 'segmented',
+  controlShape: 'rounded',
+});
 
 export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   variant?: TabsVariant;
@@ -40,11 +49,15 @@ const tabsVariants = cva('', {
 });
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
-  ({ variant = 'segmented', ...props }, ref) => (
-    <TabsVariantContext.Provider value={variant}>
-      <TabsPrimitive.Root ref={ref} {...props} />
-    </TabsVariantContext.Provider>
-  ),
+  ({ variant = 'segmented', ...props }, ref) => {
+    const { controlShape } = useShade();
+
+    return (
+      <TabsContext.Provider value={{ variant, controlShape }}>
+        <TabsPrimitive.Root ref={ref} {...props} />
+      </TabsContext.Provider>
+    );
+  },
 );
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
@@ -73,7 +86,7 @@ const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => {
-  const variant = React.useContext(TabsVariantContext);
+  const { variant } = React.useContext(TabsContext);
   return (
     <TabsPrimitive.List
       ref={ref}
@@ -102,9 +115,21 @@ const tabsTriggerVariants = cva(
         pill: 'relative h-[30px] rounded-md px-3 text-control font-medium text-text-secondary hover:bg-tab-hover hover:text-foreground data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
         kpis: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-interactive-hover data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground',
       },
+      controlShape: {
+        rounded: '',
+        pill: '',
+      },
     },
+    compoundVariants: [
+      {
+        variant: 'button-sm',
+        controlShape: 'pill',
+        className: 'rounded-full',
+      },
+    ],
     defaultVariants: {
       variant: 'segmented',
+      controlShape: 'rounded',
     },
   },
 );
@@ -113,11 +138,11 @@ const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, onMouseDownCapture, ...props }, ref) => {
-  const variant = React.useContext(TabsVariantContext);
+  const { variant, controlShape } = React.useContext(TabsContext);
   return (
     <TabsPrimitive.Trigger
       ref={ref}
-      className={cn(tabsTriggerVariants({ variant, className }))}
+      className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
       onMouseDownCapture={(event) => {
         const activeElement = document.activeElement;
         if (
@@ -178,7 +203,7 @@ const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => {
-  const variant = React.useContext(TabsVariantContext);
+  const { variant } = React.useContext(TabsContext);
   return (
     <TabsPrimitive.Content
       ref={ref}
@@ -198,12 +223,17 @@ interface TabsDropdownTriggerProps extends Omit<
 
 const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
   ({ children, className, ...props }, ref) => {
-    const variant = React.useContext(TabsVariantContext);
+    const { variant, controlShape } = React.useContext(TabsContext);
     return (
-      <div className="relative rounded-md hover:bg-tab-hover">
+      <div
+        className={cn(
+          'relative rounded-md hover:bg-tab-hover',
+          variant === 'button-sm' && controlShape === 'pill' && 'rounded-full',
+        )}
+      >
         <TabsPrimitive.Trigger
           ref={ref}
-          className={cn(tabsTriggerVariants({ variant, className }))}
+          className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
           {...props}
         >
           <div className="flex items-center gap-2">{children}</div>
