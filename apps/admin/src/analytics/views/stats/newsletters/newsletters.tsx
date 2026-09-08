@@ -264,10 +264,7 @@ const TopNewslettersTable: React.FC<{
   const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
   return (
-    <Card
-      className="w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]"
-      data-testid="top-newsletters-card"
-    >
+    <Card className="w-full max-w-full overflow-x-auto" data-testid="top-newsletters-card">
       <CardContent>
         <Table>
           <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />

@@ -212,8 +212,8 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
               </div>
             </div>
 
-            <div className="-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 xl:h-full xl:max-w-none">
-              <div className="grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full">
+            <div className="flex w-full flex-col items-stretch gap-2 px-6 lg:-ml-4 lg:pr-6 lg:pl-0 xl:h-full xl:max-w-none">
+              <div className="grid grid-cols-2 gap-6 lg:border-l lg:pl-10 xl:h-full">
                 {/* Web metrics - only for published posts */}
                 {metricsToShow.showWebMetrics && webAnalytics && (
                   <div
