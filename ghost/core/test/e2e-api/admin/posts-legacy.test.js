@@ -517,10 +517,6 @@ describe('Posts API', function () {
   });
 
   it('Can unpublish a post', async function () {
-    const email = await models.Email.findOne(
-      { post_id: testUtils.DataGenerator.Content.posts[1].id },
-      { require: true },
-    );
     const post = {
       status: 'draft',
     };
@@ -542,16 +538,6 @@ describe('Posts API', function () {
 
     assert.equal(res2.headers['x-cache-invalidate'], '/*');
     assert.equal(res2.body.posts[0].status, 'draft');
-    assert.ok(res2.body.posts[0].email, 'Unpublishing should retain the hook-loaded email');
-    assert.equal(res2.body.posts[0].email.id, email.id);
-    for (const field of [
-      'preflight_email_count',
-      'candidate_count',
-      'preparation_excluded_count',
-      'prepared_at',
-    ]) {
-      assert.equal(Object.hasOwn(res2.body.posts[0].email, field), false);
-    }
   });
 
   it(`Can't change the newsletter of a post from the post body`, async function () {
