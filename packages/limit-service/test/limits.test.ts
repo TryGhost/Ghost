@@ -119,3 +119,34 @@ describe('Reloading limits', function () {
     assert.equal(service.isDisabled('limitSomething'), true);
   });
 });
+
+/**
+ * Whether a site is over any of its limits is asked without naming one, so every limit has
+ * to be able to answer it. An allowlist limit cannot: it judges one particular value, and
+ * there is no value in the question.
+ */
+describe('Checking every limit at once', function () {
+  it('answers for a site that has an allowlist limit', async function () {
+    const service = new LimitService();
+
+    service.loadLimits({
+      limits: { customThemes: { allowlist: ['casper'] }, staff: { max: 100 } },
+      counters: { staff: () => 1 },
+      errors,
+    });
+
+    assert.equal(await service.checkIfAnyOverLimit(), false);
+  });
+
+  it('still reports a site that is over a limit it can answer for', async function () {
+    const service = new LimitService();
+
+    service.loadLimits({
+      limits: { customThemes: { allowlist: ['casper'] }, staff: { max: 0 } },
+      counters: { staff: () => 5 },
+      errors,
+    });
+
+    assert.equal(await service.checkIfAnyOverLimit(), true);
+  });
+});

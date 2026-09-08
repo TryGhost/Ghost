@@ -1,7 +1,7 @@
 import camelCase from 'lodash/camelCase.js';
 import errors from '@tryghost/errors';
 
-import { FlagLimit, type Limit } from './limits.js';
+import { AllowlistLimit, FlagLimit, type Limit } from './limits.js';
 import { type ResolveOptions, resolve } from './resolve.js';
 import type { CheckOptions, ErrorsModule, LimitProblem } from './types.js';
 
@@ -90,7 +90,15 @@ export class LimitService {
 
   /** Whether any limit the site has is already exceeded. */
   async checkIfAnyOverLimit(options: CheckOptions = {}): Promise<boolean> {
-    for (const name of Object.keys(this.limits)) {
+    for (const [name, limit] of Object.entries(this.limits)) {
+      // An allowlist limit judges one particular value, and this question names no value,
+      // so there is nothing for it to answer. Asking anyway raises an incorrect-usage error
+      // that escapes this method, which would leave a site unable to answer whether it is
+      // over any limit purely because it also has one of these.
+      if (limit instanceof AllowlistLimit) {
+        continue;
+      }
+
       if (await this.checkIsOverLimit(name, options)) {
         return true;
       }
