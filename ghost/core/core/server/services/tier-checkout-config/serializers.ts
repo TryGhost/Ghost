@@ -149,3 +149,71 @@ export const toCheckoutConfigResponse = z
     })),
   }))
   .pipe(CheckoutConfigResponse);
+
+/**
+ * The same settings, as the member they will be asked of.
+ *
+ * A publisher is deciding where collected values are kept, and a member is being asked to
+ * supply them, so the two answer different questions about the same rows. What is dropped
+ * is everything about where a value lands: the binding between a collected thing and the
+ * field holding it is the publisher's business, and a member could do nothing with it but
+ * write to that field directly.
+ *
+ * The tax number goes too, because the processor keeps one against the customer it
+ * invoices and Ghost never stores it, so nothing here could ask for it. So do the
+ * checkout questions, because a tier change does not draw them.
+ *
+ * Note what this deliberately does not borrow: `Collection` in this domain means a
+ * collected thing together with the field it lands in, which is the half a member never
+ * sees. Naming this after it would say the opposite of what it holds.
+ */
+const CheckoutRequirementsResource = z.object({
+  tier_id: z.string(),
+  /**
+   * A block appears only when the tier asks for that thing, and says so as well, the same
+   * way the publisher's resource does. Presence and the flag agree, so a client may read
+   * whichever it finds clearer.
+   *
+   * Neither says whether a thing may be skipped, because nothing here may be: every entry
+   * in a list of requirements is required. Collection a member could decline is the change
+   * that would need a field of its own rather than a new reading of these two, which is
+   * why the answer is not left resting on presence alone.
+   */
+  shipping: z
+    .object({
+      collect: z.literal(true),
+      /** Absent means everywhere the processor ships, the same as for a publisher. */
+      allowed_countries: z.array(z.string()).optional(),
+    })
+    .optional(),
+  phone: z.object({ collect: z.literal(true) }).optional(),
+});
+
+const CheckoutRequirementsResponse = z.object({
+  tiers_checkout_requirements: z.array(CheckoutRequirementsResource),
+});
+
+export const toCheckoutRequirementsResponse = z
+  .array(TierCheckoutConfig)
+  .transform((configs): z.input<typeof CheckoutRequirementsResponse> => ({
+    // A tier that has been set up but asks the member for nothing does not belong in a
+    // list of what tiers will ask for. The case that produces one is a tier collecting
+    // only a tax number, which the processor asks for and keeps to itself.
+    tiers_checkout_requirements: configs
+      .filter((config) => config.shipping ?? config.phone)
+      .map((config) => ({
+        tier_id: config.tierId,
+        ...(config.shipping
+          ? {
+              shipping: {
+                collect: true as const,
+                ...(config.shipping.allowedCountries
+                  ? { allowed_countries: config.shipping.allowedCountries }
+                  : {}),
+              },
+            }
+          : {}),
+        ...(config.phone ? { phone: { collect: true as const } } : {}),
+      })),
+  }))
+  .pipe(CheckoutRequirementsResponse);

@@ -320,6 +320,10 @@ module.exports = {
     return apiFramework.pipeline(require('./member-metafields-members'), localUtils, 'members');
   },
 
+  get tiersCheckoutRequirements() {
+    return apiFramework.pipeline(require('./tiers-checkout-requirements'), localUtils, 'members');
+  },
+
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
   },

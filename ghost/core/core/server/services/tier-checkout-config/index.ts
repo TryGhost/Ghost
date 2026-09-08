@@ -21,4 +21,4 @@ export {
   TierCheckoutConfig,
 } from './models';
 
-export { toCheckoutConfigResponse } from './serializers';
+export { toCheckoutConfigResponse, toCheckoutRequirementsResponse } from './serializers';

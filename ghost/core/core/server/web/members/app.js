@@ -11,6 +11,8 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const { http } = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
+const labs = require('../../../shared/labs');
+
 const accountRoutes = require('./account');
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
@@ -126,6 +128,18 @@ module.exports = function setupMembersApp() {
       return membersService.api.middleware.createBillingPortalSession(req, res, next);
     },
   );
+  // What each tier will ask a member for, so their client can ask before sending them
+  // into a plan change that would otherwise be refused for missing it. Signed in, because
+  // what a publisher collects is their configuration rather than something the site
+  // announces to anyone who asks.
+  membersApp.get(
+    '/api/tiers/checkout_requirements',
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    middleware.loadMemberIdentity,
+    middleware.rejectWhenAnonymous,
+    http(api.tiersCheckoutRequirements.browse),
+  );
+
   membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
     return membersService.api.middleware.updateSubscription(req, res, next);
   });
