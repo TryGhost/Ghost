@@ -1172,30 +1172,49 @@ class BatchSendingService {
     const submission = this.#verifySubmissionCounts(email, batches);
     if (batches.some((batch) => batch.get('status') === 'submitting')) {
       throw new errors.EmailError({
-        code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN', message: tpl(messages.submissionUncertain),
+        code: 'BULK_EMAIL_SUBMISSION_UNCERTAIN',
+        message: tpl(messages.submissionUncertain),
       });
     }
-    this.#assertSubmissionComplete(batches.filter(batch => batch.get('status') === 'submitted').length, batches.length);
+    this.#assertSubmissionComplete(
+      batches.filter((batch) => batch.get('status') === 'submitted').length,
+      batches.length,
+    );
     this.#reportSubmission(email, batches, submission);
     return submission;
   }
 
   #reportSubmission(email, batches, submission) {
     if (submission) {
-      logging.info({
-        event: { name: 'email.submission.verified' }, email_id: email.id,
-        candidate_count: email.get('candidate_count'),
-        preparation_excluded_count: email.get('preparation_excluded_count'),
-        submitted_count: submission.submittedCount,
-        submission_excluded_count: submission.submissionExcludedCount,
-      }, 'Email recipient submission verified');
+      logging.info(
+        {
+          event: { name: 'email.submission.verified' },
+          email_id: email.id,
+          candidate_count: email.get('candidate_count'),
+          preparation_excluded_count: email.get('preparation_excluded_count'),
+          submitted_count: submission.submittedCount,
+          submission_excluded_count: submission.submissionExcludedCount,
+        },
+        'Email recipient submission verified',
+      );
       return;
     }
-    logging.info({
-      event: { name: 'email.submission.unverified' }, email_id: email.id,
-      batch_count: batches.length, reason: 'submission_counts_unavailable',
-      unverified_batch_ids: batches.filter(batch => batch.get('submitted_count') === null && batch.get('submission_excluded_count') === null).map(batch => batch.id),
-    }, 'All email batches submitted; submission recipient counts are unavailable');
+    logging.info(
+      {
+        event: { name: 'email.submission.unverified' },
+        email_id: email.id,
+        batch_count: batches.length,
+        reason: 'submission_counts_unavailable',
+        unverified_batch_ids: batches
+          .filter(
+            (batch) =>
+              batch.get('submitted_count') === null &&
+              batch.get('submission_excluded_count') === null,
+          )
+          .map((batch) => batch.id),
+      },
+      'All email batches submitted; submission recipient counts are unavailable',
+    );
   }
 
   #assertSubmissionComplete(succeededCount, expectedBatchCount) {
@@ -1206,26 +1225,37 @@ class BatchSendingService {
     }
   }
 
-  #verifySubmissionCounts(email, batches) {
-    let submittedCount = 0;
-    let submissionExcludedCount = 0;
-    let unknown = false;
-    for (const batch of batches) {
-      let errorData;
-      try {
-        errorData = JSON.parse(batch.get('error_data') ?? 'null');
-      } catch {
-        // Ordinary provider failures can contain non-JSON diagnostics.
-      }
-      if (batch.get('status') === 'failed' && errorData?.code === VERIFICATION_CODE) {
-        throw this.#verificationFailure(email, 'batch_verification_failed', {
+  #throwPersistedVerificationFailure(email, batch) {
+    let errorData;
+    try {
+      errorData = JSON.parse(batch.get('error_data') ?? 'null');
+    } catch {
+      // Ordinary provider failures can contain non-JSON diagnostics.
+    }
+    if (batch.get('status') === 'failed' && errorData?.code === VERIFICATION_CODE) {
+      // Earlier submission deployments persisted counts without classification.
+      // Preserve their event semantics; new failures retain the explicit kind.
+      throw this.#verificationFailure(
+        email,
+        'batch_verification_failed',
+        {
           batch_id: batch.id,
           batch_error: errorData,
           expected: errorData.expected,
           actual: errorData.actual,
           count_check: errorData.count_check,
-        });
-      }
+        },
+        errorData.count_mismatch ?? countsDiffer(errorData.expected, errorData.actual),
+      );
+    }
+  }
+
+  #verifySubmissionCounts(email, batches) {
+    let submittedCount = 0;
+    let submissionExcludedCount = 0;
+    let unknown = false;
+    for (const batch of batches) {
+      this.#throwPersistedVerificationFailure(email, batch);
       if (batch.get('status') !== 'submitted') {
         unknown = true;
         continue;
@@ -1237,23 +1267,22 @@ class BatchSendingService {
         unknown = true;
         continue;
       }
-      if (
-        !Number.isSafeInteger(submitted) ||
-        submitted < 0 ||
-        !Number.isSafeInteger(excluded) ||
-        excluded < 0 ||
-        batch.get('recipient_count') !== submitted + excluded
-      ) {
-        throw this.#verificationFailure(email, 'batch_submission_counts', {
-          batch_id: batch.id,
-          recipient_count: batch.get('recipient_count'),
-          expected: batch.get('recipient_count'),
-          actual: [submitted, excluded].every((count) => Number.isSafeInteger(count) && count >= 0)
-            ? submitted + excluded
-            : null,
-          submitted_count: submitted,
-          submission_excluded_count: excluded,
-        });
+      const expected = batch.get('recipient_count');
+      const actual = isCount(submitted) && isCount(excluded) ? submitted + excluded : null;
+      if (actual === null || expected !== actual) {
+        throw this.#verificationFailure(
+          email,
+          'batch_submission_counts',
+          {
+            batch_id: batch.id,
+            recipient_count: batch.get('recipient_count'),
+            expected,
+            actual,
+            submitted_count: submitted,
+            submission_excluded_count: excluded,
+          },
+          countsDiffer(expected, actual),
+        );
       }
       submittedCount += submitted;
       submissionExcludedCount += excluded;
@@ -1319,7 +1348,7 @@ class BatchSendingService {
     try {
       const expectedCount = batch.get('recipient_count');
       const recipientAccounting = this.#usesRecipientAccounting(email);
-      if (recipientAccounting && (!Number.isSafeInteger(expectedCount) || expectedCount < 1)) {
+      if (recipientAccounting && (!isCount(expectedCount) || expectedCount === 0)) {
         throw this.#verificationFailure(email, 'invalid_batch_recipient_count', {
           batch_id: batch.id,
           expected: expectedCount,
@@ -1347,10 +1376,16 @@ class BatchSendingService {
         },
       ).catch((error) => {
         if (error.code === RECIPIENT_READ_MISMATCH) {
-          throw this.#verificationFailure(email, 'batch_recipient_read', {
-            batch_id: batch.id,
-            ...JSON.parse(error.errorDetails),
-          });
+          const details = JSON.parse(error.errorDetails);
+          throw this.#verificationFailure(
+            email,
+            'batch_recipient_read',
+            {
+              batch_id: batch.id,
+              ...details,
+            },
+            countsDiffer(details.expected, details.actual),
+          );
         }
         throw error;
       });

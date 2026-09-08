@@ -1,7 +1,7 @@
 const validator = require('@tryghost/validator');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { recipientVerificationError } = require('./recipient-accounting');
+const { recipientVerificationError, isCount, countsDiffer } = require('./recipient-accounting');
 
 /**
  * @typedef {object} EmailData
@@ -146,16 +146,19 @@ class SendingService {
       options.recipientAccounting ? { emailId, batchId: options.batchId } : undefined,
     );
     if (options.recipientAccounting && members.length !== recipients.length + excludedCount) {
-      throw recipientVerificationError(emailId, 'message_recipient_counts', {
-        batch_id: options.batchId,
-        expected: members.length,
-        actual:
-          Number.isSafeInteger(excludedCount) && excludedCount >= 0
-            ? recipients.length + excludedCount
-            : null,
-        recipient_count: recipients.length,
-        submission_excluded_count: excludedCount,
-      });
+      const actual = isCount(excludedCount) ? recipients.length + excludedCount : null;
+      throw recipientVerificationError(
+        emailId,
+        'message_recipient_counts',
+        {
+          batch_id: options.batchId,
+          expected: members.length,
+          actual,
+          recipient_count: recipients.length,
+          submission_excluded_count: excludedCount,
+        },
+        { countMismatch: countsDiffer(members.length, actual) },
+      );
     }
     return {
       data: {

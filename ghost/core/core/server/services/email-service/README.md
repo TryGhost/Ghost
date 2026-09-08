@@ -119,7 +119,6 @@ whose submission counts are null. Verify their rows and statuses, preserve the
 intended `email_count`, and emit an unverified-submission-counts event. Do not
 infer or backfill provider counts for those batches.
 
-
 ## Recipient accounting events
 
 Confirmed recipient-count discrepancies emit error-level records with
@@ -149,7 +148,7 @@ identifies a batch. Counts describe the failed check:
 | `batch_recipient_count`     | `expected`, `actual` recipient rows                                                                                                                                                                          |
 | `email_recipient_count` | `expected` prepared recipient total, `actual` persisted `email_count` |
 | `preparation_totals`        | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
-| `batch_recovery_conflict`   | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                                          |
+| `batch_recovery_conflict`   | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                           |
 | `batch_recipient_read`      | `expected`, `actual` rows after read retries are exhausted                                                                                                                                                   |
 | `message_recipient_counts`  | `expected` loaded members, `actual` message recipients plus exclusions, `recipient_count`, `submission_excluded_count`                                                                                       |
 | `provider_payload_count`    | `expected`, `actual` unique provider address keys                                                                                                                                                            |

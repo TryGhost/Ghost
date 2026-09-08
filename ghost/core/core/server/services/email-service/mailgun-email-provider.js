@@ -5,6 +5,7 @@ const { escapeExpression } = require('handlebars');
 const {
   RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
+  countsDiffer,
 } = require('./recipient-accounting');
 
 /**
@@ -152,11 +153,19 @@ class MailgunEmailProvider {
         options.expectedRecipientCount !== undefined &&
         Object.keys(recipientData).length !== options.expectedRecipientCount
       ) {
-        throw recipientVerificationError(emailId, 'provider_payload_count', {
-          batch_id: options.batchId,
-          expected: options.expectedRecipientCount,
-          actual: Object.keys(recipientData).length,
-        });
+        const actual = Object.keys(recipientData).length;
+        throw recipientVerificationError(
+          emailId,
+          'provider_payload_count',
+          {
+            batch_id: options.batchId,
+            expected: options.expectedRecipientCount,
+            actual,
+          },
+          {
+            countMismatch: countsDiffer(options.expectedRecipientCount, actual),
+          },
+        );
       }
 
       // update content to use Mailgun variable syntax for all replacements
