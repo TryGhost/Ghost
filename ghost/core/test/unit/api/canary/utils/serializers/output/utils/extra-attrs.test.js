@@ -94,5 +94,13 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
       );
       assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), true);
     });
+
+    it('does not leak null reading_time from the database when html is absent', function () {
+      const attrs = {
+        reading_time: null,
+      };
+      extraAttrsUtil.forPost({}, model, attrs);
+      assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), false);
+    });
   });
 });
