@@ -4,7 +4,6 @@ import {
   DEFAULT_TITLE,
   createSaveEngine,
   isCollisionToken,
-  isStatusIntent,
   zeroMilliseconds,
   type LeaveDecision,
   type PersistedIdentity,
@@ -413,12 +412,10 @@ export function createEditorSession({
     if (tiersIncomplete(prepared.access)) {
       return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
     }
-    // A status command carries its own deliberate publish time; only the time
-    // the sidebar staged is checked here.
-    if (
-      !isStatusIntent(prepared.command.kind) &&
-      publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)
-    ) {
+    // Every request, a status command included: a publish or revert with no
+    // explicit time of its own falls back to whatever the sidebar staged, and
+    // Core validates the publish time for scheduled posts only.
+    if (publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)) {
       return { ok: false, error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST } };
     }
 

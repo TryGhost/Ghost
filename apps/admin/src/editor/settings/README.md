@@ -139,6 +139,14 @@ it stands, and a save the writer asks for is refused with the same message, whic
 the status line and the save banner carry. A sent post is exempt from the rule
 and is re-timed like a published one.
 
+A status command cannot carry a time the section refuses either. Publishing and
+unpublishing take the staged time when they have none of their own, so both are
+refused with the same message while it is still to come; a staged time already in
+the past is carried, and the post is backdated to it. Scheduling carries the
+publish flow's own time and releases whatever the sidebar staged. The flow's
+picker is not pre-filled from a staged time: its floor is ahead of now and a
+staged time is always in the past, so there would be nothing left to keep.
+
 A scheduled post's fields are disabled and carry `Use the publish menu to
 re-schedule`: its time is the publish flow's to move, and the section says so
 rather than offering a second route to it. Once a scheduled time has passed the

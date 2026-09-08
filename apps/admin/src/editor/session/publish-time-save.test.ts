@@ -185,6 +185,53 @@ describe('staging the publish time', () => {
     });
   });
 
+  it('publishes at a staged time the writer backdated to', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+
+    session.editPublishedAt(PAST);
+
+    expect(await session.dispatchPublish()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[0][0]).toMatchObject({ published_at: PAST, status: 'published' });
+  });
+
+  it('refuses to publish at a staged time that has not passed', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+
+    session.editPublishedAt(future());
+
+    expect(await session.dispatchPublish()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST },
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('refuses to unpublish into a staged time that has not passed', async () => {
+    const { session, update } = publishTimeSession('published', PAST);
+
+    session.editPublishedAt(future());
+
+    expect(await session.dispatchRevert()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST },
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('schedules at the flow’s time and releases the one the sidebar staged', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+    const scheduledAt = future();
+
+    session.editPublishedAt(PAST);
+    expect(await session.dispatchSchedule({ publishedAt: scheduledAt })).toMatchObject({
+      kind: 'saved',
+    });
+
+    expect(update.mock.calls[0][0]).toMatchObject({ published_at: scheduledAt });
+    expect(session.getPublishedAt()).toBe(scheduledAt);
+    expect(session.isDirty()).toBe(false);
+  });
+
   it('keeps a staged time through a refetch that does not carry it', () => {
     const { session } = publishTimeSession('published', PAST);
 
