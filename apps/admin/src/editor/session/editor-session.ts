@@ -19,6 +19,7 @@ import {
 import type {
   EditablePostPatch,
   EditablePostProjection,
+  RestoredRevision,
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
@@ -122,6 +123,8 @@ export interface EditorSession {
   /** Routes a manual slug edit through the slug machine, then the same save policy. */
   editSlug: (input: string) => Promise<SlugEditOutcome>;
   patchLexical: (lexical: unknown) => void;
+  /** Writes a revision's fields into the post and saves them; true once persisted. */
+  restoreRevision: (restored: RestoredRevision) => Promise<boolean>;
   setBaseline: (lexical: LexicalInput) => void;
   baselineFailed: (error: unknown) => void;
   commitTitle: (title: string) => void;
@@ -637,6 +640,49 @@ export function createEditorSession({
     },
     getPublishedAt: livePublishedAt,
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
+
+    restoreRevision: async (restored) => {
+      if (disposed || restored.lexical === null || engine.getState().kind === 'reauth-pending') {
+        return false;
+      }
+      // A blank title persists as the default, the same as one the writer types.
+      const revision: RestoredRevision = {
+        ...restored,
+        title: restored.title.trim() ? restored.title : DEFAULT_TITLE,
+      };
+      const previous: RestoredRevision = {
+        lexical: live.lexical,
+        title: live.title,
+        custom_excerpt: live.custom_excerpt,
+        feature_image: live.feature_image,
+        feature_image_alt: live.feature_image_alt,
+        feature_image_caption: live.feature_image_caption,
+      };
+
+      patchLive(revision);
+      // Ember's slug task bails once the post carries the revision's title, so a
+      // restore leaves the URL alone.
+      slug.titleReplaced(revision.title);
+
+      // The reauth controls are behind the history modal. Fail and roll back
+      // this restore instead of leaving it frozen with no accessible way out.
+      const stop = engine.subscribe(() => {
+        if (engine.getState().kind === 'reauth-pending') {
+          engine.reauthAbandoned();
+        }
+      });
+      const completion = await engine.dispatch('explicit').finally(stop);
+      if (completion.kind !== 'saved') {
+        // The editor surface never adopted the revision, so nothing may keep it.
+        patchLive(previous);
+        slug.titleReplaced(previous.title);
+        return false;
+      }
+      tracker.revisionRestored(identity.id, revision);
+      dirtyChanged();
+      return true;
+    },
+
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
       dirtyChanged();

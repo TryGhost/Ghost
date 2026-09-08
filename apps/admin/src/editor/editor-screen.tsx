@@ -212,6 +212,7 @@ function EditorContent({
         </div>
         {settingsOpen ? (
           <PostSettingsSidebar
+            cardConfig={currentCardConfig}
             currentUser={currentUser}
             hasInlineExcerpt={showExcerpt}
             postType={postType}

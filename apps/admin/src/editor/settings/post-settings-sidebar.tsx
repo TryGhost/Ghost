@@ -13,13 +13,14 @@ import {
   settingsExcerptInput,
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
-import type { PostType } from '@/editor/card-config';
+import type { PostCardConfig, PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { DeleteSection } from './delete-section';
 import { MetaDataSection } from './meta-data-section';
+import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
@@ -75,6 +76,8 @@ export interface PostSettingsSidebarProps {
   postType: PostType;
   /** The site's homepage URL, which the URL section previews the slug under. */
   siteUrl: string;
+  /** Renders the cards of a version being previewed. */
+  cardConfig: PostCardConfig;
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
@@ -88,6 +91,7 @@ export function PostSettingsSidebar({
   session,
   postType,
   siteUrl,
+  cardConfig,
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
@@ -113,6 +117,14 @@ export function PostSettingsSidebar({
     template: <TemplateSection postType={postType} session={session} />,
     delete: <DeleteSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
+    'post-history': (
+      <PostHistorySection
+        cardConfig={cardConfig}
+        postType={postType}
+        session={session}
+        showExcerpt={hasInlineExcerpt}
+      />
+    ),
   };
 
   // A pane whose section renders nothing would leave an empty panel with no way

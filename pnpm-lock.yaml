@@ -999,6 +999,9 @@ importers:
       dequal:
         specifier: 'catalog:'
         version: 2.0.3
+      dompurify:
+        specifier: 'catalog:'
+        version: 3.4.13
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0

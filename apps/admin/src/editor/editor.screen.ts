@@ -34,6 +34,14 @@ import {
   leaveEditorButton,
   pagesBackLink,
   postEditor,
+  postHistoryModal,
+  postHistoryPreview,
+  postHistoryPreviewBody,
+  postHistoryPreviewExcerpt,
+  postHistoryPreviewFeatureImage,
+  postHistoryPreviewTitle,
+  postHistoryRestoreConfirm,
+  postHistoryRevisionList,
   postSettingsSidebar,
   postsBackLink,
   removeFeatureImageButton,
@@ -56,6 +64,8 @@ import {
   settingsMetaDescriptionInput,
   settingsMetaTitleInput,
   settingsSerpPreview,
+  restoreRevisionButton,
+  settingsPostHistoryButton,
   settingsShowTitleToggle,
   settingsShowTitleWarning,
   settingsSlugError,
@@ -205,6 +215,29 @@ export const editorScreen = {
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
   settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
+
+  settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
+  postHistoryModal: () => page.getByTestId(postHistoryModal),
+  postHistoryRevisions: () => page.getByTestId(postHistoryRevisionList).getByRole('listitem'),
+  /** One revision row, with the controls it carries. */
+  postHistoryRevision: (index: number) => {
+    const row = page.getByTestId(postHistoryRevisionList).getByRole('listitem').nth(index);
+    return Object.assign(row, {
+      select: () => row.getByRole('button').first(),
+      restore: () => row.getByRole('button', { name: restoreRevisionButton }),
+    });
+  },
+  postHistoryPreview: () => page.getByTestId(postHistoryPreview),
+  postHistoryPreviewTitle: () => page.getByTestId(postHistoryPreviewTitle),
+  postHistoryPreviewExcerpt: () => page.getByTestId(postHistoryPreviewExcerpt),
+  postHistoryPreviewFeatureImage: () => page.getByTestId(postHistoryPreviewFeatureImage),
+  /** The read-only Koenig rendering of the selected version. */
+  postHistoryPreviewBody: () => page.getByTestId(postHistoryPreviewBody),
+  restoreConfirm: () => page.getByTestId(postHistoryRestoreConfirm),
+  confirmRestore: () =>
+    page
+      .getByTestId(postHistoryRestoreConfirm)
+      .getByRole('button', { name: restoreRevisionButton }),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

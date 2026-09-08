@@ -345,6 +345,53 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
+## Post history
+
+The row opens the post's saved versions, and it is absent whenever there is
+nothing to show: a post that has never been saved, one with no lexical content,
+and a published or sent post that only ever went out as an email.
+
+Versions are listed newest first, each with its date in the site's timezone and
+the author who wrote it, shown with their avatar; an author the API no longer
+resolves reads as a deleted staff user. The newest carries a `Latest` label, the version that first took the
+post to published carries `Published`, and one written because the post was
+unpublished carries `Unpublished`. Selecting a version previews it — feature
+image, title, the excerpt where the inline excerpt is on, and a read-only
+rendering of its body — and changes nothing about the post. The feature image
+caption is stored HTML, rendered as such and limited to the marks a caption can
+carry.
+
+Every version but the newest can be restored if it carries body content, behind a confirmation that says
+the site will be updated when the post is already published. A restore writes
+the version's body, title, feature image, alt text and caption back into the
+post, and its excerpt as well while the inline excerpt is on: a version written
+before the excerpt existed carries none, and the post keeps the excerpt it has
+rather than losing it. It then saves explicitly, so the server keeps a version
+of what was replaced, and the editor adopts the restored content and closes the
+history only once that save lands.
+
+A restored title is not a title the writer typed, so the slug is kept rather
+than moved to it. Whether it goes on following the title is then re-read from
+the slug itself: one the restored title still produces stays derived and moves
+with the next title the writer types, and one it does not produce reads as
+chosen by hand and stops following. A save that is refused puts the post back as
+it was — content, title and slug — leaves the editor and the list as they were,
+and reports the failure.
+
+While a restore is saving, the confirmation and history cannot be dismissed.
+An expired session rolls the restore back and asks the writer to sign in in a
+new tab before trying again. Closing history returns focus to its sidebar row.
+Older versions without body content remain available to preview but cannot be
+restored, so missing data cannot erase the current body. Malformed revision
+lists are treated as unavailable by both the editor and history; an invalid
+site timezone falls back to UTC.
+
+A restore is a document boundary for the slug, the same as a reload: a manual
+URL edit still waiting on the generator when it lands is released rather than
+left holding the save engine's slug wait. The restore's save carries the slug
+the post already holds, and the URL section accepts the next manual edit
+normally.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
