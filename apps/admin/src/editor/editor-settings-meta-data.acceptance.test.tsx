@@ -177,6 +177,29 @@ describe('Post settings meta data', () => {
     SLOW,
   );
 
+  it.each(['title', 'description'] as const)(
+    'saves the focused meta %s edit when Escape closes the pane',
+    async (field) => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openMetaData();
+
+      const input =
+        field === 'title'
+          ? editorScreen.settingsMetaTitle()
+          : editorScreen.settingsMetaDescription();
+      await input.fill('Saved when the pane closes');
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewRow('Meta data')).toHaveFocus();
+      await expect
+        .poll(() => submittedPost(saveApi)[`meta_${field}`], FIELD_POLL)
+        .toBe('Saved when the pane closes');
+    },
+    SLOW,
+  );
+
   it(
     'moves focus into the pane and back to the row it was opened from',
     async () => {

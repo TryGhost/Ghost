@@ -30,6 +30,11 @@ describe('truncate', () => {
   it('spends the last three characters on the ellipsis', () => {
     expect(truncate('a'.repeat(58), 60)).toBe(`${'a'.repeat(57)}...`);
   });
+
+  it('counts whole Unicode characters without splitting a surrogate pair', () => {
+    expect(truncate('😀'.repeat(57), 60)).toBe('😀'.repeat(57));
+    expect(truncate('😀'.repeat(58), 60)).toBe(`${'😀'.repeat(57)}...`);
+  });
 });
 
 describe('seoTitle', () => {

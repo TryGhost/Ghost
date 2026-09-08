@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { Input, Label, Textarea } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
   settingsMetaDescriptionInput,
   settingsMetaTitleInput,
@@ -34,9 +34,9 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
 
   return (
     <Text id={id} size="sm" tone="secondary">
-      Recommended: <b>{recommended}</b> characters. You&apos;ve used{' '}
+      Recommended: <b>{formatNumber(recommended)}</b> characters. You&apos;ve used{' '}
       <span className={cn('font-bold', used > recommended ? 'text-red' : 'text-green')}>
-        {used}
+        {formatNumber(used)}
       </span>
     </Text>
   );

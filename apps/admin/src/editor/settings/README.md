@@ -184,7 +184,9 @@ alone: its heading, the other sections and their rows are all out of the way,
 and the back button or Escape brings them back. The pane's title is the panel's
 heading and its accessible name, and the pane's header stays in place while the
 fields under it scroll. Opening a pane moves focus to its back button, and
-closing one returns focus to the row it was opened from.
+closing one returns focus to the row it was opened from. Closing also blurs the
+focused field before removing it, so Escape commits the edit as the back button
+does.
 
 An Escape something inside the pane has already answered — a dialog, a select,
 an uploader — leaves the pane open, so the writer dismisses one layer at a time.
@@ -340,8 +342,8 @@ writer is looking at, else `(Untitled)`; the description is the meta
 description, else the post's excerpt, else a sentence explaining that search
 engines will compose their own. The address is the canonical URL when the post
 carries one, else the site's own host and path with the post's slug. Titles and
-descriptions are truncated to what a result shows, the ellipsis counting toward
-the limit.
+descriptions are truncated to what a result shows, counting whole Unicode
+characters and the ellipsis toward the limit.
 
 ## Open and closed
 

@@ -23,7 +23,15 @@ export const SubviewContext = createContext<SubviewController | null>(null);
  */
 export function useSubviewController(): SubviewController {
   const [open, setOpen] = useState<OpenSubview | null>(null);
-  const close = useCallback(() => setOpen(null), []);
+  const close = useCallback(() => {
+    // Removing a focused field does not fire blur. Commit it before the pane
+    // unmounts, just as clicking the back button does.
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement) {
+      focused.blur();
+    }
+    setOpen(null);
+  }, []);
 
   useEffect(() => {
     if (!open) {

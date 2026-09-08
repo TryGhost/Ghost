@@ -21,7 +21,8 @@ export function characterCount(value: string): number {
 /** Ellipsis included in the limit, as the truncation this ports is. */
 export function truncate(value: string, characterLimit: number): string {
   const limit = characterLimit - 3;
-  return value.length > limit ? `${value.substring(0, limit)}...` : value;
+  const characters = Array.from(value);
+  return characters.length > limit ? `${characters.slice(0, limit).join('')}...` : value;
 }
 
 /** The meta title, else the title the writer is looking at. */
