@@ -1,5 +1,6 @@
 import { page } from 'vitest/browser';
 import {
+  addFacebookImageLabel,
   addFeatureImageLabel,
   conflictCancelReloadButton,
   conflictCopyContentButton,
@@ -44,6 +45,7 @@ import {
   postHistoryRevisionList,
   postSettingsSidebar,
   postsBackLink,
+  removeFacebookImageButton,
   removeFeatureImageButton,
   settingsAuthorChip,
   settingsAuthorsError,
@@ -55,6 +57,10 @@ import {
   settingsDeleteDialog,
   settingsDeleteError,
   settingsExcerptInput,
+  settingsFacebookDescriptionInput,
+  settingsFacebookPreview,
+  settingsFacebookPreviewImage,
+  settingsFacebookTitleInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
   settingsPublishDate,
@@ -225,6 +231,12 @@ export const editorScreen = {
       .getByTestId(settingsShortcutRow)
       .elements()
       .map((row) => row.textContent ?? ''),
+  settingsFacebookTitle: () => page.getByTestId(settingsFacebookTitleInput),
+  settingsFacebookDescription: () => page.getByTestId(settingsFacebookDescriptionInput),
+  settingsFacebookPreview: () => page.getByTestId(settingsFacebookPreview),
+  settingsFacebookPreviewImage: () => page.getByTestId(settingsFacebookPreviewImage),
+  settingsFacebookImageInput: () => page.getByLabelText(addFacebookImageLabel),
+  removeSettingsFacebookImage: () => page.getByRole('button', { name: removeFacebookImageButton }),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
   postHistoryModal: () => page.getByTestId(postHistoryModal),

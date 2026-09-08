@@ -66,6 +66,9 @@ export interface PostCardConfig extends PostCardConfigPorts {
   membersEnabled: boolean;
   siteTitle: string;
   siteDescription: string;
+  siteOgImage: string | null;
+  siteTwitterImage: string | null;
+  siteCoverImage: string | null;
   siteUrl: string;
   siteUuid: string;
   stripeEnabled: boolean;
@@ -124,6 +127,9 @@ export function buildPostCardConfig(
     searchLinks: ports.searchLinks,
     siteTitle: getSettingValue<string>(settings, 'title') ?? '',
     siteDescription: getSettingValue<string>(settings, 'description') ?? '',
+    siteOgImage: getSettingValue<string>(settings, 'og_image'),
+    siteTwitterImage: getSettingValue<string>(settings, 'twitter_image'),
+    siteCoverImage: getSettingValue<string>(settings, 'cover_image'),
     siteUrl: getHomepageUrl(site),
     siteUuid: site.site_uuid,
     stripeEnabled: checkStripeEnabled(settings, config),
