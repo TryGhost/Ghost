@@ -82,6 +82,23 @@ export function dismissLockQuietly(state: DunningState): void {
   writeLockDismissedFor(state);
 }
 
+/**
+ * Records the route a "Pay now" CTA was clicked on. The billing app's
+ * post-payment `previousPage` request is resolved from this on the Ember
+ * side — an explicit route rather than history.back(), so a deep link (or a
+ * tab whose history points outside Admin) falls back to the billing overview
+ * instead of leaving Ghost.
+ */
+const PAY_RETURN_ROUTE_KEY = 'ghost-dunning-pay-return-route';
+
+export function markPayNowReturnRoute(route: string): void {
+  try {
+    window.sessionStorage.setItem(PAY_RETURN_ROUTE_KEY, route);
+  } catch {
+    // Without storage the post-payment return falls back to the overview.
+  }
+}
+
 function parseDate(value: string | undefined): Date | null {
   if (!value) {
     return null;

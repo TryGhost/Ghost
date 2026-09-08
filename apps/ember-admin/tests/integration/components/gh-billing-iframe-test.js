@@ -196,6 +196,14 @@ describe('Integration: Component: gh-billing-iframe', function () {
         sinon.stub(this.owner.lookup('service:limit'), 'reload');
         const feature = this.owner.lookup('service:feature');
         sinon.stub(feature, 'dunningWarnings').get(() => true);
+        const config = this.owner.lookup('config:main');
+        config.hostSettings = {
+            ...config.hostSettings,
+            billing: {
+                ...config.hostSettings?.billing,
+                dunning: {active: true, paymentFailedAt: '2026-08-26', suspendsAt: '2026-09-23'}
+            }
+        };
 
         await render(hbs`<GhBillingIframe />`);
 
@@ -203,6 +211,24 @@ describe('Integration: Component: gh-billing-iframe', function () {
 
         expect(showAlert.called).to.be.false;
         expect(closeAlerts.calledWith('billing.overdue')).to.be.true;
+    });
+
+    it('keeps the overdue alert when the flag is on but the host injects no dunning state', async function () {
+        const notifications = this.owner.lookup('service:notifications');
+        const showAlert = sinon.stub(notifications, 'showAlert');
+        sinon.stub(this.owner.lookup('service:config-manager'), 'fetch').resolves();
+        sinon.stub(this.owner.lookup('service:limit'), 'reload');
+        const feature = this.owner.lookup('service:feature');
+        sinon.stub(feature, 'dunningWarnings').get(() => true);
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({subscription: {status: 'past_due'}});
+
+        // Staggered rollout: with no dunning block the React warnings render
+        // nothing, so the legacy alert must not stand down
+        expect(showAlert.calledOnce).to.be.true;
+        expect(showAlert.firstCall.args[1]).to.include({type: 'error', key: 'billing.overdue'});
     });
 
     it('ignores a navigateToAdmin message with an unknown destination', async function () {

@@ -168,10 +168,15 @@ export default class GhBillingIframe extends Component {
 
         // Detect if the current subscription is in a grace state and render a notification.
         // The dunningWarnings flag replaces this alert with the React admin's own
-        // payment-failure warning states, so it stands down while the flag is on.
+        // payment-failure warning states, so it stands down while the flag is on —
+        // but only when the host actually injects a dunning block; during a
+        // staggered rollout (flag on, hosting config not yet updated) the user
+        // must not be left with no warning at all.
+        const dunningWarningsActive = this.feature.dunningWarnings
+            && this.config.hostSettings?.billing?.dunning?.active === true;
         if (
             (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid')
-            && !this.feature.dunningWarnings
+            && !dunningWarningsActive
         ) {
             // This notification needs to be shown to every user regardless their permissions to see billing
             this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});

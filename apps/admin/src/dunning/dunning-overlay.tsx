@@ -5,7 +5,13 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { useDunningState, dismissLock, dismissLockQuietly } from './use-dunning-state';
+import { useLocation } from '@tryghost/admin-x-framework';
+import {
+  useDunningState,
+  dismissLock,
+  dismissLockQuietly,
+  markPayNowReturnRoute,
+} from './use-dunning-state';
 import { useDunningLockTakeover } from './use-dunning-lock-takeover';
 import { useOwnerUser } from './use-owner-user';
 import { EXPORT_URL, PAY_URL, lockedHeadline, lockedMessage } from './dunning-copy';
@@ -46,6 +52,7 @@ export function DunningOverlay() {
   const { data: currentUser } = useCurrentUser();
   const state = useDunningState();
   const takeover = useDunningLockTakeover();
+  const location = useLocation();
   const isOwner = Boolean(currentUser && isOwnerUser(currentUser));
   // This component mounts on every Admin page; only fetch the user list in
   // the one case that renders the owner card (staff seeing the takeover)
@@ -101,7 +108,13 @@ export function DunningOverlay() {
         {isOwner ? (
           <Inline align="center" className="mt-4" gap="md">
             <Button size="lg" asChild>
-              <a href={PAY_URL} onClick={() => dismissLockQuietly(state)}>
+              <a
+                href={PAY_URL}
+                onClick={() => {
+                  dismissLockQuietly(state);
+                  markPayNowReturnRoute(location.pathname);
+                }}
+              >
                 Pay now
               </a>
             </Button>
