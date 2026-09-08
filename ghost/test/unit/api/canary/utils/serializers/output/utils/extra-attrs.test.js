@@ -196,5 +196,23 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
         assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), false);
       });
     });
+
+    it('ignores divergent stored values when storedPostMetadata is off', function () {
+      labsStub.withArgs('storedPostMetadata').returns(false);
+      modelGetStub.withArgs('auto_excerpt').returns('stored-should-be-ignored');
+      modelGetStub.withArgs('custom_excerpt').returns(null);
+      modelGetStub.withArgs('plaintext').returns('computed from plaintext body');
+
+      const attrs = {
+        reading_time: 99,
+        html: `<p>${'word '.repeat(390)}</p>`,
+      };
+
+      extraAttrsUtil.forPost({}, model, attrs);
+
+      assert.equal(attrs.excerpt, 'computed from plaintext body');
+      assert.equal(attrs.reading_time, 1);
+      assert.notEqual(attrs.reading_time, 99);
+    });
   });
 });

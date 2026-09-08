@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const { resolveAutoExcerpt } = require('../utils/extra-attrs');
 
 const commentFields = [
   'id',
@@ -120,11 +121,16 @@ const commentMapper = (model, frame) => {
 
     // Excerpts can contain gated post content, so only Admin gets them
     if (!isPublicRequest) {
-      // Compute excerpt from custom_excerpt or plaintext (same logic as post serializer)
+      // Same excerpt resolution as Posts/Pages (custom_excerpt wins; stored
+      // auto_excerpt preferred behind storedPostMetadata; else plaintext slice).
       if (jsonModel.post.custom_excerpt) {
         response.post.excerpt = jsonModel.post.custom_excerpt;
-      } else if (jsonModel.post.plaintext) {
-        response.post.excerpt = jsonModel.post.plaintext.substring(0, 500);
+      } else {
+        response.post.excerpt = resolveAutoExcerpt({
+          get(attr) {
+            return jsonModel.post[attr];
+          },
+        });
       }
     }
   }

@@ -21,6 +21,8 @@ function resolveAutoExcerpt(model) {
   return computeAutoExcerpt(model.get('plaintext'));
 }
 
+module.exports.resolveAutoExcerpt = resolveAutoExcerpt;
+
 /**
  *
  * @param {Object} options - frame options
