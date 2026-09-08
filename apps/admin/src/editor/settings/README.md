@@ -131,13 +131,18 @@ an edit stages a value, so an untouched draft still leaves the time to the
 server. The date is chosen from a calendar and the time typed as `HH:mm`; an
 unparseable time returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
-minute is the one already saved, so tabbing through the fields or returning to
-that minute is not an edit and cannot backdate the post by up to a minute.
+minute is the one already saved. Tabbing through an untouched time, retyping it,
+or choosing the displayed calendar day does not commit a value.
 
 A staged time is the writer's unsaved work like any other field: the post reads
 dirty, Update enables and the leave guard asks. What persists it is the same
 gate as the rest of the sidebar, so a draft saves it on its own and every other
 status holds it until Update.
+
+An edit made during a save stays staged until that save settles, even if the
+writer returns to the saved minute or a refetch already carries the chosen time.
+An older response cannot discard that choice. Once the saved time agrees and no
+older save can overwrite it, the staged edit is released.
 
 The calendar stops at today, and a draft's or published post's time may not be
 the current moment or later. Choosing one leaves the value staged and shown with

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createEditorSession, type EditorWritePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from './settings-fields';
+import { deferred } from '@/utils/deferred';
 
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PAST = '2020-06-01T10:00:00.000Z';
@@ -128,6 +129,126 @@ describe('staging the publish time', () => {
     session.commitField();
     await Promise.resolve();
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it('preserves an undo and its stored seconds through an older save', async () => {
+    const { session, update } = publishTimeSession('published', STAMPED);
+    const pending = deferred<void>();
+    const persist = update.getMockImplementation()!;
+    update.mockImplementationOnce(async (payload) => {
+      await pending.promise;
+      return persist(payload);
+    });
+
+    session.editPublishedAt(OLDER);
+    const save = session.dispatchExplicit();
+    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    session.editPublishedAt(PAST);
+
+    expect(session.hasUnsavedContent()).toBe(true);
+    pending.resolve();
+    expect(await save).toMatchObject({ kind: 'saved' });
+    expect(session.getPublishedAt()).toBe(STAMPED);
+    expect(session.isDirty()).toBe(true);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[1][0].published_at).toBe(STAMPED);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('retains a newer time through a matching refetch and an older save', async () => {
+    const { session, update } = publishTimeSession('published', PAST);
+    const pending = deferred<void>();
+    const persist = update.getMockImplementation()!;
+    update.mockImplementationOnce(async (payload) => {
+      await pending.promise;
+      return persist(payload);
+    });
+
+    session.patchFields({ custom_excerpt: 'An unrelated edit' });
+    const save = session.dispatchExplicit();
+    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    session.editPublishedAt(OLDER);
+    session.recordRefetched({
+      id: 'post-id',
+      uuid: 'post-uuid',
+      url: 'https://example.com/post/',
+      title: 'Post',
+      slug: 'post',
+      status: 'published',
+      lexical: null,
+      updated_at: '2026-01-01T00:00:01.000Z',
+      published_at: OLDER,
+      tags: [],
+    });
+
+    pending.resolve();
+    expect(await save).toMatchObject({ kind: 'saved' });
+    expect(session.getPublishedAt()).toBe(OLDER);
+    expect(session.isDirty()).toBe(true);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[1][0].published_at).toBe(OLDER);
+    expect(session.isDirty()).toBe(false);
+  });
+
+  it('releases a newer edit when the save already carries its time', async () => {
+    const { session, update } = publishTimeSession('published', PAST);
+    const pending = deferred<void>();
+    const persist = update.getMockImplementation()!;
+    update.mockImplementationOnce(async (payload) => {
+      await pending.promise;
+      return persist(payload);
+    });
+
+    session.editPublishedAt(OLDER);
+    const save = session.dispatchExplicit();
+    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    session.editPublishedAt(PAST);
+    session.editPublishedAt(OLDER);
+
+    pending.resolve();
+    expect(await save).toMatchObject({ kind: 'saved' });
+    expect(session.getPublishedAt()).toBe(OLDER);
+    expect(session.isDirty()).toBe(false);
+    expect(session.hasUnsavedContent()).toBe(false);
+  });
+
+  it('releases an undo when the older save fails', async () => {
+    const { session, update } = publishTimeSession('published', STAMPED);
+    const pending = deferred<EditorRecord>();
+    update.mockImplementationOnce(() => pending.promise);
+
+    session.editPublishedAt(OLDER);
+    const save = session.dispatchExplicit();
+    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    session.editPublishedAt(PAST);
+
+    pending.reject(new Error('Offline'));
+    expect(await save).toMatchObject({ kind: 'failed' });
+    expect(session.getPublishedAt()).toBe(STAMPED);
+    expect(session.hasUnsavedContent()).toBe(false);
+  });
+
+  it('does not let an unchanged sidebar value override an in-flight schedule', async () => {
+    const { session, update } = publishTimeSession('draft', null);
+    const scheduledAt = future();
+    const pending = deferred<void>();
+    const persist = update.getMockImplementation()!;
+    update.mockImplementationOnce(async (payload) => {
+      await pending.promise;
+      return persist(payload);
+    });
+
+    session.editPublishedAt(PAST);
+    const save = session.dispatchSchedule({ publishedAt: scheduledAt });
+    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    session.editPublishedAt(PAST);
+
+    pending.resolve();
+    expect(await save).toMatchObject({ kind: 'saved' });
+    expect(session.getPublishedAt()).toBe(scheduledAt);
+    expect(session.isDirty()).toBe(false);
   });
 
   it('sends the chosen minute once the writer moves off the saved one', async () => {

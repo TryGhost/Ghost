@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
@@ -117,6 +117,37 @@ async function setTime(value: string) {
 
 /** The sidebar's Publish date section: when the post is published, in site time. */
 describe('Post settings publish date', () => {
+  it.each(['untouched time', 'retyped time', 'reselected day'] as const)(
+    'leaves a draft’s publish time unset with an unchanged picker (%s)',
+    async (interaction) => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+      await openPublishDate();
+
+      if (interaction === 'reselected day') {
+        await editorScreen.settingsPublishDate().click();
+        await page.getByRole('gridcell', { selected: true }).click();
+        await userEvent.keyboard('{Escape}');
+      } else {
+        await editorScreen.settingsPublishTime().click();
+        if (interaction === 'retyped time') {
+          const displayed = (editorScreen.settingsPublishTime().element() as HTMLInputElement)
+            .value;
+          await editorScreen.settingsPublishTime().fill('');
+          await editorScreen.settingsPublishTime().fill(displayed);
+        }
+        await userEvent.tab();
+      }
+
+      // Save another field to observe the date carried by the session.
+      await editorScreen.titleInput().fill('Changed title');
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+      await expect.poll(() => submittedPost(saveApi).title, POLL).toBe('Changed title');
+      expect(submittedPost(saveApi).published_at).toBeNull();
+    },
+    SLOW,
+  );
+
   it(
     'shows a published post’s publish time in the site’s timezone',
     async () => {
@@ -137,20 +168,21 @@ describe('Post settings publish date', () => {
   it(
     'persists a draft’s publish time on its own, as a UTC instant',
     async () => {
+      const timezone = middayTimezone();
       const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
       await openPublishDate();
 
       // A draft carries no publish time, so the field stands at today in site time.
-      // Midnight is the one time of day that is never ahead of the clock.
+      // With the clock around midday, midnight is always a different, past time.
       const chosen = (editorScreen.settingsPublishDate().element() as HTMLInputElement).value;
 
       await setTime('00:00');
 
       await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // 00:00 in Sydney is the same instant as the ISO string the payload carries.
+      // Site-local midnight is the same instant as the ISO string the payload carries.
       expect(submittedPost(saveApi)).toMatchObject({
-        published_at: moment.tz(`${chosen} 00:00`, SYDNEY).toISOString(),
+        published_at: moment.tz(`${chosen} 00:00`, timezone).toISOString(),
         status: 'draft',
       });
       await expect.element(editorScreen.settingsPublishTime()).toHaveValue('00:00');
@@ -167,7 +199,7 @@ describe('Post settings publish date', () => {
 
       await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
 
-      // Tabbing out commits the minute the field already shows.
+      // Tabbing through the field leaves the stored timestamp alone.
       await editorScreen.settingsPublishTime().click();
       await userEvent.tab();
       await expect.element(editorScreen.updateButton()).toBeDisabled();

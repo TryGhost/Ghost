@@ -74,17 +74,27 @@ export function DateTimePicker({
     });
 
     setCalendarOpen(false);
-    onChange(next.toDate());
+    if (!next.isSame(current, 'minute')) {
+      onChange(next.toDate());
+    }
   };
 
   const commitTime = (input: string) => {
+    if (timeDraft === null) {
+      return;
+    }
     const normalized = /^\d:\d\d$/.test(input) ? `0${input}` : input;
     const [hour, minute] = normalized.split(':').map((part) => parseInt(part, 10));
 
     // An unparseable time reverts to the current one, as the Ember field does.
     setTimeDraft(null);
 
-    if (!/^\d\d:\d\d$/.test(normalized) || hour > 23 || minute > 59) {
+    if (
+      !/^\d\d:\d\d$/.test(normalized) ||
+      hour > 23 ||
+      minute > 59 ||
+      normalized === current.format(TIME_FORMAT)
+    ) {
       return;
     }
 

@@ -181,7 +181,7 @@ export function createEditorSession({
     : { id: null, updatedAt: null };
   let status: PostStatus = record?.status ?? 'draft';
   let publishedAt: string | null = record?.published_at ?? null;
-  // The publish time the writer moved to, or null when they have not moved it.
+  // Retain the writer's choice through older saves, even when it matches a refetch.
   let stagedPublishedAt: string | null = null;
   let publishedAtEditedAt = 0;
   let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
@@ -198,6 +198,15 @@ export function createEditorSession({
 
   function livePublishedAt(): string | null {
     return stagedPublishedAt ?? publishedAt;
+  }
+
+  function releaseSavedPublishTime(): void {
+    if (
+      sameMinute(stagedPublishedAt, publishedAt) &&
+      (inFlightSince === null || publishedAtEditedAt <= inFlightSince)
+    ) {
+      stagedPublishedAt = null;
+    }
   }
 
   const tracker = createChangeTracker({ siteUrl });
@@ -429,6 +438,7 @@ export function createEditorSession({
 
       if (!saved) {
         inFlightSince = null;
+        releaseSavedPublishTime();
         return { ok: false, error: { kind: 'unknown', message: saveFailureMessage } };
       }
 
@@ -443,6 +453,7 @@ export function createEditorSession({
       };
     } catch (error) {
       inFlightSince = null;
+      releaseSavedPublishTime();
       return { ok: false, error: toSaveError(error, saveFailureMessage) };
     }
   }
@@ -484,6 +495,7 @@ export function createEditorSession({
     if (publishedAtEditedAt <= prepared.builtAtVersion) {
       stagedPublishedAt = null;
     }
+    releaseSavedPublishTime();
     latestRevision = latestRevisionOf(result.post);
     live = { ...live, updated_at: result.updatedAt };
 
@@ -595,15 +607,15 @@ export function createEditorSession({
     // Staged rather than patched: the engine reads the publish time off the
     // snapshot, so a status command's own target still wins over this.
     editPublishedAt: (next) => {
-      // The saved seconds are kept when the chosen minute is the one already
-      // saved, so returning to it is not an edit and cannot backdate the post.
-      const staged = sameMinute(next, publishedAt) ? null : zeroMilliseconds(next);
-      if (staged === stagedPublishedAt) {
+      if (sameMinute(next, livePublishedAt())) {
         return;
       }
-      stagedPublishedAt = staged;
+      // The saved seconds are kept when the chosen minute is the one already
+      // saved. An undo still needs its value until an older save has settled.
+      stagedPublishedAt = sameMinute(next, publishedAt) ? publishedAt : zeroMilliseconds(next);
       version += 1;
       publishedAtEditedAt = version;
+      releaseSavedPublishTime();
       dirtyChanged();
     },
     getPublishedAt: livePublishedAt,
@@ -649,9 +661,7 @@ export function createEditorSession({
       identity = { id: next.id, updatedAt };
       status = next.status ?? status;
       publishedAt = next.published_at ?? null;
-      if (sameMinute(stagedPublishedAt, publishedAt)) {
-        stagedPublishedAt = null;
-      }
+      releaseSavedPublishTime();
       latestRevision = latestRevisionOf(next);
       dirtyChanged();
       return true;
