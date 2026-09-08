@@ -91,7 +91,7 @@
     "@tryghost/adapter-base-scheduling": "workspace:*",
     "@tryghost/adapter-base-sso": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
-    "@tryghost/api-framework": "catalog:",
+    "@tryghost/api-framework": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.3.12",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/checkout": "workspace:*",
