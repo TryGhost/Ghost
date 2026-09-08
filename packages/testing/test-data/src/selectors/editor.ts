@@ -66,6 +66,10 @@ export const settingsAuthorChip = 'settings-author-chip';
 export const settingsDeleteButton = 'settings-delete-button';
 export const settingsDeleteDialog = 'settings-delete-dialog';
 export const settingsDeleteError = 'settings-delete-error';
+export const settingsSubviewPane = 'settings-subview-pane';
+export const settingsMetaTitleInput = 'settings-meta-title-input';
+export const settingsMetaDescriptionInput = 'settings-meta-description-input';
+export const settingsSerpPreview = 'settings-serp-preview';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';

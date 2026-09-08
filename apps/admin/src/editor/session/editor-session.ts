@@ -31,12 +31,12 @@ import {
   AUTHORS_REQUIRED,
   PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
-  TIERS_REQUIRED,
   identityFor,
   publishedAtInFuture,
-  tiersIncomplete,
+  settingsFieldError,
   type EditorSettingsPatch,
   type SettingsFieldKey,
+  type ValidatedSettingsFields,
 } from './settings-fields';
 
 export type EditorWritePayload = Record<string, unknown>;
@@ -59,8 +59,8 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
   authoredFrom: AuthoredFields;
-  /** Access values captured for validation of this request. */
-  access: Pick<EditablePostProjection, 'visibility' | 'tiers'>;
+  /** Field values captured for validation of this request. */
+  validated: ValidatedSettingsFields;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
   payload: EditorWritePayload;
@@ -407,7 +407,12 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
-      access: { visibility: live.visibility, tiers: live.tiers },
+      validated: {
+        visibility: live.visibility,
+        tiers: live.tiers,
+        meta_title: live.meta_title,
+        meta_description: live.meta_description,
+      },
       builtAtVersion: version,
       payload,
       options: {
@@ -422,10 +427,11 @@ export function createEditorSession({
   // No abort signal: the transport owns its own controller and takes none. A
   // response arriving after disposal is dropped by the engine instead.
   async function execute(prepared: PreparedSave): Promise<SaveOutcome<EditorSaveResult>> {
-    // Untouched creates carry null visibility and use the server's default.
-    // An explicit tier selection needs a tier, including on the first save.
-    if (tiersIncomplete(prepared.access)) {
-      return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
+    // The post validator runs before every save: an explicit tier selection
+    // needs a tier even on the first save, and an over-long field is not sent.
+    const invalid = settingsFieldError(prepared.validated);
+    if (invalid) {
+      return { ok: false, error: { kind: 'validation', message: invalid } };
     }
     // A status command with no time of its own carries whatever the sidebar
     // staged; Core validates the publish time for scheduled posts only.
@@ -536,11 +542,10 @@ export function createEditorSession({
   // The one place the sidebar's save policy lives. A draft persists a settings
   // field the way the body does; every other status stages it until Update.
   function commitField(): void {
-    // execute() refuses an incomplete tier pairing on every path; this only
-    // keeps a field save from being dispatched for it.
+    // Invalid settings stay staged rather than dispatching a field save.
     if (
       status !== 'draft' ||
-      tiersIncomplete(live) ||
+      settingsFieldError(live) ||
       authorsEmptied() ||
       publishedAtInFuture(status, livePublishedAt())
     ) {

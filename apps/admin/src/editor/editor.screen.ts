@@ -53,10 +53,14 @@ import {
   settingsPublishDateError,
   settingsPublishDateNote,
   settingsPublishTime,
+  settingsMetaDescriptionInput,
+  settingsMetaTitleInput,
+  settingsSerpPreview,
   settingsShowTitleToggle,
   settingsShowTitleWarning,
   settingsSlugError,
   settingsSlugInput,
+  settingsSubviewPane,
   settingsTagsField,
   settingsTagsInput,
   settingsTagsList,
@@ -193,6 +197,14 @@ export const editorScreen = {
       .getByTestId(settingsDeleteDialog)
       .getByRole('button', { name: settingsDeleteCancelButton, exact: true }),
   settingsDeleteError: () => page.getByTestId(settingsDeleteError),
+  /** The row in the section list that opens a subview pane. */
+  settingsSubviewRow: (label: string) =>
+    page.getByTestId(postSettingsSidebar).getByRole('button', { name: label, exact: true }),
+  settingsSubviewPane: () => page.getByTestId(settingsSubviewPane),
+  settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
+  settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
+  settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
+  settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

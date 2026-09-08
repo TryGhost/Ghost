@@ -168,6 +168,31 @@ disabled until the server moves the post to published.
 Every role that can open the sidebar can set the publish date. It is not one of
 the Owner, Administrator and Editor fields.
 
+## Subviews
+
+Some sections are a row that opens a pane over the rest of the panel rather than
+fields in the list. `SettingsSubview` in `settings-subview.tsx` is both halves:
+give it the section's own id, an icon and a label for the row, a title and a
+back-button label for the pane, and the pane's fields as children. Two props
+adjust the shell around them: `wide` widens the panel for a pane that needs the
+room, and `contentClassName` overrides the pane body's default padding for a pane
+that runs full-bleed. Without either, the shell renders the pane as it renders
+this one.
+
+Only one pane is open at a time. While it is, the panel shows that section
+alone: its heading, the other sections and their rows are all out of the way,
+and the back button or Escape brings them back. The pane's title is the panel's
+heading and its accessible name, and the pane's header stays in place while the
+fields under it scroll. Opening a pane moves focus to its back button, and
+closing one returns focus to the row it was opened from.
+
+An Escape something inside the pane has already answered — a dialog, a select,
+an uploader — leaves the pane open, so the writer dismisses one layer at a time.
+A pane whose section renders nothing, as a role-gated section does for a role
+that cannot write it, falls back to the section list rather than an empty panel.
+The panel owns which pane is open, so closing the panel or leaving the editor
+drops it and the panel is next opened on the section list.
+
 ## Access
 
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
@@ -291,6 +316,32 @@ The list the delete lands on is refetched rather than served from the cache it
 was left with, which would still carry the deleted row. The refetch is left to
 the list's own mount: the editor's read of the post it just deleted is still
 mounted at that moment, and refetching that would answer 404.
+
+## Meta data
+
+Meta data is a pane, and every role that can open the panel can open it. The
+meta title and description are settings fields like any other: staged as the
+writer types, committed on the blur that ends the edit, and persisted or held
+back by the panel's save policy. A field cleared back to empty is stored as no
+value, as the excerpt is.
+
+Neither field is required, and the character counts beside them are a
+recommendation rather than a limit: 60 for the title, 145 for the description,
+counted as symbols so a multibyte character counts once, and coloured once the
+writer is past the recommendation. The lengths that are limits are the column
+widths, 300 and 500. Past one of those the field says so where the writer is
+typing and nothing is saved — not the field itself, and not a save the writer
+asks for, which is refused with the same message rather than sent and answered
+with a server error.
+
+The preview under them is the result the post would produce. Each line falls
+back rather than emptying: the title is the meta title, else the title the
+writer is looking at, else `(Untitled)`; the description is the meta
+description, else the post's excerpt, else a sentence explaining that search
+engines will compose their own. The address is the canonical URL when the post
+carries one, else the site's own host and path with the post's slug. Titles and
+descriptions are truncated to what a result shows, the ellipsis counting toward
+the limit.
 
 ## Open and closed
 
