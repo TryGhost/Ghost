@@ -1,15 +1,15 @@
-const readingMinutes = require('@tryghost/helpers').utils.readingMinutes;
+const readingMinutes = require('@tryghost/helpers').utils.readingMinutes as (
+  html: string,
+  additionalImages?: number,
+) => number;
 
-const AUTO_EXCERPT_LENGTH = 500;
+export const AUTO_EXCERPT_LENGTH = 500;
 
 /**
  * Deterministic automatic excerpt from stored plaintext.
  * Matches the Posts API excerpt fallback (custom_excerpt still wins at read time).
- *
- * @param {string|null|undefined} plaintext
- * @returns {string|null}
  */
-function computeAutoExcerpt(plaintext) {
+export function computeAutoExcerpt(plaintext: string | null | undefined): string | null {
   if (!plaintext) {
     return null;
   }
@@ -20,12 +20,11 @@ function computeAutoExcerpt(plaintext) {
 /**
  * Deterministic reading-time estimate from HTML (+ feature image).
  * Matches the Posts API serializer: feature image counts as one additional image.
- *
- * @param {string|null|undefined} html
- * @param {string|null|undefined} featureImage
- * @returns {number|null}
  */
-function computeReadingTime(html, featureImage) {
+export function computeReadingTime(
+  html: string | null | undefined,
+  featureImage: string | null | undefined,
+): number | null {
   if (!html) {
     return null;
   }
@@ -33,9 +32,3 @@ function computeReadingTime(html, featureImage) {
   const additionalImages = featureImage ? 1 : 0;
   return readingMinutes(html, additionalImages);
 }
-
-module.exports = {
-  AUTO_EXCERPT_LENGTH,
-  computeAutoExcerpt,
-  computeReadingTime,
-};
