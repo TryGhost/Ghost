@@ -10,6 +10,10 @@ import {
   OG_TITLE_TOO_LONG,
   TIERS_REQUIRED,
   VALIDATED_SETTINGS_FIELD_KEYS,
+  X_DESCRIPTION_MAX,
+  X_DESCRIPTION_TOO_LONG,
+  X_TITLE_MAX,
+  X_TITLE_TOO_LONG,
   overLength,
   settingsFieldError,
   validatedFieldsOf,
@@ -22,6 +26,8 @@ const VALID = {
   meta_description: null,
   og_title: null,
   og_description: null,
+  twitter_title: null,
+  twitter_description: null,
 };
 
 describe('overLength', () => {
@@ -85,6 +91,22 @@ describe('settingsFieldError', () => {
     ).toBe(OG_DESCRIPTION_TOO_LONG);
   });
 
+  it('refuses an X title past the column width', () => {
+    expect(settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX) })).toBeNull();
+    expect(settingsFieldError({ ...VALID, twitter_title: 'a'.repeat(X_TITLE_MAX + 1) })).toBe(
+      X_TITLE_TOO_LONG,
+    );
+  });
+
+  it('refuses an X description past the column width', () => {
+    expect(
+      settingsFieldError({ ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX) }),
+    ).toBeNull();
+    expect(
+      settingsFieldError({ ...VALID, twitter_description: 'a'.repeat(X_DESCRIPTION_MAX + 1) }),
+    ).toBe(X_DESCRIPTION_TOO_LONG);
+  });
+
   it('names the field the message is about', () => {
     expect(META_TITLE_TOO_LONG).toBe('Meta Title cannot be longer than 300 characters.');
     expect(META_DESCRIPTION_TOO_LONG).toBe(
@@ -93,6 +115,10 @@ describe('settingsFieldError', () => {
     expect(OG_TITLE_TOO_LONG).toBe('Facebook Title cannot be longer than 300 characters.');
     expect(OG_DESCRIPTION_TOO_LONG).toBe(
       'Facebook Description cannot be longer than 500 characters.',
+    );
+    expect(X_TITLE_TOO_LONG).toBe('Twitter Title cannot be longer than 300 characters.');
+    expect(X_DESCRIPTION_TOO_LONG).toBe(
+      'Twitter Description cannot be longer than 500 characters.',
     );
   });
 });

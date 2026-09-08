@@ -345,6 +345,59 @@ carries one, else the site's own host and path with the post's slug. Titles and
 descriptions are truncated to what a result shows, counting whole Unicode
 characters and the ellipsis toward the limit.
 
+## X card
+
+The card X renders for the post is a pane, and every role that can open the
+panel can open it. Its image, title and description are the post's `twitter_`
+fields: the title and description are staged as the writer types and committed
+on the blur that ends the edit, and an uploaded or removed image is committed as
+it lands rather than waiting for a blur. Committing is not saving, so the save
+policy above still decides: a draft persists all three, and every other status
+stages them until Update. A field cleared back to empty is stored as no value.
+The image comes from the file picker or a drop; there is no Unsplash picker
+here, and an upload the server refuses is reported without changing the field.
+
+Nothing here is required, and each line falls back rather than emptying. The
+title is the X title, else the meta title, else the title the writer is looking
+at, else `(Untitled)`. The description is the X description, else the post's
+excerpt, else its meta description, else the excerpt the server generated for
+it, else the site's own description. The image is the X image, else the post's
+feature image, else the site's X image and cover image. Those fallbacks are what
+the two inputs show as placeholders, truncated to 40 and 150 characters, and
+what the card under them previews: the title whole, the description truncated to
+140, and the site's address without its scheme.
+
+The lengths that are limits are the column widths, 300 for the title and 500 for
+the description. Past one of those the field says so where the writer is typing
+and nothing is saved — not the field itself, and not a save the writer asks for,
+which is refused with the same message.
+
+## Facebook card
+
+The card Facebook shows for the post is a pane, and every role that can open the
+panel can open it. Its image, title and description are the post's `og_` fields:
+the title and description are staged as the writer types and committed on the
+blur that ends the edit, and an uploaded or removed image is committed as it
+lands rather than waiting for a blur. Committing is not saving, so the save
+policy above still decides: a draft persists all three, and every other status
+stages them until Update. A field cleared back to empty is stored as no value.
+The image comes from the file picker or a drop; there is no Unsplash picker here.
+
+Nothing here is required, and each line falls back rather than emptying. The
+title is the Facebook title, else the meta title, else the title the writer is
+looking at, else `(Untitled)`. The description is the Facebook description, else
+the post's excerpt, else its meta description, else the excerpt the server
+generated for it, else the site's own description. The image is the Facebook
+image, else the post's feature image, else the site's social image and cover
+image. Those fallbacks are what the two inputs show as placeholders, truncated to
+40 and 150 characters, and what the card under them previews, truncated to 140
+and shown against the site's address without its scheme.
+
+The lengths that are limits are the column widths, 300 for the title and 500 for
+the description. Past one of those the field says so where the writer is typing
+and nothing is saved — not the field itself, and not a save the writer asks for,
+which is refused with the same message.
+
 ## Post history
 
 The row opens the post's saved versions, and it is absent whenever there is
@@ -422,32 +475,6 @@ the Mac glyphs for a Mac writer, the key names for everyone else — read from t
 user agent as the pane renders. Hovering a glyph names the key it stands for;
 a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
-
-## Facebook card
-
-The card Facebook shows for the post is a pane, and every role that can open the
-panel can open it. Its image, title and description are the post's `og_` fields:
-the title and description are staged as the writer types and committed on the
-blur that ends the edit, and an uploaded or removed image is committed as it
-lands rather than waiting for a blur. Committing is not saving, so the save
-policy above still decides: a draft persists all three, and every other status
-stages them until Update. A field cleared back to empty is stored as no value.
-The image comes from the file picker or a drop; there is no Unsplash picker here.
-
-Nothing here is required, and each line falls back rather than emptying. The
-title is the Facebook title, else the meta title, else the title the writer is
-looking at, else `(Untitled)`. The description is the Facebook description, else
-the post's excerpt, else its meta description, else the excerpt the server
-generated for it, else the site's own description. The image is the Facebook
-image, else the post's feature image, else the site's social image and cover
-image. Those fallbacks are what the two inputs show as placeholders, truncated to
-40 and 150 characters, and what the card under them previews, truncated to 140
-and shown against the site's address without its scheme.
-
-The lengths that are limits are the column widths, 300 for the title and 500 for
-the description. Past one of those the field says so where the writer is typing
-and nothing is saved — not the field itself, and not a save the writer asks for,
-which is refused with the same message.
 
 ## Open and closed
 
