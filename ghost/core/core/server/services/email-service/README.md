@@ -49,6 +49,45 @@ equation. Provider retries after an uncertain response can cause additional
 accepted submissions, and database failover can lose preparation or submission
 records. This protocol does not provide exactly-once delivery.
 
+## Recipient accounting alerts
+
+[BER-3898](https://linear.app/ghost/issue/BER-3898/alert-when-there-is-a-discrepancy-between-emailsemail-count-email)
+can alert on error-level records with `event.name = email.verification.failed`.
+The event is the stable selector; do not match the human-readable message or parse
+`err.errorDetails`. The structured fields survive Ghost's log serialization.
+
+```json
+{
+  "event": {"name": "email.verification.failed"},
+  "code": "BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED",
+  "email_id": "example-email-id",
+  "batch_id": "example-batch-id",
+  "reason": "batch_recipient_count",
+  "expected": 1000,
+  "actual": 997
+}
+```
+
+Every event has `code`, `email_id`, and `reason`, plus `batch_id` when the failure
+identifies a batch. Counts describe the failed check:
+
+| Reason                    | Count fields                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                             |
+| `preparation_totals`      | `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
+| `batch_recovery_conflict` | `expected`, `actual` rows; equal counts can still mean conflicting identities or batch metadata                                 |
+
+Ownership and lifecycle failures use the same event even when no numerical gap
+can be calculated. Retries or a later verification can observe the same failure
+again: group alerts by site, `email_id`, and `batch_id` when present. Treat events
+as integrity observations, not a counter of missing recipients.
+
+A legitimate preflight audience change emits `email.preparation.audience_drift`
+at warning level. An explicitly excluded invalid member has its own error log;
+it does not trigger this discrepancy event because the recipient is accounted
+for. These records cover discrepancies Ghost can verify; they do not independently
+measure Mailgun acceptance or delivery, including uncertain POST outcomes.
+
 ## Sending status
 
 The sending status served by the Admin API's `emails/:id/status` endpoint is
