@@ -27,18 +27,42 @@ rebuilding may refresh the eligible audience even if preparation finished
 immediately before a crash. No submission has started. After `prepared_at` is
 saved, the audience stays frozen.
 
-Choose each page's size and sending domain before fetching it. While warming
-capacity remains, cap the page at that capacity; afterward use the full batch
-size on the fallback domain. Each page creates at most one batch. Count candidates
-once per consumed page, excluding the lookahead row and before exclusions or
-database retries. Invalid member data is an explicit
-preparation exclusion with error logging and Sentry reporting. Every nonempty
-batch stores `recipient_count` in the same transaction as its recipients.
+Select ordered member IDs upfront for each segment, using the existing audience
+filter and the email's member-ID cutoff. Failed sweeps retry within the existing
+database budget; only a complete successful result contributes candidates.
+Collapse adjacent duplicate IDs in memory and count candidates before dividing
+them into pages. Choose each page's domain and cap its size at the remaining
+warming capacity before dispatching it; after that capacity is exhausted, use
+full-size fallback pages. Segments are prepared sequentially and do not share a
+snapshot.
 
-Audience pages read live member data. The member-ID cutoff excludes newer
-members but does not freeze filter attributes. The candidate/recipient/exclusion
-equation accounts for candidates consumed during that preparation attempt; it
-does not establish a point-in-time snapshot of everyone matching the filter.
+`bulkEmail:batchCreationConcurrency` defaults to 2 and directly bounds active
+pages per email, independently of database pool settings. Explicit per-site
+overrides can raise it after measuring database load. A worker owns its page
+through member lookup, writes, and retries. Each page creates at most one batch
+in one transaction. Warming allocation follows selected candidate order,
+including exclusions, rather than transaction completion order. Each nonempty
+batch stores `recipient_count` atomically with its recipients.
+
+Member lookup happens outside the write transaction. A bounded primary-key range
+read filters against the page's selected IDs, falling back to an ID-list query when
+the range contains more than eight times the page size. Required member data
+missing from an existing record is an explicit exclusion with error logging and
+Sentry reporting. A selected member no longer found is a `member_not_found`
+exclusion logged at information level. Database failures are not exclusions.
+
+Selection fixes eligibility for that segment: unsubscribing, disabling email, or
+changing audience attributes after selection does not remove a candidate whose
+data remains valid. Newly eligible members are not added. Earlier paged preparation
+rechecked eligibility per page; submission validation remains unchanged. Faster
+preparation can shorten this window, but retries can extend it. Members changing
+segment between sweeps can still be selected twice or missed by both segments.
+
+Each segment's sweep reads current member filter attributes. The member-ID
+cutoff excludes newer members but does not freeze those attributes across
+segments or preparation attempts. The candidate/recipient/exclusion equation
+accounts for IDs selected during that attempt; it does not establish a single
+point-in-time audience snapshot across all segments.
 
 Each batch creation operation retains its ID and intended recipient data across
 database retries of that operation. Restarting incomplete preparation before
@@ -51,6 +75,14 @@ recipient data match. A retry insert uses the same primary key, including when
 the first recovery read failed. The transaction must settle or roll back before
 the recovery read; a lock-wait timeout is not evidence that the original insert
 failed.
+
+Workers stop claiming pages when shutdown or a terminal preparation failure
+occurs. An attempt-scoped abort signal wakes preparation retry backoffs and prevents
+further attempts; it does not cancel in-flight transactions or their recovery reads.
+All workers drain before preparation verification or returning a failure. Submission
+does not use this signal and retains its retry policy. Failed partial preparation
+is kept until the next attempt performs bounded cleanup; cleanup time is separate
+from the cost of rebuilding and can dominate a large retry.
 
 Before saving `prepared_at`, verify actual recipient rows against stored counts,
 per batch and for the email, reject cross-email ownership even when swapped rows
@@ -90,6 +122,14 @@ recipient uniqueness. Compensating omissions and duplicates can balance a count
 equation. Provider retries after an uncertain response can cause additional
 accepted submissions, and database failover can lose preparation or submission
 records. This protocol does not provide exactly-once delivery.
+
+Persisted batch-list order is unspecified and may differ from audience order.
+Delivery-time spreading follows that list; individual recipients' time slots may
+change without changing warming allocation. A draining process and a new process
+resuming the same email can overlap: batch status locks prevent concurrent claims
+of the same batch, but do not prevent duplicate batch sets with different IDs.
+Verification can detect conflicts; per-process draining is not a cross-process
+ownership fence.
 
 Rolling back to code without recipient accounting can start submitting an
 accounted email without establishing its preparation boundary. After rolling
@@ -197,6 +237,30 @@ at warning level. Invalid members emit `email.preparation.excluded` or
 `reason`, and the preparation attempt or submission batch ID. Exclusions do not
 trigger the discrepancy event because the recipient is accounted for. These records cover discrepancies Ghost can verify; they do not independently
 measure Mailgun acceptance or delivery, including uncertain POST outcomes.
+
+## Benchmarking preparation
+
+From `ghost/core`, run the synthetic MySQL benchmark with the local database
+password in `database__connection__password` (and user in
+`database__connection__user`, default `root`):
+
+```sh
+NODE_OPTIONS=--conditions=source node --expose-gc scripts/benchmark-recipient-preparation.js 500000 2
+```
+
+The arguments are member count and preparation concurrency. The harness creates
+and drops its own database on `127.0.0.1:3306`, uses Ghost's schema and preparation
+service with a pool of five, and never submits email. It measures the full
+audience, discard and rebuild after a complete pending attempt, and a label
+audience containing every fifth member. JSON output includes database settings,
+query counts, elapsed times, sweep and discard durations, and sampled memory.
+
+Repeat at 500,000 and 1,000,000 members with concurrency 1, 2, and 4 to compare
+settings. RSS and heap samples every 10 ms may miss peaks during synchronous
+driver work; retained heap is measured after preparation and GC, when the sweep
+array has been released. A fresh local database does not model a production
+recipient table's history or concurrent site traffic. Production capacity and
+contention require separate measurements.
 
 ## Sending status
 
