@@ -298,7 +298,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
         assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
         assert.equal(JSON.parse(error.errorDetails).batch_id, batch.id);
-        assert.ok(!error.message.includes('Retry sending'));
+        assert.ok(!error.message.includes('Please try again'));
         return true;
       });
       assert.equal((await db.knex('email_recipients').where({ batch_id: batch.id })).length, 2);
@@ -427,7 +427,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await assert.rejects(service.createBatches(data), (error) => {
       assertVerificationError(error);
       assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
-      assert.match(error.message, /Retry sending to rebuild/);
+      assert.match(error.message, /Please try again/);
       return true;
     });
     sinon.assert.calledWithMatch(logging.error, {
@@ -654,7 +654,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await service.emailJob({ emailId: email.id });
     await email.refresh();
     assert.equal(email.get('status'), 'failed');
-    assert.match(email.get('error'), /recipient verification failed/);
+    assert.match(
+      email.get('error'),
+      /An error occurred while checking your newsletter’s recipients/,
+    );
     assert.ok(!email.get('error').toLowerCase().includes('retry'));
   });
 
