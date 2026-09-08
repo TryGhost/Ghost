@@ -71,10 +71,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // keyboard and assistive technology. Applied through refs because React 18
   // has no first-class inert prop. Whichever refs the active layout branch
   // doesn't render stay null and are skipped.
+  //
+  // A layout effect on purpose: layout effects run before passive-effect
+  // cleanups, so on dismissal inert is cleared before the overlay's cleanup
+  // restores focus — focus() on a still-inert element is a silent no-op.
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const mainRef = React.useRef<HTMLElement>(null);
   const contributorMenuRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
       if (region) {
         region.inert = dunningLocked;
