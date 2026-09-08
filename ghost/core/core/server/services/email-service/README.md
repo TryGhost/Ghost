@@ -29,8 +29,8 @@ leave those counts unchanged, and require candidates to equal prepared recipient
 plus exclusions. The verified database read supplies the batches for submission.
 The preflight estimate can legitimately differ from the consumed audience; a
 difference of at least 1% emits a warning and a Sentry message without failing
-preparation. Verification failures emit `email.verification.failed` with their
-reason and counts. The email job reports terminal verification failures to Sentry
+preparation. Verification failures emit structured error logs with their reason
+and counts; the alerting contract below distinguishes confirmed count mismatches. The email job reports terminal verification failures to Sentry
 once, including during shutdown while leaving the email resumable. Failures during
 safely rebuildable preparation ask the user to retry; frozen or possibly submitted batches require investigation.
 
@@ -52,13 +52,16 @@ records. This protocol does not provide exactly-once delivery.
 ## Recipient accounting alerts
 
 [BER-3898](https://linear.app/ghost/issue/BER-3898/alert-when-there-is-a-discrepancy-between-emailsemail-count-email)
-can alert on error-level records with `event.name = email.verification.failed`.
+should trigger P1 incidents only on error-level records with
+`event.name = email.recipient_count.mismatch`. This event requires known, valid,
+nonnegative integer `expected` and `actual` counts that differ, in either direction.
+Checks that retry emit it only after those retries are exhausted.
 The event is the stable selector; do not match the human-readable message or parse
 `err.errorDetails`. The structured fields survive Ghost's log serialization.
 
 ```json
 {
-  "event": {"name": "email.verification.failed"},
+  "event": {"name": "email.recipient_count.mismatch"},
   "code": "BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED",
   "email_id": "example-email-id",
   "batch_id": "example-batch-id",
@@ -71,14 +74,16 @@ The event is the stable selector; do not match the human-readable message or par
 Every event has `code`, `email_id`, and `reason`, plus `batch_id` when the failure
 identifies a batch. Counts describe the failed check:
 
-| Reason                    | Count fields                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                             |
-| `preparation_totals`      | `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
-| `batch_recovery_conflict` | `expected`, `actual` rows; equal counts can still mean conflicting identities or batch metadata                                 |
+| Reason                    | Count fields                                                                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                                                                                                          |
+| `preparation_totals`      | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
+| `batch_recovery_conflict` | `expected`, `actual` rows; only unequal counts trigger the P1 event                                                                                                                                          |
 
-Ownership and lifecycle failures use the same event even when no numerical gap
-can be calculated. Retries or a later verification can observe the same failure
+Unknown or invalid counts, conflicting identities with equal counts, and ownership
+or lifecycle failures use `email.verification.failed`. Both events retain the
+internal code `BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED` for error handling; that
+code alone is too broad for a P1 alert. Retries or a later verification can observe the same failure
 again: group alerts by site, `email_id`, and `batch_id` when present. Treat events
 as integrity observations, not a counter of missing recipients.
 

@@ -678,10 +678,16 @@ class BatchSendingService {
         ...details,
       }),
     });
+    const countMismatch =
+      [details.expected, details.actual].every(
+        (count) => Number.isSafeInteger(count) && count >= 0,
+      ) && details.expected !== details.actual;
     logging.error(
       {
         err: error,
-        event: { name: 'email.verification.failed' },
+        event: {
+          name: countMismatch ? 'email.recipient_count.mismatch' : 'email.verification.failed',
+        },
         code: VERIFICATION_CODE,
         email_id: email.id,
         reason,
@@ -834,7 +840,18 @@ class BatchSendingService {
       candidateCount !== recipientCount + excludedCount ||
       actualCount !== recipientCount
     ) {
+      const candidateMismatch =
+        [candidateCount, excludedCount, recipientCount + excludedCount].every(
+          (count) => Number.isSafeInteger(count) && count >= 0,
+        ) && candidateCount !== recipientCount + excludedCount;
       throw this.#verificationFailure(email, 'preparation_totals', {
+        ...(candidateMismatch
+          ? {
+              count_check: 'candidate_total',
+              expected: candidateCount,
+              actual: recipientCount + excludedCount,
+            }
+          : { count_check: 'recipient_rows', expected: recipientCount, actual: actualCount }),
         candidate_count: candidateCount,
         preparation_excluded_count: excludedCount,
         recipient_count: recipientCount,
