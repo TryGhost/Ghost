@@ -206,6 +206,17 @@ describe('staging the publish time', () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it('publishes a scheduled post at the time it already carries', async () => {
+    const scheduledAt = future();
+    const { session, update } = publishTimeSession('scheduled', scheduledAt);
+
+    expect(await session.dispatchPublish()).toMatchObject({ kind: 'saved' });
+    expect(update.mock.calls[0][0]).toMatchObject({
+      published_at: scheduledAt,
+      status: 'published',
+    });
+  });
+
   it('refuses to unpublish into a staged time that has not passed', async () => {
     const { session, update } = publishTimeSession('published', PAST);
 

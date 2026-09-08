@@ -412,10 +412,12 @@ export function createEditorSession({
     if (tiersIncomplete(prepared.access)) {
       return { ok: false, error: { kind: 'validation', message: TIERS_REQUIRED } };
     }
-    // Every request, a status command included: a publish or revert with no
-    // explicit time of its own falls back to whatever the sidebar staged, and
-    // Core validates the publish time for scheduled posts only.
-    if (publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)) {
+    // A status command with no time of its own carries whatever the sidebar
+    // staged; Core validates the publish time for scheduled posts only.
+    if (
+      prepared.target.publishedAt !== publishedAt &&
+      publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)
+    ) {
       return { ok: false, error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST } };
     }
 
