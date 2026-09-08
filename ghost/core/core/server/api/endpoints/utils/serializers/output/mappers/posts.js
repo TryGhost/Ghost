@@ -3,7 +3,7 @@ const _ = require('lodash');
 const mapTag = require('./tags');
 const mapUser = require('./users');
 const mapEmail = require('./emails');
-const stripEmailAccounting = require('../utils/strip-email-accounting');
+const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 
 const clean = require('../utils/clean');
 const date = require('../utils/date');
