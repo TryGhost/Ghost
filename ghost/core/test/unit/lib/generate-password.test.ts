@@ -27,4 +27,13 @@ describe('password generation', function () {
     assert.equal(generatePassword('user@example.com'), 'TY7VZkRwCcUKhJP9');
     sinon.assert.callCount(uid, 2);
   });
+
+  it('throws after exhausting invalid password retries', function () {
+    const uid = sinon.stub(security.identifier, 'uid').returns('password');
+
+    assert.throws(() => generatePassword('user@example.com'), {
+      message: 'Unable to generate a valid password after 1000 iterations',
+    });
+    sinon.assert.callCount(uid, 1000);
+  });
 });
