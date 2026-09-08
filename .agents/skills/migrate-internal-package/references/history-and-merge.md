@@ -202,11 +202,12 @@ The script:
 1. verifies authentication, PR state, checks and imported-history reachability;
 2. records the current `allow_merge_commit` setting;
 3. enables merge commits only when necessary;
-4. rejects any head other than the SHA validated by the dry run and merges with
-   `--merge --match-head-commit`;
-5. restores the setting through an exit trap;
-6. verifies the merged commit has two parents;
-7. verifies the source split tip remains an ancestor of the merged result.
+4. rejects any head other than the SHA validated by the dry run;
+5. requests GitHub's asynchronous direct-merge endpoint with the pinned head
+   and `merge` method, as required for stacked PRs, and waits for completion;
+6. restores the setting through an exit trap;
+7. verifies the merged commit has two parents;
+8. verifies the source split tip remains an ancestor of the merged result.
 
 If branch protection or a merge queue blocks the operation, report the exact
 blocker. Do not add `--admin` or bypass policy.

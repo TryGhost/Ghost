@@ -211,8 +211,9 @@ copyable `--confirm` command containing the actual PR number and recorded source
 split tip plus the exact head SHA reported by the dry run; do not leave
 placeholders for the administrator to infer. Include the successful dry-run
 evidence and explain that the command rejects a changed head, temporarily
-enables merge commits, merges the pinned PR head, restores the original setting
-and verifies the ancestry. Explicitly say not to use GitHub's normal
+enables merge commits, requests and waits for GitHub's asynchronous direct
+merge of the pinned PR head, restores the original setting and verifies the
+ancestry. Explicitly say not to use GitHub's normal
 squash/rebase buttons and not to remove `[Don't merge]` manually.
 
 Wait for the administrator to report that the command completed. Afterward,

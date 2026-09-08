@@ -84,7 +84,9 @@ enables merge commits if required, merges with that reviewed head pinned,
 restores the original setting, and verifies that the resulting commit has two
 parents and still contains the imported ancestry. If the head changed, return
 to the skill for another review and preflight rather than updating the SHA
-manually.
+manually. GitHub requires stacked pull requests to use its asynchronous merge
+API, so the script submits a direct merge-commit request and waits for it to
+finish before restoring the repository setting.
 
 This operation requires repository administration permission because Ghost
 normally has merge commits disabled. It is intentionally performed by a human
