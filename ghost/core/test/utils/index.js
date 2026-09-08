@@ -18,9 +18,6 @@ const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
 const filterData = require('./fixtures/filter-param');
 
-// Require additional assertions which help us keep our tests small and clear
-require('./assertions');
-
 // ## Test Setup and Teardown
 
 const initFixtures = async function initFixtures() {
