@@ -69,6 +69,27 @@ Role gates live with the section, not with the frame: every role that can open
 the editor can open the sidebar, and a section the writer's role cannot write is
 the part that is left out.
 
+The URL section edits the slug, which is not a settings field: a manual edit
+goes to the slug machine, and only a proposal the machine applies reaches the
+live document, where the save policy above then decides whether it is persisted
+or staged. A superseded proposal is ignored, and a generator that fails or
+answers blank leaves the slug alone: the input reverts to whatever the machine
+still holds and the section says the URL could not be updated, marking the input
+itself invalid, so a lost edit is never silent. The input is disabled while a
+proposal is in flight. Because an applied edit makes the slug the writer's, a
+later title change no longer moves it. The preview
+under the input is the site URL without its scheme, then the slug, both
+slash-terminated. The section is the slug and that preview and nothing else: it
+does not link out to a published post, and a sent post previews its site URL
+like any other rather than the separate email URL it also has.
+
+A manual proposal participates in the save engine's slug wait, so Update or
+Cmd-S cannot save the old URL while the generator is still answering. Pending
+manual edits count as unsaved work for the navigation and tab-close guards.
+A draft's save on leave waits for the proposal; other statuses ask before
+discarding it. A document reload releases waits on obsolete requests, and a
+response arriving after reload or disposal cannot patch the live document.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.

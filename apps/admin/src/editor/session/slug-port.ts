@@ -1,10 +1,15 @@
 import type { SlugMachine } from '@/editor/engine/slug-machine';
 import type { SlugPort, SlugProposal } from '@/editor/engine/save-engine';
+import { deferred } from '@/utils/deferred';
 
 export interface SlugPortAdapter {
   port: SlugPort;
   /** Commits a title without waiting for it; the save's `settled()` picks the work up. */
   commitTitle: (title: string) => void;
+  /** Manual submissions participate in the same settling barrier as title commits. */
+  editSlug: SlugMachine['slugEdited'];
+  /** Releases old waiters at a document reload or disposal. */
+  reset: () => void;
 }
 
 /**
@@ -14,6 +19,7 @@ export interface SlugPortAdapter {
  */
 export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
   let latest: Promise<unknown> = Promise.resolve();
+  let boundary = deferred<void>();
 
   function track<T>(submission: Promise<T>): Promise<T> {
     latest = submission.catch(() => undefined);
@@ -24,7 +30,7 @@ export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
     let awaited;
     do {
       awaited = latest;
-      await awaited;
+      await Promise.race([awaited, boundary.promise]);
     } while (awaited !== latest);
   }
 
@@ -39,5 +45,12 @@ export function createSlugPort(machine: SlugMachine): SlugPortAdapter {
   return {
     port: { settled, fromTitle },
     commitTitle: (title) => void track(machine.titleCommitted(title)),
+    editSlug: (input) => track(machine.slugEdited(input)),
+    reset: () => {
+      latest = Promise.resolve();
+      const previous = boundary;
+      boundary = deferred<void>();
+      previous.resolve();
+    },
   };
 }
