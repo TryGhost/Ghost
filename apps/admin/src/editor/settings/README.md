@@ -153,6 +153,20 @@ Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
 
+## Template
+
+The theme decides which templates a post may render with, so the section is the
+active theme's list and nothing else: its slugless templates, by name, under a
+Default that stands for the post carrying no template. A template the theme no
+longer offers reads as the default. A theme with no such templates leaves the
+section out entirely, and every role that can open the sidebar sees it.
+
+A theme may also bind a template to one post URL. Where the post's slug matches
+one, the theme applies that template whatever the field holds, so the select is
+disabled and names the template the URL picked. The field is committed through
+the same gate as the rest of the sidebar: a draft saves it, every other status
+stages it until Update.
+
 ## Show title and feature image
 
 A page can render without its own title and feature image, and only a page: the

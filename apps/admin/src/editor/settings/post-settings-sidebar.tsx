@@ -18,6 +18,7 @@ import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
 import { SettingsSection } from './settings-section';
 import { ShowTitleSection } from './show-title-section';
 import { TagsSection } from './tags-section';
+import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
@@ -95,6 +96,7 @@ export function PostSettingsSidebar({
     access: canManagePost ? <AccessSection postType={postType} session={session} /> : null,
     'show-title-and-feature-image':
       postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
+    template: <TemplateSection postType={postType} session={session} />,
   };
 
   return (

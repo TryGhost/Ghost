@@ -4,6 +4,7 @@ import {
   browseResponse,
   configResponse,
   currentUserResponse,
+  defaultThemesResponse,
   settingsResponse,
   siteResponse,
 } from '@tryghost/test-data';
@@ -63,6 +64,11 @@ export function defaultBootRequests() {
       method: 'GET',
       path: '/themes/active/',
       response: activeThemeResponse(),
+    },
+    browseThemes: {
+      method: 'GET',
+      path: '/themes/',
+      response: defaultThemesResponse(),
     },
     editUserPreferences: {
       method: 'PUT',

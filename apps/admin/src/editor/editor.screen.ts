@@ -48,6 +48,8 @@ import {
   settingsTagsInput,
   settingsTagsList,
   settingsTagsToken,
+  settingsTemplateSelect,
+  settingsTemplateSlugMatch,
   settingsTiersError,
   settingsTiersPicker,
   settingsUrlPreview,
@@ -143,6 +145,10 @@ export const editorScreen = {
     page
       .getByTestId(settingsTagsField)
       .getByRole('button', { name: `Remove ${name}`, exact: true }),
+  settingsTemplate: () => page.getByTestId(settingsTemplateSelect),
+  settingsTemplateOption: (label: string) =>
+    page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
+  settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
