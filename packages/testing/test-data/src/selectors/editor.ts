@@ -59,6 +59,10 @@ export const settingsPublishDate = 'settings-publish-date';
 export const settingsPublishTime = 'settings-publish-time';
 export const settingsPublishDateError = 'settings-publish-date-error';
 export const settingsPublishDateNote = 'settings-publish-date-note';
+export const settingsAuthorsPicker = 'settings-authors-picker';
+export const settingsAuthorsList = 'settings-authors-list';
+export const settingsAuthorsError = 'settings-authors-error';
+export const settingsAuthorChip = 'settings-author-chip';
 
 // publish flow testids
 export const publishFlowModal = 'publish-flow-modal';

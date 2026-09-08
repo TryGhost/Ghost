@@ -23,15 +23,16 @@ import type {
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
-import { tagIdentities } from '@/shared/tags/tag-selection';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
+  AUTHORS_REQUIRED,
   PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
   TIERS_REQUIRED,
+  identityFor,
   publishedAtInFuture,
   tiersIncomplete,
   type EditorSettingsPatch,
@@ -184,7 +185,9 @@ export function createEditorSession({
   // Retain the writer's choice through older saves, even when it matches a refetch.
   let stagedPublishedAt: string | null = null;
   let publishedAtEditedAt = 0;
-  let live: EditablePostProjection = record ? projectionOf(record) : newPostProjection();
+  let live: EditablePostProjection = record
+    ? projectionOf(record)
+    : newPostProjection(currentUserId);
   let latestRevision: RevisionProjection | null = latestRevisionOf(record);
   let version = 0;
   let disposed = false;
@@ -315,6 +318,11 @@ export function createEditorSession({
     tracker.setLive(identity.id, patch);
   }
 
+  /** The writer removed every author the post had; Ember's validator refuses it too. */
+  function authorsEmptied(): boolean {
+    return live.authors.length === 0 && tracker.isFieldDirty('authors');
+  }
+
   function getSnapshot(): EditorSaveSnapshot {
     const verdict = tracker.verdict();
     return buildSaveSnapshot({
@@ -368,9 +376,7 @@ export function createEditorSession({
     for (const key of SETTINGS_FIELD_KEYS) {
       if (tracker.isFieldDirty(key)) {
         staged[key] = live[key];
-        // The field holds the tag records the field displays; the relation is
-        // written by identity alone.
-        payload[key] = key === 'tags' ? tagIdentities(live.tags) : live[key];
+        payload[key] = identityFor(key, live[key]);
       }
     }
     // The write contract requires the pair even when only one field changed.
@@ -428,6 +434,11 @@ export function createEditorSession({
       publishedAtInFuture(prepared.target.status, prepared.target.publishedAt)
     ) {
       return { ok: false, error: { kind: 'validation', message: PUBLISHED_AT_MUST_BE_PAST } };
+    }
+    // Only an emptied list reaches the request; an untouched create is credited
+    // to the current user by `prepare` instead.
+    if (prepared.projection.authors?.length === 0) {
+      return { ok: false, error: { kind: 'validation', message: AUTHORS_REQUIRED } };
     }
 
     inFlightSince = prepared.builtAtVersion;
@@ -530,6 +541,7 @@ export function createEditorSession({
     if (
       status !== 'draft' ||
       tiersIncomplete(live) ||
+      authorsEmptied() ||
       publishedAtInFuture(status, livePublishedAt())
     ) {
       return;

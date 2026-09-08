@@ -37,6 +37,10 @@ import {
   postSettingsSidebar,
   postsBackLink,
   removeFeatureImageButton,
+  settingsAuthorChip,
+  settingsAuthorsError,
+  settingsAuthorsList,
+  settingsAuthorsPicker,
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
@@ -159,6 +163,20 @@ export const editorScreen = {
   settingsPublishDateNote: () => page.getByTestId(settingsPublishDateNote),
   settingsPublishDateLabel: () =>
     page.getByTestId(postSettingsSidebar).getByText(/^(Publish|Scheduled) date$/),
+  settingsAuthors: () => page.getByTestId(settingsAuthorsPicker),
+  settingsAuthorsInput: () => page.getByTestId(settingsAuthorsPicker).getByRole('combobox'),
+  settingsAuthorsList: () => page.getByTestId(settingsAuthorsList),
+  settingsAuthorOption: (name: string) =>
+    page.getByTestId(settingsAuthorsList).getByRole('option', { name }),
+  removeAuthor: (name: string) =>
+    page.getByTestId(settingsAuthorsPicker).getByRole('button', { name: `Remove ${name}` }),
+  settingsAuthorsError: () => page.getByTestId(settingsAuthorsError),
+  /** The author chips in the order the field lists them. */
+  settingsAuthorNames: (): string[] =>
+    page
+      .getByTestId(settingsAuthorChip)
+      .elements()
+      .map((chip) => chip.textContent?.trim() ?? ''),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),

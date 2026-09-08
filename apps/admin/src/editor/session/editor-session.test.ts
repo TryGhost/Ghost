@@ -1281,6 +1281,89 @@ describe('createEditorSession', () => {
       expect(reloaded).toBe(true);
       expect(session.getFields().featured).toBe(false);
     });
+
+    describe('authors', () => {
+      const AUTHORS = [{ id: 'author-1' }, { id: 'author-2' }];
+      const NAMED = [
+        { id: 'author-2', name: 'Nadia Ahmed' },
+        { id: 'author-1', name: 'Owner User' },
+      ];
+
+      it('credits a new post to the current user without dirtying it', async () => {
+        const { session, state } = harness({ currentUserId: 'author-1' });
+
+        expect(session.getFields().authors).toEqual([{ id: 'author-1' }]);
+        expect(session.isDirty()).toBe(false);
+
+        session.patchLexical(body('First words'));
+        await session.dispatchExplicit();
+
+        expect(state.creates[0].authors).toEqual([{ id: 'author-1' }]);
+      });
+
+      it('submits the writer\u2019s authors as identity alone, in their order', async () => {
+        const { session, state } = harness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+        session.patchFields({ authors: NAMED });
+
+        // The field keeps the whole record so a chip stays named; only the
+        // request is reduced to identities.
+        expect(session.getFields().authors).toEqual(NAMED);
+
+        await session.dispatchExplicit();
+
+        expect(state.updates[0].payload.authors).toEqual([{ id: 'author-2' }, { id: 'author-1' }]);
+      });
+
+      it('refuses a save that would leave the post without an author', async () => {
+        const { session, state } = harness({ record: record({ authors: AUTHORS }) });
+
+        session.patchFields({ authors: [] });
+        session.commitField();
+
+        // The gate holds the field save back, as an incomplete tier pairing is.
+        expect(engineSpy.dispatched).toEqual([]);
+        expect(await session.dispatchExplicit()).toMatchObject({
+          kind: 'failed',
+          error: { kind: 'validation', message: 'At least one author is required.' },
+        });
+        expect(state.updates).toHaveLength(0);
+        expect(session.hasUnsavedContent()).toBe(true);
+
+        session.patchFields({ authors: [AUTHORS[1]] });
+
+        expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+        expect(state.updates[0].payload.authors).toEqual([{ id: 'author-2' }]);
+      });
+
+      it('keeps an author the writer dropped while a save was in flight', async () => {
+        const built = harness(
+          { record: record({ authors: AUTHORS }) },
+          {
+            duringSave: once(() => {
+              built.session.patchFields({ authors: [AUTHORS[0]] });
+              // The server has not seen the removal yet, so its copy still has both.
+              built.session.recordRefetched(
+                record({ authors: AUTHORS, updated_at: '2026-01-01T00:00:00.500Z' }),
+              );
+            }),
+            acknowledge: (acknowledged) => ({ ...acknowledged, authors: AUTHORS }),
+          },
+        );
+
+        built.session.patchLexical(body('Changed'));
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[0].payload).not.toHaveProperty('authors');
+        expect(built.session.getFields().authors).toEqual([AUTHORS[0]]);
+        expect(built.session.isDirty()).toBe(true);
+
+        await built.session.dispatchExplicit();
+
+        expect(built.state.updates[1].payload.authors).toEqual([AUTHORS[0]]);
+        expect(built.session.isDirty()).toBe(false);
+      });
+    });
   });
 
   describe('slug', () => {
