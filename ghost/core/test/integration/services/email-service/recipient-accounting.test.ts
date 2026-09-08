@@ -47,6 +47,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   };
   let data: SendData;
   let sentry: { captureException: sinon.SinonStub; captureMessage: sinon.SinonStub };
+  let renderer: { getSegments: sinon.SinonStub };
+  let segmenter: { getMemberFilterForSegment: sinon.SinonStub };
   let sender: {
     getMaximumRecipients: () => number;
     getTargetDeliveryWindow: () => number;
@@ -86,12 +88,14 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       getTargetDeliveryWindow: () => 0,
       send: sinon.stub().resolves({ id: 'accepted' }),
     };
+    renderer = { getSegments: sinon.stub().resolves([null]) };
+    segmenter = { getMemberFilterForSegment: sinon.stub().returns('status:free') };
     service = new BatchSendingService({
       db,
       models,
       sentry,
-      emailRenderer: { getSegments: async () => [null] },
-      emailSegmenter: { getMemberFilterForSegment: () => 'status:free' },
+      emailRenderer: renderer,
+      emailSegmenter: segmenter,
       domainWarmingService: { isEnabled: () => true },
       sendingService: sender,
       BEFORE_RETRY_CONFIG: { maxRetries: 2, sleep: 0 },
@@ -135,6 +139,48 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.ok(email.get('prepared_at'));
     } finally {
       await db.knex('members').where({ id: memberId }).update({ uuid: originalMember.uuid });
+    }
+  });
+
+  it('carries warming capacity and exclusions across an entirely excluded segment', async function () {
+    renderer.getSegments.resolves(['status:-free', 'status:free']);
+    segmenter.getMemberFilterForSegment.callsFake((_newsletter, _filter, segment) => segment);
+    const memberId = '000000000000000000000004';
+    const originalMember = await db.knex('members').where({ id: memberId }).first();
+    await db.knex('members').where({ id: memberId }).update({ uuid: '', status: 'paid' });
+    try {
+      const batches = await service.createBatches(data);
+      await email.refresh();
+      assert.equal(email.get('candidate_count'), 4);
+      assert.equal(email.get('preparation_excluded_count'), 1);
+      assert.equal(email.get('email_count'), 3);
+      assert.equal(email.get('csd_email_count'), 3);
+      assert.ok(email.get('prepared_at'));
+      assert.deepEqual(
+        batches
+          .map((batch) => [
+            batch.get('member_segment'),
+            batch.get('fallback_sending_domain'),
+            batch.get('recipient_count'),
+          ])
+          .sort(),
+        [
+          ['status:free', false, 2],
+          ['status:free', true, 1],
+        ],
+      );
+      const recipients = await db.knex('email_recipients').where({ email_id: email.id });
+      assert.deepEqual(recipients.map((row) => row.member_id).sort(), [
+        '000000000000000000000001',
+        '000000000000000000000002',
+        '000000000000000000000003',
+      ]);
+      sinon.assert.calledOnce(sentry.captureException);
+    } finally {
+      await db.knex('members').where({ id: memberId }).update({
+        uuid: originalMember.uuid,
+        status: originalMember.status,
+      });
     }
   });
 
