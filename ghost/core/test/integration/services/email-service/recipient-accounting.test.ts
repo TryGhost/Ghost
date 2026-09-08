@@ -1,19 +1,57 @@
-const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
-const ObjectID = require('bson-objectid').default;
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import ObjectID from 'bson-objectid';
+import sinon from 'sinon';
+import type { Knex } from 'knex';
 const logging = require('@tryghost/logging');
 const models = require('../../../../core/server/models');
-const db = require('../../../../core/server/data/db');
+const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
 
+// The legacy Bookshelf models are untyped; keep that boundary separate from the test fixtures.
+type Email = InstanceType<typeof models.Email>;
+type Batch = InstanceType<typeof models.EmailBatch>;
+type SendData = {
+  email: Email;
+  post: Record<string, unknown>;
+  newsletter: Record<string, unknown>;
+};
+type CreateBatchArgs = [
+  Email,
+  string | null,
+  Record<string, unknown>[],
+  { useFallbackDomain?: boolean; transacting?: Knex.Transaction },
+];
+type TransactionHandler = (trx: Knex.Transaction) => Promise<Batch>;
+const emailBatchTransactions: { transaction: (handler: TransactionHandler) => Promise<Batch> } =
+  models.EmailBatch;
+
+function assertVerificationError(
+  error: unknown,
+): asserts error is Error & { code: unknown; errorDetails: string } {
+  assert.ok(error instanceof Error && 'code' in error && 'errorDetails' in error);
+  assert.equal(typeof error.errorDetails, 'string');
+}
+
 describe('Recipient accounting through MySQL and Bookshelf', function () {
-  let email;
-  let service;
-  let data;
-  let sentry;
-  let sender;
+  let email: Email;
+  let service: {
+    createBatch: (...args: CreateBatchArgs) => Promise<Batch>;
+    createBatches: (data: SendData & { existingBatches?: Batch[] }) => Promise<Batch[]>;
+    getBatches: (email: Email) => Promise<Batch[]>;
+    sendBatch: (data: { batch: Batch }) => Promise<boolean>;
+    sendBatches: (data: SendData & { batches: Batch[] }) => Promise<void>;
+    sendEmail: (email: Email) => Promise<void>;
+    emailJob: (data: { emailId: string }) => Promise<void>;
+  };
+  let data: SendData;
+  let sentry: { captureException: sinon.SinonStub; captureMessage: sinon.SinonStub };
+  let sender: {
+    getMaximumRecipients: () => number;
+    getTargetDeliveryWindow: () => number;
+    send: sinon.SinonStub;
+  };
 
   beforeAll(async function () {
     await dbUtils.reset();
@@ -104,9 +142,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const memberId = '000000000000000000000004';
     const originalMember = await db.knex('members').where({ id: memberId }).first();
     await db.knex('members').where({ id: memberId }).update({ uuid: '' });
-    const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
+    const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
     let lost = false;
-    sinon.stub(models.EmailBatch, 'transaction').callsFake(async (handler) => {
+    sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
       const result = await transaction(handler);
       if (!lost) {
         lost = true;
@@ -137,9 +175,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   it('uses legacy preparation retries when preflight_email_count is null', async function () {
     await email.save({ preflight_email_count: null }, { patch: true });
-    const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
+    const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
     let lost = false;
-    sinon.stub(models.EmailBatch, 'transaction').callsFake(async (handler) => {
+    sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
       const result = await transaction(handler);
       if (!lost) {
         lost = true;
@@ -175,6 +213,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('email_recipients').insert({ ...row, id: extraId, email_id: otherEmail.id });
     try {
       await assert.rejects(service.createBatches(data), (error) => {
+        assertVerificationError(error);
         assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
         return true;
       });
@@ -224,6 +263,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return true;
     });
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+      assertVerificationError(error);
       assert.equal(JSON.parse(error.errorDetails).reason, 'batch_after_preparation');
       return true;
     });
@@ -254,6 +294,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('email_recipients').insert({ ...row, id: extraId, email_id: otherEmail.id });
     try {
       await assert.rejects(service.createBatches(data), (error) => {
+        assertVerificationError(error);
         assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
         assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
         assert.equal(JSON.parse(error.errorDetails).batch_id, batch.id);
@@ -292,6 +333,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       const batches = await db.knex('email_batches').whereIn('email_id', emailIds).orderBy('id');
       try {
         await assert.rejects(service.createBatches(data), (error) => {
+          assertVerificationError(error);
           assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
           assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
           assert.equal(JSON.parse(error.errorDetails).batch_id, otherBatch.id);
@@ -342,6 +384,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       }
       try {
         await assert.rejects(service.createBatches(data), (error) => {
+          assertVerificationError(error);
           assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
           assert.equal(JSON.parse(error.errorDetails).reason, 'cross_email_recipient');
           return true;
@@ -372,7 +415,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   it('does not complete preparation when persisted recipients are missing', async function () {
     const createBatch = service.createBatch.bind(service);
-    let removedBatch;
+    let removedBatch: Batch;
     sinon.stub(service, 'createBatch').callsFake(async (...args) => {
       const batch = await createBatch(...args);
       if (!args[3]?.transacting && !removedBatch) {
@@ -382,6 +425,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return batch;
     });
     await assert.rejects(service.createBatches(data), (error) => {
+      assertVerificationError(error);
       assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
       assert.match(error.message, /Retry sending to rebuild/);
       return true;
@@ -441,16 +485,18 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   });
 
   it('recovers the committed batch after acknowledgement loss without duplicating recipients', async function () {
-    const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
+    const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
     let lostAcknowledgement = false;
-    const transactions = sinon.stub(models.EmailBatch, 'transaction').callsFake(async (handler) => {
-      const result = await transaction(handler);
-      if (!lostAcknowledgement) {
-        lostAcknowledgement = true;
-        throw new Error('Commit acknowledgement lost');
-      }
-      return result;
-    });
+    const transactions = sinon
+      .stub(emailBatchTransactions, 'transaction')
+      .callsFake(async (handler) => {
+        const result = await transaction(handler);
+        if (!lostAcknowledgement) {
+          lostAcknowledgement = true;
+          throw new Error('Commit acknowledgement lost');
+        }
+        return result;
+      });
     const batches = await service.createBatches(data);
     assert.equal(batches.length, 3);
     assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
@@ -508,7 +554,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       })),
     );
     let deletes = 0;
-    const interrupt = (query) => {
+    const interrupt = (query: { sql: string }) => {
       if (query.sql.startsWith('delete from `email_recipients`')) {
         deletes += 1;
         if (deletes === 2) {
@@ -599,6 +645,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.stub(service, 'sendBatch').resolves(false);
     await db.knex('email_recipients').where({ batch_id: batches[0].id }).del();
     await assert.rejects(service.sendBatches({ ...data, batches }), (error) => {
+      assertVerificationError(error);
       assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
       assert.ok(!error.message.toLowerCase().includes('retry'));
       return true;
@@ -614,8 +661,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   it('does not mark the email complete or resend after an accepted batch fails its terminal write', async function () {
     const batches = await service.createBatches(data);
     const save = models.EmailBatch.prototype.save;
-    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (attributes, ...options) {
-      if (attributes?.status === 'submitted') {
+    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (
+      this: Batch,
+      attributes,
+      ...options
+    ) {
+      if (
+        attributes &&
+        typeof attributes === 'object' &&
+        'status' in attributes &&
+        attributes.status === 'submitted'
+      ) {
         return Promise.reject(new Error('Terminal write unavailable'));
       }
       return save.call(this, attributes, ...options);
@@ -632,9 +688,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   it('rolls back a lock-wait timeout before reading the original committed batch', async function () {
     const createBatch = service.createBatch.bind(service);
-    const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
-    let held;
-    let retryTransaction;
+    const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
+    const transactions: { held?: Knex.Transaction; retry?: Knex.Transaction } = {};
     let timedOut = false;
     await db.knex.schema.createTable('accounting_retry_marker', (table) =>
       table.integer('id').primary(),
@@ -643,14 +698,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       // The original insert remains in doubt on another connection. Its primary
       // key is locked, but a plain recovery read cannot yet see the row.
       sinon.stub(service, 'createBatch').callsFake(async (...args) => {
-        if (!args[3]?.transacting && !held) {
-          held = await db.knex.transaction();
-          await createBatch(...args.slice(0, 3), { ...args[3], transacting: held });
+        if (!args[3]?.transacting && !transactions.held) {
+          transactions.held = await db.knex.transaction();
+          await createBatch(args[0], args[1], args[2], {
+            ...args[3],
+            transacting: transactions.held,
+          });
           throw new Error('Original connection outcome unknown');
         }
         return createBatch(...args);
       });
-      sinon.stub(models.EmailBatch, 'transaction').callsFake(async (handler) => {
+      sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
         try {
           return await transaction(async (trx) => {
             const [[{ timeout }]] = await trx.raw(
@@ -661,7 +719,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
             let result;
             try {
               if (!timedOut) {
-                retryTransaction = trx;
+                transactions.retry = trx;
                 // MySQL only rolls back the timed-out statement. This earlier
                 // write must also disappear when Bookshelf rejects the handler.
                 await trx('accounting_retry_marker').insert({ id: 1 });
@@ -687,18 +745,22 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
             return result;
           });
         } catch (error) {
+          assert.ok(error instanceof Error && 'code' in error);
           assert.equal(error.code, 'ER_LOCK_WAIT_TIMEOUT');
+          assert.ok(transactions.retry);
+          assert.ok(transactions.held);
           timedOut = true;
-          assert.equal(retryTransaction.isCompleted(), true);
+          assert.equal(transactions.retry.isCompleted(), true);
           assert.deepEqual(await db.knex('accounting_retry_marker'), []);
-          await held.commit();
+          await transactions.held.commit();
           throw error;
         }
       });
       const findOne = models.EmailBatch.findOne.bind(models.EmailBatch);
       sinon.stub(models.EmailBatch, 'findOne').callsFake(async (...args) => {
         if (timedOut) {
-          assert.equal(retryTransaction.isCompleted(), true);
+          assert.ok(transactions.retry);
+          assert.equal(transactions.retry.isCompleted(), true);
           assert.deepEqual(await db.knex('accounting_retry_marker'), []);
         }
         return findOne(...args);
@@ -708,17 +770,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(batches.length, 3);
       assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
     } finally {
-      if (held && !held.isCompleted()) {
-        await held.rollback();
+      if (transactions.held && !transactions.held.isCompleted()) {
+        await transactions.held.rollback();
       }
       await db.knex.schema.dropTable('accounting_retry_marker');
     }
   });
 
   it('retries a transaction rolled back before commit with the same operation identity', async function () {
-    const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
+    const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
     let rolledBack = false;
-    sinon.stub(models.EmailBatch, 'transaction').callsFake((handler) =>
+    sinon.stub(emailBatchTransactions, 'transaction').callsFake((handler) =>
       transaction(async (trx) => {
         const result = await handler(trx);
         if (!rolledBack) {
@@ -739,9 +801,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   for (const fault of ['recovery-read', 'metadata', 'identity', 'missing-recipients']) {
     it(`handles ${fault} after an uncertain commit`, async function () {
-      const transaction = models.EmailBatch.transaction.bind(models.EmailBatch);
+      const transaction = emailBatchTransactions.transaction.bind(models.EmailBatch);
       let interrupted = false;
-      sinon.stub(models.EmailBatch, 'transaction').callsFake(async (handler) => {
+      sinon.stub(emailBatchTransactions, 'transaction').callsFake(async (handler) => {
         const batch = await transaction(handler);
         if (!interrupted) {
           interrupted = true;
@@ -820,6 +882,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       return batch;
     });
     await assert.rejects(service.createBatches(data), (error) => {
+      assertVerificationError(error);
       assert.equal(error.code, 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED');
       const details = JSON.parse(error.errorDetails);
       assert.equal(details.reason, 'preparation_totals');
