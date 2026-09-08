@@ -712,6 +712,9 @@ describe('Post Model', function () {
         assert.ok(createdPost.get('html'));
         assert.equal(createdPost.has('plaintext'), true);
         assert.match(createdPost.get('plaintext'), /^testing/);
+        assert.equal(createdPost.has('auto_excerpt'), true);
+        assert.match(createdPost.get('auto_excerpt'), /^testing/);
+        assert.equal(typeof createdPost.get('reading_time'), 'number');
         assert.equal(createdPost.get('slug'), newPostDB.slug + '-2');
         assert.equal(!!createdPost.get('featured'), false);
         assert.equal(!!createdPost.get('page'), false);
