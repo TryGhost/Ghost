@@ -53,7 +53,6 @@ fi
     fail "--confirm requires the full PR head SHA reported by --dry-run"
 
 command -v gh >/dev/null || fail "gh is required"
-
 printf 'Checking GitHub authentication...\n'
 gh auth status >/dev/null
 
@@ -62,6 +61,11 @@ is_draft=$(gh pr view "$pr_number" --repo "$repo" --json isDraft --jq '.isDraft'
 mergeable=$(gh pr view "$pr_number" --repo "$repo" --json mergeable --jq '.mergeable')
 merge_state=$(gh pr view "$pr_number" --repo "$repo" --json mergeStateStatus --jq '.mergeStateStatus')
 head_sha=$(gh pr view "$pr_number" --repo "$repo" --json headRefOid --jq '.headRefOid')
+is_stacked=$(gh api \
+    -H 'Accept: application/vnd.github+json' \
+    -H 'X-GitHub-Api-Version: 2026-03-10' \
+    "repos/$repo/pulls/$pr_number" \
+    --jq 'has("stack") and .stack != null')
 
 if [[ $mode == --confirm && $head_sha != "$expected_head" ]]; then
     fail "PR head changed after dry-run (expected: $expected_head, current: $head_sha)"
@@ -71,6 +75,8 @@ fi
 [[ $is_draft == false ]] || fail "PR is still a draft"
 [[ $mergeable == MERGEABLE ]] ||
     fail "PR is not currently mergeable (mergeable: $mergeable)"
+[[ $is_stacked == false ]] ||
+    fail "PR is part of a GitHub stack; unstack it before rerunning the preflight"
 
 printf 'Checking PR checks...\n'
 gh pr checks "$pr_number" --repo "$repo"

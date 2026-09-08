@@ -199,14 +199,20 @@ manually remove the `[Don't merge]` prefix.
 
 The script:
 
-1. verifies authentication, PR state, checks and imported-history reachability;
-2. records the current `allow_merge_commit` setting;
-3. enables merge commits only when necessary;
-4. rejects any head other than the SHA validated by the dry run and merges with
+1. verifies authentication and rejects PRs that belong to a GitHub stack;
+2. verifies PR state, checks and imported-history reachability;
+3. records the current `allow_merge_commit` setting;
+4. enables merge commits only when necessary;
+5. rejects any head other than the SHA validated by the dry run and merges with
    `--merge --match-head-commit`;
-5. restores the setting through an exit trap;
-6. verifies the merged commit has two parents;
-7. verifies the source split tip remains an ancestor of the merged result.
+6. restores the setting through an exit trap;
+7. verifies the merged commit has two parents;
+8. verifies the source split tip remains an ancestor of the merged result.
+
+GitHub requires stacked PRs to use an asynchronous merge operation. Do not use
+that path for a history import: it would leave the repository-wide merge-commit
+setting enabled while waiting for a background operation. Unstack the import PR
+and rerun the preflight instead.
 
 If branch protection or a merge queue blocks the operation, report the exact
 blocker. Do not add `--admin` or bypass policy.
