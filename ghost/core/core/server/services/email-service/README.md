@@ -144,12 +144,18 @@ The event is the stable selector; do not match the human-readable message or par
 Every event has `code`, `email_id`, and `reason`, plus `batch_id` when the failure
 identifies a batch. Counts describe the failed check:
 
-| Reason                    | Count fields                                                                                                                                                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                                                                                                          |
-| `email_recipient_count`   | `expected` prepared recipient total, `actual` persisted `email_count`                                                                                                                                        |
-| `preparation_totals`      | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
-| `batch_recovery_conflict` | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                           |
+| Reason                      | Count fields                                                                                                                                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `batch_recipient_count`     | `expected`, `actual` recipient rows                                                                                                                                                                          |
+| `email_recipient_count` | `expected` prepared recipient total, `actual` persisted `email_count` |
+| `preparation_totals`        | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
+| `batch_recovery_conflict`   | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                                          |
+| `batch_recipient_read`      | `expected`, `actual` rows after read retries are exhausted                                                                                                                                                   |
+| `message_recipient_counts`  | `expected` loaded members, `actual` message recipients plus exclusions, `recipient_count`, `submission_excluded_count`                                                                                       |
+| `provider_payload_count`    | `expected`, `actual` unique provider address keys                                                                                                                                                            |
+| `batch_submission_counts`   | `expected` stored intent, `actual` submitted plus excluded, `recipient_count`, `submitted_count`, `submission_excluded_count`                                                                                |
+| `batch_verification_failed` | `expected`, `actual`, optional `count_check` from the original failure; `batch_error` contains its full details                                                                                              |
+
 
 Unknown or invalid counts, conflicting identities with equal counts, and ownership
 or lifecycle failures use `email.verification.failed`. Both events retain the
@@ -165,6 +171,21 @@ Verification errors carry `retryable: false`, and their logged error details rec
 `emails.error`. Automatic database retries do not retry a
 terminal verification failure. These markers describe recovery within Ghost;
 they do not imply that the provider accepted or delivered an email.
+
+The shared verification error factory emits the event immediately, including
+payload failures before the provider POST. A failed batch-status write cannot
+suppress that observation. Re-reading a persisted verification failure emits
+`batch_verification_failed` with the original details in `batch_error`; it is
+another observation of the same problem, not additional lost recipients.
+
+Successful accounted batches emit `email.batch.submitted` at info level with
+`email_id`, `batch_id`, `recipient_count`, `submitted_count`,
+`submission_excluded_count`, and `mailgun_message_id` for provider correlation.
+An all-excluded batch has zero submitted and a null message ID. Final verified
+emails emit `email.submission.verified` with candidate, submitted, and exclusion
+totals. Preparation-era batches with unknown submission counts instead emit
+`email.submission.unverified` at info level, naming `unverified_batch_ids`;
+unknown historical counts alone are not a detected discrepancy.
 
 A legitimate preflight audience change emits `email.preparation.audience_drift`
 at warning level. An explicitly excluded invalid member has its own error log;

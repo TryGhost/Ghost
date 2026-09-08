@@ -729,9 +729,49 @@ describe('Batch Sending Service', function () {
           'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
         );
         sinon.assert.calledTwice(read);
+        sinon.assert.calledWithMatch(errorLog, {
+          event: { name: 'email.recipient_count.mismatch' },
+          reason: 'batch_recipient_read',
+          expected,
+          actual: 2,
+        });
         sinon.assert.notCalled(sender.send);
       });
     }
+
+    it('does not emit a count mismatch incident when a recipient read recovers on retry', async function () {
+      const recipients = await EmailRecipient.findAll();
+      const findAll = sinon.stub(EmailRecipient, 'findAll').resolves(recipients);
+      findAll.onFirstCall().resolves({ length: 1 });
+      const batch = createModel({ status: 'pending', recipient_count: 2 });
+      const sender = {
+        buildMessage: sinon.stub().resolves({}),
+        sendMessage: sinon
+          .stub()
+          .resolves({ id: 'provider', submittedCount: 2, submissionExcludedCount: 0 }),
+        getMaximumRecipients: () => 5,
+      };
+      const service = new BatchSendingService({
+        models: { EmailRecipient },
+        sendingService: sender,
+        BEFORE_RETRY_CONFIG: { maxRetries: 1, sleep: 0 },
+      });
+      sinon.stub(service, 'updateStatusLock').resolves(batch);
+      assert.equal(
+        await service.sendBatch({
+          email: createModel({ preflight_email_count: 2 }),
+          batch,
+          post: createModel({}),
+          newsletter: createModel({}),
+        }),
+        true,
+      );
+      sinon.assert.calledTwice(findAll);
+      sinon.assert.calledOnce(sender.sendMessage);
+      sinon.assert.neverCalledWithMatch(errorLog, {
+        event: { name: 'email.recipient_count.mismatch' },
+      });
+    });
 
     for (const expectedCount of [0, null]) {
       it(`rejects a corrupt ${expectedCount} recipient count before reading recipients`, async function () {
@@ -751,6 +791,13 @@ describe('Batch Sending Service', function () {
           'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
         );
         sinon.assert.notCalled(read);
+        sinon.assert.calledWithMatch(errorLog, {
+          event: { name: 'email.verification.failed' },
+          reason: 'invalid_batch_recipient_count',
+        });
+        sinon.assert.neverCalledWithMatch(errorLog, {
+          event: { name: 'email.recipient_count.mismatch' },
+        });
       });
     }
 

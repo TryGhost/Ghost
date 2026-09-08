@@ -1232,6 +1232,22 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(excludedBatch.get('status'), 'submitted');
     assert.equal(excludedBatch.get('submitted_count'), 0);
     assert.equal(excludedBatch.get('mailgun_message_id'), null);
+    sinon.assert.calledWithMatch(logging.info, {
+      event: { name: 'email.batch.submitted' },
+      email_id: email.id,
+      batch_id: excludedBatch.id,
+      submitted_count: 0,
+      submission_excluded_count: 1,
+      mailgun_message_id: null,
+    });
+    sinon.assert.calledWithMatch(logging.info, {
+      event: { name: 'email.batch.submitted' },
+      email_id: email.id,
+      mailgun_message_id: 'accepted',
+    });
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+    });
     const mapBatch = require('../../../../core/server/api/endpoints/utils/serializers/output/mappers/email-batches');
     const response = mapBatch(excludedBatch, { options: {} });
     assert.equal(response.status, 'submitted');
@@ -1268,6 +1284,59 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.assert.calledOnce(sentry.captureException);
     assert.match(email.get('error'), /recipient verification failed/);
     assert.ok(!email.get('error').toLowerCase().includes('retry'));
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+      email_id: email.id,
+      batch_id: duplicateBatch.id,
+      reason: 'batch_verification_failed',
+      expected: 2,
+      actual: 1,
+    });
+  });
+
+  it('logs a payload discrepancy before a failed batch status write can hide it', async function () {
+    const batches = await service.createBatches(data);
+    const duplicateBatch = batches.find((batch) => batch.get('recipient_count') === 2);
+    await db
+      .knex('email_recipients')
+      .where({ batch_id: duplicateBatch.id })
+      .update({ member_email: 'duplicate@example.com' });
+    const client = { send: sinon.stub().resolves({ id: '<accepted>' }) };
+    const provider = new MailgunEmailProvider({
+      mailgunClient: client,
+      config: { get: () => undefined },
+    });
+    sender.send.callsFake(provider.send.bind(provider));
+    // Status persistence fails independently of the payload check. Disable backoff
+    // so the test exercises the exhausted-write outcome without waiting for retries.
+    sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
+    const save = models.EmailBatch.prototype.save;
+    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (attributes, ...args) {
+      if (this.id === duplicateBatch.id && attributes?.status === 'failed') {
+        sinon.assert.calledWithMatch(logging.error, {
+          event: { name: 'email.recipient_count.mismatch' },
+          code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+          email_id: email.id,
+          batch_id: duplicateBatch.id,
+          reason: 'provider_payload_count',
+          expected: 2,
+          actual: 1,
+        });
+        throw new Error('Batch status write unavailable');
+      }
+      return save.call(this, attributes, ...args);
+    });
+    await assert.rejects(
+      service.sendBatches({ ...data, batches }),
+      /Batch status write unavailable/,
+    );
+    await duplicateBatch.refresh();
+    assert.equal(duplicateBatch.get('status'), 'submitting');
+    assert.equal(duplicateBatch.get('error_data'), null);
+    const alerts = logging.error
+      .getCalls()
+      .filter(({ args }) => args[0]?.event?.name === 'email.recipient_count.mismatch');
+    assert.equal(alerts.length, 1);
   });
 
   it('counts each consumed candidate once across lookahead pages and warming splits', async function () {
@@ -1302,6 +1371,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       event: { name: 'email.submission.unverified' },
       unverified_batch_ids: [batches[0].id],
     });
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+    });
     sinon.assert.calledTwice(sender.send);
   });
 
@@ -1320,6 +1392,38 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       },
     );
     sinon.assert.callCount(sender.send, 3);
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+      code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      email_id: email.id,
+      batch_id: batches[0].id,
+      reason: 'batch_submission_counts',
+      expected: batches[0].get('recipient_count'),
+      actual: batches[0].get('recipient_count') + 1,
+      recipient_count: batches[0].get('recipient_count'),
+      submitted_count: batches[0].get('recipient_count') + 1,
+      submission_excluded_count: 0,
+    });
+  });
+
+  it('reports partially missing submission metadata without a P1 count mismatch', async function () {
+    const batches = await service.createBatches(data);
+    await service.sendBatches({ ...data, batches });
+    await batches[0].save({ submitted_count: null }, { patch: true });
+    await assert.rejects(
+      service.sendBatches({ ...data, batches: await service.getBatches(email) }),
+      {
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      },
+    );
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.verification.failed' },
+      reason: 'batch_submission_counts',
+      actual: null,
+    });
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.recipient_count.mismatch' },
+    });
   });
 
   it('keeps ordinary provider failures retry-oriented', async function () {

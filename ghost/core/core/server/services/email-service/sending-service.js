@@ -149,6 +149,10 @@ class SendingService {
       throw recipientVerificationError(emailId, 'message_recipient_counts', {
         batch_id: options.batchId,
         expected: members.length,
+        actual:
+          Number.isSafeInteger(excludedCount) && excludedCount >= 0
+            ? recipients.length + excludedCount
+            : null,
         recipient_count: recipients.length,
         submission_excluded_count: excludedCount,
       });
@@ -175,7 +179,7 @@ class SendingService {
         useFallbackAddress: !!options.useFallbackAddress,
         ...(options.deliveryTime && { deliveryTime: options.deliveryTime }),
         ...(options.recipientAccounting
-          ? { expectedRecipientCount: members.length - excludedCount }
+          ? { expectedRecipientCount: members.length - excludedCount, batchId: options.batchId }
           : {}),
       },
       ...(options.recipientAccounting ? { submissionExcludedCount: excludedCount } : {}),
