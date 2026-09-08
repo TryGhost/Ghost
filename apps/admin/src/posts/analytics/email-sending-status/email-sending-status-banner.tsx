@@ -1,11 +1,11 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { useSendingEta } from './use-sending-eta';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
+import { getEmailSendingProgressCopy } from '@/posts/email-sending-status/email-sending-status-copy';
+import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
-import type { ReactNode } from 'react';
 
 const FILL_CLIP_ID = 'email-sending-fill-clip';
 
@@ -58,24 +58,6 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
-const activeDetail = (
-  sending: Exclude<EmailSendingState, { status: 'failed' }>,
-  estimate: string | null,
-): ReactNode => {
-  const { completed, total } = sending.progress;
-
-  if (total === 0) {
-    return estimate;
-  }
-
-  return (
-    <>
-      {`${formatNumber(completed)} of ${formatNumber(total)}`}
-      {estimate && ` · ${estimate}`}
-    </>
-  );
-};
-
 const failureDetail = (
   sending: Extract<EmailSendingState, { status: 'failed' }>,
   error?: string | null,
@@ -109,18 +91,20 @@ const EmailSendingStatusBanner = () => {
       sending.failed_during === 'submitting' &&
       sending.progress.completed > 0
     : false;
-  const title = isFailed
-    ? hasSentEmails
-      ? 'Some emails failed to send'
-      : 'Emails failed to send'
-    : sending.status === 'preparing'
-      ? 'Preparing emails'
-      : 'Sending emails';
-  const detail = isFailed
-    ? hasUnknownDeliveryOutcome
+  let title: string;
+  let detail: string | null;
+
+  if (sending.status === 'failed') {
+    title = hasSentEmails ? 'Some emails failed to send' : 'Emails failed to send';
+    detail = hasUnknownDeliveryOutcome
       ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error)
-    : activeDetail(sending, estimate);
+      : failureDetail(sending, post?.email?.error);
+  } else {
+    const progressCopy = getEmailSendingProgressCopy(sending, estimate);
+    title = progressCopy.title;
+    detail = progressCopy.detail;
+  }
+
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (

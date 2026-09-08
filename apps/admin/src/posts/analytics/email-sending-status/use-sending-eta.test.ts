@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { useSendingEta } from './use-sending-eta';
+import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingStatus } from '@tryghost/admin-x-framework/api/emails';
 
 function status(
