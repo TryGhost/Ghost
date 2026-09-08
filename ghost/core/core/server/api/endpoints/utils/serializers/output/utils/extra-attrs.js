@@ -1,4 +1,22 @@
+const labs = require('../../../../../../../shared/labs');
 const { computeAutoExcerpt, computeReadingTime } = require('../../../../../../lib/post-meta');
+
+/**
+ * Automatic excerpt for API output.
+ * When storedPostMetadata is on, prefer the persisted column (no plaintext read).
+ * When off, keep today's request-time plaintext slice.
+ *
+ * @param {import('../../../../../../models/post')} model
+ * @returns {string|null}
+ */
+function resolveAutoExcerpt(model) {
+  if (labs.isSet('storedPostMetadata')) {
+    const stored = model.get('auto_excerpt');
+    return stored === undefined ? null : stored;
+  }
+
+  return computeAutoExcerpt(model.get('plaintext'));
+}
 
 /**
  *
@@ -19,11 +37,12 @@ module.exports.forPost = (options, model, attrs) => {
 
   // no columns requested
   const noColumnsRequested = !Object.prototype.hasOwnProperty.call(options, 'columns');
+  const useStoredPostMetadata = labs.isSet('storedPostMetadata');
 
   // 1. Gets excerpt from post's plaintext. If custom_excerpt exists, it overrides the excerpt but the key remains excerpt.
   if (columnsIncludesExcerpt) {
     if (!attrs.custom_excerpt) {
-      attrs.excerpt = computeAutoExcerpt(model.get('plaintext'));
+      attrs.excerpt = resolveAutoExcerpt(model);
     } else {
       attrs.excerpt = attrs.custom_excerpt;
     }
@@ -49,16 +68,21 @@ module.exports.forPost = (options, model, attrs) => {
     if (customExcerpt !== null) {
       attrs.excerpt = customExcerpt;
     } else {
-      attrs.excerpt = computeAutoExcerpt(model.get('plaintext'));
+      attrs.excerpt = resolveAutoExcerpt(model);
     }
   }
 
   // 4. Add `reading_time` if no columns were requested, or if `reading_time` was requested via `columns`
   // reading_time is also a DB column now; drop the raw value so we only expose it when
-  // computed below (avoids leaking `reading_time: null` into APIs/webhooks).
+  // we intentionally return a stored or computed value (avoids leaking `reading_time: null`).
+  const storedReadingTime = attrs.reading_time;
   delete attrs.reading_time;
   if (noColumnsRequested || columnsIncludesReadingTime) {
-    if (attrs.html) {
+    if (useStoredPostMetadata && storedReadingTime !== null && storedReadingTime !== undefined) {
+      // Prefer persisted value even when html was not selected (enables later query narrowing).
+      attrs.reading_time = storedReadingTime;
+    } else if (attrs.html) {
+      // Flag off, or stored null during partial backfill — compute from html.
       attrs.reading_time = computeReadingTime(attrs.html, attrs.feature_image);
     }
   }
