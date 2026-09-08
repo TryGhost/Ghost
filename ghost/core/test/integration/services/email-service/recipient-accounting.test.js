@@ -76,6 +76,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       candidate_count: 4,
     });
     sinon.assert.calledOnce(sentry.captureMessage);
+    sinon.assert.neverCalledWithMatch(logging.error, {
+      event: { name: 'email.verification.failed' },
+    });
   });
 
   it('creates no batch for an all-excluded preparation page', async function () {
@@ -369,11 +372,11 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   it('does not complete preparation when persisted recipients are missing', async function () {
     const createBatch = service.createBatch.bind(service);
-    let removed = false;
+    let removedBatch;
     sinon.stub(service, 'createBatch').callsFake(async (...args) => {
       const batch = await createBatch(...args);
-      if (!args[3]?.transacting && !removed) {
-        removed = true;
+      if (!args[3]?.transacting && !removedBatch) {
+        removedBatch = batch;
         await db.knex('email_recipients').where({ batch_id: batch.id }).del();
       }
       return batch;
@@ -385,8 +388,12 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     sinon.assert.calledWithMatch(logging.error, {
       event: { name: 'email.verification.failed' },
+      code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
       reason: 'batch_recipient_count',
       email_id: email.id,
+      batch_id: removedBatch.id,
+      expected: removedBatch.get('recipient_count'),
+      actual: 0,
     });
     await email.refresh();
     assert.equal(email.get('prepared_at'), null);
@@ -408,6 +415,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       );
       sinon.assert.calledOnceWithMatch(sentry.captureException, {
         code: 'BULK_EMAIL_INVALID_RECIPIENT',
+      });
+      sinon.assert.neverCalledWithMatch(logging.error, {
+        event: { name: 'email.verification.failed' },
       });
     } finally {
       await db.knex('members').where({ id: memberId }).update({ uuid: originalMember.uuid });
@@ -787,6 +797,16 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(details.recipient_count, 6);
       assert.equal(details.actual_count, 6);
       return true;
+    });
+    sinon.assert.calledWithMatch(logging.error, {
+      event: { name: 'email.verification.failed' },
+      code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+      email_id: email.id,
+      reason: 'preparation_totals',
+      candidate_count: 4,
+      preparation_excluded_count: 0,
+      recipient_count: 6,
+      actual_count: 6,
     });
     // An equal-sized omission could mask the duplicate: count equations alone
     // do not establish global recipient identity uniqueness.

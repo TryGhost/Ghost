@@ -681,6 +681,7 @@ class BatchSendingService {
       {
         err: error,
         event: { name: 'email.verification.failed' },
+        code: VERIFICATION_CODE,
         email_id: email.id,
         reason,
         ...details,
@@ -985,6 +986,8 @@ class BatchSendingService {
           ) {
             throw this.#verificationFailure(email, 'batch_recovery_conflict', {
               batch_id: batchId,
+              expected: members.length,
+              actual: recipients.length,
             });
           }
           logging.info(
