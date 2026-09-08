@@ -17,14 +17,34 @@ describe('password generation', function () {
   });
 
   it('retries invalid generated passwords', function () {
+    const rejectedPassword = 'passwordABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop';
+    const acceptedPassword = 'ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedZ';
     const uid = sinon
       .stub(security.identifier, 'uid')
       .onFirstCall()
-      .returns('password')
+      .returns(rejectedPassword)
       .onSecondCall()
-      .returns('TY7VZkRwCcUKhJP9');
+      .returns(acceptedPassword);
 
-    assert.equal(generatePassword('user@example.com'), 'TY7VZkRwCcUKhJP9');
+    const result = generatePassword('user@example.com');
+
+    assert.equal(result, acceptedPassword);
+    assert.equal(result.length, 50);
+    sinon.assert.callCount(uid, 2);
+  });
+
+  it('retries passwords matching email local part', function () {
+    const email = 'user@example.com';
+    const rejectedPassword = email;
+    const acceptedPassword = 'ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedZ';
+    const uid = sinon
+      .stub(security.identifier, 'uid')
+      .onFirstCall()
+      .returns(rejectedPassword)
+      .onSecondCall()
+      .returns(acceptedPassword);
+
+    assert.equal(generatePassword(email), acceptedPassword);
     sinon.assert.callCount(uid, 2);
   });
 
