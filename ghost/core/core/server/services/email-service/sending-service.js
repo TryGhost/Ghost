@@ -1,7 +1,10 @@
 const validator = require('@tryghost/validator');
 const logging = require('@tryghost/logging');
-const errors = require('@tryghost/errors');
-const { recipientVerificationError, isCount, countsDiffer } = require('./recipient-accounting');
+const {
+  recipientVerificationError,
+  excludedRecipientError,
+  countsDiffer,
+} = require('./recipient-accounting');
 
 /**
  * @typedef {object} EmailData
@@ -9,7 +12,7 @@ const { recipientVerificationError, isCount, countsDiffer } = require('./recipie
  * @prop {string} plaintext
  * @prop {string} subject
  * @prop {string} from
- * @prop {string} emailId
+ * @prop {string|null} emailId
  * @prop {string} [replyTo]
  * @prop {string} [domainOverride]
  * @prop {Recipient[]} recipients
@@ -38,7 +41,7 @@ const { recipientVerificationError, isCount, countsDiffer } = require('./recipie
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
  * @prop {boolean} useFallbackAddress
- * @prop {Date} deliveryTime
+ * @prop {Date} [deliveryTime]
  * @prop {Map<string, EmailBody>} [emailBodyCache]
  * @prop {boolean} [recipientAccounting]
  * @prop {string} [batchId]
@@ -65,6 +68,13 @@ const { recipientVerificationError, isCount, countsDiffer } = require('./recipie
  * @typedef {object} EmailProviderSuccessResponse
  * @prop {string|null} id
  * @prop {number} [submittedCount]
+ * @prop {number} [submissionExcludedCount]
+ */
+
+/**
+ * @typedef {object} BatchMessage
+ * @prop {EmailData} data
+ * @prop {EmailSendingOptions & {expectedRecipientCount?: number}} options
  * @prop {number} [submissionExcludedCount]
  */
 
@@ -116,8 +126,12 @@ class SendingService {
     return this.sendMessage(await this.buildMessage(data, options));
   }
 
-  // Construct once outside the provider retry loop so exclusions, recipient
-  // replacements, and the intended payload stay fixed across uncertain retries.
+  /**
+   * Construct once before provider retries so the payload and exclusions stay fixed.
+   * @param {{post: Post, newsletter: Newsletter, segment: string|null, members: MemberLike[], emailId: string|null}} data
+   * @param {EmailSendingOptions} options
+   * @returns {Promise<BatchMessage>}
+   */
   async buildMessage({ post, newsletter, segment, members, emailId }, options) {
     const cacheId = emailId + '-' + (segment ?? 'null');
     const isTestEmail = options.isTestEmail ?? false;
@@ -146,7 +160,7 @@ class SendingService {
       options.recipientAccounting ? { emailId, batchId: options.batchId } : undefined,
     );
     if (options.recipientAccounting && members.length !== recipients.length + excludedCount) {
-      const actual = isCount(excludedCount) ? recipients.length + excludedCount : null;
+      const actual = recipients.length + excludedCount;
       throw recipientVerificationError(
         emailId,
         'message_recipient_counts',
@@ -189,6 +203,10 @@ class SendingService {
     };
   }
 
+  /**
+   * @param {BatchMessage} message
+   * @returns {Promise<EmailProviderSuccessResponse>}
+   */
   async sendMessage(message) {
     if (message.submissionExcludedCount !== undefined && message.data.recipients.length === 0) {
       return {
@@ -236,18 +254,15 @@ class SendingService {
         if (!isValidRecipient) {
           excludedCount += 1;
           if (accounting) {
-            const error = new errors.EmailError({
-              code: 'BULK_EMAIL_INVALID_RECIPIENT',
-              message:
-                'Recipient excluded from newsletter submission due to an invalid email address',
-              errorDetails: JSON.stringify({
-                email_id: accounting.emailId,
+            const error = excludedRecipientError(
+              accounting.emailId,
+              'email.submission.excluded',
+              'invalid_email_address',
+              {
                 batch_id: accounting.batchId,
                 member_id: members[index].id,
-                reason: 'invalid_email_address',
-              }),
-            });
-            logging.error(error);
+              },
+            );
             this.#sentry?.captureException(error);
           } else {
             logging.warn(

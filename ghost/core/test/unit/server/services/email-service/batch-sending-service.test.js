@@ -885,7 +885,7 @@ describe('Batch Sending Service', function () {
         assert.equal(
           errorLog
             .getCalls()
-            .filter((call) => call.args[0]?.code === 'BULK_EMAIL_INVALID_RECIPIENT').length,
+            .filter((call) => call.args[0]?.event?.name === 'email.submission.excluded').length,
           1,
         );
       });

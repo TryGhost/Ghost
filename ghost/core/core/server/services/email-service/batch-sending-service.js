@@ -3,7 +3,7 @@ const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {
-  RECIPIENT_VERIFICATION_CODE: VERIFICATION_CODE,
+  RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
   excludedRecipientError,
   isCount,
@@ -1232,9 +1232,7 @@ class BatchSendingService {
     } catch {
       // Ordinary provider failures can contain non-JSON diagnostics.
     }
-    if (batch.get('status') === 'failed' && errorData?.code === VERIFICATION_CODE) {
-      // Earlier submission deployments persisted counts without classification.
-      // Preserve their event semantics; new failures retain the explicit kind.
+    if (batch.get('status') === 'failed' && errorData?.code === RECIPIENT_VERIFICATION_CODE) {
       throw this.#verificationFailure(
         email,
         'batch_verification_failed',
@@ -1245,7 +1243,7 @@ class BatchSendingService {
           actual: errorData.actual,
           count_check: errorData.count_check,
         },
-        errorData.count_mismatch ?? countsDiffer(errorData.expected, errorData.actual),
+        errorData.count_mismatch === true,
       );
     }
   }
@@ -1303,229 +1301,218 @@ class BatchSendingService {
    */
   async sendBatch({ email, batch: originalBatch, post, newsletter, emailBodyCache, deliveryTime }) {
     logging.info(`Sending batch ${originalBatch.id} for email ${email.id}`);
-
-    // Check the status of the email batch in a 'for update' transaction
-
-    const batch = await this.retryDb(
-      async () => {
-        return await this.updateStatusLock(
-          this.#models.EmailBatch,
-          originalBatch.id,
-          'submitting',
-          ['pending', 'failed'],
-        );
-      },
-      {
-        ...this.#getBeforeRetryConfig(email),
-        description: `updateStatusLock batch ${originalBatch.id} -> submitting`,
-      },
-    );
+    const batch = await this.#lockBatch(email, originalBatch.id);
     if (!batch) {
-      // updateStatusLock returned undefined: the batch's current status is neither
-      // `pending` nor `failed`, so the lock didn't engage. Two distinct cases, and
-      // they need different handling — collapsing them is the bug this branch fixes.
-      const currentStatus = originalBatch.get('status');
-      if (currentStatus === 'submitted') {
-        // Mailgun accepted this batch on a prior run. Nothing to do; return true so
-        // the parent email's success counter stays accurate. Expected path during
-        // resume of an interrupted send where some batches finished before the crash.
-        logging.info(`Email batch ${originalBatch.id} already submitted on a prior run; skipping`);
-        return true;
-      }
-      // Otherwise currentStatus is `submitting`: orphan from a worker that crashed
-      // mid-batch. We have no record of Mailgun accepting it, and re-sending risks
-      // duplicates. Return false so the parent email is promoted to `failed` and an
-      // operator can reconcile against the Mailgun dashboard before retrying.
-      // Runbook: docs/newsletter-send-plan-v9.md.
-      logging.error(
-        `Email batch ${originalBatch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending — marking parent email as failed for operator review`,
-      );
-      return false;
+      return this.#reportUnclaimedBatch(originalBatch);
     }
-
     let succeeded = false;
-
     try {
-      const expectedCount = batch.get('recipient_count');
-      const recipientAccounting = this.#usesRecipientAccounting(email);
-      if (recipientAccounting && (!isCount(expectedCount) || expectedCount === 0)) {
-        throw this.#verificationFailure(email, 'invalid_batch_recipient_count', {
-          batch_id: batch.id,
-          expected: expectedCount,
-        });
-      }
-      let members = await this.retryDb(
-        async () => {
-          const m = recipientAccounting
-            ? await this.getBatchMembers(batch.id, expectedCount)
-            : await this.getBatchMembers(batch.id);
-
-          // If we receive 0 rows, there is a possibility that we switched to a secondary database and have replication lag
-          // So we throw an error and we retry
-          if (m.length === 0) {
-            throw new errors.EmailError({
-              message: `No members found for batch ${batch.id}, possible replication lag`,
-            });
-          }
-
-          return m;
-        },
-        {
-          ...this.#getBeforeRetryConfig(email),
-          description: `getBatchMembers batch ${originalBatch.id}`,
-        },
-      ).catch((error) => {
-        if (error.code === RECIPIENT_READ_MISMATCH) {
-          const details = JSON.parse(error.errorDetails);
-          throw this.#verificationFailure(
-            email,
-            'batch_recipient_read',
-            {
-              batch_id: batch.id,
-              ...details,
-            },
-            countsDiffer(details.expected, details.actual),
-          );
-        }
-        throw error;
-      });
-
-      const messageData = {
-        emailId: email.id,
+      const members = await this.#loadBatchRecipients(email, batch);
+      const response = await this.#submitBatchMessage(email, batch, members, {
         post,
         newsletter,
-        segment: batch.get('member_segment'),
-        members,
-      };
-      const messageOptions = {
-        openTrackingEnabled: !!email.get('track_opens'),
-        clickTrackingEnabled: !!email.get('track_clicks'),
-        useFallbackAddress: batch.get('fallback_sending_domain'),
-        deliveryTime,
         emailBodyCache,
-        ...(recipientAccounting ? { recipientAccounting: true, batchId: batch.id } : {}),
-      };
-      const message = recipientAccounting
-        ? await this.retryDb(() => this.#sendingService.buildMessage(messageData, messageOptions), {
-            ...this.#getBeforeRetryConfig(email),
-            description: `Constructing email batch ${originalBatch.id}`,
-          })
-        : null;
-      const response = await this.retryDb(
-        () =>
-          recipientAccounting
-            ? this.#sendingService.sendMessage(message)
-            : this.#sendingService.send(messageData, messageOptions),
-        {
-          ...this.#getMailgunRetryConfig(),
-          description: `Sending email batch ${originalBatch.id} ${deliveryTime ? `with delivery time ${deliveryTime}` : ''}`,
-        },
-      );
+        deliveryTime,
+      });
       succeeded = true;
-
-      await this.retryDb(
-        async () => {
-          await batch.save(
-            {
-              status: 'submitted',
-              mailgun_message_id: response.id,
-              ...(recipientAccounting
-                ? {
-                    submitted_count: response.submittedCount,
-                    submission_excluded_count: response.submissionExcludedCount,
-                  }
-                : {}),
-              // reset error fields when sending succeeds
-              error_status_code: null,
-              error_message: null,
-              error_data: null,
-            },
-            { patch: true, require: false, autoRefresh: false },
-          );
-        },
-        {
-          ...this.#getAfterRetryConfig(),
-          description: `save batch ${originalBatch.id} -> submitted`,
-        },
-      );
-      if (recipientAccounting) {
-        logging.info(
-          {
-            event: { name: 'email.batch.submitted' },
-            email_id: email.id,
-            batch_id: batch.id,
-            recipient_count: expectedCount,
-            submitted_count: response.submittedCount,
-            submission_excluded_count: response.submissionExcludedCount,
-            mailgun_message_id: response.id,
-          },
-          'Email batch submission accounted',
-        );
-      }
+      await this.#saveBatchStatus(batch, 'submitted', {
+        mailgun_message_id: response.id,
+        ...(this.#usesRecipientAccounting(email)
+          ? {
+              submitted_count: response.submittedCount,
+              submission_excluded_count: response.submissionExcludedCount,
+            }
+          : {}),
+        error_status_code: null,
+        error_message: null,
+        error_data: null,
+      });
+      this.#reportBatchSubmission(email, batch, response);
     } catch (err) {
-      if (err.code && err.code === 'BULK_EMAIL_SEND_FAILED') {
-        logging.error(err);
-        if (this.#sentry) {
-          // Log the original provider error to Sentry.
-          this.#sentry.captureException(err);
-        }
-      } else {
-        const ghostError = new errors.EmailError({
-          err,
-          code: 'BULK_EMAIL_SEND_FAILED',
-          message: `Error sending email batch ${batch.id}`,
-          context: err.message,
-        });
-
-        logging.error(ghostError);
-        if (this.#sentry && err.code !== VERIFICATION_CODE) {
-          // Integrity failures are reported once by emailJob after persisted verification.
-          this.#sentry.captureException(err);
-        }
-      }
-
+      this.#reportBatchError(batch, err);
       if (!succeeded) {
-        // We check succeeded because a Rare edge case where the batch was send, but we failed to set status to submitted, then we don't want to set it to failed
-        await this.retryDb(
-          async () => {
-            await batch.save(
-              {
-                status: 'failed',
-                error_status_code: err.statusCode ?? null,
-                error_message: err.message,
-                error_data: err.errorDetails ?? null,
-              },
-              { patch: true, require: false, autoRefresh: false },
-            );
-          },
-          {
-            ...this.#getAfterRetryConfig(),
-            description: `save batch ${originalBatch.id} -> failed`,
-          },
-        );
+        await this.#saveBatchStatus(batch, 'failed', {
+          error_status_code: err.statusCode ?? null,
+          error_message: err.message,
+          error_data: err.errorDetails ?? null,
+        });
       } else if (this.#shuttingDown) {
-        // Sent, but the `submitted` write didn't land in the collapsed budget.
-        // Returning success would mark the email submitted with this row left in
-        // `submitting`, which the boot resume scan never looks at.
+        // Accepted, but the submitted write failed. Keep the email resumable;
+        // never replace this uncertain outcome with a failed batch status.
         throw err;
       }
     }
+    // Mark as processed even when submission failed.
+    await this.#markBatchProcessed(batch);
+    return succeeded;
+  }
 
-    // Mark as processed, even when failed
-    await this.retryDb(
-      async () => {
-        await this.#models.EmailRecipient.where({ batch_id: batch.id }).save(
-          { processed_at: new Date() },
-          { patch: true, require: false, autoRefresh: false },
-        );
-      },
+  async #lockBatch(email, batchId) {
+    return this.retryDb(
+      () =>
+        this.updateStatusLock(this.#models.EmailBatch, batchId, 'submitting', [
+          'pending',
+          'failed',
+        ]),
       {
-        ...this.#getAfterRetryConfig(),
-        description: `save EmailRecipients ${originalBatch.id} processed_at`,
+        ...this.#getBeforeRetryConfig(email),
+        description: `updateStatusLock batch ${batchId} -> submitting`,
       },
     );
+  }
 
-    return succeeded;
+  #reportUnclaimedBatch(batch) {
+    const currentStatus = batch.get('status');
+    if (currentStatus === 'submitted') {
+      // A prior run submitted this batch; include it in the parent's success count.
+      logging.info(`Email batch ${batch.id} already submitted on a prior run; skipping`);
+      return true;
+    }
+    // An orphaned submitting batch has no recorded outcome. Preserve the existing
+    // reconciliation path instead of claiming success or resubmitting it here.
+    logging.error(
+      `Email batch ${batch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending — marking parent email as failed for operator review`,
+    );
+    return false;
+  }
+
+  async #loadBatchRecipients(email, batch) {
+    const recipientAccounting = this.#usesRecipientAccounting(email);
+    const expectedCount = batch.get('recipient_count');
+    if (recipientAccounting && (!isCount(expectedCount) || expectedCount === 0)) {
+      throw this.#verificationFailure(email, 'invalid_batch_recipient_count', {
+        batch_id: batch.id,
+        expected: expectedCount,
+      });
+    }
+    return this.retryDb(
+      async () => {
+        const members = recipientAccounting
+          ? await this.getBatchMembers(batch.id, expectedCount)
+          : await this.getBatchMembers(batch.id);
+        // Preserve the legacy retry for an empty read after a database switch.
+        if (members.length === 0) {
+          throw new errors.EmailError({
+            message: `No members found for batch ${batch.id}, possible replication lag`,
+          });
+        }
+        return members;
+      },
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `getBatchMembers batch ${batch.id}`,
+      },
+    ).catch((error) => {
+      if (error.code !== RECIPIENT_READ_MISMATCH) {
+        throw error;
+      }
+      const details = JSON.parse(error.errorDetails);
+      throw this.#verificationFailure(
+        email,
+        'batch_recipient_read',
+        { batch_id: batch.id, ...details },
+        countsDiffer(details.expected, details.actual),
+      );
+    });
+  }
+
+  async #submitBatchMessage(
+    email,
+    batch,
+    members,
+    { post, newsletter, deliveryTime, emailBodyCache },
+  ) {
+    const recipientAccounting = this.#usesRecipientAccounting(email);
+    const data = {
+      emailId: email.id,
+      post,
+      newsletter,
+      segment: batch.get('member_segment'),
+      members,
+    };
+    const options = {
+      openTrackingEnabled: !!email.get('track_opens'),
+      clickTrackingEnabled: !!email.get('track_clicks'),
+      useFallbackAddress: batch.get('fallback_sending_domain'),
+      deliveryTime,
+      emailBodyCache,
+      ...(recipientAccounting ? { recipientAccounting: true, batchId: batch.id } : {}),
+    };
+    // Accounted payloads are built once before provider retries; legacy retries
+    // still render and submit together through send().
+    let submit = () => this.#sendingService.send(data, options);
+    if (recipientAccounting) {
+      const message = await this.retryDb(() => this.#sendingService.buildMessage(data, options), {
+        ...this.#getBeforeRetryConfig(email),
+        description: `Constructing email batch ${batch.id}`,
+      });
+      submit = () => this.#sendingService.sendMessage(message);
+    }
+    return this.retryDb(submit, {
+      ...this.#getMailgunRetryConfig(),
+      description: `Sending email batch ${batch.id} ${deliveryTime ? `with delivery time ${deliveryTime}` : ''}`,
+    });
+  }
+
+  async #saveBatchStatus(batch, status, attributes) {
+    await this.retryDb(
+      () =>
+        batch.save({ status, ...attributes }, { patch: true, require: false, autoRefresh: false }),
+      {
+        ...this.#getAfterRetryConfig(),
+        description: `save batch ${batch.id} -> ${status}`,
+      },
+    );
+  }
+
+  #reportBatchSubmission(email, batch, response) {
+    if (!this.#usesRecipientAccounting(email)) {
+      return;
+    }
+    logging.info(
+      {
+        event: { name: 'email.batch.submitted' },
+        email_id: email.id,
+        batch_id: batch.id,
+        recipient_count: batch.get('recipient_count'),
+        submitted_count: response.submittedCount,
+        submission_excluded_count: response.submissionExcludedCount,
+        mailgun_message_id: response.id,
+      },
+      'Email batch submission accounted',
+    );
+  }
+
+  #reportBatchError(batch, err) {
+    const loggedError =
+      err.code === 'BULK_EMAIL_SEND_FAILED'
+        ? err
+        : new errors.EmailError({
+            err,
+            code: 'BULK_EMAIL_SEND_FAILED',
+            message: `Error sending email batch ${batch.id}`,
+            context: err.message,
+          });
+    logging.error(loggedError);
+    if (this.#sentry && err.retryable !== false) {
+      // Read the raw error; integrity failures are reported once by emailJob
+      // after persisted verification. Provider errors retain their original data.
+      this.#sentry.captureException(err);
+    }
+  }
+
+  async #markBatchProcessed(batch) {
+    await this.retryDb(
+      () =>
+        this.#models.EmailRecipient.where({ batch_id: batch.id }).save(
+          { processed_at: new Date() },
+          { patch: true, require: false, autoRefresh: false },
+        ),
+      {
+        ...this.#getAfterRetryConfig(),
+        description: `save EmailRecipients ${batch.id} processed_at`,
+      },
+    );
   }
 
   /**

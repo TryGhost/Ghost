@@ -187,9 +187,10 @@ totals. Preparation-era batches with unknown submission counts instead emit
 unknown historical counts alone are not a detected discrepancy.
 
 A legitimate preflight audience change emits `email.preparation.audience_drift`
-at warning level. An explicitly excluded invalid member has its own error log;
-it does not trigger this discrepancy event because the recipient is accounted
-for. These records cover discrepancies Ghost can verify; they do not independently
+at warning level. Invalid members emit `email.preparation.excluded` or
+`email.submission.excluded` at error level, with `email_id`, `member_id`,
+`reason`, and the preparation attempt or submission batch ID. Exclusions do not
+trigger the discrepancy event because the recipient is accounted for. These records cover discrepancies Ghost can verify; they do not independently
 measure Mailgun acceptance or delivery, including uncertain POST outcomes.
 
 ## Sending status
