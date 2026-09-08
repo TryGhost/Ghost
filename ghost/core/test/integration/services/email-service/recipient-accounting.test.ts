@@ -536,7 +536,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
           (error) => {
             assert.ok(error instanceof Error && 'code' in error);
             assert.equal(error.code, 'BULK_EMAIL_SUBMISSION_UNCERTAIN');
-            assert.match(error.message, /Contact support/);
+            assert.match(
+              error.message,
+              /We couldn’t confirm whether your newsletter finished sending/,
+            );
             return true;
           },
         );
@@ -1292,7 +1295,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await email.refresh();
     assert.equal(email.get('status'), 'failed');
     sinon.assert.calledOnce(sentry.captureException);
-    assert.match(email.get('error'), /recipient verification failed/);
+    assert.match(
+      email.get('error'),
+      /An error occurred while checking your newsletter’s recipients/,
+    );
     assert.ok(!email.get('error').toLowerCase().includes('retry'));
     sinon.assert.calledWithMatch(logging.error, {
       event: { name: 'email.recipient_count.mismatch' },
@@ -1458,7 +1464,10 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await email.refresh();
     assert.equal(email.get('status'), 'failed');
     assert.match(email.get('error'), /retry/i);
-    assert.doesNotMatch(email.get('error'), /recipient verification failed/);
+    assert.doesNotMatch(
+      email.get('error'),
+      /An error occurred while checking your newsletter’s recipients/,
+    );
   });
 
   it('completes a zero-candidate email with verified zero submissions', async function () {
