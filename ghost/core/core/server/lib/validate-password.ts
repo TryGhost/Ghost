@@ -1,7 +1,9 @@
-const validator = require('@tryghost/validator');
-const tpl = require('@tryghost/tpl');
-const settingsCache = require('../../shared/settings-cache');
-const urlUtils = require('../../shared/url-utils').default;
+// @ts-expect-error This module lacks type definitions.
+import validator from '@tryghost/validator';
+import tpl from '@tryghost/tpl';
+// @ts-expect-error This module lacks type definitions.
+import settingsCache from '../../shared/settings-cache';
+import urlUtils from '../../shared/url-utils';
 
 const messages = {
   passwordTooShort: 'Your password must be at least {minLength} characters long.',
@@ -9,20 +11,15 @@ const messages = {
   passwordDoesNotComplySecurity: 'Sorry, you cannot use an insecure password.',
 };
 
-/**
- * @typedef {{isValid: true} | {isValid: false; message: string}} PasswordValidationResult
- */
+type PasswordValidationResult = { isValid: true } | { isValid: false; message: string };
 
 /**
  * Counts repeated characters in a string. When 50% or more characters are the same,
  * we return false and therefore invalidate the string.
- * @param {string} stringToTest
- * @return {boolean}
  */
-function characterOccurrence(stringToTest) {
+function characterOccurrence(stringToTest: string): boolean {
   const limit = stringToTest.length / 2;
-  /** @type {Map<string, number>} */
-  const counts = new Map();
+  const counts = new Map<string, number>();
 
   for (let i = 0; i < stringToTest.length; i++) {
     const char = stringToTest[i];
@@ -36,14 +33,12 @@ function characterOccurrence(stringToTest) {
   return true;
 }
 
-/**
- * Validation against simple password rules
- * @param {string} password
- * @param {string} email
- * @param {string} [siteTitle]
- * @return {PasswordValidationResult}
- */
-function validatePassword(password, email, siteTitle) {
+/** Validation against simple password rules. */
+export function validatePassword(
+  password: string,
+  email: string,
+  siteTitle?: string,
+): PasswordValidationResult {
   // password cannot be longer than 256 code units, for performance
   if (password.length > 256) {
     return { isValid: false, message: tpl(messages.passwordTooLong) };
@@ -54,7 +49,7 @@ function validatePassword(password, email, siteTitle) {
     return { isValid: false, message: tpl(messages.passwordTooShort, { minLength: 10 }) };
   }
 
-  const invalidValidationResult = {
+  const invalidValidationResult: PasswordValidationResult = {
     isValid: false,
     message: tpl(messages.passwordDoesNotComplySecurity),
   };
@@ -65,7 +60,7 @@ function validatePassword(password, email, siteTitle) {
   }
 
   // password must not match with site title
-  siteTitle = siteTitle ? siteTitle : settingsCache.get('title');
+  siteTitle = siteTitle || settingsCache.get('title');
   if (siteTitle && siteTitle.toLowerCase() === password.toLowerCase()) {
     return invalidValidationResult;
   }
@@ -111,5 +106,3 @@ function validatePassword(password, email, siteTitle) {
 
   return { isValid: true };
 }
-
-exports.validatePassword = validatePassword;
