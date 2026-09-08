@@ -12,7 +12,6 @@ import {
 import {
   LucideIcon,
   abbreviateNumber,
-  cn,
   formatDisplayDate,
   formatNumber,
 } from '@tryghost/shade/utils';
@@ -40,18 +39,15 @@ interface PostlistTooptipProps {
     label: string;
     metric: React.ReactNode;
   }>;
-  className?: string;
 }
 
-const PostListTooltip: React.FC<PostlistTooptipProps> = ({ className, metrics, title }) => {
+const PostListTooltip: React.FC<PostlistTooptipProps> = ({ metrics, title }) => {
   return (
     <>
-      <div
-        className={cn(
-          'pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100',
-          className,
-        )}
-      >
+      {/* Right-aligned, not centred: the metrics stack flush to the row's right edge
+          below md, so a centred tooltip overhangs the page and makes it scroll
+          sideways while staying invisible at opacity-0. */}
+      <div className="pointer-events-none absolute right-0 bottom-[calc(100%+2px)] z-50 min-w-[160px] rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100">
         <div className="mb-1.5 border-b pr-10 pb-1.5 font-medium whitespace-nowrap text-muted-foreground">
           {title}
         </div>
@@ -199,7 +195,6 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                         }}
                       >
                         <PostListTooltip
-                          className={`${!membersTrackSources ? 'right-0 left-auto translate-x-0' : ''}`}
                           metrics={[
                             // Always show sent
                             {
@@ -302,7 +297,6 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                         }}
                       >
                         <PostListTooltip
-                          className="right-0 left-auto translate-x-0"
                           metrics={[
                             {
                               icon: (
