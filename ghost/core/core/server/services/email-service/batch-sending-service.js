@@ -1220,6 +1220,9 @@ class BatchSendingService {
         throw this.#verificationFailure(email, 'batch_verification_failed', {
           batch_id: batch.id,
           batch_error: errorData,
+          expected: errorData.expected,
+          actual: errorData.actual,
+          count_check: errorData.count_check,
         });
       }
       if (batch.get('status') !== 'submitted') {
@@ -1243,6 +1246,10 @@ class BatchSendingService {
         throw this.#verificationFailure(email, 'batch_submission_counts', {
           batch_id: batch.id,
           recipient_count: batch.get('recipient_count'),
+          expected: batch.get('recipient_count'),
+          actual: [submitted, excluded].every((count) => Number.isSafeInteger(count) && count >= 0)
+            ? submitted + excluded
+            : null,
           submitted_count: submitted,
           submission_excluded_count: excluded,
         });
@@ -1414,6 +1421,7 @@ class BatchSendingService {
             recipient_count: expectedCount,
             submitted_count: response.submittedCount,
             submission_excluded_count: response.submissionExcludedCount,
+            mailgun_message_id: response.id,
           },
           'Email batch submission accounted',
         );
