@@ -1,5 +1,5 @@
 const mapComment = require('./comments');
-const stripEmailAccounting = require('../utils/strip-email-accounting');
+const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 const url = require('../utils/url');
 const _ = require('lodash');
 

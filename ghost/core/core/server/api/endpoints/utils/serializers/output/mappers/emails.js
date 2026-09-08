@@ -1,5 +1,5 @@
 const emailService = require('../../../../../../services/email-service');
-const stripEmailAccounting = require('../utils/strip-email-accounting');
+const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 
 module.exports = (model, frame) => {
   const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
