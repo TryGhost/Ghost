@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { FilterBar } from '@tryghost/shade/patterns';
 import {
   type MemberView,
   useDeleteMemberView,
@@ -180,12 +181,9 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          className="data-[control-shape=pill]:h-7 data-[control-shape=pill]:text-sm! data-[control-shape=pill]:[&_svg]:size-3"
-          variant="outline"
-        >
+        <FilterBar.Action variant="outline">
           {activeView ? 'Edit view' : 'Save view'}
-        </Button>
+        </FilterBar.Action>
       </PopoverTrigger>
       {open && (
         <ManageViewPopoverContent

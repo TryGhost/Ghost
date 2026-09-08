@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react';
 import { Calendar } from '@/components/ui/calendar';
+import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import {
   Command,
   CommandEmpty,
@@ -2749,6 +2750,7 @@ export function Filters<T = unknown>({
   onActiveFieldChange,
 }: FiltersProps<T>) {
   const { controlShape } = useShade();
+  const isInFilterBar = useFilterBarContext();
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -3151,7 +3153,7 @@ export function Filters<T = unknown>({
                     controlShape === 'pill' && 'h-7 text-sm! [&_svg]:size-3',
                     controlShape === 'pill' &&
                       (filters.length > 0
-                        ? 'border-0 shadow-none'
+                        ? cn('border-0 shadow-none', isInFilterBar && 'aspect-square !px-0')
                         : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
                     addButtonClassName,
                   )}

@@ -1,4 +1,5 @@
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { POST_VIEW_COLORS, type PostViewColor, pickPostViewColor } from '@/posts/list/post-views';
@@ -175,9 +176,9 @@ export function ManagePostViewPopover({
         {/* Labelled in words. No `aria-label`: it would override the
                     visible text as the accessible name, leaving the two out of
                     step. */}
-        <Button data-testid="manage-post-view" variant="outline">
+        <FilterBar.Action data-testid="manage-post-view" variant="outline">
           {activeView ? 'Edit view' : 'Save view'}
-        </Button>
+        </FilterBar.Action>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72">
         {/* Keyed so reopening starts from the current view's name. */}

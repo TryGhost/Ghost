@@ -1,6 +1,9 @@
 import React from 'react';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { Inline } from '@/components/primitives';
+import { FilterBarContext, useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-provider';
 
 type FilterBarProps = React.PropsWithChildren & {
   className?: string;
@@ -14,25 +17,47 @@ type FilterBarProps = React.PropsWithChildren & {
  * Typical usage:
  *   <FilterBar>
  *     <Filters ... />
- *     <Button variant="ghost">Save view</Button>
+ *     <FilterBar.Action variant="ghost">Save view</FilterBar.Action>
  *   </FilterBar>
  */
-function FilterBar({ className, children }: FilterBarProps) {
+function FilterBarRoot({ className, children }: FilterBarProps) {
   if (React.Children.count(children) === 0) {
     return null;
   }
 
   return (
-    <Inline
-      align="start"
-      className={cn('w-full', className)}
-      data-slot="filter-bar"
-      gap="sm"
-      justify="between"
-    >
-      {children}
-    </Inline>
+    <FilterBarContext.Provider value={true}>
+      <Inline
+        align="start"
+        className={cn('w-full', className)}
+        data-slot="filter-bar"
+        gap="sm"
+        justify="between"
+      >
+        {children}
+      </Inline>
+    </FilterBarContext.Provider>
   );
 }
+
+const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ size, ...props }, ref) => {
+    const isInFilterBar = useFilterBarContext();
+    const { controlShape } = useShade();
+
+    return (
+      <Button
+        ref={ref}
+        size={size ?? (isInFilterBar && controlShape === 'pill' ? 'sm' : undefined)}
+        {...props}
+      />
+    );
+  },
+);
+FilterBarAction.displayName = 'FilterBar.Action';
+
+const FilterBar = Object.assign(FilterBarRoot, {
+  Action: FilterBarAction,
+});
 
 export { FilterBar };

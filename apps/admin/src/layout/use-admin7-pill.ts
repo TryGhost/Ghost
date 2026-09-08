@@ -6,6 +6,8 @@ const approvedRoutePatterns = [
   /^\/members\/import\/?$/,
   /^\/tags\/?$/,
   /^\/comments\/?$/,
+  /^\/posts\/?$/,
+  /^\/pages\/?$/,
   /^\/analytics(?:\/(?:web|growth|newsletters))?\/?$/,
 ];
 const memberDetailRoutePattern = /^\/members\/[0-9a-f]{24}\/?$/i;

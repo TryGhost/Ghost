@@ -1,10 +1,8 @@
 import React from 'react';
-import { Button } from '@tryghost/shade/components';
-import { type Filter, Filters } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface CommentsFiltersProps {
@@ -28,29 +26,26 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
 
-  const outlinedClearButton = useConsolidatedFilterUI ? (
-    <Button
+  const outlinedClearButton = isAdmin7Pill ? (
+    <FilterBar.Action
       className="sm:absolute sm:top-0 sm:right-0"
-      size={isAdmin7Pill ? 'sm' : undefined}
       type="button"
       variant="outline"
       onClick={() => onFiltersChange([])}
     >
       Clear
-    </Button>
+    </FilterBar.Action>
   ) : undefined;
 
   return (
     <Filters
       addButtonClassName={cn(
-        hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-        isAdmin7Pill &&
-          (hasFilters ? 'aspect-square !px-0' : 'h-(--control-height) text-base! [&_svg]:size-4'),
+        hasFilters && !isAdmin7Pill && 'border-none',
+        isAdmin7Pill && !hasFilters && 'h-(--control-height) text-base! [&_svg]:size-4',
       )}
       addButtonIcon={
-        useConsolidatedFilterUI ? (
+        isAdmin7Pill ? (
           hasFilters ? (
             <LucideIcon.ListFilterPlus />
           ) : (

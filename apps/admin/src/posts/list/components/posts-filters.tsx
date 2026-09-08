@@ -1,5 +1,4 @@
-import { type Filter, Filters } from '@tryghost/shade/patterns';
-import { Button } from '@tryghost/shade/components';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -52,14 +51,14 @@ export function PostsFilters({
   // in normal flow wrapping chips would drag it down off the first row.
   const trailingActions = hasFilters ? (
     <Inline className="shrink-0 sm:absolute sm:top-0 sm:right-0" gap="sm">
-      <Button
+      <FilterBar.Action
         className="hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex"
         type="button"
         variant="outline"
         onClick={() => onFiltersChange([])}
       >
         Clear
-      </Button>
+      </FilterBar.Action>
       {viewActions}
     </Inline>
   ) : undefined;
@@ -77,10 +76,11 @@ export function PostsFilters({
         // word "Filter" stays in the accessible name at every width.
         addButtonClassName={cn(
           showIconOnlyTrigger &&
-            'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
+            'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
           // In the bar it is icon-only at every width — the chips
           // beside it already say what it adds to.
-          hasFilters && 'gap-0 !px-3 text-[0px]',
+          hasFilters &&
+            'data-[control-shape=rounded]:gap-0 data-[control-shape=rounded]:!px-3 data-[control-shape=rounded]:text-[0px]',
         )}
         addButtonIcon={
           hasFilters ? (

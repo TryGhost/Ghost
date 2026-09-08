@@ -359,7 +359,7 @@ export const WithFilterBar: Story = {
               showClearButton={true}
               onChange={setFilters}
             />
-            <Button variant="ghost">Save view</Button>
+            <FilterBar.Action variant="ghost">Save view</FilterBar.Action>
           </FilterBar>
         </ListPage.Header>
         <ListPage.Body>
