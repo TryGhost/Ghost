@@ -93,7 +93,6 @@ import {
   settingsTagsToken,
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
-  settingsTiersError,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -178,7 +177,7 @@ export const editorScreen = {
   settingsTiers: () => page.getByTestId(settingsTiersPicker),
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
-  settingsTiersError: () => page.getByTestId(settingsTiersError),
+  settingsTiersError: () => page.getByTestId(settingsTiersPicker).getByRole('alert'),
   settingsTagsField: () => page.getByTestId(settingsTagsField),
   settingsTagsInput: () => page.getByTestId(settingsTagsInput),
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),

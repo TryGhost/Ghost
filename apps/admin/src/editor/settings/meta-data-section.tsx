@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Input, Label, Textarea } from '@tryghost/shade/components';
+import { FieldError, Input, Label, Textarea } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
@@ -15,7 +15,6 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { FieldError } from './field-error';
 import {
   META_DESCRIPTION_RECOMMENDED,
   META_TITLE_RECOMMENDED,
@@ -36,7 +35,9 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
   return (
     <Text id={id} size="sm" tone="secondary">
       Recommended: <b>{formatNumber(recommended)}</b> characters. You&apos;ve used{' '}
-      <span className={cn('font-bold', used > recommended ? 'text-red' : 'text-green')}>
+      <span
+        className={cn('font-bold', used > recommended ? 'text-destructive' : 'text-state-success')}
+      >
         {formatNumber(used)}
       </span>
     </Text>
@@ -126,7 +127,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
           onChange={(event) => session.stageSettings({ meta_title: event.target.value || null })}
         />
         <Countdown id={titleHintId} recommended={META_TITLE_RECOMMENDED} value={metaTitle} />
-        {titleError ? <FieldError id={titleErrorId} message={titleError} /> : null}
+        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
       </Stack>
 
       <Stack gap="sm">
@@ -152,7 +153,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
           value={metaDescription}
         />
         {descriptionError ? (
-          <FieldError id={descriptionErrorId} message={descriptionError} />
+          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
         ) : null}
       </Stack>
 
