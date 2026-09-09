@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import validator from 'validator';
 import {
   Button,
@@ -36,6 +36,7 @@ export function SendTestEmail({
   newsletterSlug,
   disabled = false,
 }: SendTestEmailProps) {
+  const id = useId();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
@@ -99,10 +100,10 @@ export function SendTestEmail({
           }}
         >
           <Stack gap="md">
-            <Label htmlFor="post-preview-test-email">Send test email</Label>
+            <Label htmlFor={id}>Send test email</Label>
             <Input
               data-testid="post-preview-test-email-input"
-              id="post-preview-test-email"
+              id={id}
               placeholder="you@yoursite.com"
               type="email"
               value={address}
