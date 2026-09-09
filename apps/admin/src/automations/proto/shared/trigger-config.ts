@@ -319,6 +319,16 @@ const orList = (items: string[]): string =>
  */
 export const AUTOMATIC_EXIT_SENTENCE = 'Members always exit when they unsubscribe or are deleted.';
 
+// The same two facts as rows, for the exits field — ticked and not editable.
+//
+// They were a sentence under the field. As rows they sit with the choices, which
+// answers "what ends a run" in one place instead of two, and makes the difference
+// between stated and offered something you can see rather than read.
+export const AUTOMATIC_EXITS: { id: string; label: string }[] = [
+  { id: 'unsubscribes', label: 'Unsubscribes from emails' },
+  { id: 'member_deleted', label: 'Member is deleted' },
+];
+
 export const exitCriterion = (id: ExitCriterionId): ExitCriterion =>
   EXIT_CRITERIA.find((criterion) => criterion.id === id) ?? EXIT_CRITERIA[0];
 

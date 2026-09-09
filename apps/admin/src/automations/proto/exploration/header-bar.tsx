@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@tryghost/shade/components';
+import { Button, Separator } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
@@ -35,84 +35,79 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 // thing it's genuinely better at — but it isn't worth splitting identity from
 // navigation, and a crumb that doubles as the way back still reads as a label
 // first. If it comes up a third time, this is the objection to answer.
-// The status badge and the on/off control, as one object.
+// The on/off control: a button with the state written in it and a switch beside it.
 //
-// Three arrangements came before this: a green switch beside the badge, the badge's
-// pill wrapped around a switch, then the badge and a plain switch side by side. All
-// three had the same problem — the state was being said twice, once as a readout and
-// once as a control, and no amount of styling made two things look like one fact.
+// Four earlier arrangements tried to say the state twice — a badge next to a switch,
+// a switch tinted like the badge, the badge's pill wrapped around a switch, then the
+// badge redrawn AS the switch. All of them were a readout and a control competing
+// for the same fact, and the last one solved that by inventing a control Ghost
+// doesn't otherwise have.
 //
-// So the badge IS the switch. Its dot is the thumb, its label is the label — one
-// object, nothing duplicated, because there's only one of it.
+// This one is the word and the switch as a single control, so there is nothing on
+// the other side of the header doing the communicating and nothing new to learn.
 //
-// Solid fills with a white thumb and white label, rather than the badge's pale green
-// on green. A badge is a quiet readout in a list of twenty; this is a single control
-// in a header, and it has to look like something you operate. The solid field also
-// carries the state on its own, which is what lets the label be white in both
-// positions and the whole thing work on either theme without a dark variant.
+// Ghost rather than outline. It was outlined, which made it a button sitting beside
+// other buttons — three bordered boxes in a row, none of which was obviously the
+// state. Unbordered it reads as what it is: the automation's status, which happens
+// to be operable. What separates it from the actions is a rule, not a box.
 //
-// The thumb travels right to turn ON, as every other switch does. That's the one
-// place this stops imitating the badge: the badge leads with its dot, so mirroring it
-// literally would have put ON at the left and read as off to anyone who didn't stop
-// to look. Convention wins over resemblance — the fill and the label still carry it.
+// "Live", not "On", because this control replaced the badge and inherited its job:
+// it's the list's word (and production's), and a control that said "On" beside a
+// list that said "Live" would be the same fact under two names. Live and Off aren't
+// a natural antonym pair, which is the cost — but Live says the automation is
+// enrolling members right now, and On doesn't say anything.
 //
-// Not Shade's Switch. That renders its own thumb and takes no children, so a label
-// can't go inside it, and every version above was fighting its internals through
-// child selectors. A button with role="switch" is the same thing to a screen reader.
-const StatusSwitch: React.FC<{
+// A button with role="switch" rather than a real Switch inside a button: nesting two
+// interactive elements is a bug in waiting, and to a screen reader this is exactly
+// what a switch is.
+// Exported so the floating HUD can raise the same control when the header itself is
+// hidden — the chrome moves, the control doesn't change.
+export const StatusSwitch: React.FC<{
   status: 'active' | 'inactive';
   canGoLive: boolean;
   onChange: (next: boolean) => void;
 }> = ({ status, canGoLive, onChange }) => {
   const on = status === 'active';
   return (
-    <button
+    <Button
       aria-checked={on}
-      aria-label="Automation on"
-      // 24px tall. Shade's own switch is 16, which was the right number for a switch
-      // and the wrong one for a switch with a word inside it — at that height the
-      // label had no room and the pill went long and thin. 24 sits well under the
-      // header's 34px buttons rather than setting its own line.
-      //
-      // Fixed width so the pill doesn't resize as ON becomes OFF, and so the thumb
-      // has a constant distance to travel. 56 = 2 inset + 20 thumb + 32 travel + 2.
-      // The travel is set by OFF, the longer of the two words: the thumb has to clear
-      // it, so the pill can only be as short as "OFF" plus a thumb plus air.
-      className={cn(
-        'relative h-6 w-14 shrink-0 rounded-full transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-hidden',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        on ? 'bg-green-500' : 'bg-grey-600',
-      )}
+      aria-label="Automation live"
+      // The only deviation from the component: gap-2 rather than its gap-1.5, which
+      // is sized for a 16px icon and reads tight against a 28px switch. Height,
+      // radius, padding and type are all the button's own.
+      className="gap-2"
       disabled={!on && !canGoLive}
       role="switch"
       type="button"
+      variant="ghost"
       onClick={() => onChange(!on)}
     >
-      {/* The badge's dot at the badge's size, grown into a thumb. White in both
-                states — the track is what changes, and a thumb that changed with it would
-                be a second thing to read. */}
-      <span
-        className={cn(
-          'absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
-          on ? 'translate-x-8' : 'translate-x-0',
-        )}
-      />
-      {/* Sits in whichever half the thumb isn't using. Its position swaps rather than
-                sliding: the word itself changes at the same moment, so animating it across
-                would be animating one label into a different one.
+      {/* No type classes: the label inherits the button's text-control (13px) and
+                font-medium, so it matches every other button rather than being a size of
+                its own. */}
+      <span>{on ? 'Live' : 'Off'}</span>
+      {/* Decorative: the button is the control, and a second focusable thing inside
+                it would be one tab stop too many. Shade's unchecked fill, so it reads as
+                the same component even though it can't be one here.
                 
-                text-sm, which 24px has the room for — 16px did not, which is most of
-                why this isn't Shade's switch height. */}
+                20x36 with a 16px thumb — one step up from Shade's own 16x28, which is
+                sized to sit in a settings list rather than to carry a header's primary
+                state. Travel is the width less the thumb and both insets: 36 - 16 - 4. */}
       <span
         className={cn(
-          'absolute inset-y-0 flex items-center text-sm font-medium text-white uppercase',
-          on ? 'left-1.5' : 'right-1.5',
+          'inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
+          on ? 'bg-green-500' : 'bg-input',
         )}
+        aria-hidden
       >
-        {on ? 'On' : 'Off'}
+        <span
+          className={cn(
+            'size-4 rounded-full bg-white transition-transform duration-200 ease-out motion-reduce:transition-none',
+            on ? 'translate-x-4.5' : 'translate-x-0.5',
+          )}
+        />
       </span>
-    </button>
+    </Button>
   );
 };
 
@@ -124,8 +119,6 @@ interface HeaderBarProps {
   // both header variants raise identical controls — a header style shouldn't
   // change what the screen lets you do.
   actions: React.ReactNode;
-  // Opens the automation's settings, from the icon beside the title.
-  onOpenSettings: () => void;
   // Asks for the status to change. The screen decides what that costs — turning
   // off confirms first — so the switch reports `status` and never its own guess:
   // a switch that flips before the answer is a switch that can be wrong.
@@ -139,7 +132,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   status,
   onBack,
   actions,
-  onOpenSettings,
   onStatusChange,
   canGoLive,
 }) => (
@@ -147,7 +139,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     className={cn(
       // px-6: the same 24px column the pane and the canvas HUD use, so every
       // leading control on the screen starts on one line rather than three.
-      'relative z-30 flex h-16 shrink-0 items-center justify-between px-6',
+      'relative z-30 flex h-18 shrink-0 items-center justify-between px-6',
     )}
   >
     {/* Identity sits with navigation at the left rather than centred: the title
@@ -173,30 +165,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 verbatim. The screen's subject should be the largest thing on it; at
                 text-md it was a step BELOW the pane heading beneath it, which inverted
                 the hierarchy — the region label outranking the thing it reports on. */}
-      {/* Title and cog are ONE control, not a label with a button after it. The
-                name is the thing settings are about, so it should be the thing you click
-                — the cog is the affordance that says so, and folding both into a single
-                button makes the target the width of the name rather than 28px of icon.
-                
-                Persistent, not hover-revealed: an affordance that only appears on hover
-                still has to reserve its width, so it pushes the title's line apart while
-                advertising nothing.
-                
-                -ml-2 with px-2 so the hover fill has room without the text shifting off
-                the line the back arrow's glyph sets. */}
-      <button
-        className="-ml-2 flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-        title="Automation settings"
-        type="button"
-        onClick={onOpenSettings}
-      >
-        <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
-        <LucideIcon.Settings className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
-      </button>
+      {/* Plain text. It was a button with a trailing cog, opening the name and
+                description in a dialog — that moved into the pane's Settings panel, and a
+                second way in would be two places to change one thing. The title is a label
+                again, which is all it was ever claiming to be. */}
+      <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
     </Inline>
 
     <Inline align="center" className="shrink-0" gap="sm">
       {actions}
+      {/* A rule, not a border. The status isn't another action — it's what the
+                actions are acting on — so it's set apart rather than lined up with them.
+                h-5 rather than full height: a hairline the height of the row would divide
+                the header, where this only divides the group. */}
+      <Separator className="h-5" orientation="vertical" />
       {/* Ends the row, past the ⋯ and any primary action. It's the only control
                 here that changes what the automation DOES rather than what you're looking
                 at, so it gets the far edge to itself. */}

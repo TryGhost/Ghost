@@ -564,7 +564,7 @@ const AutomationFloat: React.FC = () => {
         setPaneCollapsed(false);
         // Title only — the start-confirmation dialog already explained what
         // turning it on means, so the toast just confirms it happened.
-        toast.success('Automation is on');
+        toast.success('Automation is live');
       },
       () => setStartOpen(false),
     );
@@ -713,35 +713,43 @@ const AutomationFloat: React.FC = () => {
                     and Save is reachable in a menu without the moment feeling worse.
 
                     Duplicated rather than moved — the button below carries the inverse
-                    class, so exactly one of the two is ever rendered. */}
+                    class, so exactly one of the two is ever rendered.
+
+                    Still conditional, unlike Duplicate and Delete below. Those are
+                    temporarily unavailable; this one doesn't exist while the automation is
+                    live, because Publish IS the save then. A greyed Save there would say
+                    changes can't be committed, which is the opposite of true. */}
         {liveStatus === 'inactive' && (
           <DropdownMenuItem className="lg:hidden" disabled={!hasChanges} onClick={handleSave}>
             <LucideIcon.Save /> Save
           </DropdownMenuItem>
         )}
+        {/* A verb, like every other row here. "Settings" was the one noun in a list
+                    of things you do, which made it read as a different kind of item —
+                    somewhere to go rather than something to perform. */}
         <DropdownMenuItem onClick={openSettings}>
-          <LucideIcon.Settings /> Settings
+          <LucideIcon.Settings /> Edit details
         </DropdownMenuItem>
-        {/* Both act on a record that doesn't exist yet — there is nothing to copy
-                    and nothing to remove until the first Save. */}
-        {!isCreating && (
-          <DropdownMenuItem onClick={openDuplicate}>
-            <LucideIcon.Copy /> Duplicate
-          </DropdownMenuItem>
-        )}
+        {/* Disabled while creating rather than hidden. Both act on a record that
+                    doesn't exist yet — there's nothing to copy and nothing to remove until
+                    the first Save — but a menu whose contents change between visits teaches
+                    nobody what's in it. Showing them greyed says the automation isn't ready
+                    for them; removing them says they don't exist. */}
+        <DropdownMenuItem disabled={isCreating} onClick={openDuplicate}>
+          <LucideIcon.Copy /> Duplicate
+        </DropdownMenuItem>
         {/* Delete sits last. A menu opens with the cursor at the top, so leading
                     with the one item that destroys something would put it directly under
                     the pointer. It used to be fenced off by a separator too; with four
                     items the rules were doing more to break the list up than the grouping
                     justified, and the destructive colour already marks it. */}
-        {!isCreating && (
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <LucideIcon.Trash2 /> Delete
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          disabled={isCreating}
+          onClick={() => setDeleteOpen(true)}
+        >
+          <LucideIcon.Trash2 /> Delete
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -1066,9 +1074,9 @@ const AutomationFloat: React.FC = () => {
                 Reached two ways: the title, which is where people try first, and the
                 ⋯, which is what makes it findable for anyone who doesn't. */}
       <DetailsDialog
-        blurb="The name and description shown on your automations list."
+        blurb="Shown on your automations list. Members never see either of these."
         confirmLabel="Save"
-        heading="Automation settings"
+        heading="Automation details"
         open={settingsOpen}
         values={settingsDraft}
         onChange={setSettingsDraft}
@@ -1079,7 +1087,7 @@ const AutomationFloat: React.FC = () => {
       {/* The copy, named before it exists. Same dialog as settings — naming a new
                 automation and renaming an existing one are the same act. */}
       <DetailsDialog
-        blurb="Creates a copy of this automation. It starts turned off."
+        blurb="Creates a copy of this automation. It starts turned off, and members never see either of these."
         confirmLabel="Duplicate"
         heading="Duplicate automation"
         open={duplicateOpen}

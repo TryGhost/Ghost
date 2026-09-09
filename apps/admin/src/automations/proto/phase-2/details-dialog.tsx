@@ -25,6 +25,9 @@ interface DetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   heading: string;
+  // Says who these words are for. It used to be a hint under the description alone,
+  // which left the name unaccounted for and put the reassurance below the field it
+  // was reassuring about. One line at the top covers both.
   blurb: string;
   confirmLabel: string;
   values: { name: string; description: string };
@@ -67,12 +70,6 @@ export const DetailsDialog: React.FC<DetailsDialogProps> = ({
             value={values.description}
             onChange={(e) => onChange({ ...values, description: e.target.value })}
           />
-          {/* Says where the words end up. Without it the field is a box asking
-                    for text with no stated audience, and people either skip it or
-                    write for nobody. */}
-          <p className="text-sm text-muted-foreground">
-            Shown under the name on your automations list.
-          </p>
         </div>
       </div>
       <DialogFooter>

@@ -299,7 +299,7 @@ const AutomationFloat: React.FC = () => {
     setAutomationStatus(id, 'active');
     // Title only — the start-confirmation dialog already explained what
     // turning it on means, so the toast just confirms it happened.
-    toast.success('Automation is on');
+    toast.success('Automation is live');
   };
 
   const publishChanges = () => {

@@ -17,7 +17,7 @@ import {
   ALL_TIER_IDS,
   EXIT_CRITERIA,
   TIER_OPTIONS,
-  AUTOMATIC_EXIT_SENTENCE,
+  AUTOMATIC_EXITS,
   type AudienceScope,
   type ExitCriterionId,
   type TriggerConfig,
@@ -86,12 +86,18 @@ interface TriggerConfigFormProps {
   // disabled — the card still says what starts the flow — and the disclosed
   // tier fields don't render at all rather than stacking disabled controls.
   locked?: boolean;
+  // Exits are edited somewhere other than this card — Exploration puts them in the
+  // settings panel. Not a variant of `locked`: locked means "you can't change this",
+  // this means "you change it over there", and a card that dropped the field for
+  // either reason would be telling two different stories with one silence.
+  exitsElsewhere?: boolean;
 }
 
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
   locked = false,
+  exitsElsewhere = false,
 }) => {
   // Filtered through availableCriteria so a criterion that stopped applying (the
   // audience changed to paid, say) neither shows in the summary nor in the list.
@@ -208,18 +214,20 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 absence for a while, which read as an unanswered field: the trigger showed
                 greyed placeholder text for what was actually a deliberate, valid answer.
                 As a row it checks every tier below it and shows checked only while they
-                all are, so there is one thing to look at and it agrees with itself. */}
+                all are, so there is one thing to look at and it agrees with itself.
+                
+                Unticking everything is still reachable and still means an automation that
+                could never run. It carries no message here: validation is being solved as
+                its own thing rather than per-field, so this reads as unanswered — see
+                `Select` in the trigger — and the objection is raised somewhere that can
+                speak for the whole card. */}
       {!locked && showTiers && (
         <Stack gap="sm">
           <Label className="text-muted-foreground">Tiers</Label>
           <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
             <ComboboxTrigger aria-label="Tiers">
               <ComboboxValue placeholder={noTier}>
-                {noTier
-                  ? 'No tiers selected'
-                  : anyTier
-                    ? 'Any tier'
-                    : tierNames(tierIds).join(', ')}
+                {noTier ? 'Select' : anyTier ? 'Any tier' : tierNames(tierIds).join(', ')}
               </ComboboxValue>
             </ComboboxTrigger>
             {/* "always" so the list tracks its card when the canvas pans — the
@@ -248,10 +256,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
               </CheckboxList>
             </ComboboxContent>
           </Combobox>
-          {/* An automation for no tiers at all would never run. Stated rather than
-                        prevented: a checkbox you can't untick is a checkbox that lies about
-                        being a checkbox, and the way out is obvious once it's said. */}
-          {noTier && <p className="text-sm text-red">Select at least one tier</p>}
         </Stack>
       )}
 
@@ -267,9 +271,14 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 included. Both were in that sentence for a while, and both have a
                 defensible other answer — which is the line: facts are stated,
                 choices are offered. */}
-      {!locked && (
+      {!locked && !exitsElsewhere && (
         <Stack gap="sm">
-          <Label className="text-muted-foreground">Exit conditions</Label>
+          {/* Optional said in the label rather than left to be inferred from an
+                        empty field. Everything else on this card has to be answered, so an
+                        unanswered one reads as unfinished unless something says otherwise. */}
+          <Label className="text-muted-foreground">
+            Exit conditions <span className="font-normal">(Optional)</span>
+          </Label>
           <Combobox open={exitsOpen} onOpenChange={setExitsOpen}>
             <ComboboxTrigger aria-label="Exit conditions">
               <ComboboxValue placeholder={chosenIds.length === 0}>
@@ -277,11 +286,22 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                   ? EXIT_CRITERIA.filter((criterion) => chosenIds.includes(criterion.id))
                       .map((criterion) => criterion.label(config))
                       .join(', ')
-                  : 'Nothing else'}
+                  : 'Select'}
               </ComboboxValue>
             </ComboboxTrigger>
             <ComboboxContent className="p-2" updatePositionStrategy="always">
               <CheckboxList>
+                {/* First, and not yours to change: you cannot email someone who has
+                                    unsubscribed or no longer exists. */}
+                {AUTOMATIC_EXITS.map((exit) => (
+                  <CheckboxRow
+                    key={exit.id}
+                    label={exit.label}
+                    checked
+                    disabled
+                    onCheckedChange={() => undefined}
+                  />
+                ))}
                 {EXIT_CRITERIA.map((criterion) => (
                   <CheckboxRow
                     key={criterion.id}
@@ -301,7 +321,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
               </CheckboxList>
             </ComboboxContent>
           </Combobox>
-          <p className="text-sm text-muted-foreground">{AUTOMATIC_EXIT_SENTENCE}</p>
         </Stack>
       )}
     </Stack>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Checkbox } from '@tryghost/shade/components';
+import { cn } from '@tryghost/shade/utils';
 
 // A list of checkboxes inside a field's popover.
 //
@@ -19,11 +20,26 @@ export const CheckboxList: React.FC<{ children: React.ReactNode }> = ({ children
 export const CheckboxRow: React.FC<{
   checked: boolean;
   label: string;
+  // A row that states something rather than offering it — ticked, and not yours to
+  // untick. It sits in the list rather than in prose beneath it so that everything
+  // ending a run is in one place, whether or not you get a say in it.
+  disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
-}> = ({ checked, label, onCheckedChange }) => (
+}> = ({ checked, label, disabled = false, onCheckedChange }) => (
   // A label, so the whole row is the target rather than the 16px box.
-  <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-interactive-hover">
-    <Checkbox checked={checked} onCheckedChange={(next) => onCheckedChange(next === true)} />
+  <label
+    className={cn(
+      'flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+      disabled ? 'cursor-default' : 'cursor-pointer hover:bg-interactive-hover',
+    )}
+  >
+    <Checkbox
+      checked={checked}
+      disabled={disabled}
+      onCheckedChange={(next) => onCheckedChange(next === true)}
+    />
+    {/* Only the box dims. The words are still the answer to "what ends a run", and
+            greying them would say they matter less than the ones you chose. */}
     <span className="text-sm">{label}</span>
   </label>
 );

@@ -153,6 +153,8 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
+  // The lane edits exits somewhere else — see TriggerFieldsForm.
+  exitsElsewhere?: boolean;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
   // something entirely different by it — "don't offer to edit this", not "this
@@ -559,6 +561,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
               >
                 <TriggerFieldsForm
                   config={triggerConfig}
+                  exitsElsewhere={d.exitsElsewhere}
                   locked={triggerLocked}
                   onChange={d.onTriggerConfigChange}
                 />
@@ -815,6 +818,8 @@ interface EditCanvasProps {
   triggerConfig?: TriggerConfig | null;
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   triggerLocked?: boolean;
+  // The screen edits exit conditions itself, so the trigger card doesn't offer them.
+  exitsElsewhere?: boolean;
   inlineAnalytics?: boolean;
 }
 
@@ -824,6 +829,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerConfig,
   onTriggerConfigChange,
   triggerLocked = false,
+  exitsElsewhere = false,
   inlineAnalytics = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
@@ -1044,6 +1050,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerConfig: triggerConfig ?? undefined,
         onTriggerConfigChange,
         triggerLocked,
+        exitsElsewhere,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
@@ -1164,6 +1171,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     triggerConfig,
     onTriggerConfigChange,
     triggerLocked,
+    exitsElsewhere,
     inlineAnalytics,
     linksOpenId,
     layout,

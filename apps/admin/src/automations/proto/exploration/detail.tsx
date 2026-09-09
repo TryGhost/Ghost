@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   AlertDialog,
@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   EmptyIndicator,
+  Separator,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -25,17 +26,15 @@ import { getRunData } from '@/automations/proto/shared/mock';
 import {
   saveAutomation,
   setAutomationStatus,
+  updateAutomationDetails,
   useProtoAutomation,
 } from '@/automations/proto/shared/store';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
-import { HeaderBar } from './header-bar';
+import { HeaderBar, StatusSwitch } from './header-bar';
+import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
 import type { TriggerConfig } from '@/automations/proto/shared/trigger-config';
-import {
-  CANVAS_HUD_BUTTON,
-  CANVAS_SLOT_FILL,
-  canvasTheme,
-} from '@/automations/proto/canvas/flow-utils';
+import { CANVAS_SLOT_FILL, canvasTheme } from '@/automations/proto/canvas/flow-utils';
 import { EditCanvas } from '@/automations/proto/canvas/edit-canvas';
 import { FlowCanvas } from '@/automations/proto/canvas/flow-canvas';
 import { useVersionLink } from '@/automations/proto/shared/use-version-link';
@@ -150,6 +149,29 @@ const PublishChangesDialog: React.FC<{
  * before it was cut, and stayed separate because the flow itself isn't part of
  * what this screen decides.
  */
+// How long the interface takes to get out of the way, and come back. One number for
+// every geometric part of it — the header's height, the pane's width, the canvas
+// window's margin and radius — because they're one gesture.
+const CHROME_MS = 300;
+
+// The floating chrome on this canvas: the identity pill top-left, the actions pill
+// top-right, and — already, and not ours — the zoom controls bottom-left.
+//
+// Sized and surfaced from those zoom controls, since they're the shipped component
+// and the one thing here that can't be changed to match: p-0.5 around 36px controls,
+// rounded-md, elevated surface, shadow instead of a border. Every floating group is
+// then 40px and made of the same material, wherever it sits.
+//
+// The pills were smaller and outlined before this, which put three sizes and two
+// treatments in the four corners of one canvas.
+const HUD_PILL = 'flex items-center rounded-md bg-surface-elevated p-0.5 shadow-sm';
+// The controls inside one. size="icon" is 36px, which is the number the zoom
+// controls use and the number CANVAS_HUD_BUTTON was pinned to for the same reason.
+const HUD_CONTROL = 'size-9';
+// Mounted after the geometry has settled, so it fades in where it will stay rather
+// than riding the canvas as it grows.
+const HUD_ENTER = `animate-in duration-200 ${PROTO_EASE} fade-in-0 motion-reduce:animate-none`;
+
 const AutomationFloat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -181,6 +203,9 @@ const AutomationFloat: React.FC = () => {
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [stopOpen, setStopOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
+  // No model behind it yet — see the panel. Held here so the choice survives a tab
+  // switch, which is enough to tell whether the question belongs in this panel.
+  const [allowReentry, setAllowReentry] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
@@ -200,6 +225,23 @@ const AutomationFloat: React.FC = () => {
   // The trigger stays editable here — nothing is fixed after creation.
   // The canvas is always editable, so hiding the pane is the user's call.
   const [paneCollapsed, setPaneCollapsed] = useState(false);
+
+  // The HUD is mounted once the geometry has finished, rather than faded in place.
+  //
+  // A CSS fade would keep it in the layout the whole time, and the top-left pill sits
+  // in a row with the toggle — space reserved there would hold the toggle out of
+  // position whenever the interface is showing. Mounting also gets the reverse for
+  // free: on the way back it goes at once, which is right, because what should be
+  // watched then is the chrome returning.
+  const [hudVisible, setHudVisible] = useState(false);
+  useEffect(() => {
+    if (!paneCollapsed) {
+      setHudVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setHudVisible(true), CHROME_MS);
+    return () => clearTimeout(timer);
+  }, [paneCollapsed]);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -314,7 +356,7 @@ const AutomationFloat: React.FC = () => {
     setAutomationStatus(id, 'active');
     // Title only — the start-confirmation dialog already explained what
     // turning it on means, so the toast just confirms it happened.
-    toast.success('Automation is on');
+    toast.success('Automation is live');
   };
 
   const publishChanges = () => {
@@ -449,6 +491,23 @@ const AutomationFloat: React.FC = () => {
     </>
   );
 
+  // Hiding and showing the interface, choreographed.
+  //
+  // Everything geometric moves together on one duration and one curve — the header's
+  // height, the pane's width, the canvas window's margin and its radius. They're a
+  // single gesture (the chrome leaving, the canvas taking the space), so anything
+  // moving at its own speed reads as a second thing happening.
+  //
+  // What's staggered is what APPEARS and DISAPPEARS. Contents leave fast and early,
+  // so nothing is being clipped as its container collapses; they arrive late, after
+  // there's somewhere for them to be. That ordering is the whole difference between
+  // this reading as deliberate and reading as a jump.
+  const chrome = `duration-300 ${PROTO_EASE} motion-reduce:transition-none`;
+  // The header's contents, which stay mounted inside a collapsing row: out before the
+  // space closes, in after it has opened.
+  const leaves = 'opacity-0 duration-150';
+  const arrives = 'opacity-100 duration-200 [transition-delay:220ms]';
+
   return (
     // flex-col in both variants: the docked header is a row above the pane and
     // canvas, and with no header the same column collapses to just that row.
@@ -457,16 +516,37 @@ const AutomationFloat: React.FC = () => {
       data-testid="float-detail"
     >
       {/* The header never carries the pane control in either release — its left
-                is the back arrow, the title and its status, full stop. */}
-      <HeaderBar
-        actions={chromeActions}
-        canGoLive={canGoLive}
-        status={liveStatus}
-        title={automation.name}
-        onBack={goBack}
-        onOpenSettings={() => toast.success('Automation settings')}
-        onStatusChange={handleStatusToggle}
-      />
+                is the back arrow, the title and its status, full stop.
+                
+                Gone entirely while the canvas is maximised. The same press that takes the
+                pane also takes the header, and everything on it comes back as HUD floating
+                over the canvas — Figma's ⌘\ — so maximised means the flow and nothing
+                else, rather than the flow plus a bar that was never the subject. */}
+      {/* Height, not mounting. Unmounted, the header vanished and everything below
+                jumped up a row before any of the animation had started, which is what made
+                the whole gesture feel broken rather than fast.
+                
+                overflow-hidden so the row is clipped as it closes, and its contents fade
+                first — a header being cut in half on the way out is worse than one that
+                has already gone. */}
+      <div
+        className={cn(
+          'shrink-0 overflow-hidden transition-[height]',
+          chrome,
+          paneCollapsed ? 'h-0' : 'h-18',
+        )}
+      >
+        <div className={cn('transition-opacity', paneCollapsed ? leaves : arrives)}>
+          <HeaderBar
+            actions={chromeActions}
+            canGoLive={canGoLive}
+            status={liveStatus}
+            title={automation.name}
+            onBack={goBack}
+            onStatusChange={handleStatusToggle}
+          />
+        </div>
+      </div>
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {/* Left pane docked flush to the edge. On entering edit it slides off the
                 left (negative margin collapses its flex footprint to 0) and the canvas
@@ -491,7 +571,8 @@ const AutomationFloat: React.FC = () => {
             // This only works because the child below is pinned to w-[480px]: left
             // to itself the content would reflow as the pane narrowed, wrapping the
             // title and crushing the table for the length of the animation.
-            'relative flex shrink-0 flex-col overflow-hidden transition-[width] duration-150 ease-out',
+            'relative flex shrink-0 flex-col overflow-hidden transition-[width]',
+            chrome,
             // Not a panel at all — page content on the page's own background,
             // with only its own px-6 holding it off the canvas window beside it.
             // No rule, because there are no longer two surfaces meeting that
@@ -512,6 +593,20 @@ const AutomationFloat: React.FC = () => {
               query={query}
               scenario={scenario}
               selectedMemberId={selectedMemberId}
+              settings={{
+                name: automation.name,
+                description: record?.description ?? '',
+                // Written straight through, like the status is. This lane has no
+                // Save between you and the store for these — they're properties of
+                // the automation rather than of the flow, and the flow is the thing
+                // Publish commits.
+                onDetailsChange: ({ name, description }) =>
+                  updateAutomationDetails(id, name, description),
+                triggerConfig,
+                onTriggerConfigChange: handleTriggerConfigChange,
+                allowReentry,
+                onAllowReentryChange: setAllowReentry,
+              }}
               onQueryChange={setQuery}
               onSelectMember={setSelectedMemberId}
             />
@@ -561,10 +656,34 @@ const AutomationFloat: React.FC = () => {
             // DARK: the flow fill and the page background are the same token
             // there by design, so the only thing marking where the canvas ends is
             // the dot pattern stopping.
-            'transition-[margin] duration-150 ease-out',
+            // Radius rides with the margin. Snapping square the instant the press
+            // landed was the canvas arriving before it had moved.
+            'transition-[margin,border-radius]',
+            chrome,
             paneCollapsed ? 'm-0 rounded-none' : 'mr-6 mb-6 ml-0 rounded-2xl',
           )}
         >
+          {/* The header's action half, floating, on the same 24px inset as everything
+                    else on this canvas. Its own pill rather than joined to the left one —
+                    they were at opposite ends of the header and should stay at opposite ends
+                    of the screen; sliding them together would be a different layout, not a
+                    hidden one. */}
+          {hudVisible && (
+            <div className="absolute top-6 right-6 z-20">
+              <div className={cn(HUD_PILL, 'gap-1.5', HUD_ENTER)}>
+                {chromeActions}
+                {/* The same rule the header uses between its actions and the status,
+                                    so the floating version isn't a different arrangement of the
+                                    same controls. */}
+                <Separator className="h-5" orientation="vertical" />
+                <StatusSwitch
+                  canGoLive={canGoLive}
+                  status={liveStatus}
+                  onChange={handleStatusToggle}
+                />
+              </div>
+            </div>
+          )}
           {/* Both canvases stay mounted and crossfade on mode change. No remount
                     means the incoming flow is already centred — no first-frame node flash.
                     The inactive one is opacity-0 + pointer-events-none so clicks fall to
@@ -591,42 +710,84 @@ const AutomationFloat: React.FC = () => {
                     controls take in the opposite corner. */}
           <div className="absolute top-6 left-6 z-20">
             <Inline align="center" gap="sm">
-              {/* The pane toggle, in both directions. It used to be two
-                                controls — one leading the pane's title to close it, one
-                                floating here to bring it back — which meant the way out
-                                and the way in lived in different places and the pane
-                                carried chrome ahead of its own heading.
-
-                                One button on the canvas instead: it stays put, and the
-                                pane stays a clean column of content.
-
-                                Maximise / minimise rather than a panel glyph. The same
-                                press still shows and hides the pane, but the pane is not
-                                what you're looking at when you reach for a control in
-                                the CANVAS's corner — from here the visible effect is the
-                                canvas taking the screen and giving it back. (Phase 1's
-                                toggle sits on the seam between the two regions and keeps
-                                PanelLeft, because from there it genuinely reads as the
-                                panel's control.) */}
-              {/* Sits on the 24px inset as a whole object. It was a bare
-                                ghost button pulled back by -ml-2 to put its GLYPH on
-                                the inset — right for a mark floating on the canvas,
-                                wrong now that it has a surface of its own. */}
-              <Button
-                aria-label={paneCollapsed ? 'Restore canvas' : 'Maximise canvas'}
-                aria-pressed={paneCollapsed}
-                className={CANVAS_HUD_BUTTON}
-                size="icon"
-                type="button"
-                variant="outline"
-                onClick={() => setPaneCollapsed(!paneCollapsed)}
-              >
-                {paneCollapsed ? (
-                  <LucideIcon.Minimize strokeWidth={2} />
-                ) : (
-                  <LucideIcon.Maximize strokeWidth={2} />
-                )}
-              </Button>
+              {/* The toggle and, once maximised, the header's identity half beside it —
+                                one pill, not a pill and a button. They're a single displaced
+                                object, and spacing them apart would read as unrelated things
+                                that happen to be near each other.
+                                
+                                The pill is here in both states. Maximised it holds the way back,
+                                the name and the toggle; otherwise just the toggle, where its p-1
+                                around a 28px ghost button comes out at the same 36px the
+                                standalone outline button was. Which means the toggle never
+                                unmounts, moves or restyles as the interface goes — only the
+                                things beside it arrive. */}
+              {/* Nothing may put width on the toggle's left while the group is closed.
+                                Two things tried to: a gap on the pill, which applies either side of
+                                a zero-width child; then padding on that child, which under
+                                border-box still floors its border box at the padding. Both left the
+                                pill looking off-centre around a single button.
+                                
+                                The space is a margin on the separator instead — inside the clipped
+                                content, so it goes to nothing with the rest of it. */}
+              <div className={HUD_PILL}>
+                {/* The identity half opens the pill from nothing rather than appearing
+                                    in it.
+                                    
+                                    It sits BEFORE the toggle, so anything that mounts here
+                                    displaces the toggle — and mounting it outright moved the
+                                    button a hundred-odd pixels in a single frame, right after it
+                                    had just finished sliding up with the canvas. Two motions, the
+                                    second of them instant.
+                                    
+                                    A grid column from 0fr to 1fr is the way to animate to a width
+                                    nobody knows in advance (the name is however long it is). The
+                                    child clips while it's narrow, so the toggle is pushed rather
+                                    than jumped, and the contents fade so the squeeze isn't read as
+                                    the text being crushed. */}
+                <div
+                  className={cn(
+                    'grid min-w-0 transition-[grid-template-columns,opacity]',
+                    chrome,
+                    hudVisible ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0',
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-1 overflow-hidden">
+                    <Button
+                      aria-label="Back to automations"
+                      className={HUD_CONTROL}
+                      size="icon"
+                      tabIndex={hudVisible ? undefined : -1}
+                      type="button"
+                      variant="ghost"
+                      onClick={goBack}
+                    >
+                      <LucideIcon.ArrowLeft strokeWidth={2} />
+                    </Button>
+                    {/* text-md (14px): a step up from the 12px this started at, which
+                                        read as a caption on a control rather than the name of the
+                                        thing on screen. Still short of the header's own text-lg —
+                                        floating chrome shouldn't claim to be the page title, it's
+                                        standing in for one. */}
+                    <span className="max-w-56 truncate px-1 text-md font-medium">
+                      {automation.name}
+                    </span>
+                    {/* Same rule as the header's, between what names the automation
+                                        and what acts on the view of it. */}
+                    <Separator className="mr-1 h-5" orientation="vertical" />
+                  </div>
+                </div>
+                <Button
+                  aria-label={paneCollapsed ? 'Show interface' : 'Hide interface'}
+                  aria-pressed={paneCollapsed}
+                  className={HUD_CONTROL}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setPaneCollapsed(!paneCollapsed)}
+                >
+                  <LucideIcon.PanelLeft strokeWidth={2} />
+                </Button>
+              </div>
               {/* Who you're looking at, and the way out, as one control:
                                 clicking the member's name closes their run. This replaced
                                 a bare X in the canvas's top-right, which said nothing
@@ -645,18 +806,21 @@ const AutomationFloat: React.FC = () => {
                                 doesn't say what pressing it does; it contains the visible
                                 text, so the label-in-name rule still holds. */}
               {selectedRun && !showEditCanvas && (
-                <Button
-                  aria-label={`Close ${selectedRun.member.name}'s run`}
-                  // Same chrome as the maximise toggle beside it, so
-                  // the two read as one set of canvas controls.
-                  className={CANVAS_HUD_BUTTON}
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSelectedMemberId(null)}
-                >
-                  <LucideIcon.X strokeWidth={2} />
-                  {selectedRun.member.name}
-                </Button>
+                <div className={HUD_PILL}>
+                  <Button
+                    aria-label={`Close ${selectedRun.member.name}'s run`}
+                    // Its own pill, of the same material as the one beside it — two
+                    // groups, because one is about the automation and one is about the
+                    // run you've opened, and they come and go independently.
+                    className="h-9"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setSelectedMemberId(null)}
+                  >
+                    <LucideIcon.X strokeWidth={2} />
+                    {selectedRun.member.name}
+                  </Button>
+                </div>
               )}
             </Inline>
           </div>
@@ -667,9 +831,13 @@ const AutomationFloat: React.FC = () => {
               showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
           >
+            {/* exitsElsewhere: this lane's settings panel owns exit conditions, so the
+                            trigger card would be a second field editing the same value — and two
+                            controls for one thing is how they end up disagreeing. */}
             <EditCanvas
               draft={draftFlow}
               triggerConfig={triggerConfig}
+              exitsElsewhere
               inlineAnalytics
               onChange={handleDraftChange}
               onTriggerConfigChange={handleTriggerConfigChange}

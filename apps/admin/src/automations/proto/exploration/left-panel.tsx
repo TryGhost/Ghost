@@ -5,16 +5,20 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
   Table,
   TableBody,
   TableCell,
+  PageMenu,
+  PageMenuItem,
   TableHeader,
   TableRow,
+  Tabs,
+  TabsContent,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import {
@@ -22,10 +26,18 @@ import {
   GhAreaChart,
   KpiCardHeaderLabel,
   KpiCardHeaderValue,
+  ViewBar,
 } from '@tryghost/shade/patterns';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import type { AutomationRun, ExitReason } from '@/automations/proto/shared/mock';
 import type { LeftPanelProps } from '@/automations/proto/shared/left-panel-types';
+import { SettingsPanel, type SettingsPanelProps } from './settings-panel';
+
+// The shared contract plus what only this lane's pane needs — settings live here,
+// not in LeftPanelProps, because no other lane's pane has them.
+export interface ExplorationLeftPanelProps extends LeftPanelProps {
+  settings: SettingsPanelProps;
+}
 import {
   CompletedGlyph,
   ExitedGlyph,
@@ -78,18 +90,15 @@ const STATUS_FACETS: { key: StatusKey; color: string; glyph: React.ReactNode }[]
   { key: 'Exited early', color: 'text-muted-foreground', glyph: <ExitedGlyph /> },
 ];
 
-// Exploration's exit-reason filter, hidden rather than removed.
+// The exit-reason filter was hidden here for a while, because none of the places it
+// could go was right: in the search field's trailing slot it competed with search for
+// one control's worth of meaning, beside the field it put a second element on a row
+// that wanted one, and in the screen header it claimed a scope it doesn't have.
 //
-// Where it belongs is still open: in the field's trailing slot it competes with
-// search for one control's worth of meaning, beside the field it puts a second
-// element on the row, and in the header it claims a scope it doesn't have. Its
-// real home may be the "Exited early" status card, which is what it actually
-// narrows. Off until that's settled — the menu below still works, nothing renders
-// it. Phase 1 is unaffected: its funnel carries exit reason as it always has.
-//
-// Typed as boolean, not inferred as `false`, so flipping it back doesn't trip
-// unreachable-branch lint on everything downstream.
-const SHOW_EXIT_FILTER: boolean = false;
+// The view bar is the place that was missing. It's the pane's own strip, it scopes
+// exactly what the filter scopes, and it holds the timeframe and search alongside —
+// so the filter is back on, sitting with the other two controls that narrow the same
+// list. Phase 1 is unaffected: its funnel has always been in its own strip.
 
 const facetColor = (status: StatusKey): string =>
   STATUS_FACETS.find((facet) => facet.key === status)?.color ?? '';
@@ -119,7 +128,19 @@ const RANGE_OPTIONS: { value: string; label: string }[] = [
 
 type EnrichedRun = { run: AutomationRun; status: StatusKey };
 
-export const LeftPanel: React.FC<LeftPanelProps> = ({
+// EXPLORATION — the pane is two panels behind tabs: what the automation IS, and how
+// it's DOING. Analytics is the pane the other lanes have; Settings is new here.
+//
+// Tabs rather than a scroll: the two answer different questions, and one is read
+// while building and the other after publishing. Stacking them would put whichever
+// you didn't want a screenful away, and there's no order that's right for both.
+//
+// Settings defaults for a stopped automation, Analytics for a running one — the
+// same rule the pane's own open/closed state follows in phase 2, for the same
+// reason: a stopped automation is one you're building, and a running one is one
+// you're watching.
+export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
+  settings,
   scenario,
   selectedMemberId,
   onSelectMember,
@@ -127,6 +148,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onQueryChange,
 }) => {
   const { automation, metrics, runs } = scenario;
+  const [tab, setTab] = useState(automation.status === 'active' ? 'analytics' : 'settings');
   const [range, setRange] = useState('all');
   // Search is mounted open, directly above the table it narrows — there's no
   // magnifier to press and nothing to collapse back into.
@@ -137,6 +159,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   // five times. Tried at 32px and came back to 24.
   const gutter = 'px-6';
 
+  // Collapsed to an icon until pressed — see the view bar.
+  const [searchOpen, setSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
@@ -159,7 +183,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
     label: 'Entries',
   });
   const chartMax = Math.max(...chartData.map((point) => point.value), 1);
-  const rangeLabel = RANGE_OPTIONS.find((option) => option.value === range)?.label ?? 'All time';
 
   // All time reports the automation's own total, so it matches the number on the
   // automations list exactly; narrower ranges are summed from the visible series.
@@ -245,22 +268,36 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   // belong to the table and sit directly above it. Phase 1 keeps everything in one
   // funnel in its own strip, which is the affordance the rest of Ghost uses.
 
-  // Drills into the rows. Lives in the search field's trailing slot rather than
-  // beside it: both narrow the same table, so one control that filters is easier to
-  // place than two that sit side by side — and it takes a whole element out of the
-  // row above the table.
+  // One funnel holding both the timeframe and the exit reason, exactly as phase 1
+  // does it. They were in three places here — a field above the table, a funnel
+  // inside that field, a labelled button floating in the chart — and the strip has
+  // room for one control that narrows, not three.
   //
-  // InputGroupButton, not Button. It's the primitive built for this slot: icon-xs is
-  // 24px against the field's own height, where a plain size="icon" Button is 36px and
-  // overflows a 32px field. The clear button beside it had the same fault.
-  const exitMenu = (
+  // No active state on the icon: it names the action and nothing more. What's applied
+  // is stated, and made removable, by its chip in the row below.
+  const filterMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <InputGroupButton aria-label="Filter members" size="icon-sm">
+        <Button aria-label="Filter" size="icon" type="button" variant="ghost">
           <LucideIcon.Funnel strokeWidth={2} />
-        </InputGroupButton>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Entries</DropdownMenuLabel>
+        {/* Trailing check, not a radio bullet — Shade's active-option convention.
+                    Opacity rather than conditional render so rows keep a stable width. */}
+        {RANGE_OPTIONS.map((option) => (
+          <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
+            {option.label}
+            <LucideIcon.Check
+              className={cn(
+                'ms-auto text-primary',
+                range === option.value ? 'opacity-100' : 'opacity-0',
+              )}
+            />
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
         <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
         {EXIT_REASONS.map((reason) => (
           <DropdownMenuItem
@@ -289,390 +326,414 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       <InputGroupAddon>
         <LucideIcon.Search />
       </InputGroupAddon>
-      {/* No autoFocus: the field is mounted on load, where taking focus would be
-                taking it from wherever the reader was. */}
+      {/* autoFocus, and it's the mount that does it: the field appears because you
+                pressed the magnifier, so focus is the point. */}
       <InputGroupInput
         placeholder="Search members…"
         value={query}
+        autoFocus
         onChange={(e) => onQueryChange(e.target.value)}
       />
-      {/* With no close button to lean on, clearing belongs to the field — and
-                only while there's something to clear. */}
-      {(query || SHOW_EXIT_FILTER) && (
-        <InputGroupAddon align="inline-end">
-          {query && (
-            <InputGroupButton
-              aria-label="Clear search"
-              size="icon-sm"
-              onClick={() => onQueryChange('')}
-            >
-              <LucideIcon.X strokeWidth={2} />
-            </InputGroupButton>
-          )}
-          {SHOW_EXIT_FILTER && exitMenu}
-        </InputGroupAddon>
-      )}
     </InputGroup>
-  );
-
-  // Entry window. Exposed rather than hidden behind an icon: it scopes everything
-  // in the card it sits in, so what it's set to has to be readable without opening
-  // anything.
-  const rangeMenu = (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {/* 24px off the card's top and right, matching the canvas HUD's own
-                    inset so the two floating-control positions agree.
-                    
-                    Both are made up of the card's padding plus a margin, because the
-                    padding belongs to the whole card and moving it would move the metric
-                    too: py-3 (12px) + mt-3 gets the top to 24, px-4 (16px) + mr-2 gets
-                    the right there. align="start" is what hangs it from the top edge in
-                    the first place, level with the metric's label row. */}
-        {/* Default size, not sm. sm is h-7 with size-3 icons, which read a step
-                    below every other labelled control on the screen — the filter chips
-                    below already made this call for the same reason (Shade's Filters
-                    pattern renders at the control height, so members and comments look
-                    like this too). */}
-        <Button className="mt-3 mr-2 shrink-0" type="button" variant="outline">
-          <LucideIcon.Calendar strokeWidth={2} />
-          {rangeLabel}
-          <LucideIcon.ChevronDown strokeWidth={2} />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {RANGE_OPTIONS.map((option) => (
-          <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
-            {option.label}
-            <LucideIcon.Check
-              className={cn(
-                'ms-auto text-primary',
-                range === option.value ? 'opacity-100' : 'opacity-0',
-              )}
-            />
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Floating chrome: the controls sit in the screen's top strip, on the
-                same baseline as the back arrow and title floating to their left, so the
-                top of the screen reads as one row rather than starting again below it.
-
-                Docked header: there is no strip to borrow — the bar above already owns
-                that row — so the pane titles itself and keeps its controls on its own
-                baseline. Outside the scroll container either way, so they stay put. */}
-
-      {/* An applied filter gets its own row beneath the controls, the way the
-                members page does it — so what's narrowing the list is always visible
-                rather than hidden inside the button that set it. "All time" is the
-                default, so it isn't a filter and doesn't earn a row. */}
-      {exitFilter && (
-        <FilterBar className={cn('shrink-0 pb-3', gutter)}>
-          {/* One child, not one per chip: FilterBar justifies between its
-                        children so it can hold filters at the left and controls like
-                        "Save view" at the right, and handing it two peer chips pushed
-                        them to opposite ends. Grouped, they append to each other and
-                        the right-hand slot stays free. */}
-          <Inline align="center" gap="sm" wrap>
-            {/* Value only. The field name was carrying its weight when
-                            the chip read "Entered: Last 30 days", but every value
-                            here already names its own field — a timeframe reads as a
-                            timeframe, "Unsubscribed" reads as a reason — so the
-                            prefix was repeating what the words underneath it said. */}
-            {/* Default size, not sm: Shade's own Filters pattern renders
-                            its chips at md — h-(--control-height), px-2.5, size-4
-                            icon — so these now match the chips on members and
-                            comments rather than sitting a size below them. The X
-                            takes Button's base svg size for the same reason. */}
-            {exitFilter && (
-              <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
-                {exitReasonLabel(exitFilter)}
-                <LucideIcon.X strokeWidth={2} />
-              </Button>
-            )}
-          </Inline>
-        </FilterBar>
-      )}
-
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        {/* Chart + counts. Scrolls away under the sticky bar below. No section
-                heading — the automation's own title already names what this is.
-                pb-4 holds the count cards off the table header: with search moved to
-                the top strip, the sticky bar below collapses to nothing until it
-                sticks, so there's no chrome left in between to separate them. */}
-        {/* pt-0: the strip above already ends in pb-3, and its own top padding
-                on top of that held the chart too far off the Performance label. */}
-        <div className={cn('flex flex-col pt-0 pb-4', gutter)}>
-          {/* Collapses on a grid-rows 0fr→1fr, the same technique the sticky
-                    bar below uses to roll its chips in — one idiom for "this region
-                    folds away" rather than two. The mb-4 rides inside the collapsing
-                    element on purpose: as a gap on the flex parent it would survive
-                    the collapse and leave 16px of nothing above the cards. */}
-          <div
-            className={cn(
-              'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
-              summaryHidden ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
-            )}
-          >
-            <div className="overflow-hidden">
-              <Box className="mb-4 rounded-lg border border-border-default px-4 py-3">
-                <Stack gap="sm">
-                  {/* The entry window sits IN the card it scopes. Everything here
-                            — the total, the chart, and the counts below — is measured
-                            over it, so putting it anywhere else made it look like one
-                            more control acting on the list. align="start" so it hangs
-                            off the metric's label row rather than centring against a
-                            two-line block. */}
-                  <Inline align="start" justify="between">
-                    {/* KpiCardHeaderLabel + KpiCardHeaderValue rather than MetricValue.
-                        Main removed MetricValue from Shade's public exports as dead
-                        (#30142) — it's internal now, and the KpiCard pair is the
-                        supported way to reach the same rendering: the label carries the
-                        identical chrome and the value wraps MetricValue itself. Stack
-                        gap="sm" is gap-2, the gap MetricValue put between them. */}
-                    <Stack gap="sm">
-                      <KpiCardHeaderLabel>
-                        {/* Matches the shipping KPI for a member count
-                            (posts/analytics/growth labels "Free members" with the same
-                            icon and weight). Zap was the trigger's icon, not this
-                            metric's — what's counted here is people, not firings. */}
-                        <LucideIcon.User size={16} strokeWidth={1.5} />
-                        Total entries
-                      </KpiCardHeaderLabel>
-                      <KpiCardHeaderValue value={formatNumber(totalEntries)} />
-                    </Stack>
-                    {rangeMenu}
-                  </Inline>
-                  <GhAreaChart
-                    className={`${CHART_HEIGHT} w-full`}
-                    color="var(--chart-blue)"
-                    data={chartData}
-                    id={`float-entries-${automation.id}`}
-                    range={chartData.length}
-                    showYAxisValues={false}
-                    yAxisRange={[0, chartMax]}
-                  />
-                </Stack>
-              </Box>
-            </div>
-          </div>
-
-          {/* Three counts in a row. They both report and filter, and sit above
-                    the sticky bar so they scroll away as it sticks — the table then
-                    always lands directly beneath the bar. */}
-          <div className="grid grid-cols-3 gap-3">
-            {STATUS_FACETS.map((facet) => {
-              const active = statusFilter === facet.key;
-              return (
-                <button
-                  key={facet.key}
-                  aria-pressed={active}
-                  className={cn(
-                    'rounded-lg border px-4 py-3 text-left transition-colors',
-                    active
-                      ? 'border-foreground bg-muted-foreground/10'
-                      : 'border-border-default hover:bg-interactive-hover',
-                  )}
+      {/* The two panels. TabsContent carries the scroll, so the strip stays put
+                while either side of it moves. */}
+      <Tabs className="flex min-h-0 flex-1 flex-col" value={tab} onValueChange={setTab}>
+        {/* Shade's ViewBar rather than a TabsList: this is the pane saying which of
+                    its two views you're looking at, which is the job ViewBar and PageMenu do
+                    on the analytics screens. A segmented control would have been a second
+                    switching idiom for the same kind of switch.
+                    
+                    ViewBar keeps its Actions slot free for whatever the panels need on this
+                    row later — a timeframe for Analytics, most obviously, which currently
+                    sits further down. */}
+        {/* No top margin, matching the canvas window beside it — that has mr/mb but
+                    no mt, so its rounded top edge starts at the top of the row. The bar sat
+                    16px lower, which put the pane and the canvas on two different lines for
+                    no reason either of them could show.
+                    
+                    The gap below it belongs here rather than on each panel, so both tabs
+                    clear it by the same amount — Settings had its own mt and Analytics had
+                    none, so the chart came up against the bar. */}
+        <ViewBar className={cn(gutter, 'mb-4 shrink-0')}>
+          {/* flex-none so the tabs take their own width and the controls get the
+                        rest — Nav is flex-1 by default, which would split the row down the
+                        middle and leave the search field short while the tabs sat in space. */}
+          <ViewBar.Nav className="flex-none">
+            {/* defaultValue, despite the name, is what PageMenuItem reads to mark
+                            itself active — it's live context, not an initial value — and each
+                            item carries its own onClick. onValueChange only wires the
+                            responsive overflow menu, so on its own it switches nothing. Same
+                            shape as the post analytics header. */}
+            <PageMenu defaultValue={tab} value={tab} onValueChange={setTab}>
+              <PageMenuItem value="settings" onClick={() => setTab('settings')}>
+                Settings
+              </PageMenuItem>
+              <PageMenuItem value="analytics" onClick={() => setTab('analytics')}>
+                Analytics
+              </PageMenuItem>
+            </PageMenu>
+          </ViewBar.Nav>
+          {/* Search, exit reason and timeframe, in the slot ViewBar keeps for exactly
+                        this. They were in three different places — a field above the table, a
+                        funnel inside that field, a button floating in the chart — which made
+                        three controls that narrow one dataset look like three unrelated
+                        features.
+                        
+                        Analytics only. They narrow the runs, and there is nothing on Settings
+                        for them to act on; a search field over a form is a promise the panel
+                        can't keep. */}
+          {tab === 'analytics' && (
+            <ViewBar.Actions className="min-w-0 flex-1 justify-end">
+              {/* Open, the field takes the row; closed, it's a magnifier. Phase 1's
+                                arrangement exactly — the strip is narrow enough that a permanent
+                                field would crowd the tabs beside it, and the runs are usually
+                                read rather than searched. */}
+              {searchOpen && searchField}
+              {searchOpen ? (
+                <Button
+                  aria-label="Close search"
+                  size="icon"
                   type="button"
-                  onClick={() => setStatusFilter(active ? null : facet.key)}
+                  variant="ghost"
+                  onClick={() => {
+                    onQueryChange('');
+                    setSearchOpen(false);
+                  }}
                 >
-                  <Stack gap="sm">
-                    <KpiCardHeaderLabel>
-                      <span className={facet.color}>{facet.glyph}</span>
-                      {facet.key}
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue value={formatNumber(counts[facet.key] ?? 0)} />
-                  </Stack>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* The instant this scrolls out the top, the bar below has stuck. */}
-        <div ref={sentinelRef} className="h-px" />
-
-        <div ref={stickyBlockRef}>
-          {/* Sticky bar: now only the status chips, which roll in once the count
-                    cards above have scrolled off (grid-rows 0fr→1fr so it animates).
-                    Search left this bar for the top strip, so with nothing stuck the bar
-                    collapses to nothing rather than holding empty space. */}
-          {/* pb only, no pt: the header strip above already ends on pb-3, and
-                    stacking this bar's own top padding on top of that read as a gap
-                    between the chips and the header rather than as the chips sitting
-                    under it. */}
-          {/* Border only while stuck: collapsed, the bar has no height, and
-                    an unconditional rule would hang above the table as a stray line.
-                    Stuck, it marks where the pinned chrome ends and the scrolling
-                    rows begin. */}
-          <div
-            ref={stickyBarRef}
-            className={cn(
-              'sticky top-0 z-20',
-              gutter,
-              'bg-background',
-              stuck && 'border-b border-border-default pb-4',
-            )}
-          >
-            <div
-              className={cn(
-                'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
-                stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                  <LucideIcon.X strokeWidth={2} />
+                </Button>
+              ) : (
+                <Button
+                  aria-label="Search members"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <LucideIcon.Search strokeWidth={2} />
+                </Button>
               )}
-            >
-              <div className="overflow-hidden">
-                <div className="flex gap-2">
-                  {STATUS_FACETS.map((facet) => {
-                    const active = statusFilter === facet.key;
-                    return (
-                      <button
-                        key={facet.key}
-                        aria-pressed={active}
-                        className={cn(
-                          // rounded-md, not a pill — Shade's Filters
-                          // pattern (the members page's chips) defaults
-                          // to md, so filter-shaped controls share one
-                          // radius everywhere.
-                          'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors',
-                          active
-                            ? 'border-foreground bg-muted-foreground/10'
-                            : 'border-border-default hover:bg-interactive-hover',
-                        )}
-                        title={facet.key}
-                        type="button"
-                        onClick={() => setStatusFilter(active ? null : facet.key)}
-                      >
-                        <span className={facet.color}>{facet.glyph}</span>
-                        {/* Selected lifts the count to full text colour — the border and
-                                                fill mark the chip, but keeping its number muted made the
-                                                active filter look no more current than the idle ones. */}
-                        {/* font-mono: three counts read side by side
-                                                and get compared, so they're the repeated-
-                                                readout case rather than the headline one. */}
-                        <span
-                          className={cn(
-                            'font-mono tabular-nums',
-                            active ? 'text-foreground' : 'text-muted-foreground',
-                          )}
-                        >
-                          {formatNumber(counts[facet.key] ?? 0)}
-                        </span>
-                      </button>
-                    );
-                  })}
+              {filterMenu}
+            </ViewBar.Actions>
+          )}
+        </ViewBar>
+        <TabsContent className="min-h-0 flex-1 overflow-y-auto" value="settings">
+          <SettingsPanel {...settings} />
+        </TabsContent>
+        <TabsContent className="flex min-h-0 flex-1 flex-col" value="analytics">
+          {/* Floating chrome: the controls sit in the screen's top strip, on the
+                  same baseline as the back arrow and title floating to their left, so the
+                  top of the screen reads as one row rather than starting again below it.
+
+                  Docked header: there is no strip to borrow — the bar above already owns
+                  that row — so the pane titles itself and keeps its controls on its own
+                  baseline. Outside the scroll container either way, so they stay put. */}
+
+          {/* An applied filter gets its own row beneath the controls, the way the
+                  members page does it — so what's narrowing the list is always visible
+                  rather than hidden inside the button that set it. "All time" is the
+                  default, so it isn't a filter and doesn't earn a row. */}
+          {exitFilter && (
+            <FilterBar className={cn('shrink-0 pb-3', gutter)}>
+              {/* One child, not one per chip: FilterBar justifies between its
+                          children so it can hold filters at the left and controls like
+                          "Save view" at the right, and handing it two peer chips pushed
+                          them to opposite ends. Grouped, they append to each other and
+                          the right-hand slot stays free. */}
+              <Inline align="center" gap="sm" wrap>
+                {/* Value only. The field name was carrying its weight when
+                              the chip read "Entered: Last 30 days", but every value
+                              here already names its own field — a timeframe reads as a
+                              timeframe, "Unsubscribed" reads as a reason — so the
+                              prefix was repeating what the words underneath it said. */}
+                {/* Default size, not sm: Shade's own Filters pattern renders
+                              its chips at md — h-(--control-height), px-2.5, size-4
+                              icon — so these now match the chips on members and
+                              comments rather than sitting a size below them. The X
+                              takes Button's base svg size for the same reason. */}
+                {exitFilter && (
+                  <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
+                    {exitReasonLabel(exitFilter)}
+                    <LucideIcon.X strokeWidth={2} />
+                  </Button>
+                )}
+              </Inline>
+            </FilterBar>
+          )}
+
+          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+            {/* Chart + counts. Scrolls away under the sticky bar below. No section
+                  heading — the automation's own title already names what this is.
+                  pb-4 holds the count cards off the table header: with search moved to
+                  the top strip, the sticky bar below collapses to nothing until it
+                  sticks, so there's no chrome left in between to separate them. */}
+            {/* pt-0: the strip above already ends in pb-3, and its own top padding
+                  on top of that held the chart too far off the Performance label. */}
+            <div className={cn('flex flex-col pt-0 pb-4', gutter)}>
+              {/* Collapses on a grid-rows 0fr→1fr, the same technique the sticky
+                      bar below uses to roll its chips in — one idiom for "this region
+                      folds away" rather than two. The mb-4 rides inside the collapsing
+                      element on purpose: as a gap on the flex parent it would survive
+                      the collapse and leave 16px of nothing above the cards. */}
+              <div
+                className={cn(
+                  'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
+                  summaryHidden ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
+                )}
+              >
+                <div className="overflow-hidden">
+                  <Box className="mb-4 rounded-lg border border-border-default px-4 py-3">
+                    <Stack gap="sm">
+                      {/* The entry window sits IN the card it scopes. Everything here
+                              — the total, the chart, and the counts below — is measured
+                              over it, so putting it anywhere else made it look like one
+                              more control acting on the list. align="start" so it hangs
+                              off the metric's label row rather than centring against a
+                              two-line block. */}
+                      <Inline align="start" justify="between">
+                        {/* KpiCardHeaderLabel + KpiCardHeaderValue rather than MetricValue.
+                          Main removed MetricValue from Shade's public exports as dead
+                          (#30142) — it's internal now, and the KpiCard pair is the
+                          supported way to reach the same rendering: the label carries the
+                          identical chrome and the value wraps MetricValue itself. Stack
+                          gap="sm" is gap-2, the gap MetricValue put between them. */}
+                        <Stack gap="sm">
+                          <KpiCardHeaderLabel>
+                            {/* Matches the shipping KPI for a member count
+                              (posts/analytics/growth labels "Free members" with the same
+                              icon and weight). Zap was the trigger's icon, not this
+                              metric's — what's counted here is people, not firings. */}
+                            <LucideIcon.User size={16} strokeWidth={1.5} />
+                            Total entries
+                          </KpiCardHeaderLabel>
+                          <KpiCardHeaderValue value={formatNumber(totalEntries)} />
+                        </Stack>
+                      </Inline>
+                      <GhAreaChart
+                        className={`${CHART_HEIGHT} w-full`}
+                        color="var(--chart-blue)"
+                        data={chartData}
+                        id={`float-entries-${automation.id}`}
+                        range={chartData.length}
+                        showYAxisValues={false}
+                        yAxisRange={[0, chartMax]}
+                      />
+                    </Stack>
+                  </Box>
                 </div>
+              </div>
+
+              {/* Three counts in a row. They both report and filter, and sit above
+                      the sticky bar so they scroll away as it sticks — the table then
+                      always lands directly beneath the bar. */}
+              <div className="grid grid-cols-3 gap-3">
+                {STATUS_FACETS.map((facet) => {
+                  const active = statusFilter === facet.key;
+                  return (
+                    <button
+                      key={facet.key}
+                      aria-pressed={active}
+                      className={cn(
+                        'rounded-lg border px-4 py-3 text-left transition-colors',
+                        active
+                          ? 'border-foreground bg-muted-foreground/10'
+                          : 'border-border-default hover:bg-interactive-hover',
+                      )}
+                      type="button"
+                      onClick={() => setStatusFilter(active ? null : facet.key)}
+                    >
+                      <Stack gap="sm">
+                        <KpiCardHeaderLabel>
+                          <span className={facet.color}>{facet.glyph}</span>
+                          {facet.key}
+                        </KpiCardHeaderLabel>
+                        <KpiCardHeaderValue value={formatNumber(counts[facet.key] ?? 0)} />
+                      </Stack>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* The instant this scrolls out the top, the bar below has stuck. */}
+            <div ref={sentinelRef} className="h-px" />
+
+            <div ref={stickyBlockRef}>
+              {/* Sticky bar: now only the status chips, which roll in once the count
+                      cards above have scrolled off (grid-rows 0fr→1fr so it animates).
+                      Search left this bar for the top strip, so with nothing stuck the bar
+                      collapses to nothing rather than holding empty space. */}
+              {/* pb only, no pt: the header strip above already ends on pb-3, and
+                      stacking this bar's own top padding on top of that read as a gap
+                      between the chips and the header rather than as the chips sitting
+                      under it. */}
+              {/* Border only while stuck: collapsed, the bar has no height, and
+                      an unconditional rule would hang above the table as a stray line.
+                      Stuck, it marks where the pinned chrome ends and the scrolling
+                      rows begin. */}
+              <div
+                ref={stickyBarRef}
+                className={cn(
+                  'sticky top-0 z-20',
+                  gutter,
+                  'bg-background',
+                  stuck && 'border-b border-border-default pb-4',
+                )}
+              >
+                <div
+                  className={cn(
+                    'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
+                    stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="flex gap-2">
+                      {STATUS_FACETS.map((facet) => {
+                        const active = statusFilter === facet.key;
+                        return (
+                          <button
+                            key={facet.key}
+                            aria-pressed={active}
+                            className={cn(
+                              // rounded-md, not a pill — Shade's Filters
+                              // pattern (the members page's chips) defaults
+                              // to md, so filter-shaped controls share one
+                              // radius everywhere.
+                              'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border px-3 text-sm transition-colors',
+                              active
+                                ? 'border-foreground bg-muted-foreground/10'
+                                : 'border-border-default hover:bg-interactive-hover',
+                            )}
+                            title={facet.key}
+                            type="button"
+                            onClick={() => setStatusFilter(active ? null : facet.key)}
+                          >
+                            <span className={facet.color}>{facet.glyph}</span>
+                            {/* Selected lifts the count to full text colour — the border and
+                                                  fill mark the chip, but keeping its number muted made the
+                                                  active filter look no more current than the idle ones. */}
+                            {/* font-mono: three counts read side by side
+                                                  and get compared, so they're the repeated-
+                                                  readout case rather than the headline one. */}
+                            <span
+                              className={cn(
+                                'font-mono tabular-nums',
+                                active ? 'text-foreground' : 'text-muted-foreground',
+                              )}
+                            >
+                              {formatNumber(counts[facet.key] ?? 0)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
+              <div className={cn('pb-6', gutter)}>
+                <Table className="table-fixed" data-testid="float-entries-table">
+                  {/* border-b-0 on both: Shade gives thead and its row a bottom
+                              border, but this header's single rule is the SortHead cells'
+                              inset shadow (a border wouldn't travel when they stick) — left
+                              on, the two lines doubled up at rest. */}
+                  <TableHeader className="border-b-0">
+                    <TableRow className="border-b-0 hover:bg-transparent">
+                      <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
+                      <SortHead
+                        className="w-28"
+                        label="Entered"
+                        sort={sort}
+                        sortKey="entered"
+                        onSort={onSort}
+                      />
+                      <SortHead
+                        className="w-20"
+                        label="Status"
+                        sort={sort}
+                        sortKey="status"
+                        onSort={onSort}
+                      />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sorted.length === 0 && (
+                      <TableRow className="hover:bg-transparent">
+                        <TableCell
+                          className="py-6 text-center text-sm text-muted-foreground"
+                          colSpan={3}
+                        >
+                          No members match.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {sorted.map(({ run, status }) => {
+                      const isSelected = run.id === selectedMemberId;
+                      return (
+                        <TableRow
+                          key={run.id}
+                          aria-selected={isSelected}
+                          // Selection is Shade's own: TableRow ships
+                          // data-[state=selected]:bg-muted, so the state goes through
+                          // data-state and the fill comes from the component rather
+                          // than from a class here. Hover matches the interactive
+                          // controls above it.
+                          //
+                          // Plain grey either way. A rounded blue ring was tried via a
+                          // tr::before overlay (radius doesn't work on collapsed table
+                          // rows directly) and broke row layout — positioned table rows
+                          // aren't dependable. The canvas's blue review ring carries the
+                          // "you're in this member's run" signal on its own.
+                          className="cursor-pointer transition-colors hover:bg-interactive-hover"
+                          data-state={isSelected ? 'selected' : undefined}
+                          // Toggle: clicking the selected row again de-selects it.
+                          onClick={() => onSelectMember(isSelected ? null : run.id)}
+                        >
+                          <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
+                            <span
+                              className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}
+                            >
+                              {run.member.name}
+                            </span>
+                          </TableCell>
+                          <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
+                            <span className="block truncate text-base">
+                              {startedLabel(run.enrolled_at)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
+                            {/* Icon only — the cards above name each state.
+                                                  The title is the one place the exit reason
+                                                  surfaces in the table, and only for failures,
+                                                  where the dot has raised a question the row
+                                                  otherwise can't answer. */}
+                            <div
+                              className={cn('flex justify-center', facetColor(status))}
+                              title={
+                                runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status
+                              }
+                            >
+                              <span className="relative flex">
+                                {facetGlyph(status)}
+                                {runFailed(run) && <FailureDot />}
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
-
-          {/* Exploration's row-scoped controls, directly above the rows they
-                    narrow. Inside the sticky block, so they pin to the top with the
-                    status chips and stay reachable however far down the list you are —
-                    searching a long table from a field that has scrolled away is the
-                    thing this avoids. */}
-          <div className={cn('pb-3', gutter)}>{searchField}</div>
-
-          {/* Member table. table-fixed keeps the Entered/Status widths steady. */}
-          <div className={cn('pb-6', gutter)}>
-            <Table className="table-fixed" data-testid="float-entries-table">
-              {/* border-b-0 on both: Shade gives thead and its row a bottom
-                            border, but this header's single rule is the SortHead cells'
-                            inset shadow (a border wouldn't travel when they stick) — left
-                            on, the two lines doubled up at rest. */}
-              <TableHeader className="border-b-0">
-                <TableRow className="border-b-0 hover:bg-transparent">
-                  <SortHead label="Member" sort={sort} sortKey="member" onSort={onSort} />
-                  <SortHead
-                    className="w-28"
-                    label="Entered"
-                    sort={sort}
-                    sortKey="entered"
-                    onSort={onSort}
-                  />
-                  <SortHead
-                    className="w-20"
-                    label="Status"
-                    sort={sort}
-                    sortKey="status"
-                    onSort={onSort}
-                  />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sorted.length === 0 && (
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell
-                      className="py-6 text-center text-sm text-muted-foreground"
-                      colSpan={3}
-                    >
-                      No members match.
-                    </TableCell>
-                  </TableRow>
-                )}
-                {sorted.map(({ run, status }) => {
-                  const isSelected = run.id === selectedMemberId;
-                  return (
-                    <TableRow
-                      key={run.id}
-                      aria-selected={isSelected}
-                      // Selection is Shade's own: TableRow ships
-                      // data-[state=selected]:bg-muted, so the state goes through
-                      // data-state and the fill comes from the component rather
-                      // than from a class here. Hover matches the interactive
-                      // controls above it.
-                      //
-                      // Plain grey either way. A rounded blue ring was tried via a
-                      // tr::before overlay (radius doesn't work on collapsed table
-                      // rows directly) and broke row layout — positioned table rows
-                      // aren't dependable. The canvas's blue review ring carries the
-                      // "you're in this member's run" signal on its own.
-                      className="cursor-pointer transition-colors hover:bg-interactive-hover"
-                      data-state={isSelected ? 'selected' : undefined}
-                      // Toggle: clicking the selected row again de-selects it.
-                      onClick={() => onSelectMember(isSelected ? null : run.id)}
-                    >
-                      <TableCell className="min-w-0 p-4 group-hover:bg-transparent">
-                        <span
-                          className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}
-                        >
-                          {run.member.name}
-                        </span>
-                      </TableCell>
-                      <TableCell className="w-28 p-4 align-middle group-hover:bg-transparent">
-                        <span className="block truncate text-base">
-                          {startedLabel(run.enrolled_at)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="w-20 p-4 text-center align-middle group-hover:bg-transparent">
-                        {/* Icon only — the cards above name each state.
-                                                The title is the one place the exit reason
-                                                surfaces in the table, and only for failures,
-                                                where the dot has raised a question the row
-                                                otherwise can't answer. */}
-                        <div
-                          className={cn('flex justify-center', facetColor(status))}
-                          title={
-                            runFailed(run) ? `${status} — ${exitReasonLabel('failed')}` : status
-                          }
-                        >
-                          <span className="relative flex">
-                            {facetGlyph(status)}
-                            {runFailed(run) && <FailureDot />}
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
