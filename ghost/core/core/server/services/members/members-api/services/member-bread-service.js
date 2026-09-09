@@ -95,16 +95,17 @@ module.exports = class MemberBREADService {
    * size or a delivery address. Their values live in their own table, so they are fetched
    * here rather than loaded alongside the member.
    *
-   * Returns null when the site has defined no fields, which tells the caller to leave the
-   * `metafields` key off the member payload rather than send an empty object: a key added to
-   * an API response cannot be withdrawn without breaking whoever started reading it, and
-   * most sites have never defined a field, so those sites keep the payload they had before
-   * this feature existed.
+   * Returns null when this audience has no field to be told about, which tells the caller to
+   * leave the `metafields` key off the member payload rather than send an empty object: a key
+   * added to an API response cannot be withdrawn without breaking whoever started reading it,
+   * and most sites have never defined a field, so those sites keep the payload they had
+   * before this feature existed.
    * @param {string[]} memberIds
+   * @param {import('../../../members-metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
   async fetchMetafieldValues(memberIds, audience) {
-    if (!(await this.metafieldDefinitions.hasAnyActive())) {
+    if (!(await this.metafieldDefinitions.hasAnyReadable(audience))) {
       return null;
     }
 

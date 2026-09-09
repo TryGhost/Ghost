@@ -463,6 +463,76 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  describe('Member access', function () {
+    it('creates a field closed to members', async function () {
+      const created = await createField({ name: 'Internal note' });
+      assert.deepEqual(created.access, { member: 'none' });
+    });
+
+    it('creates a field open to members when the publisher says so', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Shoe size', type: 'short_text', access: { member: 'write' } },
+          ],
+        })
+        .expectStatus(201);
+      assert.deepEqual(body.members_metafields[0].access, { member: 'write' });
+    });
+
+    it('opens and closes a field after the fact', async function () {
+      const field = await createField({ name: 'Shoe size' });
+
+      const opened = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'read' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(opened.access, { member: 'read' });
+
+      const closed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'none' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(closed.access, { member: 'none' });
+    });
+
+    it('leaves access alone when an edit says nothing about it', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const renamed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ name: 'Shoe size (EU)' }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+
+      assert.equal(renamed.name, 'Shoe size (EU)');
+      assert.deepEqual(renamed.access, { member: 'write' });
+    });
+
+    it('refuses a level it does not recognise', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'admin' } }] })
+        .expectStatus(422);
+
+      const unchanged = (
+        await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(unchanged.access, { member: 'none' });
+    });
+  });
+
   // Admin sends `?include=` on resources that have relations to load. This one has none,
   // so the parameter has nothing to act on — which is a request that returns a definition,
   // not a request that got something wrong.
@@ -1958,12 +2028,30 @@ describe('Member Custom Fields Admin API', function () {
         primary_name?: string;
         key?: string;
         previous_name?: string;
+        member_access?: string;
+        previous_member_access?: string;
         action_name?: string;
         count?: number;
       };
 
     beforeAll(async function () {
       actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
+    });
+
+    it("records what a field's member access became, and what it was", async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const actions = await customFieldActions();
+      const opened = actions.find((a: { event: string }) => a.event === 'edited') as unknown as {
+        context: unknown;
+      };
+
+      assert.equal(contextOf(opened).member_access, 'write');
+      assert.equal(contextOf(opened).previous_member_access, 'none');
     });
 
     it('records an "added" action when a field is created', async function () {

@@ -17,8 +17,8 @@ const createMetafieldValuesStub = () => ({
   applyWrite: sinon.stub().resolves(),
 });
 
-const createMetafieldDefinitionsStub = (hasAnyActive = false) => ({
-  hasAnyActive: sinon.stub().resolves(hasAnyActive),
+const createMetafieldDefinitionsStub = (hasAnyReadable = false) => ({
+  hasAnyReadable: sinon.stub().resolves(hasAnyReadable),
 });
 
 describe('MemberBreadService', function () {
@@ -586,7 +586,7 @@ describe('MemberBreadService', function () {
       const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: null });
 
       assert.equal(Object.hasOwn(member, 'metafields'), false);
-      assert.equal(metafieldDefinitions.hasAnyActive.called, false);
+      assert.equal(metafieldDefinitions.hasAnyReadable.called, false);
       assert.equal(metafieldValues.getValuesForMembers.called, false);
     });
 
