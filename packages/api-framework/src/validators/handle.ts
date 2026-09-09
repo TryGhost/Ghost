@@ -7,7 +7,6 @@ import * as sharedValidators from './input/index.ts';
 
 const debug = createDebug('validators:handle');
 const { IncorrectUsageError } = errors;
-const { sequence } = promiseUtils;
 type AsyncResult = unknown | Promise<unknown>;
 interface Validator {
   (apiConfig: ApiConfiguration, frame: Frame): AsyncResult;
@@ -54,7 +53,7 @@ export const input = (
   const sharedMethod = apiConfig.method ? sharedAll[apiConfig.method] : undefined;
   if (sharedMethod) {
     tasks.push(function allShared() {
-      return sharedMethod(apiConfig, frame);
+      return sharedMethod.call(sharedAll, apiConfig, frame);
     });
   }
 
@@ -64,7 +63,7 @@ export const input = (
   const allMethodValidator = apiConfig.method ? allValidators?.[apiConfig.method] : undefined;
   if (allMethodValidator) {
     tasks.push(function allAPIVersion() {
-      return allMethodValidator(apiConfig, frame);
+      return allMethodValidator.call(allValidators, apiConfig, frame);
     });
   }
 
@@ -73,20 +72,20 @@ export const input = (
     const allResourceValidator = resourceValidators.all;
     if (allResourceValidator) {
       tasks.push(function docNameAll() {
-        return allResourceValidator(apiConfig, frame);
+        return allResourceValidator.call(resourceValidators, apiConfig, frame);
       });
     }
 
     const methodValidator = apiConfig.method ? resourceValidators[apiConfig.method] : undefined;
     if (methodValidator) {
       tasks.push(function docNameMethod() {
-        return methodValidator(apiConfig, frame);
+        return methodValidator.call(resourceValidators, apiConfig, frame);
       });
     }
   }
 
   debug('input ready');
-  return sequence(tasks);
+  return promiseUtils.sequence(tasks);
 };
 
 export default { input };

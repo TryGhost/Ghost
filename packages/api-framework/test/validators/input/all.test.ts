@@ -557,6 +557,22 @@ describe('validators/input/all', function () {
       );
       assert.equal(result, undefined);
     });
+
+    it('does not check an id in data when no option id is provided', function () {
+      sinon.stub(shared.validators.input.all, 'add').returns(undefined);
+      const result = shared.validators.input.all.edit(
+        {
+          docName: 'users',
+        },
+        {
+          options: {},
+          data: {
+            users: [{ id: 'id-1' }],
+          },
+        },
+      );
+      assert.equal(result, undefined);
+    });
   });
 
   describe('delegated methods', function () {
