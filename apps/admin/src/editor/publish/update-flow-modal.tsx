@@ -1,4 +1,4 @@
-import { Banner, Button, Dialog, DialogContent, DialogTitle } from '@tryghost/shade/components';
+import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -16,6 +16,7 @@ import {
   updateFlowPreviousEmail,
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { createPublishOptions } from './publish-options';
 import {
   describeCompletionFailure,
@@ -27,9 +28,6 @@ import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
-
-const FULLSCREEN =
-  'top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 overflow-y-auto rounded-none border-0 p-0 shadow-none sm:rounded-none';
 
 export interface UpdateFlowModalProps {
   post: PublishFlowPost;
@@ -165,94 +163,93 @@ function KeyedUpdateFlowModal({
   const publishedAt = post.publishedAt;
 
   return (
-    <Dialog modal={false} open onOpenChange={(open) => !open && close()}>
-      <DialogContent
-        className={FULLSCREEN}
-        data-testid={updateFlowModal}
-        onInteractOutside={(event) => event.preventDefault()}
-      >
-        <DialogTitle className="sr-only">{isScheduled ? 'Unschedule' : 'Unpublish'}</DialogTitle>
-        <Stack className="mx-auto w-full max-w-2xl px-6 pb-16" gap="xl">
-          <Inline className="py-4" justify="end">
-            {isSent ? null : (
-              <Button variant="outline" onClick={close}>
-                Close
-              </Button>
-            )}
-          </Inline>
+    <FullscreenDialog
+      data-testid={updateFlowModal}
+      modal={false}
+      title={isScheduled ? 'Unschedule' : 'Unpublish'}
+      open
+      onOpenChange={(open) => !open && close()}
+    >
+      <Stack className="mx-auto w-full max-w-2xl px-6 pb-16" gap="xl">
+        <Inline className="py-4" justify="end">
+          {isSent ? null : (
+            <Button variant="outline" onClick={close}>
+              Close
+            </Button>
+          )}
+        </Inline>
 
-          <Text as="h2" data-testid={updateFlowTitle} size="3xl" weight="bold">
-            This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
-            <span className="text-state-success">
-              {post.status}
-              {isSent ? ' by email' : ''}
-            </span>
-          </Text>
+        <Text as="h2" data-testid={updateFlowTitle} size="3xl" weight="bold">
+          This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
+          <span className="text-state-success">
+            {post.status}
+            {isSent ? ' by email' : ''}
+          </span>
+        </Text>
 
-          <Text data-testid={updateFlowConfirmation}>
-            Your {post.displayName} {isScheduled ? 'will be' : 'was'}{' '}
-            {hasBeenEmailed || willEmail ? (
-              <>
-                {emailOnly ? 'sent to' : 'published and sent to'}{' '}
-                <strong>
-                  {isScheduled
-                    ? pluralSubscribers(count)
-                    : pluralSubscribers(post.email?.email_count ?? null)}
-                </strong>
-                {showNewsletterName && post.newsletterName ? (
-                  <>
-                    {' '}
-                    of <strong>{post.newsletterName}</strong>
-                  </>
-                ) : null}
-              </>
-            ) : (
-              'published on your site'
-            )}
-            {publishedAt ? <> on {formatSiteDateTime(publishedAt, timezone)}.</> : '.'}
-          </Text>
-
-          {isScheduled && post.email ? (
-            <Text data-testid={updateFlowPreviousEmail}>
-              This post was previously emailed to{' '}
-              <strong>{pluralSubscribers(post.email.email_count ?? null)}</strong>
+        <Text data-testid={updateFlowConfirmation}>
+          Your {post.displayName} {isScheduled ? 'will be' : 'was'}{' '}
+          {hasBeenEmailed || willEmail ? (
+            <>
+              {emailOnly ? 'sent to' : 'published and sent to'}{' '}
+              <strong>
+                {isScheduled
+                  ? pluralSubscribers(count)
+                  : pluralSubscribers(post.email?.email_count ?? null)}
+              </strong>
               {showNewsletterName && post.newsletterName ? (
                 <>
                   {' '}
                   of <strong>{post.newsletterName}</strong>
                 </>
               ) : null}
-              {post.emailCreatedAt ? (
-                <> on {formatSiteDateTime(post.emailCreatedAt, timezone)}.</>
-              ) : (
-                '.'
-              )}
-            </Text>
-          ) : null}
+            </>
+          ) : (
+            'published on your site'
+          )}
+          {publishedAt ? <> on {formatSiteDateTime(publishedAt, timezone)}.</> : '.'}
+        </Text>
 
-          {failure ? (
-            <Banner role="alert" variant="destructive">
-              {failure.message}
-            </Banner>
-          ) : null}
+        {isScheduled && post.email ? (
+          <Text data-testid={updateFlowPreviousEmail}>
+            This post was previously emailed to{' '}
+            <strong>{pluralSubscribers(post.email.email_count ?? null)}</strong>
+            {showNewsletterName && post.newsletterName ? (
+              <>
+                {' '}
+                of <strong>{post.newsletterName}</strong>
+              </>
+            ) : null}
+            {post.emailCreatedAt ? (
+              <> on {formatSiteDateTime(post.emailCreatedAt, timezone)}.</>
+            ) : (
+              '.'
+            )}
+          </Text>
+        ) : null}
 
-          {isScheduled || !emailOnly ? (
-            <div>
-              <Button
-                data-testid={publishRevertToDraft}
-                disabled={running}
-                size="lg"
-                variant="outline"
-                onClick={() => void revert()}
-              >
-                {isScheduled
-                  ? 'Unschedule and revert to draft →'
-                  : 'Unpublish and revert to private draft →'}
-              </Button>
-            </div>
-          ) : null}
-        </Stack>
-      </DialogContent>
-    </Dialog>
+        {failure ? (
+          <Banner role="alert" variant="destructive">
+            {failure.message}
+          </Banner>
+        ) : null}
+
+        {isScheduled || !emailOnly ? (
+          <div>
+            <Button
+              data-testid={publishRevertToDraft}
+              disabled={running}
+              size="lg"
+              variant="outline"
+              onClick={() => void revert()}
+            >
+              {isScheduled
+                ? 'Unschedule and revert to draft →'
+                : 'Unpublish and revert to private draft →'}
+            </Button>
+          </div>
+        ) : null}
+      </Stack>
+    </FullscreenDialog>
   );
 }
