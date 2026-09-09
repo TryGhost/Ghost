@@ -97,10 +97,12 @@ export const init = ({
 
   const newsletterMailgunTags = ['bulk-email'];
   const automationMailgunTags = [AUTOMATION_EMAIL_TAG];
+  const giftMailgunTags = [GIFT_DELIVERY_EMAIL_TAG];
   const mailgunTagFromConfig = config.get('bulkEmail:mailgun:tag');
   if (mailgunTagFromConfig) {
     newsletterMailgunTags.push(mailgunTagFromConfig);
     automationMailgunTags.push(mailgunTagFromConfig);
+    giftMailgunTags.push(mailgunTagFromConfig);
   }
 
   prometheusClient?.registerCounter({
@@ -171,7 +173,7 @@ export const init = ({
     domainEvents,
     event: StartGiftEmailAnalyticsJobEvent,
     queries,
-    mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
+    mailgunTags: giftMailgunTags,
     jobNames: {
       latestNonOpened: 'email-analytics-gifts-latest-others',
       missing: 'email-analytics-gifts-missing',

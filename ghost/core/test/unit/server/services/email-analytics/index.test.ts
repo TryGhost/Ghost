@@ -139,7 +139,7 @@ describe('email analytics service', function () {
         event: {
           name: 'StartGiftEmailAnalyticsJobEvent',
         },
-        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
+        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-gifts-latest-others',
           missing: 'email-analytics-gifts-missing',
@@ -172,6 +172,20 @@ describe('email analytics service', function () {
       }),
     );
   });
+
+  it.each([undefined, ''])(
+    'does not add a gift analytics site tag when configured as %s',
+    function (siteTag) {
+      config.get.withArgs('bulkEmail:mailgun:tag').returns(siteTag);
+
+      init(dependencies);
+
+      sinon.assert.calledOnceWithExactly(
+        giftsInit,
+        sinon.match({ mailgunTags: [GIFT_DELIVERY_EMAIL_TAG] }),
+      );
+    },
+  );
 
   it('registers Prometheus metrics for member stat aggregation', function () {
     const registerCounter = sinon.stub();
