@@ -251,7 +251,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
               aria-label="More member actions"
               data-testid="members-actions"
               size={isAdmin7Pill ? 'icon' : undefined}
-              variant="outline"
+              variant={isAdmin7Pill ? 'secondary' : 'outline'}
             >
               <LucideIcon.MoreHorizontal className="size-4" />
             </Button>

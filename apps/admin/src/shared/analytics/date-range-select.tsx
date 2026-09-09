@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useShade } from '@tryghost/shade/app';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
 import {
@@ -22,6 +23,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
   onRangeChange,
   excludeRanges = [],
 }) => {
+  const { controlShape } = useShade();
   const excludeValues = excludeRanges.map((key) => STATS_RANGES[key].value);
   const filteredOptions = STATS_RANGE_OPTIONS.filter(
     (option) => !excludeValues.includes(option.value),
@@ -46,7 +48,11 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
         onRangeChange(Number(value));
       }}
     >
-      <SelectTrigger className="w-auto">
+      <SelectTrigger
+        className="w-auto"
+        shape={controlShape}
+        variant={controlShape === 'pill' ? 'secondary' : 'default'}
+      >
         <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
         <SelectValue placeholder="Select a period" />
       </SelectTrigger>

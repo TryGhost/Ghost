@@ -685,6 +685,7 @@ function StatsFilter({
     <Filters
       addButtonIcon={<LucideIcon.FunnelPlus />}
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+      addButtonVariant={hasPillControls && !hasFilters ? 'secondary' : undefined}
       allowMultiple={false}
       className={cn(
         '[&>button]:order-last',

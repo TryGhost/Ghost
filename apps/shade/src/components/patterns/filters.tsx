@@ -203,6 +203,7 @@ interface FilterContextValue {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showSearchInput?: boolean;
   trigger?: React.ReactNode;
@@ -220,6 +221,7 @@ const FilterContext = createContext<FilterContextValue>({
   addButtonText: undefined,
   addButtonIcon: undefined,
   addButtonClassName: undefined,
+  addButtonVariant: undefined,
   addButton: undefined,
   showSearchInput: true,
   trigger: undefined,
@@ -316,6 +318,9 @@ const filterAddButtonVariants = cva(
       variant: {
         solid: 'border border-input hover:bg-secondary/60',
         outline: 'border border-control-border hover:bg-interactive-hover',
+        ghost: 'border border-transparent hover:bg-button-hover',
+        secondary:
+          'border border-transparent bg-tab-active text-secondary-foreground hover:bg-secondary',
       },
       size: {
         lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -2699,6 +2704,7 @@ interface FiltersProps<T = unknown> {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showClearButton?: boolean;
   clearButtonText?: string;
@@ -2729,6 +2735,7 @@ export function Filters<T = unknown>({
   addButtonText,
   addButtonIcon,
   addButtonClassName,
+  addButtonVariant,
   addButton,
   showClearButton = false,
   clearButtonText,
@@ -3051,6 +3058,7 @@ export function Filters<T = unknown>({
         addButtonText,
         addButtonIcon,
         addButtonClassName,
+        addButtonVariant,
         addButton,
         showSearchInput,
         trigger,
@@ -3145,7 +3153,7 @@ export function Filters<T = unknown>({
                   aria-label={isPillFilterBar && filters.length > 0 ? addButtonLabel : undefined}
                   className={cn(
                     filterAddButtonVariants({
-                      variant: variant,
+                      variant: addButtonVariant ?? variant,
                       size: size,
                       cursorPointer: cursorPointer,
                       radius: controlRadius,
@@ -3155,7 +3163,9 @@ export function Filters<T = unknown>({
                     controlShape === 'pill' &&
                       (isPillFilterBar && filters.length > 0
                         ? 'aspect-square border-0 !px-0 shadow-none'
-                        : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
+                        : addButtonVariant === 'ghost' || addButtonVariant === 'secondary'
+                          ? 'border-0 px-3 shadow-none active:shadow-none'
+                          : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
                     addButtonClassName,
                   )}
                   data-control-shape={controlShape}

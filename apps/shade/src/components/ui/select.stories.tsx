@@ -58,6 +58,72 @@ export const Default: Story = {
   },
 };
 
+export const Pill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]" shape="pill">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Pill-shaped trigger for selects used alongside pill-shaped header controls.',
+      },
+    },
+  },
+};
+
+export const GhostPill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]" shape="pill" variant="ghost">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Borderless pill trigger for selects on low-emphasis surfaces such as page headers.',
+      },
+    },
+  },
+};
+
+export const SecondaryPill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]" shape="pill" variant="secondary">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Flat grey pill trigger for secondary selects in page headers.',
+      },
+    },
+  },
+};
+
 export const WithGroups: Story = {
   render: () => (
     <Select>

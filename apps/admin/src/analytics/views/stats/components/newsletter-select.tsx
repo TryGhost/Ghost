@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
+import { useShade } from '@tryghost/shade/app';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
 import {
@@ -17,6 +18,7 @@ interface NewsletterSelectProps {
 }
 
 const NewsletterSelect: React.FC<NewsletterSelectProps> = ({ newsletters }) => {
+  const { controlShape } = useShade();
   const { selectedNewsletterId, setSelectedNewsletterId } = useAnalytics();
 
   // Filter only active newsletters
@@ -52,7 +54,11 @@ const NewsletterSelect: React.FC<NewsletterSelectProps> = ({ newsletters }) => {
         setSelectedNewsletterId(value);
       }}
     >
-      <SelectTrigger className="w-auto">
+      <SelectTrigger
+        className="w-auto"
+        shape={controlShape}
+        variant={controlShape === 'pill' ? 'secondary' : 'default'}
+      >
         <LucideIcon.Mails className="mr-2" size={16} strokeWidth={1.5} />
         <SelectValue placeholder="Select a newsletter" />
       </SelectTrigger>

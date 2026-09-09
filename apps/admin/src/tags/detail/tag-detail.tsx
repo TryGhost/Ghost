@@ -430,7 +430,7 @@ const TagDetail: React.FC = () => {
                             aria-label="Tag actions"
                             className="size-(--control-height)"
                             size="icon"
-                            variant="outline"
+                            variant={isAdmin7Pill ? 'secondary' : 'outline'}
                           >
                             <LucideIcon.Ellipsis size={16} />
                           </Button>

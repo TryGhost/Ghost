@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -12,24 +13,55 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+const selectTriggerVariants = cva(
+  'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
+  {
+    variants: {
+      variant: {
+        default: '',
+        ghost: 'border-transparent bg-transparent shadow-none',
+        secondary:
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
+      },
+      shape: {
+        rounded: 'rounded-control',
+        pill: 'rounded-full',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      shape: 'rounded',
+    },
+  },
+);
+
+export interface SelectTriggerProps
+  extends
+    React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
+    VariantProps<typeof selectTriggerVariants> {}
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  SelectTriggerProps
+>(({ className, children, shape, variant, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
       inputSurface('self'),
       inputSurfaceClasses.disabledFieldSelf,
-      'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
+      selectTriggerVariants({ shape, variant }),
       className,
     )}
+    data-control-shape={shape ?? 'rounded'}
+    data-variant={variant ?? 'default'}
     {...props}
   >
     {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
-    </SelectPrimitive.Icon>
+    {variant !== 'secondary' && (
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
+      </SelectPrimitive.Icon>
+    )}
   </SelectPrimitive.Trigger>
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
@@ -154,4 +186,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  selectTriggerVariants,
 };

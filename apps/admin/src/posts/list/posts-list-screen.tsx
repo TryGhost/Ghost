@@ -4,6 +4,7 @@ import { ListPage } from '@tryghost/shade/page-templates';
 import { LoadMoreButton } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
 import { PostListRow } from './components/post-list-row';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
@@ -58,6 +59,7 @@ const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unsch
 const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-modal'));
 
 export function PostsListScreen({ resource }: { resource: PostResource }) {
+  const { controlShape } = useShade();
   const copy = getPostResourceCopy(resource);
   const { params, filters, order, setFilters, setOrder, hasFilters, clearFilters } =
     usePostsFilterState();
@@ -293,6 +295,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       activeView={activeView}
                       params={params}
                       resource={resource}
+                      triggerVariant={controlShape === 'pill' ? 'secondary' : 'outline'}
                     />
                   )}
                   <Button asChild>

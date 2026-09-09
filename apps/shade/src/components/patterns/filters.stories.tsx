@@ -452,7 +452,7 @@ export const PillControls: Story = {
   render: () => (
     <ShadeApp controlShape="pill" darkMode={false}>
       <Inline align="start" gap="lg">
-        <FilterDemo addButtonText="Filter" fields={basicFields} />
+        <FilterDemo addButtonText="Filter" addButtonVariant="secondary" fields={basicFields} />
         <FilterDemo
           addButtonClassName="aspect-square gap-0 !px-0 text-[0px]"
           addButtonText="Add filter"

@@ -6,6 +6,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import { DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel } from '@/posts/list/post-filter-fields';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -24,6 +25,8 @@ interface PostsSortMenuProps {
  * "Newest first" is the *absence* of an `order` param, not a value.
  */
 export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
+  const { controlShape } = useShade();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,11 +38,11 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
         <Button
           aria-label={`Sort: ${getOrderLabel(order)}`}
           data-testid="posts-sort"
-          variant="outline"
+          variant={controlShape === 'pill' ? 'secondary' : 'outline'}
         >
           <LucideIcon.ArrowUpDown className="size-4" />
           {getOrderLabel(order)}
-          <LucideIcon.ChevronDown className="size-4" />
+          {controlShape !== 'pill' && <LucideIcon.ChevronDown className="size-4" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

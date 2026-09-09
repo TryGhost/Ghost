@@ -88,7 +88,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             className="size-(--control-height)"
             data-testid="member-actions"
             size="icon"
-            variant="outline"
+            variant={isAdmin7Pill ? 'secondary' : 'outline'}
           >
             <LucideIcon.Ellipsis size={16} />
           </Button>

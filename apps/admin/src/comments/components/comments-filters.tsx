@@ -52,6 +52,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+      addButtonVariant={isAdmin7Pill && !hasFilters ? 'secondary' : undefined}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}

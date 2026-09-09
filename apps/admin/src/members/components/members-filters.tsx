@@ -240,6 +240,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+      addButtonVariant={isAdmin7Pill && !hasFilters ? 'secondary' : undefined}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}

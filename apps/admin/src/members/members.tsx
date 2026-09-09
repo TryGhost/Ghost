@@ -184,7 +184,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             showMobileSearch && 'bg-secondary hover:bg-secondary',
                           )}
                           size={isAdmin7Pill ? 'icon' : undefined}
-                          variant="outline"
+                          variant={isAdmin7Pill ? 'secondary' : 'outline'}
                           onClick={handleMobileSearchToggle}
                         >
                           <LucideIcon.Search className="size-4" />

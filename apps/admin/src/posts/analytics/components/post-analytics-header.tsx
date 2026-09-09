@@ -241,7 +241,10 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size={isAdmin7Pill ? 'icon' : undefined} variant="outline">
+                        <Button
+                          size={isAdmin7Pill ? 'icon' : undefined}
+                          variant={isAdmin7Pill ? 'secondary' : 'outline'}
+                        >
                           <LucideIcon.Ellipsis />
                         </Button>
                       </DropdownMenuTrigger>

@@ -1,4 +1,5 @@
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -43,6 +44,7 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
+  const { controlShape } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
   const showIconOnlyTrigger = iconOnly && !hasFilters;
@@ -90,6 +92,7 @@ export function PostsFilters({
           )
         }
         addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+        addButtonVariant={controlShape === 'pill' && !hasFilters ? 'secondary' : undefined}
         // Each field maps to one URL param holding one value; a second
         // chip per field would sit there without being in the URL.
         allowMultiple={false}

@@ -1,4 +1,11 @@
-import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  type ButtonProps,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -16,6 +23,7 @@ interface ManagePostViewPopoverProps {
   params: PostListParams;
   /** The saved view matching the current params, if the user is on one. */
   activeView?: SharedView;
+  triggerVariant?: ButtonProps['variant'];
 }
 
 function isPostViewColor(value: string | undefined): value is PostViewColor {
@@ -167,6 +175,7 @@ export function ManagePostViewPopover({
   resource,
   params,
   activeView,
+  triggerVariant = 'outline',
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
 
@@ -176,7 +185,7 @@ export function ManagePostViewPopover({
         {/* Labelled in words. No `aria-label`: it would override the
                     visible text as the accessible name, leaving the two out of
                     step. */}
-        <FilterBar.Action data-testid="manage-post-view" variant="outline">
+        <FilterBar.Action data-testid="manage-post-view" variant={triggerVariant}>
           {activeView ? 'Edit view' : 'Save view'}
         </FilterBar.Action>
       </PopoverTrigger>
