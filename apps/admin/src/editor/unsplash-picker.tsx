@@ -5,6 +5,7 @@ import { Button } from '@tryghost/shade/components';
 import { ImageUploadActions } from '@tryghost/shade/patterns';
 import { cn } from '@tryghost/shade/utils';
 import { useFramework } from '@tryghost/admin-x-framework';
+import { unsplashSearchModal } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 
 export interface UnsplashSelection {
@@ -37,11 +38,20 @@ export function UnsplashPicker({
 }: UnsplashPickerProps) {
   const { unsplashConfig } = useFramework();
   const [isOpen, setIsOpen] = useState(false);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
+
+  // A gate that goes off while the search is open closes it, so nothing is left
+  // listening for a field the writer can no longer see.
+  useEffect(() => {
+    if (!enabled) {
+      setIsOpen(false);
+    }
+  }, [enabled]);
 
   // The modal answers Escape itself but does not mark it, so a settings pane
   // behind it would read the same Escape as its own and close too.
   useEffect(() => {
-    if (!isOpen) {
+    if (!modalRoot) {
       return;
     }
 
@@ -51,9 +61,9 @@ export function UnsplashPicker({
       }
     };
 
-    window.addEventListener('keydown', markHandled, true);
-    return () => window.removeEventListener('keydown', markHandled, true);
-  }, [isOpen]);
+    modalRoot.addEventListener('keydown', markHandled, true);
+    return () => modalRoot.removeEventListener('keydown', markHandled, true);
+  }, [modalRoot]);
 
   if (!enabled) {
     return null;
@@ -79,16 +89,20 @@ export function UnsplashPicker({
       </ImageUploadActions>
       {isOpen &&
         createPortal(
-          <UnsplashSearchModal
-            unsplashProviderConfig={unsplashConfig}
-            onClose={() => setIsOpen(false)}
-            onImageInsert={(inserted) => {
-              if (inserted.src) {
-                onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
-              }
-              setIsOpen(false);
-            }}
-          />,
+          // The root the Escape listener is bound to: no layout of its own, and
+          // focusable so a click on the gallery keeps focus inside it.
+          <div ref={setModalRoot} data-testid={unsplashSearchModal} tabIndex={-1}>
+            <UnsplashSearchModal
+              unsplashProviderConfig={unsplashConfig}
+              onClose={() => setIsOpen(false)}
+              onImageInsert={(inserted) => {
+                if (inserted.src) {
+                  onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
+                }
+                setIsOpen(false);
+              }}
+            />
+          </div>,
           document.body,
         )}
     </>

@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  UNSPLASH_PICKED,
   currentRoute,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
+  fakeUnsplashPhotos,
   post,
   renderAdminApp,
   submittedPost,
@@ -197,6 +199,27 @@ describe('Post editor feature image', () => {
         feature_image: UPLOADED,
         feature_image_alt: 'Rolling hills',
       });
+    },
+    SLOW,
+  );
+
+  it(
+    'saves an image picked from Unsplash with the credit it carries',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImageUnsplashButton()).toBeVisible();
+      await editorScreen.featureImageUnsplashButton().click();
+      await editorScreen.unsplashInsertImage().click();
+
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      const saved = submittedPost(saveApi);
+      expect(saved.feature_image).toBe(UNSPLASH_PICKED);
+      // The photographer credit the picker hands over, as the caption stores it.
+      expect(String(saved.feature_image_caption)).toContain('A Photographer');
+      await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
     },
     SLOW,
   );

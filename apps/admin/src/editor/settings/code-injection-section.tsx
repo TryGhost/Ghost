@@ -4,8 +4,8 @@ import type { PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { SettingsSubview } from './settings-subview';
 
-// An Escape no other binding answers leaves the event unprevented, closing the
-// pane. Arm tab-focus mode for the 2s @codemirror/view does, so Tab leaves.
+// A binding that returns true prevents the event's default, which the pane
+// reads as answered. Arm tab-focus mode for the 2s @codemirror/view does.
 const TAB_FOCUS_ESCAPE = () =>
   import('@uiw/react-codemirror').then(({ Prec, keymap }) =>
     Prec.lowest(

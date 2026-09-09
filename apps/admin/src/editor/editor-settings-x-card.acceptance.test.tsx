@@ -2,18 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  UNSPLASH_PICKED,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
-  fakeEndpoint,
   fakeTiers,
+  fakeUnsplashPhotos,
   post,
   renderAdminApp,
-  settingsResponse,
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutUnsplash,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -71,44 +72,6 @@ function fakeImageUpload() {
   return fakeAdminEndpoint('POST', '/images/upload/', {
     images: [{ url: UPLOADED, ref: null }],
   });
-}
-
-const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
-// The picker asks Unsplash for a wider rendition of the image it inserts.
-const UNSPLASH_PICKED = 'https://images.unsplash.com/photo-1?ixid=1&w=2000';
-
-/** One Unsplash photo, in the shape the search modal lays out and inserts. */
-function fakeUnsplashPhotos() {
-  fakeEndpoint('GET', 'https://api.unsplash.com/photos', [
-    {
-      id: 'photo-1',
-      color: '#123456',
-      alt_description: 'A hillside',
-      height: 800,
-      width: 1200,
-      likes: 12,
-      urls: { regular: UNSPLASH_REGULAR },
-      links: {
-        html: 'https://unsplash.com/photos/photo-1',
-        download: 'https://unsplash.com/photos/photo-1/download',
-        download_location: 'https://api.unsplash.com/photos/photo-1/download',
-      },
-      user: {
-        name: 'A Photographer',
-        links: { html: 'https://unsplash.com/@photographer' },
-        profile_image: { medium: 'https://images.unsplash.com/profile-1' },
-      },
-    },
-  ]);
-  fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
-}
-
-/** The site fixture turns Unsplash on, so only the off case needs an override. */
-function withoutUnsplash() {
-  return {
-    ...FLAG_ON,
-    boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
-  };
 }
 
 async function openXCard() {
@@ -517,7 +480,7 @@ describe('Post settings X card', () => {
     'leaves Unsplash out while the site’s integration is off',
     async () => {
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, withoutUnsplash());
+      await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withoutUnsplash() });
       await openXCard();
 
       await expect.element(editorScreen.settingsXImageInput()).toBeInTheDocument();
