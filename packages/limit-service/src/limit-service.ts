@@ -111,15 +111,18 @@ export class LimitService {
     limitName: string,
     run: (limit: Limit) => Promise<void>,
   ): Promise<boolean | undefined> {
-    // Both read before the await, so a reload part way through this check cannot leave the
-    // limit being tested against a different module's error class than the one it was built
-    // with. That mismatch would let a genuine limit refusal escape as an exception.
     const limit = this.find(limitName);
-    const { HostLimitError } = this.errors;
 
+    // Nothing to answer about, and nothing loaded to answer with: a service that was never
+    // given limits says so rather than failing.
     if (!limit) {
       return;
     }
+
+    // Read before the await, so a reload part way through this check cannot leave the limit
+    // being tested against a different module's error class than the one it was built with.
+    // That mismatch would let a genuine limit refusal escape as an exception.
+    const { HostLimitError } = this.errors;
 
     try {
       await run(limit);

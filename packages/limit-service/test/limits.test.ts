@@ -107,13 +107,15 @@ describe('Reloading limits', function () {
     assert.equal(await inFlight, true);
   });
 
-  it('keeps the limits it had when a reload cannot be resolved', async function () {
+  // The refusal happens before anything is resolved or assigned, so this says only that a
+  // rejected reload leaves the site as it was. That the swap itself is ordered safely is
+  // what the test above pins.
+  it('keeps the limits it had when a reload is refused outright', async function () {
     const service = new LimitService();
 
     service.loadLimits({ limits: { limitSomething: { disabled: true } }, errors });
     assert.equal(service.isDisabled('limitSomething'), true);
 
-    // `errors` is required, so this reload cannot produce a set of limits at all.
     assert.throws(() => service.loadLimits({ limits: {} } as never));
 
     assert.equal(service.isDisabled('limitSomething'), true);
@@ -150,3 +152,29 @@ describe('Checking every limit at once', function () {
     assert.equal(await service.checkIfAnyOverLimit(), true);
   });
 });
+
+/**
+ * A service is constructed before it is given anything, and one consumer deliberately never
+ * gives it anything: a self-hosted site has no host limits, so Admin builds the service and
+ * leaves it empty. Asking it a question then has to answer, not fail.
+ */
+describe('A service that was never loaded', function () {
+  it('answers that it is not limited', function () {
+    assert.equal(new LimitService().isLimited('staff'), false);
+  });
+
+  it('answers the over-limit checks rather than throwing', async function () {
+    const service = new LimitService();
+
+    assert.equal(await service.checkIsOverLimit('staff'), undefined);
+    assert.equal(await service.checkWouldGoOverLimit('staff'), undefined);
+  });
+
+  it('lets the error-raising checks pass', async function () {
+    const service = new LimitService();
+
+    await service.errorIfIsOverLimit('staff');
+    await service.errorIfWouldGoOverLimit('staff');
+  });
+});
+
