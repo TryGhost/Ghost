@@ -31,6 +31,7 @@ import { ShowTitleSection } from './show-title-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
+import { XCardSection } from './x-card-section';
 
 function ExcerptSection({ session }: { session: EditorSessionHandle }) {
   const inputId = useId();
@@ -125,6 +126,14 @@ export function PostSettingsSidebar({
     'code-injection': <CodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <KeyboardShortcutsSection />,
+    'x-card': (
+      <XCardSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ),
     'facebook-card': (
       <FacebookCardSection
         cardConfig={cardConfig}

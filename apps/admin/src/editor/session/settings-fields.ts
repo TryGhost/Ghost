@@ -61,11 +61,15 @@ export const META_TITLE_MAX = 300;
 export const META_DESCRIPTION_MAX = 500;
 export const OG_TITLE_MAX = 300;
 export const OG_DESCRIPTION_MAX = 500;
+export const X_TITLE_MAX = 300;
+export const X_DESCRIPTION_MAX = 500;
 
 export const META_TITLE_TOO_LONG = `Meta Title cannot be longer than ${META_TITLE_MAX} characters.`;
 export const META_DESCRIPTION_TOO_LONG = `Meta Description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
 export const OG_TITLE_TOO_LONG = `Facebook Title cannot be longer than ${OG_TITLE_MAX} characters.`;
 export const OG_DESCRIPTION_TOO_LONG = `Facebook Description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
+export const X_TITLE_TOO_LONG = `Twitter Title cannot be longer than ${X_TITLE_MAX} characters.`;
+export const X_DESCRIPTION_TOO_LONG = `Twitter Description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
 
 /** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
 export function tiersIncomplete(
@@ -103,6 +107,8 @@ export const VALIDATED_SETTINGS_FIELD_KEYS = [
   'meta_description',
   'og_title',
   'og_description',
+  'twitter_title',
+  'twitter_description',
 ] as const;
 
 export type ValidatedSettingsFields = Pick<
@@ -133,6 +139,12 @@ export function settingsFieldError(fields: ValidatedSettingsFields): string | nu
   }
   if (overLength(fields.og_description, OG_DESCRIPTION_MAX)) {
     return OG_DESCRIPTION_TOO_LONG;
+  }
+  if (overLength(fields.twitter_title, X_TITLE_MAX)) {
+    return X_TITLE_TOO_LONG;
+  }
+  if (overLength(fields.twitter_description, X_DESCRIPTION_MAX)) {
+    return X_DESCRIPTION_TOO_LONG;
   }
   return null;
 }
