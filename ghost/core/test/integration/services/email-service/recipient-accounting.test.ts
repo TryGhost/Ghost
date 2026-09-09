@@ -365,11 +365,12 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       '000000000000000000000003',
       [
         [false, 1],
-        [true, 2],
+        [true, 1],
+        [true, 1],
       ],
     ],
   ] as const) {
-    it(`counts exclusions once across warming slices and commit recovery (${warmupLimit}, ${memberId})`, async function () {
+    it(`counts exclusions once across warming pages and commit recovery (${warmupLimit}, ${memberId})`, async function () {
       await email.save({ csd_email_count: warmupLimit }, { patch: true });
       await corruptMember(memberId, { uuid: '' });
       loseCommitAcknowledgementOnce();
@@ -468,6 +469,32 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(email.get('csd_email_count'), limit);
     });
   }
+
+  it('finishes a warming page before filling the next page on the fallback domain', async function () {
+    await email.save({ csd_email_count: 1 }, { patch: true });
+    sinon.stub(sender, 'getMaximumRecipients').returns(3);
+    const batches = await service.createBatches(data);
+    assert.equal(batches.length, 2);
+    const primary = batches.find((batch) => !batch.get('fallback_sending_domain'));
+    const fallback = batches.find((batch) => batch.get('fallback_sending_domain'));
+    assert.equal(primary.get('recipient_count'), 1);
+    assert.equal(fallback.get('recipient_count'), 3);
+    assert.deepEqual(
+      await db.knex('email_recipients').where({ batch_id: primary.id }).pluck('member_id'),
+      ['000000000000000000000004'],
+    );
+    assert.deepEqual(
+      await db
+        .knex('email_recipients')
+        .where({ batch_id: fallback.id })
+        .orderBy('member_id')
+        .pluck('member_id'),
+      ['000000000000000000000001', '000000000000000000000002', '000000000000000000000003'],
+    );
+    assert.equal(email.get('candidate_count'), 4);
+    assert.equal(email.get('preparation_excluded_count'), 0);
+    assert.equal(email.get('email_count'), 4);
+  });
 
   it('prepares disjoint segments without duplicating or omitting members', async function () {
     await corruptMember('000000000000000000000001', { status: 'paid' });

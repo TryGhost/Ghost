@@ -525,26 +525,30 @@ class BatchSendingService {
     // ObjectIds exclude members created after the email, even with backdated imports.
     let lastId = email.id;
     do {
+      const useFallbackDomain = remainingCustomDomainCapacity <= 0;
+      const pageSize = useFallbackDomain
+        ? batchSize
+        : Math.min(remainingCustomDomainCapacity, batchSize);
       const members = await this.#fetchPreparationPage(
         email,
         segment,
         segmentFilter,
         lastId,
-        batchSize,
+        pageSize,
       );
-      const candidates = members.slice(0, batchSize);
-      // Count the consumed page once, before splitting or retrying, without lookahead.
+      const candidates = members.slice(0, pageSize);
+      // Count the consumed page once, before exclusions or retries, without lookahead.
       candidateCount += candidates.length;
       excludedCount += await this.#preparePage({
         email,
         segment,
         members: candidates,
         attemptId,
-        remainingCustomDomainCapacity,
+        useFallbackDomain,
       });
       // Warming capacity counts candidates, including explicit exclusions.
       remainingCustomDomainCapacity -= candidates.length;
-      if (members.length <= batchSize) {
+      if (members.length <= pageSize) {
         break;
       }
       lastId = candidates[candidates.length - 1].id;
@@ -573,31 +577,16 @@ class BatchSendingService {
       .limit(batchSize + 1);
   }
 
-  async #preparePage({ email, segment, members, attemptId, remainingCustomDomainCapacity }) {
-    if (members.length === 0) {
-      return 0;
+  async #preparePage({ email, segment, members, attemptId, useFallbackDomain }) {
+    const snapshot = this.#snapshotPreparationMembers(email, members, attemptId);
+    if (snapshot.length > 0) {
+      await this.#createBatchWithRecovery(
+        email,
+        { segment, members: snapshot, useFallbackDomain },
+        attemptId,
+      );
     }
-    const shouldSplit =
-      remainingCustomDomainCapacity > 0 && remainingCustomDomainCapacity < members.length;
-    const slices = shouldSplit
-      ? [
-          { members: members.slice(0, remainingCustomDomainCapacity), useFallbackDomain: false },
-          { members: members.slice(remainingCustomDomainCapacity), useFallbackDomain: true },
-        ]
-      : [{ members, useFallbackDomain: remainingCustomDomainCapacity <= 0 }];
-    let excludedCount = 0;
-    for (const slice of slices) {
-      const snapshot = this.#snapshotPreparationMembers(email, slice.members, attemptId);
-      excludedCount += slice.members.length - snapshot.length;
-      if (snapshot.length > 0) {
-        await this.#createBatchWithRecovery(
-          email,
-          { ...slice, segment, members: snapshot },
-          attemptId,
-        );
-      }
-    }
-    return excludedCount;
+    return members.length - snapshot.length;
   }
 
   async #completePreparation(email, { candidateCount, excludedCount, attemptId }) {
@@ -777,6 +766,8 @@ class BatchSendingService {
       this.#assertAllPending(email, batches);
       return;
     }
+    // Timestamps have second precision: this detects later seconds, not exact membership.
+    // The email job lock and frozen-preparation path prevent new batches after preparation.
     const laterBatch = batches.find(
       (batch) => new Date(batch.get('created_at')) > new Date(email.get('prepared_at')),
     );

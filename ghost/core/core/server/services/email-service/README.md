@@ -27,8 +27,11 @@ rebuilding may refresh the eligible audience even if preparation finished
 immediately before a crash. No submission has started. After `prepared_at` is
 saved, the audience stays frozen.
 
-Count candidates once per consumed page, excluding the lookahead row and before
-splitting a page for domain warming. Invalid member data is an explicit
+Choose each page's size and sending domain before fetching it. While warming
+capacity remains, cap the page at that capacity; afterward use the full batch
+size on the fallback domain. Each page creates at most one batch. Count candidates
+once per consumed page, excluding the lookahead row and before exclusions or
+database retries. Invalid member data is an explicit
 preparation exclusion with error logging and Sentry reporting. Every nonempty
 batch stores `recipient_count` in the same transaction as its recipients.
 
@@ -65,7 +68,11 @@ bounded deletes of recipient rows followed by batches. Any non-pending batch
 blocks cleanup. Cross-email recipient references fail verification before any
 cleanup deletes in either ownership direction, including when the email has no
 batches of its own. Once prepared, retries reuse the batches without selecting the
-audience again. Batches created after the preparation marker fail verification.
+audience again. The email job lock and frozen-preparation path prevent new batch
+creation after preparation. As an additional check, batches with `created_at`
+later than `prepared_at` fail verification. Both timestamps have second precision,
+so this check cannot distinguish writes within the same second and does not
+independently establish frozen batch membership.
 After submission workers settle, re-read all persisted batches, verify recipient
 counts again, and require every batch submitted before completing the email.
 
