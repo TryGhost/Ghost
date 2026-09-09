@@ -8,7 +8,7 @@ import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { metafieldCodec } from './codec';
 import { assertDefinable } from './namespaces';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
-import { ADMIN, readableFields, type Audience } from './access';
+import { readableFields, type Audience } from './access';
 import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
 import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
@@ -135,8 +135,8 @@ export class MetafieldDefinitionsService {
   }
 
   async browse(
-    options: { namespace?: string; filter?: string } = {},
-    audience: Audience = ADMIN,
+    options: { namespace?: string; filter?: string },
+    audience: Audience,
   ): Promise<Metafield[]> {
     if (options.namespace !== undefined && !this.isStored(options.namespace)) {
       return [];

@@ -1,4 +1,4 @@
-import { actingContext, definitions } from '../../services/members-metafields';
+import { ADMIN, actingContext, definitions } from '../../services/members-metafields';
 import { assertDefinable } from '../../services/members-metafields/namespaces';
 
 const permissionsService = require('../../services/permissions');
@@ -46,10 +46,13 @@ const controller = {
     validation: { options: { namespace: { required: true } } },
     permissions: false,
     query(frame: Frame) {
-      return definitions!.browse({
-        namespace: frame.options.namespace,
-        filter: frame.options.filter as string | undefined,
-      });
+      return definitions!.browse(
+        {
+          namespace: frame.options.namespace,
+          filter: frame.options.filter as string | undefined,
+        },
+        ADMIN,
+      );
     },
   },
 
