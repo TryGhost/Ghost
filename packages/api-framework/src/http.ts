@@ -142,13 +142,13 @@ const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHand
         if (typeof apiImpl.response.format === 'function') {
           const apiResponseFormat = apiImpl.response.format();
 
-          if (apiResponseFormat instanceof Promise) {
-            return apiResponseFormat.then((formatName) => {
+          if (typeof apiResponseFormat !== 'string') {
+            return Promise.resolve(apiResponseFormat).then((formatName) => {
               send(formatName);
             });
-          } else {
-            responseFormat = apiResponseFormat;
           }
+
+          responseFormat = apiResponseFormat;
         } else {
           responseFormat = apiImpl.response.format;
         }

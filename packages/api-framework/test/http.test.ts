@@ -14,7 +14,7 @@ describe('HTTP', function () {
     status: SinonStub;
   };
   type ApiImplementation = SinonStub & {
-    response?: { format: string | (() => string | Promise<string>) };
+    response?: { format: string | (() => string | PromiseLike<string>) };
     statusCode?: number | SinonStub;
   };
 
@@ -176,6 +176,26 @@ describe('HTTP', function () {
       apiImpl.response = {
         format() {
           return 'plain';
+        },
+      };
+
+      res.send.callsFake(() => {
+        assert.equal(res.send.calledOnce, true);
+        assert.equal(res.json.called, false);
+        resolve();
+      });
+
+      shared.http(apiImpl)(req, res, next);
+    });
+  });
+
+  it('supports thenable response format', async function () {
+    await new Promise<void>((resolve) => {
+      const apiImpl: ApiImplementation = sinon.stub().resolves('plain body');
+      apiImpl.response = {
+        format() {
+          const format = Promise.resolve('plain');
+          return { then: format.then.bind(format) };
         },
       };
 

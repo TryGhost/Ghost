@@ -53,6 +53,9 @@ describe('serializers/handle', function () {
         stubsToCheck.forEach((stub) => {
           sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
         });
+        sinon.assert.calledOn(apiSerializers.all, apiSerializers);
+        sinon.assert.calledOn(apiSerializers.posts.all, apiSerializers.posts);
+        sinon.assert.calledOn(apiSerializers.posts.browse, apiSerializers.posts);
       });
     });
 
@@ -198,6 +201,9 @@ describe('serializers/handle', function () {
 
             // After has a different call signature... is this a intentional?
             sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+            sinon.assert.calledOn(apiSerializers.all.before, apiSerializers.all);
+            sinon.assert.calledOn(apiSerializers.posts.add, apiSerializers.posts);
+            sinon.assert.calledOn(apiSerializers.all.after, apiSerializers.all);
 
             sinon.assert.callOrder(
               apiSerializers.all.before,

@@ -9,7 +9,6 @@ import validators from './validators/index.ts';
 
 const debug = createDebug('pipeline');
 const { IncorrectUsageError } = errors;
-const { sequence } = promiseUtils;
 type AsyncResult = unknown | Promise<unknown>;
 export interface ApiConfiguration extends FrameConfiguration, Dictionary {
   docName?: string;
@@ -33,7 +32,7 @@ export interface ControllerMethod {
   options?: FrameConfiguration['options'];
   permissions?: boolean | PermissionConfiguration | ((frame: Frame) => AsyncResult);
   query?: (frame: Frame) => AsyncResult;
-  response?: { format: string | (() => string | Promise<string>) };
+  response?: { format: string | (() => string | PromiseLike<string>) };
   statusCode?: number | ((result: unknown) => number);
   validation?: Dictionary | ((frame: Frame) => AsyncResult);
 }
@@ -106,7 +105,7 @@ const STAGES = {
         );
       });
 
-      return sequence(tasks);
+      return promiseUtils.sequence(tasks);
     },
   },
 
@@ -224,7 +223,7 @@ const STAGES = {
       return apiUtils.permissions.handle(Object.assign({}, apiConfig, apiImpl.permissions), frame);
     });
 
-    return sequence(tasks);
+    return promiseUtils.sequence(tasks);
   },
 
   /**

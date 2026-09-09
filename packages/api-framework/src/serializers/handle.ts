@@ -7,7 +7,6 @@ import * as sharedSerializers from './input/index.ts';
 
 const debug = createDebug('serializers:handle');
 const { IncorrectUsageError } = errors;
-const { sequence } = promiseUtils;
 type AsyncResult = unknown | Promise<unknown>;
 interface Serializer {
   (...args: unknown[]): AsyncResult;
@@ -54,7 +53,7 @@ export const input = (
   const sharedMethod = apiConfig.method ? sharedAll[apiConfig.method] : undefined;
   if (sharedMethod) {
     tasks.push(function serializeAllShared() {
-      return sharedMethod(apiConfig, frame);
+      return sharedMethod.call(sharedAll, apiConfig, frame);
     });
   }
 
@@ -63,7 +62,7 @@ export const input = (
   const allSerializer = apiSerializers.all;
   if (allSerializer) {
     tasks.push(function serializeOptionsShared() {
-      return allSerializer(apiConfig, frame);
+      return allSerializer.call(apiSerializers, apiConfig, frame);
     });
   }
 
@@ -72,20 +71,20 @@ export const input = (
     const allResourceSerializer = resourceSerializers.all;
     if (allResourceSerializer) {
       tasks.push(function serializeOptionsShared() {
-        return allResourceSerializer(apiConfig, frame);
+        return allResourceSerializer.call(resourceSerializers, apiConfig, frame);
       });
     }
 
     const methodSerializer = apiConfig.method ? resourceSerializers[apiConfig.method] : undefined;
     if (methodSerializer) {
       tasks.push(function serializeOptionsShared() {
-        return methodSerializer(apiConfig, frame);
+        return methodSerializer.call(resourceSerializers, apiConfig, frame);
       });
     }
   }
 
   debug(tasks);
-  return sequence(tasks);
+  return promiseUtils.sequence(tasks);
 };
 
 const getBestMatchSerializer = function (
@@ -146,7 +145,7 @@ export const output = (
   const allBefore = apiSerializers.all?.before;
   if (allBefore) {
     tasks.push(function allSerializeBefore() {
-      return allBefore(response, apiConfig, frame);
+      return allBefore.call(apiSerializers.all, response, apiConfig, frame);
     });
   }
 
@@ -172,12 +171,12 @@ export const output = (
   const allAfter = apiSerializers.all?.after;
   if (allAfter) {
     tasks.push(function allSerializeAfter() {
-      return allAfter(apiConfig, frame);
+      return allAfter.call(apiSerializers.all, apiConfig, frame);
     });
   }
 
   debug(tasks);
-  return sequence(tasks);
+  return promiseUtils.sequence(tasks);
 };
 
 export default { input, output };
