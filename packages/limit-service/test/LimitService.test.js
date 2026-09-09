@@ -1,25 +1,23 @@
 // Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-const should = require('should');
-const assert = require('node:assert').strict;
-const LimitService = require('../lib/LimitService');
-const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
-const sinon = require('sinon');
+// import * as testUtils from './utils/index.js';
+import './utils/index.js';
+import should from 'should';
+import {strict as assert} from 'node:assert';
+import LimitService from '../lib/LimitService.js';
+import LimitServiceFromIndex from '../index.js';
+import {MaxLimit, MaxPeriodicLimit, FlagLimit} from '../lib/limit.js';
+import sinon from 'sinon';
+import _ from 'lodash';
 
-const errors = require('./fixtures/errors');
+import errors from './fixtures/errors.js';
 
 describe('Limit Service', function () {
     it('is exported via the package index', function () {
-        const LimitServiceFromIndex = require('../index');
         assert.equal(LimitServiceFromIndex, LimitService);
     });
 
     describe('Lodash Template', function () {
         it('Does not get clobbered by this lib', function () {
-            require('../lib/limit');
-            let _ = require('lodash');
-
             _.templateSettings.interpolate.should.eql(/<%=([\s\S]+?)%>/g);
         });
     });

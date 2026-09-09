@@ -2,7 +2,7 @@
 // Each type of limit has it's own structure:
 // 1. FlagLimit and AllowlistLimit types are empty objects paired with a key, e.g.: `customThemes: {}`
 // 2. MaxLimit should contain a `currentCountQuery` function which would count the resources under limit
-module.exports = {
+export default {
     members: {
         currentCountQuery: async (knex) => {
             let result = await knex('members').count('id', {as: 'count'}).first();

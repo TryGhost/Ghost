@@ -436,7 +436,7 @@ describe('Host limits', function () {
     it('exports something a caller can construct directly', function () {
       // Two places construct the service themselves rather than using Ghost's, so the shape
       // of the export is part of what a change to this package must not break.
-      const exported = require('@tryghost/limit-service');
+      const exported = require('@tryghost/limit-service').default;
 
       assert.equal(typeof exported, 'function');
       assert.doesNotThrow(() => new exported());

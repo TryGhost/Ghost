@@ -2,7 +2,8 @@ const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const db = require('../data/db');
 const logging = require('@tryghost/logging');
-const LimitService = require('@tryghost/limit-service');
+// @tryghost/limit-service is ESM, so require() hands back its namespace
+const LimitService = require('@tryghost/limit-service').default;
 let limitService = new LimitService();
 
 const init = () => {

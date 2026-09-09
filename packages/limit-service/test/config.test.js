@@ -1,7 +1,7 @@
-require('./utils');
-const assert = require('node:assert').strict;
-const sinon = require('sinon');
-const config = require('../lib/config');
+import './utils/index.js';
+import {strict as assert} from 'node:assert';
+import sinon from 'sinon';
+import config from '../lib/config.js';
 
 describe('Config', function () {
     afterEach(function () {

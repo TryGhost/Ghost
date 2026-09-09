@@ -1,11 +1,11 @@
 // Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+// import * as testUtils from './utils/index.js';
+import './utils/index.js';
 
-const {DateTime} = require('luxon');
-const sinon = require('sinon');
-const assert = require('node:assert').strict;
-const {lastPeriodStart} = require('../lib/date-utils');
+import {DateTime} from 'luxon';
+import sinon from 'sinon';
+import {strict as assert} from 'node:assert';
+import {lastPeriodStart} from '../lib/date-utils.js';
 
 describe('Date Utils', function () {
     describe('fn: lastPeriodStart', function () {

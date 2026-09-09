@@ -8,12 +8,13 @@
     },
     "author": "Ghost Foundation",
     "license": "MIT",
+    "type": "module",
     "main": "index.js",
     "exports": "./index.js",
     "scripts": {
         "dev": "echo \"Implement me!\"",
         "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-        "lint": "eslint . --ext .js --cache",
+        "lint": "eslint . --cache",
         "posttest": "pnpm run lint"
     },
     "files": [
@@ -21,7 +22,9 @@
         "lib"
     ],
     "devDependencies": {
+        "@internal/cfg-eslint": "workspace:*",
         "c8": "12.0.0",
+        "eslint": "catalog:",
         "mocha": "12.0.0",
         "should": "13.2.3",
         "sinon": "22.1.0"
@@ -34,6 +37,6 @@
     "private": true,
     "ghostPackage": {
         "goldenPath": "migration",
-        "reason": "Imported from TryGhost/SDK with its history. Still CommonJS with mocha tests, and still contains Ghost's database queries. Modernised in the change that follows this one."
+        "reason": "Imported from TryGhost/SDK with its history. Now ESM, but still plain JavaScript with mocha tests, and still contains Ghost's database queries."
     }
 }

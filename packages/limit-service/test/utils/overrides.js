@@ -1,10 +1,7 @@
-// This file is required before any test is run
+// This file is imported before any test is run
 
-// Taken from the should wiki, this is how to make should global
-// Should is a global in our eslint test config
-global.should = require('should').noConflict();
-should.extend();
+import shouldModule from 'should';
 
-// Sinon is a simple case
-// Sinon is a global in our eslint test config
-global.sinon = require('sinon');
+// `should` installs itself as a non-writable global on import, so it can only be
+// re-pointed through its own noConflict()/extend() pair
+shouldModule.noConflict().extend();

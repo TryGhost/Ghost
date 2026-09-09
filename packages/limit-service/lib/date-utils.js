@@ -1,5 +1,9 @@
-const {DateTime} = require('luxon');
-const {IncorrectUsageError} = require('@tryghost/errors');
+import {DateTime} from 'luxon';
+// Node's loader offers no named exports for @tryghost/errors, so its classes
+// come off the default export
+import ghostErrors from '@tryghost/errors';
+
+const {IncorrectUsageError} = ghostErrors;
 
 const messages = {
     invalidInterval: 'Invalid interval specified. Only "month" value is accepted.'
@@ -31,7 +35,7 @@ const lastPeriodStart = (startDate, interval) => {
     });
 };
 
-module.exports = {
+export {
     lastPeriodStart,
     SUPPORTED_INTERVALS
 };

@@ -1,6 +1,6 @@
-const lowerCase = require('lodash/lowerCase');
-const template = require('lodash/template');
-const {lastPeriodStart, SUPPORTED_INTERVALS} = require('./date-utils');
+import lowerCase from 'lodash/lowerCase.js';
+import template from 'lodash/template.js';
+import {lastPeriodStart, SUPPORTED_INTERVALS} from './date-utils.js';
 
 const interpolate = /{{([\s\S]+?)}}/g;
 
@@ -366,7 +366,7 @@ class AllowlistLimit extends Limit {
     }
 }
 
-module.exports = {
+export {
     MaxLimit,
     MaxPeriodicLimit,
     FlagLimit,

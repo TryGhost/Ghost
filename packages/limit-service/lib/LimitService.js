@@ -1,9 +1,13 @@
-const camelCase = require('lodash/camelCase');
-const has = require('lodash/has');
-const {IncorrectUsageError} = require('@tryghost/errors');
+import camelCase from 'lodash/camelCase.js';
+import has from 'lodash/has.js';
+// Node's loader offers no named exports for @tryghost/errors, so its classes
+// come off the default export
+import ghostErrors from '@tryghost/errors';
 
-const {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} = require('./limit');
-const config = require('./config');
+import {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} from './limit.js';
+import config from './config.js';
+
+const {IncorrectUsageError} = ghostErrors;
 
 const messages = {
     missingErrorsConfig: `Config Missing: 'errors' is required.`,
@@ -186,7 +190,7 @@ class LimitService {
     }
 }
 
-module.exports = LimitService;
+export default LimitService;
 
 /**
  * @typedef {Object} LimitConfig

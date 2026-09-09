@@ -1,12 +1,12 @@
 // Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-const should = require('should');
-const sinon = require('sinon');
-const assert = require('node:assert').strict;
+// import * as testUtils from './utils/index.js';
+import './utils/index.js';
+import should from 'should';
+import sinon from 'sinon';
+import {strict as assert} from 'node:assert';
 
-const errors = require('./fixtures/errors');
-const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
+import errors from './fixtures/errors.js';
+import {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} from '../lib/limit.js';
 
 describe('Limit', function () {
     describe('Flag Limit', function () {

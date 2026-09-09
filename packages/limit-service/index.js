@@ -1,1 +1,1 @@
-module.exports = require('./lib/LimitService');
+export {default} from './lib/LimitService.js';

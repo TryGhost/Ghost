@@ -19,7 +19,7 @@ class HostLimitError extends Error {
 }
 
 // NOTE: this module is here to serve as a dummy fixture for GhostError errors (@tryghost/errors)
-module.exports = {
+export default {
     IncorrectUsageError,
     HostLimitError
 };
