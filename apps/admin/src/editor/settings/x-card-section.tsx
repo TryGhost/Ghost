@@ -13,14 +13,11 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import {
-  addXImageLabel,
-  removeXImageButton,
   settingsXDescriptionInput,
   settingsXImage,
   settingsXPreview,
   settingsXPreviewImage,
   settingsXTitleInput,
-  xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
@@ -52,6 +49,9 @@ import {
 } from './social-card-fields';
 
 const IMAGE_SUBJECT = 'X image';
+const ADD_IMAGE_LABEL = 'Add X image';
+const REMOVE_IMAGE_LABEL = 'Remove X image';
+const UNSPLASH_BUTTON_LABEL = 'Select X image from Unsplash';
 
 export interface XCardSectionProps {
   session: EditorSessionHandle;
@@ -127,7 +127,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
             <ImageUploadImage role="presentation" src={twitterImage} />
             <ImageUploadActions>
               <ImageUploadAction
-                aria-label={removeXImageButton}
+                aria-label={REMOVE_IMAGE_LABEL}
                 onClick={() => session.editSettings({ twitter_image: null })}
               >
                 <LucideIcon.Trash2 />
@@ -140,7 +140,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
           <ImageUploadDropzone
             accept={ACCEPTED_IMAGE_TYPES}
             disabled={isPending}
-            inputAriaLabel={addXImageLabel}
+            inputAriaLabel={ADD_IMAGE_LABEL}
             noDragEventsBubbling
             onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
             onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
@@ -150,14 +150,14 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
             ) : (
               <Inline gap="sm">
                 <LucideIcon.Plus aria-hidden="true" className="size-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{addXImageLabel}</span>
+                <span className="text-sm text-muted-foreground">{ADD_IMAGE_LABEL}</span>
               </Inline>
             )}
           </ImageUploadDropzone>
           <UnsplashPicker
             disabled={isPending}
             enabled={!!cardConfig.unsplash}
-            label={xImageUnsplashButton}
+            label={UNSPLASH_BUTTON_LABEL}
             onSelect={({ src }) => session.editSettings({ twitter_image: src })}
           />
         </ImageUpload>

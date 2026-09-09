@@ -13,7 +13,6 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import {
-  facebookImageUnsplashButton,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -51,6 +50,7 @@ import {
 const IMAGE_SUBJECT = 'Facebook image';
 const ADD_IMAGE_LABEL = 'Add Facebook image';
 const REMOVE_IMAGE_LABEL = 'Remove Facebook image';
+const UNSPLASH_BUTTON_LABEL = 'Select Facebook image from Unsplash';
 
 export interface FacebookCardSectionProps {
   session: EditorSessionHandle;
@@ -161,7 +161,7 @@ export function FacebookCardSection({
           <UnsplashPicker
             disabled={isPending}
             enabled={!!cardConfig.unsplash}
-            label={facebookImageUnsplashButton}
+            label={UNSPLASH_BUTTON_LABEL}
             onSelect={({ src }) => session.editSettings({ og_image: src })}
           />
         </ImageUpload>
