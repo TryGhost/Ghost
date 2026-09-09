@@ -1,7 +1,6 @@
-const readingMinutes = require('@tryghost/helpers').utils.readingMinutes as (
-  html: string,
-  additionalImages?: number,
-) => number;
+import { utils } from '@tryghost/helpers';
+
+const { readingMinutes } = utils;
 
 export const AUTO_EXCERPT_LENGTH = 500;
 

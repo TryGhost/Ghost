@@ -1,9 +1,9 @@
-const assert = require('node:assert/strict');
-const {
+import assert from 'node:assert/strict';
+import {
   AUTO_EXCERPT_LENGTH,
   computeAutoExcerpt,
   computeReadingTime,
-} = require('../../../../core/server/lib/post-meta');
+} from '../../../../core/server/lib/post-meta';
 
 describe('post-meta helpers', function () {
   describe('computeAutoExcerpt', function () {
@@ -20,7 +20,7 @@ describe('post-meta helpers', function () {
     it('truncates plaintext to the automatic excerpt length', function () {
       const plaintext = 'a'.repeat(AUTO_EXCERPT_LENGTH + 50);
       const excerpt = computeAutoExcerpt(plaintext);
-      assert.equal(excerpt.length, AUTO_EXCERPT_LENGTH);
+      assert.equal(excerpt!.length, AUTO_EXCERPT_LENGTH);
       assert.equal(excerpt, 'a'.repeat(AUTO_EXCERPT_LENGTH));
     });
   });
@@ -35,14 +35,14 @@ describe('post-meta helpers', function () {
       const html = `<p>${'word '.repeat(300)}</p>`;
       const readingTime = computeReadingTime(html, null);
       assert.equal(typeof readingTime, 'number');
-      assert.ok(readingTime >= 0);
+      assert.ok(readingTime! >= 0);
     });
 
     it('increases when a feature image is present', function () {
       const html = `<p>${'word '.repeat(300)}</p>`;
       const withoutImage = computeReadingTime(html, null);
       const withImage = computeReadingTime(html, 'https://example.com/image.jpg');
-      assert.ok(withImage >= withoutImage);
+      assert.ok(withImage! >= withoutImage!);
     });
   });
 });
