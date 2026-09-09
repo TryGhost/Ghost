@@ -100,13 +100,27 @@ describe('Schedules API', function () {
       }),
     );
 
+    resources.push(
+      testUtils.DataGenerator.forKnex.createPost({
+        published_by: testUtils.getExistingData().users[0].id,
+        published_at: moment().subtract(10, 'seconds').toDate(),
+        status: 'scheduled',
+        slug: 'sixth',
+        authors: [
+          {
+            id: testUtils.getExistingData().users[0].id,
+          },
+        ],
+      }),
+    );
+
     const result = await Promise.all(
       resources.map((post) => {
         return models.Post.add(post, { context: { internal: true } });
       }),
     );
 
-    assert.equal(result.length, 5);
+    assert.equal(result.length, 6);
   });
 
   describe('publish', function () {
@@ -204,6 +218,34 @@ describe('Schedules API', function () {
         .expect('Content-Type', /json/)
         .expect('Cache-Control', testUtils.cacheRules.private)
         .expect(404);
+    });
+
+    it('two overlapping deliveries of the same job publish once', async function () {
+      // A scheduler with a persistent queue can hold two jobs for one post
+      // and fire both in the same tick. The first delivery publishes; the
+      // second must see the post is no longer scheduled and take the no-op
+      // path, so the post is not published (or emailed) twice.
+      const url = localUtils.API.getApiQuery(`schedules/posts/${resources[5].id}/?token=${token}`);
+
+      const [first, second] = await Promise.all([
+        request.put(url).expect('Content-Type', /json/).expect(200),
+        request.put(url).expect('Content-Type', /json/).expect(200),
+      ]);
+
+      const published = [first, second].filter((res) => res.body.posts.length === 1);
+      const noOps = [first, second].filter((res) => res.body.posts.length === 0);
+
+      assert.equal(published.length, 1, 'exactly one delivery publishes');
+      assert.equal(noOps.length, 1, 'the other delivery is a no-op');
+      assert.equal(published[0].body.posts[0].status, 'published');
+      assertExists(published[0].headers['x-cache-invalidate']);
+      assert.equal(noOps[0].headers['x-cache-invalidate'], undefined);
+
+      const post = await models.Post.findOne(
+        { id: resources[5].id },
+        { context: { internal: true } },
+      );
+      assert.equal(post.get('status'), 'published');
     });
 
     it('a deleted resource is a no-op, not an error', async function () {
