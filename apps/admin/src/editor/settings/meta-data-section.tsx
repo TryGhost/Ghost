@@ -99,7 +99,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
   const previewDescription = seoDescription(metaDescription, session.settings.custom_excerpt ?? '');
   const previewUrl = seoUrl({
     siteUrl,
-    slug: session.getSaveSnapshot().slug,
+    slug: session.slug,
     canonicalUrl: session.settings.canonical_url ?? '',
   });
 

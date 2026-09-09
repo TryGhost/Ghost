@@ -96,6 +96,8 @@ export interface EditorSessionOptions {
 export interface EditorSessionView {
   readonly state: SaveEngineState;
   readonly isDirty: boolean;
+  /** The title the engine holds, which is DEFAULT_TITLE while the input is blank. */
+  readonly title: string;
   readonly slug: string;
   readonly settings: EditorSettingsFields;
   readonly publishTime: { status: PostStatus; publishedAt: string | null };
@@ -269,13 +271,14 @@ export function createEditorSession({
       view &&
       view.state === state &&
       view.isDirty === isDirty &&
+      view.title === live.title &&
       view.slug === currentSlug &&
       view.settings === settings &&
       view.publishTime === publishTime
     ) {
       return;
     }
-    view = { state, isDirty, slug: currentSlug, settings, publishTime };
+    view = { state, isDirty, title: live.title, slug: currentSlug, settings, publishTime };
     for (const listener of changeListeners) {
       try {
         listener();

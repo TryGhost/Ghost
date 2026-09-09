@@ -58,7 +58,7 @@ export function EditorHeaderActions({
   siteUrl,
   tkCount,
 }: EditorHeaderActionsProps) {
-  const snapshot = session.getSaveSnapshot();
+  const { persistedId, publishTime, title } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -67,7 +67,12 @@ export function EditorHeaderActions({
   const closePreview = useCallback(() => setPreviewOpen(false), []);
 
   const post = buildPublishFlowPost({
-    snapshot,
+    snapshot: {
+      id: persistedId,
+      status: publishTime.status,
+      publishedAt: publishTime.publishedAt,
+      title,
+    },
     record,
     displayName: postType,
     lexical: session.getLiveLexical(),
@@ -78,12 +83,12 @@ export function EditorHeaderActions({
 
   usePreviewShortcut(
     useCallback(() => setPreviewOpen((open) => !open), []),
-    isDraft && snapshot.id !== null,
+    isDraft && persistedId !== null,
   );
 
   // Ember saves a dirty draft before previewing it and leaves every other post as it is.
   const saveBeforePreview = useCallback(async () => {
-    if (session.getSaveSnapshot().status !== 'draft' || !session.isDirty()) {
+    if (session.publishTime.status !== 'draft' || !session.isDirty()) {
       return;
     }
     await requireSaved(session.saveExplicit());
@@ -93,7 +98,7 @@ export function EditorHeaderActions({
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
   // A post the server has never seen can be neither published nor previewed.
-  if (!snapshot.id) {
+  if (!persistedId) {
     return null;
   }
 
@@ -126,7 +131,7 @@ export function EditorHeaderActions({
           isPost={postType === 'post'}
           newsletterSlug={post.newsletter ?? undefined}
           open={previewOpen}
-          postId={snapshot.id}
+          postId={persistedId}
           previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
           onBeforeOpen={saveBeforePreview}
           onOpenChange={setPreviewOpen}
