@@ -195,6 +195,77 @@ describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function 
 
         assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'reading_time'), false);
       });
+
+      it('strips force-loaded feature_image when only reading_time was requested', function () {
+        const attrs = {
+          reading_time: null,
+          html: `<p>${'word '.repeat(390)}</p>`,
+          feature_image: 'https://example.com/feature.jpg',
+        };
+
+        extraAttrsUtil.forPost(
+          {
+            columns: ['reading_time'],
+          },
+          model,
+          attrs,
+        );
+
+        assert.equal(attrs.reading_time, 2);
+        assert.equal(Object.prototype.hasOwnProperty.call(attrs, 'feature_image'), false);
+      });
+
+      it('keeps feature_image when it was explicitly requested with reading_time', function () {
+        const attrs = {
+          reading_time: 7,
+          feature_image: 'https://example.com/feature.jpg',
+        };
+
+        extraAttrsUtil.forPost(
+          {
+            columns: ['reading_time', 'feature_image'],
+          },
+          model,
+          attrs,
+        );
+
+        assert.equal(attrs.reading_time, 7);
+        assert.equal(attrs.feature_image, 'https://example.com/feature.jpg');
+      });
+
+      it('uses feature_image when falling back to compute reading_time', function () {
+        // ~380–410 words is just under 1.5 minutes; +1 image rounds to 2.
+        const html = `<p>${'word '.repeat(390)}</p>`;
+        const withoutImage = { reading_time: null, html };
+        const withImage = {
+          reading_time: null,
+          html,
+          feature_image: 'https://example.com/feature.jpg',
+        };
+
+        extraAttrsUtil.forPost({}, model, withoutImage);
+        extraAttrsUtil.forPost({}, model, withImage);
+
+        assert.equal(withoutImage.reading_time, 1);
+        assert.equal(withImage.reading_time, 2);
+        assert.ok(withImage.reading_time > withoutImage.reading_time);
+      });
+    });
+
+    it('uses feature_image when computing reading_time with flag off', function () {
+      const html = `<p>${'word '.repeat(390)}</p>`;
+      const withoutImage = { html };
+      const withImage = {
+        html,
+        feature_image: 'https://example.com/feature.jpg',
+      };
+
+      extraAttrsUtil.forPost({}, model, withoutImage);
+      extraAttrsUtil.forPost({}, model, withImage);
+
+      assert.equal(withoutImage.reading_time, 1);
+      assert.equal(withImage.reading_time, 2);
+      assert.ok(withImage.reading_time > withoutImage.reading_time);
     });
 
     it('ignores divergent stored values when storedPostMetadata is off', function () {

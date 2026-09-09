@@ -27,6 +27,22 @@ const requiredForExcerpt = (requestedColumns) => {
   }
 };
 
+// reading_time is a real column now, but compute fallback (flag off, or flag on
+// with a still-null stored value during partial backfill) needs html + feature_image.
+// Frame.options.columns stays as the caller's list; only the fetch clone is expanded.
+const requiredForReadingTime = (requestedColumns) => {
+  if (!requestedColumns || !requestedColumns.includes('reading_time')) {
+    return;
+  }
+
+  if (!requestedColumns.includes('html')) {
+    requestedColumns.push('html');
+  }
+  if (!requestedColumns.includes('feature_image')) {
+    requestedColumns.push('feature_image');
+  }
+};
+
 const parsePositiveInteger = (value, defaultValue) => {
   const parsedValue = Number.parseInt(value, 10);
 
@@ -129,6 +145,7 @@ module.exports = function (Bookshelf) {
         const requestedColumns = options.columns;
         // Ensure DB columns needed to build computed `excerpt` are selected/kept
         requiredForExcerpt(requestedColumns);
+        requiredForReadingTime(requestedColumns);
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = unfilteredOptions.debug && process.env.NODE_ENV !== 'production';
@@ -229,6 +246,7 @@ module.exports = function (Bookshelf) {
         const requestedColumns = options.columns;
         // Ensure DB columns needed to build computed `excerpt` are selected/kept
         requiredForExcerpt(requestedColumns);
+        requiredForReadingTime(requestedColumns);
 
         // @NOTE: The API layer decides if this option is allowed
         if (options.filter) {
