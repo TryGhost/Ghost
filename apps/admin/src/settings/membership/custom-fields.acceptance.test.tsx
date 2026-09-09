@@ -16,6 +16,7 @@ const companyField: MemberCustomField = {
   name: 'Company',
   type: 'short_text',
   status: 'active',
+  access: { member: 'none' },
   created_at: '2026-07-13T00:00:00.000Z',
   updated_at: null,
 };
@@ -26,6 +27,7 @@ const archivedField: MemberCustomField = {
   name: 'Old hobby',
   type: 'short_text',
   status: 'archived',
+  access: { member: 'none' },
   created_at: '2026-07-12T00:00:00.000Z',
   updated_at: '2026-07-13T00:00:00.000Z',
 };
@@ -79,6 +81,7 @@ describe('Custom fields', () => {
     await expect(row).toHaveCount(1);
     await expect.element(row).toHaveTextContent('Company');
     await expect.element(row).toHaveTextContent('Short text');
+    await expect.element(row).toHaveTextContent('Only staff');
   });
 
   it('validates and creates a short-text field without sending a key', async () => {
@@ -99,7 +102,7 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_metafields: [{ name: 'Job Title', type: 'short_text' }],
+      members_metafields: [{ name: 'Job Title', type: 'short_text', access: { member: 'none' } }],
     });
   });
 
@@ -120,7 +123,7 @@ describe('Custom fields', () => {
 
     await expect(modal).toHaveCount(0);
     expect(createApi.lastRequest?.body).toEqual({
-      members_metafields: [{ name: 'Bio', type: 'long_text' }],
+      members_metafields: [{ name: 'Bio', type: 'long_text', access: { member: 'none' } }],
     });
   });
 
@@ -156,6 +159,69 @@ describe('Custom fields', () => {
     expect(createApi.requests).toHaveLength(1);
   });
 
+  it('warns that opening a closed field discloses what is already in it', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields();
+    fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await modal.getByLabelText('Who it’s for').click();
+    await page.getByRole('option', { name: 'Members can edit' }).click();
+
+    await expect.element(modal.getByText(/becomes visible to them/)).toBeVisible();
+  });
+
+  it('does not warn about disclosure when the member could already see the field', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);
+    fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await modal.getByLabelText('Who it’s for').click();
+    await page.getByRole('option', { name: 'Members can edit' }).click();
+
+    await expect(modal.getByText(/becomes visible to them/)).toHaveCount(0);
+  });
+
+  // Access does nothing while a field is archived — members never see one — so the
+  // control is not offered. Otherwise it would change something invisible, and the
+  // disclosure would arrive later, at reactivation, unannounced.
+  it('does not offer the access control on an archived field', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([archivedField]);
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await expect.element(modal.getByTestId('custom-field-access')).toBeDisabled();
+    await expect.element(modal.getByText(/Reactivate it to choose who it/)).toBeVisible();
+  });
+
+  // Reactivating is the only way an archived field's values reach a member, so it is
+  // the moment that has to say so.
+  it('warns when reactivating a field that is open to members', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...archivedField, access: { member: 'write' as const } }]);
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    await settingsScreen.customFieldModal().getByRole('button', { name: 'Reactivate' }).click();
+
+    await expect
+      .element(settingsScreen.confirmationModal().getByText(/becomes visible to each of them/))
+      .toBeVisible();
+  });
+
   it('renames a field without allowing its type to change', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
@@ -172,7 +238,31 @@ describe('Custom fields', () => {
     await modal.getByRole('button', { name: 'Save' }).click();
 
     await expect(modal).toHaveCount(0);
-    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Employer' }] });
+    // Only the name. Echoing the access back would carry whatever this screen loaded,
+    // so a rename would undo an access change someone else made in the meantime.
+    expect(editApi.lastRequest?.body).toEqual({
+      members_metafields: [{ name: 'Employer' }],
+    });
+  });
+
+  it('sends only the access when only the access changed', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields();
+    const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
+      members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await modal.getByLabelText('Who it’s for').click();
+    await page.getByRole('option', { name: 'Members can edit' }).click();
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect(modal).toHaveCount(0);
+    expect(editApi.lastRequest?.body).toEqual({
+      members_metafields: [{ access: { member: 'write' } }],
+    });
   });
 
   it('archives a field only after destructive confirmation', async () => {
