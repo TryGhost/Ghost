@@ -5,6 +5,7 @@ export class DonationPaymentEvent {
   memberId: string | null;
   amount: number;
   currency: string;
+  stripeCheckoutSessionId: string | null;
   donationMessage: string | null;
 
   attributionId: string | null;
@@ -27,6 +28,7 @@ export class DonationPaymentEvent {
     this.memberId = data.memberId;
     this.amount = data.amount;
     this.currency = data.currency;
+    this.stripeCheckoutSessionId = data.stripeCheckoutSessionId;
     this.donationMessage = data.donationMessage;
 
     this.attributionId = data.attributionId;

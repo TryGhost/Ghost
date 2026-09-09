@@ -1,5 +1,6 @@
 import { FakeStripeCheckoutPage } from '@/helpers/pages';
-import { Page } from '@playwright/test';
+import { MailPit } from '@/helpers/services/email/mail-pit';
+import { Page, expect } from '@playwright/test';
 import type { StripeTestService } from '@/helpers/services/stripe';
 
 interface CompleteDonationOptions {
@@ -35,6 +36,26 @@ export async function completeDonationViaFakeCheckout(
     email,
     name: opts.name,
   });
+
+  // The staff notification subject only carries the donor's display name, which tests
+  // reuse, and Mailpit is never cleared between them — match the donor address in the body.
+  const mailpit = new MailPit();
+  await expect
+    .poll(
+      async () => {
+        const candidates = await mailpit.search(
+          { subject: opts.name ?? email },
+          { timeoutMs: null },
+        );
+        const messages = await Promise.all(
+          candidates.map((candidate) => mailpit.getMessageDetailed(candidate)),
+        );
+
+        return messages.some((message) => message.HTML.includes(email));
+      },
+      { timeout: 10000, message: `No donation notification email found for ${email}` },
+    )
+    .toBe(true);
 
   const latestCheckoutSession = stripe.getCheckoutSessions().at(-1);
   const successUrl = latestCheckoutSession?.response.success_url;
