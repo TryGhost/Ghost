@@ -291,14 +291,14 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
       .not.toHaveTextContent('minute');
     estimate = 30;
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Sending emails · 250 of 1,000');
+      .toHaveTextContent(/Sending emails\s*250 of 1,000/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
       .toHaveTextContent('Less than 1 minute left');
@@ -469,7 +469,7 @@ describe('Post analytics overview', () => {
 
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Preparing emails · 10% complete · 1,000 total');
+      .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
       .toHaveTextContent('Less than 1 minute left');
