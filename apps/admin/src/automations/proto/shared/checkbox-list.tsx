@@ -14,7 +14,7 @@ import { cn } from '@tryghost/shade/utils';
 // The popover itself is still Shade's Combobox — the field keeps its look, clicking
 // it again closes it, and clicking away closes it. Only the inside changed.
 export const CheckboxList: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex flex-col gap-0.5">{children}</div>
+  <div className="flex flex-col">{children}</div>
 );
 
 export const CheckboxRow: React.FC<{
@@ -28,8 +28,10 @@ export const CheckboxRow: React.FC<{
 }> = ({ checked, label, disabled = false, onCheckedChange }) => (
   // A label, so the whole row is the target rather than the 16px box.
   <label
+    // Row metrics from Shade's SelectItem — rounded-xs, py-1.5 px-2 — so a row here
+    // is the same object as a row in any select rather than a size of its own.
     className={cn(
-      'flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+      'flex items-center gap-2.5 rounded-xs px-2 py-1.5 transition-colors',
       disabled ? 'cursor-default' : 'cursor-pointer hover:bg-interactive-hover',
     )}
   >
@@ -40,6 +42,6 @@ export const CheckboxRow: React.FC<{
     />
     {/* Only the box dims. The words are still the answer to "what ends a run", and
             greying them would say they matter less than the ones you chose. */}
-    <span className="text-sm">{label}</span>
+    <span className="text-control">{label}</span>
   </label>
 );

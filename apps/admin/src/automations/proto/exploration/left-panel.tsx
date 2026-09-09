@@ -100,6 +100,12 @@ const STATUS_FACETS: { key: StatusKey; color: string; glyph: React.ReactNode }[]
 // so the filter is back on, sitting with the other two controls that narrow the same
 // list. Phase 1 is unaffected: its funnel has always been in its own strip.
 
+// Trailing check, not a radio bullet — Shade's active-option convention. Opacity
+// rather than conditional render so rows keep a stable width.
+const MenuCheck: React.FC<{ on: boolean }> = ({ on }) => (
+  <LucideIcon.Check className={cn('ms-auto text-primary', on ? 'opacity-100' : 'opacity-0')} />
+);
+
 const facetColor = (status: StatusKey): string =>
   STATUS_FACETS.find((facet) => facet.key === status)?.color ?? '';
 const facetGlyph = (status: StatusKey): React.ReactNode =>
@@ -159,8 +165,6 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // five times. Tried at 32px and came back to 24.
   const gutter = 'px-6';
 
-  // Collapsed to an icon until pressed — see the view bar.
-  const [searchOpen, setSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusKey | null>(null);
   // Why someone left, filtered separately from the status. Deliberately not a
   // fourth status card: the three statuses are mutually exclusive outcomes, and
@@ -172,11 +176,20 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // reason narrows the list beneath it and leaves it untouched — so while either
   // is active it would sit there contradicting the controls above it. It rolls
   // away instead, and comes back the moment they clear.
-  const summaryHidden = Boolean(exitFilter) || query.trim().length > 0;
+  // The summary answers "how many are entering, over time", and only the timeframe
+  // changes that. Searching or filtering narrows the list beneath it and leaves it
+  // untouched, so while either is active it would sit there contradicting the
+  // controls above it. It rolls away instead, and comes back when they clear.
+  const summaryHidden = Boolean(exitFilter) || Boolean(statusFilter) || query.trim().length > 0;
+  const rangeLabel = RANGE_OPTIONS.find((option) => option.value === range)?.label ?? 'All time';
 
   // Newest first: the question this table answers is "who's in here now".
   const [sort, setSort] = useState<SortState<SortKey>>({ key: 'entered', direction: 'desc' });
-  const { scrollRef, sentinelRef, stickyBlockRef, stickyBarRef, stuck } = useStickyList();
+  // Tied to the tab: this block is inside Analytics, and Radix unmounts the tab that
+  // isn't showing — see useStickyList.
+  const { scrollRef, sentinelRef, stickyBlockRef, stickyBarRef, stuck } = useStickyList(
+    tab === 'analytics',
+  );
 
   const chartData = toAreaData(metrics.enrollments_by_day, {
     range: range === 'all' ? undefined : Number(range),
@@ -268,49 +281,64 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
   // belong to the table and sit directly above it. Phase 1 keeps everything in one
   // funnel in its own strip, which is the affordance the rest of Ghost uses.
 
-  // One funnel holding both the timeframe and the exit reason, exactly as phase 1
-  // does it. They were in three places here — a field above the table, a funnel
-  // inside that field, a labelled button floating in the chart — and the strip has
-  // room for one control that narrows, not three.
-  //
-  // No active state on the icon: it names the action and nothing more. What's applied
-  // is stated, and made removable, by its chip in the row below.
+  // Three menus rather than one funnel, now that find mode has a row to put them on.
+  // A funnel is what you reach for when there's one slot for every filter; with the
+  // room to show them, each says what it's set to without being opened.
+  // Equal columns, not a wrapping row. Three buttons sized to their own labels made
+  // a ragged row that re-laid itself every time a value changed — "All time" is half
+  // the width of "Any exit reason", and picking one shuffled the other two. A grid
+  // holds each in place, so changing a filter changes only its own words.
+  // One funnel, beside the search field — the members page's arrangement. Everything
+  // it holds is in one menu because the strip has room for one control.
   const filterMenu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Filter" size="icon" type="button" variant="ghost">
+        <Button aria-label="Filter" className="shrink-0" size="icon" type="button" variant="ghost">
           <LucideIcon.Funnel strokeWidth={2} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Entries</DropdownMenuLabel>
-        {/* Trailing check, not a radio bullet — Shade's active-option convention.
-                    Opacity rather than conditional render so rows keep a stable width. */}
         {RANGE_OPTIONS.map((option) => (
           <DropdownMenuItem key={option.value} onSelect={() => setRange(option.value)}>
             {option.label}
-            <LucideIcon.Check
-              className={cn(
-                'ms-auto text-primary',
-                range === option.value ? 'opacity-100' : 'opacity-0',
-              )}
-            />
+            <MenuCheck on={range === option.value} />
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Exit reason</DropdownMenuLabel>
+        <DropdownMenuLabel>Status</DropdownMenuLabel>
+        {STATUS_FACETS.map((facet) => (
+          <DropdownMenuItem
+            key={facet.key}
+            onSelect={() => {
+              setStatusFilter(statusFilter === facet.key && !exitFilter ? null : facet.key);
+              setExitFilter(null);
+            }}
+          >
+            {facet.key}
+            <MenuCheck on={statusFilter === facet.key && exitFilter === null} />
+          </DropdownMenuItem>
+        ))}
+        {/* The reasons run straight on from the statuses, in one list. They were a
+                    section of their own under "Exited early, because", which was accurate and
+                    read as a second question — you had to notice a heading to understand that
+                    picking from it also set the status above.
+                    
+                    As one list it's what it always was: what happened to this run, in
+                    descending specificity. "Exited early" is the general answer and each
+                    reason is a more particular one, so choosing a reason sets the status with
+                    it and the list never offers a combination with no runs in it. */}
         {EXIT_REASONS.map((reason) => (
           <DropdownMenuItem
             key={reason.id}
-            onSelect={() => setExitFilter(exitFilter === reason.id ? null : reason.id)}
+            onSelect={() => {
+              const on = exitFilter === reason.id;
+              setStatusFilter(on ? null : 'Exited early');
+              setExitFilter(on ? null : reason.id);
+            }}
           >
             {reason.label}
-            <LucideIcon.Check
-              className={cn(
-                'ms-auto text-primary',
-                exitFilter === reason.id ? 'opacity-100' : 'opacity-0',
-              )}
-            />
+            <MenuCheck on={exitFilter === reason.id} />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -326,12 +354,11 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
       <InputGroupAddon>
         <LucideIcon.Search />
       </InputGroupAddon>
-      {/* autoFocus, and it's the mount that does it: the field appears because you
-                pressed the magnifier, so focus is the point. */}
+      {/* No autoFocus: it's mounted with the tab, and taking focus on arrival would
+                take it from wherever the reader was. */}
       <InputGroupInput
         placeholder="Search members…"
         value={query}
-        autoFocus
         onChange={(e) => onQueryChange(e.target.value)}
       />
     </InputGroup>
@@ -358,7 +385,13 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                     The gap below it belongs here rather than on each panel, so both tabs
                     clear it by the same amount — Settings had its own mt and Analytics had
                     none, so the chart came up against the bar. */}
-        <ViewBar className={cn(gutter, 'mb-4 shrink-0')}>
+        {/* min-h-9 so the bar is the same height on both tabs. Its controls are 36px
+                    (Shade's icon button, and the search field matched to it) while the tab
+                    buttons are the 32px control height — so with the controls only on
+                    Analytics, the bar lost 4px on Settings and the panel below it shifted up.
+                    Reserving the taller of the two is cheaper than making one of them lie
+                    about its size. */}
+        <ViewBar className={cn(gutter, 'mb-4 min-h-9 shrink-0')}>
           {/* flex-none so the tabs take their own width and the controls get the
                         rest — Nav is flex-1 by default, which would split the row down the
                         middle and leave the search field short while the tabs sat in space. */}
@@ -377,46 +410,20 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
               </PageMenuItem>
             </PageMenu>
           </ViewBar.Nav>
-          {/* Search, exit reason and timeframe, in the slot ViewBar keeps for exactly
-                        this. They were in three different places — a field above the table, a
-                        funnel inside that field, a button floating in the chart — which made
-                        three controls that narrow one dataset look like three unrelated
-                        features.
+          {/* Search and filter, as the members page has them: the field is always
+                        there, and the funnel beside it opens the filters. Nothing bespoke —
+                        find mode was an interesting shape and the wrong time to be inventing
+                        one, and the icon for it never landed because no single glyph names a
+                        control that both searches and filters.
                         
-                        Analytics only. They narrow the runs, and there is nothing on Settings
-                        for them to act on; a search field over a form is a promise the panel
-                        can't keep. */}
+                        Members builds its filters on Shade's Filters pattern, which brings its
+                        own Filter[] model and is sized for a page header rather than a 480px
+                        pane. That's a deliberate adoption rather than a styling change, so
+                        this matches the ARRANGEMENT and leaves the engine for when someone
+                        decides to take it. */}
           {tab === 'analytics' && (
             <ViewBar.Actions className="min-w-0 flex-1 justify-end">
-              {/* Open, the field takes the row; closed, it's a magnifier. Phase 1's
-                                arrangement exactly — the strip is narrow enough that a permanent
-                                field would crowd the tabs beside it, and the runs are usually
-                                read rather than searched. */}
-              {searchOpen && searchField}
-              {searchOpen ? (
-                <Button
-                  aria-label="Close search"
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    onQueryChange('');
-                    setSearchOpen(false);
-                  }}
-                >
-                  <LucideIcon.X strokeWidth={2} />
-                </Button>
-              ) : (
-                <Button
-                  aria-label="Search members"
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setSearchOpen(true)}
-                >
-                  <LucideIcon.Search strokeWidth={2} />
-                </Button>
-              )}
+              {searchField}
               {filterMenu}
             </ViewBar.Actions>
           )}
@@ -433,31 +440,35 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                   that row — so the pane titles itself and keeps its controls on its own
                   baseline. Outside the scroll container either way, so they stay put. */}
 
-          {/* An applied filter gets its own row beneath the controls, the way the
-                  members page does it — so what's narrowing the list is always visible
-                  rather than hidden inside the button that set it. "All time" is the
-                  default, so it isn't a filter and doesn't earn a row. */}
-          {exitFilter && (
+          {/* What's narrowing the list, stated below the controls rather than hidden
+                    inside the funnel that set it — the members page's row, and the reason the
+                    funnel needs no active state of its own.
+                    
+                    "All time" is the default, so it isn't a filter and doesn't earn a chip.
+                    Status and exit reason share one chip: choosing a reason sets the status
+                    with it, so two chips would be one fact stated twice. */}
+          {(range !== 'all' || statusFilter || exitFilter) && (
             <FilterBar className={cn('shrink-0 pb-3', gutter)}>
-              {/* One child, not one per chip: FilterBar justifies between its
-                          children so it can hold filters at the left and controls like
-                          "Save view" at the right, and handing it two peer chips pushed
-                          them to opposite ends. Grouped, they append to each other and
-                          the right-hand slot stays free. */}
+              {/* One child, not one per chip: FilterBar justifies between its children
+                            so it can hold filters at the left and controls like "Save view" at
+                            the right, and handing it peers pushed them to opposite ends. */}
               <Inline align="center" gap="sm" wrap>
-                {/* Value only. The field name was carrying its weight when
-                              the chip read "Entered: Last 30 days", but every value
-                              here already names its own field — a timeframe reads as a
-                              timeframe, "Unsubscribed" reads as a reason — so the
-                              prefix was repeating what the words underneath it said. */}
-                {/* Default size, not sm: Shade's own Filters pattern renders
-                              its chips at md — h-(--control-height), px-2.5, size-4
-                              icon — so these now match the chips on members and
-                              comments rather than sitting a size below them. The X
-                              takes Button's base svg size for the same reason. */}
-                {exitFilter && (
-                  <Button type="button" variant="outline" onClick={() => setExitFilter(null)}>
-                    {exitReasonLabel(exitFilter)}
+                {range !== 'all' && (
+                  <Button type="button" variant="outline" onClick={() => setRange('all')}>
+                    {rangeLabel}
+                    <LucideIcon.X strokeWidth={2} />
+                  </Button>
+                )}
+                {statusFilter && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setStatusFilter(null);
+                      setExitFilter(null);
+                    }}
+                  >
+                    {exitFilter ? exitReasonLabel(exitFilter) : statusFilter}
                     <LucideIcon.X strokeWidth={2} />
                   </Button>
                 )}
@@ -527,9 +538,14 @@ export const LeftPanel: React.FC<ExplorationLeftPanelProps> = ({
                 </div>
               </div>
 
-              {/* Three counts in a row. They both report and filter, and sit above
-                      the sticky bar so they scroll away as it sticks — the table then
-                      always lands directly beneath the bar. */}
+              {/* Three counts in a row. They both report and filter, and sit above the
+                      sticky bar so they scroll away as it sticks — the table then always lands
+                      directly beneath the bar.
+                      
+                      They go with the summary in find mode. Reporting is the half of their job
+                      that find mode is putting away, and the filtering half is on the row above
+                      by then — a card and a menu setting the same status, four inches apart,
+                      is two controls for one value. */}
               <div className="grid grid-cols-3 gap-3">
                 {STATUS_FACETS.map((facet) => {
                   const active = statusFilter === facet.key;

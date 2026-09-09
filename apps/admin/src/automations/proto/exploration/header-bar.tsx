@@ -139,21 +139,29 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     className={cn(
       // px-6: the same 24px column the pane and the canvas HUD use, so every
       // leading control on the screen starts on one line rather than three.
-      'relative z-30 flex h-18 shrink-0 items-center justify-between px-6',
+      // Hugs its contents with 24px on every side, the way the post editor's header
+      // does, rather than standing at a fixed height with only horizontal padding. The
+      // row is as tall as the tallest control in it plus its margins — so changing a
+      // control's size changes the header, instead of leaving it centred in a number
+      // that no longer means anything.
+      'relative z-30 flex shrink-0 items-center justify-between p-6',
     )}
   >
     {/* Identity sits with navigation at the left rather than centred: the title
             is what you came here for, and the way back belongs beside it. min-w-0 so
             a long automation name truncates instead of pushing the actions off. */}
     <Inline align="center" className="min-w-0" gap="sm">
-      {/* -ml-2, as everywhere a leading ghost icon button meets the inset: the
-                box pulls back 8px so its 16px glyph lands optically on the 24px
-                column, instead of the box sitting on it and the glyph landing 10px
-                further in. The pane's own leading button does the same, which is
-                what puts the two on one line down the left of the screen. */}
+      {/* No negative inset. It used to pull back 8px so the arrow's 16px GLYPH landed
+                optically on the 24px column rather than the button's box — right when the
+                header only had horizontal padding and the button was the first mark on an
+                otherwise empty row.
+                
+                Now that the header pads 24px on every side, that reads as the padding
+                failing on one edge: the box visibly starts before the line the rest of the
+                header keeps. The padding wins — a consistent box inset beats an optical
+                glyph inset once there's an edge above and below it to compare against. */}
       <Button
         aria-label="Back to automations"
-        className="-ml-2"
         size="icon"
         type="button"
         variant="ghost"

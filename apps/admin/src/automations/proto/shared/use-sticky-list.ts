@@ -8,7 +8,15 @@ import { useEffect, useRef, useState } from 'react';
 //   sentinelRef    a 1px marker directly above the sticky bar
 //   stickyBlockRef wraps the sticky bar + the table beneath it
 //   stickyBarRef   the bar itself
-export function useStickyList() {
+//
+// `active` is for panes that mount and unmount this block — Exploration hides it
+// behind a tab. All three observers attach to elements that go away with it, and an
+// IntersectionObserver watching a DETACHED element reports "not intersecting", which
+// latches `stuck` on the way out; coming back, the sentinel is a new element the old
+// observer was never given. The result was a collapsed chip row sitting under the
+// full cards, both at once. Passing the tab's state re-runs all three against the
+// elements that exist now.
+export function useStickyList(active = true) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const stickyBlockRef = useRef<HTMLDivElement>(null);
@@ -24,9 +32,12 @@ export function useStickyList() {
   useEffect(() => {
     const root = scrollRef.current;
     const sentinel = sentinelRef.current;
-    if (!root || !sentinel) {
+    if (!active || !root || !sentinel) {
       return;
     }
+    // Freshly mounted means freshly scrolled to the top, whatever the last instance
+    // had concluded before it was taken away.
+    setStuck(false);
     const observer = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
       root,
       rootMargin: '-12px 0px 0px 0px',
@@ -34,7 +45,7 @@ export function useStickyList() {
     });
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, []);
+  }, [active]);
 
   // Reserve at least a viewport of height for the sticky bar + table block, set
   // from JS so it's reliable (a CSS percentage min-height can fail to resolve
@@ -45,7 +56,7 @@ export function useStickyList() {
   useEffect(() => {
     const root = scrollRef.current;
     const block = stickyBlockRef.current;
-    if (!root || !block) {
+    if (!active || !root || !block) {
       return;
     }
     const apply = () => {
@@ -55,7 +66,7 @@ export function useStickyList() {
     const observer = new ResizeObserver(apply);
     observer.observe(root);
     return () => observer.disconnect();
-  }, []);
+  }, [active]);
 
   // Dock the sortable table header directly beneath the sticky bar. The bar's
   // height changes when the chips expand, so rather than a hardcoded offset we
@@ -66,7 +77,7 @@ export function useStickyList() {
   useEffect(() => {
     const bar = stickyBarRef.current;
     const block = stickyBlockRef.current;
-    if (!bar || !block) {
+    if (!active || !bar || !block) {
       return;
     }
     const apply = () => {
@@ -76,7 +87,7 @@ export function useStickyList() {
     const observer = new ResizeObserver(apply);
     observer.observe(bar);
     return () => observer.disconnect();
-  }, []);
+  }, [active]);
 
   return { scrollRef, sentinelRef, stickyBlockRef, stickyBarRef, stuck };
 }

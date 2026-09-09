@@ -531,20 +531,29 @@ const AutomationFloat: React.FC = () => {
                 has already gone. */}
       <div
         className={cn(
-          'shrink-0 overflow-hidden transition-[height]',
+          'grid shrink-0 transition-[grid-template-rows]',
           chrome,
-          paneCollapsed ? 'h-0' : 'h-18',
+          paneCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
         )}
       >
-        <div className={cn('transition-opacity', paneCollapsed ? leaves : arrives)}>
-          <HeaderBar
-            actions={chromeActions}
-            canGoLive={canGoLive}
-            status={liveStatus}
-            title={automation.name}
-            onBack={goBack}
-            onStatusChange={handleStatusToggle}
-          />
+        {/* A grid row from 0fr to 1fr rather than a height from 0 to a number, now
+                    that the header hugs its contents and there's no number to name. Same
+                    technique as the identity pill's width, for the same reason: it animates
+                    to a size nobody has to keep in step with anything.
+                    
+                    The clip lives on this middle element — the grid item — because that's
+                    what the track squeezes. */}
+        <div className="overflow-hidden">
+          <div className={cn('transition-opacity', paneCollapsed ? leaves : arrives)}>
+            <HeaderBar
+              actions={chromeActions}
+              canGoLive={canGoLive}
+              status={liveStatus}
+              title={automation.name}
+              onBack={goBack}
+              onStatusChange={handleStatusToggle}
+            />
+          </div>
         </div>
       </div>
       <div className="relative flex min-h-0 flex-1 overflow-hidden">

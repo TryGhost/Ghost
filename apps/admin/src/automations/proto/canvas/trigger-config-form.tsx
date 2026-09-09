@@ -232,7 +232,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
             </ComboboxTrigger>
             {/* "always" so the list tracks its card when the canvas pans — the
                             same reason the node menus and the option picker set it. */}
-            <ComboboxContent className="p-2" updatePositionStrategy="always">
+            <ComboboxContent className="p-1" updatePositionStrategy="always">
               <CheckboxList>
                 <CheckboxRow
                   checked={anyTier}
@@ -289,7 +289,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                   : 'Select'}
               </ComboboxValue>
             </ComboboxTrigger>
-            <ComboboxContent className="p-2" updatePositionStrategy="always">
+            <ComboboxContent className="p-1" updatePositionStrategy="always">
               <CheckboxList>
                 {/* First, and not yours to change: you cannot email someone who has
                                     unsubscribed or no longer exists. */}
