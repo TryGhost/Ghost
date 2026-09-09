@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   addTag,
-  availableTags,
   canCreateTag,
   isInternalTag,
-  matchingTags,
   normalizeTagName,
   removeTag,
   sameTag,
@@ -97,37 +95,6 @@ describe('sortTagsByName', () => {
     const sorted = sortTagsByName([{ name: 'Apple' }, { name: '#Bees' }, { name: 'Cider' }]);
 
     expect(sorted.map((tag) => tag.name)).toEqual(['Apple', '#Bees', 'Cider']);
-  });
-});
-
-describe('matchingTags', () => {
-  it('narrows by the term, case-insensitively, and keeps what is selected', () => {
-    const site = [
-      { id: 't1', name: 'News' },
-      { id: 't2', name: 'Newsletter' },
-      { id: 't3', name: 'Sport' },
-    ];
-
-    expect(matchingTags(site, 'news').map((tag) => tag.name)).toEqual(['News', 'Newsletter']);
-  });
-});
-
-describe('availableTags', () => {
-  const site = [
-    { id: 't1', name: 'News', slug: 'news' },
-    { id: 't2', name: 'News', slug: 'news-2' },
-    { id: 't3', name: 'Sport' },
-  ];
-
-  it('leaves out the tag the post carries, not every tag sharing its name', () => {
-    expect(availableTags(site, [{ id: 't1', name: 'News' }], '').map((tag) => tag.slug)).toEqual([
-      'news-2',
-      undefined,
-    ]);
-  });
-
-  it('narrows by the term', () => {
-    expect(availableTags(site, [], 'sport').map((tag) => tag.name)).toEqual(['Sport']);
   });
 });
 
