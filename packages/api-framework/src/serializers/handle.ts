@@ -18,7 +18,7 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
   debug('input');
 
   const tasks = [];
-  const sharedSerializers = require('./input');
+  const sharedSerializers = require('./input/index.ts');
 
   if (!apiConfig) {
     return Promise.reject(new errors.IncorrectUsageError());
