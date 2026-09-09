@@ -312,6 +312,33 @@ describe('ProductNode', function () {
             expect(element.outerHTML).toContain('alt="Fits &quot;most&quot; cameras &amp; ');
         }));
 
+        it('preserves literal HTML entities in web and email alt text', editorTest(function () {
+            const alt = 'A label showing &amp;, &copy;, &#169;, &#x1f4f7; and "<lenses>"';
+            const productNode = $createProductNode({
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageAlt: alt
+            });
+
+            for (const target of ['web', 'email']) {
+                const result = productNode.exportDOM(editor, {...exportOptions, target});
+                const element = result.element as HTMLElement;
+                expect(element.querySelector('img')!.getAttribute('alt')).toBe(alt);
+            }
+        }));
+
+        it('preserves literal HTML entities through an HTML round trip', editorTest(function () {
+            const alt = 'A label showing &amp; and &copy;';
+            const productNode = $createProductNode({
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageAlt: alt
+            });
+            const result = productNode.exportDOM(editor, exportOptions);
+            const document = createDocument((result.element as HTMLElement).outerHTML);
+            const [importedNode] = $generateNodesFromDOM(editor, document);
+
+            expect(importedNode.exportJSON()).toMatchObject({productImageAlt: alt});
+        }));
+
         it('renders escaped image alt text in email', editorTest(function () {
             const productNode = $createProductNode({
                 productImageSrc: 'https://example.com/images/ok.jpg',

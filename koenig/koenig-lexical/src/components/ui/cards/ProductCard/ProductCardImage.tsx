@@ -124,7 +124,7 @@ export function ProductCardImage({
                                     showAltToggle && (
                                         <button
                                             aria-pressed={isEditingAlt}
-                                            className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded-md border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey bg-white/90 text-grey-900 hover:bg-white'}`}
+                                            className={`absolute bottom-0 left-0 m-2 cursor-pointer rounded-md border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey bg-white/90 text-grey-900 hover:bg-white'}`}
                                             data-testid="product-image-alt-toggle"
                                             name="alt-toggle-button"
                                             type="button"
