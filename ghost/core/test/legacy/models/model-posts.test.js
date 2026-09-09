@@ -712,6 +712,9 @@ describe('Post Model', function () {
         assert.ok(createdPost.get('html'));
         assert.equal(createdPost.has('plaintext'), true);
         assert.match(createdPost.get('plaintext'), /^testing/);
+        assert.equal(createdPost.has('auto_excerpt'), true);
+        assert.match(createdPost.get('auto_excerpt'), /^testing/);
+        assert.equal(typeof createdPost.get('reading_time'), 'number');
         assert.equal(createdPost.get('slug'), newPostDB.slug + '-2');
         assert.equal(!!createdPost.get('featured'), false);
         assert.equal(!!createdPost.get('page'), false);
@@ -1562,6 +1565,173 @@ describe('Post Model', function () {
             assert(lexicalString.includes(`${cdnUrl}/content/images/audio-thumb.jpg`));
           });
         });
+      });
+    });
+
+    describe('stored auto_excerpt and reading_time', function () {
+      const {
+        computeAutoExcerpt,
+        computeReadingTime,
+      } = require('../../../core/server/lib/post-meta');
+
+      afterEach(function () {
+        return testUtils
+          .truncate('posts_tags')
+          .then(function () {
+            return testUtils.truncate('tags');
+          })
+          .then(function () {
+            return testUtils.truncate('posts');
+          })
+          .then(function () {
+            return testUtils.truncate('posts_meta');
+          });
+      });
+
+      it('refreshes auto_excerpt and reading_time when content changes', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Stored meta content edit',
+            lexical: markdownToLexical('Original short content'),
+          },
+          context,
+        );
+
+        const edited = await models.Post.edit(
+          {
+            lexical: markdownToLexical(`Updated ${'word '.repeat(300)}content`),
+          },
+          _.extend({}, context, { id: added.id }),
+        );
+
+        assert.equal(edited.get('auto_excerpt'), computeAutoExcerpt(edited.get('plaintext')));
+        assert.equal(
+          edited.get('reading_time'),
+          computeReadingTime(edited.get('html'), edited.get('feature_image')),
+        );
+        assert.match(edited.get('auto_excerpt'), /^Updated/);
+        assert.notEqual(edited.get('auto_excerpt'), added.get('auto_excerpt'));
+      });
+
+      it('updates reading_time on feature_image-only edits without changing auto_excerpt', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Stored meta feature image',
+            lexical: markdownToLexical(`Feature image ${'word '.repeat(300)}content`),
+          },
+          context,
+        );
+
+        await db.knex('posts').where({ id: added.id }).update({ reading_time: 999 });
+
+        const edited = await models.Post.edit(
+          {
+            feature_image: 'https://example.com/feature.jpg',
+          },
+          _.extend({}, context, { id: added.id }),
+        );
+
+        assert.equal(edited.get('auto_excerpt'), added.get('auto_excerpt'));
+        assert.equal(
+          edited.get('reading_time'),
+          computeReadingTime(edited.get('html'), edited.get('feature_image')),
+        );
+        assert.notEqual(edited.get('reading_time'), 999);
+      });
+
+      it('rejects API-supplied auto_excerpt and reading_time unless migrating', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Stored meta generated fields',
+            lexical: markdownToLexical('Generated field content'),
+          },
+          context,
+        );
+
+        const rejected = await models.Post.edit(
+          {
+            title: 'Renamed without override',
+            auto_excerpt: 'injected excerpt',
+            reading_time: 9999,
+          },
+          _.extend({}, context, { id: added.id }),
+        );
+
+        assert.equal(rejected.get('title'), 'Renamed without override');
+        assert.notEqual(rejected.get('auto_excerpt'), 'injected excerpt');
+        assert.notEqual(rejected.get('reading_time'), 9999);
+        assert.equal(rejected.get('auto_excerpt'), computeAutoExcerpt(rejected.get('plaintext')));
+        assert.equal(
+          rejected.get('reading_time'),
+          computeReadingTime(rejected.get('html'), rejected.get('feature_image')),
+        );
+
+        const migrated = await models.Post.edit(
+          {
+            auto_excerpt: 'migrated excerpt',
+            reading_time: 42,
+          },
+          _.extend({}, context, { id: added.id, migrating: true }),
+        );
+
+        assert.equal(migrated.get('auto_excerpt'), 'migrated excerpt');
+        assert.equal(migrated.get('reading_time'), 42);
+      });
+
+      it('keeps migrating-supplied auto_excerpt and reading_time when content also changes', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Migrating with content change',
+            lexical: markdownToLexical('Original migrating content'),
+          },
+          context,
+        );
+
+        const migrated = await models.Post.edit(
+          {
+            lexical: markdownToLexical(`Rerendered ${'word '.repeat(300)}content`),
+            auto_excerpt: 'explicit migrated excerpt',
+            reading_time: 77,
+          },
+          _.extend({}, context, { id: added.id, migrating: true }),
+        );
+
+        assert.equal(migrated.get('auto_excerpt'), 'explicit migrated excerpt');
+        assert.equal(migrated.get('reading_time'), 77);
+        assert.match(migrated.get('plaintext'), /^Rerendered/);
+        assert.notEqual(
+          migrated.get('auto_excerpt'),
+          computeAutoExcerpt(migrated.get('plaintext')),
+        );
+      });
+
+      it('fills null auto_excerpt and reading_time on an otherwise unrelated save', async function () {
+        const added = await models.Post.add(
+          {
+            title: 'Stored meta warm fill',
+            lexical: markdownToLexical('Warm fill content'),
+          },
+          context,
+        );
+
+        await db
+          .knex('posts')
+          .where({ id: added.id })
+          .update({ auto_excerpt: null, reading_time: null });
+
+        const edited = await models.Post.edit(
+          {
+            title: 'Only the title changed',
+          },
+          _.extend({}, context, { id: added.id }),
+        );
+
+        assert.equal(edited.get('title'), 'Only the title changed');
+        assert.equal(edited.get('auto_excerpt'), computeAutoExcerpt(edited.get('plaintext')));
+        assert.equal(
+          edited.get('reading_time'),
+          computeReadingTime(edited.get('html'), edited.get('feature_image')),
+        );
       });
     });
 

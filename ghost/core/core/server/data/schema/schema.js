@@ -184,6 +184,12 @@ module.exports = {
       nullable: true,
       validations: { isLength: { max: 300 } },
     },
+    auto_excerpt: {
+      type: 'string',
+      maxlength: 500,
+      nullable: true,
+    },
+    reading_time: { type: 'integer', unsigned: true, nullable: true },
     codeinjection_head: { type: 'text', maxlength: 65535, nullable: true },
     codeinjection_foot: { type: 'text', maxlength: 65535, nullable: true },
     custom_template: { type: 'string', maxlength: 100, nullable: true },
