@@ -47,7 +47,7 @@ interface RecordNewsletter {
 
 export interface PublishFlowPostSources {
   /** The engine's view of the post: identity, status, publish time and the live title. */
-  snapshot: EditorSaveSnapshot;
+  snapshot: Pick<EditorSaveSnapshot, 'id' | 'status' | 'title' | 'publishedAt'>;
   /** The record the session is loaded at; absent until a created post has been read back. */
   record?: EditorRecord;
   displayName: 'post' | 'page';
