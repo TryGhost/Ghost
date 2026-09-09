@@ -195,6 +195,7 @@ class EmailService {
       from: this.#emailRenderer.getFromAddress(post, newsletter),
       replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter),
       email_count: emailCount,
+      preflight_email_count: emailCount,
       csd_email_count: csdEmailCount,
       source: post.get('lexical') || post.get('mobiledoc'),
       source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
@@ -374,17 +375,32 @@ class EmailService {
     if (email.get('status') !== 'failed') {
       throw new errors.BadRequestError({
         message: tpl(messages.retryEmailNotFailed),
+        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
       });
     }
 
     await this.checkLimits();
 
-    // Change email status back to 'pending' before scheduling
-    // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-    await email.save({ status: 'pending' }, { patch: true });
+    // Claim the retry in the database: another request may have already scheduled
+    // this email since the caller loaded its failed model. Refresh inside that
+    // transaction for database-normalized API timestamps: a failed read must
+    // roll back the claim rather than leave an unscheduled pending email.
+    const pendingEmail = await this.#batchSendingService.updateStatusLock(
+      this.#models.Email,
+      email.id,
+      'pending',
+      ['failed'],
+      { autoRefresh: true },
+    );
+    if (!pendingEmail) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.retryEmailNotFailed),
+        code: 'BULK_EMAIL_RETRY_NOT_FAILED',
+      });
+    }
 
-    this.#batchSendingService.scheduleEmail(email);
-    return email;
+    this.#batchSendingService.scheduleEmail(pendingEmail);
+    return pendingEmail;
   }
 
   /**

@@ -7,6 +7,7 @@ const { createModel, createModelClass } = require('./utils');
 describe('Email Service', function () {
   let memberCount, limited, verificicationRequired, service;
   let scheduleEmail;
+  let retryStatusLock;
   let settings, settingsCache;
   let membersRepository;
   let emailRenderer;
@@ -23,6 +24,7 @@ describe('Email Service', function () {
     };
     verificicationRequired = false;
     scheduleEmail = sinon.stub().returns();
+    retryStatusLock = sinon.stub().resolves(null);
     scheduleRecurringNewslettersJob = sinon.stub().resolves();
     settings = {};
     settingsCache = {
@@ -108,6 +110,7 @@ describe('Email Service', function () {
       },
       batchSendingService: {
         scheduleEmail,
+        updateStatusLock: retryStatusLock,
       },
       settingsCache,
       emailRenderer,
@@ -268,6 +271,22 @@ describe('Email Service', function () {
   });
 
   describe('createEmail', function () {
+    it('records the original preflight count, including zero, to identify new sends', async function () {
+      const newsletter = createModel({ status: 'active' });
+      const post = createModel({
+        newsletter,
+        email_recipient_filter: 'all',
+        mobiledoc: 'Mobiledoc',
+      });
+      for (const emailCount of [42, 0]) {
+        const email = await service.createEmail(post, {
+          preflight: { newsletter, emailRecipientFilter: 'all', emailCount },
+        });
+        assert.equal(email.get('preflight_email_count'), emailCount);
+        assert.equal(email.get('email_count'), emailCount);
+      }
+    });
+
     it('Throws if post does not have a newsletter', async function () {
       const post = createModel({
         newsletter: null,
@@ -543,8 +562,30 @@ describe('Email Service', function () {
         }),
       });
 
-      await service.retryEmail(email);
-      sinon.assert.calledOnce(scheduleEmail);
+      const lockedEmail = createModel({ id: email.id, status: 'pending' });
+      retryStatusLock.resolves(lockedEmail);
+
+      assert.equal(await service.retryEmail(email), lockedEmail);
+      sinon.assert.calledOnceWithExactly(
+        retryStatusLock,
+        sinon.match.any,
+        email.id,
+        'pending',
+        ['failed'],
+        { autoRefresh: true },
+      );
+      sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail);
+    });
+
+    it('Rejects a stale failed model once another retry has claimed the email', async function () {
+      const email = createModel({
+        status: 'failed',
+        post: createModel({ status: 'published' }),
+      });
+      retryStatusLock.resolves(null);
+
+      await assert.rejects(service.retryEmail(email), (err) => err.statusCode === 400);
+      sinon.assert.notCalled(scheduleEmail);
     });
 
     it('Does not schedule email again if draft', async function () {

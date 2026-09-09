@@ -218,61 +218,31 @@ describe('Batch sending tests', function () {
     assert.equal(memberIds.length, _.uniq(memberIds).length);
   });
 
-  it('Protects the email job from being run multiple times at the same time', async function () {
-    // The lock means only one job wins; every other concurrent attempt hits
-    // the "not pending or failed" guard and logs an expected error. Stub the
-    // logger so we can assert that guard fired instead of spamming stdout.
-    const errorLog = sinon.stub(logging, 'error');
-
-    // Prepare a post and email model
+  it('Schedules only one job for concurrent retries of the same failed email', async function () {
     const { emailModel } = await sendEmail(agent);
-
-    // Flip the email back to `failed` so retryEmail is allowed to reschedule it
-    // (retryEmail now rejects non-failed emails). This reproduces the real-world
-    // contention we care about: a failed email getting retried many times at once.
     await emailModel.save({ status: 'failed' }, { patch: true, autoRefresh: false });
-
-    // Each retryEmail mutates its email model in-memory (status -> pending) before
-    // scheduling, so concurrent calls must use independent model instances — otherwise
-    // they'd race on the shared model's status and trip the "only failed" guard.
+    // Separate stale models reproduce requests that all read the failed status.
     const emailModels = await Promise.all(
       Array.from({ length: 50 }, () => models.Email.findOne({ id: emailModel.id })),
     );
+    const completed = jobManager.awaitCompletion('batch-sending-service-job');
+    const results = await Promise.allSettled(
+      emailModels.map((model) => emailService.service.retryEmail(model)),
+    );
+    await completed;
 
-    // Retry sending a couple of times concurrently
-    await Promise.all(emailModels.map((model) => emailService.service.retryEmail(model)));
-
-    // Await sending job
-    await jobManager.allSettled();
-
-    // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
-    // (pending/failed -> submitting) ensures only one job actually sends. The already
-    // submitted batch from the initial send is short-circuited, not re-sent.
+    assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        assert.equal(result.reason.statusCode, 400);
+        assert.match(result.reason.message, /Only failed emails can be retried/);
+      }
+    }
     await emailModel.refresh();
     assert.equal(emailModel.get('status'), 'submitted');
     assert.equal(emailModel.get('email_count'), 4);
-
-    // Did we create batches?
     const batches = await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` });
     assert.equal(batches.models.length, 1);
-
-    // The losing attempts logged the expected guard error. Filter for the
-    // specific guard message rather than asserting every captured call
-    // matches it — with 50 concurrent retries and maxRetries: 0 in test
-    // config, an unrelated transient failure elsewhere in the same window
-    // would log a non-string Error object and crash assert.match instead of
-    // failing the assertion cleanly.
-    const guardLogs = errorLog
-      .getCalls()
-      .filter(
-        (call) =>
-          typeof call.args[0] === 'string' &&
-          /\[Background Job\] batch-sending-service-job skipped/.test(call.args[0]),
-      );
-    assert.ok(
-      guardLogs.length > 0,
-      'expected at least one "not pending or failed" guard error log',
-    );
   });
 
   it("Doesn't include members created after the email in the batches", async function () {
