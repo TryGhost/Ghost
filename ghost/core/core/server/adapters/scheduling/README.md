@@ -19,6 +19,10 @@ and `unschedule`, and inherit a registry of reschedulers from
   a job's fire time.
 - `build-signed-job.ts` — builds an adapter job whose callback URL carries
   that signed token, from an Admin API path and fire time.
+- `get-scheduler-idempotency-key.ts` — `getSchedulerIdempotencyKey`, which
+  derives the idempotency key a job carries from its consumer namespace, fire
+  time, and final callback URL, so a persistent queue can recognise a
+  re-registration of a job it already holds.
 - `signed-flush-scheduler.ts` — `SignedFlushScheduler`, a flush-queue
   primitive on top of the two above: arms one job per fire time (deduplicated
   in memory), skips already-due times in favour of the caller's own recovery
