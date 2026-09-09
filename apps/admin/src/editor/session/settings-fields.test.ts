@@ -13,6 +13,7 @@ import {
   overLength,
   settingsFieldError,
   validatedFieldsOf,
+  type ValidatedSettingsFields,
 } from './settings-fields';
 
 const VALID = {
@@ -41,6 +42,17 @@ describe('validatedFieldsOf', () => {
 
     expect(validatedFieldsOf(live)).toEqual({ ...VALID, meta_title: 'Meta' });
     expect(Object.keys(validatedFieldsOf(live))).toEqual([...VALIDATED_SETTINGS_FIELD_KEYS]);
+  });
+
+  it('is the whole of what the validator reads, so a removed key stops being checked', () => {
+    const live = { ...VALID, meta_title: 'a'.repeat(META_TITLE_MAX + 1) };
+    const validated = validatedFieldsOf(live);
+    // The same projection, built as the list without that key would build it.
+    const withoutMetaTitle = { ...validated };
+    delete (withoutMetaTitle as Partial<ValidatedSettingsFields>).meta_title;
+
+    expect(settingsFieldError(validated)).toBe(META_TITLE_TOO_LONG);
+    expect(settingsFieldError(withoutMetaTitle)).toBeNull();
   });
 });
 
