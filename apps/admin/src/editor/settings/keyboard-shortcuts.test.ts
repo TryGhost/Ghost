@@ -40,9 +40,11 @@ describe('keyboardShortcutGroups', () => {
     expect(keys(windows, 'Bold')).toEqual(['Ctrl', 'B']);
     expect(keys(windows, 'Strike through')).toEqual(['Ctrl', 'Alt', 'U']);
     expect(keys(windows, 'Highlight')).toEqual(['Ctrl', 'Alt', 'H']);
-    expect(keys(windows, 'Inline code')).toEqual(['Ctrl', '⇧', 'K']);
-    expect(keys(windows, 'Toggle card edit mode')).toEqual(['Ctrl', '↩']);
-    expect(keys(windows, 'Publish')).toEqual(['Ctrl', '⇧', 'P']);
+    expect(keys(windows, 'Inline code')).toEqual(['Ctrl', 'Shift', 'K']);
+    expect(keys(windows, 'Toggle card edit mode')).toEqual(['Ctrl', 'Enter']);
+    expect(keys(windows, 'Publish')).toEqual(['Ctrl', 'Shift', 'P']);
+    expect(keys(windows, 'Line break')).toEqual(['Shift', 'Enter']);
+    expect(keys(windows, 'Code block')).toEqual(['```', 'Enter']);
   });
 
   it('names the modifier a glyph stands for, and only where it is a glyph', () => {

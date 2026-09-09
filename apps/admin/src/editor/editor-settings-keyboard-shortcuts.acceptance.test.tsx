@@ -150,7 +150,7 @@ describe('Post settings keyboard shortcuts', () => {
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await openShortcuts();
 
-      await userEvent.hover(page.getByText('⌘').first());
+      await userEvent.hover(page.getByRole('img', { name: 'Command', exact: true }).first());
 
       // The tooltip opens after Radix's hover delay.
       await expect.element(page.getByText('Command'), { timeout: SLOW }).toBeVisible();
@@ -169,9 +169,9 @@ describe('Post settings keyboard shortcuts', () => {
       const rows = editorScreen.settingsShortcutRows();
       expect(rows).toContain('BoldCtrlB');
       expect(rows).toContain('Strike throughCtrlAltU');
-      expect(rows).toContain('Inline codeCtrl⇧K');
-      expect(rows).toContain('Toggle card edit modeCtrl↩');
-      expect(rows).toContain('PublishCtrl⇧P');
+      expect(rows).toContain('Inline codeCtrlShiftK');
+      expect(rows).toContain('Toggle card edit modeCtrlEnter');
+      expect(rows).toContain('PublishCtrlShiftP');
       // A slash command is the same text whatever the writer is typing it on.
       expect(rows).toContain('Image/image');
     },

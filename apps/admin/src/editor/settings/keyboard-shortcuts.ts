@@ -30,9 +30,6 @@ export interface ShortcutGroup {
   shortcuts: Shortcut[];
 }
 
-const SHIFT: ShortcutKey = { text: '⇧', tooltip: 'Shift' };
-const RETURN: ShortcutKey = { text: '↩', tooltip: 'Return' };
-
 function typed(text: string): ShortcutKey {
   return { text, mono: true };
 }
@@ -45,6 +42,9 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
     : { text: 'Ctrl', mono: true };
   const alt: ShortcutKey = isMac ? { text: '⌥', tooltip: 'Option' } : { text: 'Alt', mono: true };
 
+  const shift: ShortcutKey = isMac ? { text: '⇧', tooltip: 'Shift' } : typed('Shift');
+  const enter: ShortcutKey = isMac ? { text: '↩', tooltip: 'Return' } : typed('Enter');
+
   return [
     {
       title: 'Formatting',
@@ -55,7 +55,7 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
         { label: 'Strike through', style: 'strikethrough', keys: [ctrl, alt, typed('U')] },
         { label: 'Highlight', style: 'highlight', keys: [cmd, alt, typed('H')] },
         { label: 'Link', style: 'link', keys: [cmd, typed('K')] },
-        { label: 'Inline code', style: 'code', keys: [ctrl, SHIFT, typed('K')] },
+        { label: 'Inline code', style: 'code', keys: [ctrl, shift, typed('K')] },
         { label: 'List', keys: [ctrl, typed('L')] },
         { label: 'Ordered list', keys: [ctrl, alt, typed('L')] },
         { label: 'Quote', keys: [ctrl, typed('Q')] },
@@ -66,13 +66,13 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
     {
       title: 'Editing',
       shortcuts: [
-        { label: 'Toggle card edit mode', keys: [cmd, RETURN] },
-        { label: 'Paste without formatting', keys: [cmd, SHIFT, typed('V')] },
+        { label: 'Toggle card edit mode', keys: [cmd, enter] },
+        { label: 'Paste without formatting', keys: [cmd, shift, typed('V')] },
         { label: 'Indent', keys: [typed('tab')] },
-        { label: 'Unindent', keys: [SHIFT, typed('tab')] },
-        { label: 'Line break', keys: [SHIFT, RETURN] },
+        { label: 'Unindent', keys: [shift, typed('tab')] },
+        { label: 'Line break', keys: [shift, enter] },
         { label: 'Undo', keys: [cmd, typed('Z')] },
-        { label: 'Redo', keys: [cmd, SHIFT, typed('Z')] },
+        { label: 'Redo', keys: [cmd, shift, typed('Z')] },
       ],
     },
     {
@@ -80,14 +80,14 @@ export function keyboardShortcutGroups(isMac: boolean): ShortcutGroup[] {
       shortcuts: [
         { label: 'Save', keys: [cmd, typed('S')] },
         { label: 'Preview', keys: [cmd, typed('P')] },
-        { label: 'Publish', keys: [cmd, SHIFT, typed('P')] },
+        { label: 'Publish', keys: [cmd, shift, typed('P')] },
       ],
     },
     {
       title: 'Inserting',
       shortcuts: [
-        { label: 'Code block', keys: [typed('```'), RETURN] },
-        { label: 'Language code block', keys: [typed('```html'), RETURN] },
+        { label: 'Code block', keys: [typed('```'), enter] },
+        { label: 'Language code block', keys: [typed('```html'), enter] },
         { label: 'Emoji', keys: [typed(':emoji_name:')] },
         { label: 'Image', keys: [typed('/image')] },
         { label: 'Markdown', keys: [typed('/md')] },
