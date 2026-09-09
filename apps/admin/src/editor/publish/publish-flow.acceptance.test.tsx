@@ -341,6 +341,30 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
+  it('gives each publish-at radio its own id, reached from exactly one label', async () => {
+    await renderPublishFlow();
+
+    await publishScreen.setting('publish-at').click();
+
+    const labelledId = async (name: string) => {
+      const control = page.getByRole('radio', { name });
+      await expect.element(control).toBeInTheDocument();
+
+      const id = control.element().getAttribute('id') ?? '';
+      const labels = document.querySelectorAll(`label[for="${id}"]`);
+
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toHaveTextContent(name);
+
+      return id;
+    };
+
+    const now = await labelledId('Set it live now');
+    const schedule = await labelledId('Schedule for later');
+
+    expect(now).not.toBe(schedule);
+  });
+
   // One pinned instant, two zones a day apart: whatever zone the runner uses, it
   // agrees with at most one of them, so a browser-day mapping fails at least one.
   it.each([
