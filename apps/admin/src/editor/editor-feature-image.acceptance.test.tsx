@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   post,
   renderAdminApp,
-  type EndpointCapture,
+  submittedPost,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -25,40 +22,14 @@ const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] };
-  return body.posts[0];
-}
-
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  fakeEditorChrome();
+  return fakeEditorPost({
     tags: [],
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 

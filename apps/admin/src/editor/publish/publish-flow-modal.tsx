@@ -148,18 +148,11 @@ function PublishFlowDialog({
     onBeforePublish,
     onCompleted,
   });
-  const { machine, state, step } = flow;
+  const { state, step } = flow;
   const close = () => {
     flow.cancel();
     onClose();
   };
-
-  const transition =
-    <T,>(apply: (value: T) => void) =>
-    (value: T) => {
-      apply(value);
-      flow.refresh();
-    };
 
   return (
     <Dialog modal={false} open onOpenChange={(open) => !open && close()}>
@@ -232,11 +225,11 @@ function PublishFlowDialog({
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
-              onSetNewsletter={transition((value) => machine.setNewsletter(value))}
-              onSetPublishType={transition((value) => machine.setPublishType(value))}
-              onSetRecipientFilter={transition((value) => machine.setRecipientFilter(value))}
-              onSetScheduledAt={transition((value) => machine.setScheduledAt(value))}
-              onToggleScheduled={transition((value) => machine.setIsScheduled(value))}
+              onSetNewsletter={flow.setNewsletter}
+              onSetPublishType={flow.setPublishType}
+              onSetRecipientFilter={flow.setRecipientFilter}
+              onSetScheduledAt={flow.setScheduledAt}
+              onToggleScheduled={flow.setIsScheduled}
             />
           )}
         </Stack>

@@ -9,17 +9,15 @@ import {
 
 import {
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   fakeTiers,
   post,
   postRevision,
   renderAdminApp,
   settingsResponse,
   staffUser,
-  type EndpointCapture,
+  submittedPost,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
@@ -82,17 +80,8 @@ const BARE = postRevision({
 // Deliberately out of order: the list is the component's to sort.
 const REVISIONS = [MIDDLE, NEWEST, OLDEST];
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  return (
-    (capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined)?.posts[0] ?? {}
-  );
-}
-
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeTiers([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -119,17 +108,7 @@ function savedPost(overrides: Partial<SavedPost> = {}): SavedPost {
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = savedPost(overrides);
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
-  });
+  return fakeEditorPost(savedPost(overrides));
 }
 
 /** The same post, but every save is refused. */

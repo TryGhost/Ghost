@@ -5,15 +5,13 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   post,
   renderAdminApp,
   staffRole,
+  submittedPost,
   unsavedChangesGuarded,
-  type EndpointCapture,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -35,11 +33,6 @@ const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
-
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
@@ -47,11 +40,7 @@ function asRole(name: StaffRoleName) {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
@@ -60,28 +49,11 @@ function editorChrome() {
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  return fakeEditorPost({
     featured: false,
     custom_excerpt: null,
     tags: [],
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 
