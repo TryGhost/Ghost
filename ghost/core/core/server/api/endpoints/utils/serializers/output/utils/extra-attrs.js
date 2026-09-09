@@ -91,4 +91,10 @@ module.exports.forPost = (options, model, attrs) => {
       attrs.reading_time = computeReadingTime(attrs.html, attrs.feature_image);
     }
   }
+
+  // html is stripped by the formats keep-list when not requested; feature_image is not a
+  // format, so drop it when it was only force-loaded for reading_time compute fallback.
+  if (columnsIncludesReadingTime && options.columns && !options.columns.includes('feature_image')) {
+    delete attrs.feature_image;
+  }
 };
