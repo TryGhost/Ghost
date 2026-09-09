@@ -28,7 +28,7 @@ export interface HostLimitConfig {
 /** The rest of hostSettings a limit might need, such as billing links or a period anchor. */
 export interface HostSettings {
   billing?: { enabled?: boolean; url?: string };
-  subscription?: { start?: string };
+  subscription?: { start?: string; interval?: string };
 }
 
 /**

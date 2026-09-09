@@ -78,7 +78,7 @@ describe('Unit | Service | limit', function () {
             ]);
             limitService.set('store', {query});
 
-            const count = await limitService.getEmailsCount(undefined, '2026-01-01T00:00:00.000Z');
+            const count = await limitService.getEmailsCount({periodStart: '2026-01-01T00:00:00.000Z'});
 
             expect(count).to.equal(42);
             expect(query.firstCall.args[0]).to.equal('email');
@@ -90,7 +90,7 @@ describe('Unit | Service | limit', function () {
         it('counts nothing when no emails were sent in the period', async function () {
             limitService.set('store', {query: sinon.stub().resolves([])});
 
-            expect(await limitService.getEmailsCount(undefined, '2026-01-01T00:00:00.000Z')).to.equal(0);
+            expect(await limitService.getEmailsCount({periodStart: '2026-01-01T00:00:00.000Z'})).to.equal(0);
         });
     });
 

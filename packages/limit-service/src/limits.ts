@@ -1,374 +1,242 @@
-const lowerCase = require('lodash/lowerCase');
-const template = require('lodash/template');
-const {lastPeriodStart, SUPPORTED_INTERVALS} = require('./date-utils');
+import lowerCase from 'lodash/lowerCase.js';
+import template from 'lodash/template.js';
+
+import { lastPeriodStart } from './date-utils.js';
+import type {
+  CheckOptions,
+  Counter,
+  ErrorsModule,
+  Formatter,
+  GhostErrorOptions,
+  Interval,
+  LimitConfig,
+} from './types.js';
 
 const interpolate = /{{([\s\S]+?)}}/g;
 
-class Limit {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.name - name of the limit
-     * @param {String} options.error - error message to use when limit is reached
-     * @param {String} options.helpLink - URL to the resource explaining how the limit works
-     * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    constructor({name, error, helpLink, db, errors}) {
-        this.name = name;
-        this.error = error;
-        this.helpLink = helpLink;
-        this.db = db;
-        this.errors = errors;
-    }
-
-    generateError() {
-        let errorObj = {
-            errorDetails: {
-                name: this.name
-            }
-        };
-
-        if (this.helpLink) {
-            errorObj.help = this.helpLink;
-        }
-
-        return errorObj;
-    }
+interface Deps {
+  name: string;
+  config: LimitConfig;
+  helpLink?: string;
+  errors: ErrorsModule;
 }
 
-class MaxLimit extends Limit {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.name - name of the limit
-     * @param {Object} options.config - limit configuration
-     * @param {Number} options.config.max - maximum limit the limit would check against
-     * @param {Function} options.config.currentCountQuery - query checking the state that would be compared against the limit
-     * @param {Function} [options.config.formatter] - function to format the limit counts before they are passed to the error message
-     * @param {String} [options.config.error] - error message to use when limit is reached
-     * @param {String} [options.helpLink] - URL to the resource explaining how the limit works
-     * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    constructor({name, config, helpLink, db, errors}) {
-        super({name, error: config.error || '', helpLink, db, errors});
-
-        if (config.max === undefined) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a max limit without a limit'});
-        }
-
-        if (!config.currentCountQuery) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a max limit without a current count query'});
-        }
-
-        this.currentCountQueryFn = config.currentCountQuery;
-        this.max = config.max;
-        this.formatter = config.formatter;
-        this.fallbackMessage = `This action would exceed the ${lowerCase(this.name)} limit on your current plan.`;
-    }
-
-    /**
-     *
-     * @param {Number} count - current count that acceded the limit
-     * @returns {Object} instance of HostLimitError
-     */
-    generateError(count) {
-        let errorObj = super.generateError();
-
-        errorObj.message = this.fallbackMessage;
-
-        if (this.error) {
-            const formatter = this.formatter || Intl.NumberFormat().format;
-            try {
-                errorObj.message = template(this.error, {interpolate})(
-                    {
-                        max: formatter(this.max),
-                        count: formatter(count),
-                        name: this.name
-                    });
-            } catch (e) {
-                errorObj.message = this.fallbackMessage;
-            }
-        }
-
-        errorObj.errorDetails.limit = this.max;
-        errorObj.errorDetails.total = count;
-
-        return new this.errors.HostLimitError(errorObj);
-    }
-
-    /**
-     * @param {Object} [options]
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     * @returns
-     */
-    async currentCountQuery(options = {}) {
-        return await this.currentCountQueryFn(options.transacting ?? this.db?.knex);
-    }
-
-    /**
-     * Throws a HostLimitError if the configured or passed max limit is acceded by currentCountQuery
-     *
-     * @param {Object} options
-     * @param {Number} [options.max] - overrides configured default max value to perform checks against
-     * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     */
-    async errorIfWouldGoOverLimit(options = {}) {
-        const {max, addedCount = 1} = options;
-        let currentCount = await this.currentCountQuery(options);
-
-        if ((currentCount + addedCount) > (max || this.max)) {
-            throw this.generateError(currentCount);
-        }
-    }
-
-    /**
-     * Throws a HostLimitError if the configured or passed max limit is acceded by currentCountQuery
-     *
-     * @param {Object} options
-     * @param {Number} [options.max] - overrides configured default max value to perform checks against
-     * @param {Number} [options.currentCount] - overrides currentCountQuery to perform checks against
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     */
-    async errorIfIsOverLimit(options = {}) {
-        const currentCount = options.currentCount || await this.currentCountQuery(options);
-
-        if (currentCount > (options.max || this.max)) {
-            throw this.generateError(currentCount);
-        }
-    }
+interface ErrorPayload {
+  errorDetails: { name: string; limit?: number; total?: number };
+  help?: string;
+  message?: string;
 }
 
-class MaxPeriodicLimit extends Limit {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.name - name of the limit
-     * @param {Object} options.config - limit configuration
-     * @param {Number} options.config.maxPeriodic - maximum limit the limit would check against
-     * @param {String} options.config.error - error message to use when limit is reached
-     * @param {Function} options.config.currentCountQuery - query checking the state that would be compared against the limit
-     * @param {('month')} options.config.interval - an interval to take into account when checking the limit. Currently only supports 'month' value
-     * @param {String} options.config.startDate - start date in ISO 8601 format (https://en.wikipedia.org/wiki/ISO_8601), used to calculate period intervals
-     * @param {String} options.helpLink - URL to the resource explaining how the limit works
-     * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    constructor({name, config, helpLink, db, errors}) {
-        super({name, error: config.error || '', helpLink, db, errors});
+/**
+ * A limit knows how to answer one question: would this be allowed. It never learns what it
+ * is counting or where the numbers come from, which is what keeps this package free of any
+ * particular product's schema.
+ */
+export abstract class Limit {
+  readonly name: string;
+  readonly error: string;
+  readonly helpLink?: string;
+  protected readonly errors: ErrorsModule;
 
-        if (config.maxPeriodic === undefined) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a periodic max limit without a limit'});
-        }
+  constructor({ name, config, helpLink, errors }: Deps) {
+    this.name = name;
+    this.error = config.error || '';
+    this.helpLink = helpLink;
+    this.errors = errors;
+  }
 
-        if (!config.currentCountQuery) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a periodic max limit without a current count query'});
-        }
+  protected basePayload(): ErrorPayload {
+    const payload: ErrorPayload = { errorDetails: { name: this.name } };
 
-        if (!config.interval) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a periodic max limit without an interval'});
-        }
-
-        if (!SUPPORTED_INTERVALS.includes(config.interval)) {
-            throw new errors.IncorrectUsageError({message: `Attempted to setup a periodic max limit without unsupported interval. Please specify one of: ${SUPPORTED_INTERVALS}`});
-        }
-
-        if (!config.startDate) {
-            throw new errors.IncorrectUsageError({message: 'Attempted to setup a periodic max limit without a start date'});
-        }
-
-        this.currentCountQueryFn = config.currentCountQuery;
-        this.maxPeriodic = config.maxPeriodic;
-        this.interval = config.interval;
-        this.startDate = config.startDate;
-        this.fallbackMessage = `This action would exceed the ${lowerCase(this.name)} limit on your current plan.`;
+    if (this.helpLink) {
+      payload.help = this.helpLink;
     }
 
-    generateError(count) {
-        let errorObj = super.generateError();
+    return payload;
+  }
 
-        errorObj.message = this.fallbackMessage;
+  protected hostLimitError(payload: ErrorPayload): Error {
+    return new this.errors.HostLimitError(payload as unknown as GhostErrorOptions);
+  }
 
-        if (this.error) {
-            try {
-                errorObj.message = template(this.error, {interpolate})(
-                    {
-                        max: Intl.NumberFormat().format(this.maxPeriodic),
-                        count: Intl.NumberFormat().format(count),
-                        name: this.name
-                    });
-            } catch (e) {
-                errorObj.message = this.fallbackMessage;
-            }
-        }
-
-        errorObj.errorDetails.limit = this.maxPeriodic;
-        errorObj.errorDetails.total = count;
-
-        return new this.errors.HostLimitError(errorObj);
-    }
-
-    /**
-     * @param {Object} [options]
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     * @returns
-     */
-    async currentCountQuery(options = {}) {
-        const lastPeriodStartDate = lastPeriodStart(this.startDate, this.interval);
-
-        return await this.currentCountQueryFn(options.transacting ? options.transacting : (this.db ? this.db.knex : undefined), lastPeriodStartDate);
-    }
-
-    /**
-     * Throws a HostLimitError if the configured or passed max limit is acceded by currentCountQuery
-     *
-     * @param {Object} options
-     * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
-     * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     */
-    async errorIfWouldGoOverLimit(options = {}) {
-        const {max, addedCount = 1} = options;
-        let currentCount = await this.currentCountQuery(options);
-
-        if ((currentCount + addedCount) > (max || this.maxPeriodic)) {
-            throw this.generateError(currentCount);
-        }
-    }
-
-    /**
-     * Throws a HostLimitError if the configured or passed max limit is acceded by currentCountQuery
-     *
-     * @param {Object} options
-     * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
-     * @param {Object} [options.transacting] Transaction to run the count query on
-     */
-    async errorIfIsOverLimit(options = {}) {
-        const {max} = options;
-        let currentCount = await this.currentCountQuery(options);
-
-        if (currentCount > (max || this.maxPeriodic)) {
-            throw this.generateError(currentCount);
-        }
-    }
+  abstract errorIfWouldGoOverLimit(options?: CheckOptions): Promise<void>;
+  abstract errorIfIsOverLimit(options?: CheckOptions): Promise<void>;
 }
 
-class FlagLimit extends Limit {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.name - name of the limit
-     * @param {Object} options.config - limit configuration
-     * @param {Number} options.config.disabled - disabled/enabled flag for the limit
-     * @param {String} options.config.error - error message to use when limit is reached
-     * @param {String} options.helpLink - URL to the resource explaining how the limit works
-     * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    constructor({name, config, helpLink, db, errors}) {
-        super({name, error: config.error || '', helpLink, db, errors});
-        const userFacingLimitName = lowerCase(name.replace(/^limit/, ''));
+/**
+ * Shared by the two limits that compare against a number. The only difference between them
+ * is where the count comes from, so that is all the subclass supplies.
+ */
+abstract class CountedLimit extends Limit {
+  readonly max: number;
+  protected readonly counter: Counter;
+  protected readonly formatter?: Formatter;
+  readonly fallbackMessage: string;
 
-        this.disabled = config.disabled;
-        this.fallbackMessage = `Your plan does not support ${userFacingLimitName}. Please upgrade to enable ${userFacingLimitName}.`;
+  constructor(deps: Deps & { max: number; counter: Counter; formatter?: Formatter }) {
+    super(deps);
+    this.max = deps.max;
+    this.counter = deps.counter;
+    this.formatter = deps.formatter;
+    this.fallbackMessage = `This action would exceed the ${lowerCase(this.name)} limit on your current plan.`;
+  }
+
+  protected abstract count(options: CheckOptions): Promise<number>;
+
+  generateError(count: number): Error {
+    const payload = this.basePayload();
+    payload.message = this.fallbackMessage;
+
+    if (this.error) {
+      const format = this.formatter || Intl.NumberFormat().format;
+      try {
+        payload.message = template(this.error, { interpolate })({
+          max: format(this.max),
+          count: format(count),
+          name: this.name,
+        });
+      } catch {
+        payload.message = this.fallbackMessage;
+      }
     }
 
-    generateError() {
-        let errorObj = super.generateError();
+    payload.errorDetails.limit = this.max;
+    payload.errorDetails.total = count;
 
-        if (this.error) {
-            errorObj.message = this.error;
-        } else {
-            errorObj.message = this.fallbackMessage;
-        }
+    return this.hostLimitError(payload);
+  }
 
-        return new this.errors.HostLimitError(errorObj);
+  // Nullish rather than falsy throughout: zero is a meaningful value for all three of
+  // these. A caller overriding the maximum to zero means nothing is allowed, and a current
+  // count of zero means the resource is empty. Treating either as absent would fall back to
+  // the configured maximum and permit exactly what the caller asked to refuse.
+  async errorIfWouldGoOverLimit(options: CheckOptions = {}): Promise<void> {
+    const { max, addedCount = 1 } = options;
+    const current = await this.count(options);
+
+    if (current + addedCount > (max ?? this.max)) {
+      throw this.generateError(current);
     }
+  }
 
-    /**
-     * Flag limits are on/off so using a feature is always over the limit
-     */
-    async errorIfWouldGoOverLimit() {
-        if (this.disabled) {
-            throw this.generateError();
-        }
-    }
+  async errorIfIsOverLimit(options: CheckOptions = {}): Promise<void> {
+    const current = options.currentCount ?? (await this.count(options));
 
-    /**
-     * Flag limits are on/off. They don't necessarily mean the limit wasn't possible to reach
-     * NOTE: this method should not be relied on as it's impossible to check the limit was surpassed!
-     */
-    async errorIfIsOverLimit() {
-        return;
+    if (current > (options.max ?? this.max)) {
+      throw this.generateError(current);
     }
-
-    /**
-     * Checks whether the Flag limit is disabled or not
-     * @returns boolean
-     */
-    isDisabled() {
-        return !!this.disabled;
-    }
+  }
 }
 
-class AllowlistLimit extends Limit {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.name - name of the limit
-     * @param {Object} options.config - limit configuration
-     * @param {[String]} options.config.allowlist - allowlist values that would be compared against
-     * @param {String} options.config.error - error message to use when limit is reached
-     * @param {String} options.helpLink - URL to the resource explaining how the limit works
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    constructor({name, config, helpLink, errors}) {
-        super({name, error: config.error || '', helpLink, errors});
-
-        if (!config.allowlist || !config.allowlist.length) {
-            throw new this.errors.IncorrectUsageError({message: 'Attempted to setup an allowlist limit without an allowlist'});
-        }
-
-        this.allowlist = config.allowlist;
-        this.fallbackMessage = `This action would exceed the ${lowerCase(this.name)} limit on your current plan.`;
-    }
-
-    generateError() {
-        let errorObj = super.generateError();
-
-        if (this.error) {
-            errorObj.message = this.error;
-        } else {
-            errorObj.message = this.fallbackMessage;
-        }
-
-        return new this.errors.HostLimitError(errorObj);
-    }
-
-    async errorIfWouldGoOverLimit(metadata) {
-        if (!metadata || !metadata.value) {
-            throw new this.errors.IncorrectUsageError({message: 'Attempted to check an allowlist limit without a value'});
-        }
-        if (!this.allowlist.includes(metadata.value)) {
-            throw this.generateError();
-        }
-    }
-
-    async errorIfIsOverLimit(metadata) {
-        if (!metadata || !metadata.value) {
-            throw new this.errors.IncorrectUsageError({message: 'Attempted to check an allowlist limit without a value'});
-        }
-        if (!this.allowlist.includes(metadata.value)) {
-            throw this.generateError();
-        }
-    }
+/** A cap on how many of something a site may have. */
+export class MaxLimit extends CountedLimit {
+  protected async count(options: CheckOptions): Promise<number> {
+    return await this.counter({ transacting: options.transacting });
+  }
 }
 
-module.exports = {
-    MaxLimit,
-    MaxPeriodicLimit,
-    FlagLimit,
-    AllowlistLimit
-};
+/** A cap that resets each billing period, counted from where that period started. */
+export class MaxPeriodicLimit extends CountedLimit {
+  readonly interval: Interval;
+  readonly startDate: string;
+
+  constructor(
+    deps: Deps & {
+      max: number;
+      counter: Counter;
+      formatter?: Formatter;
+      interval: Interval;
+      startDate: string;
+    },
+  ) {
+    super(deps);
+    this.interval = deps.interval;
+    this.startDate = deps.startDate;
+  }
+
+  protected async count(options: CheckOptions): Promise<number> {
+    return await this.counter({
+      transacting: options.transacting,
+      periodStart: lastPeriodStart(this.startDate, this.interval),
+    });
+  }
+}
+
+/** A feature the host has switched off outright. */
+export class FlagLimit extends Limit {
+  readonly disabled: boolean;
+  readonly fallbackMessage: string;
+
+  constructor(deps: Deps) {
+    super(deps);
+    const userFacingName = lowerCase(deps.name.replace(/^limit/, ''));
+
+    this.disabled = Boolean(deps.config.disabled);
+    this.fallbackMessage = `Your plan does not support ${userFacingName}. Please upgrade to enable ${userFacingName}.`;
+  }
+
+  generateError(): Error {
+    const payload = this.basePayload();
+    payload.message = this.error || this.fallbackMessage;
+
+    return this.hostLimitError(payload);
+  }
+
+  /** On or off, so using the feature at all is over the limit. */
+  async errorIfWouldGoOverLimit(): Promise<void> {
+    if (this.disabled) {
+      throw this.generateError();
+    }
+  }
+
+  /**
+   * On or off. Whether the feature was already used cannot be answered from here, so this
+   * deliberately says nothing rather than guessing.
+   */
+  async errorIfIsOverLimit(): Promise<void> {
+    return;
+  }
+
+  isDisabled(): boolean {
+    return this.disabled;
+  }
+}
+
+/** A limit on which particular values a site may use. */
+export class AllowlistLimit extends Limit {
+  readonly allowlist: string[];
+  readonly fallbackMessage: string;
+
+  constructor(deps: Deps & { allowlist: string[] }) {
+    super(deps);
+    this.allowlist = deps.allowlist;
+    this.fallbackMessage = `This action would exceed the ${lowerCase(this.name)} limit on your current plan.`;
+  }
+
+  generateError(): Error {
+    const payload = this.basePayload();
+    payload.message = this.error || this.fallbackMessage;
+
+    return this.hostLimitError(payload);
+  }
+
+  private check(options?: CheckOptions): void {
+    if (!options || !options.value) {
+      throw new this.errors.IncorrectUsageError({
+        message: 'Attempted to check an allowlist limit without a value',
+      });
+    }
+
+    if (!this.allowlist.includes(options.value)) {
+      throw this.generateError();
+    }
+  }
+
+  async errorIfWouldGoOverLimit(options?: CheckOptions): Promise<void> {
+    this.check(options);
+  }
+
+  async errorIfIsOverLimit(options?: CheckOptions): Promise<void> {
+    this.check(options);
+  }
+}
