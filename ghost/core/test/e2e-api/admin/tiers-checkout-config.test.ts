@@ -1125,6 +1125,65 @@ describe('Tier Checkout Admin API', function () {
       );
     });
 
+    it('provisions them as the member’s own to read and change', async function () {
+      mockManager.mockLabsDisabled('membersCustomFields');
+      await agent
+        .put(`tiers/${tierId}/checkout_config/`)
+        .body({
+          tiers_checkout_config: [
+            {
+              shipping: {
+                collect: true,
+                name: { custom_field_key: PORT_FIELD[STRIPE_PORT.shippingName].key },
+                address: { custom_field_key: PORT_FIELD[STRIPE_PORT.shippingAddress].key },
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map((f: { key: string; access: unknown }) => [f.key, f.access]),
+        [
+          ['shipping_name', { member: 'write' }],
+          ['shipping_address', { member: 'write' }],
+        ],
+      );
+    });
+
+    // The other half of the same rule: the exception covers fields this path creates,
+    // not fields it binds to. Reopening one the publisher had closed would disclose
+    // what they had deliberately kept back.
+    it('leaves an existing field’s access alone when it binds to one', async function () {
+      const existing = await createField({ name: 'Delivery notes' });
+      await agent
+        .put(`members/metafields/custom/${existing.key}/`)
+        .body({ members_metafields: [{ access: { member: 'none' } }] })
+        .expectStatus(200);
+
+      mockManager.mockLabsDisabled('membersCustomFields');
+      await agent
+        .put(`tiers/${tierId}/checkout_config/`)
+        .body({
+          tiers_checkout_config: [
+            {
+              shipping: {
+                collect: true,
+                name: { custom_field_key: existing.key },
+                address: { custom_field_key: PORT_FIELD[STRIPE_PORT.shippingAddress].key },
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent
+        .get(`members/metafields/custom/${existing.key}/`)
+        .expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].access, { member: 'none' });
+    });
+
     // The tier resource is generally available, so this concept must not appear on it.
     it('adds nothing to the tier itself', async function () {
       const { body } = await agent.get(`tiers/${tierId}/`).expectStatus(200);

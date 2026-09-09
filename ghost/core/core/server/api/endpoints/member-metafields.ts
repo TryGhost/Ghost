@@ -8,7 +8,13 @@ interface Frame {
   // `members_metafields` array before any handler runs, so `edit` can take element 0 without
   // checking.
   data: { members_metafields: unknown[] };
-  options: { namespace: string; key: string; context: unknown; [key: string]: unknown };
+  options: {
+    namespace: string;
+    key: string;
+    filter?: string;
+    context: unknown;
+    [key: string]: unknown;
+  };
 }
 
 // Reading a definition needs no permission. A definition says only that the site collects
@@ -49,7 +55,7 @@ const controller = {
       return definitions!.browse(
         {
           namespace: frame.options.namespace,
-          filter: frame.options.filter as string | undefined,
+          filter: frame.options.filter,
         },
         ADMIN,
       );
@@ -62,7 +68,7 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: false,
     query(frame: Frame) {
-      return definitions!.read(frame.options.namespace, frame.options.key);
+      return definitions!.read(frame.options.namespace, frame.options.key, ADMIN);
     },
   },
 
