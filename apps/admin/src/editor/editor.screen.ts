@@ -215,6 +215,9 @@ export const editorScreen = {
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
   settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
+  /** CodeMirror exposes its content as a textbox named by the editor's label. */
+  settingsCodeInjection: (label: string) =>
+    page.getByRole('textbox', { name: new RegExp(`^${label}`) }),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
   postHistoryModal: () => page.getByTestId(postHistoryModal),

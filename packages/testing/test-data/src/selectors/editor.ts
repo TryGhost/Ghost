@@ -164,3 +164,7 @@ export const postHistoryLatestText = 'Latest';
 export const postHistoryPublishedText = 'Published';
 export const postHistoryUnpublishedText = 'Unpublished';
 export const restoreRevisionButton = 'Restore';
+export const codeInjectionHeadLabel = 'Post header';
+export const codeInjectionFootLabel = 'Post footer';
+export const codeInjectionPageHeadLabel = 'Page header';
+export const codeInjectionPageFootLabel = 'Page footer';

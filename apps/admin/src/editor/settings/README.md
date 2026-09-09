@@ -392,6 +392,26 @@ left holding the save engine's slug wait. The restore's save carries the slug
 the post already holds, and the URL section accepts the next manual edit
 normally.
 
+## Code injection
+
+The row opens a pane holding the header and footer code this post injects into
+the page it renders on, each an HTML editor labelled with the theme helper it
+lands in. Every role that can open the panel can write both fields. A page's
+editors are named for a page rather than a post.
+
+The two fields are settings fields like any other: staged as the writer types,
+committed on the blur that ends the edit, and persisted or held back by the
+panel's save policy. Closing the pane commits the editor the writer was in, and
+a field cleared back to empty is stored as no value, as the excerpt is. A post
+saved before that convention holds an empty string rather than no value, so
+clearing such a field back to empty counts as a change until the next save.
+
+Escape inside either editor leaves the pane open. An open completion list or a
+selection wider than the cursor takes it first; otherwise it frees the editor's
+Tab, so the next Tab moves on to the footer editor and out of the pane rather
+than indenting. The back button, or Escape from anywhere else in the pane,
+still closes the pane.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

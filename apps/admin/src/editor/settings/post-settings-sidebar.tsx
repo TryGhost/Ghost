@@ -18,6 +18,7 @@ import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
+import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
@@ -116,6 +117,7 @@ export function PostSettingsSidebar({
       postType === 'page' ? <ShowTitleSection currentUser={currentUser} session={session} /> : null,
     template: <TemplateSection postType={postType} session={session} />,
     delete: <DeleteSection postType={postType} session={session} />,
+    'code-injection': <CodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
     'post-history': (
       <PostHistorySection
