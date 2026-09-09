@@ -242,7 +242,14 @@ const validators = {
     if (!['posts', 'tags'].includes(docName)) {
       const resource = data[docName];
       const row = Array.isArray(resource) ? resource[0] : undefined;
-      if (row && typeof row === 'object' && 'id' in row && options.id !== row.id) {
+      if (
+        options.id &&
+        row &&
+        typeof row === 'object' &&
+        'id' in row &&
+        row.id &&
+        options.id !== row.id
+      ) {
         return Promise.reject(
           new BadRequestError({
             message: tpl(messages.invalidIdProvided),

@@ -14,7 +14,7 @@ describe('HTTP', function () {
     status: SinonStub;
   };
   type ApiImplementation = SinonStub & {
-    response?: { format: string | (() => string | Promise<string>) };
+    response?: { format: string | (() => string | PromiseLike<string>) };
     statusCode?: number | SinonStub;
   };
 
@@ -150,7 +150,7 @@ describe('HTTP', function () {
   });
 
   it('does not set an integration for staff tokens', async function () {
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       req.user = { id: 'user-id' };
       req.api_key = {
         get(key) {
@@ -166,7 +166,7 @@ describe('HTTP', function () {
       const apiImpl = sinon.stub().resolves({ ok: true });
 
       res.json.callsFake(() => {
-        const frame = apiImpl.args[0][0];
+        const frame = apiImpl.firstCall.firstArg;
         assert.equal(frame.options.context.api_key.id, 'api-key-id');
         assert.equal(frame.options.context.integration, null);
         assert.equal(frame.options.context.user, 'user-id');
@@ -204,6 +204,26 @@ describe('HTTP', function () {
       apiImpl.response = {
         format() {
           return 'plain';
+        },
+      };
+
+      res.send.callsFake(() => {
+        assert.equal(res.send.calledOnce, true);
+        assert.equal(res.json.called, false);
+        resolve();
+      });
+
+      shared.http(apiImpl)(req, res, next);
+    });
+  });
+
+  it('supports thenable response format', async function () {
+    await new Promise<void>((resolve) => {
+      const apiImpl: ApiImplementation = sinon.stub().resolves('plain body');
+      apiImpl.response = {
+        format() {
+          const format = Promise.resolve('plain');
+          return { then: format.then.bind(format) };
         },
       };
 

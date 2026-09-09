@@ -465,13 +465,13 @@ describe('Pipeline', function () {
       // one that keeps its state in a #field throws on first use. A copy would
       // also never see the reset() a service calls to invalidate.
       class PrivateFieldCache {
-        #store = new Map();
+        #store = new Map<string, unknown>();
 
-        get(key) {
+        get(key: string) {
           return this.#store.get(key);
         }
 
-        set(key, value) {
+        set(key: string, value: unknown) {
           this.#store.set(key, value);
         }
 
@@ -483,12 +483,12 @@ describe('Pipeline', function () {
       const cache = new PrivateFieldCache();
       const result = shared.pipeline({ browse: { cache } }, {});
 
-      shared.pipeline.STAGES.validation.input.resolves();
-      shared.pipeline.STAGES.serialisation.input.resolves();
-      shared.pipeline.STAGES.permissions.resolves();
-      shared.pipeline.STAGES.query.resolves('response');
-      shared.pipeline.STAGES.serialisation.output.callsFake(
-        function (response, _apiUtils, apiConfig, apiImpl, frame) {
+      validationInputStub.resolves();
+      serialisationInputStub.resolves();
+      permissionsStub.resolves();
+      queryStub.resolves('response');
+      serialisationOutputStub.callsFake(
+        function (response, _apiUtils, _apiConfig, _apiImpl, frame) {
           frame.response = response;
         },
       );
@@ -496,13 +496,13 @@ describe('Pipeline', function () {
       assert.equal(await result.browse(), 'response');
       // Second call is served from the cache rather than the query stage.
       assert.equal(await result.browse(), 'response');
-      assert.equal(shared.pipeline.STAGES.query.calledOnce, true);
+      assert.equal(queryStub.calledOnce, true);
 
       // Invalidating through the original instance reaches the cache the
       // pipeline reads, so the next request goes back to the query stage.
       cache.reset();
       assert.equal(await result.browse(), 'response');
-      assert.equal(shared.pipeline.STAGES.query.calledTwice, true);
+      assert.equal(queryStub.calledTwice, true);
     });
 
     it('should set a cache if configured on endpoint level', async function () {

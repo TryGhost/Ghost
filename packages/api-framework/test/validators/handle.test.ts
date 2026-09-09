@@ -70,6 +70,8 @@ describe('validators/handle', function () {
           assert.equal(apiValidators.all.add.calledOnce, true);
           assert.equal(apiValidators.posts.add.calledOnce, true);
           assert.equal(apiValidators.users.add.called, false);
+          sinon.assert.calledOn(apiValidators.all.add, apiValidators.all);
+          sinon.assert.calledOn(apiValidators.posts.add, apiValidators.posts);
         });
     });
 
