@@ -563,6 +563,7 @@ describe('Email Service', function () {
       });
 
       const lockedEmail = createModel({ id: email.id, status: 'pending' });
+      lockedEmail.refresh = sinon.stub().resolves(lockedEmail);
       retryStatusLock.resolves(lockedEmail);
 
       assert.equal(await service.retryEmail(email), lockedEmail);
