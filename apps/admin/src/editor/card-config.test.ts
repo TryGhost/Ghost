@@ -149,6 +149,26 @@ describe('buildPostCardConfig', () => {
     });
   });
 
+  it.each([123, true])('ignores non-string site images (%s)', (value) => {
+    const cardConfig = buildPostCardConfig(
+      sources({
+        settings: settingsFrom({
+          ...baseSettings,
+          og_image: value,
+          twitter_image: value,
+          cover_image: value,
+        }),
+      }),
+      ports,
+    );
+
+    expect(cardConfig).toMatchObject({
+      siteOgImage: null,
+      siteTwitterImage: null,
+      siteCoverImage: null,
+    });
+  });
+
   it('drops Unsplash when the integration is off', () => {
     const cardConfig = buildPostCardConfig(
       sources({ settings: settingsFrom({ ...baseSettings, unsplash: false }) }),

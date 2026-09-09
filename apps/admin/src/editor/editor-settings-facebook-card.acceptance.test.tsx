@@ -188,7 +188,7 @@ describe('Post settings Facebook card', () => {
       await editorScreen.settingsFacebookDescription().fill('What this post is about');
       await editorScreen.settingsFacebookTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(2);
       expect(submittedPost(saveApi)).toMatchObject({
         og_description: 'What this post is about',
       });
