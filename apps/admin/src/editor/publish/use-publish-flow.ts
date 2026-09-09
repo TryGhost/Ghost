@@ -18,7 +18,7 @@ import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
 import type {
-  PublishDispatch,
+  PublishDispatcher,
   PublishLimitPorts,
   PublishOptionsMachine,
   PublishOptionsState,
@@ -29,8 +29,6 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
-
-export type PublishDispatcher = (dispatch: PublishDispatch) => Promise<SaveCompletion>;
 
 export interface PublishFlowOptions {
   post: PublishFlowPost;

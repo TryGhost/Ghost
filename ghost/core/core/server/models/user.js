@@ -6,7 +6,8 @@ const limitService = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
-const validatePassword = require('../lib/validate-password');
+const { validatePassword } = require('../lib/validate-password');
+const { generatePassword } = require('../lib/generate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils').default;
 const { setIsRoles } = require('./role-utils');
@@ -66,8 +67,7 @@ User = ghostBookshelf.Model.extend(
 
     defaults: function defaults() {
       return {
-        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
-        password: security.identifier.uid(50),
+        password: generatePassword(''),
         visibility: 'public',
         status: 'active',
         comment_notifications: true,
@@ -208,8 +208,7 @@ User = ghostBookshelf.Model.extend(
      */
     lock: function lock(options) {
       const update = {
-        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
-        password: security.identifier.uid(50),
+        password: generatePassword(this.get('email') || ''),
       };
       if (this.get('status') !== 'inactive') {
         update.status = 'locked';
@@ -306,8 +305,8 @@ User = ghostBookshelf.Model.extend(
         }
 
         if (options.importing) {
-          // always set password to a random uid when importing
-          this.set('password', security.identifier.uid(50));
+          // generate a random password when importing
+          this.set('password', generatePassword(this.get('email') || ''));
 
           // lock users so they have to follow the password reset flow
           if (this.get('status') !== 'inactive') {

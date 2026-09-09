@@ -523,3 +523,49 @@ describe('Portal API plan checkout', () => {
     expect(body.cancelUrl).toBe('https://example.com/custom-cancel/');
   });
 });
+
+// `fetch` treats a refusal as a response rather than a failure, so an endpoint whose
+// caller only awaits it reads every refusal as success. This one matters more than most:
+// a member is told their plan changed and sent back to their account.
+describe('Portal API subscription update', () => {
+  const mockSubscriptionFetch = (response) => {
+    vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(response);
+    });
+  };
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('rejects when the server refuses the change', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    mockSubscriptionFetch(new Response('Tier is archived.', { status: 403 }));
+
+    await expect(
+      ghostApi.member.updateSubscription({
+        subscriptionId: 'sub_123',
+        tierId: 'tier_123',
+        cadence: 'month',
+      }),
+    ).rejects.toThrow();
+  });
+
+  test('resolves with the response when the change is accepted', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const accepted = new Response(null, { status: 204 });
+    mockSubscriptionFetch(accepted);
+
+    await expect(
+      ghostApi.member.updateSubscription({
+        subscriptionId: 'sub_123',
+        tierId: 'tier_123',
+        cadence: 'month',
+      }),
+    ).resolves.toBe(accepted);
+  });
+});

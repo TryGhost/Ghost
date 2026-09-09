@@ -108,6 +108,7 @@ Times are ISO 8601 strings with milliseconds zeroed, because the API stores seco
 - `scheduledAt` starts at that floor.
 - `setIsScheduled(true)` snaps a time that is earlier than ten minutes ahead of now forward to exactly that default; calling it with no argument toggles.
 - `setScheduledAt()` zeroes milliseconds and clamps anything before the floor up to it. An unparseable date is ignored.
+- The date and time fields commit at minute granularity, so a time the writer chooses carries no seconds of its own; an untouched default still carries the floor's.
 - `resetPastScheduledAt()` turns scheduling off when the chosen time has fallen into the past. It leaves the stale time in place: re-enabling scheduling snaps it forward to the default, so the stale value is never offered.
 
 ## Producing a save command

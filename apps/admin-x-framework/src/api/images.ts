@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { createMutation } from '../utils/api/hooks';
 
 export interface ImagesResponseType {
@@ -18,4 +19,10 @@ export const useUploadImage = createMutation<ImagesResponseType, { file: File }>
   },
 });
 
-export const getImageUrl = (response: ImagesResponseType) => response.images[0].url;
+const UploadedImageResponseSchema = z.object({
+  // Storage adapters may return relative paths as well as absolute URLs.
+  images: z.array(z.object({ url: z.string().min(1) })).min(1),
+});
+
+export const getImageUrl = (response: unknown): string =>
+  UploadedImageResponseSchema.parse(response).images[0].url;

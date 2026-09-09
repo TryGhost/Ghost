@@ -10,6 +10,8 @@ export interface SnapshotSources {
   identity: PersistedIdentity;
   status: PostStatus;
   publishedAt: string | null;
+  /** The writer moved the publish time past the saved one; the tracker does not carry it. */
+  publishedAtDirty: boolean;
   title: string;
   slug: string;
   slugIsCustom: boolean;
@@ -22,6 +24,7 @@ export function buildSaveSnapshot({
   identity,
   status,
   publishedAt,
+  publishedAtDirty,
   title,
   slug,
   slugIsCustom,
@@ -35,7 +38,7 @@ export function buildSaveSnapshot({
     title,
     slug,
     slugIsCustom,
-    isDirty: verdict.dirty,
+    isDirty: verdict.dirty || publishedAtDirty,
     titleDirty: verdict.reasons.some((reason) => reason.code === 'POST_TITLE_DIVERGED'),
     changedSinceLastRevision,
     version,

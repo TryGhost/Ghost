@@ -9,16 +9,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import {
-  type PageEditorRecord,
-  useEditPage,
-  useEditorPage,
-} from '@tryghost/admin-x-framework/api/pages';
-import {
-  type PostEditorRecord,
-  useEditPost,
-  useEditorPost,
-} from '@tryghost/admin-x-framework/api/posts';
+import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
+import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
 import {
   type User,
   isAdminUser,
@@ -28,7 +20,12 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
-import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
+import {
+  type CardConfigPostSource,
+  type PostCardConfig,
+  type PostType,
+  withLiveSettings,
+} from './card-config';
 import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
@@ -41,9 +38,8 @@ import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-save-shortcut';
-
-type EditorRecord = PostEditorRecord | PageEditorRecord;
+import { useSaveShortcut } from './use-editor-shortcuts';
+import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
   return (
@@ -140,27 +136,16 @@ function EditorContent({
   const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
-  const acceptedRecord = session.loadedRecord;
   const liveVisibility = session.settings.visibility;
-  const currentCardConfig = useMemo(() => {
-    if (!cardConfig.post) {
-      return cardConfig;
-    }
-
-    // The live settings field, not the saved record: a visibility the writer has
-    // only staged still decides what the cards describe.
-    return {
-      ...cardConfig,
-      post: {
-        ...cardConfig.post,
-        visibility: liveVisibility || cardConfig.post.visibility,
-        showTitleAndFeatureImage:
-          acceptedRecord && 'show_title_and_feature_image' in acceptedRecord
-            ? (acceptedRecord.show_title_and_feature_image ?? true)
-            : cardConfig.post.showTitleAndFeatureImage,
-      },
-    };
-  }, [acceptedRecord, cardConfig, liveVisibility]);
+  const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
+  const currentCardConfig = useMemo(
+    () =>
+      withLiveSettings(cardConfig, {
+        visibility: liveVisibility,
+        showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
+      }),
+    [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
+  );
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -212,15 +197,19 @@ function EditorContent({
             featureImage={featureImage}
             postType={postType}
             showExcerpt={showExcerpt}
+            onExcerptBlur={session.commitSettings}
             onTkCountChange={setTkCount}
           />
         </div>
         {settingsOpen ? (
           <PostSettingsSidebar
+            cardConfig={currentCardConfig}
             currentUser={currentUser}
+            featureImage={featureImage.featureImage}
             hasInlineExcerpt={showExcerpt}
             postType={postType}
             session={session}
+            siteUrl={cardConfig.siteUrl}
           />
         ) : null}
       </Inline>
