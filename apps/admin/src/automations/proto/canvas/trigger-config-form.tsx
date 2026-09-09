@@ -5,7 +5,6 @@ import {
   ComboboxTrigger,
   ComboboxValue,
   Label,
-  MultiSelectCombobox,
   Select,
   SelectContent,
   SelectItem,
@@ -15,13 +14,13 @@ import {
 import { Stack } from '@tryghost/shade/primitives';
 import {
   AUDIENCE_OPTIONS,
-  TIER_OPTIONS,
+  ALL_TIER_IDS,
   EXIT_CRITERIA,
+  TIER_OPTIONS,
   AUTOMATIC_EXIT_SENTENCE,
   type AudienceScope,
   type ExitCriterionId,
   type TriggerConfig,
-  availableCriteria,
   hasTiers,
   reconcileCriteria,
   tierNames,
@@ -29,6 +28,7 @@ import {
   triggerConfigFor,
 } from '@/automations/proto/shared/trigger-config';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
+import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -57,11 +57,17 @@ import { PickerRow } from '@/automations/proto/shared/option-picker';
  * own p-6 so each row's icon chip lands on 24px — the column a configured card's
  * header chip sits on — and the hover fill reads as an inset list rather than a
  * stack of blocks jammed against the padding.
+ *
+ * -mb-4 for the same reason vertically. A row carries its own p-4, so the last one
+ * sat its 16px on top of the card's 24px and left 40px of nothing under the final
+ * option — a card that looked bottom-heavy next to the same card once it holds
+ * fields. Pulling the row's padding back into the card's puts the last option 24px
+ * off the edge, which is what every other card does.
  */
 export const TriggerEmptyState: React.FC<{ onSelect: (config: TriggerConfig) => void }> = ({
   onSelect,
 }) => (
-  <div className="-mx-4">
+  <div className="-mx-4 -mb-4">
     {TRIGGER_PICKER_OPTIONS.map((option) => (
       <PickerRow
         key={option.value}
@@ -89,15 +95,20 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
 }) => {
   // Filtered through availableCriteria so a criterion that stopped applying (the
   // audience changed to paid, say) neither shows in the summary nor in the list.
-  const available = availableCriteria(config);
-  const chosenIds = available
-    .filter((criterion) => config.exitCriteria.includes(criterion.id))
-    .map((criterion) => criterion.id);
-  const exitOptions = available.map((criterion) => ({
-    value: criterion.id,
-    label: criterion.label(config),
-  }));
-  const tierOptions = TIER_OPTIONS.map((tier) => ({ value: tier.id, label: tier.name }));
+  // Every criterion, not just the ones that apply to this configuration.
+  //
+  // availableCriteria still decides what COUNTS — the summary and the read canvas
+  // go through it — but the field shows the whole set while we work out what the
+  // list should be. Hiding rows made the field's contents change as the audience
+  // changed above it, which is hard to reason about when the question is still
+  // "which of these do we even want".
+  const chosenIds = EXIT_CRITERIA.filter((criterion) =>
+    config.exitCriteria.includes(criterion.id),
+  ).map((criterion) => criterion.id);
+  const tierIds = config.audience.tierIds;
+  // Every tier is "any tier"; none is the error state.
+  const anyTier = tierIds.length === ALL_TIER_IDS.length;
+  const noTier = tierIds.length === 0;
   const [tiersOpen, setTiersOpen] = useState(false);
   const [exitsOpen, setExitsOpen] = useState(false);
   // The paid trigger already answers the membership question, so its Select would
@@ -108,14 +119,19 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   // Changing the membership scope clears the tiers with it. Tiers only narrow a
   // paid audience, and leaving them set behind a Free scope would keep a filter
   // alive that nothing on screen is showing.
-  const changeScope = (scope: AudienceScope) =>
-    onChange(reconcileCriteria({ ...config, audience: { scope, tierIds: [] } }, config));
+  const changeScope = (scope: AudienceScope) => {
+    // A scope with tiers arrives with all of them; one without has none to hold.
+    // Either way the tiers are replaced rather than carried over — leaving them set
+    // behind a Free scope would keep a filter alive that nothing on screen shows.
+    const next = { ...config, audience: { scope, tierIds: [] } };
+    const audience = hasTiers(next) ? { scope, tierIds: [...ALL_TIER_IDS] } : next.audience;
+    onChange(reconcileCriteria({ ...config, audience }, config));
+  };
 
-  // Tiers are a plain multi-select against "any paid tier" — an empty list IS
-  // "any", so there's no separate Any option to keep in sync with the others and
-  // no state where the scope and the tiers disagree.
-  const setTiers = (tierIds: string[]) =>
-    onChange(reconcileCriteria({ ...config, audience: { ...config.audience, tierIds } }, config));
+  const setTiers = (next: string[]) =>
+    onChange(
+      reconcileCriteria({ ...config, audience: { ...config.audience, tierIds: next } }, config),
+    );
 
   const setCriteria = (ids: ExitCriterionId[]) =>
     // Keep EXIT_CRITERIA order so the summary doesn't reshuffle as options are
@@ -185,37 +201,57 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
         </Stack>
       )}
 
-      {/* Tiers narrow a paid or complimentary audience — comping someone means
-                giving them a tier, so both are tier-holders. Nothing selected means any
-                tier — an
-                empty filter rather than an option of its own, so the scope and the
-                tiers can never say different things, and the trigger says so in words
-                rather than leaving the field looking unanswered. */}
+      {/* Tiers narrow a paid or complimentary audience — comping someone means giving
+                someone a tier, so both are tier-holders.
+                
+                "Any tier" is a row in the list rather than the absence of one. It was the
+                absence for a while, which read as an unanswered field: the trigger showed
+                greyed placeholder text for what was actually a deliberate, valid answer.
+                As a row it checks every tier below it and shows checked only while they
+                all are, so there is one thing to look at and it agrees with itself. */}
       {!locked && showTiers && (
         <Stack gap="sm">
           <Label className="text-muted-foreground">Tiers</Label>
           <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
             <ComboboxTrigger aria-label="Tiers">
-              <ComboboxValue placeholder={config.audience.tierIds.length === 0}>
-                {config.audience.tierIds.length > 0
-                  ? tierNames(config.audience.tierIds).join(', ')
-                  : 'Any tier'}
+              <ComboboxValue placeholder={noTier}>
+                {noTier
+                  ? 'No tiers selected'
+                  : anyTier
+                    ? 'Any tier'
+                    : tierNames(tierIds).join(', ')}
               </ComboboxValue>
             </ComboboxTrigger>
             {/* "always" so the list tracks its card when the canvas pans — the
                             same reason the node menus and the option picker set it. */}
-            <ComboboxContent updatePositionStrategy="always">
-              {/* searchable={false}: three fixed options, and a search box over
-                                three rows is chrome asking to be ignored. */}
-              <MultiSelectCombobox
-                options={tierOptions}
-                searchable={false}
-                values={config.audience.tierIds}
-                onChange={setTiers}
-                onClose={() => setTiersOpen(false)}
-              />
+            <ComboboxContent className="p-2" updatePositionStrategy="always">
+              <CheckboxList>
+                <CheckboxRow
+                  checked={anyTier}
+                  label="Any tier"
+                  onCheckedChange={(checked) => setTiers(checked ? [...ALL_TIER_IDS] : [])}
+                />
+                {TIER_OPTIONS.map((tier) => (
+                  <CheckboxRow
+                    key={tier.id}
+                    checked={tierIds.includes(tier.id)}
+                    label={tier.name}
+                    onCheckedChange={(checked) =>
+                      setTiers(
+                        checked
+                          ? ALL_TIER_IDS.filter((id) => id === tier.id || tierIds.includes(id))
+                          : tierIds.filter((id) => id !== tier.id),
+                      )
+                    }
+                  />
+                ))}
+              </CheckboxList>
             </ComboboxContent>
           </Combobox>
+          {/* An automation for no tiers at all would never run. Stated rather than
+                        prevented: a checkbox you can't untick is a checkbox that lies about
+                        being a checkbox, and the way out is obvious once it's said. */}
+          {noTier && <p className="text-sm text-red">Select at least one tier</p>}
         </Stack>
       )}
 
@@ -231,28 +267,38 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 included. Both were in that sentence for a while, and both have a
                 defensible other answer — which is the line: facts are stated,
                 choices are offered. */}
-      {!locked && exitOptions.length > 0 && (
+      {!locked && (
         <Stack gap="sm">
-          <Label className="text-muted-foreground">Also exit when</Label>
+          <Label className="text-muted-foreground">Exit conditions</Label>
           <Combobox open={exitsOpen} onOpenChange={setExitsOpen}>
-            <ComboboxTrigger aria-label="Additional exit conditions">
+            <ComboboxTrigger aria-label="Exit conditions">
               <ComboboxValue placeholder={chosenIds.length === 0}>
                 {chosenIds.length > 0
-                  ? exitOptions
-                      .filter((option) => chosenIds.includes(option.value))
-                      .map((option) => option.label)
+                  ? EXIT_CRITERIA.filter((criterion) => chosenIds.includes(criterion.id))
+                      .map((criterion) => criterion.label(config))
                       .join(', ')
                   : 'Nothing else'}
               </ComboboxValue>
             </ComboboxTrigger>
-            <ComboboxContent updatePositionStrategy="always">
-              <MultiSelectCombobox
-                options={exitOptions}
-                searchable={false}
-                values={chosenIds}
-                onChange={setCriteria}
-                onClose={() => setExitsOpen(false)}
-              />
+            <ComboboxContent className="p-2" updatePositionStrategy="always">
+              <CheckboxList>
+                {EXIT_CRITERIA.map((criterion) => (
+                  <CheckboxRow
+                    key={criterion.id}
+                    checked={chosenIds.includes(criterion.id)}
+                    label={criterion.label(config)}
+                    onCheckedChange={(checked) =>
+                      setCriteria(
+                        checked
+                          ? EXIT_CRITERIA.map((entry) => entry.id).filter(
+                              (id) => id === criterion.id || chosenIds.includes(id),
+                            )
+                          : chosenIds.filter((id) => id !== criterion.id),
+                      )
+                    }
+                  />
+                ))}
+              </CheckboxList>
             </ComboboxContent>
           </Combobox>
           <p className="text-sm text-muted-foreground">{AUTOMATIC_EXIT_SENTENCE}</p>

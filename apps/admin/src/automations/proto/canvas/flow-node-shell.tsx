@@ -42,8 +42,11 @@ export const NodeCard: React.FC<{
   muted?: boolean;
   // Entrance animation, for a card that arrives after the canvas is already there.
   className?: string;
+  // Only ever the entrance's animation-delay, which is per-card and so can't be a
+  // class — Tailwind can't generate what it can't read in the source.
+  style?: React.CSSProperties;
   children: React.ReactNode;
-}> = ({ border = 'default', muted = false, className, children }) => (
+}> = ({ border = 'default', muted = false, className, style, children }) => (
   // group/node so controls that only earn their place on hover — the subject's
   // pencil, the performance chevron — can key off the whole card rather than the
   // element they sit next to.
@@ -55,6 +58,7 @@ export const NodeCard: React.FC<{
       muted && 'opacity-60',
       className,
     )}
+    style={style}
   >
     <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
     {children}

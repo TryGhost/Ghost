@@ -59,6 +59,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { OptionPicker, type PickerOption } from '@/automations/proto/shared/option-picker';
+import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import {
   DEFAULT_TRIGGER_CONFIG,
   TRIGGER_PICKER_OPTIONS,
@@ -73,6 +74,7 @@ import {
   CANVAS_HUD_INSET,
   CANVAS_SLOT_FILL,
   EDGE_STROKE,
+  NODE_VISUAL_GAP,
   type StepKind,
   formatWait,
   orderActions,
@@ -159,6 +161,12 @@ type StepNodeData = {
   // Which beat of the creation sequence is playing, or undefined for a canvas that
   // isn't playing one. The canvas owns the clock; the node owns its own motion.
   introPhase?: IntroPhase;
+  // This card's place in the canvas's entrance, in ms. Undefined once the entrance
+  // is over, so inserting a step later doesn't replay it.
+  enterDelay?: number;
+  // Just added by the step picker. Cleared shortly after, so the card doesn't
+  // animate again the next time anything re-renders it.
+  isNew?: boolean;
   // Asks the canvas to confirm a different trigger. The node doesn't apply it
   // itself: swapping the trigger discards the audience and exits configured under
   // the old one, which is a warning the canvas owns.
@@ -187,6 +195,13 @@ type StepNodeData = {
 //   leaving     the options fade out, the card holding still
 //   growing     the fields fade in while the card resizes to hug them
 //   connecting  the connector draws downward, then the exit card lands
+//
+// The canvas itself never moves during any of it. A closing beat that re-centred
+// the finished flow was tried twice — once straight after the resize, once at the
+// very end — and both were worse than nothing: the card someone had just chosen a
+// trigger in, and was already reaching back into, would slide out from under the
+// cursor. Auto-centring earns its place when a step is ADDED, where the flow has
+// grown somewhere the reader hasn't looked yet; here they are looking right at it.
 //   (null)      no animation — an existing automation, or the sequence is over
 //
 // Deliberately NOT a crossfade with the flow already in place. The connector and
@@ -198,24 +213,56 @@ export type IntroPhase = 'leaving' | 'growing' | 'connecting';
 // Each beat's own duration lives with the element that animates it; these are when
 // the NEXT beat starts, so they trail their animation slightly rather than cutting
 // it off.
-export const INTRO_LEAVING_MS = 140;
+export const INTRO_LEAVING_MS = 120;
 // Ends 40ms BEFORE the card has finished resizing, on purpose. The last stretch of
 // a decelerating curve covers almost no distance, and node positions are re-derived
 // from the measured height every frame — so the connector starts drawing while the
 // card settles its final few pixels, and the exit card tracks it rather than
 // waiting for it. Overlapping the beats is most of what stops this reading as slow.
-export const INTRO_GROWING_MS = 240;
+export const INTRO_GROWING_MS = 260;
 // The line, and the exit card starting just before the line finishes reaching it.
-export const INTRO_CONNECTING_MS = 380;
+export const INTRO_CONNECTING_MS = 300;
 
-// One curve for the whole sequence, so a card resizing and a line drawing read as
-// the same gesture rather than two things eased differently.
+// The proto's one easing curve — see shared/motion.
+const INTRO_EASE = PROTO_EASE;
+
+// The canvas arriving on a screen that already existed — opening an automation from
+// the list, rather than creating one. Each card follows the one above it.
+const ENTER_STAGGER_MS = 70;
+
+// A step arriving on a canvas that's already there. Verbatim from the shipping
+// canvas (components/canvas/nodes) — engineers reading both should find one answer,
+// not two, and that one is already reviewed.
+const NEW_STEP_CLASS =
+  'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none';
+const NEW_STEP_MS = 400;
+// Bringing a newly added card to the middle of the canvas, after the column has
+// settled around it. Doing both at once would be the card moving while it appears,
+// which is two things to follow.
+const STEP_CENTER_MS = 450;
+// Below this the canvas doesn't bother: a card that already sits near the middle
+// doesn't need correcting by a few pixels, and a move that small reads as the canvas
+// slipping rather than as anything being done.
+const STEP_CENTER_MIN_SHIFT = 24;
+
+// The column opening to make room for an insertion, and closing up after a delete.
 //
-// A plain decelerate, not the hard-out curve this started with. That one covered
-// most of its distance in the first third and then crept, which is why a 300ms
-// grow read as instant-then-settling — the duration was real, but almost none of
-// the movement was in it.
-const INTRO_EASE = 'ease-[cubic-bezier(0.22,0.61,0.36,1)]';
+// React Flow positions nodes with an inline transform, and a CSS transition tweens
+// an inline style like any other — so the cards below an insertion glide instead of
+// jumping. The same rule covers deleting a step and a card growing (an email's links
+// list, a tier filter revealing a field), both of which also jumped.
+//
+// Only safe because nothing here is draggable. On a canvas with draggable nodes this
+// would put every card 300ms behind the cursor, which is why it isn't the default.
+//
+// Written as String.raw, and with the curve spelled out rather than interpolated
+// from PROTO_EASE, because Tailwind reads class names out of the source text and
+// both would otherwise be lost: an underscore means a space inside an arbitrary
+// variant, so `react-flow__node` needs its underscores escaped and the backslashes
+// have to survive into the runtime string; and a `${...}` is not a name the scanner
+// can see. Keep the curve in step with shared/motion.
+const NODE_SETTLE_CLASS = String.raw`[&_.react-flow\_\_node]:transition-transform [&_.react-flow\_\_node]:duration-300 [&_.react-flow\_\_node]:ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:[&_.react-flow\_\_node]:transition-none`;
+const ENTER_CLASS = `animate-in duration-320 ${INTRO_EASE} fade-in-0 fill-mode-backwards slide-in-from-bottom-2 motion-reduce:animate-none`;
 
 // The card resizing around its new contents, and the connector drawing itself down
 // to the exit card. Both are transitions rather than keyframes — they interpolate
@@ -225,15 +272,15 @@ const INTRO_EASE = 'ease-[cubic-bezier(0.22,0.61,0.36,1)]';
 //
 // INTRO_GROWING_MS above has to outlast the grow, since the connector can't be
 // positioned until the card it hangs from has stopped moving.
-const INTRO_GROW_CLASS = `transition-[height] duration-280 ${INTRO_EASE} motion-reduce:transition-none`;
+const INTRO_GROW_CLASS = `transition-[height] duration-240 ${INTRO_EASE} motion-reduce:transition-none`;
 // Still the quickest beat — the line is a connection being made, not an object
 // arriving — but not so quick that the exit card lands before it has got there.
-const INTRO_DRAW_CLASS = `transition-[stroke-dashoffset] duration-200 ${INTRO_EASE} motion-reduce:transition-none`;
+const INTRO_DRAW_CLASS = `transition-[stroke-dashoffset] duration-180 ${INTRO_EASE} motion-reduce:transition-none`;
 // The exit card, held back until the line is most of the way down to it — not all
 // the way, so the two overlap rather than queue. The delay is an arbitrary property
 // rather than `delay-*`, which tw-animate-css redefines to mean animation-delay,
 // and this is a transition.
-const INTRO_EXIT_CLASS = `transition-[opacity,translate] duration-240 [transition-delay:140ms] ${INTRO_EASE} motion-reduce:transition-none`;
+const INTRO_EXIT_CLASS = `transition-[opacity,translate] duration-180 [transition-delay:120ms] ${INTRO_EASE} motion-reduce:transition-none`;
 
 const StepNode: React.FC<NodeProps> = ({ data }) => {
   const d = data as StepNodeData;
@@ -249,6 +296,41 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       d.onWaitChange?.(hours);
     }
   };
+  // What's in the box while it's being typed in, which is not always a number a
+  // wait can be made of.
+  //
+  // Bound straight to the value, the field was uneditable: clearing it made an
+  // empty string, an empty string isn't a valid duration, so the change was
+  // rejected and the old digit reappeared under the cursor. You could never get to
+  // an empty box to type a different number into.
+  //
+  // So the text is held here while it's being edited and only committed when it
+  // parses. Leaving it empty isn't a wait of zero — a step that waits no time is a
+  // step that shouldn't be there — so blurring an empty box puts the previous value
+  // back rather than inventing one.
+  const [waitText, setWaitText] = useState<string | null>(null);
+  // A step you just added opens with its cursor in it. The two kinds of card ask for
+  // different first things — a subject, a duration — but in both the answer is the
+  // first field, so this finds it rather than each card knowing its own name for it.
+  // (The email's subject lives inside EmailPreview, which would otherwise need a prop
+  // threaded through it for this alone.)
+  //
+  // preventScroll because the canvas is about to centre this card itself: left to
+  // the browser, focus would scroll the container first and the two would fight.
+  const formRef = useRef<HTMLDivElement>(null);
+  const focusOnMount = useRef(Boolean(d.isNew)).current;
+  useEffect(() => {
+    if (!focusOnMount) {
+      return;
+    }
+    // Next frame, not this one: the card mounts while the picker that added it is
+    // still closing, and focus set mid-teardown is focus something else is about to
+    // take back.
+    const frame = requestAnimationFrame(() => {
+      formRef.current?.querySelector('input')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusOnMount]);
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
   const triggerUnset = isTrigger && Boolean(d.triggerUnset);
   // Captured at mount: a card that STARTED life asking the question is the one
@@ -426,9 +508,14 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
     <NodeCard
       border={d.selected ? 'selected' : 'default'}
       className={cn(
+        // The entrance and an insertion never overlap in practice — one is the
+        // canvas arriving, the other needs it to already be there — but they're
+        // exclusive so they can't both drive the animation if they ever do.
+        d.enterDelay !== undefined ? ENTER_CLASS : d.isNew && NEW_STEP_CLASS,
         bornAsking &&
           `animate-in duration-300 ${INTRO_EASE} fade-in-0 slide-in-from-top-2 motion-reduce:animate-none`,
       )}
+      style={d.enterDelay === undefined ? undefined : { animationDelay: `${d.enterDelay}ms` }}
     >
       <NodeHeader action={action} icon={headerIcon} title={d.title} />
       {isTrigger && (
@@ -454,7 +541,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
               <div
                 className={cn(
                   phase === 'leaving' &&
-                    'animate-out duration-140 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
+                    'animate-out duration-120 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
                 )}
               >
                 <TriggerEmptyState onSelect={d.onTriggerConfigChange} />
@@ -468,7 +555,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
               // (components/canvas/nodes) — including motion-reduce, since this is
               // decoration and nobody needs it to understand what happened.
               <div
-                className={`animate-in duration-280 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
+                className={`animate-in duration-240 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
               >
                 <TriggerFieldsForm
                   config={triggerConfig}
@@ -486,6 +573,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
         // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
         // and selecting don't pan the canvas or re-fire node selection.
         <div
+          ref={formRef}
           className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)}
           onClick={(e) => e.stopPropagation()}
         >
@@ -528,8 +616,20 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                 className="h-9 flex-1"
                 min={1}
                 type="number"
-                value={wait.amount}
-                onChange={(e) => changeWait(Math.max(1, Number(e.target.value) || 1), wait.unit)}
+                value={waitText ?? wait.amount}
+                onBlur={() => setWaitText(null)}
+                onChange={(e) => {
+                  setWaitText(e.target.value);
+                  const amount = Number(e.target.value);
+                  if (e.target.value !== '' && Number.isSafeInteger(amount) && amount > 0) {
+                    changeWait(amount, wait.unit);
+                  }
+                }}
+                // Clicking in replaces rather than appends. These are one or two
+                // digits that get changed wholesale — nobody edits their way from 3
+                // to 14 — and a number input's spinner makes the caret hard to place
+                // by hand anyway.
+                onFocus={(e) => e.target.select()}
               />
               <Select
                 value={wait.unit}
@@ -568,6 +668,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
 // adding meant pressing a big dashed rectangle, and it was also the only place
 // you could not insert BEFORE the thing you were pointing at.
 const ExitNode: React.FC<NodeProps> = ({ data }) => {
+  const enterDelay = (data as { enterDelay?: number } | undefined)?.enterDelay;
   // Lands after the connector has drawn down to it, so the line arrives somewhere
   // rather than the two appearing together and the line explaining nothing.
   //
@@ -586,7 +687,12 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
   }, [shown]);
   return (
     <NodeCard
-      className={cn(intro && INTRO_EXIT_CLASS, intro && !shown && 'translate-y-2 opacity-0')}
+      className={cn(
+        enterDelay !== undefined && ENTER_CLASS,
+        intro && INTRO_EXIT_CLASS,
+        intro && !shown && 'translate-y-2 opacity-0',
+      )}
+      style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
     >
       <NodeHeader icon={LucideIcon.LogOut} title="Exit automation" />
     </NodeCard>
@@ -720,7 +826,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerLocked = false,
   inlineAnalytics = false,
 }) => {
-  const { canvasRef, onInit, size } = useCenteredColumn();
+  const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Which email the right-hand analytics sheet is reporting on.
   const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
@@ -731,6 +837,25 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   const [linksOpenId, setLinksOpenId] = useState<string | null>(null);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  // The step just inserted, held only as long as its entrance takes. Left set, the
+  // card would animate again on any later re-render.
+  const [newStepId, setNewStepId] = useState<string | null>(null);
+  // Which card the canvas should bring to the middle next. Set when a step is added
+  // and at no other time.
+  //
+  // Deleting deliberately doesn't move the canvas. Running the add in reverse —-
+  // centring the card above the gap — was tried and taken out again: it assumes the
+  // reader is working back up the flow, and someone clearing out several steps in a
+  // row is usually working DOWN it. Guessing wrong there takes the view away from
+  // the next thing they were about to delete.
+  const [centerStepId, setCenterStepId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!newStepId) {
+      return;
+    }
+    const timer = setTimeout(() => setNewStepId(null), NEW_STEP_MS);
+    return () => clearTimeout(timer);
+  }, [newStepId]);
   // A trigger picked from the node's ⋯, waiting on the warning below. Swapping the
   // trigger throws away the audience and exits configured under the old one, so the
   // pick is held here rather than applied where it was made.
@@ -740,6 +865,49 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // `triggerConfig === undefined` is the read canvas passing none and means the
   // opposite, so the check is explicitly against null.
   const unset = triggerConfig === null;
+
+  // The canvas is blank until React Flow has centred the column, then its cards
+  // arrive in order.
+  //
+  // React Flow centres the flow from a measurement it can only take once the DOM
+  // exists, so the first painted frame has the nodes positioned for a viewport that
+  // hasn't accounted for the performance pane beside it — they draw wide and jump
+  // left. Waiting a frame and fading in means the first thing drawn is the right
+  // thing, and staggering the cards turns the wait into the screen assembling
+  // itself rather than a pause.
+  //
+  // Not for a canvas being created: that one has the trigger sequence, and two
+  // entrances for one screen is one too many. Captured at mount because `unset`
+  // stops being true the moment a trigger is picked.
+  const [entered, setEntered] = useState(false);
+  const [entranceOver, setEntranceOver] = useState(false);
+  const staggerOnEntry = useRef(!unset).current;
+  useEffect(() => {
+    if (entered || size.width === 0) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      // Re-anchor before revealing. React Flow's own init runs before any card has
+      // been measured, so the flow's height wasn't known yet and it anchored to the
+      // top by default; by now it is, and this is the last moment the correction is
+      // free — the canvas is still being held at opacity 0.
+      recenter();
+      setEntered(true);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [entered, size.width, recenter]);
+  // Dropped once it has played. Left in place, a card's delay would change as steps
+  // were inserted around it, and a changed animation class replays the animation —
+  // so adding one step would re-introduce the whole flow.
+  useEffect(() => {
+    if (!entered || entranceOver) {
+      return;
+    }
+    const timer = setTimeout(() => setEntranceOver(true), 1200);
+    return () => clearTimeout(timer);
+  }, [entered, entranceOver]);
+  const staggering = staggerOnEntry && entered && !entranceOver;
+  const enterDelay = (index: number) => (staggering ? index * ENTER_STAGGER_MS : undefined);
 
   // The creation sequence, run once, when a canvas that had no trigger gets one.
   // Not on "Change trigger" — the flow below is already built, and animating it away
@@ -800,11 +968,18 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   const { onNodesChange, layout } = useMeasuredColumn();
 
   const insert = (anchor: InsertActionAnchor, kind: 'email' | 'wait') => {
-    onChange(
+    const next =
       kind === 'email'
         ? insertSendEmailAction({ detail: draft, anchor })
-        : insertWaitAction({ detail: draft, anchor }),
-    );
+        : insertWaitAction({ detail: draft, anchor });
+    // Which action is the new one, read off the result rather than returned by the
+    // helpers — they hand back a whole detail, and its id is the one thing here that
+    // needs to know which card just appeared.
+    const before = new Set(draft.actions.map((action) => action.id));
+    const added = next.actions.find((action) => !before.has(action.id))?.id ?? null;
+    setNewStepId(added);
+    setCenterStepId(added);
+    onChange(next);
   };
   // The email the analytics sheet is reporting on, resolved from the live draft
   // so edits to its subject show through while the sheet is open.
@@ -829,16 +1004,28 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     [triggerConfig],
   );
 
-  const { nodes, edges, contentBottom } = useMemo(() => {
+  const { nodes, edges, contentBottom, centerStepY } = useMemo(() => {
     // The column, top to bottom: trigger, each action in flow order, then the
     // tail button. Order is the only thing the layout needs — heights come back
     // measured, so an email card growing an analytics block or a links list
     // moves the cards below it without anything here being told.
-    const { ys, bottom } = layout(
-      triggerOnly
-        ? ['__trigger__']
-        : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'],
-    );
+    const columnIds = triggerOnly
+      ? ['__trigger__']
+      : ['__trigger__', ...ordered.map((action) => action.id), '__exit__'];
+    const { ys, bottom } = layout(columnIds);
+
+    // The middle of whichever card the canvas has been asked to centre on. Heights
+    // aren't handed back by the layout, but they're implied by it: the next card's
+    // top, less the constant gap, is this one's bottom — and for the last card that
+    // bottom is the content's.
+    const centerIndex = centerStepId ? columnIds.indexOf(centerStepId) : -1;
+    let targetCenter: number | null = null;
+    if (centerIndex >= 0) {
+      const top = ys[centerIndex];
+      const nextTop = ys[centerIndex + 1];
+      const cardBottom = nextTop === undefined ? bottom : nextTop - NODE_VISUAL_GAP;
+      targetCenter = top + (cardBottom - top) / 2;
+    }
 
     const built: Node[] = [];
     built.push({
@@ -859,6 +1046,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerLocked,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
+        enterDelay: enterDelay(0),
         onRequestTriggerChange: requestTriggerChange,
       },
       draggable: false,
@@ -868,7 +1056,12 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     // Nothing else to draw yet: the trigger node is either asking the question, or
     // resizing around the answer with nothing below it to displace.
     if (triggerOnly) {
-      return { nodes: built, edges: [] as Edge[], contentBottom: bottom };
+      return {
+        nodes: built,
+        edges: [] as Edge[],
+        contentBottom: bottom,
+        centerStepY: targetCenter,
+      };
     }
     ordered.forEach((action, i) => {
       const isEmail = action.type === 'send_email';
@@ -878,6 +1071,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         position: { x: 0, y: ys[i + 1] },
         data: {
           kind: isEmail ? 'email' : 'wait',
+          enterDelay: enterDelay(i + 1),
+          isNew: action.id === newStepId,
           title: isEmail ? 'Send email' : 'Wait',
           subtitle: isEmail
             ? action.data.email_subject || 'Untitled'
@@ -920,7 +1115,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
       id: '__exit__',
       type: 'exit',
       position: { x: 0, y: ys[ys.length - 1] },
-      data: { intro: introPhase === 'connecting' },
+      data: { intro: introPhase === 'connecting', enterDelay: enterDelay(ordered.length + 1) },
       draggable: false,
       connectable: false,
       selectable: false,
@@ -955,7 +1150,12 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         },
       });
     }
-    return { nodes: built, edges: builtEdges, contentBottom: bottom };
+    return {
+      nodes: built,
+      edges: builtEdges,
+      contentBottom: bottom,
+      centerStepY: targetCenter,
+    };
   }, [
     draft,
     ordered,
@@ -967,11 +1167,37 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     inlineAnalytics,
     linksOpenId,
     layout,
+    enterDelay,
+    newStepId,
+    centerStepId,
     showOptions,
     triggerOnly,
     introPhase,
     requestTriggerChange,
   ]);
+
+  // Follow whichever card was asked for, once the column has settled around it.
+  // Deliberately a beat later than the animation rather than part of it: the canvas
+  // moving under a card that is still fading in reads as one thing failing to hold
+  // still.
+  //
+  // Keyed on the id alone. centerStepY goes on moving as measurements trickle in
+  // behind the column's transition, and reacting to that would re-issue the move
+  // every frame instead of once per insertion.
+  useEffect(() => {
+    if (centerStepId === null || centerStepY === null) {
+      return;
+    }
+    const timer = setTimeout(
+      () => centerOn(centerStepY, STEP_CENTER_MS, STEP_CENTER_MIN_SHIFT),
+      NEW_STEP_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [centerStepId]);
+
+  // Handed to the viewport hook rather than passed in, because it comes out of the
+  // layout below — which needs the hook to have run first.
+  contentHeightRef.current = contentBottom;
 
   const translateExtent = useMemo(
     () => panTranslateExtent(contentBottom, size),
@@ -981,7 +1207,21 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   return (
     // relative: the analytics sheet slides in over this region.
     <div className="relative flex size-full">
-      <div ref={canvasRef} className="min-h-0 flex-1">
+      {/* Held blank until the column is centred — see `entered`. The whole surface,
+                not just the cards: the dotted background is positioned by the same
+                viewport, so it would slide too. */}
+      <div
+        ref={canvasRef}
+        className={cn(
+          'min-h-0 flex-1 transition-opacity duration-200 motion-reduce:transition-none',
+          entered ? 'opacity-100' : 'opacity-0',
+          // Not until the canvas has settled. During the entrance and the creation
+          // sequence the cards are being placed for the first time, and a transition
+          // would animate them in from wherever React Flow started them — including
+          // the exit card sliding in from the origin.
+          entranceOver && NODE_SETTLE_CLASS,
+        )}
+      >
         <ReactFlow
           edges={edges}
           edgeTypes={edgeTypes}

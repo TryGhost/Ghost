@@ -165,6 +165,8 @@ export const TIER_OPTIONS: { id: string; name: string }[] = [
   { id: 'gold', name: 'Gold' },
 ];
 
+export const ALL_TIER_IDS: string[] = TIER_OPTIONS.map((tier) => tier.id);
+
 export const ANY_AUDIENCE: Audience = { scope: 'all', tierIds: [] };
 
 export const tierNames = (tierIds: string[]): string[] =>
@@ -209,8 +211,18 @@ export const needsStripe = (config: TriggerConfig): boolean =>
   isPaidAudience(config) || config.exitCriteria.some((id) => STRIPE_CRITERIA.includes(id));
 
 /** Specific tiers are being watched, rather than any tier. */
+// A tier list that actually NARROWS the audience — some of the tiers, not all of
+// them. Every tier selected is "any tier", which is what a paid audience already
+// means, so it isn't a filter and shouldn't read as one.
+//
+// Empty is neither: it's the invalid state the field shows an error for. Tiers used
+// to be stored the other way round, with an empty list meaning "any", but that left
+// "any" and "none chosen yet" as the same value — and the moment the field offered
+// an Any TIER row of its own, the two had to be told apart.
 export const hasTierFilter = (config: Pick<TriggerConfig, 'type' | 'audience'>): boolean =>
-  hasTiers(config) && config.audience.tierIds.length > 0;
+  hasTiers(config) &&
+  config.audience.tierIds.length > 0 &&
+  config.audience.tierIds.length < ALL_TIER_IDS.length;
 
 interface ExitCriterion {
   id: ExitCriterionId;
@@ -325,11 +337,15 @@ const defaultCriteria = (config: Pick<TriggerConfig, 'type' | 'audience'>): Exit
  * with no trigger at all, so there's nothing to merge into and the config is
  * built from the choice.
  */
-export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
-  type,
-  audience: ANY_AUDIENCE,
-  exitCriteria: defaultCriteria({ type, audience: ANY_AUDIENCE }),
-});
+export const triggerConfigFor = (type: TriggerType): TriggerConfig => {
+  // A trigger that has tiers starts with all of them — "any tier" — rather than
+  // with none, which is now the field's error state rather than its default.
+  const base = { type, audience: ANY_AUDIENCE };
+  const audience: Audience = hasTiers(base)
+    ? { ...ANY_AUDIENCE, tierIds: [...ALL_TIER_IDS] }
+    : ANY_AUDIENCE;
+  return { type, audience, exitCriteria: defaultCriteria({ type, audience }) };
+};
 
 export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = triggerConfigFor('member_subscribes');
 

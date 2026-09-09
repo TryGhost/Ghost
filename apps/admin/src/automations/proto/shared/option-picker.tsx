@@ -100,6 +100,8 @@ export const OptionPicker = <Value extends string>({
 }: OptionPickerProps<Value>) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  // Whether this close is the result of choosing something — see onCloseAutoFocus.
+  const picked = useRef(false);
 
   // Dismiss on outside pointerdown, in the capture phase.
   //
@@ -164,6 +166,20 @@ export const OptionPicker = <Value extends string>({
         side={side}
         sideOffset={sideOffset}
         updatePositionStrategy="always"
+        // Radix returns focus to whatever opened the popover as it closes, and it
+        // does so AFTER the selection has been handled — so anything the choice put
+        // on screen and focused (a new step card's first field) lost the cursor a
+        // moment later, to a "+" that by then had a card sitting where it used to be.
+        //
+        // Only when a choice was actually made. Dismissing without picking leaves
+        // nothing new to focus, and handing focus back to the trigger is then exactly
+        // right.
+        onCloseAutoFocus={(event) => {
+          if (picked.current) {
+            picked.current = false;
+            event.preventDefault();
+          }
+        }}
       >
         {options.map((option) => (
           <PickerRow
@@ -173,6 +189,7 @@ export const OptionPicker = <Value extends string>({
             // Picking closes the list — every use of this is a single
             // choice, so leaving it open would just be a second click.
             onSelect={(next) => {
+              picked.current = true;
               onOpenChange(false);
               onSelect(next);
             }}

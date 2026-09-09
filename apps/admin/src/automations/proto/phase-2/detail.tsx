@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   AlertDialog,
@@ -17,12 +17,19 @@ import {
   DropdownMenuTrigger,
   EmptyIndicator,
   buttonVariants,
+  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
-import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import {
+  useBlocker,
+  useConfirmUnload,
+  useLocation,
+  useNavigate,
+  useParams,
+} from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
 import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
@@ -39,6 +46,7 @@ import {
 } from '@/automations/proto/shared/store';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
 import { HeaderBar } from './header-bar';
+import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
 import { type TriggerConfig, needsStripe } from '@/automations/proto/shared/trigger-config';
 import {
@@ -73,12 +81,38 @@ type LiveStatus = 'active' | 'inactive';
 // what takes a stopped automation live — the button and the dialog it opens have
 // to say the same thing. (The exploration lane uses an on/off switch metaphor
 // instead, which is why this used to be a prop.)
+// How long the prototype pretends publishing takes. The real editor puts a spinner
+// in this button while the request is in flight (see automations/editor.tsx), and
+// the choreography around it is worth prototyping even though nothing here is
+// actually waiting on a server: it's the moment the screen changes underneath, so
+// it's the moment worth getting right.
+const PUBLISH_LATENCY_MS = 550;
+
+// The confirm button, with production's own in-flight treatment: the label is
+// replaced by a spinner and kept for screen readers, and both controls go inert so
+// the dialog can't be dismissed or double-fired mid-request.
+const ConfirmButton: React.FC<{
+  pending: boolean;
+  pendingLabel: string;
+  children: React.ReactNode;
+  onConfirm: () => void;
+}> = ({ pending, pendingLabel, children, onConfirm }) =>
+  pending ? (
+    <Button disabled>
+      <LoadingIndicator color="light" size="sm" />
+      <span className="sr-only">{pendingLabel}</span>
+    </Button>
+  ) : (
+    <Button onClick={onConfirm}>{children}</Button>
+  );
+
 const TurnOnAutomationDialog: React.FC<{
   open: boolean;
+  pending: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-}> = ({ open, onOpenChange, onConfirm }) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
+}> = ({ open, pending, onOpenChange, onConfirm }) => (
+  <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>Publish automation?</AlertDialogTitle>
@@ -88,8 +122,10 @@ const TurnOnAutomationDialog: React.FC<{
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <Button onClick={onConfirm}>Publish</Button>
+        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+        <ConfirmButton pending={pending} pendingLabel="Publishing..." onConfirm={onConfirm}>
+          Publish
+        </ConfirmButton>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -123,10 +159,11 @@ const TurnOffAutomationDialog: React.FC<{
 // yet; options go back in when there's something to encode.
 const PublishChangesDialog: React.FC<{
   open: boolean;
+  pending: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-}> = ({ open, onOpenChange, onConfirm }) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
+}> = ({ open, pending, onOpenChange, onConfirm }) => (
+  <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>Publish changes</AlertDialogTitle>
@@ -135,8 +172,10 @@ const PublishChangesDialog: React.FC<{
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <Button onClick={onConfirm}>Publish</Button>
+        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+        <ConfirmButton pending={pending} pendingLabel="Publishing..." onConfirm={onConfirm}>
+          Publish
+        </ConfirmButton>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -218,6 +257,8 @@ const AutomationFloat: React.FC = () => {
   const [stopOpen, setStopOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  // Whether a publish is in flight — see runPublish, below the not-found guard.
+  const [publishing, setPublishing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const stripeConnected = useStripeConnected();
   // Set when the screen is deliberately navigating away — Delete, and the first
@@ -275,6 +316,31 @@ const AutomationFloat: React.FC = () => {
   // often turning it off BECAUSE of what the numbers say, and hiding them at that
   // exact moment would be the app arguing with them.
   const [paneCollapsed, setPaneCollapsed] = useState(() => liveStatus !== 'active');
+  // Whether the pane is allowed to animate yet.
+  //
+  // Its opening state is settled before the screen renders — the store is
+  // synchronous, so a running automation's pane is open on the very first pass. It
+  // should therefore simply BE open, not animate into being open, and opening an
+  // automation that was already on flashed exactly that: the pane wiping in from
+  // zero as the page arrived.
+  //
+  // Turning the transition on one paint later means the width it mounts with is the
+  // width it draws, while every change after that — publishing, the toggle — still
+  // animates. Cheaper and more reliable than working out which of the mount's style
+  // recalculations was firing the transition.
+  const [paneAnimated, setPaneAnimated] = useState(false);
+  useEffect(() => {
+    setPaneAnimated(true);
+  }, []);
+  // `leaving` suppresses the not-found read and the leave guard while an automation
+  // is removed or replaced under the screen. A first save used to end in a remount,
+  // which cleared it; now that the screen survives, it has to be put back down once
+  // the automation it was covering for exists.
+  useEffect(() => {
+    if (!isCreating) {
+      leaving.current = false;
+    }
+  }, [isCreating]);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -354,6 +420,19 @@ const AutomationFloat: React.FC = () => {
   // still sees them as possibly-undefined; past the guard they can't be.
   const publishedFlow = publishedAutomation ?? automation;
   const draftFlow = activeDraft ?? automation;
+  // What actually gets committed, which is the flow draft with the CURRENT name put
+  // back on it.
+  //
+  // A draft is a snapshot of the whole AutomationDetail, taken whenever the canvas
+  // last changed — so it carries whatever the automation was called at that moment.
+  // The name isn't edited on the canvas though; it's edited in Settings, on its own
+  // path. Add a step, then rename, then publish, and the snapshot's stale name went
+  // straight over the rename.
+  //
+  // The record is the authority on the name in both modes: while creating, it's the
+  // blank with the pending rename merged over it; afterwards, it's what Settings
+  // wrote to the store.
+  const flowToCommit: AutomationDetail = { ...draftFlow, name: automation.name };
   const selectedRun = selectedMemberId
     ? (scenario.runs.find((r) => r.id === selectedMemberId) ?? null)
     : null;
@@ -413,53 +492,92 @@ const AutomationFloat: React.FC = () => {
       leaving.current = true;
       insertAutomation({
         ...record,
-        automation: { ...draftFlow, status: status ?? draftFlow.status },
+        automation: { ...flowToCommit, status: status ?? draftFlow.status },
         trigger: triggerConfig,
       });
       // replace: /new isn't somewhere to go Back to, and the automation now has a
       // real id. The screen is keyed by id, so this remounts onto the saved record
       // — which is why the write has to land first.
-      navigate(toVersioned(`${lanePath(LANE)}/${draftFlow.id}`), { replace: true });
+      // replace: /new isn't somewhere to go Back to. `fromNew` tells the screen
+      // wrapper this is the same automation gaining an id rather than a move to a
+      // different one, so it holds its key and nothing remounts.
+      //
+      // Which means the state the remount used to reset has to be reset here: the
+      // draft IS the saved version now, and the creating-only name override would
+      // otherwise go on shadowing the record it was just written into.
+      navigate(toVersioned(`${lanePath(LANE)}/${draftFlow.id}`), {
+        replace: true,
+        state: { fromNew: true },
+      });
+      setDraft(null);
+      setNewDetails(null);
       return;
     }
-    saveAutomation(id, draftFlow, triggerConfig);
+    saveAutomation(id, flowToCommit, triggerConfig);
     if (status) {
       setAutomationStatus(id, status);
     }
     setDraft(null);
   };
 
+  // Publishing runs behind the dialog rather than after it.
+  //
+  // The button spins while the work happens — the real editor's behaviour, since a
+  // publish is a request — and the dialog only closes once the screen behind it is
+  // in its final state. That ordering is the point: whatever changes on publish
+  // (the record appearing in the store, /new becoming a real route, the pane
+  // opening) happens under cover, and what's revealed when the dialog goes is a
+  // settled screen rather than one still catching up.
+  const runPublish = (work: () => void, close: () => void) => {
+    setPublishing(true);
+    window.setTimeout(() => {
+      work();
+      setPublishing(false);
+      // A frame later, so the work above has painted behind the dialog before the
+      // dialog stops covering it.
+      requestAnimationFrame(close);
+    }, PUBLISH_LATENCY_MS);
+  };
+
   const handleStart = () => {
-    // Starting takes the automation live as it currently stands, so the draft
-    // becomes the published version in the same move — there's no separate
-    // "publish" step to remember for something that was never running.
-    setStartOpen(false);
-    promoteDraft('active');
-    // Open the performance pane on the way live, so the screen ends up in the
-    // state it would open in from now on (see paneCollapsed): the pane tracks the
-    // lifecycle, and this is the lifecycle changing.
-    //
-    // It also means someone can't create, build and publish an automation without
-    // ever learning this screen has analytics — going live is when they start to
-    // matter, so it's when to show them.
-    //
-    // It opens onto the empty state, deliberately: "Members will appear here as
-    // they enter this automation" is a better introduction than a chart would be,
-    // because it says where to come back to and what will be here.
-    //
-    // Only on the transition to live — publishing CHANGES to something already
-    // running leaves the pane as the reader left it, since by then they've made
-    // their own choice about it.
-    setPaneCollapsed(false);
-    // Title only — the start-confirmation dialog already explained what
-    // turning it on means, so the toast just confirms it happened.
-    toast.success('Automation is on');
+    runPublish(
+      () => {
+        // Starting takes the automation live as it currently stands, so the draft
+        // becomes the published version in the same move — there's no separate
+        // "publish" step to remember for something that was never running.
+        promoteDraft('active');
+        // Open the performance pane on the way live, so the screen ends up in the
+        // state it would open in from now on (see paneCollapsed): the pane tracks the
+        // lifecycle, and this is the lifecycle changing.
+        //
+        // It also means someone can't create, build and publish an automation without
+        // ever learning this screen has analytics — going live is when they start to
+        // matter, so it's when to show them.
+        //
+        // It opens onto the empty state, deliberately: "Members will appear here as
+        // they enter this automation" is a better introduction than a chart would be,
+        // because it says where to come back to and what will be here.
+        //
+        // Only on the transition to live — publishing CHANGES to something already
+        // running leaves the pane as the reader left it, since by then they've made
+        // their own choice about it.
+        setPaneCollapsed(false);
+        // Title only — the start-confirmation dialog already explained what
+        // turning it on means, so the toast just confirms it happened.
+        toast.success('Automation is on');
+      },
+      () => setStartOpen(false),
+    );
   };
 
   const publishChanges = () => {
-    setPublishOpen(false);
-    promoteDraft();
-    toast.success('Changes published');
+    runPublish(
+      () => {
+        promoteDraft();
+        toast.success('Changes published');
+      },
+      () => setPublishOpen(false),
+    );
   };
 
   // Phase 1 only, and only while the automation is off: commit the edits without
@@ -725,7 +843,14 @@ const AutomationFloat: React.FC = () => {
             // This only works because the child below is pinned to w-[480px]: left
             // to itself the content would reflow as the pane narrowed, wrapping the
             // title and crushing the table for the length of the animation.
-            'relative flex shrink-0 flex-col overflow-hidden transition-[width] duration-150 ease-out',
+            'relative flex shrink-0 flex-col overflow-hidden',
+            // 420ms on the proto's shared curve, matching the canvas's creation
+            // sequence: publishing opens this pane, and the two shouldn't look like
+            // separate animations that happened to fire together. At the old
+            // 150ms/ease-out a 480px slab arrived faster than the eye could follow it,
+            // which is what made it read as a jump rather than a reveal.
+            paneAnimated &&
+              `transition-[width] duration-420 ${PROTO_EASE} motion-reduce:transition-none`,
             // A content panel flanking the canvas, so it takes the same step of
             // the ladder as the right-hand analytics sheet.
             'border-r border-border-default bg-surface-elevated',
@@ -739,7 +864,23 @@ const AutomationFloat: React.FC = () => {
                     header bar, so its pane doesn't carry a control of its own. */}
           {/* Pinned to the pane's full width so it never reflows while the
                     aside narrows around it — see the note above. */}
-          <div className="flex min-h-0 w-[480px] flex-1 flex-col">
+          {/* The contents fade rather than being wiped in by the widening edge.
+                    Width alone made the panel's own text appear to slide out from under
+                    the canvas, because everything inside was arriving sideways at 480px
+                    of travel while standing still relative to its own column.
+                    
+                    Trailing the width on the way in, leading it on the way out: a reveal
+                    wants the space to exist before anything occupies it, and a dismissal
+                    wants the contents gone before the space closes over them. */}
+          <div
+            className={cn(
+              'flex min-h-0 w-[480px] flex-1 flex-col',
+              paneAnimated && 'transition-opacity motion-reduce:transition-none',
+              paneHidden
+                ? 'opacity-0 duration-100'
+                : 'opacity-100 [transition-delay:140ms] duration-300',
+            )}
+          >
             <LeftPanel
               query={query}
               scenario={scenario}
@@ -913,6 +1054,7 @@ const AutomationFloat: React.FC = () => {
       {/* Lifecycle confirms — turning the automation on, and taking it off. */}
       <TurnOnAutomationDialog
         open={startOpen}
+        pending={publishing}
         onConfirm={handleStart}
         onOpenChange={setStartOpen}
       />
@@ -977,6 +1119,7 @@ const AutomationFloat: React.FC = () => {
       {/* Publish — a deliberate confirm when the automation is already live. */}
       <PublishChangesDialog
         open={publishOpen}
+        pending={publishing}
         onConfirm={publishChanges}
         onOpenChange={setPublishOpen}
       />
@@ -1020,11 +1163,39 @@ const AutomationFloat: React.FC = () => {
 // styles, header treatments — can register without moving anything.
 const AutomationFloatScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   // Keyed by id so every piece of unsaved state — the draft, the trigger being
   // configured, the member in focus — belongs to one automation and starts clean
   // on the next. Without it, React reuses the instance across a route change and
   // the previous automation's draft would follow you to the new one.
-  return <AutomationFloat key={id} />;
+  //
+  // With ONE exception: saving a new automation swaps /new for its id, and that is
+  // the only route change that isn't a change of subject — it's the same
+  // automation, which has just gained an id. Letting the key change there tore the
+  // whole screen down and rebuilt it mid-publish: header, pane, and both React Flow
+  // canvases reassembling in full view. That was the flash, and no amount of
+  // animation on the pieces could hide it, because the pieces were what was being
+  // destroyed.
+  //
+  // `fromNew` is set by the navigate that does it, so this can't be confused with
+  // going from /new to some OTHER automation — a change of subject, which still has
+  // to reset. `heldFor` remembers which id the held key now stands for, so the next
+  // real navigation is still recognised as one.
+  const fromNew = Boolean((location.state as { fromNew?: boolean } | null)?.fromNew);
+  const screenKey = useRef(id);
+  const heldFor = useRef(id);
+  // Mutating a ref during render is safe here in a way it wasn't for the canvas's
+  // intro sequence: this only ever recomputes the same answer, so StrictMode's
+  // discarded first pass costs nothing.
+  if (id !== heldFor.current) {
+    if (fromNew && heldFor.current === 'new') {
+      heldFor.current = id;
+    } else {
+      screenKey.current = id;
+      heldFor.current = id;
+    }
+  }
+  return <AutomationFloat key={screenKey.current} />;
 };
 
 export default AutomationFloatScreen;

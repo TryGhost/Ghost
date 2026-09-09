@@ -265,10 +265,46 @@ export const orderActions = (automation: AutomationDetail): AutomationAction[] =
 // the flow doesn't bob vertically as you move between read / run / edit.
 export const INITIAL_VIEWPORT_Y = 48;
 
+// Where "centred" actually sits: 40% of the free space above the flow, 60% below.
+//
+// Geometric centre reads as low here, because the canvas isn't the whole window —
+// there's a header above it, and the eye centres on the screen rather than on the
+// region. The same correction typography makes for a title in a box: true middle
+// looks like it has slipped downward, so it goes slightly above.
+//
+// Used by every rule that centres something vertically, so that framing set on load
+// and framing set when a step is added agree with each other.
+export const VERTICAL_CENTER_RATIO = 0.4;
+
 export function useCenteredColumn(leftInset = 0) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<ReactFlowInstance | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  // The height of the flow, kept current by whoever is laying it out. Read rather
+  // than reacted to — it only matters at the moments the viewport is re-anchored.
+  const contentHeightRef = useRef(0);
+
+  // Where the top of the flow sits.
+  //
+  // Centred vertically while the whole flow fits on screen, which is what makes a
+  // one-card canvas — a new automation, before anything has been added to it — look
+  // composed rather than pinned to the ceiling above a screen of nothing. It also
+  // means the first step someone adds moves the canvas a short way instead of
+  // hauling it down from the top.
+  //
+  // Anchored near the top as soon as it doesn't fit, because then the top of the
+  // flow is where you start reading and centring would hide the beginning.
+  const anchorY = useCallback(() => {
+    const el = canvasRef.current;
+    const content = contentHeightRef.current;
+    if (!el || content <= 0) {
+      return INITIAL_VIEWPORT_Y;
+    }
+    const slack = el.clientHeight - content;
+    return slack > INITIAL_VIEWPORT_Y * 2
+      ? Math.round(slack * VERTICAL_CENTER_RATIO)
+      : INITIAL_VIEWPORT_Y;
+  }, []);
 
   const centerColumn = useCallback(() => {
     const instance = flowRef.current;
@@ -280,8 +316,8 @@ export function useCenteredColumn(leftInset = 0) {
     const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
     // Re-anchor Y to the shared default (not the drifted value) so state transitions
     // keep the first node at the same height instead of jumping.
-    void instance.setViewport({ x, y: INITIAL_VIEWPORT_Y, zoom });
-  }, [leftInset]);
+    void instance.setViewport({ x, y: anchorY(), zoom });
+  }, [leftInset, anchorY]);
 
   useEffect(() => {
     const el = canvasRef.current;
@@ -303,12 +339,49 @@ export function useCenteredColumn(leftInset = 0) {
       const width = el?.clientWidth ?? 800;
       setSize({ width, height: el?.clientHeight ?? 600 });
       const x = Math.round(leftInset + (width - leftInset - NODE_WIDTH) / 2);
-      void instance.setViewport({ x, y: INITIAL_VIEWPORT_Y, zoom: 1 });
+      void instance.setViewport({ x, y: anchorY(), zoom: 1 });
+    },
+    [leftInset, anchorY],
+  );
+
+  // Bring a point in the flow to the middle of the visible canvas, animated.
+  //
+  // setViewport rather than setCenter so the horizontal half stays under our
+  // control: the column is centred by the same rule as everywhere else here, and
+  // only the vertical actually moves. A viewport's y is the screen offset of flow
+  // y=0, so putting flow point `y` at the middle of the canvas means offsetting by
+  // half the height less where the point already sits.
+  // minShift: how far the viewport has to travel for the move to be worth making.
+  // A canvas that is already nearly centred doesn't need correcting by ten pixels —
+  // that isn't a move, it's a twitch, and a twitch reads as something going wrong
+  // rather than something being done.
+  const centerOn = useCallback(
+    (y: number, duration: number, minShift = 0) => {
+      const instance = flowRef.current;
+      const el = canvasRef.current;
+      if (!instance || !el) {
+        return;
+      }
+      const { zoom, y: currentY } = instance.getViewport();
+      const targetY = el.clientHeight * VERTICAL_CENTER_RATIO - y * zoom;
+      if (Math.abs(targetY - currentY) < minShift) {
+        return;
+      }
+      const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
+      void instance.setViewport(
+        { x, y: targetY, zoom },
+        // 'linear' rather than the default 'smooth'. Smooth is d3's interpolateZoom,
+        // which travels between two viewports by zooming OUT, panning, and zooming
+        // back in — the arc that made every card on the canvas shrink and grow again
+        // on the way past. Nothing here changes zoom, so there's nothing for that arc
+        // to be good at.
+        { duration, interpolate: 'linear' },
+      );
     },
     [leftInset],
   );
 
-  return { canvasRef, onInit, size };
+  return { canvasRef, onInit, size, centerOn, contentHeightRef, recenter: centerColumn };
 }
 
 // Bounds panning to the automation's content plus a margin, so the flow can't be
@@ -332,8 +405,10 @@ export function panTranslateExtent(
   const w = size.width || 1200;
   const h = size.height || 800;
   const marginY = h * PAN_MARGIN_RATIO;
-  // The centred initial viewport in flow coords (matches useCenteredColumn: zoom 1,
-  // y = 48). Included so the bound can never clamp our own starting position.
+  // The initial viewport in flow coords, at zoom 1 and the shallowest anchor
+  // useCenteredColumn uses. Included so the bound can never clamp our own starting
+  // position — and the anchor only ever moves DOWN from here (centring a flow that
+  // fits), which stays inside a bound computed from the top of it.
   const centeredX = leftInset + (w - leftInset - NODE_WIDTH) / 2;
   const visLeft = -centeredX;
   const visRight = w - centeredX;

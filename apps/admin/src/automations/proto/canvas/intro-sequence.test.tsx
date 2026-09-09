@@ -72,7 +72,10 @@ describe('new automation intro sequence', () => {
     expect(screen.queryByText('Select a trigger')).toBeNull();
     expect(screen.queryByText('Exit automation')).toBeNull();
 
-    // Connecting: the connector and the exit card exist at last.
+    // Connecting: the connector and the exit card exist at last. The canvas has not
+    // moved at any point up to here — centring is the beat AFTER this one, so that
+    // it has a flow's worth of new height to move for rather than the few pixels the
+    // card gained by growing.
     act(() => {
       vi.advanceTimersByTime(INTRO_GROWING_MS + 10);
     });
