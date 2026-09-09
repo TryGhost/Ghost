@@ -20,12 +20,7 @@ export const SUPPORTED_INTERVALS: Interval[] = ['month'];
  * whatever request happened to need the count.
  */
 export const isCountablePeriodStart = (startDate: string): boolean => {
-  const parsed = DateTime.fromISO(startDate, { zone: 'UTC' });
-
-  // A date in the future has no period that has started yet. Counting from it puts the
-  // period start before the subscription, so usage from before the site was ever
-  // subscribed would be charged against the current allowance.
-  return parsed.isValid && parsed <= DateTime.now().setZone('UTC');
+  return DateTime.fromISO(startDate, { zone: 'UTC' }).isValid;
 };
 
 /**
@@ -50,7 +45,11 @@ export const lastPeriodStart = (startDate: string, interval: Interval): string =
     }
 
     const now = DateTime.now().setZone('UTC');
-    const fullPeriodsPast = Math.floor(now.diff(startDateISO, 'months').months);
+    // Never negative. A subscription that starts later today, or a host clock a little
+    // ahead of ours, would otherwise anchor the period before the subscription existed and
+    // charge usage from before it against the current allowance. Nothing has elapsed yet,
+    // so the current period is the one beginning at the start date.
+    const fullPeriodsPast = Math.max(0, Math.floor(now.diff(startDateISO, 'months').months));
 
     const lastPeriodStartDate = startDateISO.plus({ months: fullPeriodsPast });
 

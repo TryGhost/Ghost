@@ -11,6 +11,16 @@ import type { Interval } from '../src/types.js';
  * allowance resets, and getting it wrong charges someone on the wrong day.
  */
 describe('Date Utils', function () {
+  describe('a period that has not begun', function () {
+    it('counts from the start date rather than before the subscription existed', function () {
+      const tomorrow = DateTime.now().toUTC().plus({ days: 1 }).toISO() as string;
+
+      // Not a month earlier, which would charge usage from before the site was subscribed
+      // against the current allowance.
+      assert.equal(lastPeriodStart(tomorrow, 'month'), tomorrow);
+    });
+  });
+
   describe('fn: lastPeriodStart', function () {
     afterEach(function () {
       vi.useRealTimers();
@@ -102,15 +112,16 @@ describe('Date Utils', function () {
       assert.equal(isCountablePeriodStart('2026-02-30'), false);
     });
 
-    it('refuses a start date that has not arrived yet', function () {
-      // Counting from it would put the period start before the subscription began, so
-      // usage from before the site was ever subscribed would be charged against the
-      // current allowance.
+    // A start date that has not arrived yet is still countable. Refusing it would drop the
+    // limit entirely, which leaves the site with no allowance at all, and an allowance that
+    // is missing is worse than one anchored a little early. A host clock minutes ahead of
+    // ours is enough to reach this.
+    it('accepts a start date that has not arrived yet', function () {
       const tomorrow = DateTime.now().plus({ days: 1 }).toISO() as string;
       const nextYear = DateTime.now().plus({ years: 1 }).toISO() as string;
 
-      assert.equal(isCountablePeriodStart(tomorrow), false);
-      assert.equal(isCountablePeriodStart(nextYear), false);
+      assert.equal(isCountablePeriodStart(tomorrow), true);
+      assert.equal(isCountablePeriodStart(nextYear), true);
     });
   });
 });
