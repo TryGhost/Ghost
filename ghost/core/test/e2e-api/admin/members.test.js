@@ -4308,6 +4308,17 @@ describe('Members API Bulk operations', function () {
     mockManager.restore();
   });
 
+  it('Rejects restricted filters for destructive bulk operations', async function () {
+    const memberId = fixtureManager.get('members', 0).id;
+
+    await agent.delete(`/members?filter=${encodeURIComponent('password:guess')}`).expectStatus(400);
+
+    assert(
+      await models.Member.findOne({ id: memberId }),
+      'A restricted filter must not broaden into deleting every member',
+    );
+  });
+
   it('Can bulk unsubscribe members with filter', async function () {
     // This member has 2 subscriptions
     const member = fixtureManager.get('members', 4);

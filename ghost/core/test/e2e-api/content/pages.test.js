@@ -19,8 +19,33 @@ describe('Pages Content API', function () {
 
   beforeAll(async function () {
     agent = await agentProvider.getContentAPIAgent();
-    await fixtureManager.init('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+    await fixtureManager.init(
+      'users',
+      'user:inactive',
+      'posts',
+      'tags:extra',
+      'api_keys',
+      'newsletters',
+    );
     await agent.authenticate();
+
+    const pageId = fixtureManager.get('posts', 5).id;
+    await models.Post.edit(
+      {
+        email_recipient_filter: 'status:paid',
+        locale: 'fr',
+        newsletter_id: fixtureManager.get('newsletters', 0).id,
+      },
+      { id: pageId, context: { internal: true }, importing: true },
+    );
+    await models.PostsMeta.add(
+      {
+        post_id: pageId,
+        email_only: true,
+        email_subject: 'private page email subject',
+      },
+      { context: { internal: true } },
+    );
   });
 
   it('Can request pages', async function () {
@@ -41,6 +66,90 @@ describe('Pages Content API', function () {
     const configUrl = new URL(config.get('url'));
     assert.equal(urlParts.protocol, configUrl.protocol);
     assert.equal(urlParts.host, configUrl.host);
+  });
+
+  it('Ignores hidden selectors in page read request bodies', async function () {
+    const page = fixtureManager.get('posts', 5);
+
+    for (const identifier of [{ id: page.id }, { slug: page.slug }, { uuid: page.uuid }]) {
+      for (const selectors of [
+        { locale: 'not-the-stored-locale' },
+        { newsletter_id: '000000000000000000000000' },
+        { email_recipient_filter: 'not-the-stored-filter' },
+        { published_by: '000000000000000000000000' },
+        { html: 'not-the-stored-body' },
+        { lexical: 'not-the-stored-body' },
+        { mobiledoc: 'not-the-stored-body' },
+        { plaintext: 'not-the-stored-body' },
+      ]) {
+        const { body } = await agent
+          .get(`pages/${page.id}/?fields=id,slug,uuid`, { body: { ...identifier, ...selectors } })
+          .expectStatus(200);
+
+        assert.deepEqual(body.pages, [{ id: page.id, slug: page.slug, uuid: page.uuid }]);
+      }
+    }
+  });
+
+  it('Rejects page read bodies without a public identifier', async function () {
+    const page = fixtureManager.get('posts', 5);
+
+    for (const body of [
+      { locale: 'fr' },
+      { newsletter_id: fixtureManager.get('newsletters', 0).id },
+    ]) {
+      await agent.get(`pages/${page.id}/`, { body }).expectStatus(400);
+    }
+  });
+
+  it('Ignores ordering by fields that are not exposed', async function () {
+    const { body: defaultBody } = await agent.get('pages/?limit=all').expectStatus(200);
+    const defaultIds = defaultBody.pages.map((page) => page.id);
+
+    for (const order of [
+      'email_only asc',
+      'email_recipient_filter asc',
+      'recipient_filter asc',
+      'filter asc',
+      'email_subject asc',
+      'subject asc',
+      'locale asc',
+      'newsletter_id asc',
+    ]) {
+      await agent
+        .get(`pages/?limit=all&order=${encodeURIComponent(order)}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.deepEqual(
+            body.pages.map((page) => page.id),
+            defaultIds,
+            `order "${order}" should be ignored`,
+          );
+        });
+    }
+  });
+
+  it('Ignores filters on hidden page fields', async function () {
+    const { body: defaultBody } = await agent.get('pages/?limit=all').expectStatus(200);
+    const defaultIds = defaultBody.pages.map((page) => page.id);
+
+    for (const filter of [
+      "posts_meta.email_subject:~'private page'",
+      'email_only:true',
+      'locale:fr',
+      `newsletter_id:${fixtureManager.get('newsletters', 0).id}`,
+    ]) {
+      await agent
+        .get(`pages/?limit=all&filter=${encodeURIComponent(filter)}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.deepEqual(
+            body.pages.map((page) => page.id),
+            defaultIds,
+            `filter "${filter}" should be ignored`,
+          );
+        });
+    }
   });
 
   it('Cannot request pages with mobiledoc or lexical formats', async function () {

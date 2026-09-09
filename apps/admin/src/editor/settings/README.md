@@ -15,6 +15,13 @@ What that gate does depends on the post's status.
 | `draft`                          | dispatches the save engine's `field` intent, as a title or excerpt commit does | the field save itself                  |
 | `published`, `scheduled`, `sent` | nothing — the value is staged in the live document                             | the next explicit save (Update, Cmd-S) |
 
+The gate also holds a draft's field save back while a value it would send is not
+yet valid: an incomplete tier pairing, or a publish time that has not passed. The
+value stays staged, the section says why, and the next save the writer asks for
+is refused with the same message. A draft's body autosave is refused for that
+reason too while such a value stands, and the save banner carries the message
+whether or not the sidebar is open, so closing the panel does not hide it.
+
 Staging is not a weaker form of saving. A staged value lives in the same live
 document as the body, so it counts everywhere unsaved work counts: the post
 reads dirty, the Update button enables, and the leave guard asks before the
@@ -51,12 +58,13 @@ against a disagreeing acknowledgement and enter the next save. A matching
 acknowledgement still releases the edit and supplies server-owned relation metadata.
 
 Three fields are deliberately absent from the settings projection. Status and
-publish time belong to the save engine's command target, which the publish flow
-owns; a publish-date section reads and writes them through that command, not
-through a field patch. The slug belongs to the slug machine, which authors it on
-every save; the URL section routes a manual edit through the machine's
-`slugEdited`, so a slug written as a field patch would be dropped before the
-request is built.
+publish time belong to the save engine's command target: every request reads the
+publish time off the session's snapshot rather than the projection, so a field
+patch would be overwritten before the request is built. The Publish date section
+therefore stages the publish time on the session itself, which the snapshot then
+reports. The slug belongs to the slug machine, which authors it on every save;
+the URL section routes a manual edit through the machine's `slugEdited`, so a
+slug written as a field patch would be dropped before the request is built.
 
 ## Sections
 
@@ -69,21 +77,136 @@ Role gates live with the section, not with the frame: every role that can open
 the editor can open the sidebar, and a section the writer's role cannot write is
 the part that is left out.
 
+The URL section edits the slug, which is not a settings field: a manual edit
+goes to the slug machine, and only a proposal the machine applies reaches the
+live document, where the save policy above then decides whether it is persisted
+or staged. A superseded proposal is ignored, and a generator that fails or
+answers blank leaves the slug alone: the input reverts to whatever the machine
+still holds and the section says the URL could not be updated, marking the input
+itself invalid, so a lost edit is never silent. The input is disabled while a
+proposal is in flight. Because an applied edit makes the slug the writer's, a
+later title change no longer moves it. The preview
+under the input is the site URL without its scheme, then the slug, both
+slash-terminated. The section is the slug and that preview and nothing else: it
+does not link out to a published post, and a sent post previews its site URL
+like any other rather than the separate email URL it also has.
+
+A manual proposal participates in the save engine's slug wait, so Update or
+Cmd-S cannot save the old URL while the generator is still answering. Pending
+manual edits count as unsaved work for the navigation and tab-close guards.
+A draft's save on leave waits for the proposal; other statuses ask before
+discarding it. A document reload releases waits on obsolete requests, and a
+response arriving after reload or disposal cannot patch the live document.
+
+Tags are a relation rather than a value, and the section writes them as one:
+the field holds the post's tags in order, because that order is the
+`sort_order` Ghost stores and the first public tag is the post's primary tag.
+Contributors do not get the section.
+
+Each tag reaches the save as its identity and nothing else — the id of one the
+site already has, or the bare name of one the writer typed. The server keeps a
+tag relation's name and slug and writes them onto the tag row, so sending back
+the record the post was read with reverts a rename made since; the record stays
+in the field, where the chips are drawn from, and never enters the payload. A typed name is created
+by the post's own save, so an abandoned edit leaves nothing behind, and a
+leading `#` reads as an internal tag in the field before the save because that
+is the rule the server applies. Two tags can share a name and differ only by
+slug, so what makes them the same tag is the id whenever both sides have one.
+
+The list offers the first hundred tags matching what is typed, in name order.
+Narrowing the search is how the rest are reached. Enter takes the highlighted
+row, and so does Tab once something is typed; Tab through an empty field moves
+on. Escape closes the list and leaves the term where it was typed. A chip is
+removed by clicking it, or with Backspace on an empty field.
+
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
 sidebar owns it. Either way the same session binding is behind it.
+
+## Publish date
+
+When the post is published, edited in the site's timezone and carried as a UTC
+instant. A post that has no publish time yet shows the current moment, and only
+an edit stages a value, so an untouched draft still leaves the time to the
+server. The date is chosen from a calendar and the time typed as `HH:mm`; an
+unparseable time returns to the value already held. Both fields commit at minute
+granularity, and the seconds a publish stamped are kept whenever the committed
+minute is the one already saved. Tabbing through an untouched time, retyping it,
+or choosing the displayed calendar day does not commit a value.
+
+A staged time is the writer's unsaved work like any other field: the post reads
+dirty, Update enables and the leave guard asks. What persists it is the same
+gate as the rest of the sidebar, so a draft saves it on its own and every other
+status holds it until Update.
+
+An edit made during a save stays staged until that save settles, even if the
+writer returns to the saved minute or a refetch already carries the chosen time.
+An older response cannot discard that choice. Once the saved time agrees and no
+older save can overwrite it, the staged edit is released.
+
+The calendar stops at today, and a draft's or published post's time may not be
+the current moment or later. Choosing one leaves the value staged and shown with
+`Please choose a past date and time.` beside the fields; no field save runs while
+it stands, and a save the writer asks for is refused with the same message, which
+the status line and the save banner carry. A sent post is exempt from the rule
+and is re-timed like a published one.
+
+A status command cannot carry a time the section refuses either. Publishing and
+unpublishing take the staged time when they have none of their own, so both are
+refused with the same message while it is still to come; a staged time already in
+the past is carried, and the post is backdated to it. Scheduling carries the
+publish flow's own time and releases whatever the sidebar staged. The flow's
+picker is not pre-filled from a staged time: its floor is ahead of now and a
+staged time is always in the past, so there would be nothing left to keep.
+
+A scheduled post's fields are disabled and carry `Use the publish menu to
+re-schedule`: its time is the publish flow's to move, and the section says so
+rather than offering a second route to it. Once a scheduled time has passed the
+section reads `Publish date` again and drops the note, though the fields stay
+disabled until the server moves the post to published.
+
+Every role that can open the sidebar can set the publish date. It is not one of
+the Owner, Administrator and Editor fields.
+
+## Subviews
+
+Some sections are a row that opens a pane over the rest of the panel rather than
+fields in the list. `SettingsSubview` in `settings-subview.tsx` is both halves:
+give it the section's own id, an icon and a label for the row, a title and a
+back-button label for the pane, and the pane's fields as children. Two props
+adjust the shell around them: `wide` widens the panel for a pane that needs the
+room, and `contentClassName` overrides the pane body's default padding for a pane
+that runs full-bleed. Without either, the shell renders the pane as it renders
+this one.
+
+Only one pane is open at a time. While it is, the panel shows that section
+alone: its heading, the other sections and their rows are all out of the way,
+and the back button or Escape brings them back. The pane's title is the panel's
+heading and its accessible name, and the pane's header stays in place while the
+fields under it scroll. Opening a pane moves focus to its back button, and
+closing one returns focus to the row it was opened from. Closing also blurs the
+focused field before removing it, so Escape commits the edit as the back button
+does.
+
+An Escape something inside the pane has already answered — a dialog, a select,
+an uploader — leaves the pane open, so the writer dismisses one layer at a time.
+A pane whose section renders nothing, as a role-gated section does for a role
+that cannot write it, falls back to the section list rather than an empty panel.
+The panel owns which pane is open, so closing the panel or leaving the editor
+drops it and the panel is next opened on the section list.
 
 ## Access
 
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then; choosing that same value explicitly is still an edit and still
-saves. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid tiers, active ones
-before archived, and it loads only while `Specific tier(s)` is the choice.
-The free tier returned with Public and Members posts is excluded from the
-selection; a tier ID without type metadata is preserved.
+until then. Re-choosing the value already shown is not an edit and sends
+nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
+granted. The tier list is every one of the site's paid
+tiers, active ones before archived, and it loads only while `Specific tier(s)`
+is the choice. Reads carry tier relations for Public, Members and Paid posts;
+the free tier that comes with Public and Members reads is excluded from the
+selection, and a tier ID without type metadata is preserved.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -99,13 +222,175 @@ Everything that is committed goes through the same gate as the rest of the
 sidebar, so a draft saves it and every other status stages it.
 
 When either access field changes to specific tiers, the save submits both
-visibility and the tier list, including unchanged tier IDs. The API also returns
-tier relations for Public and Paid posts, so changing visibility alone can leave
-those IDs unchanged. Once saved, an unrelated edit sends neither access field.
+visibility and the tier list, including tier IDs the writer never touched. A
+Public or Members read carries every tier the site has and a Paid read carries
+every paid tier, archived ones included, so switching one of those posts to
+`Specific tier(s)` selects every paid tier on the site, which a draft grants in
+the save that follows the switch. Once saved, an unrelated edit sends neither
+access field.
 
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
+
+## Authors
+
+Authors is a token field: a chip per credited staff member and a list of
+everyone else, and everyone except an Author or Contributor sees it, in the
+page editor as well as the post editor. Users are never created here, so the list only
+offers people the site already has. It is read once, when the list is first
+opened, rather than on every editor entry, and the chips are named from the
+post's own relations until then — including the chips an edit leaves behind, so
+removing one never leaves the rest reading as bare ids.
+
+A failed staff lookup shows an error and a Retry action in the list. Retrying
+keeps the selected authors and returns focus to the search field.
+
+The list narrows as the writer types, matching a name, slug or email and
+ignoring case and accents, and it leaves out anyone already credited. Arrow keys
+move the highlight, Enter takes the highlighted row and so does Tab once
+something has been typed, Escape closes the list and keeps the term, and both
+clicking away and moving focus out of the field close it and discard the term. A
+chip goes with its own remove button, and Backspace in an empty field drops the
+last one and opens the list on the staff it can offer again. A pick that empties
+the row under the highlight moves it to the last row rather than losing it.
+
+Order is meaningful and the field keeps it: a new author joins the end of the
+list, and the post is written with its authors' identities alone, in that order.
+The whole staff record stays in the field and the request is what reduces it.
+A post always needs one. A new post is credited to whoever started it, which is
+what the first save sends; emptying the list instead leaves the field asking for
+an author, holds a field save back and refuses a save the writer asks for with
+the same message, which the save banner and the publish flow both carry. The
+field itself is marked invalid and points at that message. The list is otherwise committed
+through the same gate as the rest of the sidebar, so a draft saves it and every
+other status stages it.
+
+## Template
+
+The theme decides which templates a post may render with, so the section is the
+active theme's list and nothing else: its slugless templates, by name, under a
+Default that stands for the post carrying no template. A template the theme no
+longer offers reads as the default. A theme with no such templates leaves the
+section out entirely, and every role that can open the sidebar sees it.
+
+A theme may also bind a template to one post URL. Where the post's slug matches
+one, the theme applies that template whatever the field holds, so the select is
+disabled and names the template the URL picked. The field is committed through
+the same gate as the rest of the sidebar: a draft saves it, every other status
+stages it until Update.
+
+## Show title and feature image
+
+A page can render without its own title and feature image, and only a page: the
+field has no meaning for a post, so the section is left out there. Every role
+that can open the editor sees it. The field goes through the same gate as the
+rest of the sidebar, so a draft saves it and every other status stages it, and
+the editor's cards read the live value rather than the saved one.
+
+Honouring the choice is the theme's job. When the active theme's report says its
+page-builder helper is missing and the writer has turned the setting off, the
+section says so and links to the theme documentation. The signal comes from the
+theme report's errors and warnings alike; a backend that reports nothing is
+taken to support the helper, so no warning is shown. The report is only read
+once the choice is off, and never for a Contributor, who cannot read it.
+
+## Delete
+
+Deleting is the one thing in the panel that does not go through the session: it
+calls the API itself. A post has nothing to delete until its first save gives it
+an ID, so the button appears only once the post exists, and every role that can
+open the editor is offered it — which posts each of them may actually delete is
+the API's answer, not the panel's.
+
+Confirming names the post and says the deletion is permanent. Cancelling returns
+focus to the Delete button. An expired session asks the writer to sign in in a
+new tab before retrying, so their draft stays open. A refusal keeps
+the dialog, shows the sentence the API gave for it and leaves the editor as it
+was, so unsaved work is still the writer's to save. A deletion that succeeds
+ends the editing session before leaving for the list: the save in flight is
+abandoned and every later one is dropped, including the save the leave guard
+would otherwise make on the way out, so nothing is written after the delete
+lands. The writer is not asked about unsaved changes, and the list replaces the
+editor in history rather than stacking on top of it.
+
+The list the delete lands on is refetched rather than served from the cache it
+was left with, which would still carry the deleted row. The refetch is left to
+the list's own mount: the editor's read of the post it just deleted is still
+mounted at that moment, and refetching that would answer 404.
+
+## Meta data
+
+Meta data is a pane, and every role that can open the panel can open it. The
+meta title and description are settings fields like any other: staged as the
+writer types, committed on the blur that ends the edit, and persisted or held
+back by the panel's save policy. A field cleared back to empty is stored as no
+value, as the excerpt is.
+
+Neither field is required, and the character counts beside them are a
+recommendation rather than a limit: 60 for the title, 145 for the description,
+counted as symbols so a multibyte character counts once, and coloured once the
+writer is past the recommendation. The lengths that are limits are the column
+widths, 300 and 500. Past one of those the field says so where the writer is
+typing and nothing is saved — not the field itself, and not a save the writer
+asks for, which is refused with the same message rather than sent and answered
+with a server error.
+
+The preview under them is the result the post would produce. Each line falls
+back rather than emptying: the title is the meta title, else the title the
+writer is looking at, else `(Untitled)`; the description is the meta
+description, else the post's excerpt, else a sentence explaining that search
+engines will compose their own. The address is the canonical URL when the post
+carries one, else the site's own host and path with the post's slug. Titles and
+descriptions are truncated to what a result shows, counting whole Unicode
+characters and the ellipsis toward the limit.
+
+## Post history
+
+The row opens the post's saved versions, and it is absent whenever there is
+nothing to show: a post that has never been saved, one with no lexical content,
+and a published or sent post that only ever went out as an email.
+
+Versions are listed newest first, each with its date in the site's timezone and
+the author who wrote it, shown with their avatar; an author the API no longer
+resolves reads as a deleted staff user. The newest carries a `Latest` label, the version that first took the
+post to published carries `Published`, and one written because the post was
+unpublished carries `Unpublished`. Selecting a version previews it — feature
+image, title, the excerpt where the inline excerpt is on, and a read-only
+rendering of its body — and changes nothing about the post. The feature image
+caption is stored HTML, rendered as such and limited to the marks a caption can
+carry.
+
+Every version but the newest can be restored if it carries body content, behind a confirmation that says
+the site will be updated when the post is already published. A restore writes
+the version's body, title, feature image, alt text and caption back into the
+post, and its excerpt as well while the inline excerpt is on: a version written
+before the excerpt existed carries none, and the post keeps the excerpt it has
+rather than losing it. It then saves explicitly, so the server keeps a version
+of what was replaced, and the editor adopts the restored content and closes the
+history only once that save lands.
+
+A restored title is not a title the writer typed, so the slug is kept rather
+than moved to it. Whether it goes on following the title is then re-read from
+the slug itself: one the restored title still produces stays derived and moves
+with the next title the writer types, and one it does not produce reads as
+chosen by hand and stops following. A save that is refused puts the post back as
+it was — content, title and slug — leaves the editor and the list as they were,
+and reports the failure.
+
+While a restore is saving, the confirmation and history cannot be dismissed.
+An expired session rolls the restore back and asks the writer to sign in in a
+new tab before trying again. Closing history returns focus to its sidebar row.
+Older versions without body content remain available to preview but cannot be
+restored, so missing data cannot erase the current body. Malformed revision
+lists are treated as unavailable by both the editor and history; an invalid
+site timezone falls back to UTC.
+
+A restore is a document boundary for the slug, the same as a reload: a manual
+URL edit still waiting on the generator when it lands is released rather than
+left holding the save engine's slug wait. The restore's save carries the slug
+the post already holds, and the URL section accepts the next manual edit
+normally.
 
 ## Open and closed
 

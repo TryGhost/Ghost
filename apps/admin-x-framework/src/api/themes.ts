@@ -3,6 +3,17 @@ import { customThemeSettingsDataType } from './custom-theme-settings';
 
 // Types
 
+/** A theme's custom template. Only the active theme carries these. */
+export type ThemeTemplate = {
+  /** The template file without its extension, e.g. `custom-full-feature`. */
+  filename: string;
+  name: string;
+  /** The content types the template applies to, e.g. `['post']` for `post-*.hbs`. */
+  for?: string[];
+  /** The slug a `post-*.hbs`/`page-*.hbs` template is bound to; null for `custom-*.hbs`. */
+  slug?: string | null;
+};
+
 export type Theme = {
   active: boolean;
   name: string;
@@ -14,7 +25,7 @@ export type Theme = {
       name?: string;
     };
   };
-  templates?: string[];
+  templates?: ThemeTemplate[];
 };
 
 export type InstalledTheme = Theme & {
@@ -34,6 +45,19 @@ export type ThemeProblem<Level extends string = 'error' | 'warning' | 'recommend
   level: Level;
   rule: string;
 };
+
+export const PAGE_BUILDER_PROBLEM_CODE = 'GS110-NO-MISSING-PAGE-BUILDER-USAGE';
+
+/** Whether a gscan problem says the theme never asks for the named page-builder attribute. */
+export function missesPageBuilderAttribute(
+  problem: ThemeProblem<string>,
+  attribute: string,
+): boolean {
+  return (
+    problem.code === PAGE_BUILDER_PROBLEM_CODE &&
+    (problem.failures ?? []).some(({ message }) => message?.includes(`@page.${attribute}`))
+  );
+}
 
 export interface ThemesResponseType {
   themes: Theme[];

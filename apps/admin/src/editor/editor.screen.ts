@@ -34,15 +34,54 @@ import {
   leaveEditorButton,
   pagesBackLink,
   postEditor,
+  postHistoryModal,
+  postHistoryPreview,
+  postHistoryPreviewBody,
+  postHistoryPreviewExcerpt,
+  postHistoryPreviewFeatureImage,
+  postHistoryPreviewTitle,
+  postHistoryRestoreConfirm,
+  postHistoryRevisionList,
   postSettingsSidebar,
   postsBackLink,
   removeFeatureImageButton,
+  settingsAuthorChip,
+  settingsAuthorsError,
+  settingsAuthorsList,
+  settingsAuthorsPicker,
+  settingsDeleteButton,
+  settingsDeleteCancelButton,
+  settingsDeleteConfirmButton,
+  settingsDeleteDialog,
+  settingsDeleteError,
   settingsExcerptInput,
   settingsFeaturedToggle,
   settingsMenuToggle,
+  settingsPublishDate,
+  settingsPublishDateError,
+  settingsPublishDateNote,
+  settingsPublishTime,
+  settingsMetaDescriptionInput,
+  settingsMetaTitleInput,
+  settingsSerpPreview,
+  restoreRevisionButton,
+  settingsPostHistoryButton,
+  settingsShowTitleToggle,
+  settingsShowTitleWarning,
+  settingsSlugError,
+  settingsSlugInput,
+  settingsSubviewPane,
+  settingsTagsField,
+  settingsTagsInput,
+  settingsTagsList,
+  settingsTagsToken,
+  settingsTemplateSelect,
+  settingsTemplateSlugMatch,
   settingsTiersError,
   settingsTiersPicker,
+  settingsUrlPreview,
   settingsVisibilitySelect,
+  showTitleLearnMoreLink,
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
@@ -110,6 +149,13 @@ export const editorScreen = {
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
   settingsExcerpt: () => page.getByTestId(settingsExcerptInput),
   settingsFeatured: () => page.getByTestId(settingsFeaturedToggle),
+  settingsShowTitle: () => page.getByTestId(settingsShowTitleToggle),
+  settingsShowTitleWarning: () => page.getByTestId(settingsShowTitleWarning),
+  settingsShowTitleLearnMore: () =>
+    page.getByTestId(settingsShowTitleWarning).getByRole('link', { name: showTitleLearnMoreLink }),
+  settingsSlug: () => page.getByTestId(settingsSlugInput),
+  settingsSlugError: () => page.getByTestId(settingsSlugError),
+  settingsUrlPreview: () => page.getByTestId(settingsUrlPreview),
   settingsVisibility: () => page.getByTestId(settingsVisibilitySelect),
   settingsVisibilityOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
@@ -117,6 +163,81 @@ export const editorScreen = {
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
   settingsTiersError: () => page.getByTestId(settingsTiersError),
+  settingsTagsField: () => page.getByTestId(settingsTagsField),
+  settingsTagsInput: () => page.getByTestId(settingsTagsInput),
+  settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
+  settingsTagOption: (name: string | RegExp) =>
+    page.getByTestId(settingsTagsList).getByRole('option', { name }),
+  removeSettingsTag: (name: string) =>
+    page
+      .getByTestId(settingsTagsField)
+      .getByRole('button', { name: `Remove ${name}`, exact: true }),
+  settingsTemplate: () => page.getByTestId(settingsTemplateSelect),
+  settingsTemplateOption: (label: string) =>
+    page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
+  settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
+  settingsPublishDate: () => page.getByTestId(settingsPublishDate),
+  settingsPublishTime: () => page.getByTestId(settingsPublishTime),
+  settingsPublishDateError: () => page.getByTestId(settingsPublishDateError),
+  settingsPublishDateNote: () => page.getByTestId(settingsPublishDateNote),
+  settingsPublishDateLabel: () =>
+    page.getByTestId(postSettingsSidebar).getByText(/^(Publish|Scheduled) date$/),
+  settingsAuthors: () => page.getByTestId(settingsAuthorsPicker),
+  settingsAuthorsInput: () => page.getByTestId(settingsAuthorsPicker).getByRole('combobox'),
+  settingsAuthorsList: () => page.getByTestId(settingsAuthorsList),
+  settingsAuthorOption: (name: string) =>
+    page.getByTestId(settingsAuthorsList).getByRole('option', { name }),
+  removeAuthor: (name: string) =>
+    page.getByTestId(settingsAuthorsPicker).getByRole('button', { name: `Remove ${name}` }),
+  settingsAuthorsError: () => page.getByTestId(settingsAuthorsError),
+  /** The author chips in the order the field lists them. */
+  settingsAuthorNames: (): string[] =>
+    page
+      .getByTestId(settingsAuthorChip)
+      .elements()
+      .map((chip) => chip.textContent?.trim() ?? ''),
+  settingsDelete: () => page.getByTestId(settingsDeleteButton),
+  settingsDeleteDialog: () => page.getByTestId(settingsDeleteDialog),
+  confirmSettingsDelete: () =>
+    page
+      .getByTestId(settingsDeleteDialog)
+      .getByRole('button', { name: settingsDeleteConfirmButton, exact: true }),
+  cancelSettingsDelete: () =>
+    page
+      .getByTestId(settingsDeleteDialog)
+      .getByRole('button', { name: settingsDeleteCancelButton, exact: true }),
+  settingsDeleteError: () => page.getByTestId(settingsDeleteError),
+  /** The row in the section list that opens a subview pane. */
+  settingsSubviewRow: (label: string) =>
+    page.getByTestId(postSettingsSidebar).getByRole('button', { name: label, exact: true }),
+  settingsSubviewPane: () => page.getByTestId(settingsSubviewPane),
+  settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
+  settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
+  settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),
+  settingsSerpPreview: () => page.getByTestId(settingsSerpPreview),
+
+  settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
+  postHistoryModal: () => page.getByTestId(postHistoryModal),
+  postHistoryRevisions: () => page.getByTestId(postHistoryRevisionList).getByRole('listitem'),
+  /** One revision row, with the controls it carries. */
+  postHistoryRevision: (index: number) => {
+    const row = page.getByTestId(postHistoryRevisionList).getByRole('listitem').nth(index);
+    return Object.assign(row, {
+      select: () => row.getByRole('button').first(),
+      restore: () => row.getByRole('button', { name: restoreRevisionButton }),
+    });
+  },
+  postHistoryPreview: () => page.getByTestId(postHistoryPreview),
+  postHistoryPreviewTitle: () => page.getByTestId(postHistoryPreviewTitle),
+  postHistoryPreviewExcerpt: () => page.getByTestId(postHistoryPreviewExcerpt),
+  postHistoryPreviewFeatureImage: () => page.getByTestId(postHistoryPreviewFeatureImage),
+  /** The read-only Koenig rendering of the selected version. */
+  postHistoryPreviewBody: () => page.getByTestId(postHistoryPreviewBody),
+  restoreConfirm: () => page.getByTestId(postHistoryRestoreConfirm),
+  confirmRestore: () =>
+    page
+      .getByTestId(postHistoryRestoreConfirm)
+      .getByRole('button', { name: restoreRevisionButton }),
 
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
