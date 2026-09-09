@@ -1,1 +1,2 @@
-module.exports = {};
+const output = {};
+export default output;

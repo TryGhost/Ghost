@@ -163,19 +163,6 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
-  api-framework-migration:
-    '@tryghost/debug':
-      specifier: 2.3.13
-      version: 2.3.13
-    '@tryghost/promise':
-      specifier: 2.3.13
-      version: 2.3.13
-    '@tryghost/tpl':
-      specifier: 2.3.13
-      version: 2.3.13
-    '@tryghost/validator':
-      specifier: 3.2.13
-      version: 3.2.13
   default:
     '@breejs/later':
       specifier: 4.2.0
@@ -348,6 +335,9 @@ catalogs:
     '@tryghost/mongo-knex':
       specifier: 0.11.2
       version: 0.11.2
+    '@tryghost/promise':
+      specifier: 2.3.13
+      version: 2.3.13
     '@tryghost/request':
       specifier: 4.0.5
       version: 4.0.5
@@ -694,7 +684,6 @@ catalogs:
       version: 3.4.19
 
 overrides:
-  '@tryghost/api-framework>@tryghost/errors': 3.3.13
   cron-validate: 1.4.5
   knex-migrator>knex: 2.4.2
   '@tryghost/errors': 3.3.12
@@ -4238,20 +4227,20 @@ importers:
   packages/api-framework:
     dependencies:
       '@tryghost/debug':
-        specifier: catalog:api-framework-migration
-        version: 2.3.13(supports-color@10.2.2)
+        specifier: 'catalog:'
+        version: 2.3.12(supports-color@10.2.2)
       '@tryghost/errors':
-        specifier: 3.3.13
-        version: 3.3.13
+        specifier: 3.3.12
+        version: 3.3.12
       '@tryghost/promise':
-        specifier: catalog:api-framework-migration
+        specifier: 'catalog:'
         version: 2.3.13
       '@tryghost/tpl':
-        specifier: catalog:api-framework-migration
-        version: 2.3.13
+        specifier: 'catalog:'
+        version: 2.3.12
       '@tryghost/validator':
-        specifier: catalog:api-framework-migration
-        version: 3.2.13
+        specifier: 'catalog:'
+        version: 3.2.12
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
@@ -4259,9 +4248,24 @@ importers:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
         version: link:../../configs/vitest
+      '@types/lodash':
+        specifier: 'catalog:'
+        version: 4.17.25
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -4271,9 +4275,12 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 22.0.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: 'catalog:'
-        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
 
   packages/checkout:
     dependencies:
@@ -9655,9 +9662,6 @@ packages:
   '@tryghost/errors@3.3.12':
     resolution: {integrity: sha512-fjZp4K2u7ic5zDJ1+i+wru2+9URcbqEmYDzS6PZsiXr3z/gI1QSkwGvpVdoBHnyDEWCorR5KTqXts8Fg9H9L4Q==}
 
-  '@tryghost/errors@3.3.13':
-    resolution: {integrity: sha512-ZJelL4irZpH+37ZATowbyA3PrSZHc9EsN2ThOXGS1ESThLnq/ETIJdrnXh38I5p/dFB9ZDH7GJfcjmRZvSM69Q==}
-
   '@tryghost/express-test@2.3.12':
     resolution: {integrity: sha512-zNf2BUvaEYXk1dm7/vi8gfXV2U7deMdq3XsNbLsIC6Y6WVnb+vCs735Lqrt4R8uwf12VzNkI0VWEbFIgNMYF1g==}
     peerDependencies:
@@ -9788,9 +9792,6 @@ packages:
   '@tryghost/tpl@2.3.12':
     resolution: {integrity: sha512-4133W8SPCGd6xydaexFecLu/7poOyzgFEek+dYCZfeODldDGwu3y+a7L/veQX06ojZXGJeLUJ1irYzu/3fKbSw==}
 
-  '@tryghost/tpl@2.3.13':
-    resolution: {integrity: sha512-oAXtijesKmcDJZP0ORdzdsSRluBqzO6aQPdcv4vNt9TY3cvoSYjXTFP9HsVUhhwbjrAfSbrcxj7m+nYs2Qk9Bg==}
-
   '@tryghost/url-utils@5.2.6':
     resolution: {integrity: sha512-3TQRcseZW/rq3UsSMP94n6WgKYZJqufreNdv9wJT5P4Fm5bNQ04rEHvL8i1AggXWa2kUPmwt2ed7KzNY6xx7zA==}
 
@@ -9799,9 +9800,6 @@ packages:
 
   '@tryghost/validator@3.2.12':
     resolution: {integrity: sha512-3zuGfLCzcWK0DgF40vaWzlLFaPPUDd/+IriCHzrpJgGCb/mMbQh/QbEqouABneH5PSB/D6CWLVrqnm9+Kjpi9Q==}
-
-  '@tryghost/validator@3.2.13':
-    resolution: {integrity: sha512-VuODJYpEbvmVU1sB2M627C4kOdIla4IhmOTOmxs/Ft8RSV//6QcEZofXIolItxyKlbpayICMPGtsdH/pc0Q0Vg==}
 
   '@tryghost/version@2.3.12':
     resolution: {integrity: sha512-svCEBVRHCLdcjpOFJ6PhqlcwfqbEvkCv7d/hHopUbfIdl/Ipb+FhAhuw7C2O4tw+Tm+eugA/FwPKJeFop0TIsg==}
@@ -29374,8 +29372,6 @@ snapshots:
 
   '@tryghost/errors@3.3.12': {}
 
-  '@tryghost/errors@3.3.13': {}
-
   '@tryghost/express-test@2.3.12(express@4.22.2(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@tryghost/jest-snapshot': 2.3.12(supports-color@10.2.2)
@@ -29639,8 +29635,6 @@ snapshots:
 
   '@tryghost/tpl@2.3.12': {}
 
-  '@tryghost/tpl@2.3.13': {}
-
   '@tryghost/url-utils@5.2.6':
     dependencies:
       cheerio: 1.2.0
@@ -29665,14 +29659,6 @@ snapshots:
     dependencies:
       '@tryghost/errors': 3.3.12
       '@tryghost/tpl': 2.3.12
-      lodash: 4.18.1
-      moment-timezone: 0.5.45
-      validator: 13.15.35
-
-  '@tryghost/validator@3.2.13':
-    dependencies:
-      '@tryghost/errors': 3.3.12
-      '@tryghost/tpl': 2.3.13
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35

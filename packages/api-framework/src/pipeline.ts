@@ -1,21 +1,66 @@
-const debug = require('@tryghost/debug')('pipeline');
-const _ = require('lodash');
-const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import promiseUtils from '@tryghost/promise';
+import _ from 'lodash';
+import Frame from './frame.ts';
+import type { Dictionary, FrameConfiguration } from './frame.ts';
+import serializers from './serializers/index.ts';
+import validators from './validators/index.ts';
 
-const Frame = require('./Frame.ts');
-const serializers = require('./serializers/index.ts');
-const validators = require('./validators/index.ts');
+const debug = createDebug('pipeline');
+const { IncorrectUsageError } = errors;
+const { sequence } = promiseUtils;
+type AsyncResult = unknown | Promise<unknown>;
+export interface ApiConfiguration extends FrameConfiguration, Dictionary {
+  docName?: string;
+  method?: string;
+}
+
+interface Cache {
+  get(key: string, loader: () => Promise<unknown>): Promise<unknown>;
+  set(key: string, value: unknown): Promise<unknown>;
+}
+
+interface PermissionConfiguration extends Dictionary {
+  before?: (frame: Frame) => AsyncResult;
+}
+
+export interface ControllerMethod {
+  cache?: Cache;
+  data?: FrameConfiguration['data'];
+  generateCacheKeyData?: (frame: Frame) => AsyncResult;
+  headers?: Dictionary;
+  options?: FrameConfiguration['options'];
+  permissions?: boolean | PermissionConfiguration | ((frame: Frame) => AsyncResult);
+  query?: (frame: Frame) => AsyncResult;
+  response?: { format: string | (() => string | Promise<string>) };
+  statusCode?: number | ((result: unknown) => number);
+  validation?: Dictionary | ((frame: Frame) => AsyncResult);
+}
+
+type ControllerHandler = ControllerMethod &
+  ((dataOrOptions?: Dictionary | Frame, options?: Dictionary | Frame) => Promise<unknown>);
+
+export type Controller = { docName?: string } & Record<
+  string,
+  ControllerMethod | string | undefined
+>;
+interface ApiUtils {
+  permissions?: { handle(config: Dictionary, frame: Frame): AsyncResult };
+  serializers?: { input?: Dictionary; output?: Dictionary };
+  validators?: { input?: Dictionary };
+}
 
 // Replacer for JSON.stringify that returns every plain object with its keys
 // sorted, so the serialized output is deterministic at every depth. Unlike an
 // array replacer — which acts as a recursive key whitelist and silently drops
 // any key not present in the top-level list — this preserves all nested keys.
-function sortKeysReplacer(_key, value) {
+function sortKeysReplacer(_key: string, value: unknown) {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    const sorted = {};
-    for (const k of Object.keys(value).sort()) {
-      sorted[k] = value[k];
+    const sorted: Dictionary = {};
+    const record = value as Dictionary;
+    for (const k of Object.keys(record).sort()) {
+      sorted[k] = record[k];
     }
     return sorted;
   }
@@ -38,20 +83,25 @@ const STAGES = {
      * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
-    input(apiUtils, apiConfig, apiImpl, frame) {
+    input(
+      apiUtils: ApiUtils,
+      apiConfig: ApiConfiguration,
+      apiImpl: ControllerMethod,
+      frame: Frame,
+    ) {
       debug('stages: validation');
       const tasks = [];
 
       // CASE: do validation completely yourself
       if (typeof apiImpl.validation === 'function') {
         debug('validation function call');
-        return apiImpl.validation(frame);
+        return Promise.resolve(apiImpl.validation(frame));
       }
 
       tasks.push(function doValidation() {
         return validators.handle.input(
           Object.assign({}, apiConfig, apiImpl.validation),
-          apiUtils.validators.input,
+          apiUtils.validators?.input ?? {},
           frame,
         );
       });
@@ -75,11 +125,16 @@ const STAGES = {
      * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
-    input(apiUtils, apiConfig, apiImpl, frame) {
+    input(
+      apiUtils: ApiUtils,
+      apiConfig: ApiConfiguration,
+      apiImpl: ControllerMethod,
+      frame: Frame,
+    ) {
       debug('stages: input serialisation');
       return serializers.handle.input(
         Object.assign({ data: apiImpl.data }, apiConfig),
-        apiUtils.serializers.input,
+        apiUtils.serializers?.input ?? {},
         frame,
       );
     },
@@ -98,9 +153,20 @@ const STAGES = {
      * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
-    output(response, apiUtils, apiConfig, apiImpl, frame) {
+    output(
+      response: unknown,
+      apiUtils: ApiUtils,
+      apiConfig: ApiConfiguration,
+      _apiImpl: ControllerMethod,
+      frame: Frame,
+    ) {
       debug('stages: output serialisation');
-      return serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
+      return serializers.handle.output(
+        response,
+        apiConfig,
+        apiUtils.serializers?.output ?? {},
+        frame,
+      );
     },
   },
 
@@ -117,19 +183,24 @@ const STAGES = {
    * @param {import('@tryghost/api-framework').Frame} frame
    * @return {Promise}
    */
-  permissions(apiUtils, apiConfig, apiImpl, frame) {
+  permissions(
+    apiUtils: ApiUtils,
+    apiConfig: ApiConfiguration,
+    apiImpl: ControllerMethod,
+    frame: Frame,
+  ) {
     debug('stages: permissions');
     const tasks = [];
 
     // CASE: it's required to put the permission key to avoid security holes
     if (!Object.prototype.hasOwnProperty.call(apiImpl, 'permissions')) {
-      return Promise.reject(new errors.IncorrectUsageError());
+      return Promise.reject(new IncorrectUsageError());
     }
 
     // CASE: handle permissions completely yourself
     if (typeof apiImpl.permissions === 'function') {
       debug('permissions function call');
-      return apiImpl.permissions(frame);
+      return Promise.resolve(apiImpl.permissions(frame));
     }
 
     // CASE: skip stage completely
@@ -138,13 +209,18 @@ const STAGES = {
       return Promise.resolve();
     }
 
-    if (typeof apiImpl.permissions === 'object' && apiImpl.permissions.before) {
+    const permissionConfig =
+      typeof apiImpl.permissions === 'object' ? apiImpl.permissions : undefined;
+    if (permissionConfig?.before) {
       tasks.push(function beforePermissions() {
-        return apiImpl.permissions.before(frame);
+        return permissionConfig.before?.(frame);
       });
     }
 
     tasks.push(function doPermissions() {
+      if (!apiUtils.permissions) {
+        return Promise.reject(new IncorrectUsageError());
+      }
       return apiUtils.permissions.handle(Object.assign({}, apiConfig, apiImpl.permissions), frame);
     });
 
@@ -160,18 +236,26 @@ const STAGES = {
    * @param {import('@tryghost/api-framework').Frame} frame
    * @return {Promise}
    */
-  query(apiUtils, apiConfig, apiImpl, frame) {
+  query(
+    _apiUtils: ApiUtils,
+    _apiConfig: ApiConfiguration,
+    apiImpl: ControllerMethod,
+    frame: Frame,
+  ) {
     debug('stages: query');
 
     if (!apiImpl.query) {
-      return Promise.reject(new errors.IncorrectUsageError());
+      return Promise.reject(new IncorrectUsageError());
     }
 
-    return apiImpl.query(frame);
+    return Promise.resolve(apiImpl.query(frame));
   },
 };
 
-const controllerMap = new Map();
+const controllerMap = new Map<Controller, Record<string, ControllerHandler>>();
+type PipelineResult<T extends Controller> = {
+  [K in Exclude<keyof T, 'docName'>]: ControllerHandler;
+};
 
 /**
  * @description The pipeline runs the request through all stages (validation, serialisation, permissions).
@@ -192,9 +276,14 @@ const controllerMap = new Map();
  * @param {String} [apiType] - Content or Admin API access
  * @return {Object}
  */
-const pipeline = (apiController, apiUtils, apiType) => {
-  if (controllerMap.has(apiController)) {
-    return controllerMap.get(apiController);
+const pipeline = <T extends Controller>(
+  apiController: T,
+  apiUtils: ApiUtils,
+  apiType?: string,
+): PipelineResult<T> => {
+  const cachedController = controllerMap.get(apiController);
+  if (cachedController) {
+    return cachedController as PipelineResult<T>;
   }
 
   const keys = Object.keys(apiController).filter((key) => key !== 'docName');
@@ -202,22 +291,22 @@ const pipeline = (apiController, apiUtils, apiType) => {
 
   // CASE: api controllers are objects with configuration.
   //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
-  const result = keys.reduce((obj, method) => {
-    const apiImpl = _.cloneDeep(apiController)[method];
+  const result = keys.reduce<Record<string, ControllerHandler>>((obj, method) => {
+    const apiImpl = _.cloneDeep(apiController)[method] as ControllerMethod;
 
     Object.freeze(apiImpl.headers);
 
-    obj[method] = async function ImplWrapper() {
-      const apiConfig = { docName, method };
-      let options;
-      let data;
-      let frame;
+    const implWrapper = async function ImplWrapper(...args: Array<Dictionary | Frame | undefined>) {
+      const apiConfig: ApiConfiguration = { docName, method };
+      let options: Dictionary | Frame;
+      let data: Dictionary | undefined;
+      let frame: Frame;
 
-      if (arguments.length === 2) {
-        data = arguments[0];
-        options = arguments[1];
-      } else if (arguments.length === 1) {
-        options = arguments[0] || {};
+      if (args.length === 2) {
+        data = args[0] as Dictionary;
+        options = args[1] ?? {};
+      } else if (args.length === 1) {
+        options = args[0] || {};
       } else {
         options = {};
       }
@@ -228,7 +317,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
         frame = new Frame({
           body: data,
           options: _.omit(options, 'context'),
-          context: options.context || {},
+          context: (options.context as Dictionary | undefined) || {},
         });
 
         frame.configure({
@@ -242,14 +331,14 @@ const pipeline = (apiController, apiUtils, apiType) => {
       // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
       if (typeof apiImpl === 'function') {
         debug('ctrl function call');
-        return apiImpl(frame);
+        return (apiImpl as ControllerHandler)(frame);
       }
 
       frame.apiType = apiType;
       frame.docName = docName;
       frame.method = method;
 
-      let cacheKeyData = frame.options;
+      let cacheKeyData: unknown = frame.options;
       if (apiImpl.generateCacheKeyData) {
         cacheKeyData = await apiImpl.generateCacheKeyData(frame);
       }
@@ -279,16 +368,17 @@ const pipeline = (apiController, apiUtils, apiType) => {
       }
 
       return response;
-    };
+    } as ControllerHandler;
+    obj[method] = implWrapper;
 
-    Object.assign(obj[method], apiImpl);
+    Object.assign(implWrapper, apiImpl);
     return obj;
   }, {});
 
   controllerMap.set(apiController, result);
 
-  return result;
+  return result as PipelineResult<T>;
 };
 
-module.exports = pipeline;
-module.exports.STAGES = STAGES;
+export { STAGES };
+export default Object.assign(pipeline, { STAGES });

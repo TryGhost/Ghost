@@ -1,9 +1,25 @@
-const url = require('url');
-const debug = require('@tryghost/debug')('headers');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import { resolve as resolveUrl } from 'node:url';
+import type Frame from './frame.ts';
+import type { Dictionary } from './frame.ts';
+
+const debug = createDebug('headers');
+const { IncorrectUsageError } = errors;
 const INVALIDATE_ALL = '/*';
 
-const cacheInvalidate = (result, options = {}) => {
-  let value = options.value;
+interface HeaderOptions {
+  value?: string | (() => string);
+}
+
+interface HeadersConfiguration {
+  cacheInvalidate?: HeaderOptions | boolean;
+  disposition?: HeaderOptions & { type: keyof typeof disposition };
+  location?: false | { resolve?: (location: string) => string };
+}
+
+const cacheInvalidate = (_result: unknown, options: HeaderOptions = {}) => {
+  const value = options.value;
 
   return {
     'X-Cache-Invalidate': value || INVALIDATE_ALL,
@@ -18,7 +34,7 @@ const disposition = {
    * @param {Object} options
    * @return {Object}
    */
-  csv(result, options = {}) {
+  csv(_result: unknown, options: HeaderOptions = {}) {
     let value = options.value;
 
     if (typeof options.value === 'function') {
@@ -38,7 +54,7 @@ const disposition = {
    * @param {Object} options
    * @return {Object}
    */
-  json(result, options = {}) {
+  json(result: unknown, options: HeaderOptions = {}) {
     return {
       'Content-Disposition': `Attachment; filename="${options.value}"`,
       'Content-Type': 'application/json',
@@ -53,7 +69,7 @@ const disposition = {
    * @param {Object} options
    * @return {Object}
    */
-  yaml(result, options = {}) {
+  yaml(result: unknown, options: HeaderOptions = {}) {
     return {
       'Content-Disposition': `Attachment; filename="${options.value}"`,
       'Content-Type': 'application/yaml',
@@ -74,7 +90,7 @@ const disposition = {
    *
    * @see http://tools.ietf.org/html/rfc598
    */
-  file(result, options = {}) {
+  file(_result: unknown, options: HeaderOptions = {}) {
     return Promise.resolve()
       .then(() => {
         let value = options.value;
@@ -93,7 +109,7 @@ const disposition = {
   },
 };
 
-module.exports = {
+const headers = {
   /**
    * @description Get header based on ctrl configuration.
    *
@@ -102,8 +118,8 @@ module.exports = {
    * @param {import('@tryghost/api-framework').Frame} frame
    * @return {Promise<object>}
    */
-  async get(result, apiConfigHeaders = {}, frame) {
-    let headers = {};
+  async get(result: unknown, apiConfigHeaders: HeadersConfiguration = {}, frame: Frame) {
+    const responseHeaders: Record<string, string | number> = {};
 
     if (apiConfigHeaders.disposition) {
       const dispositionHeader = await disposition[apiConfigHeaders.disposition.type](
@@ -112,31 +128,45 @@ module.exports = {
       );
 
       if (dispositionHeader) {
-        Object.assign(headers, dispositionHeader);
+        Object.assign(responseHeaders, dispositionHeader);
       }
     }
 
     if (apiConfigHeaders.cacheInvalidate) {
-      const cacheInvalidationHeader = cacheInvalidate(result, apiConfigHeaders.cacheInvalidate);
+      const cacheInvalidationHeader = cacheInvalidate(
+        result,
+        apiConfigHeaders.cacheInvalidate === true ? {} : apiConfigHeaders.cacheInvalidate,
+      );
 
       if (cacheInvalidationHeader) {
-        Object.assign(headers, cacheInvalidationHeader);
+        Object.assign(responseHeaders, cacheInvalidationHeader);
       }
     }
 
-    const locationHeaderDisabled = apiConfigHeaders?.location === false;
-    const hasLocationResolver = apiConfigHeaders?.location?.resolve;
+    const locationConfig = apiConfigHeaders.location || undefined;
+    const locationHeaderDisabled = apiConfigHeaders.location === false;
+    const hasLocationResolver = locationConfig?.resolve;
+    const docName = frame.docName;
+    const resources =
+      docName && result && typeof result === 'object' ? (result as Dictionary)[docName] : undefined;
+    const firstResource = Array.isArray(resources) ? resources[0] : undefined;
     const hasFrameData =
-      (frame?.method === 'add' || hasLocationResolver) && result[frame.docName]?.[0]?.id;
+      (frame.method === 'add' || hasLocationResolver) &&
+      firstResource &&
+      typeof firstResource === 'object' &&
+      'id' in firstResource;
 
     if (!locationHeaderDisabled && hasFrameData) {
-      const protocol = frame.original.url.secure === false ? 'http://' : 'https://';
-      const resourceId = result[frame.docName][0].id;
+      const requestUrl = frame.original.url;
+      if (!requestUrl) {
+        throw new IncorrectUsageError({
+          message: 'Frame URL is required to generate a Location header',
+        });
+      }
+      const protocol = requestUrl.secure === false ? 'http://' : 'https://';
+      const resourceId = (firstResource as { id: string }).id;
 
-      let locationURL = url.resolve(
-        `${protocol}${frame.original.url.host}`,
-        frame.original.url.pathname,
-      );
+      let locationURL = resolveUrl(`${protocol}${requestUrl.host}`, requestUrl.pathname ?? '');
       if (!locationURL.endsWith('/')) {
         locationURL += '/';
       }
@@ -144,21 +174,23 @@ module.exports = {
       locationURL += `${resourceId}/`;
 
       if (hasLocationResolver) {
-        locationURL = apiConfigHeaders.location.resolve(locationURL);
+        locationURL = hasLocationResolver(locationURL);
       }
 
       const locationHeader = {
         Location: locationURL,
       };
 
-      Object.assign(headers, locationHeader);
+      Object.assign(responseHeaders, locationHeader);
     }
 
     const headersFromFrame = frame.getHeaders();
 
-    Object.assign(headers, headersFromFrame);
+    Object.assign(responseHeaders, headersFromFrame);
 
-    debug(headers);
-    return headers;
+    debug(responseHeaders);
+    return responseHeaders;
   },
 };
+
+export default headers;

@@ -1,8 +1,21 @@
-const debug = require('@tryghost/debug')('validators:input:all');
-const _ = require('lodash');
-const tpl = require('@tryghost/tpl');
-const { BadRequestError, ValidationError } = require('@tryghost/errors');
-const validator = require('@tryghost/validator');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import validator from '@tryghost/validator';
+import _ from 'lodash';
+import type { Dictionary } from '../../frame.ts';
+import type { ApiConfiguration } from '../../pipeline.ts';
+
+const debug = createDebug('validators:input:all');
+const { BadRequestError, ValidationError } = errors;
+interface ValidationRule extends Dictionary {
+  required?: boolean;
+  values?: unknown[];
+}
+type ValidationConfiguration = Record<string, ValidationRule | unknown[]>;
+type OptionsFrame = { options: Dictionary };
+type DataFrame = { data?: Dictionary };
+type EditFrame = { data?: Dictionary; options?: Dictionary };
 
 const messages = {
   validationFailed: 'Validation ({validationName}) failed for {key}',
@@ -10,7 +23,7 @@ const messages = {
   invalidIdProvided: 'Invalid id provided.',
 };
 
-const GLOBAL_VALIDATORS = {
+const GLOBAL_VALIDATORS: Record<string, false | Dictionary> = {
   id: { matches: /^(?:[a-f\d]{24}|1|me)$/i },
   page: { matches: /^\d+$/ },
   limit: { matches: /^(?:\d+|all)$/ },
@@ -30,12 +43,12 @@ const GLOBAL_VALIDATORS = {
   formats: false,
 };
 
-const validate = (config, attrs) => {
-  let errors = [];
+const validate = (config: ValidationConfiguration = {}, attrs: Dictionary = {}) => {
+  let validationErrors: Error[] = [];
 
-  _.each(config, (value, key) => {
-    if (value.required && !attrs[key]) {
-      errors.push(
+  Object.entries(config).forEach(([key, value]) => {
+    if (!Array.isArray(value) && value.required && !attrs[key]) {
+      validationErrors.push(
         new ValidationError({
           message: tpl(messages.validationFailed, {
             validationName: 'FieldIsRequired',
@@ -46,27 +59,30 @@ const validate = (config, attrs) => {
     }
   });
 
-  _.each(attrs, (value, key) => {
+  Object.entries(attrs).forEach(([key, value]) => {
     debug(key, value);
 
     if (GLOBAL_VALIDATORS[key]) {
       debug('global validation');
-      errors = errors.concat(validator.validate(value, key, GLOBAL_VALIDATORS[key]));
+      validationErrors = validationErrors.concat(
+        validator.validate(value, key, GLOBAL_VALIDATORS[key]),
+      );
     }
 
     if (config?.[key]) {
-      const allowedValues = Array.isArray(config[key]) ? config[key] : config[key].values;
+      const rule = config[key];
+      const allowedValues = Array.isArray(rule) ? rule : rule.values;
 
       if (allowedValues) {
         debug('ctrl validation');
 
         // CASE: we allow e.g. `formats=`
-        if (!value || !value.length) {
+        if (!value || (typeof value !== 'string' && !Array.isArray(value)) || !value.length) {
           return;
         }
 
         const valuesAsArray = Array.isArray(value) ? value : value.trim().toLowerCase().split(',');
-        const unallowedValues = _.filter(valuesAsArray, (valueToFilter) => {
+        const unallowedValues = _.filter(valuesAsArray, (valueToFilter: unknown) => {
           return !allowedValues.includes(valueToFilter);
         });
 
@@ -77,7 +93,7 @@ const validate = (config, attrs) => {
             return;
           }
 
-          errors.push(
+          validationErrors.push(
             new ValidationError({
               message: tpl(messages.validationFailed, {
                 validationName: 'AllowedValues',
@@ -90,23 +106,25 @@ const validate = (config, attrs) => {
     }
   });
 
-  return errors;
+  return validationErrors;
 };
 
-module.exports = {
+const validators = {
   /**
    * @param {object} apiConfig
    * @param {import('@tryghost/api-framework').Frame} frame
    */
-  all(apiConfig, frame) {
+  all(apiConfig: ApiConfiguration, frame: OptionsFrame) {
     debug('validate all');
 
-    let validationErrors = validate(apiConfig.options, frame.options);
+    const validationErrors = validate(
+      apiConfig.options as ValidationConfiguration | undefined,
+      frame.options,
+    );
 
     if (!_.isEmpty(validationErrors)) {
       return Promise.reject(validationErrors[0]);
     }
-
     return Promise.resolve();
   },
 
@@ -114,56 +132,65 @@ module.exports = {
    * @param {object} apiConfig
    * @param {import('@tryghost/api-framework').Frame} frame
    */
-  browse(apiConfig, frame) {
+  browse(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate browse');
 
-    let validationErrors = [];
+    let validationErrors: Error[] = [];
+    const data = frame.data ?? {};
 
     if (frame.data) {
-      validationErrors = validate(apiConfig.data, frame.data);
+      validationErrors = validate(
+        (apiConfig.data && !Array.isArray(apiConfig.data) && typeof apiConfig.data !== 'function'
+          ? apiConfig.data
+          : {}) as ValidationConfiguration,
+        data,
+      );
     }
 
     if (!_.isEmpty(validationErrors)) {
       return Promise.reject(validationErrors[0]);
     }
+    return undefined;
   },
 
-  read() {
+  read(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate read');
-    return this.browse(...arguments);
+    return validators.browse(apiConfig, frame);
   },
 
   /**
    * @param {object} apiConfig
    * @param {import('@tryghost/api-framework').Frame} frame
    */
-  add(apiConfig, frame) {
+  add(apiConfig: ApiConfiguration, frame: DataFrame): Promise<never> | undefined {
     debug('validate add');
+    const docName = apiConfig.docName ?? '';
+    const data = frame.data ?? {};
 
     // NOTE: this block should be removed completely once JSON Schema validations
     //       are introduced for all of the endpoints
-    if (!['posts', 'tags'].includes(apiConfig.docName)) {
-      if (
-        _.isEmpty(frame.data) ||
-        _.isEmpty(frame.data[apiConfig.docName]) ||
-        _.isEmpty(frame.data[apiConfig.docName][0])
-      ) {
+    if (!['posts', 'tags'].includes(docName)) {
+      const resource = data[docName];
+      const firstResource = Array.isArray(resource) ? resource[0] : undefined;
+      if (_.isEmpty(data) || _.isEmpty(resource) || _.isEmpty(firstResource)) {
         return Promise.reject(
           new BadRequestError({
-            message: tpl(messages.noRootKeyProvided, { docName: apiConfig.docName }),
+            message: tpl(messages.noRootKeyProvided, { docName }),
           }),
         );
       }
     }
 
-    if (apiConfig.data) {
-      const missedDataProperties = [];
-      const nilDataProperties = [];
+    const resource = data[docName];
+    const row = Array.isArray(resource) ? resource[0] : undefined;
+    if (apiConfig.data && row && typeof row === 'object') {
+      const missedDataProperties: string[] = [];
+      const nilDataProperties: string[] = [];
 
-      _.each(apiConfig.data, (value, key) => {
-        if (!Object.prototype.hasOwnProperty.call(frame.data[apiConfig.docName][0], key)) {
+      Object.keys(apiConfig.data).forEach((key) => {
+        if (!Object.prototype.hasOwnProperty.call(row, key)) {
           missedDataProperties.push(key);
-        } else if (_.isNil(frame.data[apiConfig.docName][0][key])) {
+        } else if (_.isNil((row as Dictionary)[key])) {
           nilDataProperties.push(key);
         }
       });
@@ -190,15 +217,19 @@ module.exports = {
         );
       }
     }
+    return undefined;
   },
 
   /**
    * @param {object} apiConfig
    * @param {import('@tryghost/api-framework').Frame} frame
    */
-  edit(apiConfig, frame) {
+  edit(apiConfig: ApiConfiguration, frame: EditFrame): Promise<never> | undefined {
     debug('validate edit');
-    const result = this.add(...arguments);
+    const docName = apiConfig.docName ?? '';
+    const data = frame.data ?? {};
+    const options = frame.options ?? {};
+    const result = validators.add(apiConfig, frame);
 
     if (result instanceof Promise) {
       return result;
@@ -208,12 +239,10 @@ module.exports = {
     //       are introduced for all of the endpoints. `id` property is currently
     //       stripped from the request body and only the one provided in `options`
     //       is used in later logic
-    if (!['posts', 'tags'].includes(apiConfig.docName)) {
-      if (
-        frame.options.id &&
-        frame.data[apiConfig.docName][0].id &&
-        frame.options.id !== frame.data[apiConfig.docName][0].id
-      ) {
+    if (!['posts', 'tags'].includes(docName)) {
+      const resource = data[docName];
+      const row = Array.isArray(resource) ? resource[0] : undefined;
+      if (row && typeof row === 'object' && 'id' in row && options.id !== row.id) {
         return Promise.reject(
           new BadRequestError({
             message: tpl(messages.invalidIdProvided),
@@ -221,25 +250,28 @@ module.exports = {
         );
       }
     }
+    return undefined;
   },
 
-  changePassword() {
+  changePassword(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate changePassword');
-    return this.add(...arguments);
+    return validators.add(apiConfig, frame);
   },
 
-  resetPassword() {
+  resetPassword(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate resetPassword');
-    return this.add(...arguments);
+    return validators.add(apiConfig, frame);
   },
 
-  setup() {
+  setup(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate setup');
-    return this.add(...arguments);
+    return validators.add(apiConfig, frame);
   },
 
-  publish() {
+  publish(apiConfig: ApiConfiguration, frame: DataFrame) {
     debug('validate schedule');
-    return this.browse(...arguments);
+    return validators.browse(apiConfig, frame);
   },
 };
+
+export default validators;

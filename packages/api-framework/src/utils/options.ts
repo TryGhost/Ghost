@@ -1,5 +1,7 @@
-const _ = require('lodash');
-const { IncorrectUsageError } = require('@tryghost/errors');
+import errors from '@tryghost/errors';
+import _ from 'lodash';
+
+const { IncorrectUsageError } = errors;
 
 /**
  * @description Helper function to prepare params for internal usages.
@@ -9,7 +11,7 @@ const { IncorrectUsageError } = require('@tryghost/errors');
  * @param {String} params
  * @return {Array}
  */
-const trimAndLowerCase = (params) => {
+export const trimAndLowerCase = (params: unknown = '') => {
   params = params || '';
 
   if (_.isString(params)) {
@@ -24,9 +26,10 @@ const trimAndLowerCase = (params) => {
     });
   }
 
-  return params.map((item) => {
+  return params.map((item: unknown) => {
+    if (typeof item !== 'string') {
+      throw new IncorrectUsageError({ message: 'Params must contain only strings' });
+    }
     return item.trim().toLowerCase();
   });
 };
-
-module.exports.trimAndLowerCase = trimAndLowerCase;

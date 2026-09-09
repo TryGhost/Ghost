@@ -92,6 +92,7 @@ catalog:
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
+  '@tryghost/promise': 2.3.13
   '@tryghost/request': 4.0.5
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
@@ -225,12 +226,6 @@ catalog:
   '@tryghost/validator': 3.2.12
 
 catalogs:
-  api-framework-migration:
-    '@tryghost/debug': 2.3.13
-    '@tryghost/errors': 3.3.13
-    '@tryghost/promise': 2.3.13
-    '@tryghost/tpl': 2.3.13
-    '@tryghost/validator': 3.2.13
   react17:
     react: 17.0.2
     react-dom: 17.0.2
@@ -242,8 +237,6 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # api-framework was imported against the framework repository's 3.3.13 release.
-  '@tryghost/api-framework>@tryghost/errors': 'catalog:api-framework-migration'
   # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on

@@ -1,6 +1,9 @@
-const debug = require('@tryghost/debug')('serializers:input:all');
-const _ = require('lodash');
-const utils = require('../../utils/index.ts');
+import createDebug from '@tryghost/debug';
+import _ from 'lodash';
+import type Frame from '../../frame.ts';
+import * as utils from '../../utils/index.ts';
+
+const debug = createDebug('serializers:input:all');
 
 const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
 
@@ -11,8 +14,8 @@ const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
  *
  * e.g. API uses "include", but model layer uses "withRelated".
  */
-module.exports = {
-  all(apiConfig, frame) {
+const serializers = {
+  all(_apiConfig: object, frame: Frame) {
     debug('serialize all');
 
     if (frame.options.include) {
@@ -29,13 +32,16 @@ module.exports = {
       frame.options.formats = utils.options.trimAndLowerCase(frame.options.formats);
     }
 
-    if (frame.options.formats && frame.options.columns) {
+    if (Array.isArray(frame.options.formats) && Array.isArray(frame.options.columns)) {
       frame.options.columns = frame.options.columns.concat(frame.options.formats);
     }
 
-    if (!frame.options.context.internal) {
+    const context = frame.options.context;
+    if (!context || typeof context !== 'object' || !('internal' in context) || !context.internal) {
       debug('omit internal options');
       frame.options = _.omit(frame.options, INTERNAL_OPTIONS);
     }
   },
 };
+
+export default serializers;

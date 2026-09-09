@@ -1,8 +1,43 @@
-const url = require('url');
-const debug = require('@tryghost/debug')('http');
+import createDebug from '@tryghost/debug';
+import { parse as parseUrl } from 'node:url';
+import Frame from './frame.ts';
+import headers from './headers.ts';
+import type { Dictionary } from './frame.ts';
+import type { ControllerMethod } from './pipeline.ts';
 
-const Frame = require('./Frame.ts');
-const headers = require('./headers.ts');
+const debug = createDebug('http');
+
+export interface GhostRequest {
+  api_key?: { get(key: string): string | undefined };
+  body?: Dictionary;
+  file?: unknown;
+  files?: unknown[];
+  frameOptions?: { docName: string | null | undefined; method: string | null };
+  get(name: string): string | undefined;
+  member?: unknown;
+  originalUrl?: string;
+  params?: Dictionary;
+  query?: Dictionary;
+  secure?: boolean;
+  session?: unknown;
+  user?: { id?: string };
+  url: string;
+  vhost?: { host: string } | null;
+}
+
+export interface GhostResponse {
+  json(body: unknown): unknown;
+  send(body: unknown): unknown;
+  set(headers: Record<string, string | number>): unknown;
+  status(code: number): unknown;
+}
+
+export type GhostNextFunction = (err?: unknown) => unknown;
+export type HttpHandler = (
+  req: GhostRequest,
+  res: GhostResponse,
+  next: GhostNextFunction,
+) => Promise<unknown>;
 
 /**
  * @description HTTP wrapper.
@@ -13,14 +48,14 @@ const headers = require('./headers.ts');
  * @param {import('@tryghost/api-framework').Controller} apiImpl - Pipeline wrapper, which executes the target ctrl function.
  * @return {import('express').RequestHandler}
  */
-const http = (apiImpl) => {
+const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHandler => {
   /**
    * @param {import('express').Request} req - Express request object.
    * @param {import('express').Response} res - Express response object.
    * @param {import('express').NextFunction} next - Express next function.
    * @returns {Promise<import('express').RequestHandler>}
    */
-  return async function Http(req, res, next) {
+  return async function Http(req: GhostRequest, res: GhostResponse, next: GhostNextFunction) {
     debug(`External API request to ${req.url}`);
     let apiKey = null;
     let integration = null;
@@ -49,8 +84,8 @@ const http = (apiImpl) => {
       user: req.user,
       session: req.session,
       url: {
-        host: req.vhost ? req.vhost.host : req.get('host'),
-        pathname: url.parse(req.originalUrl || req.url).pathname,
+        host: req.vhost ? req.vhost.host : (req.get('host') ?? ''),
+        pathname: parseUrl(req.originalUrl || req.url).pathname,
         secure: req.secure,
       },
       context: {
@@ -87,27 +122,27 @@ const http = (apiImpl) => {
       res.status(statusCode);
 
       // CASE: generate headers based on the api ctrl configuration
-      const apiHeaders = (await headers.get(result, apiImpl.headers, frame)) || {};
+      const apiHeaders = (await headers.get(result as Dictionary, apiImpl.headers, frame)) || {};
       res.set(apiHeaders);
 
-      const send = (format) => {
+      const send = (format?: string): void => {
         if (format === 'plain') {
           debug('plain text response');
-          return res.send(result);
+          res.send(result);
+          return;
         }
 
         debug('json response');
         res.json(result || {});
       };
 
-      let responseFormat;
+      let responseFormat: string | undefined;
 
       if (apiImpl.response) {
         if (typeof apiImpl.response.format === 'function') {
           const apiResponseFormat = apiImpl.response.format();
 
-          if (apiResponseFormat.then) {
-            // is promise
+          if (apiResponseFormat instanceof Promise) {
             return apiResponseFormat.then((formatName) => {
               send(formatName);
             });
@@ -131,4 +166,4 @@ const http = (apiImpl) => {
   };
 };
 
-module.exports = http;
+export default http;

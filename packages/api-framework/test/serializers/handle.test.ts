@@ -1,7 +1,7 @@
-const errors = require('@tryghost/errors');
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const shared = require('../../');
+import * as errors from '@tryghost/errors';
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import * as shared from '../../src/index.ts';
 
 describe('serializers/handle', function () {
   afterEach(function () {
@@ -20,7 +20,7 @@ describe('serializers/handle', function () {
 
     it('no api serializers passed', function () {
       return shared.serializers.handle
-        .input({})
+        .input(undefined)
         .then(Promise.reject)
         .catch((err) => {
           assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -40,7 +40,7 @@ describe('serializers/handle', function () {
       };
 
       const apiConfig = { docName: 'posts', method: 'browse' };
-      const frame = {};
+      const frame = new shared.Frame();
 
       const stubsToCheck = [
         allStub,
@@ -60,7 +60,7 @@ describe('serializers/handle', function () {
       const allStub = sinon.stub();
       const allBrowseStub = sinon.stub();
 
-      shared.serializers.input.all.browse = allBrowseStub;
+      Object.assign(shared.serializers.input.all, { browse: allBrowseStub });
 
       sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
 
@@ -73,7 +73,7 @@ describe('serializers/handle', function () {
       };
 
       const apiConfig = { docName: 'posts', method: 'browse' };
-      const frame = {};
+      const frame = new shared.Frame();
 
       const stubsToCheck = [
         allStub,
@@ -100,19 +100,18 @@ describe('serializers/handle', function () {
   });
 
   describe('output', function () {
-    let apiSerializers;
-    let response;
-    let apiConfig;
-    let frame;
+    let response: unknown[];
+    let apiConfig: { docName: string; method: string };
+    let frame: shared.Frame;
 
     beforeEach(function () {
       response = [];
       apiConfig = { docName: 'posts', method: 'add' };
-      frame = {};
+      frame = new shared.Frame();
     });
 
     it('no models passed', function () {
-      return shared.serializers.handle.output(null, {}, {}, {});
+      return shared.serializers.handle.output(null, {}, {}, new shared.Frame());
     });
 
     it('no api config passed', function () {
@@ -126,7 +125,7 @@ describe('serializers/handle', function () {
 
     it('no api serializers passed', function () {
       return shared.serializers.handle
-        .output([], {})
+        .output([], undefined)
         .then(Promise.reject)
         .catch((err) => {
           assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -134,15 +133,17 @@ describe('serializers/handle', function () {
     });
 
     describe('Specific serializers only', function () {
-      beforeEach(function () {
-        apiSerializers = {
-          posts: {
-            add: sinon.stub().resolves(),
-          },
-          users: {
-            add: sinon.stub().resolves(),
-          },
+      let apiSerializers = createSerializers();
+
+      function createSerializers() {
+        return {
+          posts: { add: sinon.stub().resolves() },
+          users: { add: sinon.stub().resolves() },
         };
+      }
+
+      beforeEach(function () {
+        apiSerializers = createSerializers();
       });
 
       it('correct custom serializer is called', function () {
@@ -172,17 +173,17 @@ describe('serializers/handle', function () {
     });
 
     describe('Custom and global (all) serializers', function () {
-      beforeEach(function () {
-        apiSerializers = {
-          all: {
-            after: sinon.stub().resolves(),
-            before: sinon.stub().resolves(),
-          },
-          posts: {
-            add: sinon.stub().resolves(),
-            all: sinon.stub().resolves(),
-          },
+      let apiSerializers = createSerializers();
+
+      function createSerializers() {
+        return {
+          all: { after: sinon.stub().resolves(), before: sinon.stub().resolves() },
+          posts: { add: sinon.stub().resolves(), all: sinon.stub().resolves() },
         };
+      }
+
+      beforeEach(function () {
+        apiSerializers = createSerializers();
       });
 
       it('calls custom serializer if one exists', function () {
@@ -235,20 +236,18 @@ describe('serializers/handle', function () {
     });
 
     describe('Custom, default and global (all) serializers with no custom fallback', function () {
-      beforeEach(function () {
-        apiSerializers = {
-          all: {
-            after: sinon.stub().resolves(),
-            before: sinon.stub().resolves(),
-          },
-          default: {
-            add: sinon.stub().resolves(),
-            all: sinon.stub().resolves(),
-          },
-          posts: {
-            add: sinon.stub().resolves(),
-          },
+      let apiSerializers = createSerializers();
+
+      function createSerializers() {
+        return {
+          all: { after: sinon.stub().resolves(), before: sinon.stub().resolves() },
+          default: { add: sinon.stub().resolves(), all: sinon.stub().resolves() },
+          posts: { add: sinon.stub().resolves() },
         };
+      }
+
+      beforeEach(function () {
+        apiSerializers = createSerializers();
       });
 
       it('uses best match serializer when custom match exists', function () {
@@ -303,21 +302,18 @@ describe('serializers/handle', function () {
     });
 
     describe('Custom, default and global (all) serializers with custom fallback', function () {
-      beforeEach(function () {
-        apiSerializers = {
-          all: {
-            after: sinon.stub().resolves(),
-            before: sinon.stub().resolves(),
-          },
-          default: {
-            add: sinon.stub().resolves(),
-            all: sinon.stub().resolves(),
-          },
-          posts: {
-            add: sinon.stub().resolves(),
-            all: sinon.stub().resolves(),
-          },
+      let apiSerializers = createSerializers();
+
+      function createSerializers() {
+        return {
+          all: { after: sinon.stub().resolves(), before: sinon.stub().resolves() },
+          default: { add: sinon.stub().resolves(), all: sinon.stub().resolves() },
+          posts: { add: sinon.stub().resolves(), all: sinon.stub().resolves() },
         };
+      }
+
+      beforeEach(function () {
+        apiSerializers = createSerializers();
       });
 
       it('uses best match serializer when custom match exists', function () {
@@ -374,17 +370,17 @@ describe('serializers/handle', function () {
     });
 
     describe('Default and global (all) serializers work together correctly', function () {
-      beforeEach(function () {
-        apiSerializers = {
-          all: {
-            after: sinon.stub().resolves(),
-            before: sinon.stub().resolves(),
-          },
-          default: {
-            add: sinon.stub().resolves(),
-            all: sinon.stub().resolves(),
-          },
+      let apiSerializers = createSerializers();
+
+      function createSerializers() {
+        return {
+          all: { after: sinon.stub().resolves(), before: sinon.stub().resolves() },
+          default: { add: sinon.stub().resolves(), all: sinon.stub().resolves() },
         };
+      }
+
+      beforeEach(function () {
+        apiSerializers = createSerializers();
       });
 
       it('correctly calls default serializer when no custom one is set', function () {

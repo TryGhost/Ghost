@@ -1,9 +1,5 @@
-module.exports = {
-  get handle() {
-    return require('./handle.ts');
-  },
+import handle from './handle.ts';
+import * as input from './input/index.ts';
 
-  get input() {
-    return require('./input/index.ts');
-  },
-};
+export { handle, input };
+export default { handle, input };
