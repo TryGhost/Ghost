@@ -6,11 +6,9 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
+  fakeEditorChrome,
   fakePosts,
   fakePostsListScreen,
-  fakeSnippets,
   post,
   renderAdminApp,
   staffRole,
@@ -38,11 +36,7 @@ function asContributor() {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));

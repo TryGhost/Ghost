@@ -1,28 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   fakeThemes,
   post,
   renderAdminApp,
+  submittedPost,
   theme,
   unsavedChangesGuarded,
-  type EndpointCapture,
   type ThemeTemplate,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
-const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const POST_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
@@ -52,11 +47,6 @@ const SLUG_TEMPLATE = {
   slug: 'hello-from-react',
 };
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
-
 /** The active theme's templates, alongside an installed theme whose templates never count. */
 function fakeSiteThemes(templates: ThemeTemplate[]) {
   fakeThemes([
@@ -66,11 +56,7 @@ function fakeSiteThemes(templates: ThemeTemplate[]) {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
@@ -79,27 +65,10 @@ function editorChrome() {
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  return fakeEditorPost({
     custom_template: null,
     tags: [],
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', POST_ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', POST_ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 
