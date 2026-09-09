@@ -563,13 +563,17 @@ describe('Email Service', function () {
       });
 
       const lockedEmail = createModel({ id: email.id, status: 'pending' });
-      lockedEmail.refresh = sinon.stub().resolves(lockedEmail);
       retryStatusLock.resolves(lockedEmail);
 
       assert.equal(await service.retryEmail(email), lockedEmail);
-      sinon.assert.calledOnceWithExactly(retryStatusLock, sinon.match.any, email.id, 'pending', [
-        'failed',
-      ]);
+      sinon.assert.calledOnceWithExactly(
+        retryStatusLock,
+        sinon.match.any,
+        email.id,
+        'pending',
+        ['failed'],
+        { autoRefresh: true },
+      );
       sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail);
     });
 

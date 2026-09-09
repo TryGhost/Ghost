@@ -459,7 +459,20 @@ class BatchSendingService {
         description: `verify frozen preparation for email ${email.id}`,
       },
     );
+    this.#verifyStoredEmailCount(email, verified);
     return verified.batches;
+  }
+
+  #verifyStoredEmailCount(email, { recipientCount }) {
+    const actual = email.get('email_count');
+    if (actual !== recipientCount) {
+      throw this.#verificationFailure(
+        email,
+        'email_recipient_count',
+        { expected: recipientCount, actual },
+        countsDiffer(recipientCount, actual),
+      );
+    }
   }
 
   async #startPreparation(email, attemptId) {
@@ -1395,9 +1408,11 @@ class BatchSendingService {
    * @param {string} id id of the model
    * @param {string} status set the status of the model to this value
    * @param {string[]} allowedStatuses Check if the models current status is one of these values
+   * @param {object} [options]
+   * @param {boolean} [options.autoRefresh=false] Refresh within the transaction for callers returning the model to the API.
    * @returns {Promise<object|undefined>} The updated model. Undefined if the model didn't pass the status check.
    */
-  async updateStatusLock(Model, id, status, allowedStatuses) {
+  async updateStatusLock(Model, id, status, allowedStatuses, { autoRefresh = false } = {}) {
     let model;
     await Model.transaction(async (transacting) => {
       model = await Model.findOne({ id }, { require: true, transacting, forUpdate: true });
@@ -1409,7 +1424,7 @@ class BatchSendingService {
         {
           status,
         },
-        { patch: true, transacting, autoRefresh: false },
+        { patch: true, transacting, autoRefresh },
       );
     });
     return model;

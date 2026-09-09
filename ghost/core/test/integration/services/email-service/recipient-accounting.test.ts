@@ -265,6 +265,74 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.assert.notCalled(sender.send);
   });
 
+  it('rolls back the retry claim when refreshing the saved email fails', async function () {
+    stubEmailRelations();
+    await email.save({ status: 'failed' }, { patch: true });
+    const failedEmail = await models.Email.findOne({ id: email.id });
+    const EmailService = require('../../../../core/server/services/email-service/email-service');
+    const scheduleEmail = sinon.stub();
+    const retryService = new EmailService({
+      models,
+      batchSendingService: {
+        updateStatusLock: BatchSendingService.prototype.updateStatusLock.bind(service),
+        scheduleEmail,
+      },
+    });
+    sinon.stub(retryService, 'checkLimits').resolves();
+    const refresh = models.Email.prototype.refresh;
+    let failed = false;
+    const readError = new Error('Lost retry refresh');
+    const refreshStub = sinon
+      .stub(models.Email.prototype, 'refresh')
+      .callsFake(async function (this: Email, options) {
+        if (!failed && this.id === email.id && this.get('status') === 'pending') {
+          failed = true;
+          throw readError;
+        }
+        return refresh.call(this, options);
+      });
+    await assert.rejects(retryService.retryEmail(failedEmail), readError);
+    refreshStub.restore();
+    assert.equal((await db.knex('emails').where({ id: email.id }).first()).status, 'failed');
+    sinon.assert.notCalled(scheduleEmail);
+    const claimed = await retryService.retryEmail(failedEmail);
+    assert.equal(claimed.get('status'), 'pending');
+    assert.equal(claimed.get('updated_at').getUTCMilliseconds(), 0);
+    sinon.assert.calledOnce(scheduleEmail);
+  });
+
+  it('rejects an incorrect persisted email total before sending frozen recipients', async function () {
+    await service.createBatches(data);
+    await email.save({ email_count: 5 }, { patch: true });
+    await assert.rejects(service.createBatches(data), (error) => {
+      const details = verificationDetails(error);
+      assert.equal(details.reason, 'email_recipient_count');
+      assert.equal(details.expected, 4);
+      assert.equal(details.actual, 5);
+      assert.equal(details.count_mismatch, true);
+      return true;
+    });
+    sinon.assert.notCalled(sender.send);
+  });
+
+  it('lets only one of two concurrent email jobs build the recipient set', async function () {
+    stubEmailRelations();
+    await Promise.all([
+      service.emailJob({ emailId: email.id }),
+      service.emailJob({ emailId: email.id }),
+    ]);
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('candidate_count'), 4);
+    assert.equal((await service.getBatches(email)).length, 3);
+    assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
+    const sentIds = sender.send
+      .getCalls()
+      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+    assert.equal(sentIds.length, 4);
+    assert.equal(new Set(sentIds).size, 4);
+  });
+
   it('rejects a stale retry while the winning retry is still preparing recipients', async function () {
     stubEmailRelations();
     await email.save({ status: 'failed' }, { patch: true });

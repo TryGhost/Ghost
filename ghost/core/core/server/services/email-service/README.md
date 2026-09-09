@@ -75,6 +75,8 @@ so this check cannot distinguish writes within the same second and does not
 independently establish frozen batch membership.
 After submission workers settle, re-read all persisted batches, verify recipient
 counts again, and require every batch submitted before completing the email.
+Frozen preparation also verifies that `email_count` equals the prepared recipient
+total so progress and statistics cannot silently retain an incorrect total.
 
 These checks account for intended recipients, not delivered copies or global
 recipient uniqueness. Compensating omissions and duplicates can balance a count
@@ -115,6 +117,7 @@ identifies a batch. Counts describe the failed check:
 | Reason                    | Count fields                                                                                                                                                                                                 |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `batch_recipient_count`   | `expected`, `actual` recipient rows                                                                                                                                                                          |
+| `email_recipient_count`   | `expected` prepared recipient total, `actual` persisted `email_count`                                                                                                                                        |
 | `preparation_totals`      | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
 | `batch_recovery_conflict` | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                           |
 
