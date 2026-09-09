@@ -23,6 +23,7 @@ import { TextCursorInput } from 'lucide-react';
 import { arrayMove } from '@dnd-kit/sortable';
 import {
   inOrderOf,
+  memberAccessLabel,
   memberCustomFieldsDataType,
   useBrowseMemberCustomFieldsIncludingArchived,
   useReorderMemberCustomFields,
@@ -64,7 +65,9 @@ const FieldRow: React.FC<{
           </span>
           <span className="min-w-0 grow">
             <span className="block font-semibold">{field.name}</span>
-            <span className="block text-sm text-muted-foreground">{userType.label}</span>
+            <span className="block text-sm text-muted-foreground">
+              {userType.label} &middot; {memberAccessLabel(field.access.member)}
+            </span>
           </span>
         </button>
       </ActionListItemContent>
