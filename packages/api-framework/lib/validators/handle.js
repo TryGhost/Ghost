@@ -15,53 +15,53 @@ const { sequence } = require('@tryghost/promise');
  * @param {import('@tryghost/api-framework').Frame} frame
  */
 module.exports.input = (apiConfig, apiValidators, frame) => {
-    debug('input begin');
+  debug('input begin');
 
-    const tasks = [];
-    const sharedValidators = require('./input');
+  const tasks = [];
+  const sharedValidators = require('./input');
 
-    if (!apiValidators) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiValidators) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    if (!apiConfig) {
-        return Promise.reject(new errors.IncorrectUsageError());
-    }
+  if (!apiConfig) {
+    return Promise.reject(new errors.IncorrectUsageError());
+  }
 
-    // ##### SHARED ALL VALIDATION
+  // ##### SHARED ALL VALIDATION
 
+  tasks.push(function allShared() {
+    return sharedValidators.all.all(apiConfig, frame);
+  });
+
+  if (sharedValidators.all[apiConfig.method]) {
     tasks.push(function allShared() {
-        return sharedValidators.all.all(apiConfig, frame);
+      return sharedValidators.all[apiConfig.method](apiConfig, frame);
     });
+  }
 
-    if (sharedValidators.all[apiConfig.method]) {
-        tasks.push(function allShared() {
-            return sharedValidators.all[apiConfig.method](apiConfig, frame);
-        });
+  // ##### API VERSION VALIDATION
+
+  if (apiValidators.all) {
+    tasks.push(function allAPIVersion() {
+      return apiValidators.all[apiConfig.method](apiConfig, frame);
+    });
+  }
+
+  if (apiValidators[apiConfig.docName]) {
+    if (apiValidators[apiConfig.docName].all) {
+      tasks.push(function docNameAll() {
+        return apiValidators[apiConfig.docName].all(apiConfig, frame);
+      });
     }
 
-    // ##### API VERSION VALIDATION
-
-    if (apiValidators.all) {
-        tasks.push(function allAPIVersion() {
-            return apiValidators.all[apiConfig.method](apiConfig, frame);
-        });
+    if (apiValidators[apiConfig.docName][apiConfig.method]) {
+      tasks.push(function docNameMethod() {
+        return apiValidators[apiConfig.docName][apiConfig.method](apiConfig, frame);
+      });
     }
+  }
 
-    if (apiValidators[apiConfig.docName]) {
-        if (apiValidators[apiConfig.docName].all) {
-            tasks.push(function docNameAll() {
-                return apiValidators[apiConfig.docName].all(apiConfig, frame);
-            });
-        }
-
-        if (apiValidators[apiConfig.docName][apiConfig.method]) {
-            tasks.push(function docNameMethod() {
-                return apiValidators[apiConfig.docName][apiConfig.method](apiConfig, frame);
-            });
-        }
-    }
-
-    debug('input ready');
-    return sequence(tasks);
+  debug('input ready');
+  return sequence(tasks);
 };
