@@ -1,8 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
-import { UnsplashSearchModal } from '@tryghost/kg-unsplash-selector';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { LoadingIndicator } from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -14,8 +12,7 @@ import {
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import { useFramework } from '@tryghost/admin-x-framework';
-import BrandIcon from '@/shared/brand-icon/brand-icon';
+import { featureImageUnsplashButton } from '@tryghost/test-data/selectors/editor';
 import {
   ACCEPTED_IMAGE_TYPES,
   UNSUPPORTED_IMAGE_MESSAGE,
@@ -24,6 +21,7 @@ import {
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
+import { UnsplashPicker } from './unsplash-picker';
 
 const ALT_MAX_LENGTH = 191;
 const IMAGE_SUBJECT = 'feature image';
@@ -61,8 +59,6 @@ export function FeatureImage({
   onTkCountChange,
 }: FeatureImageProps) {
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
-  const { unsplashConfig } = useFramework();
-  const [showUnsplash, setShowUnsplash] = useState(false);
   const [isEditingAlt, setIsEditingAlt] = useState(false);
   const [captionFocused, setCaptionFocused] = useState(false);
   const [captionTkCount, setCaptionTkCount] = useState(0);
@@ -135,39 +131,16 @@ export function FeatureImage({
             </Inline>
           )}
         </ImageUploadDropzone>
-        {cardConfig.unsplash && (
-          <ImageUploadActions className="top-1/2 right-2 -translate-y-1/2 opacity-100">
-            <Button
-              aria-label="Select feature image from Unsplash"
-              className="group/unsplash hover:bg-button-hover"
-              disabled={isPending}
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setShowUnsplash(true)}
-            >
-              <BrandIcon
-                className="size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground"
-                name="unsplash"
-              />
-            </Button>
-          </ImageUploadActions>
-        )}
-        {showUnsplash &&
-          createPortal(
-            <UnsplashSearchModal
-              unsplashProviderConfig={unsplashConfig}
-              onClose={() => setShowUnsplash(false)}
-              onImageInsert={(inserted) => {
-                if (inserted.src) {
-                  onImageChange(inserted.src);
-                  onCaptionChange(inserted.caption ?? '');
-                }
-                setShowUnsplash(false);
-              }}
-            />,
-            document.body,
-          )}
+        <UnsplashPicker
+          className="top-1/2 right-2 -translate-y-1/2"
+          disabled={isPending}
+          enabled={!!cardConfig.unsplash}
+          label={featureImageUnsplashButton}
+          onSelect={(picked) => {
+            onImageChange(picked.src);
+            onCaptionChange(picked.caption);
+          }}
+        />
       </ImageUpload>
     );
   }
