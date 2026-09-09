@@ -5,6 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEndpoint,
   fakeMembers,
   fakeNewsletters,
   fakePosts,
@@ -12,6 +13,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settingsResponse,
   staffRole,
   unsavedChangesGuarded,
   type EndpointCapture,
@@ -100,6 +102,44 @@ function fakeImageUpload() {
   return fakeAdminEndpoint('POST', '/images/upload/', {
     images: [{ url: UPLOADED, ref: null }],
   });
+}
+
+const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
+// The picker asks Unsplash for a wider rendition of the image it inserts.
+const UNSPLASH_PICKED = 'https://images.unsplash.com/photo-1?ixid=1&w=2000';
+
+/** One Unsplash photo, in the shape the search modal lays out and inserts. */
+function fakeUnsplashPhotos() {
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos', [
+    {
+      id: 'photo-1',
+      color: '#123456',
+      alt_description: 'A hillside',
+      height: 800,
+      width: 1200,
+      likes: 12,
+      urls: { regular: UNSPLASH_REGULAR },
+      links: {
+        html: 'https://unsplash.com/photos/photo-1',
+        download: 'https://unsplash.com/photos/photo-1/download',
+        download_location: 'https://api.unsplash.com/photos/photo-1/download',
+      },
+      user: {
+        name: 'A Photographer',
+        links: { html: 'https://unsplash.com/@photographer' },
+        profile_image: { medium: 'https://images.unsplash.com/profile-1' },
+      },
+    },
+  ]);
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
+}
+
+/** The site fixture turns Unsplash on, so only the off case needs an override. */
+function withoutUnsplash() {
+  return {
+    ...FLAG_ON,
+    boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
+  };
 }
 
 async function openXCard() {
@@ -485,6 +525,74 @@ describe('Post settings X card', () => {
       await expect
         .poll(() => submittedPost(saveApi).twitter_title, POLL)
         .toBe('A contributor’s X title');
+    },
+    SLOW,
+  );
+
+  it(
+    'offers Unsplash on an empty X image field',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await editorScreen.settingsXImageUnsplashButton().click();
+
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'leaves Unsplash out while the site’s integration is off',
+    async () => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutUnsplash());
+      await openXCard();
+
+      await expect.element(editorScreen.settingsXImageInput()).toBeInTheDocument();
+      await expect(editorScreen.settingsXImageUnsplashButton()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'saves an X image picked from Unsplash as soon as it lands',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await editorScreen.settingsXImageUnsplashButton().click();
+      await editorScreen.unsplashInsertImage().click();
+
+      // A field save has no debounce, so it lands well inside the autosave's 3s.
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({ twitter_image: UNSPLASH_PICKED });
+      await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the pane open when Escape dismisses the Unsplash search',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await editorScreen.settingsXImageUnsplashButton().click();
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+      await expect.element(editorScreen.settingsXTitle()).toBeVisible();
     },
     SLOW,
   );

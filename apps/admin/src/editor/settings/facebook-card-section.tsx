@@ -13,6 +13,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import {
+  facebookImageUnsplashButton,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -33,6 +34,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { FieldError } from './field-error';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
@@ -156,6 +158,12 @@ export function FacebookCardSection({
               </Inline>
             )}
           </ImageUploadDropzone>
+          <UnsplashPicker
+            disabled={isPending}
+            enabled={!!cardConfig.unsplash}
+            label={facebookImageUnsplashButton}
+            onSelect={({ src }) => session.editSettings({ og_image: src })}
+          />
         </ImageUpload>
       )}
 

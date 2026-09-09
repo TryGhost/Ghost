@@ -20,6 +20,7 @@ import {
   settingsXPreview,
   settingsXPreviewImage,
   settingsXTitleInput,
+  xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
@@ -36,6 +37,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { FieldError } from './field-error';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
@@ -152,6 +154,12 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
               </Inline>
             )}
           </ImageUploadDropzone>
+          <UnsplashPicker
+            disabled={isPending}
+            enabled={!!cardConfig.unsplash}
+            label={xImageUnsplashButton}
+            onSelect={({ src }) => session.editSettings({ twitter_image: src })}
+          />
         </ImageUpload>
       )}
 

@@ -5,6 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEndpoint,
   fakeMembers,
   fakeNewsletters,
   fakePosts,
@@ -12,6 +13,7 @@ import {
   fakeTiers,
   post,
   renderAdminApp,
+  settingsResponse,
   staffRole,
   unsavedChangesGuarded,
   type EndpointCapture,
@@ -94,6 +96,44 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
     current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
     return { posts: [current] };
   });
+}
+
+const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
+// The picker asks Unsplash for a wider rendition of the image it inserts.
+const UNSPLASH_PICKED = 'https://images.unsplash.com/photo-1?ixid=1&w=2000';
+
+/** One Unsplash photo, in the shape the search modal lays out and inserts. */
+function fakeUnsplashPhotos() {
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos', [
+    {
+      id: 'photo-1',
+      color: '#123456',
+      alt_description: 'A hillside',
+      height: 800,
+      width: 1200,
+      likes: 12,
+      urls: { regular: UNSPLASH_REGULAR },
+      links: {
+        html: 'https://unsplash.com/photos/photo-1',
+        download: 'https://unsplash.com/photos/photo-1/download',
+        download_location: 'https://api.unsplash.com/photos/photo-1/download',
+      },
+      user: {
+        name: 'A Photographer',
+        links: { html: 'https://unsplash.com/@photographer' },
+        profile_image: { medium: 'https://images.unsplash.com/profile-1' },
+      },
+    },
+  ]);
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
+}
+
+/** The site fixture turns Unsplash on, so only the off case needs an override. */
+function withoutUnsplash() {
+  return {
+    ...FLAG_ON,
+    boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
+  };
 }
 
 async function openFacebookCard() {
@@ -346,6 +386,74 @@ describe('Post settings Facebook card', () => {
       await expect
         .poll(() => submittedPost(saveApi).og_title, FIELD_POLL)
         .toBe('A contributor’s Facebook title');
+    },
+    SLOW,
+  );
+
+  it(
+    'offers Unsplash on an empty Facebook image field',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'leaves Unsplash out while the site’s integration is off',
+    async () => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutUnsplash());
+      await openFacebookCard();
+
+      await expect.element(editorScreen.settingsFacebookImageInput()).toBeInTheDocument();
+      await expect(editorScreen.settingsFacebookImageUnsplashButton()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'saves a Facebook image picked from Unsplash as soon as it lands',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+      await editorScreen.unsplashInsertImage().click();
+
+      // A field save has no debounce, so it lands well inside the autosave's 3s.
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({ og_image: UNSPLASH_PICKED });
+      await expect.element(editorScreen.removeSettingsFacebookImage()).toBeVisible();
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the pane open when Escape dismisses the Unsplash search',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+      await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
     },
     SLOW,
   );
