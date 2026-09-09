@@ -1387,56 +1387,83 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
-  it('logs a payload discrepancy before a failed batch status write can hide it', async function () {
+  for (const shutdown of [false, true]) {
+    it(`preserves a verification failure when its batch status cannot be saved (shutdown: ${shutdown})`, async function () {
+      const batches = await service.createBatches(data);
+      const duplicateBatch = batches.find((batch) => batch.get('recipient_count') === 2);
+      await db
+        .knex('email_recipients')
+        .where({ batch_id: duplicateBatch.id })
+        .update({ member_email: 'duplicate@example.com' });
+      useRealMailgunProvider();
+      // Exercise exhausted writes without retry backoff.
+      sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
+      const save = models.EmailBatch.prototype.save;
+      sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (
+        this: Batch,
+        attributes,
+        ...args
+      ) {
+        if (
+          this.id === duplicateBatch.id &&
+          attributes &&
+          typeof attributes === 'object' &&
+          'status' in attributes &&
+          attributes.status === 'failed'
+        ) {
+          if (shutdown) {
+            service.onPreStop();
+          }
+          throw new Error('Batch status write unavailable');
+        }
+        return save.call(this, attributes, ...args);
+      });
+      await runEmailJob(batches);
+      await duplicateBatch.refresh();
+      assert.equal(duplicateBatch.get('status'), 'submitting');
+      assert.equal(duplicateBatch.get('error_data'), null);
+      sinon.assert.calledOnce(sentry.captureException);
+      const error = sentry.captureException.firstCall.args[0];
+      assert.equal(error.retryable, false);
+      assert.equal(verificationDetails(error).reason, 'provider_payload_count');
+      await email.refresh();
+      assert.equal(email.get('status'), shutdown ? 'submitting' : 'failed');
+      assert.equal(email.get('error'), shutdown ? null : error.message);
+      if (shutdown) {
+        assert.ok(
+          (await service.getBatches(email)).some((batch) => batch.get('status') === 'pending'),
+        );
+      }
+      const alerts = logging.error
+        .getCalls()
+        .filter(
+          ({ args }: sinon.SinonSpyCall) =>
+            args[0]?.event?.name === 'email.recipient_count.mismatch',
+        );
+      assert.equal(alerts.length, 1);
+    });
+  }
+
+  it('keeps exclusion progress without claiming a partially sent email when every provider request fails', async function () {
     const batches = await service.createBatches(data);
-    const duplicateBatch = batches.find((batch) => batch.get('recipient_count') === 2);
+    const excludedBatch = batches.find((batch) => batch.get('recipient_count') === 2);
     await db
       .knex('email_recipients')
-      .where({ batch_id: duplicateBatch.id })
-      .update({ member_email: 'duplicate@example.com' });
-    useRealMailgunProvider();
-    // Status persistence fails independently of the payload check. Disable backoff
-    // so the test exercises the exhausted-write outcome without waiting for retries.
+      .where({ batch_id: excludedBatch.id })
+      .update({ member_email: 'invalid-email' });
+    sender.send.rejects(new Error('Provider unavailable'));
     sinon.stub(service, 'retryDb').callsFake(async (operation) => operation());
-    const save = models.EmailBatch.prototype.save;
-    sinon.stub(models.EmailBatch.prototype, 'save').callsFake(function (
-      this: Batch,
-      attributes,
-      ...args
-    ) {
-      if (
-        this.id === duplicateBatch.id &&
-        attributes &&
-        typeof attributes === 'object' &&
-        'status' in attributes &&
-        attributes.status === 'failed'
-      ) {
-        sinon.assert.calledWithMatch(logging.error, {
-          event: { name: 'email.recipient_count.mismatch' },
-          code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
-          email_id: email.id,
-          batch_id: duplicateBatch.id,
-          reason: 'provider_payload_count',
-          expected: 2,
-          actual: 1,
-        });
-        throw new Error('Batch status write unavailable');
-      }
-      return save.call(this, attributes, ...args);
-    });
-    await assert.rejects(
-      service.sendBatches({ ...data, batches }),
-      /Batch status write unavailable/,
-    );
-    await duplicateBatch.refresh();
-    assert.equal(duplicateBatch.get('status'), 'submitting');
-    assert.equal(duplicateBatch.get('error_data'), null);
-    const alerts = logging.error
-      .getCalls()
-      .filter(
-        ({ args }: sinon.SinonSpyCall) => args[0]?.event?.name === 'email.recipient_count.mismatch',
-      );
-    assert.equal(alerts.length, 1);
+    await runEmailJob(batches);
+    await excludedBatch.refresh();
+    assert.equal(excludedBatch.get('status'), 'submitted');
+    assert.equal(excludedBatch.get('submitted_count'), 0);
+    assert.equal(excludedBatch.get('submission_excluded_count'), 2);
+    await email.refresh();
+    assert.equal(email.get('status'), 'failed');
+    assert.doesNotMatch(email.get('error'), /partially sent/);
+    const result = await new SendingStatusService({ knex: db.knex }).statusFor(email.id);
+    assert.equal(result?.sending.progress.completed, 2);
+    assert.equal(result?.sending.progress.total, 4);
   });
 
   it('counts each consumed candidate once across lookahead pages and warming splits', async function () {
@@ -1751,7 +1778,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.stub(service, 'sendBatch').resolves(true);
     await assert.rejects(
       service.sendBatches({ ...data, batches: dispatched }),
-      /only partially sent/,
+      /please retry sending your newsletter/,
     );
   });
 

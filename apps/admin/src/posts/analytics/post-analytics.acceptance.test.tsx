@@ -348,18 +348,55 @@ describe('Post analytics overview', () => {
       boot: webAnalyticsBootOverrides(),
     });
 
-    await expect.element(page.getByText('Some emails failed to send')).toBeVisible();
+    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
     await expect.element(page.getByText(/^Published on your site on/)).toBeVisible();
     await expect.element(page.getByText(/^Published and sent on/)).not.toBeInTheDocument();
     await expect.element(page.getByText(/Mailgun rejected the batch/)).toBeVisible();
     await expect.element(page.getByText('No newsletter data available')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Send remaining emails' }).click();
+    await page.getByRole('button', { name: 'Retry sending email' }).click();
     await expect.poll(() => retryApi.requests.length).toBe(1);
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     // Keep submission visible until asserted, regardless of how many polls CI runs.
     hasCompleted = true;
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
+  });
+
+  it('does not describe completed exclusions as sent emails after a submission failure', async () => {
+    seedPostAnalyticsWorld({
+      email: {
+        id: EMAIL_ID,
+        email_count: 1000,
+        opened_count: 0,
+        status: 'failed',
+        error: 'Please retry sending your newsletter.',
+      },
+    });
+    fakeSubmittingBatches();
+    // The completed batch excluded all 250 recipients; the other batch failed.
+    // Progress includes exclusions and therefore cannot establish a sent count.
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            failed_during: 'submitting',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      labs: { improveSendingUI: true },
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    const banner = postAnalyticsScreen.emailSendingStatusBanner();
+    await expect.element(banner).toHaveTextContent('250 of 1,000 recipients processed.');
+    await expect.element(banner).not.toHaveTextContent('emails were sent');
+    await expect.element(page.getByText('Emails failed to send')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Retry sending email' })).toBeVisible();
   });
 
   it('shows a generic failure without retry when a batch has an unknown delivery outcome', async () => {

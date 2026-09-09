@@ -1137,6 +1137,15 @@ class BatchSendingService {
       `Email ${email.id} send done: ${succeededCount}/${batches.length} batches succeeded, ${queue.length} unstarted`,
     );
 
+    // Preserve an integrity failure even if its status write failed. Another
+    // worker's database error or shutdown must not replace the original cause.
+    const failedWorkers = workerResults.filter((result) => result.status === 'rejected');
+    const failedWorker =
+      failedWorkers.find((result) => result.reason?.retryable === false) ?? failedWorkers[0];
+    if (failedWorker) {
+      await this.#rethrowWorkerFailure(email, failedWorker.reason);
+    }
+
     if (this.#shuttingDown && queue.length > 0) {
       if (this.#usesRecipientAccounting(email)) {
         // A worker may have persisted an integrity failure while shutdown left
@@ -1148,11 +1157,6 @@ class BatchSendingService {
         code: SHUTDOWN_CODE,
         message: 'Email send stopped because the container is shutting down',
       });
-    }
-
-    const failedWorker = workerResults.find((result) => result.status === 'rejected');
-    if (failedWorker) {
-      await this.#rethrowWorkerFailure(email, failedWorker.reason);
     }
 
     if (this.#usesRecipientAccounting(email)) {
@@ -1199,6 +1203,8 @@ class BatchSendingService {
     this.#assertSubmissionComplete(
       batches.filter((batch) => batch.get('status') === 'submitted').length,
       batches.length,
+      // Completed batches may contain only exclusions, not successful submissions.
+      messages.emailError,
     );
     this.#reportSubmission(email, batches, submission);
     return submission;
@@ -1237,10 +1243,13 @@ class BatchSendingService {
     );
   }
 
-  #assertSubmissionComplete(succeededCount, expectedBatchCount) {
+  #assertSubmissionComplete(succeededCount, expectedBatchCount, failureMessage) {
     if (succeededCount < expectedBatchCount) {
       throw new errors.EmailError({
-        message: tpl(succeededCount > 0 ? messages.emailErrorPartialFailure : messages.emailError),
+        message: tpl(
+          failureMessage ??
+            (succeededCount > 0 ? messages.emailErrorPartialFailure : messages.emailError),
+        ),
       });
     }
   }
@@ -1351,11 +1360,7 @@ class BatchSendingService {
     } catch (err) {
       this.#reportBatchError(batch, err);
       if (!succeeded) {
-        await this.#saveBatchStatus(batch, 'failed', {
-          error_status_code: err.statusCode ?? null,
-          error_message: err.message,
-          error_data: err.errorDetails ?? null,
-        });
+        await this.#saveBatchFailure(batch, err);
       } else if (this.#shuttingDown) {
         // Accepted, but the submitted write failed. Keep the email resumable;
         // never replace this uncertain outcome with a failed batch status.
@@ -1484,6 +1489,23 @@ class BatchSendingService {
         description: `save batch ${batch.id} -> ${status}`,
       },
     );
+  }
+
+  async #saveBatchFailure(batch, error) {
+    try {
+      await this.#saveBatchStatus(batch, 'failed', {
+        error_status_code: error.statusCode ?? null,
+        error_message: error.message,
+        error_data: error.errorDetails ?? null,
+      });
+    } catch (saveError) {
+      // The persisted-state lookup cannot recover metadata that was never saved.
+      // Keep the raw integrity error for the email banner and Sentry, including on shutdown.
+      if (error.retryable === false) {
+        throw error;
+      }
+      throw saveError;
+    }
   }
 
   #reportBatchSubmission(email, batch, response) {

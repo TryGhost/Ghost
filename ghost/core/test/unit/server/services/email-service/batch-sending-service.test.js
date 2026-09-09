@@ -2214,6 +2214,38 @@ describe('Batch Sending Service', function () {
       sinon.assert.callCount(func, 1);
     });
 
+    for (const shutdown of [false, true]) {
+      it(`preserves an unpersisted verification error over another worker failure (shutdown: ${shutdown})`, async function () {
+        const service = new BatchSendingService({
+          sendingService: { getTargetDeliveryWindow: () => 0 },
+        });
+        const error = Object.assign(new Error('Recipient verification failed'), {
+          retryable: false,
+        });
+        sinon.stub(service, 'getBatches').resolves([]);
+        sinon
+          .stub(service, 'sendBatch')
+          .onFirstCall()
+          .rejects(new Error('Database unavailable'))
+          .onSecondCall()
+          .callsFake(async () => {
+            if (shutdown) {
+              service.onPreStop();
+            }
+            throw error;
+          });
+        await assert.rejects(
+          service.sendBatches({
+            email: createModel({ preflight_email_count: 3 }),
+            batches: Array.from({ length: 3 }, () => createModel({ status: 'pending' })),
+            post: createModel({}),
+            newsletter: createModel({}),
+          }),
+          (failure) => failure === error,
+        );
+      });
+    }
+
     it('waits for every worker to settle when one throws', async function () {
       const service = new BatchSendingService({
         sendingService: {

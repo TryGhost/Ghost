@@ -173,7 +173,9 @@ they do not imply that the provider accepted or delivered an email.
 
 The shared verification error factory emits the event immediately, including
 payload failures before the provider POST. A failed batch-status write cannot
-suppress that observation. Re-reading a persisted verification failure emits
+suppress that observation. If saving the batch failure also fails, the original
+terminal verification error still reaches the email job and Sentry, including
+during shutdown. Re-reading a persisted verification failure emits
 `batch_verification_failed` with the original details in `batch_error`; it is
 another observation of the same problem, not additional lost recipients.
 
@@ -211,7 +213,9 @@ Active accounted sends read the small batch table: preparation progress sums
 `recipient_count`; submission progress sums submitted and excluded counts for
 submitted batches. Unknown preparation-era submission counts fall back to the
 batch's expected count at read time only. The submission total remains the sum
-of expected batch counts, so exclusions cannot leave progress short. Emails with
+of expected batch counts, so exclusions cannot leave progress short. Failed-send
+UI describes this as processed recipients, because completed work includes
+exclusions and cannot establish how many emails were sent. Emails with
 null `preflight_email_count` retain their indexed recipient-count queries. Actual recipient verification
 runs at lifecycle boundaries, not on the polling path.
 
