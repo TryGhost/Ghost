@@ -1,7 +1,4 @@
-/**
- * Every settings section, in the order they are shown. Sections arrive one at a
- * time; an id the sidebar has no entry for renders nothing.
- */
+/** Every settings section, in display order. The sidebar must implement each one. */
 export const SETTINGS_SECTION_ORDER = [
   'url',
   'publish-date',

@@ -42,7 +42,7 @@ import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
 import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
 import { createPublishDispatcher } from './publish-dispatch';
-import type { PublishDispatcher } from '@/editor/publish/use-publish-flow';
+import type { PublishDispatcher } from '@/editor/publish/publish-options';
 import type { EditorRecord } from './projection';
 import {
   SETTINGS_FIELD_KEYS,
@@ -195,7 +195,6 @@ export function useEditorSession({
   const [title, setTitle] = useState(() =>
     record?.title === DEFAULT_TITLE ? '' : (record?.title ?? ''),
   );
-  const [excerpt, setExcerpt] = useState(() => record?.custom_excerpt ?? '');
   const [initialLexical, setInitialLexical] = useState(() => record?.lexical ?? null);
   const [loadedRecord, setLoadedRecord] = useState(record);
   const [contentKey, setContentKey] = useState(0);
@@ -271,7 +270,7 @@ export function useEditorSession({
   const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
   const slug = useSyncExternalStore(session.subscribe, session.getSlug);
 
-  // Mirrored into React state, as the title and excerpt are: the session
+  // Mirrored into React state, as the title is: the session
   // notifies on engine and dirtiness changes, not on every field edit.
   const [settings, setSettings] = useState<EditorSettingsFields>(() =>
     settingsFieldsOf(session.getFields()),
@@ -321,7 +320,6 @@ export function useEditorSession({
     setSettings((current) =>
       SETTINGS_FIELD_KEYS.every((key) => current[key] === next[key]) ? current : next,
     );
-    setExcerpt(next.custom_excerpt ?? '');
     const time = publishTimeOf(session);
     setPublishTime((current) => (samePublishTime(current, time) ? current : time));
   }, [session, state]);
@@ -352,7 +350,6 @@ export function useEditorSession({
       // so the inputs mirroring them are re-read rather than left behind.
       const fields = session.getFields();
       setSettings(settingsFieldsOf(fields));
-      setExcerpt(fields.custom_excerpt ?? '');
       setPublishTime(publishTimeOf(session));
     }
   }, [saved, session]);
@@ -403,7 +400,6 @@ export function useEditorSession({
     await queryClient.cancelQueries({ queryKey, exact: true });
     queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
-    setExcerpt(fresh.custom_excerpt ?? '');
     setSettings(settingsFieldsOf(session.getFields()));
     setPublishTime(publishTimeOf(session));
     setInitialLexical(fresh.lexical ?? null);
@@ -424,7 +420,6 @@ export function useEditorSession({
       // The session normalizes a blank restored title, so the surface reads it back.
       const fields = session.getFields();
       setTitle(fields.title === DEFAULT_TITLE ? '' : fields.title);
-      setExcerpt(fields.custom_excerpt ?? '');
       setSettings(settingsFieldsOf(fields));
       setInitialLexical(restored.lexical);
       setLoadedRecord((current) =>
@@ -452,10 +447,9 @@ export function useEditorSession({
 
   const onExcerptChange = useCallback(
     (next: string) => {
-      setExcerpt(next);
-      session.patchExcerpt(next);
+      stageSettings({ custom_excerpt: next || null });
     },
-    [session],
+    [stageSettings],
   );
 
   const onTitleBlur = useCallback(() => {
@@ -494,7 +488,7 @@ export function useEditorSession({
   return {
     bind: {
       title,
-      excerpt,
+      excerpt: settings.custom_excerpt ?? '',
       initialLexical,
       onTitleChange,
       onTitleBlur,

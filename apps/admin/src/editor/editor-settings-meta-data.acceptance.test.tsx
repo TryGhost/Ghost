@@ -372,6 +372,33 @@ describe('Post settings meta data', () => {
   );
 
   it(
+    'keeps the preview in sync with the inline excerpt while published edits are staged',
+    async () => {
+      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, editorExcerpt: true },
+      });
+      await openMetaData();
+
+      await editorScreen.excerptInput().fill('First unsaved summary');
+      await expect
+        .element(editorScreen.settingsSerpPreview())
+        .toHaveTextContent('First unsaved summary');
+      // Already dirty: another edit must update the preview without a save or dirty-state transition.
+      await editorScreen.excerptInput().fill('The latest unsaved summary');
+      await expect
+        .element(editorScreen.settingsSerpPreview())
+        .toHaveTextContent('The latest unsaved summary');
+      await expect
+        .element(editorScreen.settingsMetaDescription())
+        .toHaveAttribute('placeholder', 'The latest unsaved summary');
+      await expect.element(editorScreen.excerptInput()).toHaveValue('The latest unsaved summary');
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
     'explains the result a post with no description of its own gets',
     async () => {
       fakeSavablePost();
