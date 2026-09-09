@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { computeAutoExcerpt, computeReadingTime } from '../../../../../core/server/lib/post-meta';
 
-const migration = require('../../../../../core/server/data/migrations/versions/6.64/2026-09-08-13-09-12-backfill-posts-auto-excerpt-and-reading-time');
+const migration = require('../../../../../core/server/data/migrations/versions/7.0/2026-09-08-13-09-12-backfill-posts-auto-excerpt-and-reading-time');
 
 type PostRow = {
   id: string;
