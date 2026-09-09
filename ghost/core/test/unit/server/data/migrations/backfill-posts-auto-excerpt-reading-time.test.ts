@@ -1,12 +1,61 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
-const {
-  computeAutoExcerpt,
-  computeReadingTime,
-} = require('../../../../../core/server/lib/post-meta');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import { computeAutoExcerpt, computeReadingTime } from '../../../../../core/server/lib/post-meta';
 
 const migration = require('../../../../../core/server/data/migrations/versions/6.63/2026-09-08-13-09-12-backfill-posts-auto-excerpt-and-reading-time');
+
+type PostRow = {
+  id: string;
+  html: string | null;
+  plaintext: string | null;
+  feature_image: string | null;
+  auto_excerpt: string | null;
+  reading_time: number | null;
+};
+
+type UpdateEntry = {
+  id: string | null;
+  whereNull: string | null;
+  updates: Record<string, string | number | null>;
+};
+
+type KnexFakeState = {
+  posts: PostRow[];
+  updates: UpdateEntry[];
+};
+
+type QueryMode = 'candidates' | 'row' | null;
+
+type KnexFake = {
+  (table: string): KnexQuery;
+  __state: KnexFakeState;
+};
+
+type KnexQuery = {
+  _id: string | null;
+  _whereNull: string | null;
+  _mode: QueryMode;
+  select(...columns: string[]): KnexQuery;
+  where(arg: ((this: WhereBuilder) => void) | { id: string }): KnexQuery;
+  whereNull(column: string): KnexQuery;
+  whereNotNull(): KnexQuery;
+  andWhere(): KnexQuery;
+  orWhere(fn: (this: WhereBuilder) => void): KnexQuery;
+  update(updates: Record<string, string | number | null>): Promise<number>;
+  then<TResult1 = unknown, TResult2 = never>(
+    onFulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | null,
+    onRejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+  ): Promise<TResult1 | TResult2>;
+};
+
+type WhereBuilder = {
+  where(fn: (this: WhereBuilder) => void): WhereBuilder;
+  orWhere(fn: (this: WhereBuilder) => void): WhereBuilder;
+  whereNull(): WhereBuilder;
+  whereNotNull(): WhereBuilder;
+  andWhere(): WhereBuilder;
+};
 
 /**
  * Minimal knex stand-in that covers the migration's query shapes:
@@ -14,24 +63,25 @@ const migration = require('../../../../../core/server/data/migrations/versions/6
  * - per-id select of html/plaintext/feature_image/auto_excerpt/reading_time
  * - per-column whereNull-guarded updates
  */
-function createKnexFake(posts) {
-  const state = {
+function createKnexFake(posts: PostRow[]): KnexFake {
+  const state: KnexFakeState = {
     posts: posts.map((post) => ({ ...post })),
     updates: [],
   };
 
-  const needsBackfill = (post) =>
-    (post.auto_excerpt === null && post.plaintext) || (post.reading_time === null && post.html);
+  const needsBackfill = (post: PostRow) =>
+    (post.auto_excerpt === null && Boolean(post.plaintext)) ||
+    (post.reading_time === null && Boolean(post.html));
 
-  const knex = function knex(table) {
+  const knex = function knex(table: string): KnexQuery {
     assert.equal(table, 'posts');
 
-    const query = {
+    const query: KnexQuery = {
       _id: null,
       _whereNull: null,
       _mode: null,
 
-      select(...columns) {
+      select(...columns: string[]) {
         if (columns.length === 1 && columns[0] === 'id') {
           this._mode = 'candidates';
         } else {
@@ -40,10 +90,10 @@ function createKnexFake(posts) {
         return this;
       },
 
-      where(arg) {
+      where(arg: ((this: WhereBuilder) => void) | { id: string }) {
         if (typeof arg === 'function') {
           // Candidate filter — invoke nested builders for API shape only.
-          const builder = {
+          const builder: WhereBuilder = {
             where(fn) {
               if (typeof fn === 'function') {
                 fn.call({
@@ -56,7 +106,7 @@ function createKnexFake(posts) {
                   andWhere() {
                     return this;
                   },
-                });
+                } as WhereBuilder);
               }
               return this;
             },
@@ -86,7 +136,7 @@ function createKnexFake(posts) {
         return this;
       },
 
-      whereNull(column) {
+      whereNull(column: string) {
         this._whereNull = column;
         return this;
       },
@@ -99,21 +149,21 @@ function createKnexFake(posts) {
         return this;
       },
 
-      orWhere(fn) {
+      orWhere(fn: (this: WhereBuilder) => void) {
         if (typeof fn === 'function') {
-          fn.call(this);
+          fn.call(this as unknown as WhereBuilder);
         }
         return this;
       },
 
-      update(updates) {
+      update(updates: Record<string, string | number | null>) {
         const post = state.posts.find((row) => row.id === this._id);
         assert.ok(post, `missing post ${this._id}`);
         assert.ok(this._whereNull, 'update must be guarded with whereNull');
 
         state.updates.push({ id: this._id, whereNull: this._whereNull, updates: { ...updates } });
 
-        if (post[this._whereNull] !== null) {
+        if (post[this._whereNull as keyof PostRow] !== null) {
           return Promise.resolve(0);
         }
 
@@ -140,7 +190,7 @@ function createKnexFake(posts) {
     };
 
     return query;
-  };
+  } as KnexFake;
 
   knex.__state = state;
   return knex;
@@ -242,17 +292,18 @@ describe('Migration: backfill posts auto_excerpt and reading_time', function () 
     ]);
 
     // Concurrent save fills the columns between the migration's row read and update.
-    const knex = function (table) {
+    const knex = function (table: string) {
       const query = baseKnex(table);
       const originalUpdate = query.update.bind(query);
-      query.update = function (updates) {
+      query.update = function (this: KnexQuery, updates: Record<string, string | number | null>) {
         const post = baseKnex.__state.posts.find((row) => row.id === this._id);
+        assert.ok(post);
         post.auto_excerpt = 'filled-by-concurrent-save';
         post.reading_time = 9;
         return originalUpdate(updates);
       };
       return query;
-    };
+    } as KnexFake;
     knex.__state = baseKnex.__state;
 
     await migration.up({ connection: knex });
