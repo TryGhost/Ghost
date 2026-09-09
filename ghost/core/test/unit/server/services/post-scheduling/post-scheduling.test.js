@@ -271,14 +271,15 @@ describe('PostScheduling', function () {
       await service.rescheduleAll({ previousKey: { id: 'k1', secret: 'ccccdddd' } });
 
       sinon.assert.calledOnce(adapter.unschedule);
-      assert.equal(adapter.unschedule.args[0][1].bootstrap, false);
+      assert.notEqual(adapter.unschedule.args[0][1]?.bootstrap, true);
     });
 
-    it('same-key rebuild marks unschedule as bootstrap so the new job survives', async function () {
-      // Outcome: when no previousKey is supplied (boot), unschedule and
-      // schedule use the same URL. PostScheduling must mark the
-      // unschedule as bootstrap so the adapter skips the tombstone and
-      // the about-to-be-scheduled job stays pingable.
+    it('boot rebuild registers the job again without unscheduling it', async function () {
+      // Outcome: when no previousKey is supplied (boot), the queued job and
+      // the reissued job share a URL and an idempotency key. A persistent
+      // queue dedupes the reissue against the job it holds, so there is
+      // nothing to delete. Sending a delete anyway is what let a late delete
+      // cancel the freshly registered job and drop the publish entirely.
       stubScheduledPost();
       internalKeys = new Map([
         ['ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaabbbb' })],
@@ -291,8 +292,9 @@ describe('PostScheduling', function () {
       });
       await service.rescheduleAll();
 
-      sinon.assert.calledOnce(adapter.unschedule);
-      assert.equal(adapter.unschedule.args[0][1].bootstrap, true);
+      sinon.assert.notCalled(adapter.unschedule);
+      sinon.assert.calledOnce(adapter.schedule);
+      assert(adapter.schedule.args[0][0].extra.idempotencyKey);
     });
   });
 });
