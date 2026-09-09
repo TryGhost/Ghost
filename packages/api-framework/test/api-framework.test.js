@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 
 describe('api-framework module exports', function () {
   it('exposes all lazy getters', function () {
-    const apiFramework = require('../lib/api-framework');
+    const apiFramework = require('../src/api-framework');
 
     assert.ok(apiFramework.headers);
     assert.ok(apiFramework.http);
@@ -14,7 +14,7 @@ describe('api-framework module exports', function () {
   });
 
   it('exposes serializer output module', function () {
-    const serializers = require('../lib/serializers');
+    const serializers = require('../src/serializers');
     assert.deepEqual(serializers.output, {});
   });
 });

@@ -16,12 +16,12 @@
  * @property {StatusCodeFunction | StatusCodeNumber} [statusCode]
  * @property {object} [response]
  * @property {function} [cache]
- * @property {(frame: import('./lib/Frame')) => object} [generateCacheKeyData]
- * @property {(frame: import('./lib/Frame')) => any} query
+ * @property {(frame: import('./src/Frame')) => object} [generateCacheKeyData]
+ * @property {(frame: import('./src/Frame')) => any} query
  */
 
 /**
  * @typedef {Record<string, ControllerMethod | string> & Record<'docName', string>} Controller
  */
 
-module.exports = require('./lib/api-framework');
+module.exports = require('./src/api-framework');
