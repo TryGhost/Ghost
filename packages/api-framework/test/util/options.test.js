@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const optionsUtil = require('../../lib/utils/options');
+const optionsUtil = require('../../src/utils/options');
 
 describe('util/options', function () {
   it('returns an array with empty string when no parameters are passed', function () {
