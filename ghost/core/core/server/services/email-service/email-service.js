@@ -389,17 +389,25 @@ class EmailService {
 
     await this.checkLimits();
 
-    // Change email status back to 'pending' before scheduling
-    // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-    await email.save({ status: 'pending' }, { patch: true });
+    // Claim the retry in the database: another request may have already scheduled
+    // this email since the caller loaded its failed model.
+    const pendingEmail = await this.#batchSendingService.updateStatusLock(
+      this.#models.Email,
+      email.id,
+      'pending',
+      ['failed'],
+    );
+    if (!pendingEmail) {
+      throw new errors.BadRequestError({ message: tpl(messages.retryEmailNotFailed) });
+    }
 
     try {
-      await this.#batchSendingService.scheduleEmail(email);
+      await this.#batchSendingService.scheduleEmail(pendingEmail);
     } catch (e) {
-      await email.save({ status: 'failed' }, { patch: true });
+      await pendingEmail.save({ status: 'failed' }, { patch: true });
       throw e;
     }
-    return email;
+    return pendingEmail;
   }
 
   /**

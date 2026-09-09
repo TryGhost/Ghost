@@ -53,6 +53,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sendEmail: (email: Email) => Promise<void>;
     emailJob: (data: { emailId: string }) => Promise<void>;
     onPreStop: () => void;
+    onShutdown: () => Promise<void>;
     retryDb: <T>(
       action: () => Promise<T>,
       options: { description: string; maxRetries: number; sleep: number },
@@ -106,16 +107,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     };
     renderer = { getSegments: sinon.stub().resolves([null]) };
     segmenter = { getMemberFilterForSegment: sinon.stub().returns('status:free') };
-    service = new BatchSendingService({
-      db,
-      models,
-      sentry,
-      emailRenderer: renderer,
-      emailSegmenter: segmenter,
-      domainWarmingService: { isEnabled: () => true },
-      sendingService: sender,
-      BEFORE_RETRY_CONFIG: { maxRetries: 2, sleep: 0 },
-    });
+    service = createService();
     data = { email, post: {}, newsletter: {} };
   });
 
@@ -134,6 +126,30 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('emails').whereIn('id', emailIds).del();
     await db.knex('members').whereIn('id', addedMemberIds).del();
   });
+
+  function createService(): typeof service {
+    return new BatchSendingService({
+      db,
+      models,
+      sentry,
+      emailRenderer: renderer,
+      emailSegmenter: segmenter,
+      domainWarmingService: { isEnabled: () => true },
+      sendingService: sender,
+      BEFORE_RETRY_CONFIG: { maxRetries: 2, sleep: 0 },
+    });
+  }
+
+  function stubEmailRelations() {
+    const findOne = models.Email.findOne.bind(models.Email);
+    sinon.stub(models.Email, 'findOne').callsFake(async (...args) => {
+      const found = await findOne(...args);
+      if (found) {
+        sinon.stub(found, 'getLazyRelation').resolves({ get: () => 'published' });
+      }
+      return found;
+    });
+  }
 
   async function corruptMember(id: string, patch: Record<string, unknown>) {
     const member = await db.knex('members').where({ id }).first();
@@ -247,6 +263,135 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal((await service.getBatches(email)).length, 1);
     assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 2);
     sinon.assert.notCalled(sender.send);
+  });
+
+  it('rejects a stale retry while the winning retry is still preparing recipients', async function () {
+    stubEmailRelations();
+    await email.save({ status: 'failed' }, { patch: true });
+    const stale = await models.Email.findOne({ id: email.id });
+    const winner = await models.Email.findOne({ id: email.id });
+    const EmailService = require('../../../../core/server/services/email-service/email-service');
+    let job: Promise<void> | undefined;
+    const scheduleEmail = sinon.stub().callsFake((pending) => {
+      job = service.emailJob({ emailId: pending.id });
+    });
+    const retryService = new EmailService({
+      models,
+      batchSendingService: {
+        updateStatusLock: BatchSendingService.prototype.updateStatusLock.bind(service),
+        scheduleEmail,
+      },
+    });
+    sinon.stub(retryService, 'checkLimits').resolves();
+    const createBatch = service.createBatch.bind(service);
+    let checked = false;
+    sinon.stub(service, 'createBatch').callsFake(async (...args) => {
+      const batch = await createBatch(...args);
+      if (!checked && !args[3]?.transacting) {
+        checked = true;
+        await assert.rejects(retryService.retryEmail(stale), { statusCode: 400 });
+        await email.refresh();
+        assert.equal(email.get('status'), 'submitting');
+        assert.equal(email.get('prepared_at'), null);
+      }
+      return batch;
+    });
+    await retryService.retryEmail(winner);
+    await job;
+    assert.ok(checked);
+    sinon.assert.calledOnce(scheduleEmail);
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), 4);
+  });
+
+  it('rebuilds partial preparation after shutdown with a fresh service', async function () {
+    stubEmailRelations();
+    const createBatch = service.createBatch.bind(service);
+    sinon.stub(service, 'createBatch').callsFake(async (...args) => {
+      const batch = await createBatch(...args);
+      if (!args[3]?.transacting) {
+        service.onPreStop();
+      }
+      return batch;
+    });
+    await service.emailJob({ emailId: email.id });
+    await service.onShutdown();
+    await email.refresh();
+    const partialIds = (await service.getBatches(email)).map((batch) => batch.id);
+    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('prepared_at'), null);
+    assert.equal(partialIds.length, 1);
+    sinon.assert.notCalled(sender.send);
+
+    // The boot scanner releases the interrupted email's lock before dispatching it.
+    await email.save({ status: 'pending' }, { patch: true });
+    const restarted = createService();
+    await restarted.emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), 4);
+    assert.equal(email.get('candidate_count'), 4);
+    const batches = await restarted.getBatches(email);
+    assert.ok(batches.every((batch) => !partialIds.includes(batch.id)));
+    const sentIds = sender.send
+      .getCalls()
+      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+    assert.equal(sentIds.length, 4);
+    assert.equal(new Set(sentIds).size, 4);
+  });
+
+  it('drains active submissions and resumes the frozen recipients after shutdown', async function () {
+    stubEmailRelations();
+    await service.createBatches(data);
+    const batchesBefore = await db
+      .knex('email_batches')
+      .where({ email_id: email.id })
+      .orderBy('id');
+    const rowsBefore = await db
+      .knex('email_recipients')
+      .select('id', 'batch_id', 'member_id', 'member_uuid', 'member_email')
+      .where({ email_id: email.id })
+      .orderBy('id');
+    sender.send.callsFake(async () => {
+      service.onPreStop();
+      return { id: 'accepted-before-shutdown' };
+    });
+    await service.emailJob({ emailId: email.id });
+    await service.onShutdown();
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitting');
+    const stopped = await service.getBatches(email);
+    assert.ok(stopped.some((batch) => batch.get('status') === 'submitted'));
+    assert.ok(stopped.some((batch) => batch.get('status') === 'pending'));
+    assert.ok(stopped.every((batch) => batch.get('status') !== 'submitting'));
+
+    sender.send.resolves({ id: 'accepted-after-restart' });
+    segmenter.getMemberFilterForSegment.throws(
+      new Error('Frozen recipients must not be swept again'),
+    );
+    await email.save({ status: 'pending' }, { patch: true });
+    await createService().emailJob({ emailId: email.id });
+    await email.refresh();
+    assert.equal(email.get('status'), 'submitted');
+    assert.equal(email.get('email_count'), 4);
+    assert.deepEqual(
+      (await service.getBatches(email)).map((batch) => batch.id).sort(),
+      batchesBefore.map((batch) => batch.id),
+    );
+    assert.deepEqual(
+      await db
+        .knex('email_recipients')
+        .select('id', 'batch_id', 'member_id', 'member_uuid', 'member_email')
+        .where({ email_id: email.id })
+        .orderBy('id'),
+      rowsBefore,
+    );
+    const sentIds = sender.send
+      .getCalls()
+      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+    assert.equal(sentIds.length, 4);
+    assert.equal(new Set(sentIds).size, 4);
   });
 
   it('stops accounted cleanup between chunks without deleting the batch metadata', async function () {
