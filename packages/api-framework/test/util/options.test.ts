@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const optionsUtil = require('../../src/utils/options.ts');
+import assert from 'node:assert/strict';
+import * as optionsUtil from '../../src/utils/options.ts';
 
 describe('util/options', function () {
   it('returns an array with empty string when no parameters are passed', function () {

@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const shared = require('../');
+import assert from 'node:assert/strict';
+import * as shared from '../src/index.ts';
 
 describe('Frame', function () {
   it('constructor', function () {
@@ -31,7 +31,7 @@ describe('Frame', function () {
 
       frame.configure({});
 
-      assert.ok(frame.options.context.user);
+      assert.deepEqual(frame.options.context, { user: 'id' });
       assert.equal(frame.options.include, undefined);
       assert.equal(frame.options.filter, undefined);
       assert.equal(frame.options.id, undefined);
@@ -54,7 +54,7 @@ describe('Frame', function () {
         options: ['include', 'filter', 'id'],
       });
 
-      assert.ok(frame.options.context.user);
+      assert.deepEqual(frame.options.context, { user: 'id' });
       assert.ok(frame.options.include);
       assert.ok(frame.options.filter);
       assert.ok(frame.options.id);
@@ -77,7 +77,7 @@ describe('Frame', function () {
         options: ['include', 'filter', 'slug'],
       });
 
-      assert.ok(frame.options.context.user);
+      assert.deepEqual(frame.options.context, { user: 'id' });
       assert.ok(frame.options.slug);
     });
 
@@ -96,7 +96,7 @@ describe('Frame', function () {
         data: ['id'],
       });
 
-      assert.ok(frame.options.context.user);
+      assert.deepEqual(frame.options.context, { user: 'id' });
       assert.equal(frame.options.id, undefined);
       assert.ok(frame.data.id);
     });

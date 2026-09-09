@@ -1,7 +1,7 @@
-const errors = require('@tryghost/errors');
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const shared = require('../../');
+import * as errors from '@tryghost/errors';
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import * as shared from '../../src/index.ts';
 
 describe('validators/handle', function () {
   afterEach(function () {
@@ -20,7 +20,7 @@ describe('validators/handle', function () {
 
     it('no api validators passed', function () {
       return shared.validators.handle
-        .input({})
+        .input(undefined)
         .then(Promise.reject)
         .catch((err) => {
           assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -29,7 +29,7 @@ describe('validators/handle', function () {
 
     it('no api config passed when validators exist', function () {
       return shared.validators.handle
-        .input(undefined, {}, {})
+        .input(undefined, {}, new shared.Frame())
         .then(Promise.reject)
         .catch((err) => {
           assert.equal(err instanceof errors.IncorrectUsageError, true);
@@ -59,7 +59,11 @@ describe('validators/handle', function () {
       };
 
       return shared.validators.handle
-        .input({ docName: 'posts', method: 'add' }, apiValidators, { context: {} })
+        .input(
+          { docName: 'posts', method: 'add' },
+          apiValidators,
+          new shared.Frame({ context: {} }),
+        )
         .then(() => {
           assert.equal(getStub.calledOnce, true);
           assert.equal(addStub.calledOnce, true);
@@ -77,7 +81,7 @@ describe('validators/handle', function () {
       };
 
       return shared.validators.handle
-        .input({ docName: 'posts', method: 'browse' }, apiValidators, {})
+        .input({ docName: 'posts', method: 'browse' }, apiValidators, new shared.Frame())
         .then(() => {
           assert.equal(apiValidators.posts.all.calledOnce, true);
         });

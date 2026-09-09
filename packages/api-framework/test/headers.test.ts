@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict');
-const shared = require('../');
-const Frame = require('../src/Frame.ts');
+import assert from 'node:assert/strict';
+import * as shared from '../src/index.ts';
+import Frame from '../src/frame.ts';
 
 describe('Headers', function () {
   it('empty headers config', function () {
