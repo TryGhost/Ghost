@@ -2,7 +2,7 @@ const camelCase = require('lodash/camelCase');
 const has = require('lodash/has');
 const {IncorrectUsageError} = require('@tryghost/errors');
 
-const {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} = require('./limit');
+const {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} = require('./limits');
 const config = require('./config');
 
 const messages = {

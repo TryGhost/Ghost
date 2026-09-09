@@ -1,7 +1,7 @@
 require('./utils');
 const assert = require('node:assert').strict;
 const sinon = require('sinon');
-const config = require('../lib/config');
+const config = require('../src/config');
 
 describe('Config', function () {
     afterEach(function () {
