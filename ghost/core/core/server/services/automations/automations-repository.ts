@@ -1,44 +1,44 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
 
-export interface Pagination {
+export type Pagination = {
   page: number;
   pages: number;
   limit: number | 'all';
   total: number;
   prev: number | null;
   next: number | null;
-}
+};
 
-export interface Page<T> {
+export type Page<T> = {
   data: T[];
   meta: {
     pagination: Pagination;
   };
-}
+};
 
-export interface WaitAction {
+export type WaitAction = {
   id: string;
   type: 'wait';
   data: {
     wait_hours: number;
   };
-}
+};
 
-export interface AutomationEmailStats {
+export type AutomationEmailStats = {
   email_clicked_count: number;
   email_sent_count: number;
   email_opened_count: number;
   opened_rate: number | null;
   clicked_rate: number | null;
-}
+};
 
-export interface AutomationActionLink {
+export type AutomationActionLink = {
   url: string;
   clicked_count: number;
-}
+};
 
-export interface SendEmailAction {
+export type SendEmailAction = {
   id: string;
   type: 'send_email';
   data: {
@@ -47,42 +47,42 @@ export interface SendEmailAction {
     email_design_setting_id: string;
   };
   stats?: AutomationEmailStats;
-}
+};
 
 export type AutomationAction = WaitAction | SendEmailAction;
 
-export interface AutomationEdge {
+export type AutomationEdge = {
   source_action_id: string;
   target_action_id: string;
-}
+};
 
-export interface AutomationSummary {
+export type AutomationSummary = {
   id: string;
   slug: string;
   name: string;
   status: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface AutomationBrowseResult extends AutomationSummary {
+export type AutomationBrowseResult = AutomationSummary & {
   stats?: {
     last_run_created_at: Date | null;
     total_run_count: number;
     in_progress_run_count: number;
   };
-}
+};
 
-export interface Automation extends AutomationSummary {
+export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-}
+};
 
-export interface EditAutomationData {
+export type EditAutomationData = {
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
-}
+};
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -147,8 +147,17 @@ export type AutomationStepTerminalStatus =
   | 'member changed status'
   | 'member unsubscribed';
 
-export interface AutomationsRepository {
-  browse(): Promise<Page<AutomationBrowseResult>>;
+export type BrowseOptions = Readonly<{
+  /**
+   * Should stats be included?
+   *
+   * In the future, we plan to remove this option and never return stats from the database repository.
+   */
+  includeStats: boolean;
+}>;
+
+export type AutomationsRepository = {
+  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
   getById(id: string): Promise<Automation | null>;
   getAutomationActionLinks(
     automationId: string,
@@ -233,4 +242,4 @@ export interface AutomationsRepository {
       transacting?: Knex.Transaction;
     },
   ): Promise<void>;
-}
+};

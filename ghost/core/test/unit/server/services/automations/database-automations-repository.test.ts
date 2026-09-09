@@ -453,7 +453,7 @@ describe('automations repository', function () {
       .first();
 
   const getAutomationBySlug = async (slug: string) => {
-    const automationSummaries = await repo.browse();
+    const automationSummaries = await repo.browse({ includeStats: false });
     const automationSummary = automationSummaries.data.find(
       (automation) => automation.slug === slug,
     );
@@ -714,7 +714,7 @@ describe('automations repository', function () {
         status: 'inactive',
       });
 
-      const result = await repo.browse();
+      const result = await repo.browse({ includeStats: false });
 
       const names = result.data.map((automation) => automation.name);
 
@@ -725,8 +725,14 @@ describe('automations repository', function () {
       ]);
     });
 
+    it('can omit stats', async function () {
+      const result = await repo.browse({ includeStats: false });
+
+      assert(result.data.every((automation) => automation.stats === undefined));
+    });
+
     it('returns null for "last run created at" if the automation has no runs', async function () {
-      const result = await repo.browse();
+      const result = await repo.browse({ includeStats: true });
 
       assert(result.data.every((automation) => automation.stats?.last_run_created_at === null));
     });
@@ -739,7 +745,7 @@ describe('automations repository', function () {
       await insertRun(automationId, latestRunCreatedAt);
       await insertRun(automationId, olderRunCreatedAt);
 
-      const browseResult = await repo.browse();
+      const browseResult = await repo.browse({ includeStats: true });
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
       assert(automation?.stats);
 
@@ -747,7 +753,7 @@ describe('automations repository', function () {
     });
 
     it('returns zero for "total run count" if the automation has no runs', async function () {
-      const result = await repo.browse();
+      const result = await repo.browse({ includeStats: true });
 
       assert(result.data.every((automation) => automation.stats?.total_run_count === 0));
     });
@@ -761,7 +767,7 @@ describe('automations repository', function () {
       await insertRun(automationId);
       await insertRun(otherAutomationId);
 
-      const browseResult = await repo.browse();
+      const browseResult = await repo.browse({ includeStats: true });
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
       const otherAutomation = browseResult.data.find(
         (candidate) => candidate.id === otherAutomationId,
@@ -774,7 +780,7 @@ describe('automations repository', function () {
     });
 
     it('returns zero for "in progress run count" if the automation has no runs', async function () {
-      const result = await repo.browse();
+      const result = await repo.browse({ includeStats: true });
 
       assert(result.data.every((automation) => automation.stats?.in_progress_run_count === 0));
     });
@@ -785,7 +791,7 @@ describe('automations repository', function () {
       const run = await insertRun(automationId);
       await insertStep(run.id, revisionId, { status: 'finished' });
 
-      const browseResult = await repo.browse();
+      const browseResult = await repo.browse({ includeStats: true });
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
       assert(automation?.stats);
 
@@ -814,7 +820,7 @@ describe('automations repository', function () {
       const otherPendingRun = await insertRun(otherAutomationId);
       await insertStep(otherPendingRun.id, otherRevisionId, { status: 'pending' });
 
-      const browseResult = await repo.browse();
+      const browseResult = await repo.browse({ includeStats: true });
       const automation = browseResult.data.find((candidate) => candidate.id === automationId);
       const otherAutomation = browseResult.data.find(
         (candidate) => candidate.id === otherAutomationId,
@@ -834,7 +840,7 @@ describe('automations repository', function () {
       await deleteActionsForAutomationIds(automationIds);
       await knex('automations').whereIn('id', automationIds).del();
 
-      await repo.browse();
+      await repo.browse({ includeStats: false });
 
       const automations = await knex('automations')
         .select('id', 'name', 'slug', 'status')
@@ -859,7 +865,7 @@ describe('automations repository', function () {
 
       const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
 
-      await repo.browse();
+      await repo.browse({ includeStats: false });
 
       await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
     });
@@ -873,11 +879,11 @@ describe('automations repository', function () {
       await deleteActionsForAutomationIds(automationIds);
       const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
 
-      await repo.browse();
+      await repo.browse({ includeStats: false });
 
       await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
 
-      await repo.browse();
+      await repo.browse({ includeStats: false });
 
       const totalActions = await knex('automation_actions')
         .whereIn('automation_id', automationIds)

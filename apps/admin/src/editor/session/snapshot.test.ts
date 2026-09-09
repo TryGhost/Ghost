@@ -14,6 +14,7 @@ function sources(overrides: Partial<SnapshotSources> = {}): SnapshotSources {
     identity: { id: 'abc', updatedAt: '2026-01-01T00:00:00.000Z' },
     status: 'draft',
     publishedAt: null,
+    publishedAtDirty: false,
     title: 'Hello',
     slug: 'hello',
     slugIsCustom: false,

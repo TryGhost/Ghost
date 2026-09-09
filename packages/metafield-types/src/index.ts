@@ -61,6 +61,24 @@ export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 export const FieldTypeSchema = z.enum(FIELD_TYPE_IDS);
 
 /**
+ * What the member whose record it is may do with a field.
+ *
+ * A property of a definition rather than of the publisher's namespace, so it has an
+ * answer for any regime that ever stores definitions, not only the publisher's.
+ *
+ * Ordered: `write` includes being able to read. Naming the levels for a publisher is
+ * presentation and stays with whoever renders them.
+ */
+export const MEMBER_ACCESS_LEVELS = ['none', 'read', 'write'] as const;
+export type MemberAccess = (typeof MEMBER_ACCESS_LEVELS)[number];
+export const MemberAccessSchema = z.enum(MEMBER_ACCESS_LEVELS);
+export const MEMBER_ACCESS = {
+  none: 'none',
+  read: 'read',
+  write: 'write',
+} as const satisfies Record<MemberAccess, MemberAccess>;
+
+/**
  * What kind of thing a type's value is, as anything comparing values needs to know.
  *
  * Coarser than the type: `short_text` and `long_text` are both text, and differ only in how

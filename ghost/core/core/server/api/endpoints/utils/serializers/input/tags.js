@@ -2,6 +2,7 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const utils = require('../../index');
+const { rejectTagsRestrictedOrderFields } = require('../../api-filter-utils');
 
 function setDefaultOrder(frame) {
   let defaultOrder = 'name asc';
@@ -22,6 +23,7 @@ module.exports = {
     url.forceUrlColumns(frame, 'tags');
 
     if (utils.isContentAPI(frame)) {
+      frame.options.order = rejectTagsRestrictedOrderFields(frame.options.order);
       setDefaultOrder(frame);
     }
   },

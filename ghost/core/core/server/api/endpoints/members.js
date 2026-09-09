@@ -8,6 +8,7 @@ const membersService = require('../../services/members');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
+const { ADMIN } = require('../../services/members-metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.
@@ -88,7 +89,10 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const member = await membersService.api.memberBREADService.read(frame.data, frame.options);
+      const member = await membersService.api.memberBREADService.read(frame.data, {
+        ...frame.options,
+        metafieldsFor: ADMIN,
+      });
 
       if (!member) {
         throw new errors.NotFoundError({
@@ -223,7 +227,10 @@ const controller = {
           },
         });
       }
-      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      let model = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.memberNotFound),
@@ -263,7 +270,10 @@ const controller = {
           stripe_price_id: frame.data.stripe_price_id,
         },
       });
-      let model = await membersService.api.memberBREADService.read({ id: frame.options.id });
+      let model = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
       if (!model) {
         throw new errors.NotFoundError({
           message: tpl(messages.memberNotFound),
@@ -500,7 +510,10 @@ const controller = {
       const emailSuppressionList = require('../../services/email-suppression-list');
 
       // Get the member first to retrieve their email
-      const member = await membersService.api.memberBREADService.read({ id: frame.options.id }, {});
+      const member = await membersService.api.memberBREADService.read(
+        { id: frame.options.id },
+        { metafieldsFor: ADMIN },
+      );
 
       if (!member) {
         throw new errors.NotFoundError({

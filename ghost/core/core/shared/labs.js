@@ -42,6 +42,7 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
   'automations',
   'automationRunAnalytics',
+  'automationsTinybirdSync',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',

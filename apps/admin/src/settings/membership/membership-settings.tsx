@@ -14,6 +14,7 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { searchKeywords } from './search-keywords';
+import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 
@@ -23,7 +24,7 @@ const MembershipSettings: React.FC = () => {
   const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
   const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
   const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useFeatureFlag('membersCustomFields');
+  const hasCustomFields = useCustomFieldsAvailable();
   const visibleSearchKeywords = [
     searchKeywords.access,
     searchKeywords.tiers,

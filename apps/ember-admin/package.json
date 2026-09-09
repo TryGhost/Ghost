@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.62.1-rc.0",
+  "version": "6.63.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -53,7 +53,7 @@
     "@tryghost/kg-clean-basic-html": "workspace:*",
     "@tryghost/kg-converters": "workspace:*",
     "@tryghost/koenig-lexical": "workspace:*",
-    "@tryghost/limit-service": "catalog:",
+    "@tryghost/limit-service": "workspace:*",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/string": "catalog:",
