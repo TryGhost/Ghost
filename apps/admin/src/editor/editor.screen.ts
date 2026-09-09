@@ -64,6 +64,7 @@ import {
   settingsMetaDescriptionInput,
   settingsMetaTitleInput,
   settingsSerpPreview,
+  settingsShortcutRow,
   restoreRevisionButton,
   settingsPostHistoryButton,
   settingsShowTitleToggle,
@@ -218,6 +219,12 @@ export const editorScreen = {
   /** CodeMirror exposes its content as a textbox named by the editor's label. */
   settingsCodeInjection: (label: string) =>
     page.getByRole('textbox', { name: new RegExp(`^${label}`) }),
+  /** Each keyboard-shortcut row as its label followed by the keys shown against it. */
+  settingsShortcutRows: (): string[] =>
+    page
+      .getByTestId(settingsShortcutRow)
+      .elements()
+      .map((row) => row.textContent ?? ''),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
   postHistoryModal: () => page.getByTestId(postHistoryModal),
