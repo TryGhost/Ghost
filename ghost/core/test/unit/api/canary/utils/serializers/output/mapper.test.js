@@ -38,6 +38,38 @@ describe('Unit: utils/serializers/output/mappers', function () {
       };
     });
 
+    for (const includeEmail of [false, true]) {
+      it(`strips internal email accounting fields without changing rendering (includeEmail=${includeEmail})`, async function () {
+        const emailService = require('../../../../../../../core/server/services/email-service');
+        const replaceDefinitions = sinon.stub().returns('Rendered preview');
+        sinon.define(emailService, 'renderer', {
+          buildReplacementDefinitions: sinon.stub().returns([]),
+        });
+        sinon.define(emailService, 'service', {
+          getDefaultExampleMember: sinon.stub().returns({}),
+          replaceDefinitions,
+        });
+        const email = {
+          html: '<p>Hello %%{first_name}%%</p>',
+          plaintext: 'Hello %%{first_name}%%',
+          preflight_email_count: 1,
+          candidate_count: 1,
+          preparation_excluded_count: 0,
+          prepared_at: new Date(),
+        };
+        const frame = { options: { context: {}, withRelated: includeEmail ? ['email'] : [] } };
+        const result = await mappers.posts(
+          createJsonModel({ id: 'post-id', email: { ...email } }),
+          frame,
+        );
+        assert.deepEqual(result.email, {
+          html: includeEmail ? 'Rendered preview' : email.html,
+          plaintext: includeEmail ? 'Rendered preview' : email.plaintext,
+        });
+        sinon.assert.callCount(replaceDefinitions, includeEmail ? 2 : 0);
+      });
+    }
+
     it('calls mapper on relations', async function () {
       const frame = {
         original: {

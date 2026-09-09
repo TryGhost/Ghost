@@ -1,4 +1,5 @@
 const emailService = require('../../../../../../services/email-service');
+const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 
 module.exports = (model, frame) => {
   const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -31,5 +32,5 @@ module.exports = (model, frame) => {
   // Removed loaded post relation if set
   delete jsonModel.post;
 
-  return jsonModel;
+  return stripEmailAccounting(jsonModel);
 };

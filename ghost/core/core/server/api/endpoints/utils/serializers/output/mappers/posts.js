@@ -3,6 +3,7 @@ const _ = require('lodash');
 const mapTag = require('./tags');
 const mapUser = require('./users');
 const mapEmail = require('./emails');
+const { stripEmailAccounting } = require('../utils/strip-email-accounting');
 
 const clean = require('../utils/clean');
 const date = require('../utils/date');
@@ -169,6 +170,11 @@ module.exports = async (model, frame, options = {}) => {
         jsonModel.newsletter = null;
       }
     });
+  }
+
+  // Model hooks can load the email relation even when it was not requested.
+  if (jsonModel.email) {
+    stripEmailAccounting(jsonModel.email);
   }
 
   if (jsonModel.email && jsonModel.count) {

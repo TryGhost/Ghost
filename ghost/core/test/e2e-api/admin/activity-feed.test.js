@@ -537,6 +537,17 @@ describe('Activity Feed API', function () {
           !body.events.find((e) => e.type !== 'email_sent_event'),
           'Expected only email sent events',
         );
+        for (const event of body.events) {
+          assert(event.data.email);
+          for (const field of [
+            'preflight_email_count',
+            'candidate_count',
+            'preparation_excluded_count',
+            'prepared_at',
+          ]) {
+            assert.equal(Object.hasOwn(event.data.email, field), false);
+          }
+        }
       });
   });
 
