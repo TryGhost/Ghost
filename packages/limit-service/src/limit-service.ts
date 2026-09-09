@@ -1,198 +1,188 @@
-const camelCase = require('lodash/camelCase');
-const has = require('lodash/has');
-const {IncorrectUsageError} = require('@tryghost/errors');
+import errors from '@tryghost/errors';
+import camelCase from 'lodash/camelCase.js';
+import has from 'lodash/has.js';
 
-const {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} = require('./limits');
-const config = require('./config');
+import config from './config.ts';
+import { AllowlistLimit, FlagLimit, type Limit, MaxLimit, MaxPeriodicLimit } from './limits.ts';
+import type { CheckOptions, ErrorsModule, LimitConfig, LoadLimitsOptions } from './types.ts';
 
 const messages = {
-    missingErrorsConfig: `Config Missing: 'errors' is required.`,
-    noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription'
+  missingErrorsConfig: `Config Missing: 'errors' is required.`,
+  noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription',
 };
 
-class LimitService {
-    constructor() {
-        this.limits = {};
+export class LimitService {
+  limits: Record<string, Limit>;
+  errors!: ErrorsModule;
+
+  constructor() {
+    this.limits = {};
+  }
+
+  /** Initializes the limits based on configuration */
+  loadLimits({ limits = {}, subscription, helpLink, db, errors: errorsModule }: LoadLimitsOptions): void {
+    if (!errorsModule) {
+      throw new errors.IncorrectUsageError({
+        message: messages.missingErrorsConfig,
+      });
     }
 
-    /**
-     * Initializes the limits based on configuration
-     *
-     * @param {Object} options
-     * @param {Object} [options.limits] - hash containing limit configurations keyed by limit name and containing
-     * @param {Object} [options.subscription] - hash containing subscription configuration with interval and startDate properties
-     * @param {String} options.helpLink - URL pointing to help resources for when limit is reached
-     * @param {Object} options.db - knex db connection instance or other data source for the limit checks
-     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
-     */
-    loadLimits({limits = {}, subscription, helpLink, db, errors}) {
-        if (!errors) {
-            throw new IncorrectUsageError({
-                message: messages.missingErrorsConfig
+    this.errors = errorsModule;
+
+    // CASE: reset internal limits state in case load is called multiple times
+    this.limits = {};
+
+    Object.keys(limits).forEach((rawName) => {
+      const name = camelCase(rawName);
+
+      // NOTE: config module acts as an allowlist of supported config names, where each key
+      // is a name of supported config
+      if (config[name]) {
+        // The camelCased name, as the original did, not the key the host actually wrote.
+        // A name spelled another way therefore finds no settings and the limit is built
+        // empty, which is why such a limit ends up not limiting anything. Preserved: it is
+        // behaviour, and the pins record it.
+        const limitConfig: LimitConfig = Object.assign({}, config[name], limits[name]);
+
+        if (has(limitConfig, 'allowlist')) {
+          this.limits[name] = new AllowlistLimit({
+            name,
+            config: limitConfig,
+            helpLink,
+            errors: errorsModule,
+          });
+        } else if (has(limitConfig, 'max')) {
+          this.limits[name] = new MaxLimit({
+            name,
+            config: limitConfig,
+            helpLink,
+            db,
+            errors: errorsModule,
+          });
+        } else if (has(limitConfig, 'maxPeriodic')) {
+          if (subscription === undefined) {
+            throw new errors.IncorrectUsageError({
+              message: messages.noSubscriptionParameter,
             });
+          }
+
+          const maxPeriodicLimitConfig = Object.assign({}, limitConfig, subscription);
+          this.limits[name] = new MaxPeriodicLimit({
+            name,
+            config: maxPeriodicLimitConfig,
+            helpLink,
+            db,
+            errors: errorsModule,
+          });
+        } else {
+          this.limits[name] = new FlagLimit({
+            name,
+            config: limitConfig,
+            helpLink,
+            errors: errorsModule,
+          });
         }
+      }
+    });
+  }
 
-        this.errors = errors;
+  isLimited(limitName: string): boolean {
+    return !!this.limits[camelCase(limitName)];
+  }
 
-        // CASE: reset internal limits state in case load is called multiple times
-        this.limits = {};
+  /**
+   * Check if a limit is disabled, applicable only to limits that support the disabled flag
+   * (e.g. FlagLimit). Undefined if the limit is not configured.
+   */
+  isDisabled(limitName: string): boolean | undefined {
+    // The same lookup isLimited makes, kept as one read so the limit is narrowed by it.
+    const limit = this.limits[camelCase(limitName)];
 
-        Object.keys(limits).forEach((name) => {
-            name = camelCase(name);
-
-            // NOTE: config module acts as an allowlist of supported config names, where each key is a name of supported config
-            if (config[name]) {
-                /** @type LimitConfig */
-                let limitConfig = Object.assign({}, config[name], limits[name]);
-
-                if (has(limitConfig, 'allowlist')) {
-                    this.limits[name] = new AllowlistLimit({name, config: limitConfig, helpLink, errors});
-                } else if (has(limitConfig, 'max')) {
-                    this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
-                } else if (has(limitConfig, 'maxPeriodic')) {
-                    if (subscription === undefined) {
-                        throw new IncorrectUsageError({
-                            message: messages.noSubscriptionParameter
-                        });
-                    }
-
-                    const maxPeriodicLimitConfig = Object.assign({}, limitConfig, subscription);
-                    this.limits[name] = new MaxPeriodicLimit({name: name, config: maxPeriodicLimitConfig, helpLink, db, errors});
-                } else {
-                    this.limits[name] = new FlagLimit({name: name, config: limitConfig, helpLink, errors});
-                }
-            }
-        });
+    if (!limit) {
+      return;
     }
 
-    isLimited(limitName) {
-        return !!this.limits[camelCase(limitName)];
+    if (typeof limit.isDisabled !== 'function') {
+      throw new errors.IncorrectUsageError({
+        message: `Limit ${limitName} does not support .isDisabled()`,
+      });
     }
 
-    /**
-    * Check if a limit is disabled, applicable only to limits that support the disabled flag (e.g. FlagLimit)
-    * @returns {boolean|undefined} undefined if limit is not configured
-    * @throws {IncorrectUsageError} if limit does not support disabled flag
-    */
-    isDisabled(limitName) {
-        if (!this.isLimited(limitName)) {
-            return;
-        }
+    return limit.isDisabled();
+  }
 
-        const limit = this.limits[camelCase(limitName)];
-
-        if (typeof limit.isDisabled !== 'function') {
-            throw new IncorrectUsageError({
-                message: `Limit ${limitName} does not support .isDisabled()`
-            });
-        }
-
-        return limit.isDisabled();
+  async checkIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
+    if (!this.isLimited(limitName)) {
+      return;
     }
 
-    /**
-     *
-     * @param {String} limitName - name of the configured limit
-     * @param {Object} [options] - limit parameters
-     * @param {Object} [options.transacting] Transaction to run the count query on (if required for the chosen limit)
-     * @returns
-     */
-    async checkIsOverLimit(limitName, options = {}) {
-        if (!this.isLimited(limitName)) {
-            return;
-        }
+    try {
+      // Deliberately not camelCased, where the guard above is. A name that only matches
+      // after camelCasing passes the guard and then finds nothing here, and throws. Left as
+      // it is: changing it changes behaviour, which is not this commit's business.
+      await (this.limits[limitName] as Limit).errorIfIsOverLimit(options);
+      return false;
+    } catch (error) {
+      if (error instanceof this.errors.HostLimitError) {
+        return true;
+      }
 
-        try {
-            await this.limits[limitName].errorIfIsOverLimit(options);
-            return false;
-        } catch (error) {
-            if (error instanceof this.errors.HostLimitError) {
-                return true;
-            }
+      throw error;
+    }
+  }
 
-            throw error;
-        }
+  async checkWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
+    if (!this.isLimited(limitName)) {
+      return;
     }
 
-    /**
-     *
-     * @param {String} limitName - name of the configured limit
-     * @param {Object} [options] - limit parameters
-     * @param {Object} [options.transacting] Transaction to run the count query on (if required for the chosen limit)
-     * @returns
-     */
-    async checkWouldGoOverLimit(limitName, options = {}) {
-        if (!this.isLimited(limitName)) {
-            return;
-        }
+    try {
+      // Deliberately not camelCased, where the guard above is. A name that only matches
+      // after camelCasing passes the guard and then finds nothing here, and throws. Left as
+      // it is: changing it changes behaviour, which is not this commit's business.
+      await (this.limits[limitName] as Limit).errorIfWouldGoOverLimit(options);
+      return false;
+    } catch (error) {
+      if (error instanceof this.errors.HostLimitError) {
+        return true;
+      }
 
-        try {
-            await this.limits[limitName].errorIfWouldGoOverLimit(options);
-            return false;
-        } catch (error) {
-            if (error instanceof this.errors.HostLimitError) {
-                return true;
-            }
+      throw error;
+    }
+  }
 
-            throw error;
-        }
+  async errorIfIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
+    if (!this.isLimited(limitName)) {
+      return;
     }
 
-    /**
-     *
-     * @param {String} limitName - name of the configured limit
-     * @param {Object} [options] - limit parameters
-     * @param {Object} [options.transacting] Transaction to run the count query on (if required for the chosen limit)
-     * @returns
-     */
-    async errorIfIsOverLimit(limitName, options = {}) {
-        if (!this.isLimited(limitName)) {
-            return;
-        }
+    // Deliberately not camelCased, where the guard above is. A name that only matches
+    // after camelCasing passes the guard and then finds nothing here, and throws. Left as
+    // it is: changing it changes behaviour, which is not this commit's business.
+    await (this.limits[limitName] as Limit).errorIfIsOverLimit(options);
+  }
 
-        await this.limits[limitName].errorIfIsOverLimit(options);
+  async errorIfWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
+    if (!this.isLimited(limitName)) {
+      return;
     }
 
-    /**
-     *
-     * @param {String} limitName - name of the configured limit
-     * @param {Object} [options] - limit parameters
-     * @param {Object} [options.transacting] Transaction to run the count query on (if required for the chosen limit)
-     * @returns
-     */
-    async errorIfWouldGoOverLimit(limitName, options = {}) {
-        if (!this.isLimited(limitName)) {
-            return;
-        }
+    // Deliberately not camelCased, where the guard above is. A name that only matches
+    // after camelCasing passes the guard and then finds nothing here, and throws. Left as
+    // it is: changing it changes behaviour, which is not this commit's business.
+    await (this.limits[limitName] as Limit).errorIfWouldGoOverLimit(options);
+  }
 
-        await this.limits[limitName].errorIfWouldGoOverLimit(options);
+  /** Checks if any of the configured limits acceded */
+  async checkIfAnyOverLimit(options: CheckOptions = {}): Promise<boolean> {
+    for (const limit in this.limits) {
+      if (await this.checkIsOverLimit(limit, options)) {
+        return true;
+      }
     }
 
-    /**
-     * Checks if any of the configured limits acceded
-     *
-     * @param {Object} [options] - limit parameters
-     * @param {Object} [options.transacting] Transaction to run the count queries on (if required for the chosen limit)
-     * @returns {Promise<boolean>}
-     */
-    async checkIfAnyOverLimit(options = {}) {
-        for (const limit in this.limits) {
-            if (await this.checkIsOverLimit(limit, options)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    return false;
+  }
 }
 
-module.exports = LimitService;
-
-/**
- * @typedef {Object} LimitConfig
- * @prop {Number} [max] - max limit
- * @prop {Number} [maxPeriodic] - max limit for a period
- * @prop {Boolean} [disabled] - flag disabling/enabling limit
- * @prop {String} error - custom error to be displayed when the limit is reached
- * @prop {Function} [currentCountQuery] - function returning count for the "max" type of limit
- */
+export default LimitService;

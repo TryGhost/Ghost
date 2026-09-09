@@ -1,56 +1,84 @@
-require('./utils');
-const assert = require('node:assert').strict;
-const sinon = require('sinon');
-const config = require('../src/config');
+import { strict as assert } from 'node:assert';
+
+
+import { assertExists } from './utils/assertions.ts';
+import type { Knex } from '../src/types.ts';
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
+
+import config from '../src/config.ts';
 
 describe('Config', function () {
     afterEach(function () {
-        sinon.restore();
+        vi.restoreAllMocks();
     });
 
-    function createMockKnex(options = {}) {
+    interface MockOptions {
+        firstResult?: { count?: number | string | null };
+        unionResult?: unknown[];
+    }
+
+    function createMockKnex(options: MockOptions = {}): Knex & Mock {
+        // Each builder call hands the chain back, the way knex does
+        function returnsChain(this: unknown) {
+            return chain;
+        }
+
         const chain = {
-            count: sinon.stub().returnsThis(),
-            sum: sinon.stub().returnsThis(),
-            where: sinon.stub().returnsThis(),
-            first: sinon.stub().resolves(options.firstResult || {count: 0}),
-            select: sinon.stub().returnsThis(),
-            leftJoin: sinon.stub().returnsThis(),
-            whereNot: sinon.stub().returnsThis(),
-            andWhereNot: sinon.stub().returnsThis(),
-            union: sinon.stub().resolves(options.unionResult || [])
+            count: vi.fn(returnsChain),
+            sum: vi.fn(returnsChain),
+            where: vi.fn(returnsChain),
+            first: vi.fn().mockResolvedValue(options.firstResult || {count: 0}),
+            select: vi.fn(returnsChain),
+            leftJoin: vi.fn(returnsChain),
+            whereNot: vi.fn(returnsChain),
+            andWhereNot: vi.fn(returnsChain),
+            union: vi.fn().mockResolvedValue(options.unionResult || [])
         };
-        return sinon.stub().returns(chain);
+        return vi.fn().mockReturnValue(chain);
     }
 
     describe('members', function () {
         it('queries the members table and returns count', async function () {
             const knex = createMockKnex({firstResult: {count: 42}});
-            const result = await config.members.currentCountQuery(knex);
+            const countQuery = config.members?.currentCountQuery;
+            assertExists(countQuery);
+
+            const result = await countQuery(knex);
 
             assert.equal(result, 42);
-            sinon.assert.calledWith(knex, 'members');
+            expect(knex).toHaveBeenCalledWith('members');
         });
     });
 
     describe('newsletters', function () {
         it('queries active newsletters and returns count', async function () {
             const knex = createMockKnex({firstResult: {count: 7}});
-            const result = await config.newsletters.currentCountQuery(knex);
+            const countQuery = config.newsletters?.currentCountQuery;
+            assertExists(countQuery);
+
+            const result = await countQuery(knex);
 
             assert.equal(result, 7);
-            sinon.assert.calledWith(knex, 'newsletters');
+            expect(knex).toHaveBeenCalledWith('newsletters');
         });
     });
 
     describe('emails', function () {
+        it.each([null, '500'])('preserves an aggregate returned as %s', async (count) => {
+            const countQuery = config.emails?.currentCountQuery;
+            assertExists(countQuery);
+            assert.equal(await countQuery(createMockKnex({firstResult: {count}})), count);
+        });
         it('queries emails since start date and returns sum', async function () {
             const knex = createMockKnex({firstResult: {count: 500}});
             const startDate = '2021-01-01T00:00:00Z';
-            const result = await config.emails.currentCountQuery(knex, startDate);
+            const countQuery = config.emails?.currentCountQuery;
+            assertExists(countQuery);
+
+            const result = await countQuery(knex, startDate);
 
             assert.equal(result, 500);
-            sinon.assert.calledWith(knex, 'emails');
+            expect(knex).toHaveBeenCalledWith('emails');
         });
     });
 
@@ -58,11 +86,33 @@ describe('Config', function () {
         it('queries users with roles and invites and returns count', async function () {
             const mockResults = [{id: 1}, {id: 2}, {id: 3}];
             const knex = createMockKnex({unionResult: mockResults});
-            const result = await config.staff.currentCountQuery(knex);
+            const countQuery = config.staff?.currentCountQuery;
+            assertExists(countQuery);
+
+            const result = await countQuery(knex);
 
             assert.equal(result, 3);
-            sinon.assert.calledWith(knex, 'users');
-            sinon.assert.calledWith(knex, 'invites');
+            expect(knex).toHaveBeenCalledWith('users');
+            expect(knex).toHaveBeenCalledWith('invites');
+        });
+    });
+
+    describe('uploads', function () {
+        it('counts nothing, because the caller supplies the size', async function () {
+            const countQuery = config.uploads?.currentCountQuery;
+            assertExists(countQuery);
+
+            // The size of the file being uploaded is passed in as currentCount, so there is
+            // nothing to go and count. The query exists only so the limit can be built.
+            assert.equal(await countQuery(createMockKnex()), undefined);
+        });
+
+        it('reads a size in megabytes rather than bytes', function () {
+            const formatter = config.uploads?.formatter;
+            assertExists(formatter);
+
+            assert.equal(formatter(5000000), '5MB');
+            assert.equal(formatter(1500000), '1.5MB');
         });
     });
 });

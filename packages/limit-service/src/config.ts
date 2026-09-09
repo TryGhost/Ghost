@@ -1,17 +1,19 @@
+import type { Knex, LimitConfig } from './types.ts';
+
 // NOTE: to support a new config in the limit service add an empty key-object pair in the export below.
 // Each type of limit has it's own structure:
 // 1. FlagLimit and AllowlistLimit types are empty objects paired with a key, e.g.: `customThemes: {}`
 // 2. MaxLimit should contain a `currentCountQuery` function which would count the resources under limit
-module.exports = {
+const config: Record<string, LimitConfig> = {
     members: {
-        currentCountQuery: async (knex) => {
-            let result = await knex('members').count('id', {as: 'count'}).first();
+        currentCountQuery: async (knex: Knex) => {
+            const result = await knex('members').count('id', {as: 'count'}).first();
             return result.count;
         }
     },
     newsletters: {
-        currentCountQuery: async (knex) => {
-            let result = await knex('newsletters')
+        currentCountQuery: async (knex: Knex) => {
+            const result = await knex('newsletters')
                 .count('id', {as: 'count'})
                 .where('status', '=', 'active')
                 .first();
@@ -20,8 +22,8 @@ module.exports = {
         }
     },
     emails: {
-        currentCountQuery: async (knex, startDate) => {
-            let result = await knex('emails')
+        currentCountQuery: async (knex: Knex, startDate?: string) => {
+            const result = await knex('emails')
                 .sum('email_count', {as: 'count'})
                 .where('created_at', '>=', startDate)
                 .first();
@@ -30,8 +32,8 @@ module.exports = {
         }
     },
     staff: {
-        currentCountQuery: async (knex) => {
-            let result = await knex('users')
+        currentCountQuery: async (knex: Knex) => {
+            const result = await knex('users')
                 .select('users.id')
                 .leftJoin('roles_users', 'users.id', 'roles_users.user_id')
                 .leftJoin('roles', 'roles_users.role_id', 'roles.id')
@@ -51,10 +53,10 @@ module.exports = {
         // NOTE: this function should not ever be used as for uploads we compare the size
         //       of the uploaded file with the configured limit. Noop is here to keep the
         //       MaxLimit constructor happy
-        currentCountQuery: () => {},
+        currentCountQuery: () => undefined,
         // NOTE: the uploads limit is based on file sizes provided in Bytes
         //       a custom formatter is here for more user-friendly formatting when forming an error
-        formatter: count => `${count / 1000000}MB`
+        formatter: count => `${Number(count) / 1000000}MB`
     },
     limitStripeConnect: {},
     limitAnalytics: {},
@@ -62,3 +64,5 @@ module.exports = {
     limitCustomFields: {},
     publicSiteAccess: {}
 };
+
+export default config;

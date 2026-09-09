@@ -7,6 +7,8 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
+import type { LimitConfig } from '@tryghost/limit-service';
+
 const limitServiceImport = import('@tryghost/limit-service');
 
 // limit-service constructs its misconfiguration error with a single options object
@@ -14,24 +16,6 @@ class IncorrectUsageError extends Error {
   constructor({ message }: { message: string }) {
     super(message);
   }
-}
-
-interface LimiterLimits {
-  staff?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  members?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  newsletters?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
 }
 
 export interface Limiter {
@@ -89,7 +73,7 @@ export const useLimiter = (): Limiter => {
       return noOpLimiter;
     }
 
-    const limits = { ...config.hostSettings.limits } as LimiterLimits;
+    const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
     const limiter = new LimitService();
 
     if (limits.staff) {
@@ -134,9 +118,9 @@ export const useLimiter = (): Limiter => {
 
     return {
       isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
-      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName),
-      checkWouldGoOverLimit: (limitName: string): Promise<boolean> =>
-        limiter.checkWouldGoOverLimit(limitName),
+      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
+      checkWouldGoOverLimit: async (limitName: string): Promise<boolean> =>
+        (await limiter.checkWouldGoOverLimit(limitName)) ?? false,
       errorIfWouldGoOverLimit: (
         limitName: string,
         metadata: Record<string, unknown> = {},
