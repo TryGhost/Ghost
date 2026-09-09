@@ -79,7 +79,11 @@ independently establish frozen batch membership.
 After submission workers settle, re-read all persisted batches, verify recipient
 counts again, and require every batch submitted before completing the email.
 Frozen preparation also verifies that `email_count` equals the prepared recipient
-total so progress and statistics cannot silently retain an incorrect total.
+total so progress and statistics cannot silently retain an incorrect total. Once
+every batch has verified submission counts, the stored total may instead equal
+the submitted count written at completion, including zero when all recipients
+were excluded. Partially sent emails and emails with unavailable submission
+counts must retain the prepared total.
 
 These checks account for intended recipients, not delivered copies or global
 recipient uniqueness. Compensating omissions and duplicates can balance a count
@@ -146,7 +150,7 @@ identifies a batch. Counts describe the failed check:
 | Reason                      | Count fields                                                                                                                                                                                                 |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `batch_recipient_count`     | `expected`, `actual` recipient rows                                                                                                                                                                          |
-| `email_recipient_count` | `expected` prepared recipient total, `actual` persisted `email_count` |
+| `email_recipient_count`     | `expected` prepared or verified submitted total, `actual` persisted `email_count`                                                                                                                            |
 | `preparation_totals`        | `expected`, `actual`, `count_check` (`candidate_total` or `recipient_rows`), `candidate_count`, `preparation_excluded_count`, `recipient_count` (stored batch sum), `actual_count` (rows owned by the email) |
 | `batch_recovery_conflict`   | `expected`, `actual` rows; only unequal valid counts emit the count-mismatch event                                                                                                                           |
 | `batch_recipient_read`      | `expected`, `actual` rows after read retries are exhausted                                                                                                                                                   |
@@ -154,7 +158,6 @@ identifies a batch. Counts describe the failed check:
 | `provider_payload_count`    | `expected`, `actual` unique provider address keys                                                                                                                                                            |
 | `batch_submission_counts`   | `expected` stored intent, `actual` submitted plus excluded, `recipient_count`, `submitted_count`, `submission_excluded_count`                                                                                |
 | `batch_verification_failed` | `expected`, `actual`, optional `count_check` from the original failure; `batch_error` contains its full details                                                                                              |
-
 
 Unknown or invalid counts, conflicting identities with equal counts, and ownership
 or lifecycle failures use `email.verification.failed`. Both events retain the

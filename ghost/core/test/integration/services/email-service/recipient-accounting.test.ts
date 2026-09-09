@@ -367,7 +367,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal((await db.knex('email_recipients').where({ email_id: email.id })).length, 4);
     const sentIds = sender.send
       .getCalls()
-      .flatMap((call) => call.args[0].members.map((member: { id: string }) => member.id));
+      .flatMap((call) =>
+        call.args[0].recipients.map((recipient: { email: string }) => recipient.email),
+      );
     assert.equal(sentIds.length, 4);
     assert.equal(new Set(sentIds).size, 4);
   });
@@ -1325,6 +1327,41 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(response.mailgun_message_id, null);
     sinon.assert.calledTwice(sender.send);
   });
+
+  for (const excludedCount of [1, 4]) {
+    it(`reuses completed batches with ${excludedCount} submission exclusions`, async function () {
+      stubEmailRelations();
+      const batches = await service.createBatches(data);
+      const recipients = await db
+        .knex('email_recipients')
+        .where({ email_id: email.id })
+        .limit(excludedCount);
+      await db
+        .knex('email_recipients')
+        .whereIn(
+          'id',
+          recipients.map((row) => row.id),
+        )
+        .update({ member_email: 'invalid' });
+      await service.emailJob({ emailId: email.id });
+      await email.refresh();
+      assert.equal(email.get('status'), 'submitted');
+      assert.equal(email.get('email_count'), 4 - excludedCount);
+
+      await email.save({ status: 'failed' }, { patch: true });
+      sinon.stub(models.Member, 'findPage').throws(new Error('Audience must stay frozen'));
+      sender.send.resetHistory();
+      await service.emailJob({ emailId: email.id });
+      await email.refresh();
+      assert.equal(email.get('status'), 'submitted');
+      assert.equal(email.get('email_count'), 4 - excludedCount);
+      assert.deepEqual(
+        (await service.getBatches(email)).map((batch) => batch.id),
+        batches.map((batch) => batch.id),
+      );
+      sinon.assert.notCalled(sender.send);
+    });
+  }
 
   it('preserves a duplicate-payload verification error through batch failure to the email banner', async function () {
     const batches = await service.createBatches(data);

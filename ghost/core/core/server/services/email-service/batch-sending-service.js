@@ -466,16 +466,25 @@ class BatchSendingService {
     return verified.batches;
   }
 
-  #verifyStoredEmailCount(email, { recipientCount }) {
+  #verifyStoredEmailCount(email, { batches, recipientCount }) {
     const actual = email.get('email_count');
-    if (actual !== recipientCount) {
-      throw this.#verificationFailure(
-        email,
-        'email_recipient_count',
-        { expected: recipientCount, actual },
-        countsDiffer(recipientCount, actual),
-      );
+    if (actual === recipientCount) {
+      return;
     }
+    // Preparation stores intent; completion replaces it with successful
+    // submissions. Accept that smaller total only when every batch has verified
+    // submission counts. Partially sent and preparation-only sends retain intent.
+    const submission = this.#verifySubmissionCounts(email, batches);
+    if (submission && actual === submission.submittedCount) {
+      return;
+    }
+    const expected = submission?.submittedCount ?? recipientCount;
+    throw this.#verificationFailure(
+      email,
+      'email_recipient_count',
+      { expected, actual },
+      countsDiffer(expected, actual),
+    );
   }
 
   async #startPreparation(email, attemptId) {
