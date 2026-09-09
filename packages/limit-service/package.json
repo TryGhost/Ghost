@@ -8,8 +8,8 @@
     },
     "author": "Ghost Foundation",
     "license": "MIT",
-    "main": "src/index.js",
-    "exports": "./src/index.js",
+    "main": "src/index.ts",
+    "exports": "./src/index.ts",
     "scripts": {
         "dev": "echo \"Implement me!\"",
         "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
@@ -20,10 +20,10 @@
         "src"
     ],
     "devDependencies": {
-        "c8": "12.0.0",
-        "mocha": "12.0.0",
         "should": "13.2.3",
-        "sinon": "22.1.0"
+        "sinon": "22.1.0",
+        "mocha": "12.0.0",
+        "c8": "12.0.0"
     },
     "dependencies": {
         "@tryghost/errors": "2.2.1",
