@@ -1,4 +1,4 @@
-import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
+import LOCALE_DATA from '@tryghost/i18n/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useSettingGroup from '@/settings/hooks/use-setting-group';

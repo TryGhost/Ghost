@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const i18nLib = require('@tryghost/i18n');
+const i18nLib = require('@tryghost/i18n').default;
 const CommentsServiceEmailRenderer = require('../../../../../core/server/services/comments/comments-service-email-renderer');
 
 describe('Comments Service Email Renderer', function () {
