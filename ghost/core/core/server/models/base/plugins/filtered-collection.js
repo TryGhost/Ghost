@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const { hasPosts } = require('@tryghost/bookshelf-plugins');
+
 /**
  * @param {import('bookshelf')} Bookshelf
  */
@@ -16,6 +19,19 @@ module.exports = function (Bookshelf) {
 
         // Apply model-specific search behavior
         filteredCollection.applySearchQuery(options);
+
+        // Authors are hidden unless they have posts. Apply that constraint before
+        // fetchPage clones its count query so pagination cannot reveal hidden staff.
+        // Keep this author-specific: tags have separate, established count semantics.
+        if (filteredCollection.shouldHavePosts?.joinTable === 'posts_authors') {
+          filteredCollection.query(
+            hasPosts.addHasPostsWhere(
+              _.result(filteredCollection, 'tableName'),
+              filteredCollection.shouldHavePosts,
+            ),
+          );
+          filteredCollection.shouldHavePosts = null;
+        }
 
         return filteredCollection;
       },

@@ -150,9 +150,10 @@ describe('Post settings access', () => {
   );
 
   it(
-    'keeps specific-tier access when the paid tier IDs have not changed',
+    'sends the tier IDs a paid post already carries when its visibility changes',
     async () => {
-      const saveApi = fakeSavablePost({ visibility: 'paid', tiers: [GOLD, SILVER] });
+      // A Paid read carries every paid tier, archived ones included.
+      const saveApi = fakeSavablePost({ visibility: 'paid', tiers: [GOLD, SILVER, BRONZE] });
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await openAccess();
 
@@ -161,7 +162,7 @@ describe('Post settings access', () => {
       await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
       expect(submittedPost(saveApi)).toMatchObject({
         visibility: 'tiers',
-        tiers: [{ id: GOLD.id }, { id: SILVER.id }],
+        tiers: [{ id: GOLD.id }, { id: SILVER.id }, { id: BRONZE.id }],
       });
       await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
     },
@@ -169,22 +170,23 @@ describe('Post settings access', () => {
   );
 
   it(
-    'requires a paid tier when a public post only carries the free tier',
+    'grants a public post’s paid tiers but not the free one it carries',
     async () => {
-      const saveApi = fakeSavablePost({ visibility: 'public', tiers: [FREE] });
+      // A Public read carries every site tier, the free one included.
+      const saveApi = fakeSavablePost({ visibility: 'public', tiers: SITE_TIERS });
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
       await openAccess();
 
       await chooseVisibility('Specific tier(s)');
 
-      await expect.element(editorScreen.settingsTiersError()).toBeVisible();
-      expect(saveApi.requests).toHaveLength(0);
-      await editorScreen.settingsTier('Gold').click();
       await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        visibility: 'tiers',
-        tiers: [{ id: GOLD.id }],
-      });
+      expect(submittedPost(saveApi)).toMatchObject({ visibility: 'tiers' });
+      expect(submittedPost(saveApi).tiers).toEqual([
+        { id: GOLD.id },
+        { id: SILVER.id },
+        { id: BRONZE.id },
+      ]);
+      await expect(editorScreen.settingsTiersError()).toHaveCount(0);
     },
     SLOW,
   );

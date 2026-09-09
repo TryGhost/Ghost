@@ -221,7 +221,7 @@ export function MappingStep({
 
     let field;
     try {
-      const response = await createField({ name, type });
+      const response = await createField({ name, type, access: { member: 'none' } });
       field = response.members_metafields?.[0];
     } catch (error) {
       reportCreateFailure(error);

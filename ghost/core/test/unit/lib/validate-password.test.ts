@@ -1,10 +1,11 @@
 // secretlint-disable
+import { range } from 'lodash';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { validatePassword } from '../../../core/server/lib/validate-password';
 // @ts-expect-error This module lacks type definitions.
-import validatePassword from '../../../core/server/lib/validate-password';
-const settingsCache = require('../../../core/shared/settings-cache');
-const urlUtils = require('../../../core/shared/url-utils').default;
+import settingsCache from '../../../core/shared/settings-cache';
+import urlUtils from '../../../core/shared/url-utils';
 
 const VALID_PASSWORD = 'hHa5BCKOEIwPpTcB';
 
@@ -46,6 +47,14 @@ describe('password validation', function () {
     }
     assertTooShortPassword('åß∂ƒ©˙∆˚¬');
     assertTooShortPassword('😀😃😄😁😆😅😂🤣☺️');
+  });
+
+  it('disallows long passwords', function () {
+    const password = 'x'.repeat(257);
+    assert.deepEqual(validatePassword(password, 'user@example.com'), {
+      isValid: false,
+      message: 'Your password is too long.',
+    });
   });
 
   it('disallows specific known insecure passwords', function () {
@@ -146,6 +155,12 @@ describe('password validation', function () {
     assertValidPassword('A1b2C3d4E5');
     assertValidPassword('åß∂ƒ©˙∆˚¬…');
     assertValidPassword('😀😃😄😁😆😅😂🤣☺️😊');
+  });
+
+  it('allows passwords at exactly the maximum length', function () {
+    const codePoints = range(33, 289);
+    const password = String.fromCodePoint(...codePoints);
+    assertValidPassword(password);
   });
 
   it("allows passwords that contain the user's email address but are not equal", function () {

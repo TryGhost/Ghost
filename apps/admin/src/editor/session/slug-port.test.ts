@@ -88,9 +88,83 @@ describe('createSlugPort', () => {
     expect(machine.getState().slug).toBe('second');
   });
 
+  it('keeps the slug for a title the writer did not type, and stops following', async () => {
+    const { port, titleReplaced, machine, generateSlug } = harness();
+
+    titleReplaced('An Older Title');
+
+    await expect(port.fromTitle('An Older Title', null, signal())).resolves.toEqual({
+      slug: 'original',
+      source: 'unchanged',
+    });
+    await expect(port.fromTitle('Something Else', null, signal())).resolves.toEqual({
+      slug: 'original',
+      source: 'unchanged',
+    });
+    expect(machine.getState().slug).toBe('original');
+    expect(generateSlug).not.toHaveBeenCalled();
+  });
+
   it('settles immediately when nothing was submitted', async () => {
     const { port } = harness();
 
     await expect(port.settled()).resolves.toBeUndefined();
+  });
+
+  it('waits for a manual edit queued behind title generation', async () => {
+    const title = deferred<string>();
+    const manual = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(title.promise)
+      .mockReturnValueOnce(manual.promise);
+    const { port, commitTitle, editSlug, machine } = harness(generateSlug);
+
+    commitTitle('First');
+    const edit = editSlug('Chosen');
+    let settled = false;
+    const wait = port.settled().then(() => {
+      settled = true;
+    });
+
+    title.resolve('first');
+    await flush();
+    expect(generateSlug).toHaveBeenLastCalledWith('Chosen');
+    expect(settled).toBe(false);
+
+    manual.resolve('chosen');
+    await edit;
+    await wait;
+    expect(machine.getState().slug).toBe('chosen');
+  });
+
+  it('releases old waits on reload without losing a new submission', async () => {
+    const old = deferred<string>();
+    const fresh = deferred<string>();
+    const generateSlug = vi
+      .fn<(text: string) => Promise<string>>()
+      .mockReturnValueOnce(old.promise)
+      .mockReturnValueOnce(fresh.promise);
+    const { port, editSlug, reset, machine } = harness(generateSlug);
+
+    const oldEdit = editSlug('Old');
+    const oldWait = port.settled();
+    machine.loaded({ title: 'Reloaded', slug: 'reloaded' });
+    reset();
+    await oldWait;
+
+    const freshEdit = editSlug('Fresh');
+    let settled = false;
+    const freshWait = port.settled().then(() => {
+      settled = true;
+    });
+    old.resolve('old');
+    expect(await oldEdit).toMatchObject({ source: 'unchanged', reason: 'stale' });
+    await flush();
+    expect(settled).toBe(false);
+    fresh.resolve('fresh');
+    await freshEdit;
+    await freshWait;
+    expect(machine.getState().slug).toBe('fresh');
   });
 });

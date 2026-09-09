@@ -149,9 +149,16 @@ export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
   invalidateQueries: { dataType },
 });
 
-export const useDeletePost = createMutation<unknown, string>({
+export interface DeletePostPayload {
+  id: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useDeletePost = createMutation<unknown, DeletePostPayload>({
   method: 'DELETE',
-  path: (id) => `/posts/${id}/`,
+  path: ({ id }) => `/posts/${id}/`,
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
 });
 
 /**

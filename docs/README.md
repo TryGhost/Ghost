@@ -13,7 +13,7 @@ installed:
 git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-pnpm setup
+pnpm bootstrap
 pnpm dev
 ```
 
@@ -98,6 +98,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Error handling](practices/error-handling.md)
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
+- [Internal package migrations](contributing/internal-package-migrations.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
 - [Test data](contributing/test-data.md)

@@ -243,7 +243,13 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
       });
     }
 
-    const member = await membersService.api.memberBREADService.read({ uuid });
+    // Nothing reached through this middleware renders a member's extra fields, so
+    // they are not fetched. It authenticates by a signed link rather than a session,
+    // which makes anything loaded here readable without being signed in.
+    const member = await membersService.api.memberBREADService.read(
+      { uuid },
+      { metafieldsFor: null },
+    );
     if (!member) {
       throw new errors.UnauthorizedError({
         message: tpl(messages.invalidUuid),
