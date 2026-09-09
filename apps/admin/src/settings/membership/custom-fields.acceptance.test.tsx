@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeSettingsScreens,
@@ -63,6 +64,42 @@ describe('Custom fields', () => {
 
     await expect(settingsScreen.customFields()).toHaveCount(0);
     expect(customFieldsApi.requests).toHaveLength(0);
+  });
+
+  // A host can switch custom fields off for a site separately from the flag, so the
+  // feature can be sold with a plan. Settings is where a publisher would go to set fields
+  // up, so a limited site is offered nothing to set up. Reading definitions stays open on
+  // the server, so this is the check that stops a limited site being shown a section whose
+  // every save would come back refused.
+  it('stays hidden when the host limit disables the feature', async () => {
+    fakeSettingsScreens();
+    const customFieldsApi = fakeCustomFields();
+    const config = configResponse({ labs: { membersCustomFields: true } });
+    config.config.hostSettings = {
+      limits: { limitCustomFields: { disabled: true } },
+    };
+    await renderAdminApp('/settings', {
+      ...flagOn,
+      boot: { browseConfig: { response: config } },
+    });
+
+    await expect(settingsScreen.customFields()).toHaveCount(0);
+    expect(customFieldsApi.requests).toHaveLength(0);
+  });
+
+  it('stays visible when the host sets the limit but leaves it enabled', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields();
+    const config = configResponse({ labs: { membersCustomFields: true } });
+    config.config.hostSettings = {
+      limits: { limitCustomFields: { disabled: false } },
+    };
+    await renderAdminApp('/settings', {
+      ...flagOn,
+      boot: { browseConfig: { response: config } },
+    });
+
+    await expect.element(settingsScreen.customFields()).toBeVisible();
   });
 
   it('lists each field with its user-facing type, opting into archived fields', async () => {
