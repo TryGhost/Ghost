@@ -20,9 +20,16 @@ type UpdateEntry = {
   updates: Record<string, string | number | null>;
 };
 
+type CandidateBatch = {
+  afterId: string | null;
+  limit: number | null;
+  ids: string[];
+};
+
 type KnexFakeState = {
   posts: PostRow[];
   updates: UpdateEntry[];
+  candidateBatches: CandidateBatch[];
 };
 
 type QueryMode = 'candidates' | 'row' | null;
@@ -34,14 +41,18 @@ type KnexFake = {
 
 type KnexQuery = {
   _id: string | null;
+  _afterId: string | null;
+  _limit: number | null;
   _whereNull: string | null;
   _mode: QueryMode;
   select(...columns: string[]): KnexQuery;
   where(arg: ((this: WhereBuilder) => void) | { id: string }): KnexQuery;
   whereNull(column: string): KnexQuery;
   whereNotNull(): KnexQuery;
-  andWhere(): KnexQuery;
+  andWhere(column?: string, op?: string, value?: string): KnexQuery;
   orWhere(fn: (this: WhereBuilder) => void): KnexQuery;
+  orderBy(): KnexQuery;
+  limit(n: number): KnexQuery;
   update(updates: Record<string, string | number | null>): Promise<number>;
   then<TResult1 = unknown, TResult2 = never>(
     onFulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | null,
@@ -59,7 +70,7 @@ type WhereBuilder = {
 
 /**
  * Minimal knex stand-in that covers the migration's query shapes:
- * - candidate id select with nested where callbacks
+ * - keyset candidate id select (orderBy + limit + optional id cursor)
  * - per-id select of html/plaintext/feature_image/auto_excerpt/reading_time
  * - per-column whereNull-guarded updates
  */
@@ -67,6 +78,7 @@ function createKnexFake(posts: PostRow[]): KnexFake {
   const state: KnexFakeState = {
     posts: posts.map((post) => ({ ...post })),
     updates: [],
+    candidateBatches: [],
   };
 
   const needsBackfill = (post: PostRow) =>
@@ -78,6 +90,8 @@ function createKnexFake(posts: PostRow[]): KnexFake {
 
     const query: KnexQuery = {
       _id: null,
+      _afterId: null,
+      _limit: null,
       _whereNull: null,
       _mode: null,
 
@@ -145,7 +159,10 @@ function createKnexFake(posts: PostRow[]): KnexFake {
         return this;
       },
 
-      andWhere() {
+      andWhere(column?: string, op?: string, value?: string) {
+        if (column === 'id' && op === '>' && value !== undefined && value !== null) {
+          this._afterId = value;
+        }
         return this;
       },
 
@@ -153,6 +170,15 @@ function createKnexFake(posts: PostRow[]): KnexFake {
         if (typeof fn === 'function') {
           fn.call(this as unknown as WhereBuilder);
         }
+        return this;
+      },
+
+      orderBy() {
+        return this;
+      },
+
+      limit(n: number) {
+        this._limit = n;
         return this;
       },
 
@@ -175,7 +201,26 @@ function createKnexFake(posts: PostRow[]): KnexFake {
         return Promise.resolve()
           .then(() => {
             if (this._mode === 'candidates') {
-              return state.posts.filter(needsBackfill).map((post) => ({ id: post.id }));
+              let rows = state.posts
+                .filter(needsBackfill)
+                .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+
+              if (this._afterId !== null) {
+                rows = rows.filter((post) => post.id > this._afterId!);
+              }
+
+              if (this._limit !== null) {
+                rows = rows.slice(0, this._limit);
+              }
+
+              const ids = rows.map((post) => post.id);
+              state.candidateBatches.push({
+                afterId: this._afterId,
+                limit: this._limit,
+                ids,
+              });
+
+              return ids.map((id) => ({ id }));
             }
 
             if (this._mode === 'row') {
@@ -217,6 +262,8 @@ describe('Migration: backfill posts auto_excerpt and reading_time', function () 
     await migration.up({ connection: knex });
 
     assert.equal(knex.__state.updates.length, 0);
+    assert.equal(knex.__state.candidateBatches.length, 1);
+    assert.deepEqual(knex.__state.candidateBatches[0].ids, []);
     sinon.assert.calledWithMatch(warn, /already populated/);
   });
 
@@ -311,5 +358,42 @@ describe('Migration: backfill posts auto_excerpt and reading_time', function () 
     assert.equal(baseKnex.__state.posts[0].auto_excerpt, 'filled-by-concurrent-save');
     assert.equal(baseKnex.__state.posts[0].reading_time, 9);
     assert.equal(baseKnex.__state.updates.length, 2);
+  });
+
+  it('walks eligible posts in ordered keyset batches', async function () {
+    sinon.stub(logging, 'info');
+    sinon.stub(logging, 'warn');
+
+    const batchSize = migration.BATCH_SIZE as number;
+    const posts: PostRow[] = Array.from({ length: batchSize + 1 }, (_, index) => ({
+      id: String(index).padStart(4, '0'),
+      html: '<p>x</p>',
+      plaintext: 'x',
+      feature_image: null,
+      auto_excerpt: null,
+      reading_time: null,
+    }));
+
+    const knex = createKnexFake(posts);
+
+    await migration.up({ connection: knex });
+
+    // First page, cursor page, then empty terminal probe.
+    assert.equal(knex.__state.candidateBatches.length, 3);
+    assert.equal(knex.__state.candidateBatches[0].afterId, null);
+    assert.equal(knex.__state.candidateBatches[0].limit, batchSize);
+    assert.equal(knex.__state.candidateBatches[0].ids.length, batchSize);
+    assert.equal(
+      knex.__state.candidateBatches[1].afterId,
+      knex.__state.candidateBatches[0].ids.at(-1),
+    );
+    assert.deepEqual(knex.__state.candidateBatches[1].ids, [String(batchSize).padStart(4, '0')]);
+    assert.deepEqual(knex.__state.candidateBatches[2].ids, []);
+
+    assert.equal(
+      knex.__state.posts.filter((post) => post.auto_excerpt !== null && post.reading_time !== null)
+        .length,
+      batchSize + 1,
+    );
   });
 });
