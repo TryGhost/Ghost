@@ -1,12 +1,20 @@
-const onHeaders = require('on-headers');
+import type * as http from 'node:http';
+import onHeaders from 'on-headers';
 
-function appendHeaderValue(existingValue, newValue) {
+type SettingsCache = {
+  get: (key: 'is_private' | 'llms_enabled') => unknown;
+};
+
+function appendHeaderValue(
+  existingValue: http.OutgoingHttpHeader | undefined,
+  newValue: string,
+): string {
   if (!existingValue) {
     return newValue;
   }
 
-  const raw = Array.isArray(existingValue) ? existingValue : [existingValue];
-  const values = raw.flatMap((v) => v.split(',').map((s) => s.trim()));
+  const raw = Array.isArray(existingValue) ? existingValue : [String(existingValue)];
+  const values = raw.flatMap((value) => value.split(',').map((part) => part.trim()));
 
   if (values.includes(newValue)) {
     return raw.join(', ');
@@ -15,12 +23,16 @@ function appendHeaderValue(existingValue, newValue) {
   return raw.concat(newValue).join(', ');
 }
 
-function createLlmsDiscovery({ settingsCache }) {
+export function createLlmsDiscovery({ settingsCache }: { settingsCache: SettingsCache }) {
   function isDiscoveryEnabled() {
     return !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
   }
 
-  return function llmsDiscovery(req, res, next) {
+  return function llmsDiscovery(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    next: () => unknown,
+  ) {
     if (!isDiscoveryEnabled()) {
       return next();
     }
@@ -44,5 +56,3 @@ function createLlmsDiscovery({ settingsCache }) {
     next();
   };
 }
-
-module.exports = { createLlmsDiscovery };
