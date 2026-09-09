@@ -5,7 +5,7 @@ require('./utils');
 const {DateTime} = require('luxon');
 const sinon = require('sinon');
 const assert = require('node:assert').strict;
-const {lastPeriodStart} = require('../lib/date-utils');
+const {lastPeriodStart} = require('../src/date-utils');
 
 describe('Date Utils', function () {
     describe('fn: lastPeriodStart', function () {

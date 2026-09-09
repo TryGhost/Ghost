@@ -3,21 +3,21 @@
 require('./utils');
 const should = require('should');
 const assert = require('node:assert').strict;
-const LimitService = require('../lib/LimitService');
-const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
+const LimitService = require('../src/limit-service');
+const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../src/limits');
 const sinon = require('sinon');
 
 const errors = require('./fixtures/errors');
 
 describe('Limit Service', function () {
     it('is exported via the package index', function () {
-        const LimitServiceFromIndex = require('../index');
+        const LimitServiceFromIndex = require('../src/index');
         assert.equal(LimitServiceFromIndex, LimitService);
     });
 
     describe('Lodash Template', function () {
         it('Does not get clobbered by this lib', function () {
-            require('../lib/limit');
+            require('../src/limits');
             let _ = require('lodash');
 
             _.templateSettings.interpolate.should.eql(/<%=([\s\S]+?)%>/g);

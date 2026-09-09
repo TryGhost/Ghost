@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const assert = require('node:assert').strict;
 
 const errors = require('./fixtures/errors');
-const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
+const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../src/limits');
 
 describe('Limit', function () {
     describe('Flag Limit', function () {
