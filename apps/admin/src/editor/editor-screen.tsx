@@ -214,6 +214,7 @@ function EditorContent({
           <PostSettingsSidebar
             cardConfig={currentCardConfig}
             currentUser={currentUser}
+            featureImage={featureImage.featureImage}
             hasInlineExcerpt={showExcerpt}
             postType={postType}
             session={session}

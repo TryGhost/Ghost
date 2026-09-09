@@ -66,6 +66,9 @@ export interface PostCardConfig extends PostCardConfigPorts {
   membersEnabled: boolean;
   siteTitle: string;
   siteDescription: string;
+  siteOgImage: string | null;
+  siteTwitterImage: string | null;
+  siteCoverImage: string | null;
   siteUrl: string;
   siteUuid: string;
   stripeEnabled: boolean;
@@ -99,6 +102,11 @@ export function getCardVisibilitySettings(
   return isPage ? 'web only' : 'web and email';
 }
 
+function imageSetting(settings: Setting[], key: string): string | null {
+  const value = getSettingValue(settings, key);
+  return typeof value === 'string' ? value : null;
+}
+
 export function buildPostCardConfig(
   sources: PostCardConfigSources,
   ports: PostCardConfigPorts,
@@ -124,6 +132,9 @@ export function buildPostCardConfig(
     searchLinks: ports.searchLinks,
     siteTitle: getSettingValue<string>(settings, 'title') ?? '',
     siteDescription: getSettingValue<string>(settings, 'description') ?? '',
+    siteOgImage: imageSetting(settings, 'og_image'),
+    siteTwitterImage: imageSetting(settings, 'twitter_image'),
+    siteCoverImage: imageSetting(settings, 'cover_image'),
     siteUrl: getHomepageUrl(site),
     siteUuid: site.site_uuid,
     stripeEnabled: checkStripeEnabled(settings, config),

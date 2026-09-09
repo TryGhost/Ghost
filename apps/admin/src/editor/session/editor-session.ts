@@ -35,6 +35,7 @@ import {
   identityFor,
   publishedAtInFuture,
   settingsFieldError,
+  validatedFieldsOf,
   type EditorSettingsPatch,
   type SettingsFieldKey,
   type ValidatedSettingsFields,
@@ -410,12 +411,7 @@ export function createEditorSession({
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
-      validated: {
-        visibility: live.visibility,
-        tiers: live.tiers,
-        meta_title: live.meta_title,
-        meta_description: live.meta_description,
-      },
+      validated: validatedFieldsOf(live),
       builtAtVersion: version,
       payload,
       options: {
@@ -548,7 +544,7 @@ export function createEditorSession({
     // Invalid settings stay staged rather than dispatching a field save.
     if (
       status !== 'draft' ||
-      settingsFieldError(live) ||
+      settingsFieldError(validatedFieldsOf(live)) ||
       authorsEmptied() ||
       publishedAtInFuture(status, livePublishedAt())
     ) {

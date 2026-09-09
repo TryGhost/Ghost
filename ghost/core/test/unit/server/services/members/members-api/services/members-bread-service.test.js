@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const MemberBreadService = require('../../../../../../../core/server/services/members/members-api/services/member-bread-service');
 const NextPaymentCalculator = require('../../../../../../../core/server/services/members/members-api/services/next-payment-calculator');
 const moment = require('moment');
+const { ADMIN } = require('../../../../../../../core/server/services/members-metafields');
 
 // The custom fields service is a required dependency: boot constructs it before
 // the members service, so the members service is never without one. Fixtures build
@@ -16,8 +17,8 @@ const createMetafieldValuesStub = () => ({
   applyWrite: sinon.stub().resolves(),
 });
 
-const createMetafieldDefinitionsStub = (hasAnyActive = false) => ({
-  hasAnyActive: sinon.stub().resolves(hasAnyActive),
+const createMetafieldDefinitionsStub = (hasAnyReadable = false) => ({
+  hasAnyReadable: sinon.stub().resolves(hasAnyReadable),
 });
 
 describe('MemberBreadService', function () {
@@ -585,7 +586,7 @@ describe('MemberBreadService', function () {
       const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: null });
 
       assert.equal(Object.hasOwn(member, 'metafields'), false);
-      assert.equal(metafieldDefinitions.hasAnyActive.called, false);
+      assert.equal(metafieldDefinitions.hasAnyReadable.called, false);
       assert.equal(metafieldValues.getValuesForMembers.called, false);
     });
 
@@ -593,7 +594,7 @@ describe('MemberBreadService', function () {
       const metafieldDefinitions = createMetafieldDefinitionsStub(true);
       const memberBreadService = getService({ metafieldDefinitions });
 
-      const member = await memberBreadService.read({ id: MEMBER_ID });
+      const member = await memberBreadService.read({ id: MEMBER_ID }, { metafieldsFor: ADMIN });
 
       assert.deepEqual(member.metafields, {});
     });

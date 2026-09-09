@@ -141,8 +141,9 @@ describe('Post settings tags', () => {
       await openSidebar();
       await openTagList();
 
-      // No row shows a post count, so the read does not ask for the join.
-      await expect.poll(() => tagsApi.lastRequest?.url, POLL).not.toContain('count.posts');
+      await expect.poll(() => tagsApi.lastRequest?.url, POLL).toBeDefined();
+      // Ghost rejects an explicitly empty include instead of treating it as absent.
+      expect(new URL(tagsApi.lastRequest!.url).searchParams.get('include')).not.toBe('');
 
       await editorScreen.settingsTagOption('Sport').click();
 

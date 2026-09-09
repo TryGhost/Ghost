@@ -1054,6 +1054,18 @@ module.exports = {
       defaultTo: 'active',
       validations: { isIn: [['active', 'archived']] },
     },
+    // These validations never run: they are applied by Bookshelf's onValidate hook,
+    // and this table has no Bookshelf model — the metafields service writes it through
+    // knex, validating with MEMBER_ACCESS in that service instead. Recorded here to
+    // describe the column, and duplicated because this static schema cannot import
+    // TypeScript.
+    member_access: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      defaultTo: 'none',
+      validations: { isIn: [['none', 'read', 'write']] },
+    },
     // The publisher's order for the list, rewritten across every row whenever the
     // list is reordered. Only the relative order carries meaning: creates append past
     // the highest rank and deletes leave gaps, so the values are not a dense

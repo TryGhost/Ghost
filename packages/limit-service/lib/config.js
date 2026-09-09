@@ -59,5 +59,6 @@ module.exports = {
     limitStripeConnect: {},
     limitAnalytics: {},
     limitSocialWeb: {},
+    limitCustomFields: {},
     publicSiteAccess: {}
 };
