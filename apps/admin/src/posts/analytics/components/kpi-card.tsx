@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@tryghost/shade/components';
 import { cn } from '@tryghost/shade/utils';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   children,
@@ -56,6 +57,8 @@ export const KpiCardMoreButton: React.FC<React.ComponentProps<typeof Button>> = 
   className,
   ...props
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+
   return (
     <Button
       className={cn(
@@ -63,7 +66,7 @@ export const KpiCardMoreButton: React.FC<React.ComponentProps<typeof Button>> = 
         className,
       )}
       size="sm"
-      variant="outline"
+      variant={isAdmin7Pill ? 'ghost' : 'outline'}
       {...props}
     >
       {children}

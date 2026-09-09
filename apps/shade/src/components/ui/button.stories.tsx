@@ -231,6 +231,22 @@ export const IconOnly: Story = {
   },
 };
 
+export const SmallIconOnly: Story = {
+  args: {
+    size: 'icon-sm',
+    'aria-label': 'Move up',
+    children: <ArrowUp />,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for compact icon-only actions in dense controls. Always provide an accessible `aria-label`.',
+      },
+    },
+  },
+};
+
 export const PillIconOnly: Story = {
   args: {
     shape: 'pill',

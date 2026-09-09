@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import { H3 } from '@tryghost/shade/primitives';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
 
@@ -41,6 +42,8 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   siteTitle = '',
   ...props
 }) => {
+  const { controlShape } = useShade();
+  const hasPillControls = controlShape === 'pill';
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
@@ -93,7 +96,10 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             </ShareModal.Description>
           )}
         </ShareModal.Header>
-        <ShareModal.Preview className="rounded-md" href={postURL}>
+        <ShareModal.Preview
+          className={hasPillControls ? 'rounded-xl' : 'rounded-md'}
+          href={postURL}
+        >
           {featureImageURL && (
             <div
               className="aspect-video bg-cover bg-center"
@@ -116,14 +122,18 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             </div>
           </div>
         </ShareModal.Preview>
-        <ShareModal.Footer>
+        <ShareModal.Footer className={hasPillControls ? 'gap-8 sm:gap-8' : undefined}>
           {emailOnly ? (
             <Button className="cursor-pointer" type="button" onClick={onClose}>
               Close
             </Button>
           ) : (
             <>
-              <ShareModal.SocialLinks links={socialLinks} />
+              <ShareModal.SocialLinks
+                links={socialLinks}
+                shape={hasPillControls ? 'pill' : undefined}
+                variant={hasPillControls ? 'ghost' : undefined}
+              />
               <ShareModal.CopyButton
                 className="ml-0! grow cursor-pointer"
                 copyURL={postURL}

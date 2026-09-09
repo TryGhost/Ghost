@@ -46,8 +46,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 const Overview: React.FC = () => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
@@ -226,12 +228,12 @@ const Overview: React.FC = () => {
                     <Button
                       className="absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
                       size="sm"
-                      variant="outline"
+                      variant={isAdmin7Pill ? 'ghost' : 'outline'}
                       onClick={() => {
                         navigate(`/posts/analytics/${postId}/growth`);
                       }}
                     >
-                      View more
+                      {isAdmin7Pill ? 'View more →' : 'View more'}
                     </Button>
                   </div>
                   <CardContent className="flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0">
@@ -293,9 +295,10 @@ const Overview: React.FC = () => {
                     <Button
                       className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
                       size="sm"
-                      variant="outline"
+                      variant={isAdmin7Pill ? 'ghost' : 'outline'}
                       onClick={() => setIsGiftLinkOpen(true)}
                     >
+                      {isAdmin7Pill && <LucideIcon.Share />}
                       Share
                     </Button>
                   </div>

@@ -37,6 +37,7 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
+  cn,
   formatNumber,
   formatPercentage,
   useSimplePagination,
@@ -56,6 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -98,6 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -561,9 +564,14 @@ const Newsletter: React.FC = () => {
                                 ) : (
                                   <>
                                     <Button
-                                      className="mr-2 shrink-0 bg-background"
-                                      size="sm"
-                                      variant="outline"
+                                      aria-label="Edit link"
+                                      className={cn(
+                                        'mr-2 shrink-0',
+                                        !isAdmin7Pill && 'bg-background',
+                                      )}
+                                      size={isAdmin7Pill ? 'icon-sm' : 'sm'}
+                                      title="Edit link"
+                                      variant={isAdmin7Pill ? 'ghost' : 'outline'}
                                       onClick={() => handleEdit(linkId)}
                                     >
                                       <LucideIcon.Pen />
@@ -614,13 +622,15 @@ const Newsletter: React.FC = () => {
                         <SimplePaginationNavigation>
                           <SimplePaginationPreviousButton
                             disabled={!hasPreviousPage}
+                            size={isAdmin7Pill ? 'icon' : undefined}
+                            variant={isAdmin7Pill ? 'ghost' : undefined}
                             onClick={previousPage}
-                            // size='default'
                           />
                           <SimplePaginationNextButton
                             disabled={!hasNextPage}
+                            size={isAdmin7Pill ? 'icon' : undefined}
+                            variant={isAdmin7Pill ? 'ghost' : undefined}
                             onClick={nextPage}
-                            // size='default'
                           />
                         </SimplePaginationNavigation>
                       </SimplePagination>

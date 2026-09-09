@@ -36,6 +36,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -153,6 +154,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
   isLoading,
   onSourceClick,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   // Process and group sources data with pre-computed icons and display values
   const processedData = React.useMemo(() => {
     return processSources({
@@ -217,7 +219,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline">
+              <Button variant={isAdmin7Pill ? 'ghost' : 'outline'}>
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>

@@ -222,9 +222,18 @@ function SocialIcon({ service }: { service: ShareService }) {
 interface SocialLinksProps extends React.HTMLAttributes<HTMLDivElement> {
   layout?: 'footer' | 'stacked';
   links: ShareModalSocialLink[];
+  shape?: ButtonProps['shape'];
+  variant?: ButtonProps['variant'];
 }
 
-function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLinksProps) {
+function SocialLinks({
+  className,
+  layout = 'footer',
+  links,
+  shape,
+  variant,
+  ...props
+}: SocialLinksProps) {
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -233,7 +242,8 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
             key={link.id ?? link.href}
             className="flex-1"
             id={link.id}
-            variant="outline"
+            shape={shape}
+            variant={variant ?? 'outline'}
             asChild
           >
             <a
@@ -254,19 +264,40 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
 
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
-      {links.map((link) => (
-        <a
-          key={link.id ?? link.href}
-          aria-label={link.label}
-          className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
-          href={link.href}
-          rel="noopener noreferrer"
-          target="_blank"
-          title={link.title || link.label}
-        >
-          <SocialIcon service={link.service} />
-        </a>
-      ))}
+      {links.map((link) =>
+        shape || variant ? (
+          <Button
+            key={link.id ?? link.href}
+            className="w-12 flex-none px-3"
+            shape={shape}
+            variant={variant ?? 'ghost'}
+            asChild
+          >
+            <a
+              aria-label={link.label}
+              href={link.href}
+              id={link.id}
+              rel="noopener noreferrer"
+              target="_blank"
+              title={link.title || link.label}
+            >
+              <SocialIcon service={link.service} />
+            </a>
+          </Button>
+        ) : (
+          <a
+            key={link.id ?? link.href}
+            aria-label={link.label}
+            className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
+            href={link.href}
+            rel="noopener noreferrer"
+            target="_blank"
+            title={link.title || link.label}
+          >
+            <SocialIcon service={link.service} />
+          </a>
+        ),
+      )}
     </div>
   );
 }

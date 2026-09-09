@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { Button } from '@tryghost/shade/components';
-import { type Filter, type FilterFieldConfig, Filters } from '@tryghost/shade/patterns';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
 import { formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
@@ -342,6 +342,8 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
+  const { controlShape } = useShade();
+  const hasPillControls = controlShape === 'pill';
   const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
@@ -679,36 +681,54 @@ function StatsFilter({
     }
   }, [onChange]);
 
-  return (
+  const filtersElement = (
+    <Filters
+      addButtonIcon={<LucideIcon.FunnelPlus />}
+      addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+      allowMultiple={false}
+      className={cn(
+        '[&>button]:order-last',
+        hasFilters && !hasPillControls && '[&>button]:border-none',
+      )}
+      clearButton={
+        hasFilters ? (
+          <FilterBar.Actions>
+            <FilterBar.Action
+              className={cn('hidden lg:flex', !hasPillControls && 'text-muted-foreground')}
+              data-testid="stats-filter-clear-button"
+              variant="ghost"
+              onClick={handleClearFilters}
+            >
+              {!hasPillControls && <LucideIcon.FunnelX />}
+              Clear
+            </FilterBar.Action>
+          </FilterBar.Actions>
+        ) : undefined
+      }
+      fields={groupedFields}
+      filters={filters}
+      keyboardShortcut="f"
+      popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
+      showClearButton={hasFilters}
+      showSearchInput={false}
+      onActiveFieldChange={setActiveFilterField}
+      onChange={onChange || (() => {})}
+      {...props}
+    />
+  );
+
+  return hasFilters ? (
+    <div className="w-full" data-testid="stats-filter-container">
+      <FilterBar className={hasPillControls ? undefined : 'mt-3 lg:mt-0'}>
+        {filtersElement}
+      </FilterBar>
+    </div>
+  ) : (
     <div
       className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
       data-testid="stats-filter-container"
     >
-      <Filters
-        addButtonIcon={<LucideIcon.FunnelPlus />}
-        addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-        allowMultiple={false}
-        className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
-        fields={groupedFields}
-        filters={filters}
-        keyboardShortcut="f"
-        popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
-        showSearchInput={false}
-        onActiveFieldChange={setActiveFilterField}
-        onChange={onChange || (() => {})}
-        {...props}
-      />
-      {hasFilters && (
-        <Button
-          className="hidden font-normal text-muted-foreground lg:flex"
-          data-testid="stats-filter-clear-button"
-          variant="ghost"
-          onClick={handleClearFilters}
-        >
-          <LucideIcon.FunnelX />
-          Clear
-        </Button>
-      )}
+      {filtersElement}
     </div>
   );
 }

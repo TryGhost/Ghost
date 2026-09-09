@@ -21,6 +21,7 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface WebOverviewProps {
   sourcesData: BaseSourceData[] | null;
@@ -39,6 +40,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({
   sourcesData,
   isNewsletterShown = true,
 }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const { postId } = useParams();
   const navigate = useNavigate();
 
@@ -71,12 +73,12 @@ const WebOverview: React.FC<WebOverviewProps> = ({
           <Button
             className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
             size="sm"
-            variant="outline"
+            variant={isAdmin7Pill ? 'ghost' : 'outline'}
             onClick={() => {
               navigate(`/posts/analytics/${postId}/web`);
             }}
           >
-            View more
+            {isAdmin7Pill ? 'View more →' : 'View more'}
           </Button>
         </div>
         <CardContent>

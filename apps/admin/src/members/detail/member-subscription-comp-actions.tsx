@@ -72,7 +72,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
             data-testid="subscription-actions"
             disabled={busy}
             size={isAdmin7Pill ? 'icon' : 'sm'}
-            variant="outline"
+            variant={isAdmin7Pill ? 'ghost' : 'outline'}
           >
             {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}
           </Button>

@@ -31,6 +31,7 @@ import {
 import { H1 } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
+  cn,
   formatDisplayDate,
   formatDisplayTime,
   formatNumber,
@@ -55,6 +56,7 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -62,6 +64,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
+  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -205,7 +208,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <>
+                  <div
+                    className={cn('flex items-center gap-2', isAdmin7Pill && 'flex-row-reverse')}
+                  >
                     {!post?.email_only && (
                       <PostShareModal
                         author={post?.authors?.[0]?.name || ''}
@@ -226,14 +231,17 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                           setIsGiftLinkOpen(true);
                         }}
                       >
-                        <Button variant="outline" onClick={() => setIsShareOpen(true)}>
+                        <Button
+                          variant={isAdmin7Pill ? 'default' : 'outline'}
+                          onClick={() => setIsShareOpen(true)}
+                        >
                           <LucideIcon.Share /> Share
                         </Button>
                       </PostShareModal>
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
+                        <Button size={isAdmin7Pill ? 'icon' : undefined} variant="outline">
                           <LucideIcon.Ellipsis />
                         </Button>
                       </DropdownMenuTrigger>
@@ -267,7 +275,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         </DropdownMenuGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

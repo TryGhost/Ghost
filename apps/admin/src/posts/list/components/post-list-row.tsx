@@ -17,6 +17,7 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
+import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -134,6 +135,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
     },
     ref,
   ) {
+    const { enabled: isAdmin7Pill } = useAdmin7Pill();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -262,24 +264,22 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
             settings={metricsSettings}
             visitorCounts={visitorCounts}
           />
-          {/* Always visible, as in Ember: `.gh-post-list-cta` is a
-                    bordered white button and `.is-hovered` only changes its
-                    border colour. Revealing it on hover would make it
-                    undiscoverable, and an invisible target on touch. */}
+          {/* Always visible so the action stays discoverable and remains
+                    available on touch devices. */}
           <Button
-            // `bg-control-surface` rather than a bare white: it is
-            // white in light mode and transparent in dark, so the
-            // button sits on the row instead of punching a pale hole
-            // through it. Without it the outline variant is see-through
-            // and picks up the blue of a selected row.
-            // `ms-2` on top of the row's 12px gap, so the button sits
-            // 20px off the metrics. It is a different kind of thing
-            // from them — an action rather than a figure — and reads as
-            // part of the run of metrics when spaced the same.
+            // The extra margin on top of the row's 12px gap separates
+            // the action from the analytics figures beside it. It is an
+            // action rather than another figure, so it needs to read as
+            // separate from the run of metrics.
             // Margin rather than a wider row gap, which would push the
             // title away from the metrics too.
-            className="my-4 ms-2 shrink-0 bg-control-surface px-4"
-            variant="outline"
+            className={cn(
+              'my-4 shrink-0',
+              isAdmin7Pill ? 'ms-3' : 'ms-2',
+              isAdmin7Pill ? isHovered && 'bg-background' : 'bg-control-surface px-4',
+            )}
+            size={isAdmin7Pill ? 'icon' : undefined}
+            variant={isAdmin7Pill ? (isHovered ? 'outline' : 'ghost') : 'outline'}
             asChild
           >
             <a

@@ -3151,6 +3151,7 @@ export function Filters<T = unknown>({
                       radius: controlRadius,
                     }),
                     isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
+                    controlShape === 'pill' && !isInFilterBar && 'font-medium',
                     controlShape === 'pill' &&
                       (isPillFilterBar && filters.length > 0
                         ? 'aspect-square border-0 !px-0 shadow-none'
