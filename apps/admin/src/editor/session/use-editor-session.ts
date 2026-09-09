@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
@@ -34,6 +33,7 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
+import { reportEditorError } from '@/editor/report-error';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -151,12 +151,6 @@ function pageStatus(status: PostStatus | undefined): PageStatus | undefined {
   return status === 'sent' ? undefined : status;
 }
 
-function reportError(error: unknown): void {
-  // eslint-disable-next-line no-console
-  console.error(error);
-  Sentry.captureException(error);
-}
-
 export function useEditorSession({
   postType,
   record,
@@ -191,7 +185,7 @@ export function useEditorSession({
       currentUserId,
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       onIdAcquired: setPersistedId,
-      onError: reportError,
+      onError: reportEditorError,
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;

@@ -7,8 +7,8 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
-import { reportKoenigError } from './koenig-error';
 import { editorFileUploader } from './koenig-file-uploader';
+import { reportKoenigError } from './report-error';
 
 const NOOP = () => {};
 
