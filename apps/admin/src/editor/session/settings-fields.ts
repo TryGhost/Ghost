@@ -59,9 +59,13 @@ export function identityFor(key: SettingsFieldKey, value: unknown): unknown {
 /** The column widths the schema gives these fields. */
 export const META_TITLE_MAX = 300;
 export const META_DESCRIPTION_MAX = 500;
+export const OG_TITLE_MAX = 300;
+export const OG_DESCRIPTION_MAX = 500;
 
 export const META_TITLE_TOO_LONG = `Meta Title cannot be longer than ${META_TITLE_MAX} characters.`;
 export const META_DESCRIPTION_TOO_LONG = `Meta Description cannot be longer than ${META_DESCRIPTION_MAX} characters.`;
+export const OG_TITLE_TOO_LONG = `Facebook Title cannot be longer than ${OG_TITLE_MAX} characters.`;
+export const OG_DESCRIPTION_TOO_LONG = `Facebook Description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
 
 /** `visibility: 'tiers'` with no tiers: the write contract drops the visibility. */
 export function tiersIncomplete(
@@ -91,10 +95,27 @@ export function overLength(value: string | null, max: number): boolean {
   return Array.from(value ?? '').length > max;
 }
 
+/** The settings keys the validator reads, and all a prepared save carries for it. */
+export const VALIDATED_SETTINGS_FIELD_KEYS = [
+  'visibility',
+  'tiers',
+  'meta_title',
+  'meta_description',
+  'og_title',
+  'og_description',
+] as const;
+
 export type ValidatedSettingsFields = Pick<
   EditorSettingsFields,
-  'visibility' | 'tiers' | 'meta_title' | 'meta_description'
+  (typeof VALIDATED_SETTINGS_FIELD_KEYS)[number]
 >;
+
+/** The validator's own view of the live document. */
+export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSettingsFields {
+  return Object.fromEntries(
+    VALIDATED_SETTINGS_FIELD_KEYS.map((key) => [key, fields[key]]),
+  ) as ValidatedSettingsFields;
+}
 
 /** The first rule the settings fields break, in the post validator's order. */
 export function settingsFieldError(fields: ValidatedSettingsFields): string | null {
@@ -106,6 +127,12 @@ export function settingsFieldError(fields: ValidatedSettingsFields): string | nu
   }
   if (overLength(fields.meta_description, META_DESCRIPTION_MAX)) {
     return META_DESCRIPTION_TOO_LONG;
+  }
+  if (overLength(fields.og_title, OG_TITLE_MAX)) {
+    return OG_TITLE_TOO_LONG;
+  }
+  if (overLength(fields.og_description, OG_DESCRIPTION_MAX)) {
+    return OG_DESCRIPTION_TOO_LONG;
   }
   return null;
 }

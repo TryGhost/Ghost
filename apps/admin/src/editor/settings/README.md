@@ -423,6 +423,32 @@ user agent as the pane renders. Hovering a glyph names the key it stands for;
 a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
 
+## Facebook card
+
+The card Facebook shows for the post is a pane, and every role that can open the
+panel can open it. Its image, title and description are the post's `og_` fields:
+the title and description are staged as the writer types and committed on the
+blur that ends the edit, and an uploaded or removed image is committed as it
+lands rather than waiting for a blur. Committing is not saving, so the save
+policy above still decides: a draft persists all three, and every other status
+stages them until Update. A field cleared back to empty is stored as no value.
+The image comes from the file picker or a drop; there is no Unsplash picker here.
+
+Nothing here is required, and each line falls back rather than emptying. The
+title is the Facebook title, else the meta title, else the title the writer is
+looking at, else `(Untitled)`. The description is the Facebook description, else
+the post's excerpt, else its meta description, else the excerpt the server
+generated for it, else the site's own description. The image is the Facebook
+image, else the post's feature image, else the site's social image and cover
+image. Those fallbacks are what the two inputs show as placeholders, truncated to
+40 and 150 characters, and what the card under them previews, truncated to 140
+and shown against the site's address without its scheme.
+
+The lengths that are limits are the column widths, 300 for the title and 500 for
+the description. Past one of those the field says so where the writer is typing
+and nothing is saved — not the field itself, and not a save the writer asks for,
+which is refused with the same message.
+
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every

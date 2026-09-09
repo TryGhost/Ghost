@@ -21,6 +21,7 @@ import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
+import { FacebookCardSection } from './facebook-card-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
@@ -80,6 +81,8 @@ export interface PostSettingsSidebarProps {
   siteUrl: string;
   /** Renders the cards of a version being previewed. */
   cardConfig: PostCardConfig;
+  /** The feature image the writer is looking at, which the social cards fall back to. */
+  featureImage: string | null;
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
@@ -94,6 +97,7 @@ export function PostSettingsSidebar({
   postType,
   siteUrl,
   cardConfig,
+  featureImage,
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
@@ -121,6 +125,14 @@ export function PostSettingsSidebar({
     'code-injection': <CodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <KeyboardShortcutsSection />,
+    'facebook-card': (
+      <FacebookCardSection
+        cardConfig={cardConfig}
+        featureImage={featureImage}
+        session={session}
+        siteUrl={siteUrl}
+      />
+    ),
     'post-history': (
       <PostHistorySection
         cardConfig={cardConfig}
