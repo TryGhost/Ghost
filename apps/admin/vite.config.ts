@@ -61,7 +61,12 @@ export default defineConfig(({ command }) => ({
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    // Acceptance tests run in a real browser via vitest.acceptance.config.ts
-    exclude: [...configDefaults.exclude, 'src/**/*.acceptance.test.tsx'],
+    // Acceptance and component tests run in a real browser via
+    // vitest.acceptance.config.ts
+    exclude: [
+      ...configDefaults.exclude,
+      'src/**/*.acceptance.test.tsx',
+      'src/**/*.component.test.tsx',
+    ],
   },
 }));
