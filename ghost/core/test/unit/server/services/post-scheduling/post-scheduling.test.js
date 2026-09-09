@@ -276,9 +276,11 @@ describe('PostScheduling', function () {
 
     it('same-key rebuild marks unschedule as bootstrap so the new job survives', async function () {
       // Outcome: when no previousKey is supplied (boot), unschedule and
-      // schedule use the same URL. PostScheduling must mark the
-      // unschedule as bootstrap so the adapter skips the tombstone and
-      // the about-to-be-scheduled job stays pingable.
+      // schedule use the same URL. For an adapter that has not declared it
+      // dedupes by idempotency key, PostScheduling must still unschedule so a
+      // persistent queue does not gain a duplicate per boot, and must mark it
+      // as bootstrap so the default adapter skips the tombstone and the
+      // about-to-be-scheduled job stays pingable.
       stubScheduledPost();
       internalKeys = new Map([
         ['ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaabbbb' })],
@@ -293,6 +295,54 @@ describe('PostScheduling', function () {
 
       sinon.assert.calledOnce(adapter.unschedule);
       assert.equal(adapter.unschedule.args[0][1].bootstrap, true);
+      sinon.assert.calledOnce(adapter.schedule);
+      assert(adapter.unschedule.calledBefore(adapter.schedule));
+    });
+
+    it('boot rebuild only schedules when the adapter dedupes by idempotency key', async function () {
+      // Outcome: the queued job and the reissued job share a URL and an
+      // idempotency key, and the adapter has declared that it treats the
+      // reissue as the job it already holds. There is nothing to delete, and
+      // sending a delete anyway is what let a late delete cancel the freshly
+      // registered job and drop the publish entirely.
+      stubScheduledPost();
+      adapter.dedupesByIdempotencyKey = true;
+      internalKeys = new Map([
+        ['ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaabbbb' })],
+      ]);
+
+      const service = new PostScheduling({
+        apiUrl: 'http://scheduler.local:1111/',
+        internalKeys,
+        adapter,
+      });
+      await service.rescheduleAll();
+
+      sinon.assert.notCalled(adapter.unschedule);
+      sinon.assert.calledOnce(adapter.schedule);
+      assert(adapter.schedule.args[0][0].extra.idempotencyKey);
+    });
+
+    it('rotation still unschedules when the adapter dedupes by idempotency key', async function () {
+      // Outcome: the flag only relaxes the same-key boot rebuild. Jobs signed
+      // under the previous key have different URLs and keys, so the adapter
+      // cannot dedupe them away and they must be removed explicitly.
+      stubScheduledPost();
+      adapter.dedupesByIdempotencyKey = true;
+      internalKeys = new Map([
+        ['ghost-scheduler', Promise.resolve({ id: 'k1', secret: 'aaaabbbb' })],
+      ]);
+
+      const service = new PostScheduling({
+        apiUrl: 'http://scheduler.local:1111/',
+        internalKeys,
+        adapter,
+      });
+      await service.rescheduleAll({ previousKey: { id: 'k1', secret: 'ccccdddd' } });
+
+      sinon.assert.calledOnce(adapter.unschedule);
+      assert.equal(adapter.unschedule.args[0][1].bootstrap, false);
+      sinon.assert.calledOnce(adapter.schedule);
     });
   });
 });
