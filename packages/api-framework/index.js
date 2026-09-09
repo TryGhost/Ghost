@@ -24,4 +24,4 @@
  * @typedef {Record<string, ControllerMethod | string> & Record<'docName', string>} Controller
  */
 
-module.exports = require('./src/api-framework');
+module.exports = require('./src/api-framework.ts');

@@ -1,8 +1,8 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('http');
 
-const Frame = require('./Frame');
-const headers = require('./headers');
+const Frame = require('./Frame.ts');
+const headers = require('./headers.ts');
 
 /**
  * @description HTTP wrapper.

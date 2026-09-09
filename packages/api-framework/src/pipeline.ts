@@ -3,9 +3,9 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const { sequence } = require('@tryghost/promise');
 
-const Frame = require('./Frame');
-const serializers = require('./serializers');
-const validators = require('./validators');
+const Frame = require('./Frame.ts');
+const serializers = require('./serializers/index.ts');
+const validators = require('./validators/index.ts');
 
 // Replacer for JSON.stringify that returns every plain object with its keys
 // sorted, so the serialized output is deterministic at every depth. Unlike an

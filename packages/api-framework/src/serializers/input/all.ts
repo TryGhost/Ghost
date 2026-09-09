@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('serializers:input:all');
 const _ = require('lodash');
-const utils = require('../../utils');
+const utils = require('../../utils/index.ts');
 
 const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
 
