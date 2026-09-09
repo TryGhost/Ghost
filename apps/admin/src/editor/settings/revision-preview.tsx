@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify';
-import { Suspense, useCallback, useMemo } from 'react';
+import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import {
@@ -88,7 +88,7 @@ export function RevisionPreview({
   currentTitle,
   currentExcerpt,
 }: RevisionPreviewProps) {
-  const editor = useMemo(() => loadKoenig(), []);
+  const editor = loadKoenig();
   const caption = sanitizeCaption(revision.featureImageCaption);
   const title = revision.title || currentTitle;
   const excerpt = revision.customExcerpt ?? currentExcerpt;
