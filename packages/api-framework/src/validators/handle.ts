@@ -18,7 +18,7 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
   debug('input begin');
 
   const tasks = [];
-  const sharedValidators = require('./input');
+  const sharedValidators = require('./input/index.ts');
 
   if (!apiValidators) {
     return Promise.reject(new errors.IncorrectUsageError());
