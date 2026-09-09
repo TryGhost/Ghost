@@ -7,18 +7,39 @@ const messages = {
   couldNotUnderstandRequest: 'Could not understand request.',
 };
 
-// If user requested an excerpt we need to ensure plaintext and custom_excerpt is also included so we can include it when we query the database.
+// If user requested an excerpt we need to ensure the DB columns used to build
+// it are selected (and kept through findPage's attribute pick). `excerpt` itself
+// is computed — not a column.
 const requiredForExcerpt = (requestedColumns) => {
-  if (requestedColumns) {
-    if (
-      (requestedColumns.includes('excerpt') &&
-        !requestedColumns.includes('plaintext') &&
-        !requestedColumns.includes('plaintext')) ||
-      !requestedColumns
-    ) {
-      requestedColumns.push('plaintext');
-      requestedColumns.push('custom_excerpt');
-    }
+  if (!requestedColumns || !requestedColumns.includes('excerpt')) {
+    return;
+  }
+
+  if (!requestedColumns.includes('plaintext')) {
+    requestedColumns.push('plaintext');
+  }
+  if (!requestedColumns.includes('custom_excerpt')) {
+    requestedColumns.push('custom_excerpt');
+  }
+  // Needed when storedPostMetadata prefers persisted auto_excerpt over plaintext.
+  if (!requestedColumns.includes('auto_excerpt')) {
+    requestedColumns.push('auto_excerpt');
+  }
+};
+
+// reading_time is a real column now, but compute fallback (flag off, or flag on
+// with a still-null stored value during partial backfill) needs html + feature_image.
+// Frame.options.columns stays as the caller's list; only the fetch clone is expanded.
+const requiredForReadingTime = (requestedColumns) => {
+  if (!requestedColumns || !requestedColumns.includes('reading_time')) {
+    return;
+  }
+
+  if (!requestedColumns.includes('html')) {
+    requestedColumns.push('html');
+  }
+  if (!requestedColumns.includes('feature_image')) {
+    requestedColumns.push('feature_image');
   }
 };
 
@@ -122,8 +143,9 @@ module.exports = function (Bookshelf) {
 
         const itemCollection = this.getFilteredCollection(options);
         const requestedColumns = options.columns;
-        // make sure we include plaintext and custom_excerpt if excerpt is requested
+        // Ensure DB columns needed to build computed `excerpt` are selected/kept
         requiredForExcerpt(requestedColumns);
+        requiredForReadingTime(requestedColumns);
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = unfilteredOptions.debug && process.env.NODE_ENV !== 'production';
@@ -222,8 +244,9 @@ module.exports = function (Bookshelf) {
         data = this.filterData(data);
         const model = this.forge(data);
         const requestedColumns = options.columns;
-        // make sure we include plaintext and custom_excerpt if excerpt is requested
+        // Ensure DB columns needed to build computed `excerpt` are selected/kept
         requiredForExcerpt(requestedColumns);
+        requiredForReadingTime(requestedColumns);
 
         // @NOTE: The API layer decides if this option is allowed
         if (options.filter) {

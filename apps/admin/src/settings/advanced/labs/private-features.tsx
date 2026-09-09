@@ -129,6 +129,12 @@ const features: Feature[] = [
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
   },
+  {
+    title: 'Stored post metadata',
+    description:
+      'Prefer persisted auto_excerpt and reading_time on Posts/Pages API responses instead of recomputing them on every request',
+    flag: 'storedPostMetadata',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

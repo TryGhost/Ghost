@@ -115,6 +115,51 @@ describe('Models: crud', function () {
 
       assert.equal(fetchStub.args[0][0].lock, 'forUpdate');
     });
+
+    it('selects plaintext, custom_excerpt, and auto_excerpt when columns include excerpt', async function () {
+      const data = {
+        id: 670,
+      };
+      const unfilteredOptions = {
+        columns: ['excerpt'],
+      };
+      const model = Base.Model.forge({});
+      const fetchedModel = Base.Model.forge({});
+      sinon.stub(Base.Model, 'forge').returns(model);
+      sinon
+        .stub(Base.Model.prototype, 'permittedAttributes')
+        .returns(['excerpt', 'plaintext', 'custom_excerpt', 'auto_excerpt']);
+      const fetchStub = sinon.stub(model, 'fetch').resolves(fetchedModel);
+
+      await Base.Model.findOne(data, unfilteredOptions);
+
+      assert.deepEqual(fetchStub.args[0][0].columns, [
+        'excerpt',
+        'plaintext',
+        'custom_excerpt',
+        'auto_excerpt',
+      ]);
+    });
+
+    it('selects html and feature_image when columns include reading_time', async function () {
+      const data = {
+        id: 671,
+      };
+      const unfilteredOptions = {
+        columns: ['reading_time'],
+      };
+      const model = Base.Model.forge({});
+      const fetchedModel = Base.Model.forge({});
+      sinon.stub(Base.Model, 'forge').returns(model);
+      sinon
+        .stub(Base.Model.prototype, 'permittedAttributes')
+        .returns(['reading_time', 'html', 'feature_image']);
+      const fetchStub = sinon.stub(model, 'fetch').resolves(fetchedModel);
+
+      await Base.Model.findOne(data, unfilteredOptions);
+
+      assert.deepEqual(fetchStub.args[0][0].columns, ['reading_time', 'html', 'feature_image']);
+    });
   });
 
   describe('edit', function () {
