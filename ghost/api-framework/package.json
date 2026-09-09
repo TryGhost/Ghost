@@ -1,0 +1,45 @@
+{
+  "name": "@tryghost/api-framework",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "ghost/api-framework"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint index.js lib/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/debug": "catalog:api-framework-migration",
+    "@tryghost/errors": "catalog:api-framework-migration",
+    "@tryghost/promise": "catalog:api-framework-migration",
+    "@tryghost/tpl": "catalog:api-framework-migration",
+    "@tryghost/validator": "catalog:api-framework-migration",
+    "lodash": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "sinon": "catalog:api-framework-migration",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "migration",
+    "reason": "Imported from TryGhost/framework with its history. The legacy CommonJS source still needs conversion to the internal TypeScript and ESM package standard."
+  }
+}

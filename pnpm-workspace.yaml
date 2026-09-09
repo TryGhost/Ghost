@@ -226,6 +226,15 @@ catalog:
   '@tryghost/validator': 3.2.12
 
 catalogs:
+  # Temporary source-compatible versions for the api-framework history import.
+  # Reassess these when the package is modernized onto Ghost's golden path.
+  api-framework-migration:
+    '@tryghost/debug': 2.3.13
+    '@tryghost/errors': 3.3.13
+    '@tryghost/promise': 2.3.13
+    '@tryghost/tpl': 2.3.13
+    '@tryghost/validator': 3.2.13
+    sinon: 22.1.0
   react17:
     react: 17.0.2
     react-dom: 17.0.2
@@ -243,6 +252,9 @@ overrides:
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
   cron-validate: 1.4.5
   'knex-migrator>knex': 2.4.2
+  # Preserve the source release for the imported package while the global
+  # @tryghost/errors override continues to serve every other consumer.
+  '@tryghost/api-framework>@tryghost/errors': 'catalog:api-framework-migration'
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   '@tryghost/nql': 'catalog:'
