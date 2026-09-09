@@ -26,6 +26,7 @@ import {
   uploadErrorMessage,
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   OG_DESCRIPTION_MAX,
   OG_DESCRIPTION_TOO_LONG,
@@ -108,7 +109,9 @@ export function FacebookCardSection({
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        session.editSettings({ og_image: getImageUrl(await uploadImage({ file })) });
+        session.editSettings({
+          og_image: getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })),
+        });
       } catch (error) {
         toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }

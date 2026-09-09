@@ -2,7 +2,6 @@ import DOMPurify from 'dompurify';
 import { Suspense, useCallback, useMemo } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { koenigFileUploadTypes, useKoenigFileUpload } from '@tryghost/admin-x-framework/hooks';
 import {
   postHistoryPreview,
   postHistoryPreviewBody,
@@ -18,12 +17,8 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from '@/editor/card-config';
 import { reportKoenigError } from '@/editor/koenig-error';
+import { editorFileUploader } from '@/editor/koenig-file-uploader';
 import type { RevisionEntry } from './post-history';
-
-const fileUploader = {
-  useFileUpload: useKoenigFileUpload,
-  fileTypes: koenigFileUploadTypes,
-};
 
 /** The part of Lexical's editor the loader's minimal instance type leaves out. */
 type LexicalEditable = { setEditable: (editable: boolean) => void };
@@ -62,7 +57,7 @@ function RevisionBody({
       <KoenigComposer
         cardConfig={cardConfig}
         darkMode={darkMode}
-        fileUploader={fileUploader}
+        fileUploader={editorFileUploader}
         initialEditorState={lexical ?? undefined}
         onError={reportKoenigError}
       >

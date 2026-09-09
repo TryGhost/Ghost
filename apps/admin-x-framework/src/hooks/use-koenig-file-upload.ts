@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { getGhostPaths } from '../utils/helpers';
-import { useFetchApi } from '../utils/api/fetch-api';
+import { useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 
 export const koenigFileUploadTypes = {
   image: {
@@ -55,6 +55,10 @@ interface UploadOptions {
   formData?: Record<string, string | Blob>;
 }
 
+type UploadRequestOptions = Pick<RequestOptions, 'sessionExpiryRedirect'>;
+
+const DEFAULT_REQUEST_OPTIONS: UploadRequestOptions = {};
+
 interface UploadError {
   fileName: string;
   message: string;
@@ -86,7 +90,11 @@ const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null |
   return typeof current === 'string' ? current : null;
 };
 
-export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileUploadHook => {
+/** The session-expiry policy applies to every upload this hook makes. */
+export const useKoenigFileUpload = (
+  type: KoenigFileUploadType = 'image',
+  requestOptions: UploadRequestOptions = DEFAULT_REQUEST_OPTIONS,
+): FileUploadHook => {
   const [progress, setProgress] = useState(0);
   const [isLoading, setLoading] = useState(false);
   const [errors, setErrors] = useState<UploadError[]>([]);
@@ -164,6 +172,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
 
     try {
       const uploadResponse = await fetchApi(url, {
+        ...requestOptions,
         method: koenigFileUploadTypes[type].requestMethod,
         body: fileFormData,
         onUploadProgress(uploadProgress) {
