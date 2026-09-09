@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const moment = require('moment');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
+const models = require('../../models');
 const api = require('../../api').endpoints;
 
 const messages = {
@@ -27,6 +28,16 @@ const NO_OP = { scheduledResource: null, preScheduledResource: null };
  *   `scheduledResource: null` when there was nothing to publish yet
  */
 exports.publish = async (resourceType, id, force, options) => {
+  // A scheduler may deliver the same job twice, and the two deliveries can
+  // overlap. Read and edit inside one transaction with the row locked so the
+  // second delivery waits for the first to commit, then finds nothing left to
+  // publish and takes the no-op path instead of publishing (and emailing) again.
+  if (!options.transacting) {
+    return models.Base.transaction((transacting) =>
+      exports.publish(resourceType, id, force, { ...options, transacting, forUpdate: true }),
+    );
+  }
+
   const publishAPostBySchedulerToleranceInMinutes =
     config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
@@ -43,6 +54,13 @@ exports.publish = async (resourceType, id, force, options) => {
     }
 
     throw err;
+  }
+
+  // The read above is filtered to scheduled resources, so a resource that
+  // another delivery has already published normally surfaces as NotFound.
+  // Keep an explicit check so the outcome doesn't depend on that filter.
+  if (preScheduledResource.status !== 'scheduled') {
+    return NO_OP;
   }
 
   const publishedAtMoment = moment(preScheduledResource.published_at);
