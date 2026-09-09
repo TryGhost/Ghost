@@ -85,6 +85,17 @@ history_status=$(gh api "repos/$repo/compare/$split_tip...$head_sha" --jq '.stat
 [[ $history_status == ahead || $history_status == identical ]] ||
     fail "source split tip is not an ancestor of the PR head (compare status: $history_status)"
 
+subtree_dir=$(gh api --paginate "repos/$repo/pulls/$pr_number/commits" \
+    --jq '.[].commit.message' | sed -n 's/^git-subtree-dir: //p' | sort -u)
+[[ -n $subtree_dir ]] ||
+    fail "PR commits do not contain git-subtree-dir metadata"
+[[ $subtree_dir != *$'\n'* ]] ||
+    fail "PR contains more than one git-subtree-dir: $subtree_dir"
+[[ $subtree_dir =~ ^packages/[A-Za-z0-9._-]+$ ]] ||
+    fail "subtree destination must be one direct child of packages/ (found: $subtree_dir)"
+gh api "repos/$repo/contents/$subtree_dir/package.json?ref=$head_sha" >/dev/null ||
+    fail "reviewed PR head does not contain $subtree_dir/package.json"
+
 original_setting=$(gh api "repos/$repo" --jq '.allow_merge_commit')
 [[ $original_setting == true || $original_setting == false ]] ||
     fail "could not read the repository merge-commit setting"
@@ -94,6 +105,7 @@ printf '  repository: %s\n' "$repo"
 printf '  PR:         %s\n' "$pr_number"
 printf '  head:       %s\n' "$head_sha"
 printf '  split tip:  %s\n' "$split_tip"
+printf '  destination:%s\n' " $subtree_dir"
 printf '  merge state:%s\n' " $merge_state"
 printf '  setting:    allow_merge_commit=%s\n' "$original_setting"
 
