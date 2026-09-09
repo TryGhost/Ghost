@@ -36,7 +36,7 @@ export interface SendingEmail {
 
 export interface SendingBatch {
   status: StoredSendingStatus;
-  recipientCount: number;
+  recipientCount: number | null;
   createdAt: Date;
   updatedAt: Date;
   accountedRecipientCount?: number;
@@ -70,8 +70,11 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
     (sum, batch) => sum + completedRecipients(batch, phase),
     0,
   );
+  const hasUnknownRecipients = batches.some((batch) => batch.recipientCount === null);
   const total =
-    phase === 'preparing' ? Math.max(email.recipientCount, preparedCount) : preparedCount;
+    phase === 'preparing' || hasUnknownRecipients
+      ? Math.max(email.recipientCount, preparedCount)
+      : preparedCount;
 
   if (email.status === 'failed') {
     return {
@@ -103,13 +106,13 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
 }
 
 function sumRecipients(batches: SendingBatch[]): number {
-  return batches.reduce((sum, batch) => sum + batch.recipientCount, 0);
+  return batches.reduce((sum, batch) => sum + (batch.recipientCount ?? 0), 0);
 }
 
 function completedRecipients(batch: SendingBatch, phase: SendingPhase): number {
   return phase === 'submitting'
-    ? (batch.accountedRecipientCount ?? batch.recipientCount)
-    : batch.recipientCount;
+    ? (batch.accountedRecipientCount ?? batch.recipientCount ?? 0)
+    : (batch.recipientCount ?? 0);
 }
 
 // A batch that fails is only retried together with its email, so within an attempt it is finished work.
