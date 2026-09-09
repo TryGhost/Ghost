@@ -1,6 +1,6 @@
 import { useCallback, useId } from 'react';
 import { toast } from 'sonner';
-import { Input, Label, LoadingIndicator, Textarea, XLogo } from '@tryghost/shade/components';
+import { Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -9,14 +9,9 @@ import {
   ImageUploadImage,
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import {
-  JSONError,
-  RequestEntityTooLargeError,
-  UnsupportedMediaTypeError,
-} from '@tryghost/admin-x-framework/errors';
 import {
   addXImageLabel,
   removeXImageButton,
@@ -26,6 +21,12 @@ import {
   settingsXPreviewImage,
   settingsXTitleInput,
 } from '@tryghost/test-data/selectors/editor';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  UNSUPPORTED_IMAGE_MESSAGE,
+  uploadErrorMessage,
+} from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
 import {
   X_DESCRIPTION_MAX,
@@ -35,48 +36,20 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { siteDomain } from './facebook-card-fields';
+import { FieldError } from './field-error';
+import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
-  xCardDescription,
-  xCardImage,
-  xCardTitle,
-  xDescriptionPlaceholder,
-  xPreviewDescription,
-  xTitlePlaceholder,
-} from './x-card-fields';
+  SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH,
+  SOCIAL_PREVIEW_LENGTH,
+  SOCIAL_TITLE_PLACEHOLDER_LENGTH,
+  siteDomain,
+  socialDescription,
+  socialImage,
+  socialTitle,
+} from './social-card-fields';
 
-const ACCEPTED_IMAGE_TYPES = {
-  'image/gif': ['.gif'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
-  'image/svg+xml': ['.svg', '.svgz'],
-  'image/webp': ['.webp'],
-};
-
-const UNSUPPORTED_IMAGE_MESSAGE =
-  'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
-
-function uploadErrorMessage(error: unknown): string {
-  if (error instanceof UnsupportedMediaTypeError) {
-    return UNSUPPORTED_IMAGE_MESSAGE;
-  }
-  if (error instanceof RequestEntityTooLargeError) {
-    return 'The image you uploaded was larger than the maximum file size your server allows.';
-  }
-  if (error instanceof JSONError && error.data?.errors[0]?.message) {
-    return error.data.errors[0].message;
-  }
-  return 'Couldn’t upload the X image.';
-}
-
-function FieldError({ id, message }: { id: string; message: string }) {
-  return (
-    <Text className="text-red" id={id} role="alert" size="sm">
-      {message}
-    </Text>
-  );
-}
+const IMAGE_SUBJECT = 'X image';
 
 export interface XCardSectionProps {
   session: EditorSessionHandle;
@@ -107,22 +80,22 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
     ? X_DESCRIPTION_TOO_LONG
     : null;
 
-  const previewTitle = xCardTitle({
-    twitterTitle,
+  const previewTitle = socialTitle({
+    own: twitterTitle,
     metaTitle: session.settings.meta_title ?? '',
     title: session.bind.title,
   });
-  const previewDescription = xCardDescription({
-    twitterDescription,
+  const previewDescription = socialDescription({
+    own: twitterDescription,
     customExcerpt: session.settings.custom_excerpt ?? '',
     metaDescription: session.settings.meta_description ?? '',
     postExcerpt: session.loadedRecord?.excerpt ?? '',
     siteDescription: cardConfig.siteDescription,
   });
-  const previewImage = xCardImage({
-    twitterImage,
+  const previewImage = socialImage({
+    own: twitterImage,
     featureImage: featureImage ?? '',
-    siteTwitterImage: cardConfig.siteTwitterImage ?? '',
+    siteSocialImage: cardConfig.siteTwitterImage ?? '',
     siteCoverImage: cardConfig.siteCoverImage ?? '',
   });
 
@@ -131,7 +104,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
       try {
         session.editSettings({ twitter_image: getImageUrl(await uploadImage({ file })) });
       } catch (error) {
-        toast.error(uploadErrorMessage(error));
+        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
     },
     [session, uploadImage],
@@ -140,16 +113,16 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
   return (
     <SettingsSubview
       closeLabel="Close X card panel"
-      icon={<XLogo />}
+      icon={<BrandIcon className="size-4" name="twitter-x" />}
       id="x-card"
       label="X card"
       title="X card"
       wide
     >
-      <ImageUpload className="h-40" data-testid={settingsXImage}>
-        {twitterImage ? (
+      {twitterImage ? (
+        <ImageUpload className="max-h-[480px]" data-testid={settingsXImage}>
           <ImageUploadPreview>
-            <ImageUploadImage alt="" src={twitterImage} />
+            <ImageUploadImage role="presentation" src={twitterImage} />
             <ImageUploadActions>
               <ImageUploadAction
                 aria-label={removeXImageButton}
@@ -159,10 +132,11 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
               </ImageUploadAction>
             </ImageUploadActions>
           </ImageUploadPreview>
-        ) : (
+        </ImageUpload>
+      ) : (
+        <ImageUpload className="h-[120px]" data-testid={settingsXImage}>
           <ImageUploadDropzone
             accept={ACCEPTED_IMAGE_TYPES}
-            className="group/dropzone transition-colors hover:bg-interactive-hover"
             disabled={isPending}
             inputAriaLabel={addXImageLabel}
             noDragEventsBubbling
@@ -172,19 +146,14 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
             {isPending ? (
               <LoadingIndicator size="sm" />
             ) : (
-              <Stack align="center" gap="sm">
-                <LucideIcon.Upload
-                  aria-hidden="true"
-                  className="size-6 stroke-[1.5px] text-muted-foreground transition-colors group-hover/dropzone:text-foreground"
-                />
-                <span className="text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground">
-                  {addXImageLabel}
-                </span>
-              </Stack>
+              <Inline gap="sm">
+                <LucideIcon.Plus aria-hidden="true" className="size-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{addXImageLabel}</span>
+              </Inline>
             )}
           </ImageUploadDropzone>
-        )}
-      </ImageUpload>
+        </ImageUpload>
+      )}
 
       <Stack gap="sm">
         <Label htmlFor={titleId}>X title</Label>
@@ -193,7 +162,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
           aria-invalid={!!titleError}
           data-testid={settingsXTitleInput}
           id={titleId}
-          placeholder={xTitlePlaceholder(previewTitle)}
+          placeholder={truncate(previewTitle, SOCIAL_TITLE_PLACEHOLDER_LENGTH)}
           value={twitterTitle}
           onBlur={session.commitSettings}
           // A cleared field is stored as no value, the way the excerpt is.
@@ -209,7 +178,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
           aria-invalid={!!descriptionError}
           data-testid={settingsXDescriptionInput}
           id={descriptionId}
-          placeholder={xDescriptionPlaceholder(previewDescription)}
+          placeholder={truncate(previewDescription, SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH)}
           rows={3}
           value={twitterDescription}
           onBlur={session.commitSettings}
@@ -244,7 +213,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
               {previewTitle}
             </Text>
             <Text size="sm" tone="secondary">
-              {xPreviewDescription(previewDescription)}
+              {truncate(previewDescription, SOCIAL_PREVIEW_LENGTH)}
             </Text>
             <Text size="sm" tone="secondary">
               {siteDomain(siteUrl)}

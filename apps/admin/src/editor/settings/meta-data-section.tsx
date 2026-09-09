@@ -15,6 +15,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { FieldError } from './field-error';
 import {
   META_DESCRIPTION_RECOMMENDED,
   META_TITLE_RECOMMENDED,
@@ -38,14 +39,6 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
       <span className={cn('font-bold', used > recommended ? 'text-red' : 'text-green')}>
         {formatNumber(used)}
       </span>
-    </Text>
-  );
-}
-
-function FieldError({ id, message }: { id: string; message: string }) {
-  return (
-    <Text className="text-red" id={id} role="alert" size="sm">
-      {message}
     </Text>
   );
 }
