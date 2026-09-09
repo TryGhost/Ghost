@@ -238,7 +238,7 @@ describe('Post analytics overview', () => {
 
     await expect.element(page.getByText('Sending emails')).toBeVisible();
     await expect.element(page.getByText(/500 of 1,000/)).toBeVisible();
-    await expect.element(page.getByText('This newsletter is still sending')).toBeVisible();
+    await expect.element(page.getByText('Your newsletter is being sent')).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
@@ -495,9 +495,7 @@ describe('Post analytics overview', () => {
     });
 
     await expect.element(page.getByText('Newsletter performance')).toBeVisible();
-    await expect
-      .element(page.getByText('This newsletter is still sending'))
-      .not.toBeInTheDocument();
+    await expect.element(page.getByText('Your newsletter is being sent')).not.toBeInTheDocument();
     await expect.element(postAnalyticsScreen.emailSendingStatusBanner()).not.toBeInTheDocument();
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await app.unmount();
