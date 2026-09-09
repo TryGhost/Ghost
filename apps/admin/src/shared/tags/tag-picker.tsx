@@ -72,8 +72,6 @@ export function TagPicker({
     searchParams: {
       limit: TAG_PAGE_LIMIT,
       order: 'name asc',
-      // No row shows a post count, so the join behind one is wasted per keystroke.
-      include: '',
       ...(debouncedTerm ? { filter: `tags.name:~${escapeNqlString(debouncedTerm)}` } : {}),
     },
   });

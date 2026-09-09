@@ -290,6 +290,8 @@ describe('Posts list bulk actions', () => {
       await postsListScreen.tagSearchInput().fill('C++');
 
       await expect.poll(() => tags.lastRequest?.filter).toContain("tags.name:~'C++'");
+      // An empty include makes the real API refuse the search with withRelated.
+      expect(new URL(tags.lastRequest!.url).searchParams.get('include')).not.toBe('');
       await expect.element(postsListScreen.tagOption('C++')).toBeVisible();
       await expect(postsListScreen.tagOption(/Create/)).toHaveCount(0);
     });
