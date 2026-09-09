@@ -58,6 +58,23 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
+const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>) => {
+  const { completed, total } = sending.progress;
+
+  if (total === 0) {
+    return null;
+  }
+
+  // Preparation reports a percentage so the recipient count only climbs
+  // once, during sending, while the audience size stays on screen throughout.
+  if (sending.status === 'preparing') {
+    const percent = Math.min(100, Math.floor((completed / total) * 100));
+    return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
+  }
+
+  return getEmailSendingProgressCopy(sending, null).detail;
+};
+
 const failureDetail = (
   sending: Extract<EmailSendingState, { status: 'failed' }>,
   error?: string | null,
@@ -100,9 +117,9 @@ const EmailSendingStatusBanner = () => {
       ? post?.email?.error || 'Something went wrong while sending this email.'
       : failureDetail(sending, post?.email?.error);
   } else {
-    const progressCopy = getEmailSendingProgressCopy(sending, estimate);
+    const progressCopy = getEmailSendingProgressCopy(sending, null);
     title = progressCopy.title;
-    detail = progressCopy.detail;
+    detail = activeDetail(sending);
   }
 
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
@@ -129,6 +146,11 @@ const EmailSendingStatusBanner = () => {
             )}
           </Text>
         </Inline>
+        {!isFailed && estimate && (
+          <Text className="shrink-0 tabular-nums" size="sm" tone="secondary">
+            {estimate}
+          </Text>
+        )}
         {isFailed && !hasUnknownDeliveryOutcome && (
           <Button
             className="shrink-0"
