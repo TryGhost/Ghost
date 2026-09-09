@@ -1,6 +1,19 @@
-const debug = require('@tryghost/debug')('validators:handle');
-const errors = require('@tryghost/errors');
-const { sequence } = require('@tryghost/promise');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import promiseUtils from '@tryghost/promise';
+import type Frame from '../frame.ts';
+import type { ApiConfiguration } from '../pipeline.ts';
+import * as sharedValidators from './input/index.ts';
+
+const debug = createDebug('validators:handle');
+const { IncorrectUsageError } = errors;
+const { sequence } = promiseUtils;
+type AsyncResult = unknown | Promise<unknown>;
+interface Validator {
+  (apiConfig: ApiConfiguration, frame: Frame): AsyncResult;
+  [name: string]: Validator;
+}
+type ValidatorRegistry = Record<string, Validator>;
 
 /**
  * @description Shared input validation handler.
@@ -14,18 +27,21 @@ const { sequence } = require('@tryghost/promise');
  * @param {Object} apiValidators - Target API validators
  * @param {import('@tryghost/api-framework').Frame} frame
  */
-module.exports.input = (apiConfig, apiValidators, frame) => {
+export const input = (
+  apiConfig?: ApiConfiguration,
+  apiValidatorsInput?: Record<string, unknown>,
+  frame?: Frame,
+) => {
   debug('input begin');
 
-  const tasks = [];
-  const sharedValidators = require('./input/index.ts');
-
-  if (!apiValidators) {
-    return Promise.reject(new errors.IncorrectUsageError());
+  const apiValidators = apiValidatorsInput as ValidatorRegistry;
+  const tasks: Array<() => unknown> = [];
+  if (!apiValidators || !frame) {
+    return Promise.reject(new IncorrectUsageError());
   }
 
   if (!apiConfig) {
-    return Promise.reject(new errors.IncorrectUsageError());
+    return Promise.reject(new IncorrectUsageError());
   }
 
   // ##### SHARED ALL VALIDATION
@@ -34,30 +50,37 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
     return sharedValidators.all.all(apiConfig, frame);
   });
 
-  if (sharedValidators.all[apiConfig.method]) {
+  const sharedAll = sharedValidators.all as unknown as Validator;
+  const sharedMethod = apiConfig.method ? sharedAll[apiConfig.method] : undefined;
+  if (sharedMethod) {
     tasks.push(function allShared() {
-      return sharedValidators.all[apiConfig.method](apiConfig, frame);
+      return sharedMethod(apiConfig, frame);
     });
   }
 
   // ##### API VERSION VALIDATION
 
-  if (apiValidators.all) {
+  const allValidators = apiValidators.all;
+  const allMethodValidator = apiConfig.method ? allValidators?.[apiConfig.method] : undefined;
+  if (allMethodValidator) {
     tasks.push(function allAPIVersion() {
-      return apiValidators.all[apiConfig.method](apiConfig, frame);
+      return allMethodValidator(apiConfig, frame);
     });
   }
 
-  if (apiValidators[apiConfig.docName]) {
-    if (apiValidators[apiConfig.docName].all) {
+  const resourceValidators = apiConfig.docName ? apiValidators[apiConfig.docName] : undefined;
+  if (resourceValidators) {
+    const allResourceValidator = resourceValidators.all;
+    if (allResourceValidator) {
       tasks.push(function docNameAll() {
-        return apiValidators[apiConfig.docName].all(apiConfig, frame);
+        return allResourceValidator(apiConfig, frame);
       });
     }
 
-    if (apiValidators[apiConfig.docName][apiConfig.method]) {
+    const methodValidator = apiConfig.method ? resourceValidators[apiConfig.method] : undefined;
+    if (methodValidator) {
       tasks.push(function docNameMethod() {
-        return apiValidators[apiConfig.docName][apiConfig.method](apiConfig, frame);
+        return methodValidator(apiConfig, frame);
       });
     }
   }
@@ -65,3 +88,5 @@ module.exports.input = (apiConfig, apiValidators, frame) => {
   debug('input ready');
   return sequence(tasks);
 };
+
+export default { input };

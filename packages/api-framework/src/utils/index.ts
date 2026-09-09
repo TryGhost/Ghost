@@ -1,5 +1,1 @@
-module.exports = {
-  get options() {
-    return require('./options.ts');
-  },
-};
+export * as options from './options.ts';

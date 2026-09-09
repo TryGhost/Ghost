@@ -1,7 +1,7 @@
-const errors = require('@tryghost/errors');
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const shared = require('../../../');
+import * as errors from '@tryghost/errors';
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import * as shared from '../../../src/index.ts';
 
 describe('validators/input/all', function () {
   afterEach(function () {
@@ -249,6 +249,7 @@ describe('validators/input/all', function () {
         };
 
         await assert.rejects(shared.validators.input.all.all({}, frame), (err) => {
+          assert.ok(err instanceof Error);
           assert.equal(err.message, 'Validation (matches) failed for id');
           return true;
         });
@@ -282,6 +283,7 @@ describe('validators/input/all', function () {
         };
 
         await assert.rejects(shared.validators.input.all.all({}, frame), (err) => {
+          assert.ok(err instanceof Error);
           assert.equal(err.message, 'Validation (matches) failed for limit');
           return true;
         });
@@ -342,20 +344,20 @@ describe('validators/input/all', function () {
 
       const apiConfig = {};
 
-      return shared.validators.input.all
-        .browse(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.ok(err);
-        });
+      const result = shared.validators.input.all.browse(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.ok(err);
+      });
     });
   });
 
   describe('read', function () {
     it('default', function () {
-      sinon.stub(shared.validators.input.all, 'browse');
+      const browseStub = sinon.stub(shared.validators.input.all, 'browse');
 
       const frame = {
+        data: {},
         options: {
           context: {},
         },
@@ -364,7 +366,7 @@ describe('validators/input/all', function () {
       const apiConfig = {};
 
       shared.validators.input.all.read(apiConfig, frame);
-      assert.equal(shared.validators.input.all.browse.calledOnce, true);
+      assert.equal(browseStub.calledOnce, true);
     });
   });
 
@@ -378,12 +380,11 @@ describe('validators/input/all', function () {
         docName: 'docName',
       };
 
-      return shared.validators.input.all
-        .add(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.ok(err);
-        });
+      const result = shared.validators.input.all.add(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.ok(err);
+      });
     });
 
     it('fails with docName', function () {
@@ -397,12 +398,11 @@ describe('validators/input/all', function () {
         docName: 'docName',
       };
 
-      return shared.validators.input.all
-        .add(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.ok(err);
-        });
+      const result = shared.validators.input.all.add(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.ok(err);
+      });
     });
 
     it('fails for required field', function () {
@@ -425,13 +425,12 @@ describe('validators/input/all', function () {
         },
       };
 
-      return shared.validators.input.all
-        .add(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.ok(err);
-          assert.equal(err.message, 'Validation (FieldIsRequired) failed for ["b"]');
-        });
+      const result = shared.validators.input.all.add(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.ok(err);
+        assert.equal(err.message, 'Validation (FieldIsRequired) failed for ["b"]');
+      });
     });
 
     it('fails for invalid field', function () {
@@ -455,13 +454,12 @@ describe('validators/input/all', function () {
         },
       };
 
-      return shared.validators.input.all
-        .add(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.ok(err);
-          assert.equal(err.message, 'Validation (FieldIsInvalid) failed for ["b"]');
-        });
+      const result = shared.validators.input.all.add(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.ok(err);
+        assert.equal(err.message, 'Validation (FieldIsInvalid) failed for ["b"]');
+      });
     });
 
     it('success', function () {
@@ -503,48 +501,45 @@ describe('validators/input/all', function () {
         },
       };
 
-      return shared.validators.input.all
-        .edit(apiConfig, frame)
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.equal(err instanceof errors.BadRequestError, true);
-        });
+      const result = shared.validators.input.all.edit(apiConfig, frame);
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.equal(err instanceof errors.BadRequestError, true);
+      });
     });
 
     it('returns add promise result when add fails', function () {
       sinon
         .stub(shared.validators.input.all, 'add')
         .returns(Promise.reject(new Error('add-failed')));
-      return shared.validators.input.all
-        .edit({}, {})
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.equal(err.message, 'add-failed');
-        });
+      const result = shared.validators.input.all.edit({}, {});
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.equal(err.message, 'add-failed');
+      });
     });
 
     it('checks id mismatch after successful add for non posts/tags', function () {
       sinon.stub(shared.validators.input.all, 'add').returns(undefined);
 
-      return shared.validators.input.all
-        .edit(
-          {
-            docName: 'users',
+      const result = shared.validators.input.all.edit(
+        {
+          docName: 'users',
+        },
+        {
+          options: {
+            id: 'id-1',
           },
-          {
-            options: {
-              id: 'id-1',
-            },
-            data: {
-              users: [{ id: 'id-2' }],
-            },
+          data: {
+            users: [{ id: 'id-2' }],
           },
-        )
-        .then(Promise.reject)
-        .catch((err) => {
-          assert.equal(err instanceof errors.BadRequestError, true);
-          assert.equal(err.message, 'Invalid id provided.');
-        });
+        },
+      );
+      assert.ok(result);
+      return result.then(Promise.reject).catch((err) => {
+        assert.equal(err instanceof errors.BadRequestError, true);
+        assert.equal(err.message, 'Invalid id provided.');
+      });
     });
 
     it('does not check id mismatch for posts/tags', function () {
@@ -566,27 +561,31 @@ describe('validators/input/all', function () {
 
   describe('delegated methods', function () {
     it('changePassword delegates to add', function () {
-      sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+      const expected = new Promise<never>(() => {});
+      sinon.stub(shared.validators.input.all, 'add').returns(expected);
       const result = shared.validators.input.all.changePassword({}, {});
-      assert.equal(result, 'add-result');
+      assert.equal(result, expected);
     });
 
     it('resetPassword delegates to add', function () {
-      sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+      const expected = new Promise<never>(() => {});
+      sinon.stub(shared.validators.input.all, 'add').returns(expected);
       const result = shared.validators.input.all.resetPassword({}, {});
-      assert.equal(result, 'add-result');
+      assert.equal(result, expected);
     });
 
     it('setup delegates to add', function () {
-      sinon.stub(shared.validators.input.all, 'add').returns('add-result');
+      const expected = new Promise<never>(() => {});
+      sinon.stub(shared.validators.input.all, 'add').returns(expected);
       const result = shared.validators.input.all.setup({}, {});
-      assert.equal(result, 'add-result');
+      assert.equal(result, expected);
     });
 
     it('publish delegates to browse', function () {
-      sinon.stub(shared.validators.input.all, 'browse').returns('browse-result');
+      const expected = new Promise<never>(() => {});
+      sinon.stub(shared.validators.input.all, 'browse').returns(expected);
       const result = shared.validators.input.all.publish({}, {});
-      assert.equal(result, 'browse-result');
+      assert.equal(result, expected);
     });
   });
 });

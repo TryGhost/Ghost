@@ -1,9 +1,9 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import * as apiFramework from '../src/index.ts';
+import * as serializers from '../src/serializers/index.ts';
 
 describe('api-framework module exports', function () {
   it('exposes all lazy getters', function () {
-    const apiFramework = require('../src/api-framework.ts');
-
     assert.ok(apiFramework.headers);
     assert.ok(apiFramework.http);
     assert.ok(apiFramework.Frame);
@@ -14,7 +14,6 @@ describe('api-framework module exports', function () {
   });
 
   it('exposes serializer output module', function () {
-    const serializers = require('../src/serializers/index.ts');
     assert.deepEqual(serializers.output, {});
   });
 });

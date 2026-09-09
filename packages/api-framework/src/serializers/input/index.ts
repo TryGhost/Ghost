@@ -1,5 +1,1 @@
-module.exports = {
-  get all() {
-    return require('./all.ts');
-  },
-};
+export { default as all } from './all.ts';

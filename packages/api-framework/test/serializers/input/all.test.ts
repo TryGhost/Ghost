@@ -1,22 +1,20 @@
-const assert = require('node:assert/strict');
-const shared = require('../../../');
+import assert from 'node:assert/strict';
+import * as shared from '../../../src/index.ts';
 
 describe('serializers/input/all', function () {
   describe('all', function () {
     it('transforms into model readable format', function () {
       const apiConfig = {};
-      const frame = {
-        original: {
-          include: 'tags',
-          fields: 'id,status',
-          formats: 'html',
-        },
-        options: {
-          include: 'tags',
-          fields: 'id,status',
-          formats: 'html',
-          context: {},
-        },
+      const frame = new shared.Frame({
+        include: 'tags',
+        fields: 'id,status',
+        formats: 'html',
+      });
+      frame.options = {
+        include: 'tags',
+        fields: 'id,status',
+        formats: 'html',
+        context: {},
       };
 
       shared.serializers.input.all.all(apiConfig, frame);
@@ -38,14 +36,13 @@ describe('serializers/input/all', function () {
 
     describe('extra allowed internal options', function () {
       it('internal access', function () {
-        const frame = {
-          options: {
-            context: {
-              internal: true,
-            },
-            transacting: true,
-            forUpdate: true,
+        const frame = new shared.Frame();
+        frame.options = {
+          context: {
+            internal: true,
           },
+          transacting: true,
+          forUpdate: true,
         };
 
         const apiConfig = {};
@@ -58,14 +55,13 @@ describe('serializers/input/all', function () {
       });
 
       it('no internal access', function () {
-        const frame = {
-          options: {
-            context: {
-              user: true,
-            },
-            transacting: true,
-            forUpdate: true,
+        const frame = new shared.Frame();
+        frame.options = {
+          context: {
+            user: true,
           },
+          transacting: true,
+          forUpdate: true,
         };
 
         const apiConfig = {};

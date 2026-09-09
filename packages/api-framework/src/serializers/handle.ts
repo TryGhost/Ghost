@@ -1,6 +1,19 @@
-const debug = require('@tryghost/debug')('serializers:handle');
-const { sequence } = require('@tryghost/promise');
-const errors = require('@tryghost/errors');
+import createDebug from '@tryghost/debug';
+import errors from '@tryghost/errors';
+import promiseUtils from '@tryghost/promise';
+import type Frame from '../frame.ts';
+import type { ApiConfiguration } from '../pipeline.ts';
+import * as sharedSerializers from './input/index.ts';
+
+const debug = createDebug('serializers:handle');
+const { IncorrectUsageError } = errors;
+const { sequence } = promiseUtils;
+type AsyncResult = unknown | Promise<unknown>;
+interface Serializer {
+  (...args: unknown[]): AsyncResult;
+  [name: string]: Serializer;
+}
+type SerializerRegistry = Record<string, Serializer>;
 
 /**
  * @description Shared input serialization handler.
@@ -14,18 +27,21 @@ const errors = require('@tryghost/errors');
  * @param {Object} apiSerializers - Target API serializers
  * @param {import('@tryghost/api-framework').Frame} frame
  */
-module.exports.input = (apiConfig, apiSerializers, frame) => {
+export const input = (
+  apiConfig?: ApiConfiguration,
+  apiSerializersInput?: Record<string, unknown>,
+  frame?: Frame,
+) => {
   debug('input');
 
-  const tasks = [];
-  const sharedSerializers = require('./input/index.ts');
-
+  const apiSerializers = apiSerializersInput as SerializerRegistry;
+  const tasks: Array<() => unknown> = [];
   if (!apiConfig) {
-    return Promise.reject(new errors.IncorrectUsageError());
+    return Promise.reject(new IncorrectUsageError());
   }
 
-  if (!apiSerializers) {
-    return Promise.reject(new errors.IncorrectUsageError());
+  if (!apiSerializers || !frame) {
+    return Promise.reject(new IncorrectUsageError());
   }
 
   // ##### SHARED ALL SERIALIZATION
@@ -34,30 +50,36 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     return sharedSerializers.all.all(apiConfig, frame);
   });
 
-  if (sharedSerializers.all[apiConfig.method]) {
+  const sharedAll = sharedSerializers.all as unknown as Serializer;
+  const sharedMethod = apiConfig.method ? sharedAll[apiConfig.method] : undefined;
+  if (sharedMethod) {
     tasks.push(function serializeAllShared() {
-      return sharedSerializers.all[apiConfig.method](apiConfig, frame);
+      return sharedMethod(apiConfig, frame);
     });
   }
 
   // ##### API VERSION RESOURCE SERIALIZATION
 
-  if (apiSerializers.all) {
+  const allSerializer = apiSerializers.all;
+  if (allSerializer) {
     tasks.push(function serializeOptionsShared() {
-      return apiSerializers.all(apiConfig, frame);
+      return allSerializer(apiConfig, frame);
     });
   }
 
-  if (apiSerializers[apiConfig.docName]) {
-    if (apiSerializers[apiConfig.docName].all) {
+  const resourceSerializers = apiConfig.docName ? apiSerializers[apiConfig.docName] : undefined;
+  if (resourceSerializers) {
+    const allResourceSerializer = resourceSerializers.all;
+    if (allResourceSerializer) {
       tasks.push(function serializeOptionsShared() {
-        return apiSerializers[apiConfig.docName].all(apiConfig, frame);
+        return allResourceSerializer(apiConfig, frame);
       });
     }
 
-    if (apiSerializers[apiConfig.docName][apiConfig.method]) {
+    const methodSerializer = apiConfig.method ? resourceSerializers[apiConfig.method] : undefined;
+    if (methodSerializer) {
       tasks.push(function serializeOptionsShared() {
-        return apiSerializers[apiConfig.docName][apiConfig.method](apiConfig, frame);
+        return methodSerializer(apiConfig, frame);
       });
     }
   }
@@ -66,7 +88,15 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
   return sequence(tasks);
 };
 
-const getBestMatchSerializer = function (apiSerializers, docName, method) {
+const getBestMatchSerializer = function (
+  apiSerializersInput: Record<string, unknown>,
+  docName?: string,
+  method?: string,
+) {
+  const apiSerializers = apiSerializersInput as SerializerRegistry;
+  if (!docName || !method) {
+    return false;
+  }
   if (apiSerializers[docName]?.[method]) {
     debug(`Calling ${docName}.${method}`);
     return apiSerializers[docName][method].bind(apiSerializers[docName]);
@@ -92,24 +122,31 @@ const getBestMatchSerializer = function (apiSerializers, docName, method) {
  * @param {Object} apiSerializers - Target API serializers
  * @param {import('@tryghost/api-framework').Frame} frame
  */
-module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
+export const output = (
+  response: unknown = {},
+  apiConfig?: ApiConfiguration,
+  apiSerializersInput?: Record<string, unknown>,
+  frame?: Frame,
+) => {
   debug('output');
 
-  const tasks = [];
+  const apiSerializers = apiSerializersInput as SerializerRegistry;
+  const tasks: Array<() => unknown> = [];
 
   if (!apiConfig) {
-    return Promise.reject(new errors.IncorrectUsageError());
+    return Promise.reject(new IncorrectUsageError());
   }
 
-  if (!apiSerializers) {
-    return Promise.reject(new errors.IncorrectUsageError());
+  if (!apiSerializers || !frame) {
+    return Promise.reject(new IncorrectUsageError());
   }
 
   // ##### API VERSION RESOURCE SERIALIZATION
 
-  if (apiSerializers.all?.before) {
+  const allBefore = apiSerializers.all?.before;
+  if (allBefore) {
     tasks.push(function allSerializeBefore() {
-      return apiSerializers.all.before(response, apiConfig, frame);
+      return allBefore(response, apiConfig, frame);
     });
   }
 
@@ -132,12 +169,15 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
     });
   }
 
-  if (apiSerializers.all?.after) {
+  const allAfter = apiSerializers.all?.after;
+  if (allAfter) {
     tasks.push(function allSerializeAfter() {
-      return apiSerializers.all.after(apiConfig, frame);
+      return allAfter(apiConfig, frame);
     });
   }
 
   debug(tasks);
   return sequence(tasks);
 };
+
+export default { input, output };
