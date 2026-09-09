@@ -191,7 +191,7 @@ describe('Post settings X card', () => {
       await editorScreen.settingsXDescription().fill('What this post is about on X');
       await editorScreen.settingsXTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(2);
       expect(submittedPost(saveApi)).toMatchObject({
         twitter_description: 'What this post is about on X',
       });
@@ -366,6 +366,26 @@ describe('Post settings X card', () => {
       await expect
         .element(page.getByText('The image type you uploaded is not supported.', { exact: false }))
         .toBeVisible();
+      await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
+      expect(saveApi.requests).toHaveLength(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'reports a malformed upload response without saving its image value',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeAdminEndpoint('POST', '/images/upload/', { images: [{ url: 123, ref: null }] });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await userEvent.upload(
+        editorScreen.settingsXImageInput().element(),
+        new File(['image'], 'hills.png', { type: 'image/png' }),
+      );
+
+      await expect.element(page.getByText('Couldn’t upload the X image.')).toBeVisible();
       await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
       expect(saveApi.requests).toHaveLength(0);
     },
