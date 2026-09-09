@@ -17,7 +17,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from '@/editor/card-config';
-import { reportKoenigError } from '@/editor/koenig-error';
+import { reportKoenigError } from '@/editor/report-error';
 import type { RevisionEntry } from './post-history';
 
 const fileUploader = {

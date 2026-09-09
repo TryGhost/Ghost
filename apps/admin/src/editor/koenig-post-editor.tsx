@@ -8,7 +8,7 @@ import {
   loadKoenig,
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
-import { reportKoenigError } from './koenig-error';
+import { reportKoenigError } from './report-error';
 
 const fileUploader = {
   useFileUpload: useKoenigFileUpload,
