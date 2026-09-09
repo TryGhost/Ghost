@@ -386,7 +386,12 @@ module.exports = class MailgunClient {
       emailId: event['user-variables'] && event['user-variables']['email-id'],
       providerId: providerId,
       timestamp: new Date(event.timestamp * 1000),
-
+      bot:
+        event['client-info'] &&
+        typeof event['client-info'].bot === 'string' &&
+        event['client-info'].bot.trim()
+          ? event['client-info'].bot.trim()
+          : null,
       error:
         event['delivery-status'] &&
         typeof (event['delivery-status'].message || event['delivery-status'].description) ===
