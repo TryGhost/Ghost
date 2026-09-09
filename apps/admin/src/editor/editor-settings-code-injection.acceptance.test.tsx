@@ -149,6 +149,9 @@ async function typeInto(editor: ReturnType<typeof headEditor>, code: string) {
   await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
   await userEvent.keyboard('{Backspace}');
   await expect.poll(() => editor.element().textContent).toBe('');
+  if (!code) {
+    return;
+  }
   await editor.fill(code);
   await expect.poll(() => (editor.element() as HTMLElement).innerText).toBe(code);
 }
@@ -326,6 +329,49 @@ describe('Post settings code injection', () => {
         codeinjection_head: '<script>staged();</script>',
         status: 'published',
       });
+    },
+    SLOW,
+  );
+
+  it(
+    'persists the focused editor when the writer closes the pane',
+    async () => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openCodeInjection();
+
+      await typeInto(headEditor(), '<script>onClose();</script>');
+      await expect.element(headEditor()).toHaveFocus();
+      await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+
+      await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi).codeinjection_head).toBe('<script>onClose();</script>');
+
+      await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+      await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
+    },
+    SLOW,
+  );
+
+  it.each(['codeinjection_head', 'codeinjection_foot'] as const)(
+    'clears saved %s code to null on blur',
+    async (field) => {
+      const saveApi = fakeSavablePost({
+        codeinjection_head: '<script>head();</script>',
+        codeinjection_foot: '<script>foot();</script>',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openCodeInjection();
+
+      const editor = field === 'codeinjection_head' ? headEditor() : footEditor();
+      const otherEditor = field === 'codeinjection_head' ? footEditor() : headEditor();
+      await typeInto(editor, '');
+      await otherEditor.click();
+
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)[field]).toBeNull();
+      await expect.poll(() => editor.element().textContent).toBe('');
     },
     SLOW,
   );
