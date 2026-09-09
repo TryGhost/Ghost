@@ -1,5 +1,6 @@
 const MailgunEmailProvider = require('../../../../../core/server/services/email-service/mailgun-email-provider');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
 
 describe('Mailgun Email Provider', function () {
@@ -23,6 +24,35 @@ describe('Mailgun Email Provider', function () {
 
     afterEach(function () {
       sinon.restore();
+    });
+
+    it('rejects duplicate recipient keys before an accounted provider request', async function () {
+      sinon.stub(logging, 'error');
+      const provider = new MailgunEmailProvider({ mailgunClient, config });
+      await assert.rejects(
+        provider.send(
+          {
+            emailId: 'email',
+            recipients: [
+              { email: 'same@example.com', replacements: [] },
+              { email: 'same@example.com', replacements: [] },
+            ],
+            replacementDefinitions: [],
+          },
+          { expectedRecipientCount: 2, batchId: 'batch' },
+        ),
+        { code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED' },
+      );
+      sinon.assert.notCalled(sendStub);
+      sinon.assert.calledOnceWithMatch(logging.error, {
+        event: { name: 'email.recipient_count.mismatch' },
+        code: 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED',
+        email_id: 'email',
+        batch_id: 'batch',
+        reason: 'provider_payload_count',
+        expected: 2,
+        actual: 1,
+      });
     });
 
     it('calls mailgun client with correct data', async function () {

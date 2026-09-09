@@ -81,10 +81,11 @@ const failureDetail = (
   error?: string | null,
 ) => {
   const { completed, total } = sending.progress;
-  const sent = sending.failed_during === 'submitting' ? completed : 0;
+  // Submission progress includes exclusions, so it cannot be presented as emails sent.
+  const processed = sending.failed_during === 'submitting' ? completed : 0;
   const progress =
-    sent > 0
-      ? `${formatNumber(sent)} of ${formatNumber(total)} emails were sent.`
+    processed > 0
+      ? `${formatNumber(processed)} of ${formatNumber(total)} recipients processed.`
       : total > 0
         ? `None of the ${formatNumber(total)} emails were sent.`
         : 'No emails were sent.';
@@ -104,15 +105,8 @@ const EmailSendingStatusBanner = () => {
   }
 
   const isFailed = sending.status === 'failed';
-  const hasSentEmails = isFailed
-    ? !hasUnknownDeliveryOutcome &&
-      sending.failed_during === 'submitting' &&
-      sending.progress.completed > 0
-    : false;
   const title = isFailed
-    ? hasSentEmails
-      ? 'Some emails failed to send'
-      : 'Emails failed to send'
+    ? 'Emails failed to send'
     : sending.status === 'preparing'
       ? 'Preparing emails'
       : 'Sending emails';
@@ -121,7 +115,6 @@ const EmailSendingStatusBanner = () => {
       ? post?.email?.error || 'Something went wrong while sending this email.'
       : failureDetail(sending, post?.email?.error)
     : activeDetail(sending, estimate);
-  const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
     <Banner
@@ -153,7 +146,7 @@ const EmailSendingStatusBanner = () => {
             variant="outline"
             onClick={() => void retrySending()}
           >
-            {isRetrying ? 'Sending…' : retryLabel}
+            {isRetrying ? 'Sending…' : 'Retry sending email'}
           </Button>
         )}
       </Inline>

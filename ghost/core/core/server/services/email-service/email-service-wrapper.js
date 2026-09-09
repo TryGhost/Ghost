@@ -101,6 +101,7 @@ class EmailServiceWrapper {
       emailProvider: mailgunEmailProvider,
       emailRenderer,
       emailAddressService: emailAddressService.service,
+      sentry,
     });
 
     const emailSegmenter = new EmailSegmenter({
