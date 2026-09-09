@@ -8,8 +8,8 @@
     },
     "author": "Ghost Foundation",
     "license": "MIT",
-    "main": "index.js",
-    "exports": "./index.js",
+    "main": "src/index.js",
+    "exports": "./src/index.js",
     "scripts": {
         "dev": "echo \"Implement me!\"",
         "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
@@ -17,8 +17,7 @@
         "posttest": "pnpm run lint"
     },
     "files": [
-        "index.js",
-        "lib"
+        "src"
     ],
     "devDependencies": {
         "c8": "12.0.0",
