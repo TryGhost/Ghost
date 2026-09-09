@@ -392,6 +392,9 @@ class EmailService {
       throw new errors.BadRequestError({ message: tpl(messages.retryEmailNotFailed) });
     }
 
+    // The status lock skips the model refresh. Read back database-normalized
+    // timestamps before returning the pending email to the API caller.
+    await pendingEmail.refresh();
     this.#batchSendingService.scheduleEmail(pendingEmail);
     return pendingEmail;
   }
