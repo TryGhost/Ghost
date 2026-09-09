@@ -17,22 +17,13 @@ import { useFramework } from '@tryghost/admin-x-framework';
 import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
-  JSONError,
-  RequestEntityTooLargeError,
-  UnsupportedMediaTypeError,
-} from '@tryghost/admin-x-framework/errors';
+  ACCEPTED_IMAGE_TYPES,
+  UNSUPPORTED_IMAGE_MESSAGE,
+  uploadErrorMessage,
+} from '@/shared/images/image-upload';
 import { toast } from 'sonner';
 
-const ACCEPTED_IMAGE_TYPES = {
-  'image/gif': ['.gif'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
-  'image/svg+xml': ['.svg', '.svgz'],
-  'image/webp': ['.webp'],
-};
-
-const UNSUPPORTED_IMAGE_MESSAGE =
-  'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
+const IMAGE_SUBJECT = 'image';
 
 interface TagImageFieldProps {
   id: string;
@@ -111,17 +102,8 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
       }
       return true;
     } catch (error) {
-      let message = 'Couldn’t upload the image.';
-      if (error instanceof UnsupportedMediaTypeError) {
-        message = UNSUPPORTED_IMAGE_MESSAGE;
-      } else if (error instanceof RequestEntityTooLargeError) {
-        message =
-          'The image you uploaded was larger than the maximum file size your server allows.';
-      } else if (error instanceof JSONError && error.data?.errors[0]?.message) {
-        message = error.data.errors[0].message;
-      }
       if (mountedRef.current) {
-        toast.error(message);
+        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
       return false;
     } finally {

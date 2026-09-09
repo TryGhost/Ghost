@@ -13,17 +13,17 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import {
-  JSONError,
-  RequestEntityTooLargeError,
-  UnsupportedMediaTypeError,
-} from '@tryghost/admin-x-framework/errors';
-import {
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
   settingsFacebookTitleInput,
 } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  UNSUPPORTED_IMAGE_MESSAGE,
+  uploadErrorMessage,
+} from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
 import {
   OG_DESCRIPTION_MAX,
@@ -33,51 +33,22 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import {
-  facebookDescription,
-  facebookDescriptionPlaceholder,
-  facebookImage,
-  facebookPreviewText,
-  facebookTitle,
-  facebookTitlePlaceholder,
-  siteDomain,
-} from './facebook-card-fields';
+import { FieldError } from './field-error';
+import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
+import {
+  SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH,
+  SOCIAL_PREVIEW_LENGTH,
+  SOCIAL_TITLE_PLACEHOLDER_LENGTH,
+  siteDomain,
+  socialDescription,
+  socialImage,
+  socialTitle,
+} from './social-card-fields';
 
-const ACCEPTED_IMAGE_TYPES = {
-  'image/gif': ['.gif'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
-  'image/svg+xml': ['.svg', '.svgz'],
-  'image/webp': ['.webp'],
-};
-
-const UNSUPPORTED_IMAGE_MESSAGE =
-  'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
-
+const IMAGE_SUBJECT = 'Facebook image';
 const ADD_IMAGE_LABEL = 'Add Facebook image';
 const REMOVE_IMAGE_LABEL = 'Remove Facebook image';
-
-function uploadErrorMessage(error: unknown): string {
-  if (error instanceof UnsupportedMediaTypeError) {
-    return UNSUPPORTED_IMAGE_MESSAGE;
-  }
-  if (error instanceof RequestEntityTooLargeError) {
-    return 'The image you uploaded was larger than the maximum file size your server allows.';
-  }
-  if (error instanceof JSONError && error.data?.errors[0]?.message) {
-    return error.data.errors[0].message;
-  }
-  return 'Couldn’t upload the Facebook image.';
-}
-
-function FieldError({ id, message }: { id: string; message: string }) {
-  return (
-    <Text className="text-red" id={id} role="alert" size="sm">
-      {message}
-    </Text>
-  );
-}
 
 export interface FacebookCardSectionProps {
   session: EditorSessionHandle;
@@ -113,22 +84,22 @@ export function FacebookCardSection({
     ? OG_DESCRIPTION_TOO_LONG
     : null;
 
-  const previewTitle = facebookTitle({
-    ogTitle,
+  const previewTitle = socialTitle({
+    own: ogTitle,
     metaTitle: session.settings.meta_title ?? '',
     title: session.bind.title,
   });
-  const previewDescription = facebookDescription({
-    ogDescription,
+  const previewDescription = socialDescription({
+    own: ogDescription,
     customExcerpt: session.settings.custom_excerpt ?? '',
     metaDescription: session.settings.meta_description ?? '',
     postExcerpt: session.loadedRecord?.excerpt ?? '',
     siteDescription: cardConfig.siteDescription,
   });
-  const previewImage = facebookImage({
-    ogImage,
+  const previewImage = socialImage({
+    own: ogImage,
     featureImage: featureImage ?? '',
-    siteOgImage: cardConfig.siteOgImage ?? '',
+    siteSocialImage: cardConfig.siteOgImage ?? '',
     siteCoverImage: cardConfig.siteCoverImage ?? '',
   });
 
@@ -137,7 +108,7 @@ export function FacebookCardSection({
       try {
         session.editSettings({ og_image: getImageUrl(await uploadImage({ file })) });
       } catch (error) {
-        toast.error(uploadErrorMessage(error));
+        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
     },
     [session, uploadImage],
@@ -195,7 +166,7 @@ export function FacebookCardSection({
           aria-invalid={!!titleError}
           data-testid={settingsFacebookTitleInput}
           id={titleId}
-          placeholder={facebookTitlePlaceholder(previewTitle)}
+          placeholder={truncate(previewTitle, SOCIAL_TITLE_PLACEHOLDER_LENGTH)}
           value={ogTitle}
           onBlur={session.commitSettings}
           // A cleared field is stored as no value, the way the excerpt is.
@@ -211,7 +182,7 @@ export function FacebookCardSection({
           aria-invalid={!!descriptionError}
           data-testid={settingsFacebookDescriptionInput}
           id={descriptionId}
-          placeholder={facebookDescriptionPlaceholder(previewDescription)}
+          placeholder={truncate(previewDescription, SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH)}
           rows={3}
           value={ogDescription}
           onBlur={session.commitSettings}
@@ -246,10 +217,10 @@ export function FacebookCardSection({
               {siteDomain(siteUrl)}
             </Text>
             <Text size="md" weight="medium">
-              {facebookPreviewText(previewTitle)}
+              {truncate(previewTitle, SOCIAL_PREVIEW_LENGTH)}
             </Text>
             <Text size="sm" tone="secondary">
-              {facebookPreviewText(previewDescription)}
+              {truncate(previewDescription, SOCIAL_PREVIEW_LENGTH)}
             </Text>
           </Stack>
         </Stack>

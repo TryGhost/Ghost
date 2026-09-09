@@ -15,41 +15,18 @@ import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFramework } from '@tryghost/admin-x-framework';
-import {
-  JSONError,
-  RequestEntityTooLargeError,
-  UnsupportedMediaTypeError,
-} from '@tryghost/admin-x-framework/errors';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  UNSUPPORTED_IMAGE_MESSAGE,
+  uploadErrorMessage,
+} from '@/shared/images/image-upload';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
 
-const ACCEPTED_IMAGE_TYPES = {
-  'image/gif': ['.gif'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
-  'image/svg+xml': ['.svg', '.svgz'],
-  'image/webp': ['.webp'],
-};
-
-const UNSUPPORTED_IMAGE_MESSAGE =
-  'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
-
 const ALT_MAX_LENGTH = 191;
-
-function uploadErrorMessage(error: unknown): string {
-  if (error instanceof UnsupportedMediaTypeError) {
-    return UNSUPPORTED_IMAGE_MESSAGE;
-  }
-  if (error instanceof RequestEntityTooLargeError) {
-    return 'The image you uploaded was larger than the maximum file size your server allows.';
-  }
-  if (error instanceof JSONError && error.data?.errors[0]?.message) {
-    return error.data.errors[0].message;
-  }
-  return 'Couldn’t upload the feature image.';
-}
+const IMAGE_SUBJECT = 'feature image';
 
 export interface FeatureImageProps {
   image: string | null;
@@ -96,7 +73,7 @@ export function FeatureImage({
       try {
         onImageChange(getImageUrl(await uploadImage({ file })));
       } catch (error) {
-        toast.error(uploadErrorMessage(error));
+        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
     },
     [uploadImage, onImageChange],
