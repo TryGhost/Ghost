@@ -12,7 +12,6 @@ import {
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import { featureImageUnsplashButton } from '@tryghost/test-data/selectors/editor';
 import {
   ACCEPTED_IMAGE_TYPES,
   UNSUPPORTED_IMAGE_MESSAGE,
@@ -26,6 +25,7 @@ import { UnsplashPicker } from './unsplash-picker';
 
 const ALT_MAX_LENGTH = 191;
 const IMAGE_SUBJECT = 'feature image';
+const UNSPLASH_BUTTON_LABEL = 'Select feature image from Unsplash';
 
 export interface FeatureImageProps {
   image: string | null;
@@ -136,7 +136,7 @@ export function FeatureImage({
           className="top-1/2 right-2 -translate-y-1/2"
           disabled={isPending}
           enabled={!!cardConfig.unsplash}
-          label={featureImageUnsplashButton}
+          label={UNSPLASH_BUTTON_LABEL}
           onSelect={(picked) => {
             onImageChange(picked.src);
             onCaptionChange(picked.caption);
