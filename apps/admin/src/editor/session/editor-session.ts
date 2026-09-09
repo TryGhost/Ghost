@@ -544,7 +544,7 @@ export function createEditorSession({
     // Invalid settings stay staged rather than dispatching a field save.
     if (
       status !== 'draft' ||
-      settingsFieldError(live) ||
+      settingsFieldError(validatedFieldsOf(live)) ||
       authorsEmptied() ||
       publishedAtInFuture(status, livePublishedAt())
     ) {

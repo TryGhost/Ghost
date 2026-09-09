@@ -8,6 +8,7 @@ import {
   type EditorSessionOptions,
   type EditorWritePayload,
 } from './editor-session';
+import { META_TITLE_MAX, META_TITLE_TOO_LONG } from './settings-fields';
 import type { EditorRecord } from './projection';
 
 type SaveEngineModule = typeof import('@/editor/engine/save-engine');
@@ -1207,6 +1208,23 @@ describe('createEditorSession', () => {
 
       expect(state.updates).toHaveLength(persists ? 1 : 0);
       expect(session.isDirty()).toBe(!persists);
+    });
+
+    it('refuses a field save and an explicit save on the same over-long value', async () => {
+      const { session, state } = harness({ record: record() });
+
+      session.patchFields({ meta_title: 'a'.repeat(META_TITLE_MAX + 1) });
+      session.commitField();
+      await settle();
+
+      expect(engineSpy.dispatched).toEqual([]);
+      expect(state.updates).toHaveLength(0);
+
+      expect(await session.dispatchExplicit()).toMatchObject({
+        kind: 'failed',
+        error: { kind: 'validation', message: META_TITLE_TOO_LONG },
+      });
+      expect(state.updates).toHaveLength(0);
     });
 
     it('stages a field on a published post until an explicit save', async () => {

@@ -111,10 +111,10 @@ export const VALIDATED_SETTINGS_FIELD_KEYS = [
   'twitter_description',
 ] as const;
 
-export type ValidatedSettingsFields = Pick<
-  EditorSettingsFields,
-  (typeof VALIDATED_SETTINGS_FIELD_KEYS)[number]
->;
+export type ValidatedSettingsFieldKey = (typeof VALIDATED_SETTINGS_FIELD_KEYS)[number];
+
+/** The validator's whole input, so reading an unlisted key does not compile. */
+export type ValidatedSettingsFields = Pick<EditorSettingsFields, ValidatedSettingsFieldKey>;
 
 /** The validator's own view of the live document. */
 export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSettingsFields {
