@@ -38,13 +38,6 @@ export function isPage(post: PublishFlowPost): boolean {
   return post.displayName === 'page';
 }
 
-/** The API types the newsletter relation as a bare object; the editor read includes it. */
-interface RecordNewsletter {
-  slug?: string;
-  name?: string;
-  status?: string;
-}
-
 export interface PublishFlowPostSources {
   /** The engine's view of the post: identity, status, publish time and the live title. */
   snapshot: EditorSaveSnapshot;
@@ -68,8 +61,7 @@ export function buildPublishFlowPost({
   lexical,
 }: PublishFlowPostSources): PublishFlowPost {
   const email = record && 'email' in record ? (record.email ?? null) : null;
-  const newsletter =
-    record && 'newsletter' in record ? (record.newsletter as RecordNewsletter | null) : null;
+  const newsletter = record && 'newsletter' in record ? (record.newsletter ?? null) : null;
 
   return {
     id: snapshot.id ?? record?.id ?? '',
