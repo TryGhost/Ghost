@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const nock = require('nock');
-const LimitService = require('@tryghost/limit-service');
+const { LimitService } = require('@tryghost/limit-service');
 
 const WebhookTrigger = require('../../../core/server/services/webhooks/webhook-trigger');
 const configUtils = require('../../utils/config-utils');
