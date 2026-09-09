@@ -160,6 +160,39 @@ describe('SendingStatusService', function () {
     );
   });
 
+  for (const { status, recipientCount, emailCount, total } of [
+    { status: 'failed', recipientCount: null, emailCount: 4, total: 4 },
+    { status: 'submitting', recipientCount: null, emailCount: 4, total: 4 },
+    { status: 'failed', recipientCount: null, emailCount: 2, total: 3 },
+    { status: 'failed', recipientCount: 0, emailCount: 4, total: 3 },
+  ]) {
+    it(`preserves progress totals with ${status} email, batch count ${recipientCount}, and email count ${emailCount}`, async function () {
+      await addEmail({ status, emailCount });
+      await knex('emails').update({ preflight_email_count: emailCount });
+      await addBatch({ status: 'submitted', createdAt: '2026-09-02 12:00:00', recipientCount: 3 });
+      await knex('email_batches').where('id', 'batch-1').update({
+        recipient_count: 3,
+        submitted_count: 3,
+        submission_excluded_count: 0,
+      });
+      await addBatch({ status: 'failed', createdAt: '2026-09-02 12:00:10', recipientCount: 0 });
+      await knex('email_batches')
+        .where('id', 'batch-2')
+        .update({ recipient_count: recipientCount });
+      const queries: string[] = [];
+      knex.on('query', ({ sql }: { sql: string }) => queries.push(sql));
+
+      const result = await service.statusFor('email-id');
+      assert.equal(result?.sending.status, status);
+      assert.deepEqual(result?.sending.progress, {
+        completed: 3,
+        total,
+        estimatedSecondsRemaining: null,
+      });
+      assert.ok(queries.every((sql) => !sql.includes('email_recipients')));
+    });
+  }
+
   for (const missingField of ['submitted_count', 'submission_excluded_count']) {
     it(`does not credit a submitted batch with missing ${missingField}`, async function () {
       await addEmail({ status: 'failed', emailCount: 10 });

@@ -662,15 +662,30 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(done.sending.progress.total, 4);
   });
 
-  it('keeps failed progress readable when an accounted batch count is unexpectedly null', async function () {
+  it('preserves the failed progress total when an accounted batch count is unexpectedly null', async function () {
     const batches = await service.createBatches(data);
+    const corrupt = batches.find((batch) => batch.get('recipient_count') === 1);
     await email.save({ status: 'failed' }, { patch: true });
-    await batches[0].save({ status: 'failed', recipient_count: null }, { patch: true });
+    await db
+      .knex('email_batches')
+      .where({ email_id: email.id })
+      .whereNot({ id: corrupt.id })
+      .update({
+        status: 'submitted',
+        submitted_count: db.knex.ref('recipient_count'),
+        submission_excluded_count: 0,
+      });
+    await corrupt.save({ status: 'failed', recipient_count: null }, { patch: true });
     const result = await new SendingStatusService({ knex: db.knex }).statusFor(email.id);
     assert.ok(result);
     assert.equal(result.sending.status, 'failed');
-    await batches[0].refresh();
-    assert.equal(batches[0].get('recipient_count'), null);
+    assert.deepEqual(result.sending.progress, {
+      completed: 3,
+      total: 4,
+      estimatedSecondsRemaining: null,
+    });
+    await corrupt.refresh();
+    assert.equal(corrupt.get('recipient_count'), null);
   });
 
   it('leaves already-started legacy submission counts unknown and preserves the intended count', async function () {

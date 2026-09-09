@@ -20,7 +20,7 @@ export const DbBatchSendingRow = z.object({
   status: StoredSendingStatus,
   created_at: DbDate,
   updated_at: DbDate,
-  recipient_count: DbCount,
+  recipient_count: DbCount.nullable(),
   accounted_recipient_count: DbCount.optional(),
 });
 export type DbBatchSendingRow = z.output<typeof DbBatchSendingRow>;
