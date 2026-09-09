@@ -329,4 +329,61 @@ describe('Admin API stored post metadata', function () {
     assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
     assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'plaintext'), false);
   });
+
+  it('uses stored reading_time for ?fields=reading_time without leaking html', async function () {
+    const { body: createBody } = await agent
+      .post('/posts/?formats=lexical,html,plaintext')
+      .body({
+        posts: [
+          {
+            title: 'Admin fields reading_time stored path',
+            status: 'draft',
+            mobiledoc: null,
+            lexical: createLexical(`Fields reading time ${'word '.repeat(390)}content`),
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const created = createBody.posts[0] as ApiResource;
+
+    await models.Base.knex('posts').where({ id: created.id }).update({
+      reading_time: 42,
+    });
+
+    const { body } = await agent.get(`/posts/${created.id}/?fields=reading_time`).expectStatus(200);
+
+    assert.equal(body.posts[0].reading_time, 42);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'feature_image'), false);
+  });
+
+  it('computes reading_time for ?fields=reading_time when stored value is still null', async function () {
+    const { body: createBody } = await agent
+      .post('/posts/?formats=lexical,html,plaintext')
+      .body({
+        posts: [
+          {
+            title: 'Admin fields reading_time null fallback',
+            status: 'draft',
+            mobiledoc: null,
+            lexical: createLexical(`Null fallback ${'word '.repeat(390)}content`),
+            feature_image: 'https://example.com/feature.jpg',
+          },
+        ],
+      })
+      .expectStatus(201);
+
+    const created = createBody.posts[0] as ApiResource;
+
+    await models.Base.knex('posts').where({ id: created.id }).update({
+      reading_time: null,
+    });
+
+    const { body } = await agent.get(`/posts/${created.id}/?fields=reading_time`).expectStatus(200);
+
+    assert.equal(body.posts[0].reading_time, 2);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'feature_image'), false);
+  });
 });

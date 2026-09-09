@@ -290,4 +290,103 @@ describe('Content API stored post metadata', function () {
     assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
     assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'plaintext'), false);
   });
+
+  it('uses stored reading_time for ?fields=reading_time without leaking html', async function () {
+    const post = await models.Post.add(
+      {
+        title: 'Content fields reading_time stored path',
+        status: 'published',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              {
+                children: [
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: `Fields reading time ${'word '.repeat(390)}content`,
+                    type: 'text',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        }),
+      },
+      { context: { internal: true } },
+    );
+
+    await models.Base.knex('posts').where({ id: post.id }).update({
+      reading_time: 42,
+    });
+
+    const { body } = await agent.get(`posts/${post.id}/?fields=reading_time`).expectStatus(200);
+
+    assert.equal(body.posts[0].reading_time, 42);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'feature_image'), false);
+  });
+
+  it('computes reading_time for ?fields=reading_time when stored value is still null', async function () {
+    const post = await models.Post.add(
+      {
+        title: 'Content fields reading_time null fallback',
+        status: 'published',
+        feature_image: 'https://example.com/feature.jpg',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              {
+                children: [
+                  {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: `Null fallback ${'word '.repeat(390)}content`,
+                    type: 'text',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        }),
+      },
+      { context: { internal: true } },
+    );
+
+    await models.Base.knex('posts').where({ id: post.id }).update({
+      reading_time: null,
+    });
+
+    const { body } = await agent.get(`posts/${post.id}/?fields=reading_time`).expectStatus(200);
+
+    assert.equal(body.posts[0].reading_time, 2);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'html'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(body.posts[0], 'feature_image'), false);
+  });
 });
