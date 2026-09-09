@@ -1,7 +1,7 @@
 import { Label, RadioGroup, RadioGroupItem } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { publishScheduleDate, publishScheduleTime } from '@tryghost/test-data/selectors/editor';
-import { DateTimePicker } from '@/editor/publish/components/date-time-picker';
+import { DateTimePicker } from '@/editor/date-time-picker';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface PublishAtOptionsProps {
