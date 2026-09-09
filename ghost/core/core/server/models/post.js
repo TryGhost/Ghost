@@ -12,6 +12,7 @@ const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
+const { computeAutoExcerpt, computeReadingTime } = require('../lib/post-meta');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils').default;
 const { Tag } = require('./tag');
@@ -584,7 +585,7 @@ Post = ghostBookshelf.Model.extend(
       const prevSlug = this.previous('slug');
       const publishedAt = this.get('published_at');
       const publishedAtHasChanged = this.hasDateChanged('published_at', { beforeWrite: true });
-      const generatedFields = ['html', 'plaintext'];
+      const generatedFields = ['html', 'plaintext', 'auto_excerpt', 'reading_time'];
       let tagsToSave;
       const ops = [];
 
@@ -801,6 +802,35 @@ Post = ghostBookshelf.Model.extend(
         //        value was modified.
         if (plaintext || plaintext !== this.get('plaintext')) {
           this.set('plaintext', plaintext);
+        }
+      }
+
+      // When migrating, generatedFields above allows explicit writes. Do not
+      // recompute over values the migration supplied, even if html/plaintext
+      // also changed on the same save (e.g. force_rerender + metadata).
+      const migratingSetAutoExcerpt = options.migrating && this.hasChanged('auto_excerpt');
+      const shouldUpdateAutoExcerpt =
+        !migratingSetAutoExcerpt &&
+        (this.hasChanged('html') ||
+          this.hasChanged('plaintext') ||
+          this.get('auto_excerpt') === null);
+      if (shouldUpdateAutoExcerpt) {
+        const autoExcerpt = computeAutoExcerpt(this.get('plaintext'));
+        if (autoExcerpt !== this.get('auto_excerpt')) {
+          this.set('auto_excerpt', autoExcerpt);
+        }
+      }
+
+      const migratingSetReadingTime = options.migrating && this.hasChanged('reading_time');
+      const shouldUpdateReadingTime =
+        !migratingSetReadingTime &&
+        (this.hasChanged('html') ||
+          this.hasChanged('feature_image') ||
+          this.get('reading_time') === null);
+      if (shouldUpdateReadingTime) {
+        const readingTime = computeReadingTime(this.get('html'), this.get('feature_image'));
+        if (readingTime !== this.get('reading_time')) {
+          this.set('reading_time', readingTime);
         }
       }
 
