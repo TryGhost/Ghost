@@ -262,7 +262,7 @@ jobs:
           AFFECTED_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
           echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
-          TYPECHECK_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --withTarget test:types --sep=, | tr -d '\n')
+          TYPECHECK_PROJECTS_STR=$(pnpm nx show projects ${AFFECTED_ARG} --withTarget test:types --sep=, | tr -d '\n')
           echo "typecheck_projects_str=$TYPECHECK_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
           UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
