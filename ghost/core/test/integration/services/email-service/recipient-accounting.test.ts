@@ -443,7 +443,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.ok(batches.every((batch) => !partialIds.includes(batch.id)));
     const sentIds = sender.send
       .getCalls()
-      .flatMap((call) => call.args[0].recipients.map((recipient: { email: string }) => recipient.email));
+      .flatMap((call) =>
+        call.args[0].recipients.map((recipient: { email: string }) => recipient.email),
+      );
     assert.equal(sentIds.length, 4);
     assert.equal(new Set(sentIds).size, 4);
   });
@@ -496,7 +498,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     );
     const sentIds = sender.send
       .getCalls()
-      .flatMap((call) => call.args[0].recipients.map((recipient: { email: string }) => recipient.email));
+      .flatMap((call) =>
+        call.args[0].recipients.map((recipient: { email: string }) => recipient.email),
+      );
     assert.equal(sentIds.length, 4);
     assert.equal(new Set(sentIds).size, 4);
   });
