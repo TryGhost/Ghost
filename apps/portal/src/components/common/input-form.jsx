@@ -17,6 +17,7 @@ const FormInput = ({ field, onChange, onBlur = () => {}, onKeyDown = () => {} })
         placeholder={field.placeholder}
         disabled={field.disabled}
         readOnly={field.readOnly}
+        options={field.options}
         value={field.value}
         onKeyDown={onKeyDown}
         onChange={(e) => onChange(e, field)}

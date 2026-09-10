@@ -9,6 +9,7 @@ import {
   Filters,
   FilterSegmentSelect,
   FilterSegmentInput,
+  FilterSegmentMultiSelect,
   type CustomRendererProps,
   type Filter,
   type FilterFieldConfig,
@@ -915,7 +916,8 @@ const CascadeRenderer = ({
   onOperatorChange,
   readOnly,
 }: CustomRendererProps<string>) => {
-  const [part = '', value = ''] = values;
+  const [part = '', value = '', ...more] = values;
+  const countries = value ? [value, ...more] : [];
 
   return (
     <>
@@ -928,7 +930,7 @@ const CascadeRenderer = ({
         ]}
         readOnly={readOnly}
         value={part}
-        onChange={(next) => onChange([next, value])}
+        onChange={(next) => onChange([next])}
       />
       {onOperatorChange && (
         <FilterSegmentSelect
@@ -942,13 +944,28 @@ const CascadeRenderer = ({
           onChange={onOperatorChange}
         />
       )}
-      <FilterSegmentInput
-        ariaLabel="Value"
-        placeholder="Enter value..."
-        readOnly={readOnly}
-        value={value}
-        onChange={(next) => onChange([part, next])}
-      />
+      {part === 'country' ? (
+        <FilterSegmentMultiSelect
+          ariaLabel="Value"
+          options={[
+            { value: 'DE', label: 'Germany' },
+            { value: 'GB', label: 'United Kingdom' },
+            { value: 'US', label: 'United States' },
+          ]}
+          readOnly={readOnly}
+          searchPlaceholder="Search countries..."
+          values={countries}
+          onChange={(next) => onChange([part, ...next])}
+        />
+      ) : (
+        <FilterSegmentInput
+          ariaLabel="Value"
+          placeholder="Enter value..."
+          readOnly={readOnly}
+          value={value}
+          onChange={(next) => onChange([part, next])}
+        />
+      )}
     </>
   );
 };
@@ -979,7 +996,7 @@ export const ComposedSegments: Story = {
     docs: {
       description: {
         story:
-          'FilterSegmentSelect and FilterSegmentInput composed by a customRenderer (with `renderOperatorInValue`) into a cascade that reads as native filter segments rather than standalone selects.',
+          'FilterSegmentSelect and FilterSegmentInput composed by a customRenderer (with `renderOperatorInValue`) into a cascade that reads as native filter segments rather than standalone selects. Pick the Country part for a FilterSegmentMultiSelect, the "is any of" segment.',
       },
     },
   },

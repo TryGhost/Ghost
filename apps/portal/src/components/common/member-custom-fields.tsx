@@ -1,8 +1,10 @@
 import React from 'react';
 import type { Address } from '@tryghost/metafield-types';
+import { FIELD_PARTS } from '@tryghost/metafield-types/structure';
 import type { FieldType } from '@tryghost/metafield-types/structure';
 
 import InputForm from './input-form';
+import { countryOptions } from '../../utils/countries';
 import { t } from '../../utils/i18n';
 import { compositeValue, scalarValue } from '../../utils/custom-fields';
 import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
@@ -83,22 +85,26 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   const errorsId = `custom-${field.key}-errors`;
   const nameOf = (part: keyof Address) => `custom:${field.key}:${part}`;
 
-  const input = (part: keyof Address) => ({
-    type: 'text',
-    value: held?.[part] ?? '',
-    // The part's label is read by assistive tech and shown as the placeholder; the
-    // field's own name labels the group.
-    label: labels[part],
-    hideLabel: true,
-    placeholder: labels[part],
-    name: nameOf(part),
-    invalid: Boolean(errors[nameOf(part)]),
-    // A refused part is read out with the reasons listed under the field, since its own
-    // reason is not printed beside it.
-    describedBy: errors[nameOf(part)] ? errorsId : undefined,
-    readOnly,
-    part,
-  });
+  const input = (part: keyof Address) => {
+    const isCountry = FIELD_PARTS.address[part] === 'country_code';
+    return {
+      type: isCountry ? 'select' : 'text',
+      options: isCountry ? countryOptions(held?.[part]) : undefined,
+      value: held?.[part] ?? '',
+      // The part's label is read by assistive tech and shown as the placeholder; the
+      // field's own name labels the group.
+      label: labels[part],
+      hideLabel: true,
+      placeholder: labels[part],
+      name: nameOf(part),
+      invalid: Boolean(errors[nameOf(part)]),
+      // A refused part is read out with the reasons listed under the field, since its own
+      // reason is not printed beside it.
+      describedBy: errors[nameOf(part)] ? errorsId : undefined,
+      readOnly,
+      part,
+    };
+  };
 
   const Row = ({ parts }: RowProps) => (
     <div className="gh-portal-input-group-row">

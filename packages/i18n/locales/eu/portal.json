@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(aurreztu %{highestYearlyDiscount})",
     "{amount} days free": "{amount} egun doan",
     "{amount} off": "{amount}(e)ko deskontua",
