@@ -71,7 +71,8 @@ export abstract class Limit {
   /** Only the flag limits answer this, and the service checks before calling it. */
   isDisabled?(): boolean;
 
-  generateError(_count?: Count): GhostErrorOptions | Error {
+  /** The parts of a refusal every limit shares. Subclasses finish it into an error. */
+  protected baseErrorOptions(): GhostErrorOptions {
     const errorObj: GhostErrorOptions = {
       errorDetails: {
         name: this.name,
@@ -84,6 +85,8 @@ export abstract class Limit {
 
     return errorObj;
   }
+
+  abstract generateError(count?: Count): Error;
 }
 
 export class MaxLimit extends Limit {
@@ -114,7 +117,7 @@ export class MaxLimit extends Limit {
   }
 
   generateError(count: Count): Error {
-    const errorObj = super.generateError() as GhostErrorOptions;
+    const errorObj = this.baseErrorOptions();
 
     errorObj.message = this.fallbackMessage;
 
@@ -210,7 +213,7 @@ export class MaxPeriodicLimit extends Limit {
   }
 
   generateError(count: Count): Error {
-    const errorObj = super.generateError() as GhostErrorOptions;
+    const errorObj = this.baseErrorOptions();
 
     errorObj.message = this.fallbackMessage;
 
@@ -273,7 +276,7 @@ export class FlagLimit extends Limit {
   }
 
   generateError(): Error {
-    const errorObj = super.generateError() as GhostErrorOptions;
+    const errorObj = this.baseErrorOptions();
 
     if (this.error) {
       errorObj.message = this.error;
@@ -322,7 +325,7 @@ export class AllowlistLimit extends Limit {
   }
 
   generateError(): Error {
-    const errorObj = super.generateError() as GhostErrorOptions;
+    const errorObj = this.baseErrorOptions();
 
     if (this.error) {
       errorObj.message = this.error;
