@@ -33,6 +33,7 @@ type Request = {
   url: string;
   authorization: string | null;
   contentType: string | null;
+  siteUuid: string | null;
   lines: EventLine[];
 };
 
@@ -88,6 +89,7 @@ describe('syncTableToTinybird', () => {
       url: String(input),
       authorization: headers.get('authorization'),
       contentType: headers.get('content-type'),
+      siteUuid: headers.get('x-site-uuid'),
       lines: String(init?.body)
         .split('\n')
         .map((line) => JSON.parse(line) as EventLine),
@@ -154,6 +156,7 @@ describe('syncTableToTinybird', () => {
     assert.equal(requests[0].url, 'https://analytics.example.com/api/v1/tinybird-sync');
     assert.equal(requests[0].authorization, `Bearer ${TRAFFIC_ANALYTICS_AUTH}`);
     assert.equal(requests[0].contentType, 'application/x-ndjson');
+    assert.equal(requests[0].siteUuid, SITE_UUID);
     assert.deepEqual(requests[0].lines, [
       {
         type: 'automation_runs',

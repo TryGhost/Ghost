@@ -98,13 +98,14 @@ function* chunkByBytes(lines: string[], maxBytes: number): Generator<string[]> {
 async function postEvents(
   lines: string[],
   { table }: TinybirdSyncTarget,
-  { endpoint, trafficAnalyticsAuth, fetch, requestTimeoutMs }: TinybirdSyncOptions,
+  { endpoint, trafficAnalyticsAuth, siteUuid, fetch, requestTimeoutMs }: TinybirdSyncOptions,
 ): Promise<void> {
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${trafficAnalyticsAuth}`,
       'Content-Type': 'application/x-ndjson',
+      'x-site-uuid': siteUuid,
     },
     body: lines.join('\n'),
     signal: AbortSignal.timeout(requestTimeoutMs),
