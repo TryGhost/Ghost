@@ -24,5 +24,5 @@ export type EditorCreatePayload = CreateContentData<EditorWritableData>;
 /** An update carries the id and the collision token the save was built at. */
 export type EditorEditPayload = EditorCreatePayload & {
   id: string;
-  updated_at: string | null;
+  updated_at: string;
 };
