@@ -886,21 +886,28 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     return id;
   }
 
-  it('excludes newly added members even when their creation timestamp is backdated', async function () {
-    const createBatch = service.createBatch.bind(service);
-    let newMemberId: string;
-    sinon.stub(service, 'createBatch').callsFake(async (...args) => {
-      const batch = await createBatch(...args);
-      if (!args[3]?.transacting && !newMemberId) {
-        newMemberId = await addMember();
-      }
-      return batch;
+  for (const batchSize of [0, -1]) {
+    it(`rejects configured batch size ${batchSize} before allocating preparation workers`, async function () {
+      sinon.stub(sender, 'getMaximumRecipients').returns(batchSize);
+      await assert.rejects(
+        service.createBatches(data),
+        /bulkEmail:batchSize must be a positive integer/,
+      );
+      assert.deepEqual(await service.getBatches(email), []);
     });
+  }
+
+  it('excludes members created at or after the email before its sweep, even with backdated timestamps', async function () {
+    const newerId = (BigInt(`0x${email.id}`) + 1n).toString(16).padStart(24, '0');
+    await addMember(email.id);
+    await addMember(newerId);
     await service.createBatches(data);
     assert.equal(email.get('candidate_count'), 4);
     const recipients = await db.knex('email_recipients').where({ email_id: email.id });
-    assert.equal(recipients.length, 4);
-    assert.ok(recipients.every((row) => row.member_id !== newMemberId));
+    assert.deepEqual(
+      recipients.map((row) => row.member_id).sort(),
+      [1, 2, 3, 4].map((n) => n.toString(16).padStart(24, '0')),
+    );
   });
 
   it('preserves large numeric member IDs selected by the sweep', async function () {

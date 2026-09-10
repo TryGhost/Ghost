@@ -44,15 +44,23 @@ database sort over the full audience.
 
 `bulkEmail:batchCreationConcurrency` defaults to 2 and directly bounds active
 pages per email, independently of database pool settings. Explicit per-site
-overrides can raise it after measuring database load. A worker owns its page
+overrides can raise it after measuring database load. The value must be a positive
+integer JSON number; invalid configuration stops boot with a configuration error.
+Validation happens in the `BatchSendingService` constructor. SQLite uses one database
+connection, so raising the worker limit does not add database concurrency there.
+A worker owns its page
 through member lookup, writes, and retries. Each page creates at most one batch
 in one transaction. Warming allocation follows selected candidate order,
 including exclusions, rather than transaction completion order. Each nonempty
 batch stores `recipient_count` atomically with its recipients.
 
 Member lookup happens outside the write transaction. A bounded primary-key range
-read filters against the page's selected IDs, falling back to an ID-list query when
-the range contains more than eight times the page size. Required member data
+read avoids the repeated primary-key lookups of a large ID list for dense pages;
+local lookup measurements favor it for dense audiences. Results are filtered
+against the page's selected IDs. If the range contains more than eight times the
+page size, that page falls back to an ID-list query and the segment remembers
+that choice for its remaining pages. Concurrent range reads already started may
+still finish their own probes. Each new segment starts with the range strategy. Required member data
 missing from an existing record is an explicit exclusion with error logging and
 Sentry reporting. A selected member no longer found is a `member_not_found`
 exclusion logged at information level. Database failures are not exclusions.
@@ -72,15 +80,20 @@ database retries of that operation. Restarting incomplete preparation before
 
 After a transaction error, recovery reads through the normal
 database pool and accepts a committed batch only if its metadata and exact
-recipient data match. A retry insert uses the same primary key, including when
-the first recovery read failed. The transaction must settle or roll back before
+recipient data match. While retries remain allowed, a retry insert uses the same
+primary key, including after a failed recovery read. The transaction must settle or roll back before
 the recovery read; a lock-wait timeout is not evidence that the original insert
 failed.
 
 Workers stop claiming pages when shutdown or a terminal preparation failure
-occurs. An attempt-scoped abort signal wakes preparation retry backoffs and prevents
-further attempts; it does not cancel in-flight transactions or their recovery reads.
-All workers drain before preparation verification or returning a failure. Submission
+occurs. A per-segment abort signal wakes preparation retry backoffs and stops
+further tries. It does not interrupt an in-flight transaction or recovery read,
+but prevents retrying a failed recovery read. A batch that committed without an
+acknowledgement can therefore remain unverified and pending until the next
+attempt's cleanup. All workers drain before verification or returning a failure.
+If shutdown starts after all pages finish, complete verification and save
+`prepared_at` using the shutdown retry budget, preserving the finished work.
+Submission
 does not use this signal and retains its retry policy. Failed partial preparation
 is kept until the next attempt performs bounded cleanup; cleanup time is separate
 from the cost of rebuilding and can dominate a large retry.
@@ -233,17 +246,21 @@ totals. Preparation-era batches with unknown submission counts instead emit
 unknown historical counts alone are not a detected discrepancy.
 
 A legitimate preflight audience change emits `email.preparation.audience_drift`
-at warning level. Invalid members emit `email.preparation.excluded` or
-`email.submission.excluded` at error level, with `email_id`, `member_id`,
-`reason`, and the preparation attempt or submission batch ID. Exclusions do not
+at warning level. Members with invalid required data emit
+`email.preparation.excluded` or `email.submission.excluded` at error level and
+are reported to Sentry. A selected member no longer found instead emits
+`email.preparation.excluded` with reason `member_not_found` at info level, without
+Sentry reporting. Both paths include `email_id`, `member_id`, `reason`, and the
+preparation attempt or submission batch ID. Exclusions do not
 trigger the discrepancy event because the recipient is accounted for. These records cover discrepancies Ghost can verify; they do not independently
 measure Mailgun acceptance or delivery, including uncertain POST outcomes.
 
 ## Benchmarking preparation
 
-From `ghost/core`, run the synthetic MySQL benchmark with the local database
-password in `database__connection__password` (and user in
-`database__connection__user`, default `root`):
+From `ghost/core`, run the synthetic MySQL benchmark. Credentials default to
+`root` / `root`, matching `testing-mysql`; override them with
+`database__connection__user` and `database__connection__password` for a different
+local database (an explicitly empty password is preserved):
 
 ```sh
 NODE_OPTIONS=--conditions=source node --expose-gc scripts/benchmark-recipient-preparation.js 500000 2
@@ -256,6 +273,10 @@ between free and paid segments to exercise the combined audience selection.
 It measures the full audience, discard and rebuild after a complete pending attempt, and a label
 audience containing every fifth member. JSON output includes database settings,
 query counts, elapsed times, sweep and discard durations, and sampled memory.
+Member lookups also report query count, rows transferred (including range probes),
+and summed query duration. These query durations overlap under concurrency and
+are not the phase's wall-clock duration. Compare both the full and label-filtered
+audiences when changing the lookup strategy.
 
 Repeat at 500,000 and 1,000,000 members with concurrency 1, 2, and 4 to compare
 settings. RSS and heap samples every 10 ms may miss peaks during synchronous

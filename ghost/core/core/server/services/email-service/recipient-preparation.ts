@@ -2,15 +2,6 @@ import type { Knex } from 'knex';
 import { IncorrectUsageError } from '@tryghost/errors';
 import { RECIPIENT_VERIFICATION_CODE } from './recipient-accounting';
 
-export function validatePreparationConcurrency(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
-    throw new IncorrectUsageError({
-      message: 'bulkEmail:batchCreationConcurrency must be a positive integer',
-    });
-  }
-  return value;
-}
-
 /** One statement gives all segments the same audience snapshot, without a spanning transaction. */
 export async function selectPreparationCandidates(
   knex: Knex,
@@ -23,7 +14,7 @@ export async function selectPreparationCandidates(
   const rows: { id: string; segment_index: number }[] = await knex
     .unionAll(
       queries.map((query, index) =>
-        query.select('members.id', knex.raw('? as segment_index', [index])),
+        query.clone().select('members.id', knex.raw('? as segment_index', [index])),
       ),
     )
     .orderBy('segment_index')
@@ -40,31 +31,38 @@ export async function selectPreparationCandidates(
 
 export type PreparationMember = { id: string; uuid: string; email: string; name: string | null };
 
-/** Resolve only selected IDs. The extra range row distinguishes sparse from complete reads. */
-export async function resolvePreparationMembers(
-  knex: Knex,
-  ids: string[],
-): Promise<PreparationMember[]> {
-  if (ids.length === 0) {
-    return [];
-  }
-  const columns = ['id', 'uuid', 'email', 'name'];
-  const limit = ids.length * 8;
-  let rows: PreparationMember[] = await knex('members')
-    .select(columns)
-    .whereBetween('id', [ids[ids.length - 1]!, ids[0]!])
-    .orderBy('id', 'desc')
-    .limit(limit + 1);
-  if (rows.length > limit) {
-    // Do not retain the truncated range while the fallback is materialized.
-    rows = [];
-    rows = await knex('members').select(columns).whereIn('id', ids);
-  }
-  const byId = new Map(rows.map((row) => [row.id, row]));
-  return ids.flatMap((id) => {
-    const row = byId.get(id);
-    return row ? [row] : [];
-  });
+/** Keep range reads for dense pages; after a sparse page, use IDs for the rest of this segment. */
+export function createPreparationMemberResolver(knex: Knex) {
+  let useIdList = false;
+  return async function resolveMembers(ids: string[]): Promise<PreparationMember[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const columns = ['id', 'uuid', 'email', 'name'];
+    let rows: PreparationMember[] = [];
+    if (useIdList) {
+      rows = await knex('members').select(columns).whereIn('id', ids);
+    } else {
+      const limit = ids.length * 8;
+      rows = await knex('members')
+        .select(columns)
+        .whereBetween('id', [ids[ids.length - 1]!, ids[0]!])
+        .orderBy('id', 'desc')
+        .limit(limit + 1);
+      if (rows.length > limit) {
+        // Monotonic across concurrent workers. Pages already reading a range may still finish it.
+        useIdList = true;
+        // Release the overfull range while the ID query is in flight.
+        rows = [];
+        rows = await knex('members').select(columns).whereIn('id', ids);
+      }
+    }
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    return ids.flatMap((id) => {
+      const row = byId.get(id);
+      return row ? [row] : [];
+    });
+  };
 }
 
 /** Only waits are abortable: callers must settle writes and recovery before returning. */
@@ -85,25 +83,24 @@ export function waitForPreparationRetry(ms: number, signal?: AbortSignal): Promi
   });
 }
 
-/** Fixed workers claim lazily; every exit drains them, including dispatcher failures. */
+/** The caller validates concurrency. Every exit drains workers, including dispatcher failures. */
 export async function runPreparationWorkers<T>(
   items: Iterable<T>,
   concurrency: number,
   beforeWork: () => void,
   work: (item: T, signal: AbortSignal) => Promise<void>,
 ): Promise<void> {
-  validatePreparationConcurrency(concurrency);
   const controller = new AbortController();
   const iterator = items[Symbol.iterator]();
   const failures: unknown[] = [];
   const worker = async () => {
     try {
       while (!controller.signal.aborted) {
-        beforeWork();
         const next = iterator.next();
         if (next.done) {
           return;
         }
+        beforeWork();
         await work(next.value, controller.signal);
       }
     } catch (error) {
@@ -121,12 +118,18 @@ export async function runPreparationWorkers<T>(
   }
 }
 
-export function* preparationPages(ids: string[], batchSize: number, warmingCapacity = Infinity) {
-  for (let offset = 0; offset < ids.length;) {
-    const remainingCapacity = warmingCapacity - offset;
-    const useFallbackDomain = remainingCapacity <= 0;
-    const pageSize = useFallbackDomain ? batchSize : Math.min(remainingCapacity, batchSize);
-    yield { ids: ids.slice(offset, offset + pageSize), offset, useFallbackDomain };
-    offset += pageSize;
+export function preparationPages(ids: string[], batchSize: number, warmingCapacity = Infinity) {
+  // Validate eagerly, before the caller uses batchSize to calculate the worker count.
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1) {
+    throw new IncorrectUsageError({ message: 'bulkEmail:batchSize must be a positive integer' });
   }
+  return (function* pages() {
+    for (let offset = 0; offset < ids.length;) {
+      const remainingCapacity = warmingCapacity - offset;
+      const useFallbackDomain = remainingCapacity <= 0;
+      const pageSize = useFallbackDomain ? batchSize : Math.min(remainingCapacity, batchSize);
+      yield { ids: ids.slice(offset, offset + pageSize), offset, useFallbackDomain };
+      offset += pageSize;
+    }
+  })();
 }

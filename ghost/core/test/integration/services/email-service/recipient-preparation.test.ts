@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import ObjectID from 'bson-objectid';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
-import { resolvePreparationMembers } from '../../../../core/server/services/email-service/recipient-preparation';
+import { createPreparationMemberResolver } from '../../../../core/server/services/email-service/recipient-preparation';
 
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
@@ -31,6 +31,7 @@ describe('Upfront recipient preparation through MySQL', () => {
   let filter: string;
   let segments: (string | null)[];
   let queries: Knex.Sql[];
+  let resolveMembers: ReturnType<typeof createPreparationMemberResolver>;
   let sentry: { captureException: sinon.SinonStub; captureMessage: sinon.SinonStub };
   const queryListener = (query: Knex.Sql) => queries.push(query);
   const members = Array.from({ length: 80 }, (_, index) => ({
@@ -53,6 +54,7 @@ describe('Upfront recipient preparation through MySQL', () => {
     sinon.stub(logging, 'warn');
     sentry = { captureException: sinon.stub(), captureMessage: sinon.stub() };
     queries = [];
+    resolveMembers = createPreparationMemberResolver(db.knex);
     filter = `id:<='${id(4)}'`;
     segments = [null];
     email = await models.Email.add({
@@ -139,14 +141,14 @@ describe('Upfront recipient preparation through MySQL', () => {
   });
 
   it('resolves complete dense ranges and falls back for sparse or truncated ranges', async () => {
-    const dense = await resolvePreparationMembers(db.knex, [id(4), id(2)]);
+    const dense = await resolveMembers([id(4), id(2)]);
     assert.deepEqual(
       dense.map((member) => member.id),
       [id(4), id(2)],
     );
     assert.equal(queries.length, 1);
     queries.length = 0;
-    const sparse = await resolvePreparationMembers(db.knex, [id(80), id(1)]);
+    const sparse = await resolveMembers([id(80), id(1)]);
     assert.deepEqual(
       sparse.map((member) => member.id),
       [id(80), id(1)],
@@ -154,16 +156,33 @@ describe('Upfront recipient preparation through MySQL', () => {
     assert.equal(queries.length, 2);
     assert.match(queries[1]!.sql, /where `id` in/);
     queries.length = 0;
-    assert.deepEqual(await resolvePreparationMembers(db.knex, []), []);
+    assert.deepEqual(await resolveMembers([]), []);
     assert.equal(queries.length, 0);
   });
 
   it('uses a complete range at the threshold and falls back when the extra row exists', async () => {
-    await resolvePreparationMembers(db.knex, [id(16), id(1)]);
+    await resolveMembers([id(16), id(1)]);
     assert.equal(queries.length, 1);
     queries.length = 0;
-    await resolvePreparationMembers(db.knex, [id(17), id(1)]);
+    await resolveMembers([id(17), id(1)]);
     assert.equal(queries.length, 2);
+  });
+
+  it('remembers a sparse page for the segment and resets the strategy for the next segment', async () => {
+    await resolveMembers([id(80), id(1)]);
+    assert.equal(queries.length, 2);
+    queries.length = 0;
+    const rows = await resolveMembers([id(79), id(2)]);
+    assert.deepEqual(
+      rows.map((row) => row.id),
+      [id(79), id(2)],
+    );
+    assert.equal(queries.length, 1);
+    assert.match(queries[0]!.sql, /where `id` in/);
+    queries.length = 0;
+    await createPreparationMemberResolver(db.knex)([id(4), id(3)]);
+    assert.equal(queries.length, 1);
+    assert.match(queries[0]!.sql, /between/);
   });
 
   it('accounts for disappearance without shifting domain-warming positions', async () => {
@@ -347,6 +366,47 @@ describe('Upfront recipient preparation through MySQL', () => {
       id(3),
     ]);
     assert.equal((await service.getBatches(email)).length, 2);
+  });
+
+  it('does not retry malformed audience filters', async () => {
+    filter = 'status:(';
+    const audience = sinon.spy(models.Member, 'getFilteredCollectionQuery');
+    await assert.rejects(prepare());
+    sinon.assert.calledOnce(audience);
+    assert.deepEqual(await service.getBatches(email), []);
+  });
+
+  it('persists verified preparation when shutdown starts during the final count read', async () => {
+    const stopDuringVerification = (query: Knex.Sql) => {
+      if (query.sql.includes('count(') && query.sql.includes('`email_recipients` as `recipient`')) {
+        service.onPreStop();
+      }
+    };
+    db.knex.on('query', stopDuringVerification);
+    try {
+      const batches = await prepare();
+      await email.refresh();
+      assert.ok(email.get('prepared_at'));
+      assert.equal(email.get('candidate_count'), 4);
+      assert.equal(email.get('email_count'), 4);
+      assert.equal(batches.length, 3);
+    } finally {
+      db.knex.removeListener('query', stopDuringVerification);
+    }
+  });
+
+  it('finishes preparation when shutdown starts after the last batch commit', async () => {
+    filter = `id:'${id(1)}'`;
+    const original = models.EmailBatch.transaction.bind(models.EmailBatch);
+    sinon.stub(batchTransactions, 'transaction').callsFake(async (handler) => {
+      const result = await original(handler);
+      service.onPreStop();
+      return result;
+    });
+    await prepare();
+    await email.refresh();
+    assert.ok(email.get('prepared_at'));
+    assert.equal(email.get('email_count'), 1);
   });
 
   it('does not begin preparation when shutdown starts during selection', async () => {

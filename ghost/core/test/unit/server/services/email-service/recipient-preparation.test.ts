@@ -3,10 +3,9 @@ import knex from 'knex';
 import { vi } from 'vitest';
 import {
   preparationPages,
-  resolvePreparationMembers,
+  createPreparationMemberResolver,
   runPreparationWorkers,
   selectPreparationCandidates,
-  validatePreparationConcurrency,
   waitForPreparationRetry,
 } from '../../../../../core/server/services/email-service/recipient-preparation';
 import { RECIPIENT_VERIFICATION_CODE } from '../../../../../core/server/services/email-service/recipient-accounting';
@@ -26,7 +25,6 @@ describe('Recipient preparation workers', () => {
 
   it('accepts explicit concurrency independently of the database pool', () => {
     for (const value of [1, 2, 4]) {
-      assert.equal(validatePreparationConcurrency(value), value);
       assert.doesNotThrow(
         () =>
           new BatchSendingService({
@@ -36,7 +34,10 @@ describe('Recipient preparation workers', () => {
       );
     }
     for (const value of [0, -1, 1.5, Infinity, NaN, '2', null]) {
-      assert.throws(() => validatePreparationConcurrency(value), /must be a positive integer/);
+      assert.throws(
+        () => new BatchSendingService({ batchCreationConcurrency: value }),
+        /bulkEmail:batchCreationConcurrency must be a positive integer/,
+      );
     }
   });
 
@@ -95,6 +96,31 @@ describe('Recipient preparation workers', () => {
         { ids: ['d'], offset: 0, useFallbackDomain: false },
         { ids: ['c', 'b', 'a'], offset: 1, useFallbackDomain: true },
       ],
+    );
+  });
+
+  for (const batchSize of [0, -1, 1.5, NaN, Infinity]) {
+    it(`rejects batch size ${batchSize} before yielding a page`, () => {
+      assert.throws(
+        () => preparationPages(['a'], batchSize).next(),
+        /batchSize must be a positive integer/,
+      );
+    });
+  }
+
+  it('finishes completed work without another shutdown check when there are no pages left', async () => {
+    let shuttingDown = false;
+    await runPreparationWorkers(
+      [1],
+      1,
+      () => {
+        if (shuttingDown) {
+          throw new Error('shutdown');
+        }
+      },
+      async () => {
+        shuttingDown = true;
+      },
     );
   });
 
@@ -158,12 +184,13 @@ describe('Recipient preparation workers', () => {
       await db('members').insert(
         ids.map((id) => ({ id, uuid: `uuid-${id}`, email: `${id}@example.com`, name: null })),
       );
+      const resolveMembers = createPreparationMemberResolver(db);
       await runPreparationWorkers(
         preparationPages(ids, 2),
         2,
         () => {},
         async (page) => {
-          const members = await resolvePreparationMembers(db, page.ids);
+          const members = await resolveMembers(page.ids);
           await db.transaction(async (trx) => {
             await trx('prepared').insert(members.map((member) => ({ member_id: member.id })));
           });
