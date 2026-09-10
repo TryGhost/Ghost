@@ -453,4 +453,135 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal(second.afterId, id(3));
     assert.equal(second.complete, true);
   });
+
+  it('hands a baseline over to preparation without adding its recipients twice', async () => {
+    await recipient({ opened: true });
+    const { batchId } = await recipient({ enrolled: true });
+    await counters.sweepPage({ throughId: id(3), limit: 3 });
+    assert.equal((await stats()).email_count, 1);
+    assert.equal(await counters.applyPreparedBatch(batchId), true);
+    assert.deepEqual(await stats(), {
+      email_count: 2,
+      email_tracked_count: 2,
+      email_opened_count: 1,
+      email_open_rate: null,
+    });
+    assert.ok(
+      (await db.knex('email_batches').where('id', batchId).first()).member_counters_applied_at,
+    );
+    assert.equal(await new NewsletterMemberCounters(db.knex).applyPreparedBatch(batchId), false);
+    await counters.sweepPage({ throughId: id(3), limit: 3 });
+    assert.equal((await stats()).email_count, 2);
+  });
+
+  it('initializes an unseen member from the same historical truth before applying preparation', async () => {
+    await recipient({ opened: true });
+    const { batchId } = await recipient({ enrolled: true, tracked: false });
+    const pending = await recipient({ enrolled: true });
+    assert.equal(await counters.applyPreparedBatch(batchId), true);
+    assert.deepEqual(await stats(), {
+      email_count: 2,
+      email_tracked_count: 1,
+      email_opened_count: 1,
+      email_open_rate: null,
+    });
+    assert.equal(await counters.applyPreparedBatch(pending.batchId), true);
+    assert.equal((await stats()).email_tracked_count, 2);
+  });
+
+  it('does not enroll historical batches or apply unfrozen preparation', async () => {
+    const legacy = await recipient();
+    assert.equal(await counters.applyPreparedBatch(legacy.batchId), false);
+    const pending = await recipient({ enrolled: true, prepared: false });
+    await assert.rejects(counters.applyPreparedBatch(pending.batchId), /frozen preparation/);
+    assert.equal((await stats()).email_tracked_count, null);
+  });
+
+  it('rolls member initialization and increments back when the batch marker fails', async () => {
+    const { batchId } = await recipient({ enrolled: true });
+    await db.knex.raw(
+      "CREATE TRIGGER member_counter_application_failure BEFORE UPDATE ON email_batches FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'injected application failure'",
+    );
+    try {
+      await assert.rejects(counters.applyPreparedBatch(batchId), /injected application failure/);
+      assert.equal((await stats()).email_tracked_count, null);
+      assert.equal((await stats()).email_count, 99);
+      assert.equal(
+        (await db.knex('email_batches').where('id', batchId).first()).member_counters_applied_at,
+        null,
+      );
+    } finally {
+      await db.knex.raw('DROP TRIGGER member_counter_application_failure');
+    }
+    assert.equal(await counters.applyPreparedBatch(batchId), true);
+    assert.equal((await stats()).email_count, 1);
+  });
+
+  it('applies a batch once across a lost commit acknowledgement and concurrent retries', async () => {
+    const { batchId } = await recipient({ enrolled: true });
+    const lostAckCounters = new NewsletterMemberCounters(
+      new Proxy(db.knex, {
+        get(target, property) {
+          if (property === 'transaction') {
+            return async (
+              callback: (trx: Knex.Transaction) => Promise<unknown>,
+              config?: Knex.TransactionConfig,
+            ) => {
+              await db.knex.transaction(callback, config);
+              throw Object.assign(new Error('Lost application acknowledgement'), {
+                code: 'ECONNRESET',
+              });
+            };
+          }
+          return Reflect.get(target, property);
+        },
+      }),
+    );
+    await assert.rejects(
+      lostAckCounters.applyPreparedBatch(batchId),
+      /Lost application acknowledgement/,
+    );
+    const restarted = new NewsletterMemberCounters(db.knex);
+    assert.deepEqual(
+      await Promise.all([
+        counters.applyPreparedBatch(batchId),
+        restarted.applyPreparedBatch(batchId),
+      ]),
+      [false, false],
+    );
+    assert.equal((await stats()).email_count, 1);
+    assert.equal((await stats()).email_tracked_count, 1);
+  });
+
+  it('keeps prepared totals consistent while application races the shared sweep', async () => {
+    await recipient({ opened: true });
+    const { batchId } = await recipient({ enrolled: true });
+    await Promise.all([
+      counters.applyPreparedBatch(batchId),
+      new NewsletterMemberCounters(db.knex).runSweepPage({ limit: 3 }),
+    ]);
+    assert.deepEqual(await stats(), {
+      email_count: 2,
+      email_tracked_count: 2,
+      email_opened_count: 1,
+      email_open_rate: null,
+    });
+  });
+
+  it('counts persisted recipient rows per member and updates the rate as the denominator grows', async () => {
+    for (let n = 0; n < 4; n++) {
+      await recipient({ opened: n < 2 });
+    }
+    const { batchId, recipientId } = await recipient({ enrolled: true });
+    const row = await db.knex('email_recipients').where('id', recipientId).first();
+    await db.knex('email_recipients').insert({ ...row, id: ObjectID().toHexString() });
+    await db.knex('email_batches').where('id', batchId).update({ recipient_count: 2 });
+    await counters.applyPreparedBatch(batchId);
+    assert.deepEqual(await stats(), {
+      email_count: 6,
+      email_tracked_count: 6,
+      email_opened_count: 2,
+      email_open_rate: 33,
+    });
+  });
 });

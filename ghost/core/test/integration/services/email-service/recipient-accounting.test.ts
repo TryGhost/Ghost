@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { recipientVerificationError } from '../../../../core/server/services/email-service/recipient-accounting';
 import { SendingStatusService } from '../../../../core/server/services/email-service/sending-status-service';
+import { NewsletterMemberCounters } from '../../../../core/server/services/email-analytics/newsletter-member-counters';
 
 const mapBatch = require('../../../../core/server/api/endpoints/utils/serializers/output/mappers/email-batches');
 const logging = require('@tryghost/logging');
@@ -139,7 +140,12 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('members').whereIn('id', addedMemberIds).del();
   });
 
-  function createService(): typeof service {
+  function createService(
+    counterOptions: {
+      memberCounterPreparation?: boolean;
+      memberCounters?: NewsletterMemberCounters;
+    } = {},
+  ): typeof service {
     return new BatchSendingService({
       db,
       models,
@@ -162,6 +168,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       // These transaction fault injections target one operation at a time.
       // Concurrent scheduling is covered in recipient-preparation.test.ts.
       batchCreationConcurrency: 1,
+      ...counterOptions,
     });
   }
 
@@ -2141,5 +2148,78 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
     // An equal-sized omission could mask the duplicate: count equations alone
     // do not establish global recipient identity uniqueness.
+  });
+  it('counts only frozen rebuilt preparation before provider submission and resumes persisted enrollment', async () => {
+    const memberCounters = new NewsletterMemberCounters(db.knex);
+    const memberIds = [1, 2, 3, 4].map((n) => n.toString(16).padStart(24, '0'));
+    const before = await db
+      .knex('members')
+      .whereIn('id', memberIds)
+      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate');
+    for (const { id, ...attributes } of before) {
+      memberRestorations.push({ id, attributes });
+    }
+    await email.save({ track_opens: true }, { patch: true });
+    service = createService({ memberCounters, memberCounterPreparation: true });
+    const interrupted = Object.assign(new Error('interrupted preparation'), { retryable: false });
+    const create = sinon.stub(models.EmailBatch, 'add').callThrough();
+    create.onSecondCall().rejects(interrupted);
+    await assert.rejects(service.createBatches(data), /interrupted preparation/);
+    create.restore();
+    const abandoned = await db.knex('email_batches').where('email_id', email.id);
+    assert.ok(abandoned.length > 0);
+    assert.ok(
+      abandoned.every(
+        (batch) => batch.member_counters_enabled === 1 && batch.member_counters_applied_at === null,
+      ),
+    );
+    assert.equal(email.get('prepared_at'), null);
+    assert.deepEqual(
+      await db
+        .knex('members')
+        .whereIn('id', memberIds)
+        .select(
+          'id',
+          'email_count',
+          'email_tracked_count',
+          'email_opened_count',
+          'email_open_rate',
+        ),
+      before,
+    );
+
+    const batches = await service.createBatches(data);
+    assert.ok(email.get('prepared_at'));
+    assert.ok(batches.every((batch) => !abandoned.some((old) => old.id === batch.id)));
+    // Enrollment is durable: disabling new opt-in must still finish these batches.
+    service = createService({ memberCounters, memberCounterPreparation: false });
+    sender.send.callsFake(async () => {
+      const saved = await db.knex('members').whereIn('id', memberIds);
+      assert.ok(
+        saved.every((member) => member.email_count === 1 && member.email_tracked_count === 1),
+      );
+      const prepared = await db.knex('email_batches').where('email_id', email.id);
+      assert.ok(prepared.every((batch) => batch.member_counters_applied_at !== null));
+      return { id: 'accepted' };
+    });
+    await service.sendBatches({ ...data, batches });
+    const first = await db
+      .knex('members')
+      .whereIn('id', memberIds)
+      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate');
+    await service.sendBatches({ ...data, batches: await service.getBatches(email) });
+    assert.deepEqual(
+      await db
+        .knex('members')
+        .whereIn('id', memberIds)
+        .select(
+          'id',
+          'email_count',
+          'email_tracked_count',
+          'email_opened_count',
+          'email_open_rate',
+        ),
+      first,
+    );
   });
 });

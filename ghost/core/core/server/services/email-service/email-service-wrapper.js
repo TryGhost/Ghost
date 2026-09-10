@@ -24,6 +24,7 @@ class EmailServiceWrapper {
     const EmailRenderer = require('./email-renderer');
     const SendingService = require('./sending-service');
     const BatchSendingService = require('./batch-sending-service');
+    const { NewsletterMemberCounters } = require('../email-analytics/newsletter-member-counters');
     const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
     const MailgunEmailProvider = require('./mailgun-email-provider');
@@ -35,6 +36,14 @@ class EmailServiceWrapper {
     const MailgunClient = require('../lib/mailgun-client');
     const configService = require('../../../shared/config');
     const batchCreationConcurrency = configService.get('bulkEmail:batchCreationConcurrency');
+    const memberCounterPreparation =
+      configService.get('emailAnalytics:memberCounterPreparation') ?? false;
+    if (memberCounterPreparation && configService.get('emailAnalytics:batchProcessing') !== true) {
+      const errors = require('@tryghost/errors');
+      throw new errors.IncorrectUsageError({
+        message: 'Member counter preparation requires emailAnalytics.batchProcessing',
+      });
+    }
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
     const jobsService = require('../jobs');
@@ -130,6 +139,8 @@ class EmailServiceWrapper {
       sentry,
       getRequiredUrlRelations,
       batchCreationConcurrency,
+      memberCounterPreparation,
+      memberCounters: new NewsletterMemberCounters(db.knex),
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 

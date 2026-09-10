@@ -44,6 +44,120 @@ export class NewsletterMemberCounters {
     this.#knex = knex;
   }
 
+  /** Apply only explicitly enrolled, frozen batches, atomically with their marker. */
+  async applyPreparedBatch(batchId: string): Promise<boolean> {
+    const owner = await this.#knex('email_batches').where('id', batchId).first('email_id');
+    if (!owner) {
+      throw this.#preparationError(batchId, 'Batch does not exist');
+    }
+    return this.#knex.transaction(async (trx) => {
+      // Match ingestion's email-before-recipient-before-member lock order. All
+      // reads before the member locks are locking reads, never an old snapshot.
+      const email = await trx('emails').where('id', owner.email_id).forUpdate().first();
+      const batch = await trx('email_batches').where('id', batchId).forUpdate().first();
+      if (!batch || batch.email_id !== owner.email_id) {
+        throw this.#preparationError(batchId, 'Batch ownership changed');
+      }
+      if (!batch.member_counters_enabled || batch.member_counters_applied_at !== null) {
+        return false;
+      }
+      if (!email || email.preflight_email_count === null || email.prepared_at === null) {
+        throw this.#preparationError(batchId, 'Member counters require frozen preparation');
+      }
+      if (batch.status !== 'pending') {
+        throw this.#preparationError(batchId, 'Unapplied member counters must precede submission');
+      }
+      const recipients: {
+        email_id: string;
+        member_id: string;
+        opened_at: Date | null;
+        delivered_at: Date | null;
+        failed_at: Date | null;
+      }[] = await trx('email_recipients')
+        .where('batch_id', batchId)
+        .select('email_id', 'member_id', 'opened_at', 'delivered_at', 'failed_at')
+        .limit(MAX_SWEEP_PAGE_SIZE + 1)
+        .forShare();
+      if (
+        recipients.length > MAX_SWEEP_PAGE_SIZE ||
+        recipients.length !== batch.recipient_count ||
+        recipients.some((row) => row.email_id !== email.id)
+      ) {
+        throw this.#preparationError(
+          batchId,
+          'Prepared recipient membership does not match the batch',
+        );
+      }
+      if (
+        recipients.some(
+          (row) => row.opened_at !== null || row.delivered_at !== null || row.failed_at !== null,
+        )
+      ) {
+        throw this.#preparationError(
+          batchId,
+          'Recipient events preceded member counter application',
+        );
+      }
+      const deltas = new Map<string, number>();
+      for (const row of recipients) {
+        deltas.set(row.member_id, (deltas.get(row.member_id) ?? 0) + 1);
+      }
+      const members: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
+          email_tracked_count: number | null;
+        })[] = await this.#members(trx)
+        .whereIn('id', [...deltas.keys()])
+        .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
+        .orderBy('id')
+        .forUpdate();
+      const uninitialized = members
+        .filter((row) => row.email_tracked_count === null)
+        .map((row) => row.id);
+      const baseline =
+        uninitialized.length > 0
+          ? await this.#derive(trx, uninitialized)
+          : new Map<string, MemberCounts>();
+      const totals = new Map<string, MemberCounts>();
+      for (const member of members) {
+        const current =
+          member.email_tracked_count === null
+            ? (baseline.get(member.id) ?? {
+                email_count: 0,
+                email_tracked_count: 0,
+                email_opened_count: 0,
+                email_open_rate: null,
+              })
+            : member;
+        const delta = deltas.get(member.id)!;
+        const tracked = Number(current.email_tracked_count) + (email.track_opens ? delta : 0);
+        const opened = Number(current.email_opened_count);
+        totals.set(member.id, {
+          email_count: Number(current.email_count) + delta,
+          email_tracked_count: tracked,
+          email_opened_count: opened,
+          email_open_rate:
+            tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+        });
+      }
+      if (members.length > 0) {
+        await this.#setCounts(
+          trx,
+          members.map((row) => row.id),
+          totals,
+        );
+      }
+      await trx('email_batches')
+        .where('id', batchId)
+        .update({ member_counters_applied_at: trx.fn.now() });
+      return true;
+    }, this.#transactionConfig());
+  }
+
+  #preparationError(batchId: string, message: string) {
+    return Object.assign(new IncorrectUsageError({ message, context: `Email batch ${batchId}` }), {
+      retryable: false,
+    });
+  }
+
   /** Resume the persisted sweep, or explicitly start another completed sweep. */
   async runSweepPage({
     limit = MAX_SWEEP_PAGE_SIZE,

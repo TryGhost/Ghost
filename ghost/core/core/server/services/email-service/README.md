@@ -371,3 +371,26 @@ Legacy recounts and recipient creation do not follow this protocol. The later
 incremental-ingestion integration must establish that boundary before allowing
 periodic repair alongside live ingestion. MySQL pages explicitly use repeatable
 read; multiple metadata and recipient reads share the same snapshot.
+
+`emailAnalytics.memberCounterPreparation` defaults to false and requires batched
+analytics. When enabled, new preparation operations persist batch enrollment with
+their recipient rows. Creation and discard/rebuild never increment member counters.
+After frozen preparation verifies, submission applies each enrolled batch's member
+totals and marker atomically. A resumed send honors existing enrollment even if
+new enrollment has been disabled. Historical batches remain opted out.
+
+Keep this flag off with legacy analytics workers. For isolated preparation testing,
+stop analytics jobs first: legacy recounts include pending recipient rows and do
+not coordinate with these increments. Enabling preparation with live analytics
+requires the subsequent member-event counter integration and a drained-worker
+cutover. The flag does not itself enable that integration.
+
+Application locks the email, batch, persisted recipient rows and then members in
+primary-key order, before its first consistent read. Uninitialized members use the
+same derived baseline as the sweep; pending enrolled recipients are excluded, then
+this batch is added exactly once. Deleted members are skipped. Application rejects
+unfrozen, already-submitting or inconsistent batches before changing counters.
+All batch applications finish before the first provider submission. An uncertain
+commit is retried through the persisted marker, so it cannot increment twice.
+A transaction handles at most 5,000 recipient rows; larger batches require an
+explicit implementation change before enabling this mode.
