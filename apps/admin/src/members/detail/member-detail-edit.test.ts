@@ -437,8 +437,16 @@ describe('isDraftInSyncWithServer', () => {
 
 describe('getCustomFieldValidationErrors', () => {
   const fields = [
-    { key: 'job_title', name: 'Job title', type: 'short_text', created_at: '', updated_at: null },
     {
+      namespace: 'custom',
+      key: 'job_title',
+      name: 'Job title',
+      type: 'short_text',
+      created_at: '',
+      updated_at: null,
+    },
+    {
+      namespace: 'custom',
       key: 'home_address',
       name: 'Home address',
       type: 'address',
@@ -476,7 +484,7 @@ describe('getCustomFieldValidationErrors', () => {
     for (const country of ['DEU', '12', 'D']) {
       expect(
         getCustomFieldValidationErrors({ home_address: { ...validAddress, country } }, fields),
-      ).toEqual({ 'home_address.country': message });
+      ).toEqual({ 'custom.home_address.country': message });
     }
   });
 
@@ -489,15 +497,15 @@ describe('getCustomFieldValidationErrors', () => {
     );
 
     expect(errors).toEqual({
-      job_title: 'Use 255 characters or fewer.',
-      'home_address.country': 'Enter a 2-letter country code, like US.',
-      'home_address.line1': 'Use 255 characters or fewer.',
+      'custom.job_title': 'Use 255 characters or fewer.',
+      'custom.home_address.country': 'Enter a 2-letter country code, like US.',
+      'custom.home_address.line1': 'Use 255 characters or fewer.',
     });
   });
 
   it('reports an over-long short_text value with the limit a person can act on', () => {
     const errors = getCustomFieldValidationErrors({ job_title: 'x'.repeat(256) }, fields);
-    expect(errors).toEqual({ job_title: 'Use 255 characters or fewer.' });
+    expect(errors).toEqual({ 'custom.job_title': 'Use 255 characters or fewer.' });
   });
 
   it('reports an over-long address sub-field with the limit a person can act on', () => {
@@ -505,7 +513,7 @@ describe('getCustomFieldValidationErrors', () => {
       { home_address: { ...validAddress, line1: 'x'.repeat(256) } },
       fields,
     );
-    expect(errors).toEqual({ 'home_address.line1': 'Use 255 characters or fewer.' });
+    expect(errors).toEqual({ 'custom.home_address.line1': 'Use 255 characters or fewer.' });
   });
 
   it('raises nothing for an address of nothing but whitespace, which reads as cleared', () => {

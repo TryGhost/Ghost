@@ -313,9 +313,10 @@ export function buildCustomFieldSavePayload(
  * schemas. Each rule carries its own message, so what this returns for a
  * violation is the same sentence the server returns for it, and the screen
  * reads the same whichever tier caught it. Returns messages keyed by
- * `fieldKey` (scalar) or `fieldKey.subfield` (composite sub-field), matching
- * the path shape of the server's 422 `property` so both error sources render
- * through one map. Cleared/empty values are always valid — fields are optional.
+ * `namespace.fieldKey` (scalar) or `namespace.fieldKey.subfield` (composite
+ * sub-field), the path shape of the server's 422 `property` once its
+ * `metafields.` prefix is dropped, so both error sources render through one map.
+ * Cleared/empty values are always valid — fields are optional.
  */
 export function getCustomFieldValidationErrors(
   draftCustomFields: Record<string, EditableCustomFieldValue>,
@@ -340,7 +341,7 @@ export function getCustomFieldValidationErrors(
     const result = definition.value.safeParse(value);
     if (!result.success) {
       for (const issue of result.error.issues) {
-        const key = [field.key, ...issue.path].join('.');
+        const key = [field.namespace, field.key, ...issue.path].join('.');
         errors[key] ??= issue.message;
       }
     }
