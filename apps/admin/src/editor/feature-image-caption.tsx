@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -72,7 +72,7 @@ function CaptionMount({
 
 /** The feature image caption: one paragraph of basic formatting, emitted as HTML. */
 export function FeatureImageCaption(props: FeatureImageCaptionProps) {
-  const editor = useMemo(() => loadKoenig(), []);
+  const editor = loadKoenig();
 
   return (
     <div className="koenig-react-editor koenig-lexical flex-1">

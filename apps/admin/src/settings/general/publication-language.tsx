@@ -55,15 +55,32 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
     },
   });
 
-  const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
+  const [publicationLanguage = ''] = getSettingValues<string>(localSettings, ['locale']);
 
   const localeOptions = React.useMemo<LocaleOption[]>(() => {
-    const options = (LOCALE_DATA as LocaleData[]).map((locale) => ({
+    const localeData = LOCALE_DATA as unknown as Array<unknown>;
+
+    if (!Array.isArray(localeData)) {
+      return [];
+    }
+
+    const validLocaleData = localeData.filter((locale): locale is LocaleData => {
+      if (!locale || typeof locale !== 'object') {
+        return false;
+      }
+
+      return (
+        'code' in locale &&
+        'label' in locale &&
+        typeof (locale as { code: unknown }).code === 'string' &&
+        typeof (locale as { label: unknown }).label === 'string'
+      );
+    });
+
+    return validLocaleData.map((locale) => ({
       value: locale.code,
       label: `${locale.label} (${locale.code})`,
     }));
-
-    return options;
   }, []);
 
   const handleLanguageChange = (value: string) => {
