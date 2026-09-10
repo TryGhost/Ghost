@@ -44,6 +44,7 @@
     },
     "./locale-data.json": {
       "source": "./src/locale-data.json",
+      "types": "./src/locale-data.json",
       "default": "./build/locale-data.json"
     },
     "./package.json": "./package.json"
