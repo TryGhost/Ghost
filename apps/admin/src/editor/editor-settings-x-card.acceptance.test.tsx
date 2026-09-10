@@ -510,6 +510,38 @@ describe('Post settings X card', () => {
   );
 
   it(
+    'keeps keyboard navigation inside Unsplash and restores focus after Escape',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await editorScreen.settingsXImageUnsplashButton().click();
+      await expect.element(editorScreen.unsplashSearchInput()).toHaveFocus();
+      await expect.element(editorScreen.unsplashInsertImage()).toBeVisible();
+
+      // Back past the close button: focus must wrap inside the search rather
+      // than reaching the picker button in the pane behind it.
+      await userEvent.keyboard('{Shift>}{Tab}{Tab}{/Shift}');
+      expect(editorScreen.unsplashSearch().element().contains(document.activeElement)).toBe(true);
+
+      // Traverse past the close button, search field and one photo's links.
+      // Every stop stays inside, including the forward wrap.
+      for (let i = 0; i < 6; i++) {
+        await userEvent.keyboard('{Tab}');
+        expect(editorScreen.unsplashSearch().element().contains(document.activeElement)).toBe(true);
+      }
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+      await expect.element(editorScreen.settingsXImageUnsplashButton()).toHaveFocus();
+    },
+    SLOW,
+  );
+
+  it(
     'keeps the pane open when Escape dismisses the Unsplash search',
     async () => {
       fakeSavablePost();

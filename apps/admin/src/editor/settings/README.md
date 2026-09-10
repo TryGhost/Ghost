@@ -205,6 +205,9 @@ uploader it closes that control. In the Unsplash search it closes the search and
 leaves the field it was opened from. With none of those open it closes the pane,
 and with no pane open the sidebar answers Escape with nothing.
 
+The Unsplash search traps focus and loops Tab navigation in both directions.
+Closing it returns focus to the picker button when that field is still present.
+
 ## Access
 
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,

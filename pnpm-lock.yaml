@@ -264,6 +264,12 @@ catalogs:
     '@radix-ui/react-context-menu':
       specifier: 2.3.2
       version: 2.3.2
+    '@radix-ui/react-focus-guards':
+      specifier: 1.1.4
+      version: 1.1.4
+    '@radix-ui/react-focus-scope':
+      specifier: 1.1.11
+      version: 1.1.11
     '@radix-ui/react-form':
       specifier: 0.1.11
       version: 0.1.11
@@ -938,6 +944,12 @@ importers:
       '@dnd-kit/sortable':
         specifier: 'catalog:'
         version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@radix-ui/react-focus-guards':
+        specifier: 'catalog:'
+        version: 1.1.4(@types/react@18.3.31)(react@18.3.1)
+      '@radix-ui/react-focus-scope':
+        specifier: 'catalog:'
+        version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)

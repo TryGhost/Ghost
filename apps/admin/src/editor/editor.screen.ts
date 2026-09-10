@@ -286,6 +286,8 @@ export const editorScreen = {
   featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
   /** The Unsplash search modal, wherever the picker that opened it sits. */
   unsplashModal: () => page.getByRole('heading', { name: 'Unsplash' }),
+  unsplashSearch: () => page.getByTestId(unsplashSearchModal),
+  unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
   unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),
   removeFeatureImage: () => page.getByRole('button', { name: removeFeatureImageButton }),
   featureImageAltToggle: () => page.getByRole('button', { name: toggleFeatureImageAltButton }),

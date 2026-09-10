@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { FocusGuards } from '@radix-ui/react-focus-guards';
+import { FocusScope } from '@radix-ui/react-focus-scope';
 import { UnsplashSearchModal } from '@tryghost/kg-unsplash-selector';
 import { Button } from '@tryghost/shade/components';
 import { ImageUploadActions } from '@tryghost/shade/patterns';
@@ -37,6 +39,7 @@ export function UnsplashPicker({
   onSelect,
 }: UnsplashPickerProps) {
   const { unsplashConfig } = useFramework();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
@@ -73,6 +76,7 @@ export function UnsplashPicker({
     <>
       <ImageUploadActions className={cn('top-1 right-1 opacity-100', className)}>
         <Button
+          ref={triggerRef}
           aria-label={label}
           className="group/unsplash hover:bg-button-hover"
           disabled={disabled}
@@ -89,20 +93,32 @@ export function UnsplashPicker({
       </ImageUploadActions>
       {isOpen &&
         createPortal(
-          // The root the Escape listener is bound to: no layout of its own, and
-          // focusable so a click on the gallery keeps focus inside it.
-          <div ref={setModalRoot} data-testid={unsplashSearchModal} tabIndex={-1}>
-            <UnsplashSearchModal
-              unsplashProviderConfig={unsplashConfig}
-              onClose={() => setIsOpen(false)}
-              onImageInsert={(inserted) => {
-                if (inserted.src) {
-                  onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
-                }
-                setIsOpen(false);
+          // Keep keyboard navigation and gallery clicks inside the root that
+          // marks Escape, so the settings pane behind it never answers too.
+          <FocusGuards>
+            <FocusScope
+              asChild
+              loop
+              trapped
+              onUnmountAutoFocus={(event) => {
+                event.preventDefault();
+                triggerRef.current?.focus();
               }}
-            />
-          </div>,
+            >
+              <div ref={setModalRoot} data-testid={unsplashSearchModal} tabIndex={-1}>
+                <UnsplashSearchModal
+                  unsplashProviderConfig={unsplashConfig}
+                  onClose={() => setIsOpen(false)}
+                  onImageInsert={(inserted) => {
+                    if (inserted.src) {
+                      onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
+                    }
+                    setIsOpen(false);
+                  }}
+                />
+              </div>
+            </FocusScope>
+          </FocusGuards>,
           document.body,
         )}
     </>

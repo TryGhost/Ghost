@@ -1,9 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { UnsplashPicker } from './unsplash-picker';
 
 vi.mock('@tryghost/kg-unsplash-selector', () => ({
-  UnsplashSearchModal: () => <div>Unsplash search</div>,
+  UnsplashSearchModal: ({ onClose }: { onClose: () => void }) => (
+    <div>
+      Unsplash search
+      <button type="button" onClick={onClose}>
+        Close search
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -33,6 +40,19 @@ function openSearch() {
  * Escape, so the pane it opened over keeps its own.
  */
 describe('UnsplashPicker', () => {
+  it('returns focus to the picker when the search closes', async () => {
+    render(picker(true));
+    const trigger = screen.getByRole('button', { name: LABEL });
+    trigger.focus();
+    openSearch();
+
+    const close = screen.getByRole('button', { name: 'Close search' });
+    expect(close).toHaveFocus();
+    fireEvent.click(close);
+
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
   it('marks only the Escape raised inside the open search', () => {
     render(picker(true));
 
