@@ -162,7 +162,7 @@ function MembersHeader({
               </PageHeader.ActionGroup.MobileMenu>
             )}
             <PageHeader.ActionGroup.Primary>
-              <PageHeader.Action label="New member" legacyVariant="default">
+              <PageHeader.Action fallbackVariant="default" label="New member">
                 <Plus />
                 <span className="hidden sm:inline">New member</span>
               </PageHeader.Action>
@@ -337,24 +337,24 @@ export const DisabledActions: Story = {
     </PageHeader.ActionGroup>
   ),
 };
-export const LegacyCompatibility: Story = {
+export const Admin7Disabled: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'The temporary legacy provider preserves the old control appearance and disables new header tooltips. Existing pages retain their historical action order locally.',
+          'The provider with Admin 7 disabled preserves the old control appearance and disables new header tooltips. Existing pages retain their historical action order locally.',
       },
     },
   },
   render: () => (
-    <ShadeApp darkMode={false} design="legacy">
+    <ShadeApp darkMode={false} isAdmin7Design={false}>
       <PageHeader.ActionGroup>
         <PageHeader.Action label="Sort">
           <ArrowUpDown />
           Newest first
         </PageHeader.Action>
         <PageHeader.ActionGroup.Primary>
-          <PageHeader.Action label="New post" legacyVariant="default">
+          <PageHeader.Action fallbackVariant="default" label="New post">
             <Plus />
             New post
           </PageHeader.Action>

@@ -108,7 +108,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   isCreating,
   onSearchClear,
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
   const visibleLabels = normalizedSearch
@@ -147,7 +147,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     <>
       {!showCreate && visibleLabels.length === 0 && <CommandEmpty>No labels found</CommandEmpty>}
       {visibleLabels.length > 0 && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', !isLegacyDesign && 'p-0')}>
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7Design && 'p-0')}>
           {visibleLabels.map((label) =>
             editingLabelId === label.id ? (
               <EditRow
@@ -171,7 +171,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </CommandGroup>
       )}
       {showCreate && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', !isLegacyDesign && 'p-0')}>
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7Design && 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
             <LucideIcon.Plus className="size-4" />
             {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
@@ -190,7 +190,7 @@ interface SelectedPillsProps {
 }
 
 const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   return (
     <>
       {labels.map((label) => (
@@ -198,7 +198,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
           key={label.id}
           className={cn(
             'cursor-pointer gap-1 pr-1',
-            !isLegacyDesign &&
+            isAdmin7Design &&
               'h-6 rounded-full border-transparent bg-secondary px-2 pr-1.5 text-sm',
           )}
           variant="outline"
@@ -276,7 +276,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -338,7 +338,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
       <div
         className={cn(
           'flex min-h-9 w-full cursor-text flex-wrap items-center border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
-          isLegacyDesign ? 'gap-1.5 rounded-md px-3 py-1' : 'gap-1 rounded-control p-1',
+          isAdmin7Design ? 'gap-1 rounded-control p-1' : 'gap-1.5 rounded-md px-3 py-1',
         )}
         role="combobox"
         onClick={() => {
@@ -351,7 +351,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
           ref={inputRef}
           className={cn(
             'min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-            !isLegacyDesign && 'px-2',
+            isAdmin7Design && 'px-2',
           )}
           placeholder={selectedLabels.length === 0 ? placeholder : ''}
           value={search}
@@ -369,7 +369,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         <div
           className={cn(
             'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
-            isLegacyDesign ? 'rounded-md' : 'rounded-menu',
+            isAdmin7Design ? 'rounded-menu' : 'rounded-md',
           )}
         >
           {optionSource.isInitialLoad ? (

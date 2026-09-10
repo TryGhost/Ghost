@@ -187,37 +187,37 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
-  const legacyUnconsolidated = isLegacyDesign && !useConsolidatedFilterUI;
+  const useOriginalFilterUI = !isAdmin7Design && !useConsolidatedFilterUI;
   const showIconOnlyTrigger = iconOnly && !hasFilters;
   const addFilterButtonClassName = cn(
-    isLegacyDesign && 'bg-background',
+    !isAdmin7Design && 'bg-background',
     showIconOnlyTrigger &&
-      isLegacyDesign &&
+      !isAdmin7Design &&
       'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
     hasFilters &&
-      isLegacyDesign &&
+      !isAdmin7Design &&
       (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
   );
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions
-      className={cn(legacyUnconsolidated && 'gap-4')}
+      className={cn(useOriginalFilterUI && 'gap-4')}
       data-testid="members-filter-actions"
-      gap={!legacyUnconsolidated ? 'sm' : undefined}
+      gap={!useOriginalFilterUI ? 'sm' : undefined}
     >
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          isLegacyDesign && 'text-muted-foreground hover:text-foreground',
-          legacyUnconsolidated && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
+          !isAdmin7Design && 'text-muted-foreground hover:text-foreground',
+          useOriginalFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"
-        variant={isLegacyDesign && useConsolidatedFilterUI ? 'outline' : 'ghost'}
+        variant={!isAdmin7Design && useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
-        {legacyUnconsolidated && <LucideIcon.X className="size-4" />}
+        {useOriginalFilterUI && <LucideIcon.X className="size-4" />}
         Clear
       </FilterBar.Action>
       {nql && (
@@ -233,10 +233,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const filterControls = (
     <Filters
-      addButton={!hasFilters && !isLegacyDesign ? <PageHeader.FilterTrigger /> : undefined}
+      addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
       addButtonClassName={addFilterButtonClassName}
       addButtonIcon={
-        !legacyUnconsolidated ? (
+        !useOriginalFilterUI ? (
           hasFilters ? (
             <LucideIcon.ListFilterPlus className="size-4" />
           ) : (
@@ -249,7 +249,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={!isLegacyDesign && !hasFilters ? 'ghost' : undefined}
+      addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}

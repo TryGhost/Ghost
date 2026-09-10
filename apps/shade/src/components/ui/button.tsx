@@ -30,63 +30,67 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-7 p-0 [&_svg]:size-3',
       },
-      design: { current: '', legacy: '' },
+      isAdmin7Design: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
       },
     },
     compoundVariants: [
-      { design: 'legacy', variant: 'secondary', className: 'bg-secondary hover:bg-secondary/80' },
-      { design: 'current', variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
       {
-        design: 'legacy',
+        isAdmin7Design: false,
+        variant: 'secondary',
+        className: 'bg-secondary hover:bg-secondary/80',
+      },
+      { isAdmin7Design: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
+      {
+        isAdmin7Design: false,
         variant: 'subtle',
         className:
           'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'subtle',
         className: 'hover:bg-accent hover:text-accent-foreground',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: ['secondary', 'ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: ['ghost', 'subtle'],
         className:
           'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown', 'subtle'],
         size: ['default', 'sm', 'lg'],
         className: 'px-3',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'outline',
         className:
           'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },
@@ -95,7 +99,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      design: 'current',
+      isAdmin7Design: true,
     },
   },
 );
@@ -103,13 +107,13 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Omit<VariantProps<typeof buttonVariants>, 'design'> {
+    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7Design'> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape, design } = useShade();
+    const { controlShape, isAdmin7Design } = useShade();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
@@ -128,7 +132,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
-        className={cn(buttonVariants({ variant, size, design, shape: resolvedShape, className }))}
+        className={cn(
+          buttonVariants({ variant, size, isAdmin7Design, shape: resolvedShape, className }),
+        )}
         {...props}
         data-control-shape={resolvedShape}
       >

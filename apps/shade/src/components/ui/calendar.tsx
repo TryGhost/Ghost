@@ -18,7 +18,7 @@ function Calendar({
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>['variant'];
 }) {
-  const { design, controlShape } = useShade();
+  const { isAdmin7Design, controlShape } = useShade();
   const defaultClassNames = getDefaultClassNames();
 
   return (
@@ -39,12 +39,12 @@ function Calendar({
           defaultClassNames.nav,
         ),
         button_previous: cn(
-          buttonVariants({ variant: buttonVariant, design, shape: controlShape }),
+          buttonVariants({ variant: buttonVariant, isAdmin7Design, shape: controlShape }),
           'size-(--cell-size) p-0 select-none aria-disabled:opacity-50',
           defaultClassNames.button_previous,
         ),
         button_next: cn(
-          buttonVariants({ variant: buttonVariant, design, shape: controlShape }),
+          buttonVariants({ variant: buttonVariant, isAdmin7Design, shape: controlShape }),
           'size-(--cell-size) p-0 select-none aria-disabled:opacity-50',
           defaultClassNames.button_next,
         ),

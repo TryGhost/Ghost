@@ -28,7 +28,7 @@ function Header({ mobile = false }: { mobile?: boolean }) {
         </PageHeader.ActionGroup.MobileMenuContent>
       </PageHeader.ActionGroup.MobileMenu>
       <PageHeader.ActionGroup.Primary>
-        <PageHeader.Action label="New member" legacyVariant="default">
+        <PageHeader.Action fallbackVariant="default" label="New member">
           <svg />
           New member
         </PageHeader.Action>
@@ -56,9 +56,9 @@ describe('PageHeader action contract', () => {
     expect(screen.getByRole('tooltip').textContent).toContain('Search');
   });
 
-  it.each(['current', 'legacy'] as const)('forwards primary classes in %s design', (design) => {
+  it.each([true, false])('forwards primary classes with isAdmin7Design=%s', (isAdmin7Design) => {
     render(
-      <ShadeProvider darkMode={false} design={design}>
+      <ShadeProvider darkMode={false} isAdmin7Design={isAdmin7Design}>
         <PageHeader.ActionGroup>
           <PageHeader.ActionGroup.Primary className="custom-primary">
             <PageHeader.Action className="custom-action" label="Save">
@@ -88,9 +88,9 @@ describe('PageHeader action contract', () => {
     expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 
-  it('keeps legacy controls and focus behavior without adding header tooltips', () => {
+  it('keeps previous controls and focus behavior without adding header tooltips', () => {
     render(
-      <ShadeProvider darkMode={false} design="legacy">
+      <ShadeProvider darkMode={false} isAdmin7Design={false}>
         <Header />
       </ShadeProvider>,
     );
@@ -118,11 +118,11 @@ describe('PageHeader action contract', () => {
     expect(primary?.previousElementSibling).toBe(more);
   });
 
-  it('forwards legacy asChild handlers and refs through a tooltip wrapper to a real popover', async () => {
+  it('forwards previous asChild handlers and refs through a tooltip wrapper to a real popover', async () => {
     const ref = React.createRef<HTMLButtonElement>();
     const clicked = vi.fn();
     render(
-      <ShadeProvider darkMode={false} design="legacy">
+      <ShadeProvider darkMode={false} isAdmin7Design={false}>
         <PageHeader.Tooltip label="More">
           <Popover>
             <PopoverTrigger asChild>

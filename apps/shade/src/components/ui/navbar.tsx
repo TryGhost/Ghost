@@ -9,13 +9,13 @@ interface NavbarActionsProps {
 
 const NavbarActions = React.forwardRef<HTMLDivElement, NavbarActionsProps>(
   ({ children, className, ...props }, ref) => {
-    const { isLegacyDesign } = useShade();
+    const { isAdmin7Design } = useShade();
     return (
       <div
         ref={ref}
         className={cn(
           'mt-3 flex items-center [grid-area:actions] lg:mt-0',
-          isLegacyDesign ? 'gap-2' : 'gap-1',
+          isAdmin7Design ? 'gap-1' : 'gap-2',
           className,
         )}
         data-navbar="navbar-actions"

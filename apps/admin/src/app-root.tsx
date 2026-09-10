@@ -19,14 +19,14 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
-  const admin7PillAllowed = useFeatureFlag('admin7Pill') && isAdmin7PillAllowedRoute(pathname);
-  const admin7PillEnabled = admin7PillAllowed && !isEmberOwnedRoute;
+  const isAdmin7Design =
+    useFeatureFlag('admin7Pill') && isAdmin7PillAllowedRoute(pathname) && !isEmberOwnedRoute;
 
   return (
     <ShadeApp
-      className={cn('shade-admin', admin7PillEnabled && 'admin7-pill')}
+      className={cn('shade-admin', isAdmin7Design && 'admin7-pill')}
       darkMode={resolvedTheme === 'dark'}
-      design={admin7PillEnabled ? 'current' : 'legacy'}
+      isAdmin7Design={isAdmin7Design}
       data-react-admin-mounted
     >
       <App />

@@ -18,7 +18,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
@@ -30,7 +30,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
 
-  const filterBarActions = !isLegacyDesign ? (
+  const filterBarActions = isAdmin7Design ? (
     <FilterBar.Actions>
       <FilterBar.Action type="button" variant="ghost" onClick={() => onFiltersChange([])}>
         Clear
@@ -49,18 +49,18 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   return (
     <Filters
-      addButton={!hasFilters && !isLegacyDesign ? <PageHeader.FilterTrigger /> : undefined}
+      addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
       addButtonClassName={cn(
         hasFilters &&
-          isLegacyDesign &&
+          !isAdmin7Design &&
           (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
       )}
       addButtonIcon={
-        !isLegacyDesign || useConsolidatedFilterUI ? (
+        isAdmin7Design || useConsolidatedFilterUI ? (
           hasFilters ? (
-            <LucideIcon.ListFilterPlus className={!isLegacyDesign ? 'stroke-2!' : undefined} />
+            <LucideIcon.ListFilterPlus className={isAdmin7Design ? 'stroke-2!' : undefined} />
           ) : (
-            <LucideIcon.ListFilter className={!isLegacyDesign ? 'stroke-2!' : undefined} />
+            <LucideIcon.ListFilter className={isAdmin7Design ? 'stroke-2!' : undefined} />
           )
         ) : hasFilters ? (
           <LucideIcon.FunnelPlus />
@@ -69,7 +69,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={!isLegacyDesign && !hasFilters ? 'ghost' : undefined}
+      addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}

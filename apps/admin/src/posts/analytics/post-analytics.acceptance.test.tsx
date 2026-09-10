@@ -67,7 +67,7 @@ describe.each([false, true])('Post analytics header design (admin7Pill=%s)', (ad
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const shareRect = share.element().getBoundingClientRect();
       const menuRect = menuTrigger.element().getBoundingClientRect();
-      // Legacy put Share before the more menu. The current design ends in Share,
+      // Previous put Share before the more menu. The current design ends in Share,
       // separated by 20px, without changing the menu's product actions.
       if (admin7Pill) {
         expect(shareRect.left - menuRect.right).toBeCloseTo(2 * rem, 1);

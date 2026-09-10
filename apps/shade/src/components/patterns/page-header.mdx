@@ -51,7 +51,7 @@ trigger must be constructed outside that slot, such as a modal trigger.
 </PageHeader.Actions>
 ```
 
-The controls inherit the current design. They do not need a pill shape, explicit
+The controls inherit the Admin 7 design. They do not need a pill shape, explicit
 stroke width, ghost variant, tooltip styling, or page-specific CSS. Secondary
 controls use the ghost treatment and **2px icon strokes**. Dropdown text has the
 same medium weight as Filter; header dropdown triggers hide their down chevrons.
@@ -103,16 +103,16 @@ Expanded search must not push the primary off-screen.
 
 ## Compatibility and rollout
 
-New headers use the current design by default. During the Admin 7 experiment, the
-Admin root selects Shade's temporary `design="legacy"` compatibility mode when
+New headers use the Admin 7 design by default. During the Admin 7 experiment, the
+Admin root sets `isAdmin7Design={false}` on ShadeApp when
 the private flag is off or the route is excluded. Shade owns visual differences;
 features retain only historical structural differences that cannot be expressed
-through shared controls. Existing consumers may supply `legacyVariant` and
-`legacySize` to preserve their prior controls. New consumers should use defaults.
+through shared controls. Existing consumers may supply `fallbackVariant` and
+`fallbackSize` to preserve their prior controls. New consumers should use defaults.
 
-The legacy mode retains its previous spacing, chevrons, control appearance and
+With Admin 7 disabled, the header retains its previous spacing, chevrons, control appearance and
 absence of new header tooltips. At rollout, remove the root flag mapping and
-legacy branches; ordinary page code already uses the intended defaults.
+flag-off branches; ordinary page code already uses the intended defaults.
 
 ## Review a header
 

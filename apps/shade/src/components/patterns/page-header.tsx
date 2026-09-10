@@ -25,14 +25,14 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
   blurredBackground?: boolean;
 };
 
-/** Header tooltips are opt-in during legacy compatibility, and never belong on primary actions. */
+/** Header tooltips require Admin 7 and never belong on primary actions. */
 function PageHeaderTooltip({
   children,
   label,
   shortcut,
 }: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
-  const { isLegacyDesign } = useShade();
-  if (isLegacyDesign) {
+  const { isAdmin7Design } = useShade();
+  if (!isAdmin7Design) {
     return <>{children}</>;
   }
   return (
@@ -52,16 +52,16 @@ const PageHeaderTooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipTrigger>,
   React.ComponentPropsWithoutRef<typeof TooltipTrigger>
 >(({ children, asChild, ...props }, ref) => {
-  const { isLegacyDesign } = useShade();
-  const LegacyTrigger = asChild ? Slot : 'button';
-  return isLegacyDesign ? (
-    <LegacyTrigger ref={ref} {...props}>
-      {children}
-    </LegacyTrigger>
-  ) : (
+  const { isAdmin7Design } = useShade();
+  const PlainTrigger = asChild ? Slot : 'button';
+  return isAdmin7Design ? (
     <TooltipTrigger ref={ref} asChild={asChild} {...props}>
       {children}
     </TooltipTrigger>
+  ) : (
+    <PlainTrigger ref={ref} {...props}>
+      {children}
+    </PlainTrigger>
   );
 });
 PageHeaderTooltipTrigger.displayName = 'PageHeaderTooltipTrigger';
@@ -74,8 +74,8 @@ type PageHeaderActionProps = ButtonProps & {
   primary?: boolean;
   shortcut?: string;
   /** Temporary compatibility for existing screens; new headers use the defaults. */
-  legacyVariant?: ButtonProps['variant'];
-  legacySize?: ButtonProps['size'];
+  fallbackVariant?: ButtonProps['variant'];
+  fallbackSize?: ButtonProps['size'];
 };
 
 const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionProps>(
@@ -85,14 +85,14 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
       iconOnly = false,
       primary: primaryProp,
       shortcut,
-      legacyVariant = 'outline',
-      legacySize,
+      fallbackVariant = 'outline',
+      fallbackSize,
       className,
       ...props
     },
     ref,
   ) => {
-    const { isLegacyDesign } = useShade();
+    const { isAdmin7Design } = useShade();
     const primaryContext = React.useContext(PrimaryActionContext);
     const primary = primaryProp ?? primaryContext;
     const button = (
@@ -100,13 +100,13 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
         ref={ref}
         aria-keyshortcuts={shortcut}
         aria-label={label}
-        className={cn(!isLegacyDesign && '[&_svg]:stroke-2!', className)}
-        size={isLegacyDesign ? legacySize : iconOnly ? 'icon' : undefined}
-        variant={isLegacyDesign ? legacyVariant : primary ? 'default' : 'ghost'}
+        className={cn(isAdmin7Design && '[&_svg]:stroke-2!', className)}
+        size={isAdmin7Design ? (iconOnly ? 'icon' : undefined) : fallbackSize}
+        variant={isAdmin7Design ? (primary ? 'default' : 'ghost') : fallbackVariant}
         {...props}
       />
     );
-    return primary || isLegacyDesign ? (
+    return primary || !isAdmin7Design ? (
       button
     ) : (
       <PageHeaderTooltip label={label} shortcut={shortcut}>
@@ -139,16 +139,16 @@ const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
 >(({ label, className, ...props }, ref) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   return (
     <PageHeaderTooltip label={label}>
       <PageHeaderTooltipTrigger asChild>
         <SelectTrigger
           ref={ref}
           aria-label={label}
-          className={cn('w-auto', !isLegacyDesign && 'font-medium [&_svg]:stroke-2!', className)}
-          showChevron={isLegacyDesign}
-          variant={isLegacyDesign ? 'default' : 'ghost'}
+          className={cn('w-auto', isAdmin7Design && 'font-medium [&_svg]:stroke-2!', className)}
+          showChevron={!isAdmin7Design}
+          variant={isAdmin7Design ? 'ghost' : 'default'}
           {...props}
         />
       </PageHeaderTooltipTrigger>
@@ -275,19 +275,13 @@ function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) 
 
 type PageHeaderActionGroupPrimaryProps = PropsWithChildrenAndClassName;
 function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionGroupPrimaryProps) {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   if (React.Children.toArray(children).length === 0) {
     return null;
   }
   return (
     <PrimaryActionContext.Provider value={true}>
-      {isLegacyDesign ? (
-        className ? (
-          <Slot className={className}>{children}</Slot>
-        ) : (
-          children
-        )
-      ) : (
+      {isAdmin7Design ? (
         <Inline
           className={cn('ms-4 shrink-0 first:ms-0', className)}
           data-page-header="primary"
@@ -295,6 +289,10 @@ function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionG
         >
           {children}
         </Inline>
+      ) : className ? (
+        <Slot className={className}>{children}</Slot>
+      ) : (
+        children
       )}
     </PrimaryActionContext.Provider>
   );
@@ -334,13 +332,13 @@ function PageHeaderActionGroupMobileMenuContent({
 }
 
 function PageHeaderTooltipProvider({ children }: React.PropsWithChildren) {
-  const { isLegacyDesign } = useShade();
-  return isLegacyDesign ? (
-    <>{children}</>
-  ) : (
+  const { isAdmin7Design } = useShade();
+  return isAdmin7Design ? (
     <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
       {children}
     </TooltipProvider>
+  ) : (
+    <>{children}</>
   );
 }
 
@@ -389,8 +387,8 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     children,
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
-    const { isLegacyDesign } = useShade();
-    const gap = isLegacyDesign ? 'sm' : 'xs';
+    const { isAdmin7Design } = useShade();
+    const gap = isAdmin7Design ? 'xs' : 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];
     let mobileMenu: React.ReactElement | null = null;
@@ -470,10 +468,10 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
           >
             {mobileMenu}
             {primaryAction &&
-              (isLegacyDesign ? (
-                <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
-              ) : (
+              (isAdmin7Design ? (
                 primaryAction
+              ) : (
+                <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
               ))}
           </Inline>
         </Inline>

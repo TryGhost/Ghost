@@ -3,7 +3,7 @@ import { Accept, DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { buttonVariants } from '@/components/ui/button';
 import { inputSurface } from '@/components/ui/input-surface';
-import { useShade, type ShadeDesign, type ControlShape } from '@/providers/shade-provider';
+import { useShade, type ControlShape } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 
 const dropzoneBaseVariants = cva(
@@ -32,14 +32,14 @@ const dropzoneBaseVariants = cva(
 // Keep the exported recipe useful outside the component, with current defaults.
 function dropzoneVariants(
   props: Parameters<typeof dropzoneBaseVariants>[0] = {},
-  design: ShadeDesign = 'current',
-  shape: ControlShape = design === 'legacy' ? 'rounded' : 'pill',
+  isAdmin7Design = true,
+  shape: ControlShape = isAdmin7Design ? 'pill' : 'rounded',
 ) {
   return cn(
     dropzoneBaseVariants(props),
-    props.variant === 'button' && buttonVariants({ design, shape, variant: 'outline' }),
+    props.variant === 'button' && buttonVariants({ isAdmin7Design, shape, variant: 'outline' }),
     props.variant === 'buttonSecondary' &&
-      buttonVariants({ design, shape, size: 'sm', variant: 'secondary' }),
+      buttonVariants({ isAdmin7Design, shape, size: 'sm', variant: 'secondary' }),
     props.className,
   );
 }
@@ -90,7 +90,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
     },
     ref,
   ) => {
-    const { design, controlShape } = useShade();
+    const { isAdmin7Design, controlShape } = useShade();
     const {
       getRootProps,
       getInputProps,
@@ -140,7 +140,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       'aria-disabled': disabled,
       'aria-invalid': isDragReject || undefined,
       className: cn(
-        dropzoneVariants({ variant }, design, controlShape),
+        dropzoneVariants({ variant }, isAdmin7Design, controlShape),
         disabled && 'pointer-events-none cursor-not-allowed opacity-60',
         isDragReject && 'border-state-danger bg-state-danger/10',
         isDragActive && !isDragReject && !disabled && 'border-state-success bg-state-success/10',

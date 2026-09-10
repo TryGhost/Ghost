@@ -90,12 +90,12 @@ const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & Pick<ButtonProps, 'variant'>
 >(({ className, variant, ...props }, ref) => {
-  const { controlShape, design } = useShade();
+  const { controlShape, isAdmin7Design } = useShade();
 
   return (
     <AlertDialogPrimitive.Action
       ref={ref}
-      className={cn(buttonVariants({ design, shape: controlShape, variant }), className)}
+      className={cn(buttonVariants({ isAdmin7Design, shape: controlShape, variant }), className)}
       {...props}
       data-control-shape={controlShape}
     />
@@ -107,13 +107,13 @@ const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
 >(({ className, ...props }, ref) => {
-  const { controlShape, design } = useShade();
+  const { controlShape, isAdmin7Design } = useShade();
 
   return (
     <AlertDialogPrimitive.Cancel
       ref={ref}
       className={cn(
-        buttonVariants({ design, shape: controlShape, variant: 'outline' }),
+        buttonVariants({ isAdmin7Design, shape: controlShape, variant: 'outline' }),
         'mt-2 sm:mt-0',
         className,
       )}

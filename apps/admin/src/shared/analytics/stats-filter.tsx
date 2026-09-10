@@ -349,7 +349,7 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
@@ -687,7 +687,7 @@ function StatsFilter({
     }
   }, [onChange]);
 
-  if (isLegacyDesign) {
+  if (!isAdmin7Design) {
     return (
       <div
         className="mt-3 flex w-full justify-between gap-2 lg:mt-0"

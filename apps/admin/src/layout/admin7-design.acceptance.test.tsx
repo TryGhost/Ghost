@@ -21,7 +21,7 @@ import { tagsScreen } from '@/tags/tags.screen';
 import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 import { sidebarScreen } from './sidebar.screen';
 
-// Legacy values are taken from main's rendered utility contracts: rounded-md
+// Previous values are taken from main's rendered utility contracts: rounded-md
 // (6px), row ms-2 (8px), outline border (1px), and the original INTERNAL badge.
 // The browser harness uses a 16px root, while the production host uses 10px.
 // Normalize rem-based dimensions without changing the host font size.
@@ -64,7 +64,7 @@ describe.each(designs)('Admin design compatibility: $name', ({ labs, current }) 
     }
   });
 
-  it('keeps the legacy tag row edit affordance until the design is enabled', async () => {
+  it('keeps the previous tag row edit affordance until the design is enabled', async () => {
     fakeTags([tag({ name: 'Design', slug: 'design' })]);
     await renderAdminApp('/tags', { labs });
 
@@ -127,7 +127,7 @@ describe.each(designs)('Admin design compatibility: $name', ({ labs, current }) 
 });
 
 describe.each(['/site', '/posts'])('Excluded route %s', (route) => {
-  it('keeps portaled shell menus in the legacy design even with the flag enabled', async () => {
+  it('keeps portaled shell menus in the previous design even with the flag enabled', async () => {
     // postsListReact/editorReact are absent, so the route belongs to Ember.
     await renderAdminApp(route, { labs: { admin7Pill: true } });
     await sidebarScreen.userMenuTrigger().click();
@@ -138,67 +138,71 @@ describe.each(['/site', '/posts'])('Excluded route %s', (route) => {
   });
 });
 
-it('keeps the editor host in the legacy design when the private flag is enabled', async () => {
+it('keeps the editor host in the previous design when the private flag is enabled', async () => {
   await renderAdminApp('/editor/post/new', { labs: { admin7Pill: true } });
   await expect.poll(() => document.querySelector('[data-react-admin-mounted]')).not.toBeNull();
   const root = document.querySelector('[data-react-admin-mounted]')!;
   expect(getComputedStyle(root).getPropertyValue('--radius-menu').trim()).toBe('0.6rem');
 });
 
-// postsListReact already changes the legacy filter affordances independently
+// postsListReact already changes the previous filter affordances independently
 // of Admin 7. Keep both established configurations when Admin 7 is disabled.
-describe.each([false, true])('Legacy filter compatibility: postsListReact=%s', (postsListReact) => {
-  const labs = { admin7Pill: false, postsListReact };
+describe.each([false, true])(
+  'Previous filter compatibility: postsListReact=%s',
+  (postsListReact) => {
+    const labs = { admin7Pill: false, postsListReact };
 
-  it('preserves Members add-filter and Clear controls', async () => {
-    fakeMembers([member({ name: 'Free member', status: 'free' })]);
-    await renderAdminApp('/members?filter=status:free', { labs });
-    const add = page.getByRole('button', { name: 'Add filter', exact: true });
-    const clear = page
-      .getByTestId('members-filter-actions')
-      .getByRole('button', { name: 'Clear', exact: true });
-    await expect.element(add).toBeVisible();
-    await expect.element(clear).toBeVisible();
-    expect(
-      add
-        .element()
-        .querySelector(postsListReact ? '.lucide-list-filter-plus' : '.lucide-funnel-plus'),
-    ).not.toBeNull();
-    expect(getComputedStyle(clear.element()).borderTopWidth).toBe(postsListReact ? '1px' : '0px');
-    expect(clear.element().querySelectorAll('svg')).toHaveLength(postsListReact ? 0 : 1);
-    expect(getComputedStyle(clear.element()).fontWeight).toBe(postsListReact ? '500' : '400');
-    await clear.click();
-    await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible();
-    await expect.element(clear).not.toBeInTheDocument();
-  });
-
-  it('preserves Comments filter controls and existing default tooltips', async () => {
-    const entity = comment({
-      html: '<p>Existing comment</p>',
-      member: { ...member({ name: 'Comment author' }), can_comment: false },
+    it('preserves Members add-filter and Clear controls', async () => {
+      fakeMembers([member({ name: 'Free member', status: 'free' })]);
+      await renderAdminApp('/members?filter=status:free', { labs });
+      const add = page.getByRole('button', { name: 'Add filter', exact: true });
+      const clear = page
+        .getByTestId('members-filter-actions')
+        .getByRole('button', { name: 'Clear', exact: true });
+      await expect.element(add).toBeVisible();
+      await expect.element(clear).toBeVisible();
+      expect(
+        add
+          .element()
+          .querySelector(postsListReact ? '.lucide-list-filter-plus' : '.lucide-funnel-plus'),
+      ).not.toBeNull();
+      expect(getComputedStyle(clear.element()).borderTopWidth).toBe(postsListReact ? '1px' : '0px');
+      expect(clear.element().querySelectorAll('svg')).toHaveLength(postsListReact ? 0 : 1);
+      expect(getComputedStyle(clear.element()).fontWeight).toBe(postsListReact ? '500' : '400');
+      await clear.click();
+      await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible();
+      await expect.element(clear).not.toBeInTheDocument();
     });
-    fakeComments([entity]);
-    await renderAdminApp('/comments?filter=status:published', { labs });
-    const add = page.getByRole('button', { name: 'Add filter', exact: true });
-    const clear = page.getByRole('button', { name: 'Clear', exact: true });
-    await expect.element(add).toBeVisible();
-    await expect.element(clear).toBeVisible();
-    expect(
-      add
-        .element()
-        .querySelector(postsListReact ? '.lucide-list-filter-plus' : '.lucide-funnel-plus'),
-    ).not.toBeNull();
-    expect(getComputedStyle(clear.element()).borderTopWidth).toBe(postsListReact ? '1px' : '0px');
-    expect(clear.element().querySelectorAll('svg')).toHaveLength(postsListReact ? 0 : 1);
-    await commentsScreen.commentRow('Existing comment').commentingDisabledIndicator().hover();
-    const tooltip = page.getByRole('tooltip');
-    await expect.element(tooltip).toHaveTextContent('Comments disabled');
-    // The original dark surface has no shadow; Admin 7's white surface does.
-    const tooltipSurface = tooltip.element().closest('[data-side]')!;
-    expect(getComputedStyle(tooltipSurface).boxShadow).toBe('none');
-    expect(tooltipSurface).toHaveClass('bg-primary');
-    await clear.click();
-    await expect.element(commentsScreen.filterButton()).toBeVisible();
-    await expect.element(clear).not.toBeInTheDocument();
-  });
-});
+
+    it('preserves Comments filter controls and existing default tooltips', async () => {
+      const author = { ...member({ name: 'Comment author' }), can_comment: false };
+      const entity = comment({
+        html: '<p>Existing comment</p>',
+        member: author,
+      });
+      fakeComments([entity]);
+      await renderAdminApp('/comments?filter=status:published', { labs });
+      const add = page.getByRole('button', { name: 'Add filter', exact: true });
+      const clear = page.getByRole('button', { name: 'Clear', exact: true });
+      await expect.element(add).toBeVisible();
+      await expect.element(clear).toBeVisible();
+      expect(
+        add
+          .element()
+          .querySelector(postsListReact ? '.lucide-list-filter-plus' : '.lucide-funnel-plus'),
+      ).not.toBeNull();
+      expect(getComputedStyle(clear.element()).borderTopWidth).toBe(postsListReact ? '1px' : '0px');
+      expect(clear.element().querySelectorAll('svg')).toHaveLength(postsListReact ? 0 : 1);
+      await commentsScreen.commentRow('Existing comment').commentingDisabledIndicator().hover();
+      const tooltip = page.getByRole('tooltip');
+      await expect.element(tooltip).toHaveTextContent('Comments disabled');
+      // The original dark surface has no shadow; Admin 7's white surface does.
+      const tooltipSurface = tooltip.element().closest('[data-side]')!;
+      expect(getComputedStyle(tooltipSurface).boxShadow).toBe('none');
+      expect(tooltipSurface).toHaveClass('bg-primary');
+      await clear.click();
+      await expect.element(commentsScreen.filterButton()).toBeVisible();
+      await expect.element(clear).not.toBeInTheDocument();
+    });
+  },
+);

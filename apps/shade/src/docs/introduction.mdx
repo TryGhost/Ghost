@@ -31,46 +31,46 @@ If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/
 
 See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
 
-## Design rollout and legacy compatibility
+## Admin 7 design rollout
 
-Shade's current design is the default. New screens use ordinary `Button`,
+Shade uses the Admin 7 design by default. New screens use ordinary `Button`,
 `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader` components;
-there is no need to add `shape="pill"` or copy current-design classes into pages.
+there is no need to add `shape="pill"` or copy Admin 7 classes into pages.
 Explicit shapes remain available for a specific visual need. They do not select
 an interaction mode.
 
-During the Admin 7 experiment, Admin resolves the private flag once at its
-React application boundary and selects `design="current"` or `design="legacy"`
-on `ShadeApp`. The legacy boundary preserves the previous defaults, including
-colors, spacing, tooltip behavior, and control geometry. Editor and Ember-owned
-routes retain the legacy design. Standalone ActivityPub also retains its legacy
-boundary during this experiment.
+During the experiment, Admin reads the private flag once at its React application
+boundary and passes `isAdmin7Design` to `ShadeApp`. When false, the previous
+colors, spacing, tooltip behavior, and control geometry are preserved. Editor and
+Ember-owned routes keep this value false, as does the standalone ActivityPub
+preview during this experiment.
 
 ```tsx
-// Only the host selects compatibility. Screens do not read the private flag.
-<ShadeApp darkMode={darkMode} design={enabled ? 'current' : 'legacy'}>
+// Only the host reads the private flag. Shade defaults to true when omitted.
+<ShadeApp darkMode={darkMode} isAdmin7Design={enabled}>
     <App />
 </ShadeApp>
 ```
 
-Shared components can read `useShade().isLegacyDesign` when temporary structural
-or interaction compatibility is necessary. Pure appearance differences belong
-in the shared recipes and scoped tokens. `Button variant="subtle"` expresses a
-low-emphasis action; it uses ghost chrome in the current design and outline
-chrome in the legacy design. Avoid using `controlShape` as a proxy for behavior.
+Shared components can read `useShade().isAdmin7Design` for temporary structural
+or interaction differences. Pure appearance differences belong in shared recipes
+and scoped tokens. `Button variant="subtle"` expresses a low-emphasis action:
+ghost chrome with Admin 7 enabled, outline chrome otherwise. Avoid using
+`controlShape` as a proxy for behavior.
 
-Portals carry their owning React design context through Shade's internal scope
-wrapper. Do not copy design variables onto `document.body`: two independently
-mounted surfaces must not change one another's menus or dialogs. Standalone
-surfaces should use `ShadeApp` to provide both context and the CSS scope.
+Portals carry their owning React context through Shade's internal scope wrapper
+and its `data-admin7-design` attribute. Do not copy design variables onto
+`document.body`: two independently mounted surfaces must not change one another's
+menus or dialogs. Standalone surfaces should use `ShadeApp` to provide both
+context and the CSS scope.
 
 ### Removing the experiment
 
 At general availability, remove the Admin flag and route mapping, then remove
-its `design` prop from the host. The current design is already the default.
-Delete the legacy branches, legacy token scope, and compatibility tests in Shade,
-and remove any other host compatibility opt-outs once their rollout is approved.
-Ordinary screen components require no pill-prop migration. Keep current-design
+`isAdmin7Design` from the host. Shade already defaults to true. Search for
+`isAdmin7Design` and keep the enabled branches, then remove the false token scope
+and compatibility tests. Remove other host opt-outs once their rollout is
+approved. Ordinary screens require no pill-prop migration. Keep Admin 7
 interaction tests and canonical PageHeader stories as the permanent contract.
 
 </div>

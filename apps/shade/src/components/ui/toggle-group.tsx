@@ -14,9 +14,9 @@ const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariant
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    Omit<VariantProps<typeof toggleVariants>, 'design'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Design'>
 >(({ className, variant, size, shape, children, ...props }, ref) => {
-  const { controlShape, design } = useShade();
+  const { controlShape, isAdmin7Design } = useShade();
   const resolvedShape = shape ?? controlShape;
 
   return (
@@ -30,7 +30,7 @@ const ToggleGroup = React.forwardRef<
       data-control-shape={resolvedShape}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size, design, shape: resolvedShape }}>
+      <ToggleGroupContext.Provider value={{ variant, size, isAdmin7Design, shape: resolvedShape }}>
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
@@ -42,7 +42,7 @@ ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-    Omit<VariantProps<typeof toggleVariants>, 'design'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Design'>
 >(({ className, children, variant, size, shape, ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext);
   const resolvedShape = shape ?? context.shape;
@@ -53,7 +53,7 @@ const ToggleGroupItem = React.forwardRef<
       className={cn(
         toggleVariants({
           variant: context.variant || variant,
-          design: context.design,
+          isAdmin7Design: context.isAdmin7Design,
           size: context.size || size,
           shape: resolvedShape,
         }),

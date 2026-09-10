@@ -52,7 +52,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -393,7 +393,7 @@ const TagDetail: React.FC = () => {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                    <BreadcrumbItem className={!isLegacyDesign ? 'items-baseline gap-2' : 'gap-2'}>
+                    <BreadcrumbItem className={isAdmin7Design ? 'items-baseline gap-2' : 'gap-2'}>
                       {!isCreating && isLoading ? (
                         <Skeleton className="h-4 w-40" />
                       ) : (
@@ -404,15 +404,15 @@ const TagDetail: React.FC = () => {
                       {tag?.visibility === 'internal' && (
                         <Badge
                           className={
-                            !isLegacyDesign
+                            isAdmin7Design
                               ? 'leading-none tracking-wider'
                               : 'px-1 py-px text-[10px] leading-none tracking-wider'
                           }
                           data-testid="tag-detail-internal-badge"
-                          size={!isLegacyDesign ? 'md' : 'default'}
+                          size={isAdmin7Design ? 'md' : 'default'}
                           variant="secondary"
                         >
-                          {!isLegacyDesign ? 'Internal' : 'INTERNAL'}
+                          {isAdmin7Design ? 'Internal' : 'INTERNAL'}
                         </Badge>
                       )}
                     </BreadcrumbItem>

@@ -37,7 +37,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
   memberId,
   subscription,
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const editSubscription = useEditMemberSubscription();
   // Keep the trigger disabled until the invalidated members refetch lands so a
   // user can't fire the same action twice in the window between the mutation
@@ -68,7 +68,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
           aria-label="Subscription menu"
           data-testid="subscription-actions"
           disabled={busy}
-          size={!isLegacyDesign ? 'icon' : 'sm'}
+          size={isAdmin7Design ? 'icon' : 'sm'}
           variant="subtle"
         >
           {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}

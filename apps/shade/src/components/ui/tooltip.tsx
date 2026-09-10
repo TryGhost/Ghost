@@ -18,10 +18,10 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const pointerInteraction = React.useRef(false);
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
 
   React.useEffect(() => {
-    if (isLegacyDesign) {
+    if (!isAdmin7Design) {
       return;
     }
     const onPointerDown = () => {
@@ -36,11 +36,11 @@ function TooltipProvider({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [isLegacyDesign]);
+  }, [isAdmin7Design]);
 
   return (
-    <TooltipInputContext.Provider value={isLegacyDesign ? null : pointerInteraction}>
-      <TooltipPrimitive.Provider delayDuration={isLegacyDesign ? 700 : 1000} {...props}>
+    <TooltipInputContext.Provider value={isAdmin7Design ? pointerInteraction : null}>
+      <TooltipPrimitive.Provider delayDuration={isAdmin7Design ? 1000 : 700} {...props}>
         {children}
       </TooltipPrimitive.Provider>
     </TooltipInputContext.Provider>
@@ -94,14 +94,14 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, ...props }, ref) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
           className={cn(
-            tooltipContentVariants({ variant: variant ?? (isLegacyDesign ? 'default' : 'white') }),
+            tooltipContentVariants({ variant: variant ?? (isAdmin7Design ? 'white' : 'default') }),
             className,
           )}
           sideOffset={sideOffset}

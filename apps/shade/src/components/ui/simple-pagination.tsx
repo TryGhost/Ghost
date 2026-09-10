@@ -56,11 +56,11 @@ SimplePaginationNavigation.displayName = 'SimplePaginationNavigation';
 
 const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isLegacyDesign } = useShade();
+    const { isAdmin7Design } = useShade();
     return (
       <Button
         ref={ref}
-        size={size ?? (isLegacyDesign ? 'sm' : 'icon')}
+        size={size ?? (isAdmin7Design ? 'icon' : 'sm')}
         variant={variant}
         {...props}
       >
@@ -74,11 +74,11 @@ SimplePaginationPreviousButton.displayName = 'SimplePaginationPreviousButton';
 
 const SimplePaginationNextButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isLegacyDesign } = useShade();
+    const { isAdmin7Design } = useShade();
     return (
       <Button
         ref={ref}
-        size={size ?? (isLegacyDesign ? 'sm' : 'icon')}
+        size={size ?? (isAdmin7Design ? 'icon' : 'sm')}
         variant={variant}
         {...props}
       >

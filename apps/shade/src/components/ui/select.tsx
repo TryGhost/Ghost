@@ -24,7 +24,7 @@ const selectTriggerVariants = cva(
         secondary:
           'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
       },
-      design: { current: '', legacy: '' },
+      isAdmin7Design: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -32,18 +32,18 @@ const selectTriggerVariants = cva(
     },
     compoundVariants: [
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: ['secondary', 'ghost'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'ghost',
         className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
       },
       {
-        design: 'current',
+        isAdmin7Design: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
@@ -51,7 +51,7 @@ const selectTriggerVariants = cva(
     defaultVariants: {
       variant: 'default',
       shape: 'pill',
-      design: 'current',
+      isAdmin7Design: true,
     },
   },
 );
@@ -59,7 +59,7 @@ const selectTriggerVariants = cva(
 export interface SelectTriggerProps
   extends
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
-    Omit<VariantProps<typeof selectTriggerVariants>, 'design'> {
+    Omit<VariantProps<typeof selectTriggerVariants>, 'isAdmin7Design'> {
   /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
   showChevron?: boolean;
 }
@@ -72,7 +72,7 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { controlShape, design } = useShade();
+    const { controlShape, isAdmin7Design } = useShade();
     const resolvedShape = shape ?? controlShape;
     return (
       <SelectPrimitive.Trigger
@@ -80,7 +80,7 @@ const SelectTrigger = React.forwardRef<
         className={cn(
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
-          selectTriggerVariants({ shape: resolvedShape, variant, design }),
+          selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7Design }),
           className,
         )}
         data-control-shape={resolvedShape}

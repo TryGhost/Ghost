@@ -25,7 +25,7 @@ interface CommentMenuProps {
 }
 
 export function CommentMenu({ comment }: CommentMenuProps) {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const { mutate: disableCommenting } = useDisableMemberCommenting();
   const { mutate: enableCommenting } = useEnableMemberCommenting();
   const { mutate: pinComment } = usePinComment();
@@ -62,7 +62,7 @@ export function CommentMenu({ comment }: CommentMenuProps) {
           <Button
             aria-label="Comment actions"
             className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
-            size={!isLegacyDesign ? 'icon' : 'sm'}
+            size={isAdmin7Design ? 'icon' : 'sm'}
             variant="ghost"
           >
             <LucideIcon.Ellipsis />

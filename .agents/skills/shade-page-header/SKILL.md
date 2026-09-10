@@ -13,8 +13,8 @@ description: Construct or revise Admin page headers and header controls using th
    routing, queries and shortcut bindings in the feature. For page-template choice,
    use [Shade page templates](../shade-page-templates/SKILL.md).
 3. Read the current PageHeader API and nearby header before implementing. Use
-   shared defaults for appearance and spacing; preserve any existing legacy
-   structure through the provided design context while compatibility exists.
+   shared defaults for appearance and spacing; preserve the previous
+   structure through `useShade().isAdmin7Design` while compatibility exists.
 4. Exercise every state affected by the change using the contract's review
    checklist. Report which routes, widths, themes and compatibility modes were
    verified, and address failures before marking the header complete.

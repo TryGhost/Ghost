@@ -30,9 +30,9 @@ function Controls() {
 }
 
 describe('Shade design compatibility', () => {
-  it('preserves the legacy toggle group radius and button recipe defaults', () => {
+  it('preserves the previous toggle group radius and button recipe defaults', () => {
     render(
-      <ShadeApp darkMode={false} design="legacy">
+      <ShadeApp darkMode={false} isAdmin7Design={false}>
         <ToggleGroup aria-label="View" type="single">
           <ToggleGroupItem value="list">List</ToggleGroupItem>
         </ToggleGroup>
@@ -45,7 +45,7 @@ describe('Shade design compatibility', () => {
     expect(screen.getByRole('radio').className).not.toContain(
       'h-[calc(var(--control-height)-4px)]',
     );
-    expect(dropzoneVariants({ variant: 'buttonSecondary' }, 'legacy')).toContain('bg-secondary');
+    expect(dropzoneVariants({ variant: 'buttonSecondary' }, false)).toContain('bg-secondary');
     expect(dropzoneVariants({ variant: 'buttonSecondary' })).toContain('bg-tab-active');
   });
 
@@ -64,9 +64,9 @@ describe('Shade design compatibility', () => {
     expect(screen.getByRole('combobox').getAttribute('data-control-shape')).toBe('pill');
   });
 
-  it('restores old appearance and interactions at one legacy boundary', () => {
+  it('restores old appearance and interactions at one previous boundary', () => {
     render(
-      <ShadeApp darkMode={false} design="legacy">
+      <ShadeApp darkMode={false} isAdmin7Design={false}>
         <Controls />
       </ShadeApp>,
     );
@@ -90,35 +90,29 @@ describe('Shade design compatibility', () => {
           <PopoverTrigger>Current menu</PopoverTrigger>
           <PopoverContent>Current content</PopoverContent>
         </Popover>
-        <ShadeApp darkMode={false} design="legacy">
+        <ShadeApp darkMode={false} isAdmin7Design={false}>
           <Popover open>
-            <PopoverTrigger>Legacy menu</PopoverTrigger>
-            <PopoverContent>Legacy content</PopoverContent>
+            <PopoverTrigger>Previous menu</PopoverTrigger>
+            <PopoverContent>Previous content</PopoverContent>
           </Popover>
         </ShadeApp>
       </ShadeApp>,
     );
     expect(
-      screen
-        .getByText('Current content')
-        .closest('.shade')
-        ?.classList.contains('shade-design-current'),
-    ).toBe(true);
+      screen.getByText('Current content').closest('.shade')?.getAttribute('data-admin7-design'),
+    ).toBe('true');
     expect(
-      screen
-        .getByText('Legacy content')
-        .closest('.shade')
-        ?.classList.contains('shade-design-legacy'),
-    ).toBe(true);
-    expect(document.body.classList.contains('shade-design-current')).toBe(false);
+      screen.getByText('Previous content').closest('.shade')?.getAttribute('data-admin7-design'),
+    ).toBe('false');
+    expect(document.body.hasAttribute('data-admin7-design')).toBe(false);
     expect(document.body.style.getPropertyValue('--radius-control')).toBe('');
   });
 
-  it.each(['current', 'legacy'] as const)(
-    'preserves %s tooltip focus semantics',
-    async (design) => {
+  it.each([true, false])(
+    'preserves tooltip focus semantics with isAdmin7Design=%s',
+    async (isAdmin7Design) => {
       render(
-        <ShadeApp darkMode={false} design={design}>
+        <ShadeApp darkMode={false} isAdmin7Design={isAdmin7Design}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button>Menu</Button>
@@ -132,7 +126,7 @@ describe('Shade design compatibility', () => {
       // restores focus to its trigger. This must not open current tooltips.
       fireEvent.pointerDown(document.body);
       fireEvent.focus(button);
-      if (design === 'current') {
+      if (isAdmin7Design) {
         expect(screen.queryByRole('tooltip')).toBeNull();
         fireEvent.blur(button);
         fireEvent.keyDown(document.body, { key: 'Tab' });
@@ -140,8 +134,8 @@ describe('Shade design compatibility', () => {
       }
       await waitFor(() => expect(screen.getByRole('tooltip')).toBeTruthy());
       expect(
-        screen.getByRole('tooltip').closest('.shade')?.classList.contains(`shade-design-${design}`),
-      ).toBe(true);
+        screen.getByRole('tooltip').closest('.shade')?.getAttribute('data-admin7-design'),
+      ).toBe(String(isAdmin7Design));
     },
   );
 });

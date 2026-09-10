@@ -61,7 +61,7 @@ function CommentsList({
   isLoading?: boolean;
   dislikesEnabled: boolean;
 }) {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
@@ -206,7 +206,7 @@ function CommentsList({
                           <Button
                             className={cn(
                               'text-foreground',
-                              !isLegacyDesign && 'group-hover/comment:bg-background',
+                              isAdmin7Design && 'group-hover/comment:bg-background',
                             )}
                             size="sm"
                             variant="outline"
@@ -220,7 +220,7 @@ function CommentsList({
                           <Button
                             className={cn(
                               'text-foreground',
-                              !isLegacyDesign && 'group-hover/comment:bg-background',
+                              isAdmin7Design && 'group-hover/comment:bg-background',
                             )}
                             size="sm"
                             variant="outline"

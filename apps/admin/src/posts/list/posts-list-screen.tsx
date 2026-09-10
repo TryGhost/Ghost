@@ -298,8 +298,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                   )}
                   <PageHeader.ActionGroup.Primary>
                     <PageHeader.Action
+                      fallbackVariant="default"
                       label={copy.newLabel}
-                      legacyVariant="default"
                       asChild
                       primary
                     >

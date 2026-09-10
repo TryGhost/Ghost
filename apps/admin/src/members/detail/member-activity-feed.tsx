@@ -83,12 +83,10 @@ const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
  * Router intercepting the click.
  */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const link = (
     <a
-      className={
-        !isLegacyDesign ? undefined : 'block pt-3 font-medium text-primary hover:underline'
-      }
+      className={isAdmin7Design ? undefined : 'block pt-3 font-medium text-primary hover:underline'}
       data-testid="member-activity-view-all"
       href={`#/members-activity?member=${memberId}`}
     >
@@ -96,7 +94,7 @@ const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
     </a>
   );
 
-  if (!isLegacyDesign) {
+  if (isAdmin7Design) {
     return (
       <Button className="mt-3" variant="ghost" asChild>
         {link}

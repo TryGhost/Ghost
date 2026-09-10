@@ -43,7 +43,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -93,7 +93,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                 className="pb-3"
                 defaultValue="positive"
                 value={activeFeedbackTab}
-                variant={!isLegacyDesign ? 'button-sm' : 'button'}
+                variant={isAdmin7Design ? 'button-sm' : 'button'}
                 onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
               >
                 <TabsList className="gap-1">

@@ -379,9 +379,9 @@ export const PillDropdowns: Story = {
   },
 };
 
-export const LegacyCompatibility: Story = {
+export const Admin7Disabled: Story = {
   render: () => (
-    <ShadeApp darkMode={false} design="legacy">
+    <ShadeApp darkMode={false} isAdmin7Design={false}>
       <Inline gap="sm">
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>

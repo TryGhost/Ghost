@@ -100,7 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -567,10 +567,10 @@ const Newsletter: React.FC = () => {
                                       aria-label="Edit link"
                                       className={cn(
                                         'mr-2 shrink-0',
-                                        isLegacyDesign && 'bg-background',
+                                        !isAdmin7Design && 'bg-background',
                                       )}
-                                      size={!isLegacyDesign ? 'icon-sm' : 'sm'}
-                                      title={isLegacyDesign ? undefined : 'Edit link'}
+                                      size={isAdmin7Design ? 'icon-sm' : 'sm'}
+                                      title={isAdmin7Design ? 'Edit link' : undefined}
                                       variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >

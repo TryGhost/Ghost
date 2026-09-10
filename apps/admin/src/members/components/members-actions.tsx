@@ -46,7 +46,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   showNewMember = true,
   onImportComplete,
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const location = useLocation();
   const navigate = useNavigate();
   const isImportRoute = location.pathname === '/members/import';
@@ -306,13 +306,13 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
       {showNewMember && (
         <PageHeader.ActionGroup.Primary>
-          <PageHeader.Action label="New member" legacyVariant="default" asChild primary>
+          <PageHeader.Action fallbackVariant="default" label="New member" asChild primary>
             <a
               aria-label="New member"
               className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
               href={newMemberHref}
             >
-              <LucideIcon.Plus className={!isLegacyDesign ? 'stroke-2!' : 'sm:hidden'} />
+              <LucideIcon.Plus className={isAdmin7Design ? 'stroke-2!' : 'sm:hidden'} />
               <span className="hidden sm:inline">New member</span>
             </a>
           </PageHeader.Action>

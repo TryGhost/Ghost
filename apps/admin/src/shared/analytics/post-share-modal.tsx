@@ -42,7 +42,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   siteTitle = '',
   ...props
 }) => {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
@@ -95,7 +95,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             </ShareModal.Description>
           )}
         </ShareModal.Header>
-        <ShareModal.Preview className={isLegacyDesign ? 'rounded-md' : undefined} href={postURL}>
+        <ShareModal.Preview className={isAdmin7Design ? undefined : 'rounded-md'} href={postURL}>
           {featureImageURL && (
             <div
               className="aspect-video bg-cover bg-center"

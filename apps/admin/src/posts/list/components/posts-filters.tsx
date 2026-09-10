@@ -44,7 +44,7 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { isLegacyDesign } = useShade();
+  const { isAdmin7Design } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
   const showIconOnlyTrigger = iconOnly && !hasFilters;
@@ -56,10 +56,10 @@ export function PostsFilters({
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          isLegacyDesign && 'text-muted-foreground hover:text-foreground',
+          !isAdmin7Design && 'text-muted-foreground hover:text-foreground',
         )}
         type="button"
-        variant={isLegacyDesign ? 'outline' : 'ghost'}
+        variant={isAdmin7Design ? 'ghost' : 'outline'}
         onClick={() => onFiltersChange([])}
       >
         Clear
@@ -77,7 +77,7 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
-        addButton={!hasFilters && !isLegacyDesign ? <PageHeader.FilterTrigger /> : undefined}
+        addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
         // Collapsed with `text-[0px]`, not by dropping the label: the
         // word "Filter" stays in the accessible name at every width.
         addButtonClassName={cn(
@@ -96,7 +96,7 @@ export function PostsFilters({
           )
         }
         addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-        addButtonVariant={!isLegacyDesign && !hasFilters ? 'ghost' : undefined}
+        addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
         // Each field maps to one URL param holding one value; a second
         // chip per field would sit there without being in the URL.
         allowMultiple={false}

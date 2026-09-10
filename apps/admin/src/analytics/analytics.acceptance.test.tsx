@@ -37,7 +37,7 @@ describe.each([false, true])('Analytics header design (admin7Pill=%s)', (admin7P
 
       const trigger = page.getByRole('combobox', { name: 'Date range' });
       await expect.element(trigger).toBeVisible();
-      // The legacy values come from the pre-rollout SelectTrigger and date-range
+      // The previous values come from the pre-rollout SelectTrigger and date-range
       // component: regular weight, a 1.5px calendar and a visible down chevron.
       const triggerElement = trigger.element();
       const style = () => getComputedStyle(triggerElement);

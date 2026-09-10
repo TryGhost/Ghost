@@ -9,13 +9,13 @@ interface Option {
   name: string;
 }
 
-it.each(['current', 'legacy'] as const)(
-  'inherits %s chip styling and preserves removal',
-  (design) => {
+it.each([true, false])(
+  'inherits chip styling with isAdmin7Design=%s and preserves removal',
+  (isAdmin7Design) => {
     const onRemove = vi.fn();
     const alpha = { id: 'alpha', name: 'Alpha' };
     render(
-      <ShadeApp darkMode={false} design={design}>
+      <ShadeApp darkMode={false} isAdmin7Design={isAdmin7Design}>
         <ChipPicker<Option, Option>
           emptyMessage="No options found"
           getKey={(option) => option.id}
@@ -30,7 +30,7 @@ it.each(['current', 'legacy'] as const)(
       </ShadeApp>,
     );
     const chip = screen.getByRole('button', { name: 'Remove Alpha' });
-    expect(chip).toHaveClass(design === 'legacy' ? 'rounded-xs' : 'rounded-full');
+    expect(chip).toHaveClass(isAdmin7Design ? 'rounded-full' : 'rounded-xs');
     fireEvent.click(chip);
     expect(onRemove).toHaveBeenCalledWith('alpha');
   },
