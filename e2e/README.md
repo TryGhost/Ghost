@@ -366,7 +366,7 @@ renderings: at Stripe's current default the shipping address moves to
 The same difference applies to `stripe listen`, which `pnpm dev:stripe --listen` uses:
 it renders events at the account default too. The default `pnpm dev:stripe` lets Ghost
 register its own pinned endpoint, so it receives the payloads production receives (see
-[Development setup](../docs/contributing/development-setup.md#stripe-webhooks)).
+[Stripe testing](../docs/contributing/testing-stripe.md#receive-production-shaped-webhooks)).
 
 ## Resolving issues
 

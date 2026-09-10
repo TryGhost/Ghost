@@ -5,6 +5,7 @@ import {
   type HumanizedDiffEntry,
   type LexicalInput,
 } from '@/editor/engine/lexical-compare';
+import { pick } from '@/editor/engine/pick';
 import { sameTag, type TagLike } from '@/shared/tags/tag-selection';
 
 // Codes are reported to Sentry when the leave modal opens; keep them stable.
@@ -34,8 +35,9 @@ export interface ChangeVerdict {
 /** null until the create request has been acknowledged. */
 export type PostId = string | null;
 
+/** An editor read always carries the relation's id (content-types.ts). */
 export interface PostRelationLike {
-  id?: string;
+  id: string;
 }
 
 // Client-owned editable fields only; other server metadata lives with the save engine.
@@ -181,21 +183,12 @@ function clonePlain<T>(value: T): T {
 }
 
 function pickProjection(post: EditablePostProjection): EditablePostProjection {
-  const out: Record<string, unknown> = {};
-  for (const key of PROJECTION_KEYS) {
-    out[key] = clonePlain(post[key]);
-  }
-  return out as unknown as EditablePostProjection;
+  return clonePlain(pick(post, PROJECTION_KEYS));
 }
 
 function pickPatch(patch: EditablePostPatch): EditablePostPatch {
-  const out: Record<string, unknown> = {};
-  for (const key of PROJECTION_KEYS) {
-    if (key in patch && patch[key] !== undefined) {
-      out[key] = clonePlain(patch[key]);
-    }
-  }
-  return out;
+  const keys = PROJECTION_KEYS.filter((key) => key in patch && patch[key] !== undefined);
+  return clonePlain(pick(patch, keys));
 }
 
 function errorMessage(error: unknown): string {
@@ -429,11 +422,11 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         return;
       }
       const next = pickProjection(acknowledged);
-      const rebased: Record<string, unknown> = { ...live };
+      const rebasedKeys: ProjectionKey[] = [];
       for (const key of PROJECTION_KEYS) {
         const base = submitted[key] !== undefined ? submitted[key] : saved[key];
         if (key === 'updated_at' || sameField(key, live[key], base)) {
-          rebased[key] = next[key];
+          rebasedKeys.push(key);
         }
       }
       if (postId === null && id !== null) {
@@ -447,7 +440,7 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
         baseline = { status: 'ready', lexical: next.lexical };
       }
       saved = next;
-      live = rebased as unknown as EditablePostProjection;
+      live = { ...live, ...pick(next, rebasedKeys) };
       saveError = null;
     },
 

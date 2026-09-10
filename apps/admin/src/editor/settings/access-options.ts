@@ -43,7 +43,7 @@ export function tierOptions(tiers: Tier[] | undefined): TierOption[] {
   }));
 }
 
-type PostTier = PostRelationLike & { type?: string };
+type PostTier = { id?: string; type?: string };
 
 /** Public/member reads include the free tier, which cannot grant specific-tier access. */
 export function selectedTierIds(tiers: ReadonlyArray<PostTier>): string[] {

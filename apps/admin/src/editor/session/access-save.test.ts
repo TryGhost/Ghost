@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { serializePostPayload } from '@tryghost/admin-x-framework/api/post-contract';
-import { createEditorSession, type EditorWritePayload } from './editor-session';
+import { createEditorSession, type EditorCreatePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 
 const TIERS = [{ id: 'gold' }, { id: 'silver' }];
@@ -21,7 +21,7 @@ function accessSession(visibility: string | null, tiers = TIERS) {
     tags: [],
   };
   let saves = 0;
-  const persist = (payload: EditorWritePayload) => {
+  const persist = (payload: EditorCreatePayload) => {
     // Exercise the same serialization as the post/page transports: an unpaired
     // tier visibility disappears before the API sees it.
     const serialized = serializePostPayload(payload);

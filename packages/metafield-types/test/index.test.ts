@@ -6,6 +6,7 @@ import {
   MAX_LONG_TEXT_BYTES,
   partTypesOf,
   subFieldsOf,
+  type Address,
   type FieldType,
 } from '../src/index.ts';
 
@@ -115,6 +116,19 @@ describe('metafield-types catalog', function () {
     // a name keeps it in a field of its own.
     it('is not where a recipient name lives', function () {
       assert.equal(parse({ name: 'Bex Jones' }), false);
+    });
+
+    // The compiler has to agree with the parser about which parts exist. The schema is
+    // mapped over the parts declared in `../src/structure`, and that key mapping is lost
+    // through `Object.fromEntries` unless restated: without the restatement an address
+    // admits any part at all, and only the parser objects.
+    it('is typed to the parts it parses', function () {
+      const declared: Address = { line1: 'Cloonlara', country: 'IE' };
+      // @ts-expect-error -- the same part the parser refuses just above
+      const undeclared: Address = { name: 'Bex Jones' };
+
+      assert.equal(parse(declared), true);
+      assert.equal(parse(undeclared), false);
     });
 
     it('rejects an address that names nothing', function () {
