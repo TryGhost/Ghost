@@ -176,20 +176,22 @@ describe('oembed-service', function () {
       assert.equal(response, undefined);
     });
 
-    it('still returns photo-type responses from non-allowlisted providers', async function () {
+    it('drops photo-type responses from non-allowlisted providers', async function () {
+      // `photo` responses may also carry an `html` field, which would be
+      // rendered via innerHTML just like rich/video.
       nock('https://www.example.com').get('/oembed').reply(200, {
         type: 'photo',
         version: '1.0',
         title: 'Test Title',
         url: 'https://www.example.com/photo.jpg',
+        html: '<img src=x onerror="alert(1)">',
         width: 640,
         height: 480,
       });
 
       const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
 
-      assert.equal(response.type, 'photo');
-      assert.equal(response.url, 'https://www.example.com/photo.jpg');
+      assert.equal(response, undefined);
     });
   });
 
