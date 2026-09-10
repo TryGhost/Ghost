@@ -3,6 +3,9 @@ import { InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
 
+type Page = Awaited<ReturnType<MailgunLogsClient['getPage']>>;
+type PageOutcome = { ok: true; page: Page } | { ok: false; error: unknown };
+
 export async function fetchMailgunLogs({
   config,
   settings,
@@ -28,6 +31,7 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
+  const prefetch = config.get('emailAnalytics:fetchPrefetch') === true;
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
   const windowBegin = begin ?? new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
@@ -37,35 +41,68 @@ export async function fetchMailgunLogs({
     let token: string | undefined;
     const seenTokens = new Set<string>();
     let eventCount = 0;
-    do {
-      const page = await client.getPage({
-        domain,
-        tags,
-        events,
-        begin: windowBegin,
-        end: windowEnd,
-        token,
-      });
-      if (!page.empty && page.next) {
-        if (seenTokens.has(page.next)) {
-          throw new InternalServerError({ message: 'Invalid Mailgun Logs pagination' });
-        }
-        seenTokens.add(page.next);
-      }
-      if (page.items.length) {
-        await batchHandler(page.items);
-        eventCount += page.items.length;
-        const last = page.items[page.items.length - 1].timestamp;
-        // Re-cover the boundary on the next fetch, but finish begin-time ties to make progress.
-        if (eventCount >= maxEvents && last > windowBegin) {
-          if (!safeCursor || last < safeCursor) {
-            safeCursor = last;
+    let pending: Promise<PageOutcome> | undefined;
+    const controller = new AbortController();
+    try {
+      do {
+        const options = {
+          domain,
+          tags,
+          events,
+          begin: windowBegin,
+          end: windowEnd,
+          token,
+          signal: controller.signal,
+        };
+        let page: Page;
+        if (pending) {
+          const result = await pending;
+          pending = undefined;
+          if (!result.ok) {
+            throw result.error;
           }
-          break;
+          page = result.page;
+        } else {
+          page = await client.getPage(options);
         }
+        if (!page.empty && page.next) {
+          if (seenTokens.has(page.next)) {
+            throw new InternalServerError({ message: 'Invalid Mailgun Logs pagination' });
+          }
+          seenTokens.add(page.next);
+        }
+        const last = page.items[page.items.length - 1]?.timestamp;
+        const capped = eventCount + page.items.length >= maxEvents && !!last && last > windowBegin;
+        const next = page.empty ? undefined : page.next;
+        if (prefetch && next && !capped) {
+          // Attach both outcomes immediately: a fast failure must not become an unhandled rejection
+          // while the current page is still being processed.
+          pending = client.getPage({ ...options, token: next }).then(
+            (nextPage) => ({ ok: true, page: nextPage }),
+            (error) => ({ ok: false, error }),
+          );
+        }
+        if (page.items.length) {
+          await batchHandler(page.items);
+          eventCount += page.items.length;
+          // Re-cover the boundary on the next fetch, but finish begin-time ties to make progress.
+          if (capped && last) {
+            if (!safeCursor || last < safeCursor) {
+              safeCursor = last;
+            }
+            break;
+          }
+        }
+        token = next;
+      } while (token);
+    } finally {
+      if (pending) {
+        // A callback can fail while the next request is running. Stop and settle it
+        // before returning so no detached request survives the failed fetch.
+        controller.abort();
+        await pending;
       }
-      token = page.empty ? undefined : page.next;
-    } while (token);
+    }
   }
   return { safeCursor };
 }

@@ -34,7 +34,14 @@ out after 60 seconds, and expose sanitized failures with an optional HTTP
 ## Progress and retry boundaries
 
 Domains and page callbacks run serially because they share one lane's processor
-state. The end of the window is fixed at the earlier of the requested end and
+state. `emailAnalytics.fetchPrefetch` defaults to `false`; when enabled with the
+Logs source, one next page can load while the current callback runs. At most one
+unprocessed page is buffered, and the next callback waits for the current one to
+finish. No speculative request starts beyond a known event cap. A processing
+failure aborts and settles the prefetched request, and a prefetched failure stays
+handled until the current callback finishes. The Events fallback remains serial.
+
+The end of the window is fixed at the earlier of the requested end and
 fetch start. API date bounds round outward to whole seconds; local filtering
 retains exact millisecond boundaries. With no begin, the adapter uses a one-day
 window ending at that fixed end; normal scheduled ingestion supplies both bounds.
