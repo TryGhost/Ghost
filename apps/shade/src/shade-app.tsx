@@ -28,7 +28,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props} data-admin7-pill={isAdmin7}>
+    <div className={appClassName} {...props} data-admin7={isAdmin7}>
       <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7={isAdmin7}>
         {children}
       </ShadeProvider>

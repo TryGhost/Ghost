@@ -125,7 +125,7 @@ Shade previews default to the new appearance. Admin always passes its computed
 boolean, so missing or loading configuration stays off unless the existing
 session override enables the flag. Standalone ActivityPub explicitly passes
 `isAdmin7={false}`; embedded ActivityPub inherits Admin's value. Menus,
-tooltips and dialogs carry `data-admin7-pill` through Shade's scope wrapper,
+tooltips and dialogs carry `data-admin7` through Shade's scope wrapper,
 including when rendered in portals.
 
 Shade exposes one `isAdmin7` design switch. Admin maps the current milestone's
