@@ -31,6 +31,7 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
+import { useShade } from '@tryghost/shade/app';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -48,6 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
+  const { isAdmin7 } = useShade();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -146,6 +148,38 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
+  const headerSearch =
+    shouldShowMemberControls &&
+    (isAdmin7 ? (
+      <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
+    ) : (
+      <>
+        <Box className="hidden lg:flex">
+          <MembersHeaderSearch search={searchInput} onSearchChange={handleSearchChange} />
+        </Box>
+        <Button
+          aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+          className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+          variant="outline"
+          onClick={handleMobileSearchToggle}
+        >
+          <LucideIcon.Search className="size-4" />
+        </Button>
+      </>
+    ));
+
+  const headerFilters = shouldShowMemberControls && !hasFilters && (
+    <MembersFilters
+      activeView={activeView}
+      filters={filters}
+      iconOnly={!isAdmin7}
+      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+      nql={nql}
+      savedViews={savedViews}
+      onFiltersChange={setFilters}
+    />
+  );
+
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
@@ -165,40 +199,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {shouldShowMemberControls && (
-                      <>
-                        <div className="hidden lg:flex">
-                          <MembersHeaderSearch
-                            search={searchInput}
-                            onSearchChange={handleSearchChange}
-                          />
-                        </div>
-                        <Button
-                          aria-label={
-                            showMobileSearch ? 'Hide member search' : 'Show member search'
-                          }
-                          className={cn(
-                            'lg:hidden',
-                            showMobileSearch && 'bg-secondary hover:bg-secondary',
-                          )}
-                          variant="outline"
-                          onClick={handleMobileSearchToggle}
-                        >
-                          <LucideIcon.Search className="size-4" />
-                        </Button>
-                        {!hasFilters && (
-                          <MembersFilters
-                            activeView={activeView}
-                            filters={filters}
-                            iconOnly={true}
-                            multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                            nql={nql}
-                            savedViews={savedViews}
-                            onFiltersChange={setFilters}
-                          />
-                        )}
-                      </>
-                    )}
+                    {isAdmin7 && headerFilters}
+                    {headerSearch}
+                    {!isAdmin7 && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}

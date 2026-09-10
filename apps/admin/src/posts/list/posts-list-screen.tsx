@@ -1,5 +1,5 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LoadMoreButton } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -295,14 +295,22 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       activeView={activeView}
                       params={params}
                       resource={resource}
+                      inHeader
                     />
                   )}
-                  <Button asChild>
-                    <a className="font-bold" href={copy.newHref}>
-                      <LucideIcon.Plus className="size-4" />
-                      <span className="hidden sm:inline">{copy.newLabel}</span>
-                    </a>
-                  </Button>
+                  <PageHeader.ActionGroup.Primary>
+                    <PageHeader.Action
+                      fallbackVariant="default"
+                      label={copy.newLabel}
+                      asChild
+                      primary
+                    >
+                      <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
+                        <LucideIcon.Plus className="size-4" />
+                        <span className="hidden sm:inline">{copy.newLabel}</span>
+                      </a>
+                    </PageHeader.Action>
+                  </PageHeader.ActionGroup.Primary>
                 </PageHeader.ActionGroup>
               </PageHeader.Actions>
             </PageHeader>

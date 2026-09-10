@@ -8,9 +8,10 @@ import {
   CommandItem,
   CommandList,
 } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { canCreateLabel } from './can-create-label';
 
 // What the list used to be capped at (max-h-64), and the least worth showing rather than
@@ -107,6 +108,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   isCreating,
   onSearchClear,
 }) => {
+  const { isAdmin7 } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
   const visibleLabels = normalizedSearch
@@ -145,7 +147,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     <>
       {!showCreate && visibleLabels.length === 0 && <CommandEmpty>No labels found</CommandEmpty>}
       {visibleLabels.length > 0 && (
-        <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
           {visibleLabels.map((label) =>
             editingLabelId === label.id ? (
               <EditRow
@@ -169,7 +171,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </CommandGroup>
       )}
       {showCreate && (
-        <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
             <LucideIcon.Plus className="size-4" />
             {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
@@ -187,24 +189,30 @@ interface SelectedPillsProps {
   onToggle: (slug: string) => void;
 }
 
-const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => (
-  <>
-    {labels.map((label) => (
-      <Badge
-        key={label.id}
-        className="cursor-pointer gap-1 pr-1"
-        variant="outline"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle(label.slug);
-        }}
-      >
-        {label.name}
-        <LucideIcon.X className="size-3" />
-      </Badge>
-    ))}
-  </>
-);
+const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
+  const { isAdmin7 } = useShade();
+  return (
+    <>
+      {labels.map((label) => (
+        <Badge
+          key={label.id}
+          className={cn(
+            'cursor-pointer gap-1 pr-1',
+            isAdmin7 && 'h-6 rounded-full border-transparent bg-secondary px-2 pr-1.5 text-sm',
+          )}
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(label.slug);
+          }}
+        >
+          {label.name}
+          <LucideIcon.X className="size-3" />
+        </Badge>
+      ))}
+    </>
+  );
+};
 
 // --- LabelPicker (main export) ---
 
@@ -267,6 +275,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
+  const { isAdmin7 } = useShade();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -326,7 +335,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   return (
     <div ref={containerRef} className="relative">
       <div
-        className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-surface-elevated px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent"
+        className={cn(
+          'flex min-h-9 w-full cursor-text flex-wrap items-center border border-control-border bg-surface-elevated text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25 dark:bg-transparent',
+          isAdmin7 ? 'gap-1 rounded-control p-1' : 'gap-1.5 rounded-md px-3 py-1',
+        )}
         role="combobox"
         onClick={() => {
           inputRef.current?.focus();
@@ -336,7 +348,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         <SelectedPills labels={selectedLabels} onToggle={onToggle} />
         <input
           ref={inputRef}
-          className="min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground"
+          className={cn(
+            'min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
+            isAdmin7 && 'px-2',
+          )}
           placeholder={selectedLabels.length === 0 ? placeholder : ''}
           value={search}
           onChange={(e) => {
@@ -350,7 +365,12 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
         />
       </div>
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+        <div
+          className={cn(
+            'absolute top-full left-0 z-50 mt-1 w-full border bg-white shadow-md dark:bg-gray-950',
+            isAdmin7 ? 'rounded-menu' : 'rounded-md',
+          )}
+        >
           {optionSource.isInitialLoad ? (
             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
               Loading labels...

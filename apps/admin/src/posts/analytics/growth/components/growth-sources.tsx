@@ -242,7 +242,7 @@ const GrowthSources: React.FC<SourcesCardProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline">
+              <Button variant="subtle">
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>

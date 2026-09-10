@@ -1,10 +1,9 @@
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
-import { Button } from '@tryghost/shade/components';
-import { type Filter, Filters } from '@tryghost/shade/patterns';
-import { Inline } from '@tryghost/shade/primitives';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
@@ -23,6 +22,7 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
+import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
@@ -32,7 +32,6 @@ import {
   useTierValueSource,
 } from '@/shared/filter-sources';
 import type { MemberView } from '@/members/hooks/use-member-views';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface MembersFiltersProps {
   filters: Filter[];
@@ -188,36 +187,29 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
+  const { isAdmin7 } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
-  const showIconOnlyTrigger = iconOnly && !hasFilters;
-  const addFilterButtonClassName = cn(
-    'bg-white dark:bg-background',
-    showIconOnlyTrigger &&
-      'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
-    hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-  );
+  const useOriginalFilterUI = !isAdmin7 && !useConsolidatedFilterUI;
 
   const clearAndSaveButtons = hasFilters ? (
-    <Inline
-      className={cn(
-        'shrink-0 sm:absolute sm:top-0 sm:right-0',
-        !useConsolidatedFilterUI && 'gap-4',
-      )}
+    <FilterBar.Actions
+      className={cn(useOriginalFilterUI && 'gap-4')}
       data-testid="members-filter-actions"
-      gap={useConsolidatedFilterUI ? 'sm' : undefined}
+      gap={!useOriginalFilterUI ? 'sm' : undefined}
     >
-      <Button
+      <FilterBar.Action
         className={cn(
-          'hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex',
-          !useConsolidatedFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
+          'hidden items-center lg:inline-flex',
+          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
+          useOriginalFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"
-        variant={useConsolidatedFilterUI ? 'outline' : 'ghost'}
+        variant={!isAdmin7 && useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
-        {!useConsolidatedFilterUI && <LucideIcon.X className="size-4" />}
+        {useOriginalFilterUI && <LucideIcon.X className="size-4" />}
         Clear
-      </Button>
+      </FilterBar.Action>
       {nql && (
         <ManageViewPopover
           activeView={activeView}
@@ -226,26 +218,18 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
           onDeleted={() => onFiltersChange([])}
         />
       )}
-    </Inline>
+    </FilterBar.Actions>
   ) : undefined;
 
-  return (
+  const filterControls = (
     <Filters
-      addButtonClassName={addFilterButtonClassName}
-      addButtonIcon={
-        useConsolidatedFilterUI ? (
-          hasFilters ? (
-            <LucideIcon.ListFilterPlus className="size-4" />
-          ) : (
-            <LucideIcon.ListFilter className="size-4" />
-          )
-        ) : hasFilters ? (
-          <LucideIcon.FunnelPlus />
-        ) : (
-          <LucideIcon.Funnel />
-        )
+      addButton={
+        <Filters.Trigger
+          collapseLabel={iconOnly}
+          fallbackClassName="bg-background"
+          fallbackStyle={useConsolidatedFilterUI ? 'list' : 'funnel'}
+        />
       }
-      addButtonText={hasFilters ? 'Add filter' : 'Filter'}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
@@ -259,6 +243,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       onChange={handleFiltersChange}
     />
   );
+
+  return filterControls;
 };
 
 export default MembersFilters;

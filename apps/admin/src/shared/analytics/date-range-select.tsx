@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
 import {
@@ -7,7 +8,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
 
@@ -46,10 +46,10 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
         onRangeChange(Number(value));
       }}
     >
-      <SelectTrigger className="w-auto">
+      <PageHeader.SelectTrigger label="Date range">
         <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
         <SelectValue placeholder="Select a period" />
-      </SelectTrigger>
+      </PageHeader.SelectTrigger>
       <SelectContent align="end">
         <SelectGroup>
           <SelectLabel>Period</SelectLabel>

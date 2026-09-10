@@ -1,11 +1,12 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import { DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel } from '@/posts/list/post-filter-fields';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -24,6 +25,8 @@ interface PostsSortMenuProps {
  * "Newest first" is the *absence* of an `order` param, not a value.
  */
 export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
+  const { isAdmin7 } = useShade();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,15 +35,15 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
                     aria-label of "Sort" would override the button text, so
                     assistive tech would never hear which sort is active.
                 */}
-        <Button
+        <PageHeader.Action
           aria-label={`Sort: ${getOrderLabel(order)}`}
           data-testid="posts-sort"
-          variant="outline"
+          label="Sort"
         >
           <LucideIcon.ArrowUpDown className="size-4" />
           {getOrderLabel(order)}
-          <LucideIcon.ChevronDown className="size-4" />
-        </Button>
+          {!isAdmin7 && <LucideIcon.ChevronDown className="size-4" />}
+        </PageHeader.Action>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {/* Radio items so the active sort is announced, and visible. */}

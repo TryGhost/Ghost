@@ -37,6 +37,7 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
+  cn,
   formatNumber,
   formatPercentage,
   useSimplePagination,
@@ -56,6 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
+import { useShade } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -98,6 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -561,9 +564,11 @@ const Newsletter: React.FC = () => {
                                 ) : (
                                   <>
                                     <Button
-                                      className="mr-2 shrink-0 bg-background"
-                                      size="sm"
-                                      variant="outline"
+                                      aria-label="Edit link"
+                                      className={cn('mr-2 shrink-0', !isAdmin7 && 'bg-background')}
+                                      size={isAdmin7 ? 'icon-sm' : 'sm'}
+                                      title={isAdmin7 ? 'Edit link' : undefined}
+                                      variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >
                                       <LucideIcon.Pen />
@@ -615,13 +620,8 @@ const Newsletter: React.FC = () => {
                           <SimplePaginationPreviousButton
                             disabled={!hasPreviousPage}
                             onClick={previousPage}
-                            // size='default'
                           />
-                          <SimplePaginationNextButton
-                            disabled={!hasNextPage}
-                            onClick={nextPage}
-                            // size='default'
-                          />
+                          <SimplePaginationNextButton disabled={!hasNextPage} onClick={nextPage} />
                         </SimplePaginationNavigation>
                       </SimplePagination>
                     )}

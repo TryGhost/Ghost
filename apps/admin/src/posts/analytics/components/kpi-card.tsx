@@ -63,7 +63,7 @@ export const KpiCardMoreButton: React.FC<React.ComponentProps<typeof Button>> = 
         className,
       )}
       size="sm"
-      variant="outline"
+      variant="subtle"
       {...props}
     >
       {children}

@@ -195,7 +195,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
           <div className="mt-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button className="w-full" size="sm" variant="outline">
+                <Button className="w-full" size="sm" variant="subtle">
                   View all ({extendedData.length}) <LucideIcon.ArrowRight size={14} />
                 </Button>
               </SheetTrigger>
@@ -252,7 +252,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline">
+              <Button variant="subtle">
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>
