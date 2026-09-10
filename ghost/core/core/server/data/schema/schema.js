@@ -675,6 +675,7 @@ module.exports = {
     enable_updates_and_announcements: { type: 'boolean', nullable: true },
     email_count: { type: 'integer', unsigned: true, nullable: false, defaultTo: 0 },
     email_opened_count: { type: 'integer', unsigned: true, nullable: false, defaultTo: 0 },
+    email_tracked_count: { type: 'integer', unsigned: true, nullable: true },
     email_open_rate: { type: 'integer', unsigned: true, nullable: true, index: true },
     email_disabled: { type: 'boolean', nullable: false, defaultTo: false },
     last_seen_at: { type: 'dateTime', nullable: true },
@@ -1635,6 +1636,7 @@ module.exports = {
     email_id: { type: 'string', maxlength: 24, nullable: false, references: 'emails.id' },
     mailgun_message_id: { type: 'string', maxlength: 255, nullable: true },
     fallback_sending_domain: { type: 'boolean', nullable: false, defaultTo: false },
+    member_counters_applied_at: { type: 'dateTime', nullable: true },
     status: {
       type: 'string',
       maxlength: 50,
