@@ -18,8 +18,9 @@ function etaMinutes(seconds: number, previous: number | null): number {
 export function useSendingEta(status: EmailSendingStatus | undefined): string | null {
   const sending = status?.sending;
   const key = status ? `${status.id}:${status.sending.status}` : null;
-  const isActive = sending?.status === 'preparing' || sending?.status === 'submitting';
-  const seconds = isActive ? sending.progress.estimated_seconds_remaining : null;
+  // Database timing makes preparation estimates unreliable.
+  const seconds =
+    sending?.status === 'submitting' ? sending.progress.estimated_seconds_remaining : null;
   const [previous, setPrevious] = useState<{ key: string | null; minutes: number | null }>({
     key: null,
     minutes: null,
