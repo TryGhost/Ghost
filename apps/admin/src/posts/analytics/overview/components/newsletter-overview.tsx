@@ -43,7 +43,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   isNewsletterStatsLoading,
   isWebShown,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -122,7 +122,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               navigate(`/posts/analytics/${postId}/newsletter`);
             }}
           >
-            {isAdmin7Pill ? 'View more →' : 'View more'}
+            {isAdmin7 ? 'View more →' : 'View more'}
           </Button>
         )}
       </div>

@@ -173,7 +173,7 @@ export function ManagePostViewPopover({
   inHeader = false,
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
 
   return (
     <>
@@ -184,7 +184,7 @@ export function ManagePostViewPopover({
               data-testid="manage-post-view"
               label={activeView ? 'Edit view' : 'Save view'}
             >
-              {isAdmin7Pill && <LucideIcon.Bookmark className="size-4" />}
+              {isAdmin7 && <LucideIcon.Bookmark className="size-4" />}
               {activeView ? 'Edit view' : 'Save view'}
             </PageHeader.Action>
           ) : (

@@ -60,7 +60,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 }) => {
   // const navigate = useNavigate();
   const { range } = useAnalytics();
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
 
   // Construct tooltip message based on input parameters
@@ -136,7 +136,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
             variant="subtle"
             onClick={onClick}
           >
-            {isAdmin7Pill ? 'View more →' : 'View more'}
+            {isAdmin7 ? 'View more →' : 'View more'}
           </Button>
         )}
       </KpiCardHeader>

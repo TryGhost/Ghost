@@ -20,7 +20,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
   collapsible = false,
   ariaLabel = 'Search members',
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const [expanded, setExpanded] = useState(false);
   const restoreTriggerFocus = useRef(false);
   const isExpanded = !collapsible || expanded || search.length > 0;
@@ -33,7 +33,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
         'h-(--control-height) min-w-0',
         collapsible ? 'w-full' : 'basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]',
       )}
-      variant={isAdmin7Pill ? 'secondary' : 'default'}
+      variant={isAdmin7 ? 'secondary' : 'default'}
     >
       <InputGroupAddon>
         <LucideIcon.Search className="size-4" strokeWidth={collapsible ? 2 : 1.75} />

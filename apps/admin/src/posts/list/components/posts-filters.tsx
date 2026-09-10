@@ -44,7 +44,7 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
 
@@ -55,10 +55,10 @@ export function PostsFilters({
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          !isAdmin7Pill && 'text-muted-foreground hover:text-foreground',
+          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
         )}
         type="button"
-        variant={isAdmin7Pill ? 'ghost' : 'outline'}
+        variant={isAdmin7 ? 'ghost' : 'outline'}
         onClick={() => onFiltersChange([])}
       >
         Clear

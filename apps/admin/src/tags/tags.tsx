@@ -18,7 +18,7 @@ import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
 import { useShade } from '@tryghost/shade/app';
 
 const Tags: React.FC = () => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = searchParams.get('type') ?? 'public';
 
@@ -57,7 +57,7 @@ const Tags: React.FC = () => {
                     <PageHeader.ActionGroup.MobileMenuTrigger>
                       <Button
                         aria-label="More tag actions"
-                        size={isAdmin7Pill ? 'icon' : undefined}
+                        size={isAdmin7 ? 'icon' : undefined}
                         variant="subtle"
                       >
                         <LucideIcon.MoreHorizontal className="size-4" />

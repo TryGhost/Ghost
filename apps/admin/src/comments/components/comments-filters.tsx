@@ -18,7 +18,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
@@ -30,7 +30,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
 
-  const filterBarActions = isAdmin7Pill ? (
+  const filterBarActions = isAdmin7 ? (
     <FilterBar.Actions>
       <FilterBar.Action type="button" variant="ghost" onClick={() => onFiltersChange([])}>
         Clear

@@ -63,7 +63,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -275,7 +275,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
                   <PageHeader.ActionGroup>
-                    {isAdmin7Pill ? (
+                    {isAdmin7 ? (
                       <>
                         {moreActions}
                         {shareAction && (

@@ -148,7 +148,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     },
     ref,
   ) {
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -309,11 +309,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
             // title away from the metrics too.
             className={cn(
               'my-4 shrink-0',
-              isAdmin7Pill ? 'ms-8' : 'ms-2',
-              isAdmin7Pill ? isHovered && 'bg-background' : 'bg-control-surface px-4',
+              isAdmin7 ? 'ms-8' : 'ms-2',
+              isAdmin7 ? isHovered && 'bg-background' : 'bg-control-surface px-4',
             )}
-            size={isAdmin7Pill ? 'icon' : undefined}
-            variant={isAdmin7Pill ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+            size={isAdmin7 ? 'icon' : undefined}
+            variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
             asChild
           >
             <a

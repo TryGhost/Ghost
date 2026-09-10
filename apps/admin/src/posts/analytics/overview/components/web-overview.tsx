@@ -40,7 +40,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({
   sourcesData,
   isNewsletterShown = true,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
 
@@ -78,7 +78,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({
               navigate(`/posts/analytics/${postId}/web`);
             }}
           >
-            {isAdmin7Pill ? 'View more →' : 'View more'}
+            {isAdmin7 ? 'View more →' : 'View more'}
           </Button>
         </div>
         <CardContent>

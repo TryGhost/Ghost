@@ -187,9 +187,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
-  const useOriginalFilterUI = !isAdmin7Pill && !useConsolidatedFilterUI;
+  const useOriginalFilterUI = !isAdmin7 && !useConsolidatedFilterUI;
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions
@@ -200,11 +200,11 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          !isAdmin7Pill && 'text-muted-foreground hover:text-foreground',
+          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
           useOriginalFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"
-        variant={!isAdmin7Pill && useConsolidatedFilterUI ? 'outline' : 'ghost'}
+        variant={!isAdmin7 && useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
         {useOriginalFilterUI && <LucideIcon.X className="size-4" />}

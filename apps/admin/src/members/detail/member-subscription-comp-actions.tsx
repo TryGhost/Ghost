@@ -35,7 +35,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
   member,
   tierId,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const editMember = useEditMember();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   // Keep the trigger disabled through the invalidated members refetch so the
@@ -71,7 +71,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
             aria-label="Subscription menu"
             data-testid="subscription-actions"
             disabled={busy}
-            size={isAdmin7Pill ? 'icon' : 'sm'}
+            size={isAdmin7 ? 'icon' : 'sm'}
             variant="subtle"
           >
             {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}

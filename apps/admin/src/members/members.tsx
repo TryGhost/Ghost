@@ -49,7 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -150,7 +150,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   const headerSearch =
     shouldShowMemberControls &&
-    (isAdmin7Pill ? (
+    (isAdmin7 ? (
       <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
     ) : (
       <>
@@ -172,7 +172,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <MembersFilters
       activeView={activeView}
       filters={filters}
-      iconOnly={!isAdmin7Pill}
+      iconOnly={!isAdmin7}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}
       savedViews={savedViews}
@@ -199,9 +199,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {isAdmin7Pill && headerFilters}
+                    {isAdmin7 && headerFilters}
                     {headerSearch}
-                    {!isAdmin7Pill && headerFilters}
+                    {!isAdmin7 && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}

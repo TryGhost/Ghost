@@ -25,7 +25,7 @@ interface PostsSortMenuProps {
  * "Newest first" is the *absence* of an `order` param, not a value.
  */
 export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
 
   return (
     <DropdownMenu>
@@ -42,7 +42,7 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
         >
           <LucideIcon.ArrowUpDown className="size-4" />
           {getOrderLabel(order)}
-          {!isAdmin7Pill && <LucideIcon.ChevronDown className="size-4" />}
+          {!isAdmin7 && <LucideIcon.ChevronDown className="size-4" />}
         </PageHeader.Action>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -49,7 +49,7 @@ import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-st
 import { useShade } from '@tryghost/shade/app';
 
 const Overview: React.FC = () => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
@@ -233,7 +233,7 @@ const Overview: React.FC = () => {
                         navigate(`/posts/analytics/${postId}/growth`);
                       }}
                     >
-                      {isAdmin7Pill ? 'View more →' : 'View more'}
+                      {isAdmin7 ? 'View more →' : 'View more'}
                     </Button>
                   </div>
                   <CardContent className="flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0">
@@ -298,7 +298,7 @@ const Overview: React.FC = () => {
                       variant="subtle"
                       onClick={() => setIsGiftLinkOpen(true)}
                     >
-                      {isAdmin7Pill && <LucideIcon.Share />}
+                      {isAdmin7 && <LucideIcon.Share />}
                       Share
                     </Button>
                   </div>

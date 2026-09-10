@@ -42,7 +42,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
   member,
   allowLeaveWithUnsavedChanges,
 }) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   const { data: currentUser } = useCurrentUser();
   const [showImpersonate, setShowImpersonate] = React.useState(false);
   const [showLogout, setShowLogout] = React.useState(false);
@@ -98,14 +98,14 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-impersonate"
             onSelect={() => setShowImpersonate(true)}
           >
-            {isAdmin7Pill && <LucideIcon.LogIn aria-hidden="true" />}
+            {isAdmin7 && <LucideIcon.LogIn aria-hidden="true" />}
             Impersonate
           </DropdownMenuItem>
           <DropdownMenuItem
             data-testid="member-actions-logout"
             onSelect={() => setShowLogout(true)}
           >
-            {isAdmin7Pill && <LucideIcon.LogOut aria-hidden="true" />}
+            {isAdmin7 && <LucideIcon.LogOut aria-hidden="true" />}
             Sign out of all devices
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -113,7 +113,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             disabled={commentingBusy}
             onSelect={() => void onCommentingSelect()}
           >
-            {isAdmin7Pill &&
+            {isAdmin7 &&
               (commentingDisabled ? (
                 <LucideIcon.MessageCircle aria-hidden="true" />
               ) : (
@@ -127,7 +127,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-delete"
             onSelect={() => setShowDelete(true)}
           >
-            {isAdmin7Pill && <LucideIcon.Trash2 aria-hidden="true" />}
+            {isAdmin7 && <LucideIcon.Trash2 aria-hidden="true" />}
             Delete member
           </DropdownMenuItem>
         </DropdownMenuContent>

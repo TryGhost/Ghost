@@ -13,8 +13,8 @@ interface EditRowProps {
 }
 
 export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
-  const { isAdmin7Pill } = useShade();
-  const EditInput = isAdmin7Pill ? Input : 'input';
+  const { isAdmin7 } = useShade();
+  const EditInput = isAdmin7 ? Input : 'input';
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -66,11 +66,11 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
   };
 
   return (
-    <Stack className={isAdmin7Pill ? 'pt-1 pb-2' : 'py-1.5'} gap="sm" data-edit-row>
+    <Stack className={isAdmin7 ? 'pt-1 pb-2' : 'py-1.5'} gap="sm" data-edit-row>
       <EditInput
         ref={inputRef}
         className={
-          isAdmin7Pill
+          isAdmin7
             ? 'h-7 rounded-control-sm! px-2 text-sm'
             : 'h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50'
         }
