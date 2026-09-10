@@ -5,12 +5,12 @@ import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ShadeScope } from '@/shade-scope';
-import { useAdmin7 } from '@/providers/admin7-provider';
 
 interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
+  isAdmin7Pill: boolean;
   controlShape: ControlShape;
 }
 
@@ -20,6 +20,7 @@ const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
+  isAdmin7Pill: true,
   controlShape: 'pill',
 });
 
@@ -73,12 +74,17 @@ const ToasterPortal = () => {
 
 interface ShadeProviderProps {
   darkMode: boolean;
+  isAdmin7Pill?: boolean;
   controlShape?: ControlShape;
   children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, controlShape, children }) => {
-  const { pill } = useAdmin7();
+const ShadeProvider: React.FC<ShadeProviderProps> = ({
+  darkMode,
+  isAdmin7Pill = true,
+  controlShape,
+  children,
+}) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
   const setFocusState = (value: boolean) => {
@@ -91,7 +97,8 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, controlShape, c
         isAnyTextFieldFocused,
         setFocusState,
         darkMode,
-        controlShape: controlShape ?? (pill ? 'pill' : 'rounded'),
+        isAdmin7Pill,
+        controlShape: controlShape ?? (isAdmin7Pill ? 'pill' : 'rounded'),
       }}
     >
       <GlobalDirtyStateProvider>

@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useFeatureFlag, useFeatureFlags } from '../../../src/hooks/use-feature-flag';
+import { useFeatureFlag } from '../../../src/hooks/use-feature-flag';
 
 vi.mock('../../../src/api/config', () => ({
   useBrowseConfig: vi.fn(),
@@ -104,23 +104,5 @@ describe('useFeatureFlag', () => {
     const { result } = renderHook(() => useFeatureFlag('myFlag'));
 
     expect(result.current).toBe(false);
-  });
-
-  it('resolves a requested group with the same config and session override rules', () => {
-    mockUseBrowseConfig.mockReturnValue(
-      withLabs({ fromConfig: true, fromSession: false, truthy: 'true', unrelated: true }),
-    );
-    mockUseFeatureFlagOverrides.mockReturnValue({ enabledFlags: ['fromSession'] });
-
-    const { result } = renderHook(() =>
-      useFeatureFlags(['fromConfig', 'fromSession', 'truthy', 'absent']),
-    );
-
-    expect(result.current).toEqual({
-      fromConfig: true,
-      fromSession: true,
-      truthy: false,
-      absent: false,
-    });
   });
 });

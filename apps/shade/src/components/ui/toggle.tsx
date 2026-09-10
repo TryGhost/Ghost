@@ -1,7 +1,5 @@
 'use client';
 
-import { useAdmin7 } from '@/providers/admin7-provider';
-
 import * as React from 'react';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -47,8 +45,7 @@ const Toggle = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
     Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Pill'>
 >(({ className, variant, size, shape, ...props }, ref) => {
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
   const resolvedShape = shape ?? controlShape;
 
   return (

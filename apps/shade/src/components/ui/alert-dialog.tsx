@@ -1,4 +1,3 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
@@ -91,8 +90,7 @@ const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & Pick<ButtonProps, 'variant'>
 >(({ className, variant, ...props }, ref) => {
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
 
   return (
     <AlertDialogPrimitive.Action
@@ -109,8 +107,7 @@ const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
 >(({ className, ...props }, ref) => {
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
 
   return (
     <AlertDialogPrimitive.Cancel

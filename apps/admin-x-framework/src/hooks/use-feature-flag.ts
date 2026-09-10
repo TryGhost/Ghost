@@ -9,14 +9,14 @@ export interface FeatureFlagOptions {
 }
 
 /**
- * Returns whether each requested Labs flag is explicitly enabled by config or
- * the current session's URL overrides. Only boolean `true` config values count. Avoids
+ * Returns whether a Labs flag is explicitly enabled by config or the current
+ * session's URL overrides. Only boolean `true` config values count. Avoids
  * refetching stale config when a feature-gated component mounts.
  */
-export const useFeatureFlags = (
-  flags: readonly string[],
+export const useFeatureFlag = (
+  flag: string,
   { requestOptions, defaultErrorHandler }: FeatureFlagOptions = {},
-): Record<string, boolean> => {
+): boolean => {
   const { data: config } = useBrowseConfig({
     defaultErrorHandler,
     refetchOnMount: false,
@@ -24,13 +24,5 @@ export const useFeatureFlags = (
   });
   const { enabledFlags } = useFeatureFlagOverrides();
 
-  return Object.fromEntries(
-    flags.map((flag) => [
-      flag,
-      config?.config.labs?.[flag] === true || enabledFlags.includes(flag),
-    ]),
-  );
+  return config?.config.labs?.[flag] === true || enabledFlags.includes(flag);
 };
-
-export const useFeatureFlag = (flag: string, options?: FeatureFlagOptions): boolean =>
-  useFeatureFlags([flag], options)[flag] ?? false;

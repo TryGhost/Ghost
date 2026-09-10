@@ -94,93 +94,56 @@ usable disabled state.
 
 ## Admin 7 milestones
 
-Admin 7 milestones use the existing private Labs flags and session overrides.
-Each milestone has a descriptive `admin7` key, such as `admin7Pill`, and a Labs
-label that identifies its milestone and purpose: “Admin 7 · Milestone 2 · Pill
-controls.” Keep the key stable as the implementation evolves.
+Admin 7 milestones use ordinary private Labs flags. Give each milestone a
+stable, descriptive key such as `admin7Pill`, and a Labs label that identifies
+its milestone and purpose: “Admin 7 · Milestone 2 · Pill controls.” Register it
+and add its toggle using the same steps as any other private flag.
 
-The [Admin 7 registry](../../apps/admin/src/admin7/features.ts) records each
-milestone's Labs key, title, description, supported surfaces, route exclusions
-and explicit `requires` dependencies. The Admin root calls
-[`useResolvedAdmin7`](../../apps/admin/src/admin7/use-resolved-admin7.ts), which
-resolves that registry against effective Labs values and the current route,
-then passes the complete result to Shade. An enabled Labs flag is a request to preview a
-milestone; the resolved value means that milestone is allowed on this screen.
+Read the flag with the existing `useFeatureFlag` hook where the behavior is
+owned. Keep any route restrictions beside that check. If a milestone needs
+another flag, combine those values directly at the same boundary.
 
-### Resolve once, consume by milestone
+### Shared appearance
 
-Use `useAdmin7().pill` from `@tryghost/shade/app` for the pill milestone. A single `isAdmin7Design` boolean
-would conflate independent milestones as the redesign grows. Pages and shared
-controls consume the resolved milestone values rather than reading raw Labs
-flags or repeating route checks.
-
-Resolution preserves Admin's existing session overrides. Missing flags and
-loading configuration resolve to off unless a session override enables them.
-Overrides still obey surface restrictions and dependencies. Permanent permission
-checks and backend capability checks remain separate from milestone rollout;
-removing a flag must not remove those checks.
-
-Milestones are independent unless the registry explicitly declares a dependency.
-A dependent milestone requires its own flag and every prerequisite to be enabled
-and supported on the current screen. Invalid or cyclic dependencies resolve to
-off. Enabling a milestone never silently enables other toggles. Describe actual
-prerequisites in its Labs description so a disabled dependency is understandable.
-
-### Keep presentation in Shade
-
-The host supplies all resolved values at the shared application boundary:
+For the pill milestone, the [Admin root](../../apps/admin/src/app-root.tsx)
+reads `useFeatureFlag('admin7Pill')` and excludes the editor and Ember-owned
+routes. It passes the resulting boolean to the existing Shade provider:
 
 ```tsx
-<ShadeApp darkMode={darkMode} admin7={admin7}>
+<ShadeApp darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
   <App />
 </ShadeApp>
 ```
 
-Shade knows the resolved features, not Labs storage or Admin routes. Shared
-components and recipes own appearance; ordinary callers keep using `<Button>`
-without a per-button milestone prop. Pages may use `useAdmin7()` for structural
-or interaction differences that belong to that page. Keep flag checks at those
-shared boundaries rather than distributing identical classes across consumers.
+Shared components read `useShade().isAdmin7Pill` from
+`@tryghost/shade/app`. Shade owns changes to control appearance, spacing and
+strokes; pages use the same value for structural differences such as action
+order. Ordinary component calls stay `<Button>` rather than setting a milestone
+prop on every control.
 
-Isolated Shade previews default milestone values to true. Those values affect
-appearance when shared controls adopt the milestone. Admin always supplies the
-complete resolved object, so a missing production flag cannot inherit the
-preview default. Standalone hosts must explicitly choose their supported
-milestones. Shade propagates the same values into portaled menus, tooltips and
-dialogs through its scope wrapper; global attributes on `document.body` would
-allow one host to change another's design.
+Shade previews default to the new appearance. Admin always passes its computed
+boolean, so missing or loading configuration stays off unless the existing
+session override enables the flag. Standalone ActivityPub explicitly passes
+`isAdmin7Pill={false}`; embedded ActivityPub inherits Admin's value. Menus,
+tooltips and dialogs carry `data-admin7-pill` through Shade's scope wrapper,
+including when rendered in portals.
 
-### Pill milestone
+For future milestones, use the existing hook directly. Pass a value through the
+existing Shade provider only when shared presentation needs it. Keep permanent
+permission and backend capability checks separate from the temporary flag.
 
-`admin7Pill` resolves to `pill`. Its scope is shared pill geometry, control and
-header styling, and the accompanying header interactions. Registering and
-resolving the flag does not itself change appearance; each adoption uses the
-resolved value to gate those changes. It has no milestone
-prerequisites. It applies to React Admin routes, excluding the editor; Ember-owned
-routes and the standalone ActivityPub preview resolve to `pill: false`. The
-embedded ActivityPub routes inherit Admin's resolved values.
+### Verify and remove
 
-The CSS boundary is `data-admin7-pill`. Changes to colors, spacing, strokes and
-pressed states belong in Shade's scoped tokens, recipes or shared controls.
-Page-level differences such as action order use the same resolved `pill` value.
+Keep automated coverage focused on the boundary: missing/off/on flags, excluded
+routes and portal isolation. Preserve existing behavioral tests. Styling-only
+changes do not need unit, acceptance or CSS assertion suites; review both
+appearances visually and use private dogfooding to explore new interactions.
 
-### Review and remove a milestone
-
-For each milestone, record its scope, restrictions, dependencies and removal steps
-alongside its registry entry or focused design documentation. Keep automated
-checks concentrated on the rollout boundary: absent/off/on flags, supported
-surfaces, exclusions, real dependencies and portal isolation. Preserve existing
-behavioral coverage. Styling-only changes do not need unit, acceptance or CSS
-assertion suites. Review both designs visually; private dogfooding can exercise
-experimental interactions before they become a permanent contract.
-
-Follow the normal promotion lifecycle below. As controls adopt the pill
-milestone, make their enabled behavior the intended default. When removing the
-flag, keep those branches, remove any previous token scope and fallback props,
-and delete `pill` from the registry and Shade's temporary feature contract. Remove its Labs toggle, raw key, scope attribute and boundary-only tests.
-Ordinary component calls should then use the intended defaults. Resolve dependent
-milestones before deleting a prerequisite, and retain any permanent route,
-permission or backend requirements that still apply after rollout.
+Build the enabled appearance as the intended default. Follow the normal flag
+lifecycle below, then remove the Labs key and toggle, the temporary provider
+value, disabled branches, scope attribute and tests for the obsolete boundary.
+Ordinary component calls should keep working without changes. Retain permanent
+route, permission or backend requirements after the flag is gone.
 
 ## How values are resolved
 

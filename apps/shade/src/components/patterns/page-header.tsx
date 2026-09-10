@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
+import { useShade } from '@/providers/shade-provider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,7 @@ function PageHeaderTooltip({
   label,
   shortcut,
 }: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   if (!isAdmin7Pill) {
     return <>{children}</>;
   }
@@ -52,7 +52,7 @@ const PageHeaderTooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipTrigger>,
   React.ComponentPropsWithoutRef<typeof TooltipTrigger>
 >(({ children, asChild, ...props }, ref) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const PlainTrigger = asChild ? Slot : 'button';
   return isAdmin7Pill ? (
     <TooltipTrigger ref={ref} asChild={asChild} {...props}>
@@ -92,7 +92,7 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
     },
     ref,
   ) => {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     const primaryContext = React.useContext(PrimaryActionContext);
     const primary = primaryProp ?? primaryContext;
     const button = (
@@ -139,7 +139,7 @@ const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
 >(({ label, className, ...props }, ref) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   return (
     <PageHeaderTooltip label={label}>
       <PageHeaderTooltipTrigger asChild>
@@ -275,7 +275,7 @@ function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) 
 
 type PageHeaderActionGroupPrimaryProps = PropsWithChildrenAndClassName;
 function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionGroupPrimaryProps) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   if (React.Children.toArray(children).length === 0) {
     return null;
   }
@@ -332,7 +332,7 @@ function PageHeaderActionGroupMobileMenuContent({
 }
 
 function PageHeaderTooltipProvider({ children }: React.PropsWithChildren) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   return isAdmin7Pill ? (
     <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
       {children}
@@ -387,7 +387,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     children,
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     const gap = isAdmin7Pill ? 'xs' : 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];

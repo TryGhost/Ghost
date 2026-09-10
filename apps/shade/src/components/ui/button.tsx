@@ -1,4 +1,3 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -114,8 +113,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape } = useShade();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { controlShape, isAdmin7Pill } = useShade();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =

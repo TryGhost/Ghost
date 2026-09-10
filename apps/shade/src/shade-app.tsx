@@ -2,12 +2,6 @@ import clsx from 'clsx';
 import React from 'react';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-provider';
-import {
-  ADMIN7_PREVIEW_FEATURES,
-  Admin7Provider,
-  type Admin7Features,
-  getAdmin7ScopeAttributes,
-} from '@/providers/admin7-provider';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.
@@ -19,14 +13,14 @@ export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
   controlShape?: ControlShape;
-  /** Hosts supply resolved milestones; standalone Shade previews use future defaults. */
-  admin7?: Admin7Features;
+  /** Admin supplies the effective flag; isolated Shade previews use the new design. */
+  isAdmin7Pill?: boolean;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
   controlShape,
-  admin7 = ADMIN7_PREVIEW_FEATURES,
+  isAdmin7Pill = true,
   className,
   children,
   ...props
@@ -34,12 +28,10 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props} {...getAdmin7ScopeAttributes(admin7)}>
-      <Admin7Provider features={admin7}>
-        <ShadeProvider controlShape={controlShape} darkMode={darkMode}>
-          {children}
-        </ShadeProvider>
-      </Admin7Provider>
+    <div className={appClassName} {...props} data-admin7-pill={isAdmin7Pill}>
+      <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
+        {children}
+      </ShadeProvider>
     </div>
   );
 };

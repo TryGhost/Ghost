@@ -1071,7 +1071,7 @@ function HeaderTriggerExample({
     />
   );
   return (
-    <ShadeApp admin7={{ pill: isAdmin7Pill }} className="h-auto!" darkMode={darkMode}>
+    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
       <PageHeader.ActionGroup>
         {filters.length ? <FilterBar>{control}</FilterBar> : control}
       </PageHeader.ActionGroup>
