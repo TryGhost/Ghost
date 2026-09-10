@@ -12,6 +12,7 @@ const onHeaders = require('on-headers');
 const tiersService = require('../tiers/service');
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
+const { timingSafeStringEqual } = require('../../../shared/timing-safe-string-equal');
 
 const messages = {
   missingUuid: 'Missing uuid.',
@@ -237,7 +238,7 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
       .createHmac('sha256', settingsHelpers.getMembersValidationKey())
       .update(uuid)
       .digest('hex');
-    if (memberHmac !== key) {
+    if (!timingSafeStringEqual(memberHmac, key)) {
       throw new errors.UnauthorizedError({
         message: tpl(messages.invalidKey),
       });
