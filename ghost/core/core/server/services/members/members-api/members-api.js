@@ -366,6 +366,7 @@ module.exports = function MembersAPI({
     members: users,
     emailSuppressionList,
     metafieldValues: metafields.values,
+    newslettersService,
   });
 
   async function getMemberIdentity(transientId) {
