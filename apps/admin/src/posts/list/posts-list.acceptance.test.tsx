@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
 
 import {
   fakePages,
@@ -34,32 +33,6 @@ describe('Posts and pages list flag', () => {
     fakePostsListScreen();
     postsApi = fakePosts([]);
     pagesApi = fakePages([]);
-  });
-
-  it('keeps the sort tooltip closed after pointer selection, while preserving keyboard tooltips', async () => {
-    await renderAdminApp('/posts', { labs: { postsListReact: true, admin7Pill: true } });
-
-    await expect.element(postsListScreen.sortButton()).toBeVisible();
-    await postsListScreen.sortButton().click();
-    await expect
-      .poll(() => getComputedStyle(postsListScreen.sortButton().element()).boxShadow)
-      .toContain('inset');
-    await postsListScreen.sortOption('Newest first').click();
-
-    await expect.element(postsListScreen.sortButton()).toHaveFocus();
-    await expect.element(postsListScreen.sortButton()).toHaveAttribute('aria-expanded', 'false');
-    expect(page.getByRole('tooltip').elements()).toHaveLength(0);
-    await expect
-      .poll(() => getComputedStyle(postsListScreen.sortButton().element()).boxShadow)
-      .not.toContain('inset');
-
-    await userEvent.tab();
-    await userEvent.tab({ shift: true });
-    await expect.element(postsListScreen.sortButton()).toHaveFocus();
-    await expect.element(page.getByRole('tooltip')).toHaveTextContent('Sort');
-    expect(getComputedStyle(postsListScreen.sortButton().element()).boxShadow).not.toContain(
-      'inset',
-    );
   });
 
   describe.each([

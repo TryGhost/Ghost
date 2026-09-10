@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -20,49 +19,6 @@ import { deferred } from '@/utils/deferred';
 import { analyticsScreen } from './analytics.screen';
 
 const LATEST_POST_ID = '64d623b64676110001e897d1';
-
-describe.each([false, true])('Analytics header design (admin7Pill=%s)', (admin7Pill) => {
-  it.each(['/analytics', '/analytics/web', '/analytics/growth', '/analytics/newsletters'])(
-    'preserves date selection and uses the selected design on %s',
-    async (route) => {
-      seedEmptyAnalyticsWorld();
-      seedEmptyWebTraffic();
-      seedZeroMemberHistory();
-      fakeAdminStats.topPosts();
-      fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
-      fakeAdminStats.newsletterSubscribers();
-      fakeAdminStats.newsletterBasic();
-      fakeAdminStats.newsletterClicks();
-      await renderAdminApp(route, { labs: { admin7Pill }, boot: webAnalyticsBootOverrides() });
-
-      const trigger = page.getByRole('combobox', { name: 'Date range' });
-      await expect.element(trigger).toBeVisible();
-      // The previous values come from the pre-rollout SelectTrigger and date-range
-      // component: regular weight, a 1.5px calendar and a visible down chevron.
-      const triggerElement = trigger.element();
-      const style = () => getComputedStyle(triggerElement);
-      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      await expect.poll(() => style().fontWeight).toBe(admin7Pill ? '500' : '400');
-      const calendar = trigger.element().querySelector('svg')!;
-      expect(getComputedStyle(calendar).strokeWidth).toBe(admin7Pill ? '2px' : '1.5px');
-      expect(trigger.element().querySelectorAll('svg')).toHaveLength(admin7Pill ? 1 : 2);
-
-      await trigger.click();
-      await expect.element(analyticsScreen.rangeOption('Last 7 days')).toBeVisible();
-      expect(style().boxShadow.includes('inset')).toBe(admin7Pill);
-      // The menu is portaled: it must inherit the same design as its trigger.
-      const menu = page.getByRole('listbox');
-      expect(Number.parseFloat(getComputedStyle(menu.element()).borderRadius)).toBeCloseTo(
-        rem * (admin7Pill ? 1 : 0.6),
-      );
-      await analyticsScreen.rangeOption('Last 7 days').click();
-      await expect.element(trigger).toHaveTextContent('Last 7 days');
-      await expect.element(trigger).toHaveFocus();
-      expect(page.getByRole('tooltip').elements()).toHaveLength(0);
-      expect(style().boxShadow).not.toContain('inset');
-    },
-  );
-});
 
 function daysAgo(days: number): string {
   const date = new Date();

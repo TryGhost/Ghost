@@ -19,10 +19,6 @@ vi.mock('@tryghost/admin-x-framework', () => ({
   useNavigate: mockUseNavigate,
 }));
 
-vi.mock('@/layout/use-admin7-pill', () => ({
-  useAdmin7Pill: () => ({ enabled: false }),
-}));
-
 vi.mock('@tryghost/admin-x-framework/helpers', () => ({
   blobDownloadFromEndpoint: mockBlobDownloadFromEndpoint,
 }));

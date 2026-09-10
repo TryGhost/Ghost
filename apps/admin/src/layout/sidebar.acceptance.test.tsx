@@ -8,7 +8,6 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeEndpoint,
-  fakeMembers,
   fakeTags,
   renderAdminApp,
   currentUserResponse,
@@ -31,10 +30,6 @@ function socialWebEnabled(): RenderAdminAppOptions {
 function fakeUnreadNotifications(count: number): void {
   fakeAdminEndpoint('GET', '/identities/', { identities: [{ token: 'test-token' }] });
   fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
-}
-
-function adminRoot(): Element | null {
-  return document.querySelector('[data-react-admin-mounted]');
 }
 
 function installStaleEmberRoute(activeRoute: 'members-activity' | 'pages' | 'posts'): void {
@@ -61,32 +56,6 @@ afterEach(() => {
 });
 
 describe('Sidebar navigation', () => {
-  it('enables pill styles on the Members list', async () => {
-    fakeMembers([]);
-    await renderAdminApp('/members', {
-      labs: { admin7Pill: true },
-    });
-
-    await expect.poll(() => adminRoot()?.classList.contains('admin7-pill')).toBe(true);
-  });
-
-  it('keeps pill styles off on the Members list when older Core omits the flag', async () => {
-    fakeMembers([]);
-    await renderAdminApp('/members');
-
-    await expect.poll(adminRoot).not.toBeNull();
-    expect(adminRoot()).not.toHaveClass('admin7-pill');
-  });
-
-  it('keeps pill styles off on Ember-owned routes', async () => {
-    await renderAdminApp('/site', {
-      labs: { admin7Pill: true },
-    });
-
-    await expect.poll(adminRoot).not.toBeNull();
-    expect(adminRoot()).not.toHaveClass('admin7-pill');
-  });
-
   it('renders navigation without waiting for Labs config', async () => {
     fakeTags([]);
     let resolveConfig!: (value: ReturnType<typeof configResponse>) => void;

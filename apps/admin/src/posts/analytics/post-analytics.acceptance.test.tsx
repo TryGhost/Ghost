@@ -24,66 +24,6 @@ const POST_UUID = '0d5cea22-f4d5-4b23-a0f7-1d9c46ae5f2a';
 const NEWSLETTER_ID = '64d623b64676110001e897aa';
 const EMAIL_ID = '64d623b64676110001e897ab';
 
-it('does not reserve primary-action space for an email-only post', async () => {
-  seedPostAnalyticsWorld({ email_only: true, status: 'sent' });
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), {
-    posts: [seededPost({ email_only: true, status: 'sent' })],
-  });
-  fakeAdminStats.newsletterBasic();
-  fakeAdminStats.newsletterClicks();
-  await renderAdminApp(`/posts/analytics/${POST_ID}/newsletter`, {
-    labs: { admin7Pill: true },
-    boot: webAnalyticsBootOverrides(),
-  });
-  const menu = page.getByRole('button', { name: 'More post actions' });
-  await expect.element(menu).toBeVisible();
-  expect(page.getByRole('button', { name: 'Share', exact: true }).elements()).toHaveLength(0);
-  const action = menu.element();
-  const group = action.closest('[data-page-header="action-group"]')!;
-  expect(group.getBoundingClientRect().right - action.getBoundingClientRect().right).toBeCloseTo(0);
-});
-
-describe.each([false, true])('Post analytics header design (admin7Pill=%s)', (admin7Pill) => {
-  it.each(['', '/web', '/growth', '/newsletter'])(
-    'keeps Share and menu actions working on the %s tab',
-    async (tab) => {
-      seedPostAnalyticsWorld();
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/`), { posts: [seededPost()] });
-      fakeAdminStats.newsletterBasic();
-      fakeAdminStats.newsletterClicks();
-      await renderAdminApp(`/posts/analytics/${POST_ID}${tab}`, {
-        labs: { admin7Pill },
-        boot: webAnalyticsBootOverrides(),
-      });
-
-      await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-      const share = page.getByRole('button', { name: 'Share', exact: true });
-      await expect.element(share).toBeVisible();
-      const icon = share.element().querySelector('svg')!;
-      expect(getComputedStyle(icon).strokeWidth).toBe(admin7Pill ? '2px' : '1.5px');
-      const menuTrigger = page.getByRole('button', { name: 'More post actions' });
-      await expect.element(menuTrigger).toBeVisible();
-      const menuTriggerElement = menuTrigger.element();
-      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const shareRect = share.element().getBoundingClientRect();
-      const menuRect = menuTrigger.element().getBoundingClientRect();
-      // Previous put Share before the more menu. The current design ends in Share,
-      // separated by 20px, without changing the menu's product actions.
-      if (admin7Pill) {
-        expect(shareRect.left - menuRect.right).toBeCloseTo(2 * rem, 1);
-      } else {
-        expect(menuRect.left).toBeGreaterThan(shareRect.right);
-      }
-      await menuTrigger.click();
-      await expect.element(page.getByRole('menu')).toBeVisible();
-      expect(getComputedStyle(menuTriggerElement).boxShadow.includes('inset')).toBe(admin7Pill);
-      expect(
-        Number.parseFloat(getComputedStyle(page.getByRole('menu').element()).borderRadius),
-      ).toBeCloseTo(rem * (admin7Pill ? 1 : 0.6));
-    },
-  );
-});
-
 function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);

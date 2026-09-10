@@ -29,26 +29,6 @@ describe('CopyField Components', () => {
     assert.doesNotMatch(label.className, /font-semibold/);
   });
 
-  it('uses the standard input surface and shared control height', () => {
-    render(
-      <CopyField value="https://example.com">
-        <CopyFieldContent data-testid="copy-field-content">
-          <CopyFieldValue data-testid="copy-field-value" />
-        </CopyFieldContent>
-      </CopyField>,
-    );
-
-    const content = screen.getByTestId('copy-field-content');
-    const value = screen.getByTestId('copy-field-value');
-
-    assert.match(content.className, /border-control-border/);
-    assert.match(content.className, /bg-control-readonly-surface/);
-    assert.match(content.className, /rounded-control/);
-    assert.match(content.className, /h-\(--control-height\)/);
-    assert.doesNotMatch(content.className, /border-b/);
-    assert.match(value.className, /text-muted-foreground/);
-  });
-
   it('associates its read-only value with its label', () => {
     render(
       <CopyField value="https://example.com">

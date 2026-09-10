@@ -169,7 +169,7 @@ function openCalendar() {
 }
 
 describe('Filters', () => {
-  describe('picker interactions', () => {
+  describe('ValueSource', () => {
     beforeAll(() => {
       global.ResizeObserver = class {
         observe() {
