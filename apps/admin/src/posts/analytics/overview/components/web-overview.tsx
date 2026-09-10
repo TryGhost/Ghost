@@ -21,7 +21,7 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 interface WebOverviewProps {
   sourcesData: BaseSourceData[] | null;
@@ -40,7 +40,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({
   sourcesData,
   isNewsletterShown = true,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
 

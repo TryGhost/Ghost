@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
@@ -173,7 +173,7 @@ export function ManagePostViewPopover({
   inHeader = false,
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { PageHeader } from '@tryghost/shade/patterns';
 import React, { useRef, useState } from 'react';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tryghost/shade/components';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -20,7 +20,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
   collapsible = false,
   ariaLabel = 'Search members',
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const [expanded, setExpanded] = useState(false);
   const restoreTriggerFocus = useRef(false);
   const isExpanded = !collapsible || expanded || search.length > 0;

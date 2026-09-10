@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { Stack } from '@tryghost/shade/primitives';
 import { Button, Input } from '@tryghost/shade/components';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
@@ -13,7 +13,7 @@ interface EditRowProps {
 }
 
 export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const EditInput = isAdmin7Pill ? Input : 'input';
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

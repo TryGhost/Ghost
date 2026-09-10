@@ -15,10 +15,10 @@ import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 const Tags: React.FC = () => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = searchParams.get('type') ?? 'public';
 

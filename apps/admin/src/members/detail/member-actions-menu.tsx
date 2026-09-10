@@ -21,7 +21,7 @@ import {
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 interface MemberActionsMenuProps {
   member: Member;
@@ -42,7 +42,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
   member,
   allowLeaveWithUnsavedChanges,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const { data: currentUser } = useCurrentUser();
   const [showImpersonate, setShowImpersonate] = React.useState(false);
   const [showLogout, setShowLogout] = React.useState(false);

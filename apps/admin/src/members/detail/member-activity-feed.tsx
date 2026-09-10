@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { isSafeHref } from './is-safe-href';
 import { parseMemberEvent } from './member-event';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
@@ -83,7 +83,7 @@ const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
  * Router intercepting the click.
  */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const link = (
     <a
       className={isAdmin7Pill ? undefined : 'block pt-3 font-medium text-primary hover:underline'}

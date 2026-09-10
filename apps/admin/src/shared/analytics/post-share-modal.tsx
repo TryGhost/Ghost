@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { Button } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
@@ -42,7 +42,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   siteTitle = '',
   ...props
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);

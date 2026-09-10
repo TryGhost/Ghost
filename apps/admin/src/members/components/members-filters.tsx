@@ -22,7 +22,7 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
@@ -187,7 +187,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const useOriginalFilterUI = !isAdmin7Pill && !useConsolidatedFilterUI;
 

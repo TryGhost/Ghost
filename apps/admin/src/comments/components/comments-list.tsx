@@ -21,7 +21,7 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -61,7 +61,7 @@ function CommentsList({
   isLoading?: boolean;
   dislikesEnabled: boolean;
 }) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,

@@ -31,7 +31,7 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -49,7 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;

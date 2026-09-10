@@ -5,7 +5,7 @@ import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 interface CommentsFiltersProps {
   filters: Filter[];
@@ -18,7 +18,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();

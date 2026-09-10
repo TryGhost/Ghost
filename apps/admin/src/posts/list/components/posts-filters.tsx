@@ -1,5 +1,5 @@
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn } from '@tryghost/shade/utils';
@@ -44,7 +44,7 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
 

@@ -12,7 +12,7 @@ import {
   useInfiniteVirtualScroll,
   useVirtualListWindow,
 } from '@/shared/virtual-list';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 import { forwardRef, useRef } from 'react';
@@ -53,7 +53,7 @@ function TagsList({
   isFetchingNextPage?: boolean;
   fetchNextPage: () => void;
 }) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({

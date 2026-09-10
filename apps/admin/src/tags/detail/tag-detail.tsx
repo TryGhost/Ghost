@@ -24,7 +24,7 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
@@ -52,7 +52,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();

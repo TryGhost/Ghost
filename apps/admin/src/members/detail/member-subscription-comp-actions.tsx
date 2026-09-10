@@ -18,7 +18,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useEditMember, useMembersFetching } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 interface MemberSubscriptionCompActionsProps {
   member: Member;
@@ -35,7 +35,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
   member,
   tierId,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const editMember = useEditMember();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   // Keep the trigger disabled through the invalidated members refetch so the

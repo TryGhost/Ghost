@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@tryghost/shade/components';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -108,7 +108,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   isCreating,
   onSearchClear,
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
   const visibleLabels = normalizedSearch
@@ -190,7 +190,7 @@ interface SelectedPillsProps {
 }
 
 const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   return (
     <>
       {labels.map((label) => (
@@ -275,7 +275,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);

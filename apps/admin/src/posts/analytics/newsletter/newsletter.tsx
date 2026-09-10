@@ -57,7 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -100,7 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');

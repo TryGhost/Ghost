@@ -46,10 +46,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 const Overview: React.FC = () => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();

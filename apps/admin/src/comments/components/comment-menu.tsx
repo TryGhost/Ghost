@@ -18,14 +18,14 @@ import {
 } from '@tryghost/admin-x-framework/api/members';
 import { Link } from '@tryghost/admin-x-framework';
 import { useState } from 'react';
-import { useAdmin7 } from '@tryghost/shade/app';
+import { useShade } from '@tryghost/shade/app';
 
 interface CommentMenuProps {
   comment: Comment;
 }
 
 export function CommentMenu({ comment }: CommentMenuProps) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   const { mutate: disableCommenting } = useDisableMemberCommenting();
   const { mutate: enableCommenting } = useEnableMemberCommenting();
   const { mutate: pinComment } = usePinComment();
