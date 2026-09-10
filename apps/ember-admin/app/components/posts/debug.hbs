@@ -329,7 +329,7 @@
                         <td colspan="2"><hr></td>
                     </tr>
                     <tr>
-                        <td>Analytics Latest running:</td>
+                        <td>Analytics Delivery/failures running:</td>
                         <td class="gh-email-debug-settings-icon">
                             {{#if (and this.analyticsStatus this.analyticsStatus.latest this.analyticsStatus.latest.running) }}
                                 <span class="check">{{svg-jar "check-2"}}</span>
@@ -349,6 +349,47 @@
                     <tr>
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.latest.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.latest.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.latest.lag }} (includes a 1-minute buffer)</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Opens running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.latestOpened this.analyticsStatus.latestOpened.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lag }} (includes a 1-minute buffer)</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>
@@ -374,6 +415,14 @@
                     <tr>
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.missing.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetched through:</td>
+                        <td>{{ this.analyticsStatus.missing.fetchedThrough }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ingestion lag:</td>
+                        <td>{{ this.analyticsStatus.missing.lag }} (rechecks events at least 30 minutes old)</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>
