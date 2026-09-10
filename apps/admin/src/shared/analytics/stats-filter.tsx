@@ -2,13 +2,7 @@ import { Button } from '@tryghost/shade/components';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {
-  type Filter,
-  type FilterFieldConfig,
-  FilterBar,
-  Filters,
-  PageHeader,
-} from '@tryghost/shade/patterns';
+import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { useShade } from '@tryghost/shade/app';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
@@ -694,10 +688,9 @@ function StatsFilter({
         data-testid="stats-filter-container"
       >
         <Filters
-          addButtonIcon={<LucideIcon.FunnelPlus />}
-          addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+          addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
           allowMultiple={false}
-          className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
+          className="[&>button]:order-last"
           fields={groupedFields}
           filters={filters}
           keyboardShortcut="f"
@@ -724,10 +717,7 @@ function StatsFilter({
 
   const filtersElement = (
     <Filters
-      addButton={!hasFilters ? <PageHeader.FilterTrigger /> : undefined}
-      addButtonIcon={<LucideIcon.FunnelPlus />}
-      addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={!hasFilters ? 'ghost' : undefined}
+      addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
       allowMultiple={false}
       className="[&>button]:order-last"
       clearButton={

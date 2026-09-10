@@ -3,7 +3,7 @@ import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
-import { type Filter, FilterBar, Filters, PageHeader } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
@@ -190,16 +190,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const { isAdmin7Design } = useShade();
   const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const useOriginalFilterUI = !isAdmin7Design && !useConsolidatedFilterUI;
-  const showIconOnlyTrigger = iconOnly && !hasFilters;
-  const addFilterButtonClassName = cn(
-    !isAdmin7Design && 'bg-background',
-    showIconOnlyTrigger &&
-      !isAdmin7Design &&
-      'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
-    hasFilters &&
-      !isAdmin7Design &&
-      (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-  );
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions
@@ -233,23 +223,13 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const filterControls = (
     <Filters
-      addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
-      addButtonClassName={addFilterButtonClassName}
-      addButtonIcon={
-        !useOriginalFilterUI ? (
-          hasFilters ? (
-            <LucideIcon.ListFilterPlus className="size-4" />
-          ) : (
-            <LucideIcon.ListFilter className="size-4" />
-          )
-        ) : hasFilters ? (
-          <LucideIcon.FunnelPlus />
-        ) : (
-          <LucideIcon.Funnel />
-        )
+      addButton={
+        <Filters.Trigger
+          collapseLabel={iconOnly}
+          fallbackClassName="bg-background"
+          fallbackStyle={useConsolidatedFilterUI ? 'list' : 'funnel'}
+        />
       }
-      addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}

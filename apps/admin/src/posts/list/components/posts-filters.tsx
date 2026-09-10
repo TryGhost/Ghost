@@ -1,8 +1,8 @@
-import { type Filter, FilterBar, Filters, PageHeader } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import { usePostFilterFields } from '@/posts/list/use-post-filter-fields';
 import type { PostResource } from '@/posts/list/post-resource';
 import type { User } from '@tryghost/admin-x-framework/api/users';
@@ -47,7 +47,6 @@ export function PostsFilters({
   const { isAdmin7Design } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
-  const showIconOnlyTrigger = iconOnly && !hasFilters;
 
   // Pinned right: inline it would read as another chip's own X, and wrapping
   // chips would drag it down off the first row.
@@ -77,26 +76,7 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
-        addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
-        // Collapsed with `text-[0px]`, not by dropping the label: the
-        // word "Filter" stays in the accessible name at every width.
-        addButtonClassName={cn(
-          showIconOnlyTrigger &&
-            'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
-          // In the bar it is icon-only at every width — the chips
-          // beside it already say what it adds to.
-          hasFilters &&
-            'data-[control-shape=rounded]:gap-0 data-[control-shape=rounded]:!px-3 data-[control-shape=rounded]:text-[0px]',
-        )}
-        addButtonIcon={
-          hasFilters ? (
-            <LucideIcon.ListFilterPlus className="size-4" />
-          ) : (
-            <LucideIcon.ListFilter className="size-4" />
-          )
-        }
-        addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-        addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
+        addButton={<Filters.Trigger collapseLabel={iconOnly} />}
         // Each field maps to one URL param holding one value; a second
         // chip per field would sit there without being in the URL.
         allowMultiple={false}

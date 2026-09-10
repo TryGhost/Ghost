@@ -1,7 +1,7 @@
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Button } from '@tryghost/shade/components';
 import React from 'react';
-import { type Filter, FilterBar, Filters, PageHeader } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
@@ -49,27 +49,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   return (
     <Filters
-      addButton={!hasFilters && isAdmin7Design ? <PageHeader.FilterTrigger /> : undefined}
-      addButtonClassName={cn(
-        hasFilters &&
-          !isAdmin7Design &&
-          (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-      )}
-      addButtonIcon={
-        isAdmin7Design || useConsolidatedFilterUI ? (
-          hasFilters ? (
-            <LucideIcon.ListFilterPlus className={isAdmin7Design ? 'stroke-2!' : undefined} />
-          ) : (
-            <LucideIcon.ListFilter className={isAdmin7Design ? 'stroke-2!' : undefined} />
-          )
-        ) : hasFilters ? (
-          <LucideIcon.FunnelPlus />
-        ) : (
-          <LucideIcon.Funnel />
-        )
-      }
-      addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={isAdmin7Design && !hasFilters ? 'ghost' : undefined}
+      addButton={<Filters.Trigger fallbackStyle={useConsolidatedFilterUI ? 'list' : 'funnel'} />}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}

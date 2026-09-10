@@ -113,7 +113,7 @@ function MembersHeader({
   );
   const filterControls = (
     <Filters
-      addButton={filters.length ? undefined : <PageHeader.FilterTrigger />}
+      addButton={<Filters.Trigger />}
       fields={[
         {
           key: 'status',

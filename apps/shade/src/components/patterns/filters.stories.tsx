@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Inline } from '@/components/primitives';
+import { Inline, Stack, Text } from '@/components/primitives';
+import { FilterBar } from '@/components/patterns/filter-bar';
+import { PageHeader } from '@/components/patterns/page-header';
+import { useShade } from '@/providers/shade-provider';
 import ShadeApp from '@/shade-app';
 import {
   Filters,
@@ -1043,4 +1046,73 @@ export const GroupPreviewLimit: Story = {
       },
     },
   },
+};
+
+function HeaderTriggerExample({
+  isAdmin7Design = true,
+  fallbackStyle = 'list',
+  disabled = false,
+}: {
+  isAdmin7Design?: boolean;
+  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
+  disabled?: boolean;
+}) {
+  const { darkMode } = useShade();
+  const [filters, setFilters] = useState<Filter[]>([]);
+  const control = (
+    <Filters
+      addButton={
+        <Filters.Trigger disabled={disabled} fallbackStyle={fallbackStyle} collapseLabel />
+      }
+      fields={basicFields}
+      filters={filters}
+      keyboardShortcut={disabled ? undefined : 'f'}
+      onChange={setFilters}
+    />
+  );
+  return (
+    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7Design={isAdmin7Design}>
+      <PageHeader.ActionGroup>
+        {filters.length ? <FilterBar>{control}</FilterBar> : control}
+      </PageHeader.ActionGroup>
+    </ShadeApp>
+  );
+}
+
+export const HeaderTrigger: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shared header trigger: hover for its shortcut, tab for focus, and choose a filter to see the compact add button. The disabled control stays inert.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      <HeaderTriggerExample />
+      <HeaderTriggerExample disabled />
+    </Stack>
+  ),
+};
+
+export const HeaderTriggerCompatibility: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Previous list, funnel and analytics triggers while Admin 7 is off. Resize below lg to check collapsed labels; add a filter to check each previous add-button treatment.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      {(['list', 'funnel', 'funnel-plus'] as const).map((fallbackStyle) => (
+        <Stack key={fallbackStyle} gap="sm">
+          <Text>{fallbackStyle}</Text>
+          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7Design={false} />
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };
