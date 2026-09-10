@@ -1,0 +1,154 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import { MailgunRateLimit } from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
+
+describe('Mailgun polling rate limits', () => {
+  afterEach(() => sinon.restore());
+
+  it('does not retry errors other than HTTP 429', async () => {
+    const limiter = new MailgunRateLimit();
+    const failure = Object.assign(new Error('Unavailable'), { status: 503 });
+    let calls = 0;
+    await assert.rejects(
+      limiter.run(async () => {
+        calls += 1;
+        throw failure;
+      }),
+      (error) => error === failure,
+    );
+    assert.equal(calls, 1);
+  });
+
+  it('honors the later of Retry-After and the quota reset', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    let calls = 0;
+    const result = limiter.run(async () => {
+      calls += 1;
+      if (calls === 1) {
+        throw Object.assign(new Error('Rate limited'), {
+          status: 429,
+          rateLimit: { resetAt: 3000, retryAt: 7000 },
+        });
+      }
+      return { value: 'page' };
+    });
+    await clock.tickAsync(6999);
+    assert.equal(calls, 1);
+    await clock.tickAsync(1);
+    assert.equal(await result, 'page');
+  });
+
+  it.each(['before', 'during'])(
+    'cancels %s a backoff without another request or a live timer',
+    async (when) => {
+      const clock = sinon.useFakeTimers({ now: 0 });
+      const controller = new AbortController();
+      const limiter = new MailgunRateLimit();
+      if (when === 'before') {
+        controller.abort();
+      }
+      let calls = 0;
+      let failure: unknown;
+      const result = limiter
+        .run(async () => {
+          calls += 1;
+          throw Object.assign(new Error('Rate limited'), {
+            status: 429,
+            rateLimit: { resetAt: 20000 },
+          });
+        }, controller.signal)
+        .catch((error) => {
+          failure = error;
+        });
+      await clock.tickAsync(0);
+      controller.abort();
+      await clock.tickAsync(0);
+      assert.ok(failure instanceof Error);
+      assert.equal(failure.message, 'Fetching canceled');
+      assert.equal(calls, when === 'before' ? 0 : 1);
+      assert.equal(clock.countTimers(), 0);
+      await result;
+    },
+  );
+
+  it('stops instead of retrying early when provider waits exceed the total backoff budget', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    const requestedAt: number[] = [];
+    let failure: unknown;
+    const result = limiter
+      .run(async () => {
+        requestedAt.push(Date.now());
+        throw Object.assign(new Error('Rate limited'), {
+          status: 429,
+          rateLimit: { resetAt: Date.now() + 20000 },
+        });
+      })
+      .catch((error) => {
+        failure = error;
+      });
+    await clock.tickAsync(30000);
+    assert.deepEqual(requestedAt, [0, 20000]);
+    assert.ok(failure instanceof Error && 'code' in failure);
+    assert.equal(failure.code, 'MAILGUN_RATE_LIMIT_WAIT_EXCEEDED');
+    await result;
+  });
+
+  it('applies exhausted-quota headers from a successful response to the next page', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    const limiter = new MailgunRateLimit();
+    await limiter.run(async () => ({ value: 'first', rateLimit: { remaining: 0, resetAt: 5000 } }));
+    const requestedAt: number[] = [];
+    const next = limiter.run(async () => {
+      requestedAt.push(Date.now());
+      return { value: 'next' };
+    });
+    await clock.tickAsync(4999);
+    assert.deepEqual(requestedAt, []);
+    await clock.tickAsync(1);
+    assert.equal(await next, 'next');
+    assert.deepEqual(requestedAt, [5000]);
+  });
+
+  it('bounds retries with exponential backoff and preserves the final error', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    const requestedAt: number[] = [];
+    const failure = Object.assign(new Error('Rate limited'), { status: 429 });
+    const result = limiter.run(async () => {
+      requestedAt.push(Date.now());
+      throw failure;
+    });
+    const rejected = assert.rejects(result, (error) => error === failure);
+    await clock.tickAsync(7000);
+    assert.deepEqual(requestedAt, [0, 1000, 3000, 7000]);
+    await rejected;
+  });
+
+  it('waits until the provider reset before retrying a rate-limited page', async () => {
+    const clock = sinon.useFakeTimers({ now: new Date('2026-09-01T12:00:00Z') });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    const requestedAt: number[] = [];
+    const start = Date.now();
+    const result = limiter.run(async () => {
+      requestedAt.push(Date.now());
+      if (requestedAt.length === 1) {
+        throw Object.assign(new Error('Rate limited'), {
+          status: 429,
+          rateLimit: { resetAt: start + 5000 },
+        });
+      }
+      return { value: 'page' };
+    });
+    await clock.tickAsync(4999);
+    assert.deepEqual(requestedAt, [start]);
+    await clock.tickAsync(1);
+    assert.equal(await result, 'page');
+    assert.deepEqual(requestedAt, [start, start + 5000]);
+  });
+});

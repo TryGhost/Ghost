@@ -2,12 +2,17 @@ import { IncorrectUsageError, InternalServerError } from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import metrics from '@tryghost/metrics';
 import { z } from 'zod';
+import { parseMailgunRateLimit, type MailgunRateLimitState } from './mailgun-rate-limit';
 
 // @tryghost/request has no type declarations. Keep its untrusted response at the boundary.
 const request: (
   url: string,
   options: Record<string, unknown>,
-) => Promise<{ body: unknown; statusCode?: unknown }> = require('@tryghost/request');
+) => Promise<{
+  body: unknown;
+  statusCode?: unknown;
+  headers?: unknown;
+}> = require('@tryghost/request');
 
 type LogPageOptions = {
   domain: string;
@@ -40,6 +45,8 @@ export type MailgunLogsPage = {
   skipped: number;
   /** Latest timestamp among readable provider records, filtered or not. */
   lastTimestamp?: Date;
+  /** Quota hints from the response headers, when the provider sent any. */
+  rateLimit?: MailgunRateLimitState;
 };
 
 // Boundary data: the provider owns these shapes, so read only what ingestion
@@ -142,6 +149,7 @@ export class MailgunLogsClient {
       });
     }
     let body: unknown;
+    let rateLimit: MailgunRateLimitState | undefined;
     const startedAt = Date.now();
     try {
       const response = await request(this.#url, {
@@ -173,6 +181,7 @@ export class MailgunLogsClient {
         },
       });
       body = response.body;
+      rateLimit = parseMailgunRateLimit(response.headers);
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
         statusCode: httpStatus(response.statusCode) ?? 200,
@@ -183,6 +192,9 @@ export class MailgunLogsClient {
       // Never attach or rethrow that error into analytics logging.
       const status = httpStatus(
         record(record(error)?.response)?.statusCode ?? record(error)?.statusCode,
+      );
+      rateLimit = parseMailgunRateLimit(
+        record(record(error)?.response)?.headers ?? record(error)?.headers,
       );
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
@@ -198,7 +210,7 @@ export class MailgunLogsClient {
           context: `Sending domain ${options.domain}`,
           code: rejected ? 'MAILGUN_LOGS_REQUEST_REJECTED' : 'MAILGUN_LOGS_REQUEST_FAILED',
         }),
-        { status },
+        { status, ...(rateLimit ? { rateLimit } : {}) },
       );
     }
     const page = LogsPage.safeParse(body);
@@ -255,6 +267,7 @@ export class MailgunLogsClient {
       rawCount: page.data.items.length,
       skipped,
       lastTimestamp,
+      ...(rateLimit ? { rateLimit } : {}),
     };
   }
 

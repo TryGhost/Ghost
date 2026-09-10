@@ -47,6 +47,20 @@ logs. Each domain logs a processed/records/skipped summary with its status and
 cursor. Request latency and HTTP status use `mailgun-get-events` with
 `source: logs`.
 
+The fetch driver retries HTTP 429 reads up to three times with exponential
+backoff and jitter. It honors the later of `Retry-After` and the quota reset,
+and a successful response with no remaining quota delays the next read too.
+Mailgun's `X-RateLimit-Reset` is an absolute Unix timestamp in milliseconds;
+`Retry-After` accepts seconds or an HTTP date. Only numeric scheduling hints
+are retained from headers. See the provider's
+[rate-limit headers](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview).
+
+Each page read has a total backoff budget of 30 seconds. If the required wait
+would exceed it, the fetch fails without retrying before the provider reset.
+Other errors fail immediately. Cancellation removes any pending wait timer.
+The retry boundary contains only the provider read; processor callbacks are
+never retried by this policy.
+
 ## Progress and retry boundaries
 
 Domains and page callbacks run serially because they share one lane's processor
