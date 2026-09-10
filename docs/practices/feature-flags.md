@@ -94,57 +94,24 @@ usable disabled state.
 
 ## Admin 7 milestones
 
-Admin 7 milestones use ordinary private Labs flags. Give each milestone a
-stable, descriptive key such as `admin7Pill`, and a Labs label that identifies
-its milestone and purpose: “Admin 7 · Milestone 2 · Pill controls.” Register it
-and add its toggle using the same steps as any other private flag.
+Admin 7 milestones use ordinary private Labs flags with stable, descriptive
+`admin7`-prefixed keys and labels that identify their milestone and purpose.
+Follow the same registration and lifecycle as any other private flag.
 
-Read the flag with the existing `useFeatureFlag` hook where the behavior is
-owned. Keep any route restrictions beside that check. If a milestone needs
-another flag, combine those values directly at the same boundary.
+Read the current milestone's flag with `useFeatureFlag` at the boundary that
+owns the change, keeping any availability checks beside it. For shared design
+changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
+`useShade().isAdmin7`; reuse this switch as milestones progress instead of
+adding a Shade prop for each milestone.
 
-### Shared appearance
+Keep shared appearance in Shade and page-specific structure in the page. Build
+the enabled design as the intended default so retiring a flag means removing
+compatibility branches, without changing ordinary component calls. Document
+milestone-specific scope and exclusions alongside the affected design.
 
-For the pill milestone, the [Admin root](../../apps/admin/src/app-root.tsx)
-reads `useFeatureFlag('admin7Pill')` and excludes the editor and Ember-owned
-routes. It passes the resulting boolean to the existing Shade provider:
-
-```tsx
-<ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
-  <App />
-</ShadeApp>
-```
-
-Shared components read `useShade().isAdmin7` from
-`@tryghost/shade/app`. Shade owns changes to control appearance, spacing and
-strokes; pages use the same value for structural differences such as action
-order. Ordinary component calls stay `<Button>` rather than setting a milestone
-prop on every control.
-
-Shade previews default to the new appearance. Admin always passes its computed
-boolean, so missing or loading configuration stays off unless the existing
-session override enables the flag. Standalone ActivityPub explicitly passes
-`isAdmin7={false}`; embedded ActivityPub inherits Admin's value. Menus,
-tooltips and dialogs carry `data-admin7` through Shade's scope wrapper,
-including when rendered in portals.
-
-Shade exposes one `isAdmin7` design switch. Admin maps the current milestone's
-Labs flag to it; as milestones progress, update that mapping instead of adding
-new milestone props to Shade. Keep permanent permission and backend capability
-checks separate from the temporary flag.
-
-### Verify and remove
-
-Keep automated coverage focused on the boundary: missing/off/on flags, excluded
-routes and portal isolation. Preserve existing behavioral tests. Styling-only
-changes do not need unit, acceptance or CSS assertion suites; review both
-appearances visually and use private dogfooding to explore new interactions.
-
-Build the enabled appearance as the intended default. Follow the normal flag
-lifecycle below, then remove the Labs key and toggle, the temporary provider
-value, disabled branches, scope attribute and tests for the obsolete boundary.
-Ordinary component calls should keep working without changes. Retain permanent
-route, permission or backend requirements after the flag is gone.
+Test the flag boundary and preserve existing behavioral coverage. Styling-only
+changes need visual review, not tests that assert appearance. Keep permanent
+permission and backend capability checks independent of the temporary flag.
 
 ## How values are resolved
 
