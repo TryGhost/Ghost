@@ -32,8 +32,7 @@ export interface BootRequestConfig {
  * are shell chrome; the members resource fake skips them so they never land in
  * a spec's `lastRequest`.
  */
-export const MEMBER_COUNT_PROBE_PATH =
-  /^\/members\/\?(?:limit=1|filter=&order=id&limit=1&page=1)$/;
+export const MEMBER_COUNT_PROBE_PATH = /^\/members\/\?(?:limit=1|filter=&order=id&limit=1&page=1)$/;
 
 // A function so every lookup serves freshly-minted responses — mutations
 // can't leak between tests.
