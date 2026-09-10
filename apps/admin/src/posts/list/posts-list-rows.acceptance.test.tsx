@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { focusManager } from '@tanstack/react-query';
 
 import {
   currentRoute,
@@ -16,6 +17,17 @@ import {
 import { postsListScreen } from './posts-list.screen';
 
 const FLAG_ON = { labs: { postsListReact: true } };
+const SENDING_FLAG_ON = { labs: { postsListReact: true, improveSendingUI: true } };
+const EMAIL_ID = '64d623b64676110001e897ab';
+
+const emailMetricsSettings = settingsResponse({
+  settings: {
+    email_track_opens: true,
+    email_track_clicks: true,
+    web_analytics_enabled: true,
+    members_signup_access: 'all',
+  },
+});
 
 /**
  * What a row says, and the two empty states — the parity-critical surface of
@@ -172,6 +184,310 @@ describe('Posts list rows', () => {
     const visitors = postsListScreen.metricCell('Visitors');
     await expect.element(visitors).toBeVisible();
     await expect.element(visitors).not.toHaveAttribute('href');
+  });
+});
+
+describe('Posts list email sending status', () => {
+  beforeEach(() => {
+    fakePostsListScreen();
+  });
+
+  it('shows preparing progress and hides only email metrics', async () => {
+    fakePosts([
+      post({
+        id: 'preparing-post',
+        title: 'Preparing post',
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'pending',
+          email_count: 1000,
+          opened_count: 0,
+          track_opens: true,
+          track_clicks: true,
+        },
+        count: { clicks: 0, positive_feedback: 0, negative_feedback: 0 },
+      }),
+    ]);
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'preparing',
+            progress: { completed: 250, total: 1000, estimated_seconds_remaining: 30 },
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp('/posts?type=published', {
+      ...SENDING_FLAG_ON,
+      boot: { browseSettings: { response: emailMetricsSettings } },
+    });
+
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Preparing emails · 250 of 1,000');
+    await expect.element(row).not.toHaveTextContent('minute');
+    await expect.element(row).not.toHaveTextContent('Published and sent');
+    await expect.element(row.getByLabelText(/Visitors/)).toBeVisible();
+    await expect.element(row.getByLabelText(/Sent/)).not.toBeInTheDocument();
+    await expect.element(row.getByLabelText(/Opens/)).not.toBeInTheDocument();
+    await expect.element(row.getByLabelText(/Clicks/)).not.toBeInTheDocument();
+    await expect.element(row.getByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows coarse sending copy through a transient error and recovers on focus', async () => {
+    fakePosts([
+      post({
+        id: 'sending-post',
+        title: 'Sending post',
+        status: 'published',
+        email: { id: EMAIL_ID, status: 'submitting', email_count: 1000, opened_count: 0 },
+      }),
+    ]);
+    const failedStatusApi = fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ message: 'Bad gateway' }] },
+      { status: 502 },
+    );
+
+    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Sending emails');
+    await expect.element(row).not.toHaveTextContent('Published and sent');
+    await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+
+    const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 500, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+    focusManager.setFocused(false);
+    focusManager.setFocused(true);
+
+    await expect.poll(() => recoveredStatusApi.requests.length).toBeGreaterThan(0);
+    await expect.element(row).toHaveTextContent('Sending emails · 500 of 1,000');
+    focusManager.setFocused(undefined);
+  });
+
+  it('refreshes the post and restores settled copy and metrics after sending', async () => {
+    const sendingPost = post({
+      id: 'completed-post',
+      title: 'Completed post',
+      status: 'published',
+      email: {
+        id: EMAIL_ID,
+        status: 'submitting',
+        email_count: 0,
+        opened_count: 0,
+        track_opens: true,
+        track_clicks: true,
+      },
+      count: { clicks: 0, positive_feedback: 0, negative_feedback: 0 },
+    });
+    const submittedPost = post({
+      ...sendingPost,
+      email: {
+        ...sendingPost.email!,
+        status: 'submitted',
+        email_count: 1000,
+        opened_count: 400,
+      },
+      count: { clicks: 60, positive_feedback: 0, negative_feedback: 0 },
+    });
+    let sendingComplete = false;
+    const postsApi = fakePosts(() => [sendingComplete ? submittedPost : sendingPost]);
+    let statusRequestCount = 0;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
+      statusRequestCount += 1;
+      return {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: sendingComplete
+              ? {
+                  status: 'submitted',
+                  progress: { completed: 1000, total: 1000, estimated_seconds_remaining: 0 },
+                }
+              : {
+                  status: 'submitting',
+                  progress: { completed: 500, total: 1000, estimated_seconds_remaining: null },
+                },
+          },
+        ],
+      };
+    });
+
+    await renderAdminApp('/posts?type=published', {
+      ...SENDING_FLAG_ON,
+      boot: { browseSettings: { response: emailMetricsSettings } },
+    });
+
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Sending emails · 500 of 1,000');
+    await expect.element(row.getByLabelText(/Sent/)).not.toBeInTheDocument();
+
+    sendingComplete = true;
+    const pendingStatusRequestCount = statusRequestCount;
+    await expect
+      .poll(() => statusRequestCount, { timeout: 3500 })
+      .toBeGreaterThan(pendingStatusRequestCount);
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+    await expect.element(row).toHaveTextContent('Published and sent');
+    await expect.element(row).not.toHaveTextContent('Sending emails');
+    await expect.element(row.getByLabelText(/Opens/)).toHaveTextContent('40%');
+    await expect.element(row.getByLabelText(/Clicks/)).toHaveTextContent('6%');
+  });
+
+  it('uses the existing failure state when polling reports a failure', async () => {
+    const sendingPost = post({
+      id: 'failed-post',
+      title: 'Failed post',
+      status: 'published',
+      email: { id: EMAIL_ID, status: 'submitting', email_count: 0, opened_count: 0 },
+    });
+    let sendingFailed = false;
+    const postsApi = fakePosts(() => [
+      sendingFailed
+        ? post({
+            ...sendingPost,
+            email: { ...sendingPost.email!, status: 'failed', error: 'The send failed.' },
+          })
+        : sendingPost,
+    ]);
+    let statusRequestCount = 0;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => {
+      statusRequestCount += 1;
+      return {
+        email_statuses: [
+          {
+            id: EMAIL_ID,
+            sending: sendingFailed
+              ? {
+                  status: 'failed',
+                  failed_during: 'submitting',
+                  progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+                }
+              : {
+                  status: 'submitting',
+                  progress: { completed: 250, total: 1000, estimated_seconds_remaining: null },
+                },
+          },
+        ],
+      };
+    });
+
+    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Sending emails');
+
+    sendingFailed = true;
+    const pendingStatusRequestCount = statusRequestCount;
+    await expect
+      .poll(() => statusRequestCount, { timeout: 3500 })
+      .toBeGreaterThan(pendingStatusRequestCount);
+    await expect.element(row).toHaveTextContent('Published but failed to send newsletter');
+    await expect.element(row).not.toHaveTextContent('Emails failed to send');
+    await expect.poll(() => postsApi.requests.length).toBeGreaterThan(1);
+  });
+
+  it('falls back to the existing row when the status endpoint is unavailable', async () => {
+    fakePosts([
+      post({
+        id: 'unsupported-post',
+        title: 'Unsupported post',
+        status: 'published',
+        email: { id: EMAIL_ID, status: 'submitting', email_count: 1000, opened_count: 0 },
+      }),
+    ]);
+    const statusApi = fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ message: 'Resource not found' }] },
+      { status: 404 },
+    );
+
+    const app = await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Published and sent');
+    await expect.element(row).not.toHaveTextContent('Sending emails');
+    await expect.poll(() => statusApi.requests.length).toBe(1);
+    await app.unmount();
+  });
+
+  it('polls every concurrently active email independently', async () => {
+    const firstEmailId = '64d623b64676110001e897a1';
+    const secondEmailId = '64d623b64676110001e897a2';
+    fakePosts([
+      post({
+        id: 'first-active-post',
+        title: 'First active post',
+        status: 'published',
+        email: { id: firstEmailId, status: 'submitting', email_count: 1000, opened_count: 0 },
+      }),
+      post({
+        id: 'second-active-post',
+        title: 'Second active post',
+        status: 'sent',
+        email_only: true,
+        email: { id: secondEmailId, status: 'pending', email_count: 2000, opened_count: 0 },
+      }),
+    ]);
+    const firstStatusApi = fakeAdminEndpoint('GET', `/emails/${firstEmailId}/status/`, {
+      email_statuses: [
+        {
+          id: firstEmailId,
+          sending: {
+            status: 'submitting',
+            progress: { completed: 100, total: 1000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+    const secondStatusApi = fakeAdminEndpoint('GET', `/emails/${secondEmailId}/status/`, {
+      email_statuses: [
+        {
+          id: secondEmailId,
+          sending: {
+            status: 'preparing',
+            progress: { completed: 200, total: 2000, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+
+    await expect.element(postsListScreen.listItems().nth(0)).toHaveTextContent('100 of 1,000');
+    await expect.element(postsListScreen.listItems().nth(1)).toHaveTextContent('200 of 2,000');
+    await expect.poll(() => firstStatusApi.requests.length).toBeGreaterThan(0);
+    await expect.poll(() => secondStatusApi.requests.length).toBeGreaterThan(0);
+  });
+
+  it('does not request status when the sending UI flag is off', async () => {
+    fakePosts([
+      post({
+        title: 'Flagged off post',
+        status: 'published',
+        email: { id: EMAIL_ID, status: 'submitting', email_count: 1000, opened_count: 0 },
+      }),
+    ]);
+
+    await renderAdminApp('/posts?type=published', FLAG_ON);
+
+    const row = postsListScreen.listItems().first();
+    await expect.element(row).toHaveTextContent('Published and sent');
+    await expect.element(row).not.toHaveTextContent('Sending emails');
   });
 });
 

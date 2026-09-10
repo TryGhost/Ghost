@@ -1,11 +1,11 @@
 import { Banner, Button } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { useSendingEta } from './use-sending-eta';
+import { Box, Grid, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
+import { getEmailSendingProgressCopy } from '@/posts/email-sending-status/email-sending-status-copy';
+import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
-import type { ReactNode } from 'react';
 
 const FILL_CLIP_ID = 'email-sending-fill-clip';
 
@@ -58,22 +58,21 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
-const activeDetail = (
-  sending: Exclude<EmailSendingState, { status: 'failed' }>,
-  estimate: string | null,
-): ReactNode => {
+const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>) => {
   const { completed, total } = sending.progress;
 
   if (total === 0) {
-    return estimate;
+    return null;
   }
 
-  return (
-    <>
-      {`${formatNumber(completed)} of ${formatNumber(total)}`}
-      {estimate && ` · ${estimate}`}
-    </>
-  );
+  // Preparation reports a percentage so the recipient count only climbs
+  // once, during sending, while the audience size stays on screen throughout.
+  if (sending.status === 'preparing') {
+    const percent = Math.min(100, Math.floor((completed / total) * 100));
+    return `${formatNumber(percent)}% complete · ${formatNumber(total)} total`;
+  }
+
+  return getEmailSendingProgressCopy(sending, null).detail;
 };
 
 const failureDetail = (
@@ -109,18 +108,20 @@ const EmailSendingStatusBanner = () => {
       sending.failed_during === 'submitting' &&
       sending.progress.completed > 0
     : false;
-  const title = isFailed
-    ? hasSentEmails
-      ? 'Some emails failed to send'
-      : 'Emails failed to send'
-    : sending.status === 'preparing'
-      ? 'Preparing emails'
-      : 'Sending emails';
-  const detail = isFailed
-    ? hasUnknownDeliveryOutcome
+  let title: string;
+  let detail: string | null;
+
+  if (sending.status === 'failed') {
+    title = hasSentEmails ? 'Some emails failed to send' : 'Emails failed to send';
+    detail = hasUnknownDeliveryOutcome
       ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error)
-    : activeDetail(sending, estimate);
+      : failureDetail(sending, post?.email?.error);
+  } else {
+    const progressCopy = getEmailSendingProgressCopy(sending, null);
+    title = progressCopy.title;
+    detail = activeDetail(sending);
+  }
+
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (
@@ -130,24 +131,34 @@ const EmailSendingStatusBanner = () => {
       role={isFailed ? 'alert' : 'status'}
       size="lg"
     >
-      <Inline align="center" gap="md" justify="between" wrap>
-        <Inline align="center" className="min-w-0" gap="sm">
+      <Grid
+        align="center"
+        className={cn(
+          'grid-cols-[auto_minmax(0,1fr)] gap-y-0 lg:grid-cols-[auto_auto_minmax(0,1fr)_auto]',
+          isFailed && !hasUnknownDeliveryOutcome && 'grid-cols-[auto_minmax(0,1fr)_auto]',
+        )}
+        gap="md"
+      >
+        <Box className="row-span-2 lg:row-span-1">
           <StatusGlyph sending={sending} />
-          <Text className="min-w-0 tabular-nums" size="sm">
-            <Text as="strong" size="sm" weight="semibold">
-              {title}
-            </Text>
-            {detail && (
-              <Text as="span" size="sm" tone="secondary">
-                {' · '}
-                {detail}
-              </Text>
-            )}
+        </Box>
+        <Text as="strong" className="text-base" weight="semibold">
+          {title}
+        </Text>
+        <Text className="col-start-2 min-w-0 tabular-nums lg:contents" size="sm" tone="secondary">
+          <Text as="span" size="sm" tone="secondary">
+            {detail}
           </Text>
-        </Inline>
+          {!isFailed && estimate && (
+            <Text as="span" className="whitespace-nowrap" size="sm" tone="secondary">
+              {detail && <span className="lg:hidden">{' · '}</span>}
+              {estimate}
+            </Text>
+          )}
+        </Text>
         {isFailed && !hasUnknownDeliveryOutcome && (
           <Button
-            className="shrink-0"
+            className="col-start-3 row-span-2 row-start-1 lg:col-start-4 lg:row-span-1"
             disabled={isRetrying}
             size="sm"
             variant="outline"
@@ -156,7 +167,7 @@ const EmailSendingStatusBanner = () => {
             {isRetrying ? 'Sending…' : retryLabel}
           </Button>
         )}
-      </Inline>
+      </Grid>
     </Banner>
   );
 };

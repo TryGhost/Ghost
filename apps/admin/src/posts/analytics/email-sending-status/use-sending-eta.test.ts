@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { useSendingEta } from './use-sending-eta';
+import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingStatus } from '@tryghost/admin-x-framework/api/emails';
 
 function status(
@@ -18,12 +18,14 @@ function status(
 }
 
 describe('useSendingEta', () => {
-  it('hides the time label until an active phase has an estimate', () => {
+  it('hides the time label until sending has an estimate', () => {
     const { result, rerender } = renderHook(useSendingEta, {
       initialProps: undefined as EmailSendingStatus | undefined,
     });
     expect(result.current).toBeNull();
     rerender(status(null, 'preparing'));
+    expect(result.current).toBeNull();
+    rerender(status(30, 'preparing'));
     expect(result.current).toBeNull();
     rerender(status(null, 'submitting'));
     expect(result.current).toBeNull();
@@ -65,6 +67,7 @@ describe('useSendingEta', () => {
     const { result, rerender } = renderHook(useSendingEta, {
       initialProps: status(20, 'preparing'),
     });
+    expect(result.current).toBeNull();
     rerender(status(45));
     expect(result.current).toBe('About 1 minute left');
     rerender(status(35, 'submitting', 'email-2'));

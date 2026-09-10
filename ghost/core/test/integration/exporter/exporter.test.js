@@ -114,6 +114,7 @@ describe('Exporter', function () {
       'subscriptions',
       'suppressions',
       'tags',
+      'tinybird_syncs',
       'tokens',
       'users',
       'webhooks',
