@@ -328,3 +328,46 @@ saves it when re-queuing the email. Batches completed before that timestamp
 belong to an earlier attempt and are left out of the rate window. The proxy
 only holds while nothing saves the Email model, or sets `emails.updated_at`
 through a raw update, while batches are being submitted.
+
+## Member counter reconciliation
+
+`NewsletterMemberCounters` provides one bounded sweep for member counter
+initialization, repair and rollback re-baselining. Its checkpoint lives in the
+`email-analytics-member-reconciliation` jobs row. A page locks members in primary-key
+order before reading recipient facts, then writes all four member statistics and
+the checkpoint in one transaction. An interrupted or uncertain commit resumes
+from persisted state. NULL `email_tracked_count` means uninitialized; zero is a
+valid initialized denominator. Open rates remain null below five tracked emails.
+
+Historical batches have `member_counters_enabled = false` and are never enrolled
+by an absent application marker. The derived baseline includes their recipients,
+except discardable incomplete preparation under the recipient-accounting protocol.
+An accounted email without frozen preparation but with non-pending or already
+counter-applied batches stops the sweep for explicit preparation reconciliation;
+its recipient facts must not be silently removed during rollback re-baselining.
+Opted-in batches contribute only after `member_counters_applied_at` is persisted.
+Preparation increments and that marker must commit together under the same member
+locks, after the preparation boundary freezes the recipient membership. This keeps
+pending preparation recipients out of the baseline that precedes their increments.
+
+Run the manual sweep from a bootstrapped source checkout configured for the target
+blog database. The blog must already have its jobs table initialized. This operator
+script uses source-checkout dependencies and is not included in the published release:
+
+```sh
+NODE_ENV=production node --import tsx scripts/reconcile-member-email-counters.ts --limit 5000 --pages 1
+```
+
+The script uses the configured database and prints the durable checkpoint after
+each page. Repeat to resume; `--restart` explicitly begins another completed
+sweep. A sweep fixes its upper member-ID boundary when it starts. New members are
+handled by preparation or a later sweep. The script neither schedules work nor
+enables incremental ingestion.
+
+Drain legacy analytics and preparation writers before manually initializing or
+re-baselining. The sweep's live concurrency guarantee requires every counter
+writer to acquire member locks before establishing its recipient snapshot.
+Legacy recounts and recipient creation do not follow this protocol. The later
+incremental-ingestion integration must establish that boundary before allowing
+periodic repair alongside live ingestion. MySQL pages explicitly use repeatable
+read; multiple metadata and recipient reads share the same snapshot.

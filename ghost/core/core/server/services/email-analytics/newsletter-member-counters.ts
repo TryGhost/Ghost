@@ -1,0 +1,262 @@
+import type { Knex } from 'knex';
+import { IncorrectUsageError } from '@tryghost/errors';
+import ObjectID from 'bson-objectid';
+import { z } from 'zod';
+
+export type MemberSweepPage = { afterId?: string; throughId?: string; limit?: number };
+export type MemberSweepResult = { afterId: string | undefined; processed: number };
+
+type MemberCounts = {
+  email_count: number;
+  email_tracked_count: number;
+  email_opened_count: number;
+  email_open_rate: number | null;
+};
+type DerivedRow = {
+  member_id: string;
+  email_count: number | string;
+  email_tracked_count: number | string;
+  email_opened_count: number | string;
+};
+const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
+const MAX_SWEEP_PAGE_SIZE = 5000;
+const SWEEP_JOB_NAME = 'email-analytics-member-reconciliation';
+const checkpointSchema = z.object({
+  version: z.literal(1),
+  afterId: z
+    .string()
+    .regex(/^[a-f0-9]{24}$/)
+    .nullable(),
+  throughId: z
+    .string()
+    .regex(/^[a-f0-9]{24}$/)
+    .nullable(),
+  processed: z.number().int().nonnegative(),
+  complete: z.boolean(),
+});
+export type MemberSweepCheckpoint = z.infer<typeof checkpointSchema>;
+
+/** Shared derived truth for initialization, repair and rollback re-baselining. */
+export class NewsletterMemberCounters {
+  readonly #knex: Knex;
+
+  constructor(knex: Knex) {
+    this.#knex = knex;
+  }
+
+  /** Resume the persisted sweep, or explicitly start another completed sweep. */
+  async runSweepPage({
+    limit = MAX_SWEEP_PAGE_SIZE,
+    restart = false,
+  }: {
+    limit?: number;
+    restart?: boolean;
+  } = {}): Promise<MemberSweepCheckpoint> {
+    this.#validateLimit(limit);
+    // Outside the page transaction: this range lookup must not establish its
+    // recipient snapshot before the member locks. New members are initialized
+    // by preparation; a later full sweep will also visit them.
+    const upper = await this.#knex('members').max('id as id').first();
+    const throughId: string | null = upper?.id ?? null;
+    const initial: MemberSweepCheckpoint = {
+      version: 1,
+      afterId: null,
+      throughId,
+      processed: 0,
+      complete: throughId === null,
+    };
+    await this.#knex('jobs')
+      .insert({
+        id: ObjectID().toHexString(),
+        name: SWEEP_JOB_NAME,
+        created_at: new Date(),
+        started_at: new Date(),
+        status: initial.complete ? 'finished' : 'started',
+        finished_at: initial.complete ? new Date() : null,
+        metadata: JSON.stringify(initial),
+      })
+      .onConflict('name')
+      .ignore();
+    return this.#knex.transaction(async (trx) => {
+      const job = await trx('jobs').where('name', SWEEP_JOB_NAME).forUpdate().first();
+      let state = checkpointSchema.parse(JSON.parse(job.metadata));
+      if (state.complete && !restart) {
+        return state;
+      }
+      const starting = state.complete && restart;
+      if (starting) {
+        state = initial;
+      }
+      if (state.throughId !== null) {
+        const page = await this.#sweepPage(trx, {
+          afterId: state.afterId ?? undefined,
+          throughId: state.throughId,
+          limit,
+        });
+        state.afterId = page.afterId ?? null;
+        state.processed += page.processed;
+        state.complete = page.processed === 0 || state.afterId === state.throughId;
+      }
+      await trx('jobs')
+        .where('id', job.id)
+        .update({
+          metadata: JSON.stringify(state),
+          updated_at: new Date(),
+          status: state.complete ? 'finished' : 'started',
+          finished_at: state.complete ? new Date() : null,
+          ...(starting ? { started_at: new Date() } : {}),
+        });
+      return state;
+    }, this.#transactionConfig());
+  }
+
+  /**
+   * The caller persists afterId only after this promise succeeds. Repeating a
+   * committed page is safe, including after a lost COMMIT acknowledgement.
+   * A page returning zero members ends the sweep; throughId can freeze its range.
+   */
+  async sweepPage({
+    afterId,
+    throughId,
+    limit = MAX_SWEEP_PAGE_SIZE,
+  }: MemberSweepPage = {}): Promise<MemberSweepResult> {
+    this.#validateLimit(limit);
+    return this.#knex.transaction(
+      (trx) => this.#sweepPage(trx, { afterId, throughId, limit }),
+      this.#transactionConfig(),
+    );
+  }
+
+  #validateLimit(limit: number): void {
+    if (!Number.isInteger(limit) || limit < 1 || limit > MAX_SWEEP_PAGE_SIZE) {
+      throw new IncorrectUsageError({
+        message: `Member sweep limit must be an integer between 1 and ${MAX_SWEEP_PAGE_SIZE}`,
+      });
+    }
+  }
+
+  #transactionConfig(): Knex.TransactionConfig | undefined {
+    return this.#knex.client.config.client === 'mysql2'
+      ? { isolationLevel: 'repeatable read' }
+      : undefined;
+  }
+
+  async #sweepPage(
+    trx: Knex.Transaction,
+    { afterId, throughId, limit }: MemberSweepPage & { limit: number },
+  ): Promise<MemberSweepResult> {
+    // Lock before the first consistent read. Event and preparation increments
+    // must take the same member locks before changing recipient-derived totals.
+    // An IN-list's input order alone would not establish InnoDB lock order.
+    const members = this.#members(trx).select('id').orderBy('id').limit(limit).forUpdate();
+    if (afterId !== undefined) {
+      members.where('id', '>', afterId);
+    }
+    if (throughId !== undefined) {
+      members.where('id', '<=', throughId);
+    }
+    const rows: { id: string }[] = await members;
+    if (rows.length === 0) {
+      return { afterId, processed: 0 };
+    }
+    const memberIds = rows.map((row) => row.id);
+    await this.#setCounts(trx, memberIds, await this.#derive(trx, memberIds));
+    return { afterId: memberIds.at(-1), processed: rows.length };
+  }
+
+  #members(trx: Knex.Transaction) {
+    const query = trx('members');
+    if (trx.client.config.client === 'mysql2') {
+      query.from(trx.raw('?? FORCE INDEX (PRIMARY)', ['members']));
+    }
+    return query;
+  }
+
+  async #derive(trx: Knex.Transaction, memberIds: string[]): Promise<Map<string, MemberCounts>> {
+    // Read these small metadata sets from the same transaction snapshot as the
+    // recipient facts. Avoid joining every historical recipient to its email.
+    const untrackedEmailIds: string[] = await trx('emails').where('track_opens', false).pluck('id');
+    const discardableEmailIds: string[] = await trx('emails')
+      .whereNotNull('preflight_email_count')
+      .whereNull('prepared_at')
+      .pluck('id');
+    if (discardableEmailIds.length > 0) {
+      const ambiguous = await trx('email_batches')
+        .whereIn('email_id', discardableEmailIds)
+        .where((builder) =>
+          builder.whereNot('status', 'pending').orWhereNotNull('member_counters_applied_at'),
+        )
+        .first('email_id');
+      if (ambiguous) {
+        // Rollback to older send code can submit without saving prepared_at.
+        // Those recipients cannot be discarded or silently removed from truth.
+        throw new IncorrectUsageError({
+          message:
+            'Cannot reconcile member counters for batches submitted or applied without frozen preparation.',
+          context: `Email ${ambiguous.email_id} requires preparation reconciliation.`,
+        });
+      }
+    }
+    const pendingBatchIds: string[] = await trx('email_batches')
+      .where('member_counters_enabled', true)
+      .whereNull('member_counters_applied_at')
+      .pluck('id');
+    const trackedCount =
+      untrackedEmailIds.length === 0
+        ? trx.raw('COUNT(*) AS email_tracked_count')
+        : trx.raw(
+            `SUM(CASE WHEN email_id IN (${untrackedEmailIds.map(() => '?').join(',')}) THEN 0 ELSE 1 END) AS email_tracked_count`,
+            untrackedEmailIds,
+          );
+    const rows: DerivedRow[] = await trx('email_recipients')
+      .select(
+        'member_id',
+        trx.raw('COUNT(*) AS email_count'),
+        trackedCount,
+        trx.raw('SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) AS email_opened_count'),
+      )
+      .whereIn('member_id', memberIds)
+      .whereNotIn('email_id', discardableEmailIds)
+      .whereNotIn('batch_id', pendingBatchIds)
+      .groupBy('member_id');
+    const counts = new Map<string, MemberCounts>();
+    for (const row of rows) {
+      const tracked = Number(row.email_tracked_count);
+      const opened = Number(row.email_opened_count);
+      counts.set(row.member_id, {
+        email_count: Number(row.email_count),
+        email_tracked_count: tracked,
+        email_opened_count: opened,
+        email_open_rate:
+          tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+      });
+    }
+    return counts;
+  }
+
+  async #setCounts(
+    trx: Knex.Transaction,
+    memberIds: string[],
+    counts: Map<string, MemberCounts>,
+  ): Promise<void> {
+    const columns = [
+      'email_count',
+      'email_tracked_count',
+      'email_opened_count',
+      'email_open_rate',
+    ] as const;
+    const updates: Record<string, Knex.Raw> = {};
+    for (const column of columns) {
+      const bindings: (string | number | null)[] = [];
+      const cases = memberIds.map((memberId) => {
+        bindings.push(
+          memberId,
+          counts.get(memberId)?.[column] ?? (column === 'email_open_rate' ? null : 0),
+        );
+        return 'WHEN ? THEN ?';
+      });
+      updates[column] = trx.raw(`CASE id ${cases.join(' ')} END`, bindings);
+    }
+    await trx('members').whereIn('id', memberIds).update(updates);
+  }
+}
