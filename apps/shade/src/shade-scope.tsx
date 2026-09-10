@@ -11,7 +11,7 @@ export const ShadeScope = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
         ref={ref}
         className={cn('shade shade-admin shade-activitypub', className)}
         {...props}
-        data-admin7-pill={isAdmin7}
+        data-admin7={isAdmin7}
       />
     );
   },

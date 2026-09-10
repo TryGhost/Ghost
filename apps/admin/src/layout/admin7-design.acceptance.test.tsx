@@ -23,8 +23,6 @@ it.each<{
   await renderAdminApp(route, { labs });
 
   await expect
-    .poll(() =>
-      document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7-pill'),
-    )
+    .poll(() => document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7'))
     .toBe(String(enabled));
 });
