@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useBrowseConfig } from '../api/config';
 import { useBrowseInvites } from '../api/invites';
 import { useBrowseMembers } from '../api/members';
@@ -7,9 +7,7 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
-import type { LimitConfig } from '@tryghost/limit-service';
-
-const limitServiceImport = import('@tryghost/limit-service');
+import { LimitService, type LimitConfig } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -29,14 +27,6 @@ export interface Limiter {
 export const useLimiter = (): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const [LimitService, setLimitService] = useState<
-    typeof import('@tryghost/limit-service').default | null
-  >(null);
-
-  useEffect(() => {
-    void limitServiceImport.then((exports) => setLimitService(() => exports.default));
-  }, []);
-
   const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
   const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites();
   const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles();
@@ -69,7 +59,7 @@ export const useLimiter = (): Limiter => {
       errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
     };
 
-    if (!LimitService || !config?.hostSettings?.limits || isStaffLoading) {
+    if (!config?.hostSettings?.limits || isStaffLoading) {
       return noOpLimiter;
     }
 
@@ -128,15 +118,5 @@ export const useLimiter = (): Limiter => {
       errorIfIsOverLimit: (limitName: string): Promise<void> =>
         limiter.errorIfIsOverLimit(limitName),
     };
-  }, [
-    LimitService,
-    config,
-    fetchMembers,
-    fetchNewsletters,
-    helpLink,
-    invites,
-    isStaffLoading,
-    roles,
-    users,
-  ]);
+  }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);
 };
