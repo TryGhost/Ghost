@@ -12,6 +12,7 @@ const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const validator = require('@tryghost/validator');
+const _ = require('lodash');
 
 // Shared keep-alive agents so outbound HTTPS connections are pooled and reused
 // across page renders / oEmbed / webmention / recommendations / image probes.
@@ -291,6 +292,60 @@ function installSafeDnsLookup(options) {
   };
 }
 
+// fetch requires these statuses to be constructed with a null body
+const NULL_BODY_STATUSES = new Set([101, 103, 204, 205, 304]);
+
+/**
+ * Wraps a Got instance in a fetch-compatible function so libraries that take a
+ * custom fetcher still go through the instance's hooks, agents, and timeouts
+ *
+ * @param {Got} client
+ * @returns {(input: string | URL, init?: RequestInit) => Promise<Response>}
+ */
+function createFetch(client) {
+  return async function fetch(input, init = {}) {
+    let body;
+    if (typeof init.body === 'string') {
+      body = init.body;
+    } else if (init.body instanceof Uint8Array) {
+      body = Buffer.from(init.body);
+    } else if (init.body !== undefined && init.body !== null) {
+      throw new errors.IncorrectUsageError({
+        message: 'externalRequest.fetch only supports string or Uint8Array bodies',
+      });
+    }
+
+    const redirect = init.redirect ?? 'follow';
+
+    const response = await client(input, {
+      method: /** @type {import('got').Method} */ (init.method ?? 'GET'),
+      headers: Object.fromEntries(new Headers(init.headers)),
+      body,
+      signal: init.signal ?? undefined,
+      followRedirect: redirect === 'follow',
+      throwHttpErrors: false,
+      responseType: 'buffer',
+    });
+
+    if (redirect === 'error' && response.statusCode >= 300 && response.statusCode < 400) {
+      throw new errors.InternalServerError({
+        message: 'Unexpected redirect',
+        context: response.url,
+      });
+    }
+
+    const res = new Response(NULL_BODY_STATUSES.has(response.statusCode) ? null : response.body, {
+      status: response.statusCode,
+      statusText: response.statusMessage,
+      // raw pairs keep repeated headers (e.g. set-cookie) that response.headers comma-joins
+      headers: _.chunk(response.rawHeaders, 2),
+    });
+    Object.defineProperty(res, 'url', { value: response.url });
+
+    return res;
+  };
+}
+
 // same as our normal request lib but if any request in a redirect chain resolves
 // to a private IP address it will be blocked before the request is made.
 // The beforeRequest hooks provide a first-pass DNS check with clear error messages.
@@ -318,4 +373,5 @@ const gotOpts = {
 const externalRequest = got.extend(gotOpts);
 externalRequest.isPrivateIp = isPrivateIp;
 externalRequest._installSafeDnsLookup = installSafeDnsLookup;
+externalRequest.fetch = createFetch(externalRequest);
 module.exports = externalRequest;
