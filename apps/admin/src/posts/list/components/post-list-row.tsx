@@ -17,7 +17,7 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -135,7 +135,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
     },
     ref,
   ) {
-    const { isAdmin7Design } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -275,11 +275,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
             // title away from the metrics too.
             className={cn(
               'my-4 shrink-0',
-              isAdmin7Design ? 'ms-8' : 'ms-2',
-              isAdmin7Design ? isHovered && 'bg-background' : 'bg-control-surface px-4',
+              isAdmin7Pill ? 'ms-8' : 'ms-2',
+              isAdmin7Pill ? isHovered && 'bg-background' : 'bg-control-surface px-4',
             )}
-            size={isAdmin7Design ? 'icon' : undefined}
-            variant={isAdmin7Design ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+            size={isAdmin7Pill ? 'icon' : undefined}
+            variant={isAdmin7Pill ? (isHovered ? 'outline' : 'ghost') : 'outline'}
             asChild
           >
             <a

@@ -32,7 +32,7 @@ import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
 import { useState } from 'react';
 import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 interface FeedbackProps {
   feedbackStats: {
@@ -43,7 +43,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -93,7 +93,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                 className="pb-3"
                 defaultValue="positive"
                 value={activeFeedbackTab}
-                variant={isAdmin7Design ? 'button-sm' : 'button'}
+                variant={isAdmin7Pill ? 'button-sm' : 'button'}
                 onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
               >
                 <TabsList className="gap-1">

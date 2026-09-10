@@ -18,7 +18,7 @@ import { type ImportResponse } from './bulk-action-modals/import-members/state';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberOperationParams } from '@/members/member-query-params';
 import { buildMembersUrl } from '@/members/member-route';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBulkDeleteMembers, useBulkEditMembers } from '@tryghost/admin-x-framework/api/members';
@@ -46,7 +46,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   showNewMember = true,
   onImportComplete,
 }) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const location = useLocation();
   const navigate = useNavigate();
   const isImportRoute = location.pathname === '/members/import';
@@ -312,7 +312,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
               className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
               href={newMemberHref}
             >
-              <LucideIcon.Plus className={isAdmin7Design ? 'stroke-2!' : 'sm:hidden'} />
+              <LucideIcon.Plus className={isAdmin7Pill ? 'stroke-2!' : 'sm:hidden'} />
               <span className="hidden sm:inline">New member</span>
             </a>
           </PageHeader.Action>

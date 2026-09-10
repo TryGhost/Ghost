@@ -31,7 +31,7 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -49,7 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -150,7 +150,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   const headerSearch =
     shouldShowMemberControls &&
-    (isAdmin7Design ? (
+    (isAdmin7Pill ? (
       <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
     ) : (
       <>
@@ -172,7 +172,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <MembersFilters
       activeView={activeView}
       filters={filters}
-      iconOnly={!isAdmin7Design}
+      iconOnly={!isAdmin7Pill}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}
       savedViews={savedViews}
@@ -199,9 +199,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {isAdmin7Design && headerFilters}
+                    {isAdmin7Pill && headerFilters}
                     {headerSearch}
-                    {!isAdmin7Design && headerFilters}
+                    {!isAdmin7Pill && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}

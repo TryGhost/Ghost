@@ -1,5 +1,5 @@
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn } from '@tryghost/shade/utils';
@@ -44,7 +44,7 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
 
@@ -55,10 +55,10 @@ export function PostsFilters({
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          !isAdmin7Design && 'text-muted-foreground hover:text-foreground',
+          !isAdmin7Pill && 'text-muted-foreground hover:text-foreground',
         )}
         type="button"
-        variant={isAdmin7Design ? 'ghost' : 'outline'}
+        variant={isAdmin7Pill ? 'ghost' : 'outline'}
         onClick={() => onFiltersChange([])}
       >
         Clear

@@ -21,7 +21,7 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -61,7 +61,7 @@ function CommentsList({
   isLoading?: boolean;
   dislikesEnabled: boolean;
 }) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
@@ -206,7 +206,7 @@ function CommentsList({
                           <Button
                             className={cn(
                               'text-foreground',
-                              isAdmin7Design && 'group-hover/comment:bg-background',
+                              isAdmin7Pill && 'group-hover/comment:bg-background',
                             )}
                             size="sm"
                             variant="outline"
@@ -220,7 +220,7 @@ function CommentsList({
                           <Button
                             className={cn(
                               'text-foreground',
-                              isAdmin7Design && 'group-hover/comment:bg-background',
+                              isAdmin7Pill && 'group-hover/comment:bg-background',
                             )}
                             size="sm"
                             variant="outline"

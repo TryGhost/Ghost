@@ -1,8 +1,8 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
-import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
@@ -18,10 +18,10 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const pointerInteraction = React.useRef(false);
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
 
   React.useEffect(() => {
-    if (!isAdmin7Design) {
+    if (!isAdmin7Pill) {
       return;
     }
     const onPointerDown = () => {
@@ -36,11 +36,11 @@ function TooltipProvider({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [isAdmin7Design]);
+  }, [isAdmin7Pill]);
 
   return (
-    <TooltipInputContext.Provider value={isAdmin7Design ? pointerInteraction : null}>
-      <TooltipPrimitive.Provider delayDuration={isAdmin7Design ? 1000 : 700} {...props}>
+    <TooltipInputContext.Provider value={isAdmin7Pill ? pointerInteraction : null}>
+      <TooltipPrimitive.Provider delayDuration={isAdmin7Pill ? 1000 : 700} {...props}>
         {children}
       </TooltipPrimitive.Provider>
     </TooltipInputContext.Provider>
@@ -94,14 +94,14 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, ...props }, ref) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
           className={cn(
-            tooltipContentVariants({ variant: variant ?? (isAdmin7Design ? 'white' : 'default') }),
+            tooltipContentVariants({ variant: variant ?? (isAdmin7Pill ? 'white' : 'default') }),
             className,
           )}
           sideOffset={sideOffset}

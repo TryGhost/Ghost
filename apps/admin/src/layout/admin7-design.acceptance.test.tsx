@@ -24,7 +24,7 @@ it.each<{
 
   await expect
     .poll(() =>
-      document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7-design'),
+      document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7-pill'),
     )
     .toBe(String(enabled));
 });

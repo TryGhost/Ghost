@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import React from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Inline, type InlineProps } from '@/components/primitives/inline';
@@ -24,7 +25,8 @@ type FilterBarProps = React.PropsWithChildren & {
  *   </FilterBar>
  */
 function FilterBarRoot({ className, children }: FilterBarProps) {
-  const { controlShape, isAdmin7Design } = useShade();
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
 
   if (React.Children.count(children) === 0) {
     return null;
@@ -36,7 +38,7 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
         align="start"
         className={cn(
           'w-full',
-          isAdmin7Design &&
+          isAdmin7Pill &&
             'relative -mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
           className,
         )}
@@ -54,14 +56,14 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
 const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
   ({ className, gap = 'sm', ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { isAdmin7Design } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
 
     return (
       <Inline
         ref={ref}
         className={cn(
           'shrink-0 sm:absolute',
-          isInFilterBar && isAdmin7Design ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
+          isInFilterBar && isAdmin7Pill ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
           className,
         )}
         data-slot="filter-bar-actions"
@@ -76,8 +78,8 @@ FilterBarActions.displayName = 'FilterBar.Actions';
 const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, size, variant, ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { isAdmin7Design } = useShade();
-    const usePillFilterBarStyle = isInFilterBar && isAdmin7Design;
+    const { pill: isAdmin7Pill } = useAdmin7();
+    const usePillFilterBarStyle = isInFilterBar && isAdmin7Pill;
 
     return (
       <Button

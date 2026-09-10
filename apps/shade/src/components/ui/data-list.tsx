@@ -1,4 +1,4 @@
-import { useShade } from '@/providers/shade-provider';
+import { useAdmin7 } from '@/providers/admin7-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -94,13 +94,13 @@ interface DataListRowProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(
   ({ children, className, ...props }, ref) => {
-    const { isAdmin7Design } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
     return (
       <div
         ref={ref}
         className={cn(
           'group/row relative flex items-center justify-between gap-3 py-0.5 before:absolute before:-inset-x-0.5 before:inset-y-0.5 before:z-0 before:bg-muted/60 before:opacity-0 hover:before:opacity-100',
-          isAdmin7Design ? 'before:rounded-control' : 'before:rounded-[6px]',
+          isAdmin7Pill ? 'before:rounded-control' : 'before:rounded-[6px]',
           className,
         )}
         {...props}

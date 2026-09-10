@@ -18,14 +18,14 @@ import {
 } from '@tryghost/admin-x-framework/api/members';
 import { Link } from '@tryghost/admin-x-framework';
 import { useState } from 'react';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 interface CommentMenuProps {
   comment: Comment;
 }
 
 export function CommentMenu({ comment }: CommentMenuProps) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const { mutate: disableCommenting } = useDisableMemberCommenting();
   const { mutate: enableCommenting } = useEnableMemberCommenting();
   const { mutate: pinComment } = usePinComment();
@@ -62,7 +62,7 @@ export function CommentMenu({ comment }: CommentMenuProps) {
           <Button
             aria-label="Comment actions"
             className="relative z-10 text-gray-800 hover:bg-secondary [&_svg]:size-4"
-            size={isAdmin7Design ? 'icon' : 'sm'}
+            size={isAdmin7Pill ? 'icon' : 'sm'}
             variant="ghost"
           >
             <LucideIcon.Ellipsis />

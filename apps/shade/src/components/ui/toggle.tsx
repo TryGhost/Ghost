@@ -1,5 +1,7 @@
 'use client';
 
+import { useAdmin7 } from '@/providers/admin7-provider';
+
 import * as React from 'react';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -18,7 +20,7 @@ const toggleVariants = cva(
         default: 'h-[calc(var(--control-height)-2px)] min-w-[26px] px-2',
         button: 'h-[calc(var(--control-height)-2px)] min-w-[32px] px-3',
       },
-      isAdmin7Design: { true: '', false: '' },
+      isAdmin7Pill: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -26,7 +28,7 @@ const toggleVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         size: ['default', 'button'],
         className: 'h-[calc(var(--control-height)-4px)] data-[state=off]:hover:bg-transparent',
       },
@@ -35,7 +37,7 @@ const toggleVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7Design: true,
+      isAdmin7Pill: true,
     },
   },
 );
@@ -43,16 +45,17 @@ const toggleVariants = cva(
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
-    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Design'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Pill'>
 >(({ className, variant, size, shape, ...props }, ref) => {
-  const { controlShape, isAdmin7Design } = useShade();
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const resolvedShape = shape ?? controlShape;
 
   return (
     <TogglePrimitive.Root
       ref={ref}
       className={cn(
-        toggleVariants({ variant, size, isAdmin7Design, shape: resolvedShape, className }),
+        toggleVariants({ variant, size, isAdmin7Pill, shape: resolvedShape, className }),
       )}
       data-control-shape={resolvedShape}
       {...props}

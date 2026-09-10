@@ -6,7 +6,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 import { DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel } from '@/posts/list/post-filter-fields';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -25,7 +25,7 @@ interface PostsSortMenuProps {
  * "Newest first" is the *absence* of an `order` param, not a value.
  */
 export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
 
   return (
     <DropdownMenu>
@@ -42,7 +42,7 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
         >
           <LucideIcon.ArrowUpDown className="size-4" />
           {getOrderLabel(order)}
-          {!isAdmin7Design && <LucideIcon.ChevronDown className="size-4" />}
+          {!isAdmin7Pill && <LucideIcon.ChevronDown className="size-4" />}
         </PageHeader.Action>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

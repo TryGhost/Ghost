@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Check, Copy, Link, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -11,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 
 type ShareService = 'x' | 'threads' | 'facebook' | 'linkedin' | 'bluesky';
@@ -122,13 +122,13 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
-    const { isAdmin7Design } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
     return (
       <a
         ref={ref}
         className={cn(
           'flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40',
-          isAdmin7Design && 'rounded-xl',
+          isAdmin7Pill && 'rounded-xl',
           className,
         )}
         href={href}
@@ -237,7 +237,7 @@ function SocialLinks({
   variant,
   ...props
 }: SocialLinksProps) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -269,7 +269,7 @@ function SocialLinks({
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
       {links.map((link) =>
-        isAdmin7Design || shape || variant ? (
+        isAdmin7Pill || shape || variant ? (
           <Button
             key={link.id ?? link.href}
             className="w-12 flex-none px-3"
@@ -375,10 +375,10 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   return (
     <DialogFooter
-      className={cn('justify-between gap-6', isAdmin7Design && 'gap-8 sm:gap-8', className)}
+      className={cn('justify-between gap-6', isAdmin7Pill && 'gap-8 sm:gap-8', className)}
       {...props}
     />
   );

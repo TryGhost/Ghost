@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker';
@@ -18,7 +19,8 @@ function Calendar({
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>['variant'];
 }) {
-  const { isAdmin7Design, controlShape } = useShade();
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const defaultClassNames = getDefaultClassNames();
 
   return (
@@ -39,12 +41,12 @@ function Calendar({
           defaultClassNames.nav,
         ),
         button_previous: cn(
-          buttonVariants({ variant: buttonVariant, isAdmin7Design, shape: controlShape }),
+          buttonVariants({ variant: buttonVariant, isAdmin7Pill, shape: controlShape }),
           'size-(--cell-size) p-0 select-none aria-disabled:opacity-50',
           defaultClassNames.button_previous,
         ),
         button_next: cn(
-          buttonVariants({ variant: buttonVariant, isAdmin7Design, shape: controlShape }),
+          buttonVariants({ variant: buttonVariant, isAdmin7Pill, shape: controlShape }),
           'size-(--cell-size) p-0 select-none aria-disabled:opacity-50',
           defaultClassNames.button_next,
         ),

@@ -46,10 +46,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGiftLinkUsage } from '@/posts/analytics/hooks/use-gift-link-usage';
 import { usePostReferrers } from '@/posts/analytics/hooks/use-post-referrers';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 const Overview: React.FC = () => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const navigate = useNavigate();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { post, isPostLoading, postId } = usePostAnalytics();
@@ -233,7 +233,7 @@ const Overview: React.FC = () => {
                         navigate(`/posts/analytics/${postId}/growth`);
                       }}
                     >
-                      {isAdmin7Design ? 'View more →' : 'View more'}
+                      {isAdmin7Pill ? 'View more →' : 'View more'}
                     </Button>
                   </div>
                   <CardContent className="flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0">
@@ -298,7 +298,7 @@ const Overview: React.FC = () => {
                       variant="subtle"
                       onClick={() => setIsGiftLinkOpen(true)}
                     >
-                      {isAdmin7Design && <LucideIcon.Share />}
+                      {isAdmin7Pill && <LucideIcon.Share />}
                       Share
                     </Button>
                   </div>

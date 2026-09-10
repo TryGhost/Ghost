@@ -24,7 +24,7 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
@@ -52,7 +52,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -393,7 +393,7 @@ const TagDetail: React.FC = () => {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                    <BreadcrumbItem className={isAdmin7Design ? 'items-baseline gap-2' : 'gap-2'}>
+                    <BreadcrumbItem className={isAdmin7Pill ? 'items-baseline gap-2' : 'gap-2'}>
                       {!isCreating && isLoading ? (
                         <Skeleton className="h-4 w-40" />
                       ) : (
@@ -404,15 +404,15 @@ const TagDetail: React.FC = () => {
                       {tag?.visibility === 'internal' && (
                         <Badge
                           className={
-                            isAdmin7Design
+                            isAdmin7Pill
                               ? 'leading-none tracking-wider'
                               : 'px-1 py-px text-[10px] leading-none tracking-wider'
                           }
                           data-testid="tag-detail-internal-badge"
-                          size={isAdmin7Design ? 'md' : 'default'}
+                          size={isAdmin7Pill ? 'md' : 'default'}
                           variant="secondary"
                         >
-                          {isAdmin7Design ? 'Internal' : 'INTERNAL'}
+                          {isAdmin7Pill ? 'Internal' : 'INTERNAL'}
                         </Badge>
                       )}
                     </BreadcrumbItem>

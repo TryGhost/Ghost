@@ -55,7 +55,7 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -63,7 +63,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -275,7 +275,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
                   <PageHeader.ActionGroup>
-                    {isAdmin7Design ? (
+                    {isAdmin7Pill ? (
                       <>
                         {moreActions}
                         {shareAction && (

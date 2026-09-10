@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
 import { formatQueryDate, getRangeDates } from './chart-helpers';
@@ -343,7 +343,7 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
@@ -681,7 +681,7 @@ function StatsFilter({
     }
   }, [onChange]);
 
-  if (!isAdmin7Design) {
+  if (!isAdmin7Pill) {
     return (
       <div
         className="mt-3 flex w-full justify-between gap-2 lg:mt-0"

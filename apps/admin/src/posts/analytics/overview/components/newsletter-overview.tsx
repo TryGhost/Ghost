@@ -30,7 +30,7 @@ import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/util
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -43,7 +43,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   isNewsletterStatsLoading,
   isWebShown,
 }) => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -122,7 +122,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               navigate(`/posts/analytics/${postId}/newsletter`);
             }}
           >
-            {isAdmin7Design ? 'View more →' : 'View more'}
+            {isAdmin7Pill ? 'View more →' : 'View more'}
           </Button>
         )}
       </div>

@@ -57,7 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
+import { useAdmin7 } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -100,7 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
-  const { isAdmin7Design } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -567,10 +567,10 @@ const Newsletter: React.FC = () => {
                                       aria-label="Edit link"
                                       className={cn(
                                         'mr-2 shrink-0',
-                                        !isAdmin7Design && 'bg-background',
+                                        !isAdmin7Pill && 'bg-background',
                                       )}
-                                      size={isAdmin7Design ? 'icon-sm' : 'sm'}
-                                      title={isAdmin7Design ? 'Edit link' : undefined}
+                                      size={isAdmin7Pill ? 'icon-sm' : 'sm'}
+                                      title={isAdmin7Pill ? 'Edit link' : undefined}
                                       variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >

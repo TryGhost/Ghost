@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import { type VariantProps } from 'class-variance-authority';
@@ -14,9 +15,10 @@ const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariant
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Design'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Pill'>
 >(({ className, variant, size, shape, children, ...props }, ref) => {
-  const { controlShape, isAdmin7Design } = useShade();
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
   const resolvedShape = shape ?? controlShape;
 
   return (
@@ -30,7 +32,7 @@ const ToggleGroup = React.forwardRef<
       data-control-shape={resolvedShape}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size, isAdmin7Design, shape: resolvedShape }}>
+      <ToggleGroupContext.Provider value={{ variant, size, isAdmin7Pill, shape: resolvedShape }}>
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
@@ -42,7 +44,7 @@ ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Design'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Pill'>
 >(({ className, children, variant, size, shape, ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext);
   const resolvedShape = shape ?? context.shape;
@@ -53,7 +55,7 @@ const ToggleGroupItem = React.forwardRef<
       className={cn(
         toggleVariants({
           variant: context.variant || variant,
-          isAdmin7Design: context.isAdmin7Design,
+          isAdmin7Pill: context.isAdmin7Pill,
           size: context.size || size,
           shape: resolvedShape,
         }),

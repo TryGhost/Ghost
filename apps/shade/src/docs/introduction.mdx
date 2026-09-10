@@ -31,46 +31,48 @@ If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/
 
 See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
 
-## Admin 7 design rollout
+## Admin 7 milestones
 
-Shade uses the Admin 7 design by default. New screens use ordinary `Button`,
-`SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader` components;
-there is no need to add `shape="pill"` or copy Admin 7 classes into pages.
-Explicit shapes remain available for a specific visual need. They do not select
-an interaction mode.
+Shade previews use the new controls by default. New screens use ordinary
+`Button`, `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader`
+components; there is no need to add `shape="pill"` or copy milestone classes into
+pages. Explicit shapes remain available for a specific visual need.
 
-During the experiment, Admin reads the private flag once at its React application
-boundary and passes `isAdmin7Design` to `ShadeApp`. When false, the previous
-colors, spacing, tooltip behavior, and control geometry are preserved. Editor and
-Ember-owned routes keep this value false, as does the standalone ActivityPub
-preview during this experiment.
+Admin resolves each milestone once at its application boundary and supplies the
+complete `Admin7Features` object to `ShadeApp`. Shade receives the result, without
+knowing about Labs storage or Admin routes.
 
 ```tsx
-// Only the host reads the private flag. Shade defaults to true when omitted.
-<ShadeApp darkMode={darkMode} isAdmin7Design={enabled}>
+// The Admin host supplies every milestone; isolated previews use Shade defaults.
+<ShadeApp darkMode={darkMode} admin7={admin7}>
     <App />
 </ShadeApp>
 ```
 
-Shared components can read `useShade().isAdmin7Design` for temporary structural
-or interaction differences. Pure appearance differences belong in shared recipes
-and scoped tokens. `Button variant="subtle"` expresses a low-emphasis action:
-ghost chrome with Admin 7 enabled, outline chrome otherwise. Avoid using
-`controlShape` as a proxy for behavior.
+Components can read the relevant milestone for temporary structural or interaction
+differences:
 
-Portals carry their owning React context through Shade's internal scope wrapper
-and its `data-admin7-design` attribute. Do not copy design variables onto
-`document.body`: two independently mounted surfaces must not change one another's
-menus or dialogs. Standalone surfaces should use `ShadeApp` to provide both
-context and the CSS scope.
+```tsx
+import {useAdmin7} from '@tryghost/shade/app';
 
-### Removing the experiment
+const {pill} = useAdmin7();
+```
 
-At general availability, remove the Admin flag and route mapping, then remove
-`isAdmin7Design` from the host. Shade already defaults to true. Search for
-`isAdmin7Design` and keep the enabled branches, then remove the false token scope
-and compatibility tests. Remove other host opt-outs once their rollout is
-approved. Ordinary screens require no pill-prop migration. Keep Admin 7
-interaction tests and canonical PageHeader stories as the permanent contract.
+Pure appearance differences belong in shared recipes and scoped tokens.
+`Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
+`pill` enabled, outline chrome otherwise. Avoid using control shape as a proxy
+for behavior.
+
+Portals carry their owning milestone values through Shade's internal scope
+wrapper, including the `data-admin7-pill` attribute. Keep scope attributes off
+`document.body`: independently mounted surfaces must not change one another's
+menus or dialogs. Standalone surfaces use `ShadeApp` to provide context and the
+CSS scope, and explicitly choose the milestones they support.
+
+The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
+is the canonical source for milestone naming, resolution, supported surfaces,
+dependencies, tests and removal. At rollout, keep the enabled behavior and remove
+the milestone's compatibility branches; ordinary component calls already use the
+intended defaults.
 
 </div>

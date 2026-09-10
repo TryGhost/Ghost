@@ -233,14 +233,14 @@
 /* The current design is Shade's default. The flag-off scope is temporary rollout
    compatibility and is repeated on portals, never inherited through body. */
 .shade,
-[data-admin7-design='true'] {
+[data-admin7-pill='true'] {
   --radius-control: var(--radius-lg);
   --radius-control-sm: var(--radius-md);
   --radius-menu: calc(var(--radius-lg) + 0.2rem);
   --radius-menu-item: var(--radius-lg);
   --radius-trend-badge: var(--radius-lg);
 }
-[data-admin7-design='false'] {
+[data-admin7-pill='false'] {
   --radius-control: var(--radius-md);
   --radius-control-sm: var(--radius-sm);
   --radius-menu: var(--radius-md);

@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -30,7 +31,7 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-7 p-0 [&_svg]:size-3',
       },
-      isAdmin7Design: { true: '', false: '' },
+      isAdmin7Pill: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -38,59 +39,59 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7Design: false,
+        isAdmin7Pill: false,
         variant: 'secondary',
         className: 'bg-secondary hover:bg-secondary/80',
       },
-      { isAdmin7Design: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
+      { isAdmin7Pill: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
       {
-        isAdmin7Design: false,
+        isAdmin7Pill: false,
         variant: 'subtle',
         className:
           'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: 'subtle',
         className: 'hover:bg-accent hover:text-accent-foreground',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: ['secondary', 'ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: ['ghost', 'subtle'],
         className:
           'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown', 'subtle'],
         size: ['default', 'sm', 'lg'],
         className: 'px-3',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         variant: 'outline',
         className:
           'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
-        isAdmin7Design: true,
+        isAdmin7Pill: true,
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },
@@ -99,7 +100,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7Design: true,
+      isAdmin7Pill: true,
     },
   },
 );
@@ -107,13 +108,14 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7Design'> {
+    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7Pill'> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape, isAdmin7Design } = useShade();
+    const { controlShape } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
@@ -133,7 +135,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         className={cn(
-          buttonVariants({ variant, size, isAdmin7Design, shape: resolvedShape, className }),
+          buttonVariants({ variant, size, isAdmin7Pill, shape: resolvedShape, className }),
         )}
         {...props}
         data-control-shape={resolvedShape}
