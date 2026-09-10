@@ -2,6 +2,7 @@ import logging from '@tryghost/logging';
 import { InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
+import { MailgunRateLimit } from './mailgun-rate-limit';
 
 type Page = Awaited<ReturnType<MailgunLogsClient['getPage']>>;
 type PageOutcome = { ok: true; page: Page } | { ok: false; error: unknown };
@@ -31,6 +32,12 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
+  const limiter = new MailgunRateLimit();
+  const readPage = (options: Parameters<MailgunLogsClient['getPage']>[0]) =>
+    limiter.run(async () => {
+      const page = await client.getPage(options);
+      return { value: page, rateLimit: page.rateLimit };
+    }, options.signal);
   const prefetch = config.get('emailAnalytics:fetchPrefetch') === true;
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
@@ -63,7 +70,7 @@ export async function fetchMailgunLogs({
           }
           page = result.page;
         } else {
-          page = await client.getPage(options);
+          page = await readPage(options);
         }
         if (!page.empty && page.next) {
           if (seenTokens.has(page.next)) {
@@ -77,7 +84,7 @@ export async function fetchMailgunLogs({
         if (prefetch && next && !capped) {
           // Attach both outcomes immediately: a fast failure must not become an unhandled rejection
           // while the current page is still being processed.
-          pending = client.getPage({ ...options, token: next }).then(
+          pending = readPage({ ...options, token: next }).then(
             (nextPage) => ({ ok: true, page: nextPage }),
             (error) => ({ ok: false, error }),
           );

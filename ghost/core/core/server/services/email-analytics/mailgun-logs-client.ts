@@ -1,11 +1,12 @@
 import { InternalServerError } from '@tryghost/errors';
 import metrics from '@tryghost/metrics';
+import { parseMailgunRateLimit, type MailgunRateLimitState } from './mailgun-rate-limit';
 
 // @tryghost/request has no type declarations. Keep its untrusted response at the boundary.
 const request: (
   url: string,
   options: Record<string, unknown>,
-) => Promise<{ body: unknown }> = require('@tryghost/request');
+) => Promise<{ body: unknown; headers?: unknown }> = require('@tryghost/request');
 
 type LogPageOptions = {
   domain: string;
@@ -52,9 +53,12 @@ export class MailgunLogsClient {
     this.#apiKey = apiKey;
   }
 
-  async getPage(
-    options: LogPageOptions,
-  ): Promise<{ items: MailgunAnalyticsEvent[]; next?: string; empty: boolean }> {
+  async getPage(options: LogPageOptions): Promise<{
+    items: MailgunAnalyticsEvent[];
+    next?: string;
+    empty: boolean;
+    rateLimit?: MailgunRateLimitState;
+  }> {
     if (
       !options.domain.trim() ||
       options.tags.length === 0 ||
@@ -70,6 +74,7 @@ export class MailgunLogsClient {
       });
     }
     let body: unknown;
+    let rateLimit: MailgunRateLimitState | undefined;
     const startedAt = Date.now();
     try {
       const response = await request(this.#url, {
@@ -101,6 +106,7 @@ export class MailgunLogsClient {
         },
       });
       body = response.body;
+      rateLimit = parseMailgunRateLimit(response.headers);
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
         statusCode: 200,
@@ -110,6 +116,9 @@ export class MailgunLogsClient {
       // The request wrapper copies credentials/options onto transport errors.
       // Never attach or rethrow that error into analytics logging.
       const statusCode = record(record(error)?.response)?.statusCode ?? record(error)?.statusCode;
+      rateLimit = parseMailgunRateLimit(
+        record(record(error)?.response)?.headers ?? record(error)?.headers,
+      );
       const status =
         typeof statusCode === 'number' &&
         Number.isInteger(statusCode) &&
@@ -127,7 +136,7 @@ export class MailgunLogsClient {
           message: 'Mailgun Logs request failed',
           code: 'MAILGUN_LOGS_REQUEST_FAILED',
         }),
-        { status },
+        { status, ...(rateLimit ? { rateLimit } : {}) },
       );
     }
     const page = record(body);
@@ -172,6 +181,7 @@ export class MailgunLogsClient {
       items,
       next: typeof next === 'string' ? next : undefined,
       empty: page.items.length === 0,
+      ...(rateLimit ? { rateLimit } : {}),
     };
   }
 
