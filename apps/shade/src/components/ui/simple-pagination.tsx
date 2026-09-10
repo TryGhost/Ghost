@@ -56,9 +56,9 @@ SimplePaginationNavigation.displayName = 'SimplePaginationNavigation';
 
 const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
     return (
-      <Button ref={ref} size={size ?? (isAdmin7Pill ? 'icon' : 'sm')} variant={variant} {...props}>
+      <Button ref={ref} size={size ?? (isAdmin7 ? 'icon' : 'sm')} variant={variant} {...props}>
         <ArrowLeft />
       </Button>
     );
@@ -69,9 +69,9 @@ SimplePaginationPreviousButton.displayName = 'SimplePaginationPreviousButton';
 
 const SimplePaginationNextButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
     return (
-      <Button ref={ref} size={size ?? (isAdmin7Pill ? 'icon' : 'sm')} variant={variant} {...props}>
+      <Button ref={ref} size={size ?? (isAdmin7 ? 'icon' : 'sm')} variant={variant} {...props}>
         <ArrowRight />
       </Button>
     );

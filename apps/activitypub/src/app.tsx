@@ -22,7 +22,7 @@ const App: React.FC<AppProps> = ({ framework, activityPubEnabled }) => {
     <FrameworkProvider {...framework}>
       <RouterProvider prefix={'/'} routes={routes}>
         <FeatureFlagsProvider>
-          <ShadeApp className="shade-activitypub" darkMode={false} isAdmin7Pill={false}>
+          <ShadeApp className="shade-activitypub" darkMode={false} isAdmin7={false}>
             <Outlet />
           </ShadeApp>
         </FeatureFlagsProvider>

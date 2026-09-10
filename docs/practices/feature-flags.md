@@ -110,12 +110,12 @@ reads `useFeatureFlag('admin7Pill')` and excludes the editor and Ember-owned
 routes. It passes the resulting boolean to the existing Shade provider:
 
 ```tsx
-<ShadeApp darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
+<ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
   <App />
 </ShadeApp>
 ```
 
-Shared components read `useShade().isAdmin7Pill` from
+Shared components read `useShade().isAdmin7` from
 `@tryghost/shade/app`. Shade owns changes to control appearance, spacing and
 strokes; pages use the same value for structural differences such as action
 order. Ordinary component calls stay `<Button>` rather than setting a milestone
@@ -124,13 +124,14 @@ prop on every control.
 Shade previews default to the new appearance. Admin always passes its computed
 boolean, so missing or loading configuration stays off unless the existing
 session override enables the flag. Standalone ActivityPub explicitly passes
-`isAdmin7Pill={false}`; embedded ActivityPub inherits Admin's value. Menus,
+`isAdmin7={false}`; embedded ActivityPub inherits Admin's value. Menus,
 tooltips and dialogs carry `data-admin7-pill` through Shade's scope wrapper,
 including when rendered in portals.
 
-For future milestones, use the existing hook directly. Pass a value through the
-existing Shade provider only when shared presentation needs it. Keep permanent
-permission and backend capability checks separate from the temporary flag.
+Shade exposes one `isAdmin7` design switch. Admin maps the current milestone's
+Labs flag to it; as milestones progress, update that mapping instead of adding
+new milestone props to Shade. Keep permanent permission and backend capability
+checks separate from the temporary flag.
 
 ### Verify and remove
 

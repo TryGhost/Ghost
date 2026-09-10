@@ -122,13 +122,13 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
     return (
       <a
         ref={ref}
         className={cn(
           'flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40',
-          isAdmin7Pill && 'rounded-xl',
+          isAdmin7 && 'rounded-xl',
           className,
         )}
         href={href}
@@ -237,7 +237,7 @@ function SocialLinks({
   variant,
   ...props
 }: SocialLinksProps) {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -269,7 +269,7 @@ function SocialLinks({
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
       {links.map((link) =>
-        isAdmin7Pill || shape || variant ? (
+        isAdmin7 || shape || variant ? (
           <Button
             key={link.id ?? link.href}
             className="w-12 flex-none px-3"
@@ -375,10 +375,10 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   return (
     <DialogFooter
-      className={cn('justify-between gap-6', isAdmin7Pill && 'gap-8 sm:gap-8', className)}
+      className={cn('justify-between gap-6', isAdmin7 && 'gap-8 sm:gap-8', className)}
       {...props}
     />
   );

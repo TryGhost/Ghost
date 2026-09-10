@@ -24,7 +24,7 @@ type FilterBarProps = React.PropsWithChildren & {
  *   </FilterBar>
  */
 function FilterBarRoot({ className, children }: FilterBarProps) {
-  const { controlShape, isAdmin7Pill } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
 
   if (React.Children.count(children) === 0) {
     return null;
@@ -36,7 +36,7 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
         align="start"
         className={cn(
           'w-full',
-          isAdmin7Pill &&
+          isAdmin7 &&
             'relative -mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
           className,
         )}
@@ -54,14 +54,14 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
 const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
   ({ className, gap = 'sm', ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
 
     return (
       <Inline
         ref={ref}
         className={cn(
           'shrink-0 sm:absolute',
-          isInFilterBar && isAdmin7Pill ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
+          isInFilterBar && isAdmin7 ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
           className,
         )}
         data-slot="filter-bar-actions"
@@ -76,8 +76,8 @@ FilterBarActions.displayName = 'FilterBar.Actions';
 const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, size, variant, ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { isAdmin7Pill } = useShade();
-    const usePillFilterBarStyle = isInFilterBar && isAdmin7Pill;
+    const { isAdmin7 } = useShade();
+    const usePillFilterBarStyle = isInFilterBar && isAdmin7;
 
     return (
       <Button

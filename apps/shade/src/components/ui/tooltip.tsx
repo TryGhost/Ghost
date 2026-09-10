@@ -18,10 +18,10 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const pointerInteraction = React.useRef(false);
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
 
   React.useEffect(() => {
-    if (!isAdmin7Pill) {
+    if (!isAdmin7) {
       return;
     }
     const onPointerDown = () => {
@@ -36,11 +36,11 @@ function TooltipProvider({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [isAdmin7Pill]);
+  }, [isAdmin7]);
 
   return (
-    <TooltipInputContext.Provider value={isAdmin7Pill ? pointerInteraction : null}>
-      <TooltipPrimitive.Provider delayDuration={isAdmin7Pill ? 1000 : 700} {...props}>
+    <TooltipInputContext.Provider value={isAdmin7 ? pointerInteraction : null}>
+      <TooltipPrimitive.Provider delayDuration={isAdmin7 ? 1000 : 700} {...props}>
         {children}
       </TooltipPrimitive.Provider>
     </TooltipInputContext.Provider>
@@ -94,14 +94,14 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, ...props }, ref) => {
-  const { isAdmin7Pill } = useShade();
+  const { isAdmin7 } = useShade();
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
           className={cn(
-            tooltipContentVariants({ variant: variant ?? (isAdmin7Pill ? 'white' : 'default') }),
+            tooltipContentVariants({ variant: variant ?? (isAdmin7 ? 'white' : 'default') }),
             className,
           )}
           sideOffset={sideOffset}

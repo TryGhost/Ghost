@@ -14,13 +14,13 @@ export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
   controlShape?: ControlShape;
   /** Admin supplies the effective flag; isolated Shade previews use the new design. */
-  isAdmin7Pill?: boolean;
+  isAdmin7?: boolean;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
   controlShape,
-  isAdmin7Pill = true,
+  isAdmin7 = true,
   className,
   children,
   ...props
@@ -28,8 +28,8 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props} data-admin7-pill={isAdmin7Pill}>
-      <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
+    <div className={appClassName} {...props} data-admin7-pill={isAdmin7}>
+      <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7={isAdmin7}>
         {children}
       </ShadeProvider>
     </div>

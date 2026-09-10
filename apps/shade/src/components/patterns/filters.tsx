@@ -2719,9 +2719,9 @@ const FilterAddButton = forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
 >(({ className, label, icon, ...props }, ref) => {
   const context = useFilterContext();
-  const { controlShape, isAdmin7Pill } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && isAdmin7Pill;
+  const isPillFilterBar = isInFilterBar && isAdmin7;
   const iconOnly = isPillFilterBar && context.hasFilters;
   const buttonLabel = label ?? context.addButtonText ?? context.i18n.addFilter;
 
@@ -2737,8 +2737,8 @@ const FilterAddButton = forwardRef<
           radius: context.controlRadius,
         }),
         isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
-        isAdmin7Pill && !isInFilterBar && 'font-medium',
-        isAdmin7Pill &&
+        isAdmin7 && !isInFilterBar && 'font-medium',
+        isAdmin7 &&
           (iconOnly
             ? 'aspect-square border-0 !px-0 shadow-none'
             : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
@@ -2774,9 +2774,9 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
     ref,
   ) => {
     const { hasFilters, keyboardShortcut } = useFilterContext();
-    const { isAdmin7Pill } = useShade();
+    const { isAdmin7 } = useShade();
 
-    if (isAdmin7Pill && !hasFilters) {
+    if (isAdmin7 && !hasFilters) {
       return (
         <PageHeader.FilterTrigger
           ref={ref}
@@ -2787,7 +2787,7 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
       );
     }
 
-    const iconStyle = isAdmin7Pill && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
+    const iconStyle = isAdmin7 && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
     const Icon =
       iconStyle === 'list'
         ? hasFilters
@@ -2801,7 +2801,7 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
       <FilterAddButton
         ref={ref}
         className={cn(
-          !isAdmin7Pill &&
+          !isAdmin7 &&
             cn(
               collapseLabel &&
                 !hasFilters &&
@@ -2881,9 +2881,9 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
-  const { controlShape, isAdmin7Pill } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && isAdmin7Pill;
+  const isPillFilterBar = isInFilterBar && isAdmin7;
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2897,7 +2897,7 @@ export function Filters<T = unknown>({
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const filterRadius = radius ?? 'md';
-  const controlRadius = radius ?? (isAdmin7Pill ? 'full' : 'md');
+  const controlRadius = radius ?? (isAdmin7 ? 'full' : 'md');
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -3212,7 +3212,7 @@ export function Filters<T = unknown>({
               key={filter.id}
               className={cn(
                 filterItemVariants({ variant }),
-                isAdmin7Pill && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
+                isAdmin7 && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
               )}
               data-slot="filter-item"
             >
@@ -3395,9 +3395,9 @@ export function Filters<T = unknown>({
                   cursorPointer: cursorPointer,
                   radius: controlRadius,
                 }),
-                isAdmin7Pill && 'h-7 text-sm! [&_svg]:size-3',
+                isAdmin7 && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                isAdmin7Pill && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
+                isAdmin7 && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute',
                 isPillFilterBar ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
                 clearButtonClassName,

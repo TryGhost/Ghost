@@ -126,13 +126,13 @@ Expanded search must not push the primary off-screen.
 ## Compatibility and rollout
 
 New headers use the pill milestone design by default. During the experiment,
-the Admin root passes `isAdmin7Pill={false}` to ShadeApp when the private flag
+the Admin root passes `isAdmin7={false}` to ShadeApp when the private flag
 is off or the route is excluded. Shade owns visual differences;
 features retain only historical structural differences that cannot be expressed
 through shared controls. Existing consumers may supply `fallbackVariant` and
 `fallbackSize` to preserve their prior controls. New consumers should use defaults.
 
-With `useShade().isAdmin7Pill` false, the header retains its previous spacing, chevrons,
+With `useShade().isAdmin7` false, the header retains its previous spacing, chevrons,
 control appearance and absence of new header tooltips. Follow the
 [Admin 7 milestone convention](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
 for flag usage and removal; ordinary page code already uses the intended

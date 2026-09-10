@@ -381,7 +381,7 @@ export const PillDropdowns: Story = {
 
 export const Admin7Disabled: Story = {
   render: () => (
-    <ShadeApp darkMode={false} isAdmin7Pill={false}>
+    <ShadeApp darkMode={false} isAdmin7={false}>
       <Inline gap="sm">
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
