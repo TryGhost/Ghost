@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import nock from 'nock';
 import sinon from 'sinon';
 import { fetchMailgunEvents } from '../../../../../core/server/services/email-analytics/fetch-mailgun-events';
-import type { MailgunAnalyticsEvent } from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
+import {
+  MailgunLogsClient,
+  type MailgunAnalyticsEvent,
+} from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
 // @ts-expect-error This module lacks type definitions.
 import MailgunClient from '../../../../../core/server/services/lib/mailgun-client';
 
@@ -35,6 +38,152 @@ describe('fetchMailgunEvents with Logs selected', () => {
   afterEach(() => {
     nock.cleanAll();
     sinon.restore();
+  });
+
+  it('aborts and settles a prefetched HTTP request when processing fails', async () => {
+    const pages = sinon.spy(MailgunLogsClient.prototype, 'getPage');
+    let notifyRequested!: () => void;
+    const requested = new Promise<void>((resolve) => {
+      notifyRequested = resolve;
+    });
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, { items: [event('one')], pagination: { next: 'two' } });
+    const second = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'two')
+      .delay(5000)
+      .reply(200, { items: [event('two')], pagination: {} });
+    second.on('request', notifyRequested);
+    const failure = new Error('Processing failed');
+    let calls = 0;
+    await assert.rejects(
+      fetchMailgunEvents({
+        config: read({
+          bulkEmail: { mailgun },
+          'emailAnalytics:fetchSource': 'logs',
+          'emailAnalytics:fetchPrefetch': true,
+        }),
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        batchHandler: async () => {
+          calls += 1;
+          await requested;
+          throw failure;
+        },
+      }),
+      (error) => error === failure,
+    );
+    assert.equal(calls, 1);
+    await assert.rejects(pages.secondCall.returnValue, /Mailgun Logs request failed/);
+    first.done();
+    second.done();
+  }, 1500);
+
+  it('prefetches one page while processing the current page without overlapping callbacks', async () => {
+    const order: string[] = [];
+    let notifyRequested!: () => void;
+    const requested = new Promise<void>((resolve) => {
+      notifyRequested = resolve;
+    });
+    let notifyThirdRequested!: () => void;
+    const thirdRequested = new Promise<void>((resolve) => {
+      notifyThirdRequested = resolve;
+    });
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, { items: [event('one')], pagination: { next: 'two' } });
+    const second = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'two')
+      .reply(() => {
+        order.push('fetch two');
+        notifyRequested();
+        return [200, { items: [event('two')], pagination: { next: 'three' } }];
+      });
+    const third = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'three')
+      .reply(() => {
+        order.push('fetch three');
+        notifyThirdRequested();
+        return [200, { items: [event('three')], pagination: {} }];
+      });
+    await fetchMailgunEvents({
+      config: read({
+        bulkEmail: { mailgun },
+        'emailAnalytics:fetchSource': 'logs',
+        'emailAnalytics:fetchPrefetch': true,
+      }),
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      batchHandler: async (items: MailgunAnalyticsEvent[]) => {
+        const id = items[0].id;
+        order.push(`process ${id} start`);
+        if (id === 'one') {
+          await requested;
+          assert.equal(third.isDone(), false);
+        } else if (id === 'two') {
+          await thirdRequested;
+        }
+        order.push(`process ${id} end`);
+      },
+    });
+    assert.deepEqual(order, [
+      'process one start',
+      'fetch two',
+      'process one end',
+      'process two start',
+      'fetch three',
+      'process two end',
+      'process three start',
+      'process three end',
+    ]);
+    first.done();
+    second.done();
+    third.done();
+  }, 1500);
+
+  it('keeps a prefetched failure handled while the current page finishes and does not process more events', async () => {
+    let notifyRequested!: () => void;
+    const requested = new Promise<void>((resolve) => {
+      notifyRequested = resolve;
+    });
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, { items: [event('one')], pagination: { next: 'two' } });
+    const second = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'two')
+      .reply(503, {});
+    second.on('replied', notifyRequested);
+    const ids: string[] = [];
+    await assert.rejects(
+      fetchMailgunEvents({
+        config: read({
+          bulkEmail: { mailgun },
+          'emailAnalytics:fetchSource': 'logs',
+          'emailAnalytics:fetchPrefetch': true,
+        }),
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        batchHandler: async (items: MailgunAnalyticsEvent[]) => {
+          await requested;
+          // Let the request reject while processing remains pending, without attaching
+          // a test-side rejection handler that could conceal an unhandled rejection.
+          await new Promise<void>((resolve) => {
+            setImmediate(resolve);
+          });
+          ids.push(...items.map((item) => item.id));
+        },
+      }),
+      /Mailgun Logs request failed/,
+    );
+    assert.deepEqual(ids, ['one']);
+    first.done();
+    second.done();
   });
 
   it.each(['bulk-email', 'automation-email', 'gift-delivery'])(
@@ -337,52 +486,56 @@ describe('fetchMailgunEvents with Logs selected', () => {
     first.done();
   });
 
-  it('finishes begin-time ties and returns the earliest capped cursor across sending domains', async () => {
-    const fallback = 'fallback.example.com';
-    const primaryFirst = nock('https://api.eu.mailgun.net')
-      .post(
-        '/v1/analytics/logs',
-        (body) => body.filter.AND[0].values[0].value === mailgun.domain && !body.pagination.token,
-      )
-      .reply(200, {
-        items: [event('tie', mailgun.domain, begin.toISOString())],
-        pagination: { next: 'primary-two' },
+  it.each([false, true])(
+    'finishes begin-time ties and returns the earliest capped cursor across sending domains with prefetch %s',
+    async (prefetch) => {
+      const fallback = 'fallback.example.com';
+      const primaryFirst = nock('https://api.eu.mailgun.net')
+        .post(
+          '/v1/analytics/logs',
+          (body) => body.filter.AND[0].values[0].value === mailgun.domain && !body.pagination.token,
+        )
+        .reply(200, {
+          items: [event('tie', mailgun.domain, begin.toISOString())],
+          pagination: { next: 'primary-two' },
+        });
+      const primarySecond = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs', (body) => body.pagination.token === 'primary-two')
+        .reply(200, { items: [event('primary')], pagination: { next: 'primary-three' } });
+      const fallbackFirst = nock('https://api.eu.mailgun.net')
+        .post(
+          '/v1/analytics/logs',
+          (body) => body.filter.AND[0].values[0].value === fallback && !body.pagination.token,
+        )
+        .reply(200, {
+          items: [event('fallback', fallback, '2026-09-01T12:30:00Z')],
+          pagination: { next: 'fallback-two' },
+        });
+      const ids: string[] = [];
+      const result = await fetchMailgunEvents({
+        config: read({
+          bulkEmail: { mailgun },
+          'emailAnalytics:fetchSource': 'logs',
+          'hostSettings:managedEmail:fallbackDomain': fallback,
+          'emailAnalytics:fetchPrefetch': prefetch,
+        }),
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        events: ['opened'],
+        maxEvents: 1,
+        batchHandler: (items: MailgunAnalyticsEvent[]) => {
+          ids.push(...items.map((item) => item.id));
+        },
       });
-    const primarySecond = nock('https://api.eu.mailgun.net')
-      .post('/v1/analytics/logs', (body) => body.pagination.token === 'primary-two')
-      .reply(200, { items: [event('primary')], pagination: { next: 'primary-three' } });
-    const fallbackFirst = nock('https://api.eu.mailgun.net')
-      .post(
-        '/v1/analytics/logs',
-        (body) => body.filter.AND[0].values[0].value === fallback && !body.pagination.token,
-      )
-      .reply(200, {
-        items: [event('fallback', fallback, '2026-09-01T12:30:00Z')],
-        pagination: { next: 'fallback-two' },
-      });
-    const ids: string[] = [];
-    const result = await fetchMailgunEvents({
-      config: read({
-        bulkEmail: { mailgun },
-        'emailAnalytics:fetchSource': 'logs',
-        'hostSettings:managedEmail:fallbackDomain': fallback,
-      }),
-      settings,
-      tags: ['bulk-email'],
-      begin,
-      end,
-      events: ['opened'],
-      maxEvents: 1,
-      batchHandler: (items: MailgunAnalyticsEvent[]) => {
-        ids.push(...items.map((item) => item.id));
-      },
-    });
-    assert.deepEqual(ids, ['tie', 'primary', 'fallback']);
-    assert.deepEqual(result, { safeCursor: new Date('2026-09-01T12:30:00Z') });
-    primaryFirst.done();
-    primarySecond.done();
-    fallbackFirst.done();
-  });
+      assert.deepEqual(ids, ['tie', 'primary', 'fallback']);
+      assert.deepEqual(result, { safeCursor: new Date('2026-09-01T12:30:00Z') });
+      primaryFirst.done();
+      primarySecond.done();
+      fallbackFirst.done();
+    },
+  );
 
   it('uses the configured Logs endpoint and delivers normalized pages in order', async () => {
     const first = nock('https://api.eu.mailgun.net')

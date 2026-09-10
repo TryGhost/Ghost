@@ -6,6 +6,9 @@ import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-cl
 // work: raw records count toward the budget, and pages are capped outright.
 const MAX_PAGES_PER_DOMAIN = 1000;
 
+type Page = Awaited<ReturnType<MailgunLogsClient['getPage']>>;
+type PageOutcome = { ok: true; page: Page } | { ok: false; error: unknown };
+
 export async function fetchMailgunLogs({
   config,
   settings,
@@ -31,6 +34,7 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
+  const prefetch = config.get('emailAnalytics:fetchPrefetch') === true;
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
   const windowBegin = begin ?? new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
@@ -53,46 +57,80 @@ export async function fetchMailgunLogs({
     // Everything the provider returned up to this timestamp was either
     // processed or irrelevant, so a capped cursor may safely rest here.
     let covered: Date | undefined;
+    let pending: Promise<PageOutcome> | undefined;
+    const controller = new AbortController();
     try {
       do {
-        const page = await client.getPage({
+        const options = {
           domain,
           tags,
           events,
           begin: windowBegin,
           end: windowEnd,
           token,
-        });
+          signal: controller.signal,
+        };
+        let page: Page;
+        if (pending) {
+          const result = await pending;
+          pending = undefined;
+          if (!result.ok) {
+            throw result.error;
+          }
+          page = result.page;
+        } else {
+          page = await client.getPage(options);
+        }
         pages += 1;
         rawCount += page.rawCount;
         skipped += page.skipped;
         if (page.lastTimestamp && (!covered || page.lastTimestamp > covered)) {
           covered = page.lastTimestamp;
         }
+        // Decide before delivery whether this domain continues, so the next
+        // page can be requested while this one is processed. The cursor is
+        // re-covered on the next fetch, but begin-time ties are finished to
+        // make progress.
+        const budgetSpent = eventCount + page.items.length >= maxEvents || rawCount >= maxEvents;
+        let stop: 'capped' | 'exhausted' | 'pages' | 'repeated' | undefined;
+        if (budgetSpent && covered && covered > windowBegin) {
+          stop = 'capped';
+        } else if (!page.next) {
+          stop = 'exhausted';
+        } else if (seenTokens.has(page.next)) {
+          // A provider that echoes the last token has nothing more; one that
+          // repeats an earlier token must not skip anything. This page is still
+          // delivered, then the cursor rests on what the domain covered so far.
+          stop = 'repeated';
+        } else if (pages >= MAX_PAGES_PER_DOMAIN) {
+          stop = 'pages';
+        }
+        if (prefetch && !stop) {
+          // Attach both outcomes immediately: a fast failure must not become an
+          // unhandled rejection while the current page is still being processed.
+          pending = client.getPage({ ...options, token: page.next }).then(
+            (nextPage) => ({ ok: true, page: nextPage }),
+            (error) => ({ ok: false, error }),
+          );
+        }
         if (page.items.length) {
           await batchHandler(page.items);
           eventCount += page.items.length;
         }
-        // Re-cover the boundary on the next fetch, but finish begin-time ties to make progress.
-        const budgetSpent = eventCount >= maxEvents || rawCount >= maxEvents;
-        if (budgetSpent && covered && covered > windowBegin) {
+        if (stop === 'capped' && covered) {
           cap(covered);
           status = 'capped';
           break;
         }
-        if (!page.next) {
+        if (stop === 'exhausted' || !page.next) {
           break;
         }
-        // A provider that echoes the last token has nothing more; one that
-        // repeats an earlier token must not skip anything. The page was still
-        // delivered, and the cursor rests on what the domain covered so far.
-        const repeated = seenTokens.has(page.next);
         seenTokens.add(page.next);
-        if (repeated || pages >= MAX_PAGES_PER_DOMAIN) {
+        if (stop === 'pages' || stop === 'repeated') {
           logging.warn(
-            repeated
-              ? `${prefix}: repeated pagination token after ${pages} pages`
-              : `${prefix}: stopped after ${pages} pages`,
+            stop === 'pages'
+              ? `${prefix}: stopped after ${pages} pages`
+              : `${prefix}: repeated pagination token after ${pages} pages`,
           );
           if (covered && covered > windowBegin) {
             cap(covered);
@@ -107,6 +145,13 @@ export async function fetchMailgunLogs({
     } catch (error) {
       logging.error(`${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`);
       throw error;
+    } finally {
+      if (pending) {
+        // A callback can fail while the next request is running. Stop and settle it
+        // before returning so no detached request survives the failed fetch.
+        controller.abort();
+        await pending;
+      }
     }
     logging.info(
       `${prefix}: Processed ${eventCount} events in ${pages} pages (${rawCount} records, ${skipped} skipped). Status: ${status}. Cursor: ${safeCursor?.toISOString() ?? 'none'}`,
