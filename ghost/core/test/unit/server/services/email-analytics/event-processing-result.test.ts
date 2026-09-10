@@ -72,6 +72,68 @@ describe('EventProcessingResult', function () {
   });
 
   describe('merge()', function () {
+    it('ignores empty IDs and preserves first-seen order across repeated merges', function () {
+      const result = new EventProcessingResult({
+        emailIds: ['', 'email-2', 'email-2', 'email-1'],
+        memberIds: ['member-2', '', 'member-1', 'member-2'],
+      });
+
+      for (let i = 0; i < 3; i++) {
+        result.merge({
+          opened: 1,
+          emailIds: ['email-1', '', 'email-3', 'email-2'],
+          memberIds: ['', 'member-3', 'member-1', 'member-2'],
+        });
+      }
+
+      assert.equal(result.opened, 3);
+      assert.deepEqual(result.emailIds, ['email-2', 'email-1', 'email-3']);
+      assert.deepEqual(result.memberIds, ['member-2', 'member-1', 'member-3']);
+    });
+
+    it('can collect the same IDs again after reset', function () {
+      const result = new EventProcessingResult({
+        opened: 2,
+        emailIds: ['email-1', 'email-2'],
+        memberIds: ['member-1', 'member-2'],
+      });
+
+      result.reset();
+      result.merge({
+        opened: 1,
+        emailIds: ['email-2', 'email-2', 'email-1'],
+        memberIds: ['member-2', 'member-2', 'member-1'],
+      });
+
+      assert.equal(result.opened, 1);
+      assert.deepEqual(result.emailIds, ['email-2', 'email-1']);
+      assert.deepEqual(result.memberIds, ['member-2', 'member-1']);
+    });
+
+    it('keeps merged results independent when the source resets and is reused', function () {
+      const page = new EventProcessingResult({
+        opened: 2,
+        emailIds: ['email-1'],
+        memberIds: ['member-1', 'member-2'],
+      });
+      const total = new EventProcessingResult(page);
+
+      page.reset();
+      page.merge({
+        opened: 2,
+        emailIds: ['email-1', 'email-2'],
+        memberIds: ['member-2', 'member-3'],
+      });
+      total.merge(page);
+      page.reset();
+
+      assert.equal(total.opened, 4);
+      assert.deepEqual(total.emailIds, ['email-1', 'email-2']);
+      assert.deepEqual(total.memberIds, ['member-1', 'member-2', 'member-3']);
+      assert.deepEqual(page.emailIds, []);
+      assert.deepEqual(page.memberIds, []);
+    });
+
     it('adds counts and merges id arrays', function () {
       const result = new EventProcessingResult({
         delivered: 1,
