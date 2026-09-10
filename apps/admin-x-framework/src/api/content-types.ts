@@ -9,6 +9,11 @@ export type Email = {
   email_count: number;
   status?: 'pending' | 'submitting' | 'submitted' | 'failed';
   error?: string | null;
+  submitted_at?: string | null;
+  recipient_filter?: string | null;
+  delivered_count?: number;
+  failed_count?: number;
+  feedback_enabled?: boolean;
   track_opens?: boolean;
   track_clicks?: boolean;
 };
