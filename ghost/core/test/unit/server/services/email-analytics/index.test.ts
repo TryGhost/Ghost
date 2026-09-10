@@ -1,4 +1,6 @@
 import sinon from 'sinon';
+import assert from 'node:assert/strict';
+import { MailgunRateLimit } from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
 import createKnex from 'knex';
 
 import {
@@ -26,15 +28,19 @@ describe('email analytics service', function () {
   let giftsInit: sinon.SinonStub;
 
   let dependencies: Parameters<typeof init>[0];
+  const ghostServer = { registerPreStopTask: sinon.stub(), registerCleanupTask: sinon.stub() };
 
   beforeEach(function () {
     config.get.reset();
+    ghostServer.registerPreStopTask.reset();
+    ghostServer.registerCleanupTask.reset();
     config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
     newslettersInit = sinon.stub(newsletters, 'init');
     automationsInit = sinon.stub(automations, 'init');
     giftsInit = sinon.stub(gifts, 'init');
 
     dependencies = {
+      ghostServer,
       automationsApi,
       config,
       db: {
@@ -69,6 +75,50 @@ describe('email analytics service', function () {
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('initializes all readers with the same provider cooldown', function () {
+    init(dependencies);
+    const limiter = newslettersInit.firstCall.args[0].rateLimiter;
+    assert.ok(limiter instanceof MailgunRateLimit);
+    assert.equal(automationsInit.firstCall.args[0].rateLimiter, limiter);
+    assert.equal(giftsInit.firstCall.args[0].rateLimiter, limiter);
+  });
+
+  it('initializes analytics when Ghost boots without an HTTP server', function () {
+    init({ ...dependencies, ghostServer: undefined });
+    sinon.assert.calledOnce(newslettersInit);
+    sinon.assert.calledOnce(automationsInit);
+    sinon.assert.calledOnce(giftsInit);
+    sinon.assert.notCalled(ghostServer.registerPreStopTask);
+    sinon.assert.notCalled(ghostServer.registerCleanupTask);
+  });
+
+  it('registers stop and drain hooks for all three analytics readers', async function () {
+    const stop = [newsletters, automations, gifts].map((reader) => sinon.stub(reader, 'onPreStop'));
+    let finish!: () => void;
+    const drains = [newsletters, automations, gifts].map((reader) =>
+      sinon.stub(reader, 'onShutdown').resolves(),
+    );
+    drains[0].returns(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    init(dependencies);
+    sinon.assert.calledOnce(ghostServer.registerPreStopTask);
+    sinon.assert.calledOnce(ghostServer.registerCleanupTask);
+    ghostServer.registerPreStopTask.firstCall.args[0]();
+    stop.forEach((stub) => sinon.assert.calledOnce(stub));
+    let drained = false;
+    const shutdown = ghostServer.registerCleanupTask.firstCall.args[0]().then(() => {
+      drained = true;
+    });
+    await Promise.resolve();
+    drains.forEach((stub) => sinon.assert.calledOnce(stub));
+    assert.equal(drained, false);
+    finish();
+    await shutdown;
   });
 
   it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {

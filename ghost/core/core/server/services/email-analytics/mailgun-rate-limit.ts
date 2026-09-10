@@ -98,6 +98,8 @@ export class MailgunRateLimit {
         }
         waitedMs += waitMs;
         await wait(waitMs, signal);
+        // Another in-flight response can extend the shared cooldown while we wait.
+        continue;
       }
       if (signal?.aborted) {
         throw canceled();
@@ -113,12 +115,15 @@ export class MailgunRateLimit {
         if (signal?.aborted) {
           throw canceled();
         }
-        if (!rateLimited(error) || retries === 3) {
+        if (!rateLimited(error)) {
+          throw error;
+        }
+        this.#observe(error.rateLimit, true);
+        if (retries === 3) {
           throw error;
         }
         const backoffMs = Math.ceil(1000 * 2 ** retries * (1 + Math.random() * 0.25));
         retries += 1;
-        this.#observe(error.rateLimit, true);
         this.#resumeAt = Math.max(this.#resumeAt, Date.now() + backoffMs);
       }
     }

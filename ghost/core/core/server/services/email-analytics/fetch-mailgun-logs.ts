@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import { InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
 import { MailgunRateLimit } from './mailgun-rate-limit';
@@ -19,6 +20,8 @@ export async function fetchMailgunLogs({
   end,
   batchHandler,
   maxEvents = Infinity,
+  rateLimiter = new MailgunRateLimit(),
+  signal,
 }: {
   config: ConfigReader;
   settings: ConfigReader;
@@ -27,6 +30,8 @@ export async function fetchMailgunLogs({
   begin?: Date;
   end?: Date;
   maxEvents?: number;
+  rateLimiter?: MailgunRateLimit;
+  signal?: AbortSignal;
   batchHandler: (events: MailgunAnalyticsEvent[]) => Promise<void> | void;
 }): Promise<{ safeCursor?: Date } | void> {
   const mailgun = getMailgunConfig(config, settings);
@@ -35,9 +40,8 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
-  const limiter = new MailgunRateLimit();
   const readPage = (options: Parameters<MailgunLogsClient['getPage']>[0]) =>
-    limiter.run(async () => {
+    rateLimiter.run(async () => {
       const page = await client.getPage(options);
       return { value: page, rateLimit: page.rateLimit };
     }, options.signal);
@@ -66,6 +70,7 @@ export async function fetchMailgunLogs({
     let covered: Date | undefined;
     let pending: Promise<PageOutcome> | undefined;
     const controller = new AbortController();
+    const readSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
     try {
       do {
         const options = {
@@ -75,7 +80,7 @@ export async function fetchMailgunLogs({
           begin: windowBegin,
           end: windowEnd,
           token,
-          signal: controller.signal,
+          signal: readSignal,
         };
         let page: Page;
         if (pending) {
@@ -87,6 +92,12 @@ export async function fetchMailgunLogs({
           page = result.page;
         } else {
           page = await readPage(options);
+        }
+        if (readSignal.aborted) {
+          throw new InternalServerError({
+            message: 'Fetching canceled',
+            code: 'MAILGUN_POLLING_CANCELED',
+          });
         }
         pages += 1;
         rawCount += page.rawCount;
@@ -122,6 +133,12 @@ export async function fetchMailgunLogs({
         }
         if (page.items.length) {
           await batchHandler(page.items);
+          if (readSignal.aborted) {
+            throw new InternalServerError({
+              message: 'Fetching canceled',
+              code: 'MAILGUN_POLLING_CANCELED',
+            });
+          }
           eventCount += page.items.length;
         }
         if (stop === 'capped' && covered) {

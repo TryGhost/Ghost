@@ -61,7 +61,19 @@ Other errors fail immediately. Cancellation removes any pending wait timer.
 The retry boundary contains only the provider read; processor callbacks are
 never retried by this policy.
 
+Boot shares one in-memory cooldown across newsletter, automation and gift readers.
+Later polling cycles retain quota hints after a wait-budget or retry-limit exit;
+waiting readers recheck a reset extended by another in-flight response. This state
+lasts until the service restarts. Configuration changes retain the current cooldown.
+
 ## Progress and retry boundaries
+
+Shutdown stops new polling cycles and immediate restarts, aborts active Logs reads
+and quota waits, and drains current processing and final aggregation. An interrupted
+window keeps its original cursor for replay, and a scheduled backfill keeps its
+persisted schedule. The serial Events fallback lets its current SDK request settle;
+the service stops before processing another page. Boot registers analytics cleanup
+explicitly because the offloaded job only emits the polling event on the main thread.
 
 Domains and page callbacks run serially because they share one lane's processor
 state. `emailAnalytics.fetchPrefetch` defaults to `false`; when enabled with the
