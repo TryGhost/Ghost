@@ -2040,8 +2040,12 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
     retry_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     last_retry_at: { type: 'dateTime', nullable: true },
+    available_at: { type: 'dateTime', nullable: true },
     message: { type: 'string', maxlength: 2000, nullable: true },
-    '@@INDEXES@@': [['event_type', 'status', 'created_at']],
+    '@@INDEXES@@': [
+      ['event_type', 'status', 'created_at'],
+      ['event_type', 'status', 'available_at', 'id'],
+    ],
   },
   email_design_settings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
