@@ -342,6 +342,10 @@ valid initialized denominator. Open rates remain null below five tracked emails.
 Historical batches have `member_counters_enabled = false` and are never enrolled
 by an absent application marker. The derived baseline includes their recipients,
 except discardable incomplete preparation under the recipient-accounting protocol.
+Unfrozen legacy emails whose batches are all pending are also discardable: resumed
+preparation replaces their recipient set. Once any legacy batch has started
+submission, the entire set remains part of derived truth, including its pending
+batches. A frozen legacy set also remains part of derived truth.
 An accounted email without frozen preparation but with non-pending or already
 counter-applied batches stops the sweep for explicit preparation reconciliation;
 its recipient facts must not be silently removed during rollback re-baselining.

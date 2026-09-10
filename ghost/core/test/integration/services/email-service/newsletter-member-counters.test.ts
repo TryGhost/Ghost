@@ -113,7 +113,8 @@ describe('Newsletter member counter baselines through MySQL', () => {
     await recipient({ enrolled: true });
     await recipient({ prepared: false });
     // A pre-accounting send has no preparation boundary, but remains historical truth.
-    await recipient({ accounted: false, prepared: false, tracked: false });
+    const legacy = await recipient({ accounted: false, prepared: false, tracked: false });
+    await db.knex('email_batches').where('id', legacy.batchId).update({ status: 'submitted' });
     const page = await counters.sweepPage({ throughId: id(3), limit: 2 });
     assert.deepEqual(page, { afterId: id(2), processed: 2 });
     assert.deepEqual(await stats(), {
@@ -213,6 +214,16 @@ describe('Newsletter member counter baselines through MySQL', () => {
     for (const limit of [0, -1, 5001, 1.5, NaN]) {
       await assert.rejects(counters.sweepPage({ throughId: id(3), limit }), /limit/);
     }
+  });
+
+  it('keeps frozen legacy preparation and rejects counter-applied unfrozen legacy state', async () => {
+    await recipient({ accounted: false, prepared: true });
+    await recipient({ accounted: false, prepared: false });
+    await counters.sweepPage({ throughId: id(3) });
+    assert.equal((await stats()).email_count, 1);
+    await recipient({ accounted: false, prepared: false, enrolled: true, applied: true });
+    await assert.rejects(counters.sweepPage({ throughId: id(3) }), /without frozen preparation/);
+    assert.equal((await stats()).email_count, 1);
   });
 
   it('commits its checkpoint with the page and resumes it after recreation', async () => {

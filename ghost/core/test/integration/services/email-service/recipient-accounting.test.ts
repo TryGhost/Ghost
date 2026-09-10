@@ -1028,6 +1028,15 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     return batches;
   }
 
+  async function rememberMemberCounters() {
+    const before = await db
+      .knex('members')
+      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate');
+    for (const { id, ...attributes } of before) {
+      memberRestorations.push({ id, attributes });
+    }
+  }
+
   for (const pendingCount of [0, 2, 4]) {
     it(`rebuilds unsent legacy preparation against current eligibility (${pendingCount} pending batches)`, async function () {
       const old = await createLegacyBatches(Array(pendingCount).fill('pending'));
@@ -1059,9 +1068,39 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     });
   }
 
+  it('does not baseline legacy recipients that resumed preparation will discard and replace', async function () {
+    await rememberMemberCounters();
+    await email.save({ track_opens: true }, { patch: true });
+    await createLegacyBatches(['pending', 'pending', 'pending', 'pending']);
+    const memberCounters = new NewsletterMemberCounters(db.knex);
+    await memberCounters.sweepPage();
+    await corruptMember('000000000000000000000004', { status: 'paid' });
+    service = createService({ memberCounterPreparation: true, memberCounters });
+    const batches = await service.createBatches(data);
+    for (const batch of batches) {
+      await memberCounters.applyPreparedBatch(batch.id);
+    }
+    const totals = await db
+      .knex('members')
+      .orderBy('id')
+      .select('id', 'email_count', 'email_tracked_count');
+    assert.deepEqual(
+      totals.map((row) => [row.email_count, row.email_tracked_count]),
+      [
+        [1, 1],
+        [1, 1],
+        [1, 1],
+        [0, 0],
+      ],
+    );
+  });
+
   for (const status of ['submitting', 'submitted', 'failed']) {
     it(`preserves all legacy batches when one has started submission (${status})`, async function () {
+      await rememberMemberCounters();
       await createLegacyBatches([status, 'pending']);
+      await new NewsletterMemberCounters(db.knex).sweepPage();
+      assert.deepEqual(await db.knex('members').orderBy('id').pluck('email_count'), [0, 0, 1, 1]);
       const before = await db.knex('email_batches').where({ email_id: email.id }).orderBy('id');
       const recipients = await db
         .knex('email_recipients')

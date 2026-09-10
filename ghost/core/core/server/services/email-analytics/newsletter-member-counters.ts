@@ -291,9 +291,20 @@ export class NewsletterMemberCounters {
     // recipient facts. Avoid joining every historical recipient to its email.
     const untrackedEmailIds: string[] = await trx('emails').where('track_opens', false).pluck('id');
     const discardableEmailIds: string[] = await trx('emails')
-      .whereNotNull('preflight_email_count')
       .whereNull('prepared_at')
+      .where((builder) =>
+        builder
+          .whereNotNull('preflight_email_count')
+          .orWhereNotExists(
+            trx('email_batches')
+              .select('id')
+              .whereRaw('?? = ??', ['email_batches.email_id', 'emails.id'])
+              .whereNot('status', 'pending'),
+          ),
+      )
       .pluck('id');
+    // Legacy preparation with only pending batches is also rebuilt on resume.
+    // Preserve the entire legacy set once any batch has started submission.
     if (discardableEmailIds.length > 0) {
       const ambiguous = await trx('email_batches')
         .whereIn('email_id', discardableEmailIds)
