@@ -20,6 +20,16 @@ import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { validateLocale } from '@/settings/utils/locale-validation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
+type LocaleData = {
+  code: string;
+  label: string;
+};
+
+type LocaleOption = {
+  value: string;
+  label: string;
+};
+
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const languageErrorId = React.useId();
   const [languageOpen, setLanguageOpen] = React.useState(false);
@@ -47,8 +57,8 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
 
   const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
-  const localeOptions = React.useMemo(() => {
-    const options = LOCALE_DATA.map((locale) => ({
+  const localeOptions = React.useMemo<LocaleOption[]>(() => {
+    const options = (LOCALE_DATA as LocaleData[]).map((locale) => ({
       value: locale.code,
       label: `${locale.label} (${locale.code})`,
     }));
@@ -68,7 +78,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
   );
   const [isOtherSelected, setIsOtherSelected] = React.useState(isCustomValue);
   const [validationError, setValidationError] = React.useState<string | null>(null);
-  const localeOptionsWithOther = React.useMemo(
+  const localeOptionsWithOther = React.useMemo<LocaleOption[]>(
     () => [...localeOptions, { label: 'Other...', value: 'other' }],
     [localeOptions],
   );
@@ -159,7 +169,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
               options={localeOptionsWithOther}
               values={publicationLanguage ? [publicationLanguage] : []}
               autoCloseOnSelect
-              onChange={(values) => {
+              onChange={(values: string[]) => {
                 if (values[0] === 'other') {
                   setIsOtherSelected(true);
                   handleLanguageChange('');
