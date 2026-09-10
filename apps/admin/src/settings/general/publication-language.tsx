@@ -1,4 +1,4 @@
-import LOCALE_DATA from '@tryghost/i18n/locale-data.json';
+import { LOCALE_DATA } from '@tryghost/i18n';
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
@@ -45,15 +45,34 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
     },
   });
 
-  const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
+  const [publicationLanguage = ''] = getSettingValues<string>(localSettings, ['locale']);
 
-  const localeOptions = React.useMemo(() => {
-    const options = LOCALE_DATA.map((locale) => ({
+  const localeOptions = React.useMemo<{ value: string; label: string }[]>(() => {
+    const localeData = LOCALE_DATA as unknown as Array<unknown>;
+
+    if (!Array.isArray(localeData)) {
+      return [];
+    }
+
+    const validLocaleData = localeData.filter(
+      (locale): locale is { code: string; label: string } => {
+        if (!locale || typeof locale !== 'object') {
+          return false;
+        }
+
+        return (
+          'code' in locale &&
+          'label' in locale &&
+          typeof (locale as { code: unknown }).code === 'string' &&
+          typeof (locale as { label: unknown }).label === 'string'
+        );
+      },
+    );
+
+    return validLocaleData.map((locale) => ({
       value: locale.code,
       label: `${locale.label} (${locale.code})`,
     }));
-
-    return options;
   }, []);
 
   const handleLanguageChange = (value: string) => {
