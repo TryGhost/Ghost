@@ -14,9 +14,9 @@ const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariant
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    VariantProps<typeof toggleVariants>
+    Omit<VariantProps<typeof toggleVariants>, 'design'>
 >(({ className, variant, size, shape, children, ...props }, ref) => {
-  const { controlShape } = useShade();
+  const { controlShape, design } = useShade();
   const resolvedShape = shape ?? controlShape;
 
   return (
@@ -24,13 +24,13 @@ const ToggleGroup = React.forwardRef<
       ref={ref}
       className={cn(
         'inline-flex items-center justify-center gap-0.5 bg-muted p-0.5 dark:border dark:border-border dark:bg-background',
-        resolvedShape === 'pill' ? 'rounded-full' : 'rounded-control',
+        resolvedShape === 'pill' ? 'rounded-full' : 'rounded-(--input-group-radius)',
         className,
       )}
       data-control-shape={resolvedShape}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size, shape: resolvedShape }}>
+      <ToggleGroupContext.Provider value={{ variant, size, design, shape: resolvedShape }}>
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
@@ -42,7 +42,7 @@ ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-    VariantProps<typeof toggleVariants>
+    Omit<VariantProps<typeof toggleVariants>, 'design'>
 >(({ className, children, variant, size, shape, ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext);
   const resolvedShape = shape ?? context.shape;
@@ -53,6 +53,7 @@ const ToggleGroupItem = React.forwardRef<
       className={cn(
         toggleVariants({
           variant: context.variant || variant,
+          design: context.design,
           size: context.size || size,
           shape: resolvedShape,
         }),

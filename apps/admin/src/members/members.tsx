@@ -6,12 +6,7 @@ import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
 import MultipleActiveSubscriptionsBanner from './components/multiple-active-subscriptions-banner';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Button,
-  EmptyIndicator,
-  LoadingIndicator,
-  TooltipProvider,
-} from '@tryghost/shade/components';
+import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -36,7 +31,7 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -54,7 +49,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -155,18 +150,17 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   const headerSearch =
     shouldShowMemberControls &&
-    (isAdmin7Pill ? (
+    (!isLegacyDesign ? (
       <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
     ) : (
       <>
-        <Box className="hidden lg:block">
+        <Box className="hidden lg:flex">
           <MembersHeaderSearch search={searchInput} onSearchChange={handleSearchChange} />
         </Box>
         <Button
           aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
           className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-          size={isAdmin7Pill ? 'icon' : undefined}
-          variant={isAdmin7Pill ? 'ghost' : 'outline'}
+          variant="outline"
           onClick={handleMobileSearchToggle}
         >
           <LucideIcon.Search className="size-4" />
@@ -178,7 +172,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <MembersFilters
       activeView={activeView}
       filters={filters}
-      iconOnly={!isAdmin7Pill}
+      iconOnly={isLegacyDesign}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}
       savedViews={savedViews}
@@ -204,30 +198,23 @@ const MembersPage: React.FC<MembersPageProps> = ({
                   </PageHeader.Title>
                 </PageHeader.Left>
                 <PageHeader.Actions>
-                  <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
-                    <PageHeader.ActionGroup
-                      className={cn(
-                        'ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap',
-                        isAdmin7Pill && 'gap-1',
-                      )}
-                    >
-                      {isAdmin7Pill && headerFilters}
-                      {headerSearch}
-                      {!isAdmin7Pill && headerFilters}
-                      <MembersActions
-                        canBulkDelete={canBulkDelete}
-                        hasFilterOrSearch={hasFilterOrSearch}
-                        memberCount={totalMembers}
-                        nql={nql}
-                        search={search}
-                        showMenu={shouldShowMemberControls}
-                        showNewMember={shouldShowMemberControls}
-                        onImportComplete={() => {
-                          void refetch();
-                        }}
-                      />
-                    </PageHeader.ActionGroup>
-                  </TooltipProvider>
+                  <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                    {!isLegacyDesign && headerFilters}
+                    {headerSearch}
+                    {isLegacyDesign && headerFilters}
+                    <MembersActions
+                      canBulkDelete={canBulkDelete}
+                      hasFilterOrSearch={hasFilterOrSearch}
+                      memberCount={totalMembers}
+                      nql={nql}
+                      search={search}
+                      showMenu={shouldShowMemberControls}
+                      showNewMember={shouldShowMemberControls}
+                      onImportComplete={() => {
+                        void refetch();
+                      }}
+                    />
+                  </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               </PageHeader>
 

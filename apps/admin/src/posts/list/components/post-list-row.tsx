@@ -17,7 +17,7 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -135,7 +135,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
     },
     ref,
   ) {
-    const { enabled: isAdmin7Pill } = useAdmin7Pill();
+    const { isLegacyDesign } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -274,11 +274,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
             // Margin rather than a wider row gap, which would push the
             // title away from the metrics too.
             className={cn(
-              'my-4 ms-8 shrink-0',
-              isAdmin7Pill ? isHovered && 'bg-background' : 'bg-control-surface px-4',
+              'my-4 shrink-0',
+              isLegacyDesign ? 'ms-2' : 'ms-8',
+              !isLegacyDesign ? isHovered && 'bg-background' : 'bg-control-surface px-4',
             )}
-            size={isAdmin7Pill ? 'icon' : undefined}
-            variant={isAdmin7Pill ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+            size={!isLegacyDesign ? 'icon' : undefined}
+            variant={!isLegacyDesign ? (isHovered ? 'outline' : 'ghost') : 'outline'}
             asChild
           >
             <a

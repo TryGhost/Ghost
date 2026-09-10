@@ -1,14 +1,7 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import React, { useRef, useState } from 'react';
 import { useShade } from '@tryghost/shade/app';
-import {
-  Button,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tryghost/shade/components';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@tryghost/shade/components';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 
@@ -27,7 +20,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
   collapsible = false,
   ariaLabel = 'Search members',
 }) => {
-  const { controlShape } = useShade();
+  const { isLegacyDesign } = useShade();
   const [expanded, setExpanded] = useState(false);
   const restoreTriggerFocus = useRef(false);
   const isExpanded = !collapsible || expanded || search.length > 0;
@@ -40,8 +33,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
         'h-(--control-height) min-w-0',
         collapsible ? 'w-full' : 'basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]',
       )}
-      shape={controlShape}
-      variant={controlShape === 'pill' ? 'secondary' : 'default'}
+      variant={!isLegacyDesign ? 'secondary' : 'default'}
     >
       <InputGroupAddon>
         <LucideIcon.Search className="size-4" strokeWidth={collapsible ? 2 : 1.75} />
@@ -90,28 +82,20 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
       {isExpanded ? (
         field
       ) : (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              ref={(button) => {
-                if (button && restoreTriggerFocus.current) {
-                  button.focus();
-                  restoreTriggerFocus.current = false;
-                }
-              }}
-              aria-label="Search members"
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={() => setExpanded(true)}
-            >
-              <LucideIcon.Search className="size-4 stroke-2!" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" variant="white">
-            Search members
-          </TooltipContent>
-        </Tooltip>
+        <PageHeader.Action
+          ref={(button) => {
+            if (button && restoreTriggerFocus.current) {
+              button.focus();
+              restoreTriggerFocus.current = false;
+            }
+          }}
+          label="Search members"
+          type="button"
+          iconOnly
+          onClick={() => setExpanded(true)}
+        >
+          <LucideIcon.Search className="size-4 stroke-2!" />
+        </PageHeader.Action>
       )}
     </Box>
   );

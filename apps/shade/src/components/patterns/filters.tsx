@@ -2756,9 +2756,9 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
-  const { controlShape } = useShade();
+  const { controlShape, isLegacyDesign } = useShade();
   const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && controlShape === 'pill';
+  const isPillFilterBar = isInFilterBar && !isLegacyDesign;
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2772,7 +2772,7 @@ export function Filters<T = unknown>({
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const filterRadius = radius ?? 'md';
-  const controlRadius = radius ?? (controlShape === 'pill' ? 'full' : 'md');
+  const controlRadius = radius ?? (!isLegacyDesign ? 'full' : 'md');
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -3085,7 +3085,7 @@ export function Filters<T = unknown>({
               key={filter.id}
               className={cn(
                 filterItemVariants({ variant }),
-                controlShape === 'pill' &&
+                !isLegacyDesign &&
                   'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
               )}
               data-slot="filter-item"
@@ -3159,8 +3159,8 @@ export function Filters<T = unknown>({
                       radius: controlRadius,
                     }),
                     isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
-                    controlShape === 'pill' && !isInFilterBar && 'font-medium',
-                    controlShape === 'pill' &&
+                    !isLegacyDesign && !isInFilterBar && 'font-medium',
+                    !isLegacyDesign &&
                       (isPillFilterBar && filters.length > 0
                         ? 'aspect-square border-0 !px-0 shadow-none'
                         : addButtonVariant === 'ghost' || addButtonVariant === 'secondary'
@@ -3301,9 +3301,9 @@ export function Filters<T = unknown>({
                   cursorPointer: cursorPointer,
                   radius: controlRadius,
                 }),
-                controlShape === 'pill' && 'h-7 text-sm! [&_svg]:size-3',
+                !isLegacyDesign && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                controlShape === 'pill' &&
+                !isLegacyDesign &&
                   'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute',
                 isPillFilterBar ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',

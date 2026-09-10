@@ -15,7 +15,6 @@ import {
   PopoverClose,
   PopoverContent,
   PopoverTrigger,
-  buttonVariants,
 } from '@tryghost/shade/components';
 
 interface ProfileMenuProps {
@@ -98,7 +97,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
           )}
           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className={buttonVariants({ variant: 'destructive' })}
+            variant="destructive"
             onClick={dialogType === 'user' ? handleBlockAccountClick : handleBlockDomainClick}
           >
             Block

@@ -30,7 +30,7 @@ import { cleanTrackedUrl, processAndGroupTopLinks } from '@/posts/analytics/util
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useTopLinks } from '@tryghost/admin-x-framework/api/links';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 interface NewsletterOverviewProps {
   post: Post;
@@ -43,7 +43,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   isNewsletterStatsLoading,
   isWebShown,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -117,12 +117,12 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
           <Button
             className="absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
             size="sm"
-            variant={isAdmin7Pill ? 'ghost' : 'outline'}
+            variant="subtle"
             onClick={() => {
               navigate(`/posts/analytics/${postId}/newsletter`);
             }}
           >
-            {isAdmin7Pill ? 'View more →' : 'View more'}
+            {!isLegacyDesign ? 'View more →' : 'View more'}
           </Button>
         )}
       </div>

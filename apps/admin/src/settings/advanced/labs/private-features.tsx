@@ -51,7 +51,8 @@ const features: Feature[] = [
   },
   {
     title: 'Admin 7 pill styles',
-    description: 'Enable the new pill-shaped controls in approved Admin areas.',
+    description:
+      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
     flag: 'admin7Pill',
   },
   {

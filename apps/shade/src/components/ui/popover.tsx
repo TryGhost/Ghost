@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
@@ -17,7 +17,7 @@ const PopoverContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = 'center', onEscapeKeyDown, sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <PopoverPrimitive.Content
         ref={ref}
         align={align}
@@ -29,7 +29,7 @@ const PopoverContent = React.forwardRef<
         onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </PopoverPrimitive.Portal>
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;

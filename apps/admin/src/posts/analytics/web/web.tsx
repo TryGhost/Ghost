@@ -1,4 +1,3 @@
-import { useShade } from '@tryghost/shade/app';
 import DateRangeSelect from '@/shared/analytics/date-range-select';
 import Kpis from './components/kpis';
 import Locations from './components/locations';
@@ -44,7 +43,6 @@ interface ProcessedLocationData {
 }
 
 const Web: React.FC = () => {
-  const { controlShape } = useShade();
   const navigate = useNavigate();
   const { postId } = useParams();
   const { statsConfig, isLoading: isConfigLoading, site } = useAnalyticsData();
@@ -270,7 +268,7 @@ const Web: React.FC = () => {
           </NavbarActions>
         )}
         <NavbarActions
-          className={`${controlShape === 'pill' && !hasFilters ? 'gap-1' : ''} ${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
+          className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
         >
           <StatsFilter
             filters={analyticsFilters}

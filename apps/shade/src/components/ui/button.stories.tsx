@@ -19,7 +19,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost pills show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled controls do not gain pressed styling.',
+          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost buttons show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled controls do not gain pressed styling.',
       },
     },
   },
@@ -44,9 +44,7 @@ export const Primary: Story = {
 };
 
 export const Pill: Story = {
-  args: {
-    shape: 'pill',
-  },
+  args: {},
   render: (args) => (
     <Inline gap="sm">
       <Button {...args}>Primary pill</Button>
@@ -73,14 +71,14 @@ export const AppLevelPill: Story = {
     children: 'Inherited pill button',
   },
   render: (args) => (
-    <ShadeApp controlShape="pill" darkMode={false}>
+    <ShadeApp darkMode={false}>
       <Button {...args} />
     </ShadeApp>
   ),
   parameters: {
     docs: {
       description: {
-        story: 'Use the Shade app setting to apply the pill shape across an opted-in surface.',
+        story: 'Use the Shade app setting to apply the pill shape across a surface by default.',
       },
     },
   },
@@ -92,7 +90,7 @@ export const LocalRoundedOverride: Story = {
     children: 'Rounded override',
   },
   render: (args) => (
-    <ShadeApp controlShape="pill" darkMode={false}>
+    <ShadeApp darkMode={false}>
       <Button {...args} />
     </ShadeApp>
   ),
@@ -256,7 +254,6 @@ export const SmallIconOnly: Story = {
 
 export const PillIconOnly: Story = {
   args: {
-    shape: 'pill',
     size: 'icon',
     'aria-label': 'Move up',
     children: <ArrowUp />,
@@ -292,7 +289,6 @@ export const WithIcon: Story = {
 
 export const PillWithIcon: Story = {
   args: {
-    shape: 'pill',
     variant: 'outline',
   },
   render: (args) => (
@@ -332,10 +328,8 @@ export const PillPressedStates: Story = {
     <Inline gap="sm" wrap>
       {(['outline', 'secondary', 'ghost'] as const).map((variant) => (
         <Inline key={variant} gap="xs">
-          <Button shape="pill" variant={variant}>
-            {variant}
-          </Button>
-          <Button shape="pill" variant={variant} disabled>
+          <Button variant={variant}>{variant}</Button>
+          <Button variant={variant} disabled>
             {variant} disabled
           </Button>
         </Inline>
@@ -361,9 +355,7 @@ export const PillDropdowns: Story = {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <TooltipTrigger asChild>
-                  <Button shape="pill" variant={variant}>
-                    {variant} menu
-                  </Button>
+                  <Button variant={variant}>{variant} menu</Button>
                 </TooltipTrigger>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -382,6 +374,27 @@ export const PillDropdowns: Story = {
       description: {
         story:
           'Open a menu and move the pointer away: its trigger stays pressed until selection, Escape or dismissal. Hovering the tooltip alone does not press the trigger.',
+      },
+    },
+  },
+};
+
+export const LegacyCompatibility: Story = {
+  render: () => (
+    <ShadeApp darkMode={false} design="legacy">
+      <Inline gap="sm">
+        <Button>Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="subtle">Subtle</Button>
+      </Inline>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Temporary host-level compatibility restores the previous controls. New screens use ordinary Button defaults; they do not select a pill shape.',
       },
     },
   },

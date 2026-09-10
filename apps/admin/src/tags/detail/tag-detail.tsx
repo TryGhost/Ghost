@@ -24,7 +24,7 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
@@ -52,7 +52,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -393,7 +393,7 @@ const TagDetail: React.FC = () => {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                    <BreadcrumbItem className={isAdmin7Pill ? 'items-baseline gap-2' : 'gap-2'}>
+                    <BreadcrumbItem className={!isLegacyDesign ? 'items-baseline gap-2' : 'gap-2'}>
                       {!isCreating && isLoading ? (
                         <Skeleton className="h-4 w-40" />
                       ) : (
@@ -404,16 +404,15 @@ const TagDetail: React.FC = () => {
                       {tag?.visibility === 'internal' && (
                         <Badge
                           className={
-                            isAdmin7Pill
+                            !isLegacyDesign
                               ? 'leading-none tracking-wider'
                               : 'px-1 py-px text-[10px] leading-none tracking-wider'
                           }
                           data-testid="tag-detail-internal-badge"
-                          shape={isAdmin7Pill ? 'pill' : 'rounded'}
-                          size={isAdmin7Pill ? 'md' : 'default'}
+                          size={!isLegacyDesign ? 'md' : 'default'}
                           variant="secondary"
                         >
-                          {isAdmin7Pill ? 'Internal' : 'INTERNAL'}
+                          {!isLegacyDesign ? 'Internal' : 'INTERNAL'}
                         </Badge>
                       )}
                     </BreadcrumbItem>
@@ -430,7 +429,7 @@ const TagDetail: React.FC = () => {
                             aria-label="Tag actions"
                             className="size-(--control-height)"
                             size="icon"
-                            variant={isAdmin7Pill ? 'ghost' : 'outline'}
+                            variant="subtle"
                           >
                             <LucideIcon.Ellipsis size={16} />
                           </Button>

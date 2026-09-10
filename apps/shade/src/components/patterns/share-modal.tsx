@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 
 type ShareService = 'x' | 'threads' | 'facebook' | 'linkedin' | 'bluesky';
@@ -121,11 +122,13 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
+    const { isLegacyDesign } = useShade();
     return (
       <a
         ref={ref}
         className={cn(
           'flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40',
+          !isLegacyDesign && 'rounded-xl',
           className,
         )}
         href={href}
@@ -234,6 +237,7 @@ function SocialLinks({
   variant,
   ...props
 }: SocialLinksProps) {
+  const { isLegacyDesign } = useShade();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -265,7 +269,7 @@ function SocialLinks({
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
       {links.map((link) =>
-        shape || variant ? (
+        !isLegacyDesign || shape || variant ? (
           <Button
             key={link.id ?? link.href}
             className="w-12 flex-none px-3"
@@ -371,7 +375,13 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  return <DialogFooter className={cn('justify-between gap-6', className)} {...props} />;
+  const { isLegacyDesign } = useShade();
+  return (
+    <DialogFooter
+      className={cn('justify-between gap-6', !isLegacyDesign && 'gap-8 sm:gap-8', className)}
+      {...props}
+    />
+  );
 }
 
 const ShareModal = {

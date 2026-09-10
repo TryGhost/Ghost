@@ -26,7 +26,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -60,7 +60,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 }) => {
   // const navigate = useNavigate();
   const { range } = useAnalytics();
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
 
   // Construct tooltip message based on input parameters
@@ -133,10 +133,10 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
           <Button
             className="absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
             size="sm"
-            variant={isAdmin7Pill ? 'ghost' : 'outline'}
+            variant="subtle"
             onClick={onClick}
           >
-            {isAdmin7Pill ? 'View more →' : 'View more'}
+            {!isLegacyDesign ? 'View more →' : 'View more'}
           </Button>
         )}
       </KpiCardHeader>

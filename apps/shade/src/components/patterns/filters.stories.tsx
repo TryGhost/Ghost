@@ -450,7 +450,7 @@ export const FullRadius: Story = {
 
 export const PillControls: Story = {
   render: () => (
-    <ShadeApp controlShape="pill" darkMode={false}>
+    <ShadeApp darkMode={false}>
       <Inline align="start" gap="lg">
         <FilterDemo addButtonText="Filter" addButtonVariant="secondary" fields={basicFields} />
         <FilterDemo

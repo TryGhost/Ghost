@@ -61,7 +61,7 @@ export const Default: Story = {
 export const Pill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]" shape="pill">
+      <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -83,7 +83,7 @@ export const Pill: Story = {
 export const GhostPill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]" shape="pill" variant="ghost">
+      <SelectTrigger className="w-[180px]" variant="ghost">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -105,7 +105,7 @@ export const GhostPill: Story = {
 export const SecondaryPill: Story = {
   render: () => (
     <Select defaultValue="banana">
-      <SelectTrigger className="w-[180px]" shape="pill" variant="secondary">
+      <SelectTrigger className="w-[180px]" variant="secondary">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -271,7 +271,7 @@ export const WithoutChevron: Story = {
       <SelectTrigger
         aria-label="Date range"
         className="w-[180px]"
-        shape="pill"
+
         showChevron={false}
         variant="ghost"
       >

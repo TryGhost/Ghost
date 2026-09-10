@@ -2,8 +2,9 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 const TooltipInputContext = React.createContext<React.RefObject<boolean> | null>(null);
 
@@ -17,8 +18,12 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const pointerInteraction = React.useRef(false);
+  const { isLegacyDesign } = useShade();
 
   React.useEffect(() => {
+    if (isLegacyDesign) {
+      return;
+    }
     const onPointerDown = () => {
       pointerInteraction.current = true;
     };
@@ -31,11 +36,13 @@ function TooltipProvider({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, []);
+  }, [isLegacyDesign]);
 
   return (
-    <TooltipInputContext.Provider value={pointerInteraction}>
-      <TooltipPrimitive.Provider {...props}>{children}</TooltipPrimitive.Provider>
+    <TooltipInputContext.Provider value={isLegacyDesign ? null : pointerInteraction}>
+      <TooltipPrimitive.Provider delayDuration={isLegacyDesign ? 700 : 1000} {...props}>
+        {children}
+      </TooltipPrimitive.Provider>
     </TooltipInputContext.Provider>
   );
 }
@@ -86,18 +93,24 @@ export interface TooltipContentProps
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
->(({ className, sideOffset = 4, variant, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
-      <TooltipPrimitive.Content
-        ref={ref}
-        className={cn(tooltipContentVariants({ variant }), className)}
-        sideOffset={sideOffset}
-        {...props}
-      />
-    </div>
-  </TooltipPrimitive.Portal>
-));
+>(({ className, sideOffset = 4, variant, ...props }, ref) => {
+  const { isLegacyDesign } = useShade();
+  return (
+    <TooltipPrimitive.Portal>
+      <ShadeScope>
+        <TooltipPrimitive.Content
+          ref={ref}
+          className={cn(
+            tooltipContentVariants({ variant: variant ?? (isLegacyDesign ? 'default' : 'white') }),
+            className,
+          )}
+          sideOffset={sideOffset}
+          {...props}
+        />
+      </ShadeScope>
+    </TooltipPrimitive.Portal>
+  );
+});
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

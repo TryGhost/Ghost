@@ -4,22 +4,27 @@ import { createPortal } from 'react-dom';
 import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
   controlShape: ControlShape;
+  design: ShadeDesign;
+  isLegacyDesign: boolean;
 }
 
 export type ControlShape = 'rounded' | 'pill';
+export type ShadeDesign = 'current' | 'legacy';
 
 const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
-  controlShape: 'rounded',
+  controlShape: 'pill',
+  design: 'current',
+  isLegacyDesign: false,
 });
 
 export const useShade = () => useContext(ShadeContext);
@@ -42,7 +47,7 @@ const ToasterPortal = () => {
 
   return mounted
     ? createPortal(
-        <div className={SHADE_APP_NAMESPACES} style={{ width: 'unset', height: 'unset' }}>
+        <ShadeScope style={{ width: 'unset', height: 'unset' }}>
           <Toaster
             duration={5000}
             icons={{
@@ -64,7 +69,7 @@ const ToasterPortal = () => {
             }}
             closeButton
           />
-        </div>,
+        </ShadeScope>,
         document.body,
       )
     : null;
@@ -73,12 +78,14 @@ const ToasterPortal = () => {
 interface ShadeProviderProps {
   darkMode: boolean;
   controlShape?: ControlShape;
+  design?: ShadeDesign;
   children: React.ReactNode;
 }
 
 const ShadeProvider: React.FC<ShadeProviderProps> = ({
   darkMode,
-  controlShape = 'rounded',
+  controlShape,
+  design = 'current',
   children,
 }) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
@@ -88,7 +95,16 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
   };
 
   return (
-    <ShadeContext.Provider value={{ isAnyTextFieldFocused, setFocusState, darkMode, controlShape }}>
+    <ShadeContext.Provider
+      value={{
+        isAnyTextFieldFocused,
+        setFocusState,
+        darkMode,
+        design,
+        isLegacyDesign: design === 'legacy',
+        controlShape: controlShape ?? (design === 'legacy' ? 'rounded' : 'pill'),
+      }}
+    >
       <GlobalDirtyStateProvider>
         {/* Default Radix tooltip timing for any Tooltip without a nearer
             provider; inner providers still win via nearest-provider scoping. */}

@@ -1,3 +1,4 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import React, { useCallback, useState } from 'react';
 import {
   AddLabelModal,
@@ -7,21 +8,17 @@ import {
   UnsubscribeModal,
 } from './bulk-action-modals';
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { type ImportResponse } from './bulk-action-modals/import-members/state';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberOperationParams } from '@/members/member-query-params';
 import { buildMembersUrl } from '@/members/member-route';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBulkDeleteMembers, useBulkEditMembers } from '@tryghost/admin-x-framework/api/members';
@@ -49,7 +46,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   showNewMember = true,
   onImportComplete,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const location = useLocation();
   const navigate = useNavigate();
   const isImportRoute = location.pathname === '/members/import';
@@ -248,21 +245,12 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   return (
     <>
       {showMenu && (
-        <Tooltip>
+        <>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <TooltipTrigger asChild>
-                <Button
-                  aria-label="More member actions"
-                  data-testid="members-actions"
-                  size={isAdmin7Pill ? 'icon' : undefined}
-                  variant={isAdmin7Pill ? 'ghost' : 'outline'}
-                >
-                  <LucideIcon.MoreHorizontal
-                    className={isAdmin7Pill ? 'size-4 stroke-2!' : 'size-4'}
-                  />
-                </Button>
-              </TooltipTrigger>
+              <PageHeader.Action data-testid="members-actions" label="More member actions" iconOnly>
+                <LucideIcon.MoreHorizontal className="size-4" />
+              </PageHeader.Action>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {/* Import */}
@@ -313,23 +301,22 @@ const MembersActions: React.FC<MembersActionsProps> = ({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <TooltipContent side="bottom" variant="white">
-            More member actions
-          </TooltipContent>
-        </Tooltip>
+        </>
       )}
 
       {showNewMember && (
-        <Button className={isAdmin7Pill ? 'ml-4' : undefined} asChild>
-          <a
-            aria-label="New member"
-            className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
-            href={newMemberHref}
-          >
-            <LucideIcon.Plus className={isAdmin7Pill ? 'stroke-2!' : 'sm:hidden'} />
-            <span className="hidden sm:inline">New member</span>
-          </a>
-        </Button>
+        <PageHeader.ActionGroup.Primary>
+          <PageHeader.Action label="New member" legacyVariant="default" asChild primary>
+            <a
+              aria-label="New member"
+              className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
+              href={newMemberHref}
+            >
+              <LucideIcon.Plus className={!isLegacyDesign ? 'stroke-2!' : 'sm:hidden'} />
+              <span className="hidden sm:inline">New member</span>
+            </a>
+          </PageHeader.Action>
+        </PageHeader.ActionGroup.Primary>
       )}
 
       {/* Modals */}

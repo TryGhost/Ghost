@@ -36,7 +36,6 @@ import { HTable } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -151,7 +150,6 @@ export const Sources: React.FC<SourcesCardProps> = ({
   topSourcesLimit = 10,
   onSourceClick,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const { isPostLoading } = usePostAnalytics();
 
   // Process and group sources data with pre-computed icons and display values
@@ -197,7 +195,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
           <div className="mt-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button className="w-full" size="sm" variant={isAdmin7Pill ? 'ghost' : 'outline'}>
+                <Button className="w-full" size="sm" variant="subtle">
                   View all ({extendedData.length}) <LucideIcon.ArrowRight size={14} />
                 </Button>
               </SheetTrigger>
@@ -254,7 +252,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant={isAdmin7Pill ? 'ghost' : 'outline'}>
+              <Button variant="subtle">
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>

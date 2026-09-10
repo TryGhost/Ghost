@@ -1,10 +1,9 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
-import { Button, LoadingIndicator, TooltipProvider } from '@tryghost/shade/components';
+import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LoadMoreButton } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
 import { PostListRow } from './components/post-list-row';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
@@ -59,7 +58,6 @@ const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unsch
 const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-modal'));
 
 export function PostsListScreen({ resource }: { resource: PostResource }) {
-  const { controlShape } = useShade();
   const copy = getPostResourceCopy(resource);
   const { params, filters, order, setFilters, setOrder, hasFilters, clearFilters } =
     usePostsFilterState();
@@ -278,37 +276,40 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                                 because chips need the width and would otherwise
                                 crowd the title. */}
               <PageHeader.Actions>
-                <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
-                  <PageHeader.ActionGroup className={controlShape === 'pill' ? 'gap-1' : undefined}>
-                    {!showFilterBar && (
-                      <PostsFilters
-                        currentUser={currentUser}
-                        filters={filters}
-                        iconOnly={true}
-                        params={params}
-                        resource={resource}
-                        onFiltersChange={setFilters}
-                      />
-                    )}
-                    <PostsSortMenu order={order} onOrderChange={setOrder} />
-                    {showViewActionsInHeader && (
-                      <ManagePostViewPopover
-                        activeView={activeView}
-                        params={params}
-                        resource={resource}
-                        triggerVariant={controlShape === 'pill' ? 'ghost' : 'outline'}
-                      />
-                    )}
-                    <Button className={controlShape === 'pill' ? 'ml-4' : undefined} asChild>
+                <PageHeader.ActionGroup>
+                  {!showFilterBar && (
+                    <PostsFilters
+                      currentUser={currentUser}
+                      filters={filters}
+                      iconOnly={true}
+                      params={params}
+                      resource={resource}
+                      onFiltersChange={setFilters}
+                    />
+                  )}
+                  <PostsSortMenu order={order} onOrderChange={setOrder} />
+                  {showViewActionsInHeader && (
+                    <ManagePostViewPopover
+                      activeView={activeView}
+                      params={params}
+                      resource={resource}
+                      inHeader
+                    />
+                  )}
+                  <PageHeader.ActionGroup.Primary>
+                    <PageHeader.Action
+                      label={copy.newLabel}
+                      legacyVariant="default"
+                      asChild
+                      primary
+                    >
                       <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
-                        <LucideIcon.Plus
-                          className={controlShape === 'pill' ? 'size-4 stroke-2!' : 'size-4'}
-                        />
+                        <LucideIcon.Plus className="size-4" />
                         <span className="hidden sm:inline">{copy.newLabel}</span>
                       </a>
-                    </Button>
-                  </PageHeader.ActionGroup>
-                </TooltipProvider>
+                    </PageHeader.Action>
+                  </PageHeader.ActionGroup.Primary>
+                </PageHeader.ActionGroup>
               </PageHeader.Actions>
             </PageHeader>
             {showFilterBar && (

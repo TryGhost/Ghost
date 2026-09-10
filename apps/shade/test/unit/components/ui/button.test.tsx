@@ -13,14 +13,14 @@ describe('Button Component', () => {
     assert.ok(button, 'Button should be rendered');
     assert.ok(button.className.includes('bg-primary'), 'Should have default variant class');
     assert.ok(
-      button.className.includes('rounded-control'),
-      'Should use the rounded control shape by default',
+      button.className.includes('rounded-full'),
+      'Should use the current control shape by default',
     );
   });
 
   it('supports app-level pills, local overrides, link buttons, and square icon-only pills', () => {
     render(
-      <ShadeApp controlShape="pill" darkMode={false}>
+      <ShadeApp darkMode={false}>
         <Button>Inherited pill</Button>
         <Button shape="rounded">Local rounded</Button>
         <Button shape="pill" variant="link">

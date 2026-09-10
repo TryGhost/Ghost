@@ -2,9 +2,9 @@ import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants, type ButtonProps } from '@/components/ui/button';
 import { useShade } from '@/providers/shade-provider';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 const AlertDialog = AlertDialogPrimitive.Root;
 
@@ -38,7 +38,7 @@ const AlertDialogContent = React.forwardRef<
   AlertDialogContentProps
 >(({ className, overlayClassName, ...props }, ref) => (
   <AlertDialogPortal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <AlertDialogOverlay className={overlayClassName} onClick={(e) => e.stopPropagation()} />
       <AlertDialogPrimitive.Content
         ref={ref}
@@ -48,7 +48,7 @@ const AlertDialogContent = React.forwardRef<
         )}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </AlertDialogPortal>
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
@@ -88,14 +88,14 @@ AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayNam
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => {
-  const { controlShape } = useShade();
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & Pick<ButtonProps, 'variant'>
+>(({ className, variant, ...props }, ref) => {
+  const { controlShape, design } = useShade();
 
   return (
     <AlertDialogPrimitive.Action
       ref={ref}
-      className={cn(buttonVariants({ shape: controlShape }), className)}
+      className={cn(buttonVariants({ design, shape: controlShape, variant }), className)}
       {...props}
       data-control-shape={controlShape}
     />
@@ -107,13 +107,13 @@ const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
 >(({ className, ...props }, ref) => {
-  const { controlShape } = useShade();
+  const { controlShape, design } = useShade();
 
   return (
     <AlertDialogPrimitive.Cancel
       ref={ref}
       className={cn(
-        buttonVariants({ shape: controlShape, variant: 'outline' }),
+        buttonVariants({ design, shape: controlShape, variant: 'outline' }),
         'mt-2 sm:mt-0',
         className,
       )}

@@ -16,7 +16,8 @@ const buttonVariants = cva(
           'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
         outline:
           'border border-control-border bg-transparent font-medium hover:bg-button-hover hover:text-accent-foreground',
-        secondary: 'bg-tab-active font-medium text-secondary-foreground hover:bg-secondary',
+        secondary: 'font-medium text-secondary-foreground',
+        subtle: 'font-medium',
         ghost: 'font-medium hover:bg-accent hover:text-accent-foreground',
         link: 'font-medium text-primary underline-offset-4 hover:underline',
         dropdown:
@@ -29,49 +30,63 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-7 p-0 [&_svg]:size-3',
       },
+      design: { current: '', legacy: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
       },
     },
     compoundVariants: [
+      { design: 'legacy', variant: 'secondary', className: 'bg-secondary hover:bg-secondary/80' },
+      { design: 'current', variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
       {
-        shape: 'pill',
-        variant: ['secondary', 'ghost'],
+        design: 'legacy',
+        variant: 'subtle',
+        className:
+          'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
+      },
+      {
+        design: 'current',
+        variant: 'subtle',
+        className: 'hover:bg-accent hover:text-accent-foreground',
+      },
+      {
+        design: 'current',
+        variant: ['secondary', 'ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        shape: 'pill',
+        design: 'current',
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
       {
-        shape: 'pill',
-        variant: 'ghost',
+        design: 'current',
+        variant: ['ghost', 'subtle'],
         className:
           'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
       },
       {
-        shape: 'pill',
+        design: 'current',
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
       },
       {
-        shape: 'pill',
-        variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown'],
+        design: 'current',
+        variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown', 'subtle'],
         size: ['default', 'sm', 'lg'],
         className: 'px-3',
       },
       {
-        shape: 'pill',
+        design: 'current',
         variant: 'outline',
         className:
           'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
-        shape: 'pill',
+        design: 'current',
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },
@@ -79,19 +94,22 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: 'default',
       size: 'default',
-      shape: 'rounded',
+      shape: 'pill',
+      design: 'current',
     },
   },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    Omit<VariantProps<typeof buttonVariants>, 'design'> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape } = useShade();
+    const { controlShape, design } = useShade();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
@@ -110,7 +128,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
-        className={cn(buttonVariants({ variant, size, shape: resolvedShape, className }))}
+        className={cn(buttonVariants({ variant, size, design, shape: resolvedShape, className }))}
         {...props}
         data-control-shape={resolvedShape}
       >

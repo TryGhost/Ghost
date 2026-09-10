@@ -32,7 +32,6 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS } from '@/shared/analytics/constants';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
@@ -133,7 +132,6 @@ const LocationsTable: React.FC<LocationsTableProps> = ({ tableHeader, data, onLo
 };
 
 const Locations: React.FC<LocationsProps> = ({ data, isLoading, onLocationClick }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const topLocations = data.slice(0, 10);
 
   return (
@@ -163,7 +161,7 @@ const Locations: React.FC<LocationsProps> = ({ data, isLoading, onLocationClick 
                 <CardFooter>
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant={isAdmin7Pill ? 'ghost' : 'outline'}>
+                      <Button variant="subtle">
                         View all <LucideIcon.TableOfContents />
                       </Button>
                     </SheetTrigger>

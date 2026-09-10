@@ -4,7 +4,7 @@ import { Check, ChevronRight, Circle } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -42,7 +42,7 @@ const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
 >(({ className, onEscapeKeyDown, ...props }, ref) => (
-  <div className={SHADE_APP_NAMESPACES}>
+  <ShadeScope>
     <DropdownMenuPrimitive.SubContent
       ref={ref}
       className={cn(
@@ -52,7 +52,7 @@ const DropdownMenuSubContent = React.forwardRef<
       onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
       {...props}
     />
-  </div>
+  </ShadeScope>
 ));
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
@@ -61,7 +61,7 @@ const DropdownMenuContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, onEscapeKeyDown, sideOffset = 4, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <DropdownMenuPrimitive.Content
         ref={ref}
         className={cn(
@@ -73,7 +73,7 @@ const DropdownMenuContent = React.forwardRef<
         onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </DropdownMenuPrimitive.Portal>
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;

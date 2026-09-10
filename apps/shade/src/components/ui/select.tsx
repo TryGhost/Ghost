@@ -3,8 +3,9 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 const Select = SelectPrimitive.Root;
@@ -23,6 +24,7 @@ const selectTriggerVariants = cva(
         secondary:
           'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
       },
+      design: { current: '', legacy: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -30,25 +32,26 @@ const selectTriggerVariants = cva(
     },
     compoundVariants: [
       {
-        shape: 'pill',
+        design: 'current',
         variant: ['secondary', 'ghost'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        shape: 'pill',
+        design: 'current',
         variant: 'ghost',
         className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
       },
       {
-        shape: 'pill',
+        design: 'current',
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
     ],
     defaultVariants: {
       variant: 'default',
-      shape: 'rounded',
+      shape: 'pill',
+      design: 'current',
     },
   },
 );
@@ -56,7 +59,7 @@ const selectTriggerVariants = cva(
 export interface SelectTriggerProps
   extends
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
-    VariantProps<typeof selectTriggerVariants> {
+    Omit<VariantProps<typeof selectTriggerVariants>, 'design'> {
   /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
   showChevron?: boolean;
 }
@@ -68,27 +71,31 @@ const SelectTrigger = React.forwardRef<
   (
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
-  ) => (
-    <SelectPrimitive.Trigger
-      ref={ref}
-      className={cn(
-        inputSurface('self'),
-        inputSurfaceClasses.disabledFieldSelf,
-        selectTriggerVariants({ shape, variant }),
-        className,
-      )}
-      data-control-shape={shape ?? 'rounded'}
-      data-variant={variant ?? 'default'}
-      {...props}
-    >
-      {children}
-      {showChevron && (
-        <SelectPrimitive.Icon asChild>
-          <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
-        </SelectPrimitive.Icon>
-      )}
-    </SelectPrimitive.Trigger>
-  ),
+  ) => {
+    const { controlShape, design } = useShade();
+    const resolvedShape = shape ?? controlShape;
+    return (
+      <SelectPrimitive.Trigger
+        ref={ref}
+        className={cn(
+          inputSurface('self'),
+          inputSurfaceClasses.disabledFieldSelf,
+          selectTriggerVariants({ shape: resolvedShape, variant, design }),
+          className,
+        )}
+        data-control-shape={resolvedShape}
+        data-variant={variant ?? 'default'}
+        {...props}
+      >
+        {children}
+        {showChevron && (
+          <SelectPrimitive.Icon asChild>
+            <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
+          </SelectPrimitive.Icon>
+        )}
+      </SelectPrimitive.Trigger>
+    );
+  },
 );
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
@@ -125,7 +132,7 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, onEscapeKeyDown, position = 'popper', ...props }, ref) => (
   <SelectPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
@@ -150,7 +157,7 @@ const SelectContent = React.forwardRef<
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>
-    </div>
+    </ShadeScope>
   </SelectPrimitive.Portal>
 ));
 SelectContent.displayName = SelectPrimitive.Content.displayName;

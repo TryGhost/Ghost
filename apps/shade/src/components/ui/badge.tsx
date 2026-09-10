@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
@@ -28,16 +30,25 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: 'default',
       size: 'default',
-      shape: 'rounded',
+      shape: 'pill',
     },
   },
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
+  asChild?: boolean;
+}
 
-function Badge({ className, shape, size, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ shape, size, variant }), className)} {...props} />;
+function Badge({ className, shape, size, variant, asChild = false, ...props }: BadgeProps) {
+  const { controlShape } = useShade();
+  const Comp = asChild ? Slot : 'div';
+  return (
+    <Comp
+      className={cn(badgeVariants({ shape: shape ?? controlShape, size, variant }), className)}
+      {...props}
+    />
+  );
 }
 
 export { Badge, badgeVariants };

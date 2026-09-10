@@ -35,7 +35,6 @@ import {
   useMembersTrackSources,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -158,7 +157,6 @@ const GrowthSources: React.FC<SourcesCardProps> = ({
   getPeriodText,
   className,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const membersTrackSources = useMembersTrackSources();
   // Process and group sources data with pre-computed icons and display values
   const processedData = React.useMemo(() => {
@@ -244,7 +242,7 @@ const GrowthSources: React.FC<SourcesCardProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant={isAdmin7Pill ? 'ghost' : 'outline'}>
+              <Button variant="subtle">
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>

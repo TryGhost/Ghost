@@ -51,18 +51,6 @@
   font-feature-settings: var(--font-feature-settings);
 }
 
-/* Admin 7 uses a slightly softer rounded shape for controls and menus. Keep the
-   values on the app root for in-tree UI and on body so Radix portals and the
-   legacy overlay hosts inherit the same route-scoped experiment. */
-.admin7-pill,
-body.react-admin:has(> #root .admin7-pill) {
-  --radius-control: var(--radius-lg);
-  --radius-control-sm: var(--radius-md);
-  --radius-menu: calc(var(--radius-lg) + 0.2rem);
-  --radius-menu-item: var(--radius-lg);
-  --radius-trend-badge: var(--radius-lg);
-}
-
 /* Display alternates feel crowded at small sizes, so reserve them for
    semantic headings across both Admin screens and Settings overlays. */
 :where(

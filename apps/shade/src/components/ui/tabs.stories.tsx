@@ -89,7 +89,7 @@ export const StableSelectionWidth: Story = {
 
 export const AppLevelPillButtonSmall: Story = {
   render: () => (
-    <ShadeApp controlShape="pill" darkMode={false}>
+    <ShadeApp darkMode={false}>
       <Tabs defaultValue="all" variant="button-sm">
         <TabsList>
           <TabsTrigger value="all">All content</TabsTrigger>

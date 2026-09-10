@@ -1,11 +1,16 @@
-import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
+import { Button } from '@tryghost/shade/components';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
+import {
+  type Filter,
+  type FilterFieldConfig,
+  FilterBar,
+  Filters,
+  PageHeader,
+} from '@tryghost/shade/patterns';
 import { useShade } from '@tryghost/shade/app';
-import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
 import { formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
@@ -344,8 +349,7 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { controlShape } = useShade();
-  const hasPillControls = controlShape === 'pill';
+  const { isLegacyDesign } = useShade();
   const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
@@ -683,42 +687,58 @@ function StatsFilter({
     }
   }, [onChange]);
 
+  if (isLegacyDesign) {
+    return (
+      <div
+        className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
+        data-testid="stats-filter-container"
+      >
+        <Filters
+          addButtonIcon={<LucideIcon.FunnelPlus />}
+          addButtonText={hasFilters ? 'Add filter' : 'Filter'}
+          allowMultiple={false}
+          className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
+          fields={groupedFields}
+          filters={filters}
+          keyboardShortcut="f"
+          popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
+          showSearchInput={false}
+          onActiveFieldChange={setActiveFilterField}
+          onChange={onChange || (() => {})}
+          {...props}
+        />
+        {hasFilters && (
+          <Button
+            className="hidden font-normal text-muted-foreground lg:flex"
+            data-testid="stats-filter-clear-button"
+            variant="ghost"
+            onClick={handleClearFilters}
+          >
+            <LucideIcon.FunnelX />
+            Clear
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   const filtersElement = (
     <Filters
-      addButton={
-        !hasFilters && hasPillControls ? (
-          <TooltipTrigger asChild>
-            <Button
-              aria-keyshortcuts="F"
-              aria-label="Filter"
-              data-slot="filters-add"
-              type="button"
-              variant="ghost"
-            >
-              <LucideIcon.ListFilter className="size-4 stroke-2!" />
-              Filter
-            </Button>
-          </TooltipTrigger>
-        ) : undefined
-      }
+      addButton={!hasFilters ? <PageHeader.FilterTrigger /> : undefined}
       addButtonIcon={<LucideIcon.FunnelPlus />}
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={hasPillControls && !hasFilters ? 'ghost' : undefined}
+      addButtonVariant={!hasFilters ? 'ghost' : undefined}
       allowMultiple={false}
-      className={cn(
-        '[&>button]:order-last',
-        hasFilters && !hasPillControls && '[&>button]:border-none',
-      )}
+      className="[&>button]:order-last"
       clearButton={
         hasFilters ? (
           <FilterBar.Actions>
             <FilterBar.Action
-              className={cn('hidden lg:flex', !hasPillControls && 'text-muted-foreground')}
+              className="hidden lg:flex"
               data-testid="stats-filter-clear-button"
               variant="ghost"
               onClick={handleClearFilters}
             >
-              {!hasPillControls && <LucideIcon.FunnelX />}
               Clear
             </FilterBar.Action>
           </FilterBar.Actions>
@@ -738,27 +758,14 @@ function StatsFilter({
 
   return hasFilters ? (
     <div className="w-full" data-testid="stats-filter-container">
-      <FilterBar className={hasPillControls ? undefined : 'mt-3 lg:mt-0'}>
-        {filtersElement}
-      </FilterBar>
+      <FilterBar>{filtersElement}</FilterBar>
     </div>
   ) : (
     <div
       className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
       data-testid="stats-filter-container"
     >
-      {hasPillControls ? (
-        <Tooltip>
-          {filtersElement}
-          <TooltipContent side="bottom" variant="white">
-            <Inline align="center" gap="sm">
-              Filter <Kbd>F</Kbd>
-            </Inline>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        filtersElement
-      )}
+      {filtersElement}
     </div>
   );
 }

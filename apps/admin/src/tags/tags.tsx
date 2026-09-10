@@ -15,10 +15,10 @@ import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { useBrowseTags } from '@tryghost/admin-x-framework/api/tags';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 const Tags: React.FC = () => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = searchParams.get('type') ?? 'public';
 
@@ -57,8 +57,8 @@ const Tags: React.FC = () => {
                     <PageHeader.ActionGroup.MobileMenuTrigger>
                       <Button
                         aria-label="More tag actions"
-                        size={isAdmin7Pill ? 'icon' : undefined}
-                        variant={isAdmin7Pill ? 'ghost' : 'outline'}
+                        size={!isLegacyDesign ? 'icon' : undefined}
+                        variant="subtle"
                       >
                         <LucideIcon.MoreHorizontal className="size-4" />
                       </Button>

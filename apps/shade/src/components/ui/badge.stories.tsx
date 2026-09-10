@@ -47,7 +47,6 @@ export const Secondary: Story = {
 
 export const SmallSecondaryPill: Story = {
   args: {
-    shape: 'pill',
     size: 'sm',
     variant: 'secondary',
     children: 'Small pill',
@@ -63,7 +62,6 @@ export const SmallSecondaryPill: Story = {
 
 export const MediumSecondaryPill: Story = {
   args: {
-    shape: 'pill',
     size: 'md',
     variant: 'secondary',
     children: 'Medium pill',
@@ -116,4 +114,20 @@ export const AllVariants: Story = {
       <Badge variant="outline">Outline</Badge>
     </div>
   ),
+};
+
+export const Interactive: Story = {
+  render: () => (
+    <Badge variant="warning" asChild>
+      <button type="button">Pinned</button>
+    </Badge>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use asChild when a badge is an action, preserving the native button semantics and inherited design.',
+      },
+    },
+  },
 };

@@ -163,7 +163,7 @@ const postSource = `const [isOpen, setIsOpen] = useState(false);
             </div>
         </ShareModal.Preview>
         <ShareModal.Footer>
-            <ShareModal.SocialLinks links={socialLinks} shape="pill" variant="ghost" />
+            <ShareModal.SocialLinks links={socialLinks} variant="ghost" />
             <ShareModal.CopyButton className="ml-0! grow cursor-pointer" copyURL={postUrl} />
         </ShareModal.Footer>
     </ShareModal.Content>
@@ -226,7 +226,7 @@ export const Post: Story = {
             </ShareModal.Header>
             <PostPreview />
             <ShareModal.Footer>
-              <ShareModal.SocialLinks links={postSocialLinks} shape="pill" variant="ghost" />
+              <ShareModal.SocialLinks links={postSocialLinks} variant="ghost" />
               <ShareModal.CopyButton className="ml-0! grow cursor-pointer" copyURL={postUrl} />
             </ShareModal.Footer>
           </ShareModal.Content>

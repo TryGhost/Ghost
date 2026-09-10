@@ -43,7 +43,6 @@ import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { useTopContent } from '@tryghost/admin-x-framework/api/stats';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
 
 // Unified data structure for content
 interface UnifiedContentData {
@@ -146,7 +145,6 @@ const TopContent: React.FC<TopContentProps> = ({
   audience,
   filterParams = {},
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
   const { startDate, endDate, timezone } = getRangeDates(range);
   const [selectedContentType, setSelectedContentType] = useState<ContentType>(
     CONTENT_TYPES.POSTS_AND_PAGES,
@@ -252,7 +250,7 @@ const TopContent: React.FC<TopContentProps> = ({
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant={isAdmin7Pill ? 'ghost' : 'outline'}>
+              <Button variant="subtle">
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>

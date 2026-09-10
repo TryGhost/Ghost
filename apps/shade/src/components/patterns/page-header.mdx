@@ -1,0 +1,125 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
+import * as PageHeaderStories from './page-header.stories';
+
+<Meta of={PageHeaderStories} name="Design contract" />
+
+# Page header design contract
+
+PageHeader owns the title and action area of an Admin screen. Its action controls
+share the same appearance, spacing, tooltip behavior and primary-action treatment.
+Use the same action components in analytics headers whose navigation and metadata
+require a different overall layout.
+
+## Order and hierarchy
+
+Place actions in reading and keyboard order:
+
+1. **Labelled secondary actions:** icon + label, ordered by importance or frequency.
+2. **Icon-only utilities:** ordered by importance or frequency, with **More actions
+   (•••) last** when present.
+3. **An optional single primary action:** icon + label, at the right edge.
+
+For example: Filter → Date range → Search → More actions → New member. Importance
+is a product decision within each group. The component preserves the supplied DOM
+order; it does not infer importance or sort children. A page without a meaningful
+primary action should omit it.
+
+`PageHeader.ActionGroup` provides **4px** between secondary controls.
+`PageHeader.ActionGroup.Primary` provides **20px** separation from the preceding
+secondary control. Put at most one primary action in that slot. A primary alone
+has no leading separation. Avoid additional margins or gaps on individual actions.
+
+<Canvas of={PageHeaderStories.Structure} />
+
+## Constructing controls
+
+Use `PageHeader.Action` for buttons. Set `label` to an accessible name that also
+explains the action in its tooltip. Set `iconOnly` for utilities; keep labelled
+controls as icon + visible text. Put the action in `.ActionGroup.Primary` to inherit
+primary styling and suppress its tooltip. `primary` is available when a primary
+trigger must be constructed outside that slot, such as a modal trigger.
+
+```tsx
+<PageHeader.Actions>
+  <PageHeader.ActionGroup>
+    <PageHeader.Action label="Filter"><ListFilter />Filter</PageHeader.Action>
+    <PageHeader.Action label="Search" iconOnly><Search /></PageHeader.Action>
+    <PageHeader.ActionGroup.Primary>
+      <PageHeader.Action label="New member"><Plus />New member</PageHeader.Action>
+    </PageHeader.ActionGroup.Primary>
+  </PageHeader.ActionGroup>
+</PageHeader.Actions>
+```
+
+The controls inherit the current design. They do not need a pill shape, explicit
+stroke width, ghost variant, tooltip styling, or page-specific CSS. Secondary
+controls use the ghost treatment and **2px icon strokes**. Dropdown text has the
+same medium weight as Filter; header dropdown triggers hide their down chevrons.
+
+Use `PageHeader.SelectTrigger` inside Select for labelled dropdowns. Compose
+`PageHeader.Action` with `DropdownMenuTrigger asChild` for action menus. Refs,
+accessible state and event handlers reach the underlying control. Dropdown and
+popover triggers retain the inset pressed treatment while expanded.
+
+`PageHeader.FilterTrigger` supplies Filter's icon, label and F tooltip. Use it as
+`Filters`' `addButton` and bind `keyboardShortcut="f"` on Filters. The trigger
+advertises the shortcut; the consumer remains responsible for binding it. Generic
+actions can pass `shortcut` when the screen implements a matching shortcut.
+
+## Tooltips and focus
+
+Secondary actions use the semantic white tooltip surface with a shadow. The first
+hover tooltip waits **1 second**. Moving between recently shown tooltips uses a
+**300ms skip-delay window**. Keyboard focus shows the tooltip immediately.
+
+Primary actions have **no tooltip**. Their visible labels already explain them.
+Selecting a dropdown item with the pointer closes the menu without reopening the
+trigger tooltip merely because focus returns. Keyboard navigation still restores
+focus and tooltip access. Disabled actions remain disabled and retain their size.
+
+<Canvas of={PageHeaderStories.DisabledActions} />
+
+## Search, filtering and responsive behavior
+
+Search starts as an icon button. Activating it expands the input in place and
+focuses it. A nonempty query stays visible; empty search can collapse on blur or
+Escape. When Escape collapses an input, return focus to the search trigger. Query
+state, debounce, URL updates and filtering belong to the feature, not PageHeader.
+
+<Canvas of={PageHeaderStories.ExpandedSearch} />
+
+When filters are active, move their chips into the separate FilterBar row so they
+can wrap without crowding the title. Keep the remaining header actions in order.
+
+<Canvas of={PageHeaderStories.FilteredList} />
+
+At narrow widths, provide an explicit `.ActionGroup.MobileMenu` when secondaries
+need to collapse. Choose the breakpoint from the actual header's available space.
+Keep actions reachable and maintain keyboard order. The primary may hide its
+visible label at narrow widths, but must retain its accessible name and icon.
+Expanded search must not push the primary off-screen.
+
+<Canvas of={PageHeaderStories.MobileMenu} />
+
+## Compatibility and rollout
+
+New headers use the current design by default. During the Admin 7 experiment, the
+Admin root selects Shade's temporary `design="legacy"` compatibility mode when
+the private flag is off or the route is excluded. Shade owns visual differences;
+features retain only historical structural differences that cannot be expressed
+through shared controls. Existing consumers may supply `legacyVariant` and
+`legacySize` to preserve their prior controls. New consumers should use defaults.
+
+The legacy mode retains its previous spacing, chevrons, control appearance and
+absence of new header tooltips. At rollout, remove the root flag mapping and
+legacy branches; ordinary page code already uses the intended defaults.
+
+## Review a header
+
+Verify action order, the optional single primary, and spacing at desktop and
+mobile widths. Exercise search expansion, active filters, open dropdowns, pointer
+selection, keyboard focus and disabled controls in both themes. While compatibility
+exists, compare flag-off appearance and interactions against the previous Admin,
+including menus rendered through portals. Check flag-on behavior on every tab that
+uses the shared header. For ListPage, its header owns stickiness; use
+`sticky={false}` and `blurredBackground={false}` on the nested PageHeader.

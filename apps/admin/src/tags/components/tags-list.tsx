@@ -12,7 +12,7 @@ import {
   useInfiniteVirtualScroll,
   useVirtualListWindow,
 } from '@/shared/virtual-list';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 import { forwardRef, useRef } from 'react';
@@ -53,7 +53,7 @@ function TagsList({
   isFetchingNextPage?: boolean;
   fetchNextPage: () => void;
 }) {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
@@ -73,7 +73,7 @@ function TagsList({
             <TableHead className="w-auto px-4">Tag</TableHead>
             <TableHead className="w-1/5 px-4">Slug</TableHead>
             <TableHead className="w-1/5 px-4">No. of posts</TableHead>
-            {!isAdmin7Pill && <TableHead className="w-20 px-4"></TableHead>}
+            {isLegacyDesign && <TableHead className="w-20 px-4"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody className="flex flex-col lg:table-row-group">
@@ -91,7 +91,7 @@ function TagsList({
                 {...props}
                 className={cn(
                   'group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
-                  isAdmin7Pill
+                  !isLegacyDesign
                     ? 'grid-cols-1 md:grid-cols-[1fr_auto]'
                     : 'grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem]',
                 )}
@@ -123,7 +123,7 @@ function TagsList({
                     <span className="text-muted-foreground">0 posts</span>
                   )}
                 </TableCell>
-                {!isAdmin7Pill && (
+                {isLegacyDesign && (
                   <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                     <Button
                       aria-hidden="true"

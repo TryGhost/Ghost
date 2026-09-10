@@ -5,12 +5,13 @@ import {
   type TopLevelFrameworkProps,
   useLocation,
 } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ShadeApp } from '@tryghost/shade/app';
 import { cn } from '@tryghost/shade/utils';
 
 import App from './app.tsx';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
-import { useAdmin7Pill } from './layout/use-admin7-pill';
+import { isAdmin7PillAllowedRoute } from './layout/use-admin7-pill';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
@@ -18,14 +19,14 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
-  const { enabled: admin7PillAllowed } = useAdmin7Pill();
+  const admin7PillAllowed = useFeatureFlag('admin7Pill') && isAdmin7PillAllowedRoute(pathname);
   const admin7PillEnabled = admin7PillAllowed && !isEmberOwnedRoute;
 
   return (
     <ShadeApp
       className={cn('shade-admin', admin7PillEnabled && 'admin7-pill')}
-      controlShape={admin7PillEnabled ? 'pill' : 'rounded'}
       darkMode={resolvedTheme === 'dark'}
+      design={admin7PillEnabled ? 'current' : 'legacy'}
       data-react-admin-mounted
     >
       <App />

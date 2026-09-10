@@ -1,14 +1,6 @@
-import {
-  Button,
-  type ButtonProps,
-  Input,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
+import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -26,7 +18,7 @@ interface ManagePostViewPopoverProps {
   params: PostListParams;
   /** The saved view matching the current params, if the user is on one. */
   activeView?: SharedView;
-  triggerVariant?: ButtonProps['variant'];
+  inHeader?: boolean;
 }
 
 function isPostViewColor(value: string | undefined): value is PostViewColor {
@@ -178,23 +170,28 @@ export function ManagePostViewPopover({
   resource,
   params,
   activeView,
-  triggerVariant = 'outline',
+  inHeader = false,
 }: ManagePostViewPopoverProps) {
   const [open, setOpen] = useState(false);
+  const { isLegacyDesign } = useShade();
 
   return (
-    <Tooltip>
+    <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <TooltipTrigger asChild>
-            {/* Labelled in words. No `aria-label`: it would override the
-                    visible text as the accessible name, leaving the two out of
-                    step. */}
-            <FilterBar.Action data-testid="manage-post-view" variant={triggerVariant}>
-              {triggerVariant === 'ghost' && <LucideIcon.Bookmark className="size-4 stroke-2!" />}
+          {inHeader ? (
+            <PageHeader.Action
+              data-testid="manage-post-view"
+              label={activeView ? 'Edit view' : 'Save view'}
+            >
+              {!isLegacyDesign && <LucideIcon.Bookmark className="size-4" />}
+              {activeView ? 'Edit view' : 'Save view'}
+            </PageHeader.Action>
+          ) : (
+            <FilterBar.Action data-testid="manage-post-view" variant="outline">
               {activeView ? 'Edit view' : 'Save view'}
             </FilterBar.Action>
-          </TooltipTrigger>
+          )}
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72">
           {/* Keyed so reopening starts from the current view's name. */}
@@ -209,9 +206,6 @@ export function ManagePostViewPopover({
           />
         </PopoverContent>
       </Popover>
-      <TooltipContent side="bottom" variant="white">
-        {activeView ? 'Edit view' : 'Save view'}
-      </TooltipContent>
-    </Tooltip>
+    </>
   );
 }

@@ -3,7 +3,7 @@ import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 const ContextMenu = ContextMenuPrimitive.Root;
 
@@ -42,7 +42,7 @@ const ContextMenuSubContent = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
 >(({ className, ...props }, ref) => (
-  <div className={SHADE_APP_NAMESPACES}>
+  <ShadeScope>
     <ContextMenuPrimitive.SubContent
       ref={ref}
       className={cn(
@@ -51,7 +51,7 @@ const ContextMenuSubContent = React.forwardRef<
       )}
       {...props}
     />
-  </div>
+  </ShadeScope>
 ));
 ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName;
 
@@ -60,7 +60,7 @@ const ContextMenuContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
 >(({ className, ...props }, ref) => (
   <ContextMenuPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <ContextMenuPrimitive.Content
         ref={ref}
         className={cn(
@@ -70,7 +70,7 @@ const ContextMenuContent = React.forwardRef<
         )}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </ContextMenuPrimitive.Portal>
 ));
 ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName;

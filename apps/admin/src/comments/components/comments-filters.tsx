@@ -1,9 +1,11 @@
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Button } from '@tryghost/shade/components';
 import React from 'react';
-import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters, PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 interface CommentsFiltersProps {
   filters: Filter[];
@@ -16,7 +18,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
+  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
   const filterFields = useCommentFilterFields({
@@ -27,23 +30,37 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
 
-  const filterBarActions = isAdmin7Pill ? (
+  const filterBarActions = !isLegacyDesign ? (
     <FilterBar.Actions>
       <FilterBar.Action type="button" variant="ghost" onClick={() => onFiltersChange([])}>
         Clear
       </FilterBar.Action>
     </FilterBar.Actions>
+  ) : useConsolidatedFilterUI ? (
+    <Button
+      className="sm:absolute sm:top-0 sm:right-0"
+      type="button"
+      variant="outline"
+      onClick={() => onFiltersChange([])}
+    >
+      Clear
+    </Button>
   ) : undefined;
 
   return (
     <Filters
-      addButtonClassName={cn(hasFilters && !isAdmin7Pill && 'border-none')}
+      addButton={!hasFilters && !isLegacyDesign ? <PageHeader.FilterTrigger /> : undefined}
+      addButtonClassName={cn(
+        hasFilters &&
+          isLegacyDesign &&
+          (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
+      )}
       addButtonIcon={
-        isAdmin7Pill ? (
+        !isLegacyDesign || useConsolidatedFilterUI ? (
           hasFilters ? (
-            <LucideIcon.ListFilterPlus className="stroke-2!" />
+            <LucideIcon.ListFilterPlus className={!isLegacyDesign ? 'stroke-2!' : undefined} />
           ) : (
-            <LucideIcon.ListFilter className="stroke-2!" />
+            <LucideIcon.ListFilter className={!isLegacyDesign ? 'stroke-2!' : undefined} />
           )
         ) : hasFilters ? (
           <LucideIcon.FunnelPlus />
@@ -52,7 +69,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={isAdmin7Pill && !hasFilters ? 'ghost' : undefined}
+      addButtonVariant={!isLegacyDesign && !hasFilters ? 'ghost' : undefined}
       allowMultiple={false}
       className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}

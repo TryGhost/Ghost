@@ -2,11 +2,39 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChipPicker } from './chip-picker';
+import { ShadeApp } from '@tryghost/shade/app';
 
 interface Option {
   id: string;
   name: string;
 }
+
+it.each(['current', 'legacy'] as const)(
+  'inherits %s chip styling and preserves removal',
+  (design) => {
+    const onRemove = vi.fn();
+    const alpha = { id: 'alpha', name: 'Alpha' };
+    render(
+      <ShadeApp darkMode={false} design={design}>
+        <ChipPicker<Option, Option>
+          emptyMessage="No options found"
+          getKey={(option) => option.id}
+          getLabel={(option) => option.name}
+          inputLabel="Options"
+          options={[alpha]}
+          placeholder="Select options..."
+          selected={[alpha]}
+          onAdd={vi.fn()}
+          onRemove={onRemove}
+        />
+      </ShadeApp>,
+    );
+    const chip = screen.getByRole('button', { name: 'Remove Alpha' });
+    expect(chip).toHaveClass(design === 'legacy' ? 'rounded-xs' : 'rounded-full');
+    fireEvent.click(chip);
+    expect(onRemove).toHaveBeenCalledWith('alpha');
+  },
+);
 
 const scrollIntoView = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
 

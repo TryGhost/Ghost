@@ -228,7 +228,6 @@ const PillButtonSizedComponent = () => {
 
   return (
     <ToggleGroup
-      shape="pill"
       size="button"
       type="single"
       value={value}

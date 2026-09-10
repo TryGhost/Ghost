@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from './constants';
 import {
@@ -8,11 +8,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
 
 interface DateRangeSelectProps {
@@ -26,7 +22,6 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
   onRangeChange,
   excludeRanges = [],
 }) => {
-  const { controlShape } = useShade();
   const excludeValues = excludeRanges.map((key) => STATS_RANGES[key].value);
   const filteredOptions = STATS_RANGE_OPTIONS.filter(
     (option) => !excludeValues.includes(option.value),
@@ -45,44 +40,27 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
   }, [range, excludeValues, filteredOptions, onRangeChange]);
 
   return (
-    <Tooltip>
-      <Select
-        value={`${range}`}
-        onValueChange={(value) => {
-          onRangeChange(Number(value));
-        }}
-      >
-        <TooltipTrigger asChild>
-          <SelectTrigger
-            aria-label="Date range"
-            className={controlShape === 'pill' ? 'w-auto font-medium' : 'w-auto'}
-            shape={controlShape}
-            showChevron={controlShape === 'pill' ? false : undefined}
-            variant={controlShape === 'pill' ? 'ghost' : 'default'}
-          >
-            <LucideIcon.Calendar
-              className="mr-2"
-              size={16}
-              strokeWidth={controlShape === 'pill' ? 2 : 1.5}
-            />
-            <SelectValue placeholder="Select a period" />
-          </SelectTrigger>
-        </TooltipTrigger>
-        <SelectContent align="end">
-          <SelectGroup>
-            <SelectLabel>Period</SelectLabel>
-            {filteredOptions.map((option) => (
-              <SelectItem key={option.value} value={`${option.value}`}>
-                {option.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <TooltipContent side="bottom" variant="white">
-        Date range
-      </TooltipContent>
-    </Tooltip>
+    <Select
+      value={`${range}`}
+      onValueChange={(value) => {
+        onRangeChange(Number(value));
+      }}
+    >
+      <PageHeader.SelectTrigger label="Date range">
+        <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
+        <SelectValue placeholder="Select a period" />
+      </PageHeader.SelectTrigger>
+      <SelectContent align="end">
+        <SelectGroup>
+          <SelectLabel>Period</SelectLabel>
+          {filteredOptions.map((option) => (
+            <SelectItem key={option.value} value={`${option.value}`}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 };
 

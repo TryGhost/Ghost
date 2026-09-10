@@ -57,7 +57,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -100,7 +100,7 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -567,11 +567,11 @@ const Newsletter: React.FC = () => {
                                       aria-label="Edit link"
                                       className={cn(
                                         'mr-2 shrink-0',
-                                        !isAdmin7Pill && 'bg-background',
+                                        isLegacyDesign && 'bg-background',
                                       )}
-                                      size={isAdmin7Pill ? 'icon-sm' : 'sm'}
-                                      title="Edit link"
-                                      variant={isAdmin7Pill ? 'ghost' : 'outline'}
+                                      size={!isLegacyDesign ? 'icon-sm' : 'sm'}
+                                      title={isLegacyDesign ? undefined : 'Edit link'}
+                                      variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >
                                       <LucideIcon.Pen />
@@ -622,16 +622,9 @@ const Newsletter: React.FC = () => {
                         <SimplePaginationNavigation>
                           <SimplePaginationPreviousButton
                             disabled={!hasPreviousPage}
-                            size={isAdmin7Pill ? 'icon' : undefined}
-                            variant={isAdmin7Pill ? 'ghost' : undefined}
                             onClick={previousPage}
                           />
-                          <SimplePaginationNextButton
-                            disabled={!hasNextPage}
-                            size={isAdmin7Pill ? 'icon' : undefined}
-                            variant={isAdmin7Pill ? 'ghost' : undefined}
-                            onClick={nextPage}
-                          />
+                          <SimplePaginationNextButton disabled={!hasNextPage} onClick={nextPage} />
                         </SimplePaginationNavigation>
                       </SimplePagination>
                     )}

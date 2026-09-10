@@ -1,3 +1,4 @@
+import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import EmailSendingStatusBanner from '@/posts/analytics/email-sending-status/email-sending-status-banner';
@@ -17,7 +18,6 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -27,12 +27,8 @@ import {
   Navbar,
   PageMenu,
   PageMenuItem,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
-import { H1, Inline } from '@tryghost/shade/primitives';
+import { H1 } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
   formatDisplayDate,
@@ -59,7 +55,7 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 
 interface PostAnalyticsHeaderProps {
   currentTab?: string;
@@ -67,7 +63,7 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
   const membersTrackSources = useMembersTrackSources();
@@ -184,29 +180,19 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
         setIsGiftLinkOpen(true);
       }}
     >
-      <Button
-        className={isAdmin7Pill ? 'ml-4' : undefined}
-        variant={isAdmin7Pill ? 'default' : 'outline'}
-        onClick={() => setIsShareOpen(true)}
-      >
-        <LucideIcon.Share className={isAdmin7Pill ? 'stroke-2!' : undefined} /> Share
-      </Button>
+      <PageHeader.Action label="Share" primary onClick={() => setIsShareOpen(true)}>
+        <LucideIcon.Share /> Share
+      </PageHeader.Action>
     </PostShareModal>
   );
 
   const moreActions = (
-    <Tooltip>
+    <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label="More post actions"
-              size={isAdmin7Pill ? 'icon' : undefined}
-              variant={isAdmin7Pill ? 'ghost' : 'outline'}
-            >
-              <LucideIcon.Ellipsis className={isAdmin7Pill ? 'stroke-2!' : undefined} />
-            </Button>
-          </TooltipTrigger>
+          <PageHeader.Action label="More post actions" iconOnly>
+            <LucideIcon.Ellipsis />
+          </PageHeader.Action>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuGroup>
@@ -238,14 +224,11 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <TooltipContent side="bottom" variant="white">
-        More post actions
-      </TooltipContent>
-    </Tooltip>
+    </>
   );
 
   return (
-    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
+    <>
       <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
@@ -291,11 +274,15 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <Inline align="center" gap={isAdmin7Pill ? 'xs' : 'sm'}>
-                    {isAdmin7Pill ? (
+                  <PageHeader.ActionGroup>
+                    {!isLegacyDesign ? (
                       <>
                         {moreActions}
-                        {shareAction}
+                        {shareAction && (
+                          <PageHeader.ActionGroup.Primary>
+                            {shareAction}
+                          </PageHeader.ActionGroup.Primary>
+                        )}
                       </>
                     ) : (
                       <>
@@ -303,7 +290,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                         {moreActions}
                       </>
                     )}
-                  </Inline>
+                  </PageHeader.ActionGroup>
                 )}
               </div>
             </div>
@@ -419,7 +406,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </TooltipProvider>
+    </>
   );
 };
 

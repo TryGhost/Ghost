@@ -81,7 +81,7 @@ export const Icon: Story = {
 export const GhostPill: Story = {
   render: () => (
     <div className="w-full max-w-sm">
-      <InputGroup shape="pill" variant="ghost">
+      <InputGroup variant="ghost">
         <InputGroupInput placeholder="Search..." />
         <InputGroupAddon>
           <SearchIcon />
@@ -101,7 +101,7 @@ export const GhostPill: Story = {
 export const SecondaryPill: Story = {
   render: () => (
     <div className="w-full max-w-sm">
-      <InputGroup shape="pill" variant="secondary">
+      <InputGroup variant="secondary">
         <InputGroupInput placeholder="Search..." />
         <InputGroupAddon>
           <SearchIcon />

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputSurfaceClasses } from '@/components/ui/input-surface';
@@ -41,7 +42,7 @@ const inputGroupVariants = cva(
     },
     defaultVariants: {
       variant: 'default',
-      shape: 'rounded',
+      shape: 'pill',
     },
   },
 );
@@ -50,10 +51,12 @@ export interface InputGroupProps
   extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}
 
 function InputGroup({ className, variant, shape, ...props }: InputGroupProps) {
+  const { controlShape } = useShade();
+  const resolvedShape = shape ?? controlShape;
   return (
     <div
-      className={cn(inputGroupVariants({ variant, shape }), className)}
-      data-control-shape={shape ?? 'rounded'}
+      className={cn(inputGroupVariants({ variant, shape: resolvedShape }), className)}
+      data-control-shape={resolvedShape}
       data-slot="input-group"
       data-variant={variant ?? 'default'}
       role="group"

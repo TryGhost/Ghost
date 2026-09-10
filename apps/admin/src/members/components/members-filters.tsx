@@ -1,10 +1,9 @@
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
-import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
-import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters, PageHeader } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
@@ -23,7 +22,7 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useAdmin7Pill } from '@/layout/use-admin7-pill';
+import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
@@ -188,31 +187,37 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const { enabled: isAdmin7Pill } = useAdmin7Pill();
+  const { isLegacyDesign } = useShade();
+  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
+  const legacyUnconsolidated = isLegacyDesign && !useConsolidatedFilterUI;
   const showIconOnlyTrigger = iconOnly && !hasFilters;
   const addFilterButtonClassName = cn(
+    isLegacyDesign && 'bg-background',
     showIconOnlyTrigger &&
-      !isAdmin7Pill &&
+      isLegacyDesign &&
       'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
-    hasFilters && !isAdmin7Pill && 'border-none',
+    hasFilters &&
+      isLegacyDesign &&
+      (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
   );
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions
-      className={cn(!isAdmin7Pill && 'gap-4')}
+      className={cn(legacyUnconsolidated && 'gap-4')}
       data-testid="members-filter-actions"
-      gap={isAdmin7Pill ? 'sm' : undefined}
+      gap={!legacyUnconsolidated ? 'sm' : undefined}
     >
       <FilterBar.Action
         className={cn(
           'hidden items-center lg:inline-flex',
-          !isAdmin7Pill && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
+          isLegacyDesign && 'text-muted-foreground hover:text-foreground',
+          legacyUnconsolidated && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
         )}
         type="button"
-        variant="ghost"
+        variant={isLegacyDesign && useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
-        {!isAdmin7Pill && <LucideIcon.X className="size-4" />}
+        {legacyUnconsolidated && <LucideIcon.X className="size-4" />}
         Clear
       </FilterBar.Action>
       {nql && (
@@ -228,25 +233,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const filterControls = (
     <Filters
-      addButton={
-        !hasFilters && isAdmin7Pill ? (
-          <TooltipTrigger asChild>
-            <Button
-              aria-keyshortcuts="F"
-              aria-label="Filter"
-              data-slot="filters-add"
-              type="button"
-              variant="ghost"
-            >
-              <LucideIcon.ListFilter className="size-4 stroke-2!" />
-              Filter
-            </Button>
-          </TooltipTrigger>
-        ) : undefined
-      }
+      addButton={!hasFilters && !isLegacyDesign ? <PageHeader.FilterTrigger /> : undefined}
       addButtonClassName={addFilterButtonClassName}
       addButtonIcon={
-        isAdmin7Pill ? (
+        !legacyUnconsolidated ? (
           hasFilters ? (
             <LucideIcon.ListFilterPlus className="size-4" />
           ) : (
@@ -259,7 +249,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={isAdmin7Pill && !hasFilters ? 'ghost' : undefined}
+      addButtonVariant={!isLegacyDesign && !hasFilters ? 'ghost' : undefined}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
@@ -274,18 +264,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     />
   );
 
-  return !hasFilters && isAdmin7Pill ? (
-    <Tooltip>
-      {filterControls}
-      <TooltipContent side="bottom" variant="white">
-        <Inline align="center" gap="sm">
-          Filter <Kbd>F</Kbd>
-        </Inline>
-      </TooltipContent>
-    </Tooltip>
-  ) : (
-    filterControls
-  );
+  return filterControls;
 };
 
 export default MembersFilters;
