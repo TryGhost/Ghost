@@ -11,10 +11,6 @@ import {
   AlertDialogTitle,
   Avatar,
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -26,6 +22,7 @@ import {
   postHistoryRevisionList,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { memberAvatarProps } from '@/members/api';
 import { revisionDate, type RevisionEntry, type RevisionTag } from './post-history';
 import { RevisionPreview } from './revision-preview';
@@ -158,17 +155,15 @@ export function PostHistoryModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !restoring && onOpenChange(next)}>
-      <DialogContent
-        className="top-0 left-0 grid h-dvh w-dvw max-w-none translate-x-0 grid-rows-[auto_1fr] gap-0 rounded-none p-0"
+    <>
+      <FullscreenDialog
         data-testid={postHistoryModal}
+        layout="header"
+        open={open}
+        title={`${postType === 'page' ? 'Page' : 'Post'} history`}
         onCloseAutoFocus={onCloseAutoFocus}
+        onOpenChange={(next) => !restoring && onOpenChange(next)}
       >
-        <DialogHeader className="flex-row items-center gap-4 border-b border-border-default p-4">
-          <DialogTitle className="text-lg">
-            {postType === 'page' ? 'Page' : 'Post'} history
-          </DialogTitle>
-        </DialogHeader>
         <Inline align="stretch" className="min-h-0" gap="none">
           <div className="min-w-0 flex-1 overflow-y-auto bg-surface-panel p-8">
             {selected ? (
@@ -210,7 +205,7 @@ export function PostHistoryModal({
             </ul>
           </Stack>
         </Inline>
-      </DialogContent>
+      </FullscreenDialog>
 
       <AlertDialog
         open={!!confirming}
@@ -245,6 +240,6 @@ export function PostHistoryModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </>
   );
 }
