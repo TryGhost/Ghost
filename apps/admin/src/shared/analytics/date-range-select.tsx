@@ -55,7 +55,7 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
         <TooltipTrigger asChild>
           <SelectTrigger
             aria-label="Date range"
-            className="w-auto"
+            className={controlShape === 'pill' ? 'w-auto font-medium' : 'w-auto'}
             shape={controlShape}
             showChevron={controlShape === 'pill' ? false : undefined}
             variant={controlShape === 'pill' ? 'ghost' : 'default'}

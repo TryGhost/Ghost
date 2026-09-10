@@ -267,15 +267,14 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
           <Button
-            // The extra margin on top of the row's 12px gap separates
+            // The 32px margin on top of the row's gap separates
             // the action from the analytics figures beside it. It is an
             // action rather than another figure, so it needs to read as
             // separate from the run of metrics.
             // Margin rather than a wider row gap, which would push the
             // title away from the metrics too.
             className={cn(
-              'my-4 shrink-0',
-              isAdmin7Pill ? 'ms-3' : 'ms-2',
+              'my-4 ms-8 shrink-0',
               isAdmin7Pill ? isHovered && 'bg-background' : 'bg-control-surface px-4',
             )}
             size={isAdmin7Pill ? 'icon' : undefined}

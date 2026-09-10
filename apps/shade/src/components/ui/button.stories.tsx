@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Inline } from '@/components/primitives/inline';
 import ShadeApp from '@/shade-app';
 import { ArrowUp, Smile } from 'lucide-react';
@@ -12,7 +19,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context.',
+          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost pills show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled controls do not gain pressed styling.',
       },
     },
   },
@@ -315,6 +322,66 @@ export const Disabled: Story = {
       description: {
         story:
           'Use to indicate an action is unavailable. Prefer explaining why rather than relying solely on the disabled state.',
+      },
+    },
+  },
+};
+
+export const PillPressedStates: Story = {
+  render: () => (
+    <Inline gap="sm" wrap>
+      {(['outline', 'secondary', 'ghost'] as const).map((variant) => (
+        <Inline key={variant} gap="xs">
+          <Button shape="pill" variant={variant}>
+            {variant}
+          </Button>
+          <Button shape="pill" variant={variant} disabled>
+            {variant} disabled
+          </Button>
+        </Inline>
+      ))}
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Press and hold each pill to compare inset shadows, or Tab through them to check keyboard focus. Disabled controls remain inactive.',
+      },
+    },
+  },
+};
+
+export const PillDropdowns: Story = {
+  render: () => (
+    <TooltipProvider delayDuration={1000}>
+      <Inline gap="xs">
+        {(['outline', 'secondary', 'ghost'] as const).map((variant) => (
+          <Tooltip key={variant}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <TooltipTrigger asChild>
+                  <Button shape="pill" variant={variant}>
+                    {variant} menu
+                  </Button>
+                </TooltipTrigger>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>First option</DropdownMenuItem>
+                <DropdownMenuItem>Second option</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <TooltipContent variant="white">Choose an option</TooltipContent>
+          </Tooltip>
+        ))}
+      </Inline>
+    </TooltipProvider>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Open a menu and move the pointer away: its trigger stays pressed until selection, Escape or dismissal. Hovering the tooltip alone does not press the trigger.',
       },
     },
   },

@@ -165,40 +165,33 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   };
 
   const shareAction = !post?.email_only && (
-    <Tooltip>
-      <PostShareModal
-        author={post?.authors?.[0]?.name || ''}
-        canShareAsGift={canManageGiftLink}
-        description=""
-        faviconURL={site?.icon || ''}
-        featureImageURL={post?.feature_image ?? undefined}
-        giftAccessLabel={giftAccessLabel(post?.visibility)}
-        open={isShareOpen}
-        postExcerpt={post?.excerpt || ''}
-        postTitle={post?.title}
-        postURL={post?.url}
-        siteTitle={site?.title || ''}
-        onClose={() => setIsShareOpen(false)}
-        onOpenChange={setIsShareOpen}
-        onShareAsGift={() => {
-          setIsShareOpen(false);
-          setIsGiftLinkOpen(true);
-        }}
+    <PostShareModal
+      author={post?.authors?.[0]?.name || ''}
+      canShareAsGift={canManageGiftLink}
+      description=""
+      faviconURL={site?.icon || ''}
+      featureImageURL={post?.feature_image ?? undefined}
+      giftAccessLabel={giftAccessLabel(post?.visibility)}
+      open={isShareOpen}
+      postExcerpt={post?.excerpt || ''}
+      postTitle={post?.title}
+      postURL={post?.url}
+      siteTitle={site?.title || ''}
+      onClose={() => setIsShareOpen(false)}
+      onOpenChange={setIsShareOpen}
+      onShareAsGift={() => {
+        setIsShareOpen(false);
+        setIsGiftLinkOpen(true);
+      }}
+    >
+      <Button
+        className={isAdmin7Pill ? 'ml-4' : undefined}
+        variant={isAdmin7Pill ? 'default' : 'outline'}
+        onClick={() => setIsShareOpen(true)}
       >
-        <TooltipTrigger asChild>
-          <Button
-            className={isAdmin7Pill ? 'ml-3' : undefined}
-            variant={isAdmin7Pill ? 'default' : 'outline'}
-            onClick={() => setIsShareOpen(true)}
-          >
-            <LucideIcon.Share className={isAdmin7Pill ? 'stroke-2!' : undefined} /> Share
-          </Button>
-        </TooltipTrigger>
-      </PostShareModal>
-      <TooltipContent side="bottom" variant="white">
-        Share post
-      </TooltipContent>
-    </Tooltip>
+        <LucideIcon.Share className={isAdmin7Pill ? 'stroke-2!' : undefined} /> Share
+      </Button>
+    </PostShareModal>
   );
 
   const moreActions = (
@@ -252,7 +245,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   );
 
   return (
-    <TooltipProvider delayDuration={500} skipDelayDuration={300}>
+    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
       <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
@@ -298,7 +291,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <Inline align="center" gap="sm">
+                  <Inline align="center" gap={isAdmin7Pill ? 'xs' : 'sm'}>
                     {isAdmin7Pill ? (
                       <>
                         {moreActions}

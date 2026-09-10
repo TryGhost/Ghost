@@ -1,3 +1,4 @@
+import { useShade } from '@tryghost/shade/app';
 import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import LocationsCard from '@/analytics/views/stats/locations/components/locations-card';
 import React, { useCallback, useMemo, useRef } from 'react';
@@ -24,6 +25,7 @@ import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 
 const Web: React.FC = () => {
+  const { controlShape } = useShade();
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading, site } = useAnalyticsData();
   const { startDate, endDate, timezone } = getRangeDates(range);
@@ -186,7 +188,7 @@ const Web: React.FC = () => {
           </NavbarActions>
         )}
         <NavbarActions
-          className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
+          className={`${controlShape === 'pill' && !hasFilters ? 'gap-1' : ''} ${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
         >
           <StatsFilter
             filters={analyticsFilters}

@@ -320,23 +320,16 @@ const MembersActions: React.FC<MembersActionsProps> = ({
       )}
 
       {showNewMember && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button className={isAdmin7Pill ? 'ml-3' : undefined} asChild>
-              <a
-                aria-label="New member"
-                className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
-                href={newMemberHref}
-              >
-                <LucideIcon.Plus className={isAdmin7Pill ? 'stroke-2!' : 'sm:hidden'} />
-                <span className="hidden sm:inline">New member</span>
-              </a>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="sm:hidden" side="bottom" variant="white">
-            New member
-          </TooltipContent>
-        </Tooltip>
+        <Button className={isAdmin7Pill ? 'ml-4' : undefined} asChild>
+          <a
+            aria-label="New member"
+            className="inline-flex items-center data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
+            href={newMemberHref}
+          >
+            <LucideIcon.Plus className={isAdmin7Pill ? 'stroke-2!' : 'sm:hidden'} />
+            <span className="hidden sm:inline">New member</span>
+          </a>
+        </Button>
       )}
 
       {/* Modals */}

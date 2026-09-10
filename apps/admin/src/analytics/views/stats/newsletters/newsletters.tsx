@@ -1,3 +1,4 @@
+import { useShade } from '@tryghost/shade/app';
 // import AudienceSelect from './components/AudienceSelect';
 import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import NewsletterKPIs from './components/newsletters-kpis';
@@ -288,6 +289,7 @@ const TopNewslettersTable: React.FC<{
 TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
+  const { controlShape } = useShade();
   const { range, selectedNewsletterId } = useAnalytics();
   const [searchParams] = useSearchParams();
   const newslettersEnabled = useNewslettersEnabled();
@@ -450,7 +452,7 @@ const Newsletters: React.FC = () => {
   return (
     <StatsLayout>
       <StatsHeader>
-        <NavbarActions>
+        <NavbarActions className={controlShape === 'pill' ? 'gap-1' : undefined}>
           <NewsletterSelect newsletters={newslettersData?.newsletters} />
           <DateRangeSelect />
         </NavbarActions>

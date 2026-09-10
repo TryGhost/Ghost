@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Inline } from '@/components/primitives';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
@@ -11,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Brief, non-interactive labels for hover or keyboard focus. TooltipContent supports default and white variants; white uses the elevated surface token and a shadow, adapting to dark mode. Set TooltipProvider delayDuration (milliseconds, default 700) for the first hover and skipDelayDuration (default 300) for moving between triggers without waiting again. Tooltip delayDuration overrides its provider; keyboard focus opens immediately.',
+          'Brief, non-interactive labels for hover or keyboard focus. TooltipContent supports default and white variants; white uses the elevated surface token and a shadow, adapting to dark mode. Set TooltipProvider delayDuration (milliseconds, default 700) for the first hover and skipDelayDuration (default 300) for moving between triggers without waiting again. Tooltip delayDuration overrides its provider; keyboard focus opens immediately. Returning focus after a pointer selection does not reopen the tooltip.',
       },
     },
   },
@@ -68,7 +74,7 @@ export const White: Story = {
 };
 
 export const FirstHoverDelay: Story = {
-  args: { delayDuration: 500 },
+  args: { delayDuration: 1000 },
   parameters: {
     docs: {
       description: {
@@ -131,5 +137,37 @@ export const Placement: Story = {
         </Tooltip>
       ))}
     </Inline>
+  ),
+};
+
+export const DropdownInteraction: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Select a menu option with the pointer: focus returns to the trigger without showing the tooltip. Tab away and back to show the tooltip with keyboard focus, or hover to open it after one second.',
+      },
+    },
+  },
+  render: () => (
+    <TooltipProvider delayDuration={1000}>
+      <Inline gap="xs">
+        <Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <TooltipTrigger asChild>
+                <Button variant="ghost">Sort</Button>
+              </TooltipTrigger>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>Newest first</DropdownMenuItem>
+              <DropdownMenuItem>Oldest first</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <TooltipContent variant="white">Sort items</TooltipContent>
+        </Tooltip>
+        <Button variant="ghost">Next action</Button>
+      </Inline>
+    </TooltipProvider>
   ),
 };

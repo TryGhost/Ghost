@@ -37,6 +37,23 @@ const buttonVariants = cva(
     compoundVariants: [
       {
         shape: 'pill',
+        variant: ['secondary', 'ghost'],
+        className:
+          'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
+      },
+      {
+        shape: 'pill',
+        variant: 'secondary',
+        className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
+      },
+      {
+        shape: 'pill',
+        variant: 'ghost',
+        className:
+          'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
+      },
+      {
+        shape: 'pill',
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
@@ -50,7 +67,8 @@ const buttonVariants = cva(
       {
         shape: 'pill',
         variant: 'outline',
-        className: 'border-0 shadow-control-outline active:shadow-control-outline-pressed',
+        className:
+          'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
         shape: 'pill',

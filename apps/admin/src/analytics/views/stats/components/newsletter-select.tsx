@@ -61,7 +61,7 @@ const NewsletterSelect: React.FC<NewsletterSelectProps> = ({ newsletters }) => {
         <TooltipTrigger asChild>
           <SelectTrigger
             aria-label="Newsletter"
-            className="w-auto"
+            className={controlShape === 'pill' ? 'w-auto font-medium' : 'w-auto'}
             shape={controlShape}
             showChevron={controlShape === 'pill' ? false : undefined}
             variant={controlShape === 'pill' ? 'ghost' : 'default'}

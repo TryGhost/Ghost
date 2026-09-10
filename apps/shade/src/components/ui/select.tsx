@@ -28,6 +28,24 @@ const selectTriggerVariants = cva(
         pill: 'rounded-full',
       },
     },
+    compoundVariants: [
+      {
+        shape: 'pill',
+        variant: ['secondary', 'ghost'],
+        className:
+          'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
+      },
+      {
+        shape: 'pill',
+        variant: 'ghost',
+        className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
+      },
+      {
+        shape: 'pill',
+        variant: 'secondary',
+        className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       shape: 'rounded',

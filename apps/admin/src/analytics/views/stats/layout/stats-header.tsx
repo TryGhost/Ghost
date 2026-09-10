@@ -34,7 +34,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
     : `${location.pathname}/`;
 
   return (
-    <TooltipProvider delayDuration={500} skipDelayDuration={300}>
+    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
       <header className="z-40 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex w-full flex-wrap items-center justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"

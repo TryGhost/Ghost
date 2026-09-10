@@ -41,9 +41,9 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
       addButtonIcon={
         isAdmin7Pill ? (
           hasFilters ? (
-            <LucideIcon.ListFilterPlus />
+            <LucideIcon.ListFilterPlus className="stroke-2!" />
           ) : (
-            <LucideIcon.ListFilter />
+            <LucideIcon.ListFilter className="stroke-2!" />
           )
         ) : hasFilters ? (
           <LucideIcon.FunnelPlus />

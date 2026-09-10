@@ -1,12 +1,5 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
-import {
-  Button,
-  LoadingIndicator,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@tryghost/shade/components';
+import { Button, LoadingIndicator, TooltipProvider } from '@tryghost/shade/components';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LoadMoreButton } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -285,8 +278,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                                 because chips need the width and would otherwise
                                 crowd the title. */}
               <PageHeader.Actions>
-                <TooltipProvider delayDuration={500} skipDelayDuration={300}>
-                  <PageHeader.ActionGroup>
+                <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
+                  <PageHeader.ActionGroup className={controlShape === 'pill' ? 'gap-1' : undefined}>
                     {!showFilterBar && (
                       <PostsFilters
                         currentUser={currentUser}
@@ -306,21 +299,14 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                         triggerVariant={controlShape === 'pill' ? 'ghost' : 'outline'}
                       />
                     )}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button className={controlShape === 'pill' ? 'ml-3' : undefined} asChild>
-                          <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
-                            <LucideIcon.Plus
-                              className={controlShape === 'pill' ? 'size-4 stroke-2!' : 'size-4'}
-                            />
-                            <span className="hidden sm:inline">{copy.newLabel}</span>
-                          </a>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" variant="white">
-                        {copy.newLabel}
-                      </TooltipContent>
-                    </Tooltip>
+                    <Button className={controlShape === 'pill' ? 'ml-4' : undefined} asChild>
+                      <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
+                        <LucideIcon.Plus
+                          className={controlShape === 'pill' ? 'size-4 stroke-2!' : 'size-4'}
+                        />
+                        <span className="hidden sm:inline">{copy.newLabel}</span>
+                      </a>
+                    </Button>
                   </PageHeader.ActionGroup>
                 </TooltipProvider>
               </PageHeader.Actions>

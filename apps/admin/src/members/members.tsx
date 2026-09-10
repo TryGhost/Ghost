@@ -204,8 +204,13 @@ const MembersPage: React.FC<MembersPageProps> = ({
                   </PageHeader.Title>
                 </PageHeader.Left>
                 <PageHeader.Actions>
-                  <TooltipProvider delayDuration={500} skipDelayDuration={300}>
-                    <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                  <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
+                    <PageHeader.ActionGroup
+                      className={cn(
+                        'ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap',
+                        isAdmin7Pill && 'gap-1',
+                      )}
+                    >
                       {isAdmin7Pill && headerFilters}
                       {headerSearch}
                       {!isAdmin7Pill && headerFilters}

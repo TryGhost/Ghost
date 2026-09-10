@@ -18,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Dropdown selection component built on Radix UI. Provides accessible keyboard navigation, search, and customizable styling.',
+          'Dropdown selection component built on Radix UI. Provides accessible keyboard navigation, search, and customizable styling. Ghost and secondary pill triggers share the button inset shadow while pressed and while their list is open. The open appearance follows aria-expanded and resets on selection or dismissal.',
       },
     },
   },
