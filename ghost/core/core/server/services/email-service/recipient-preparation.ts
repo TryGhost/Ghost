@@ -11,15 +11,31 @@ export function validatePreparationConcurrency(value: unknown): number {
   return value;
 }
 
-/** The filtered query is already ordered; avoid DISTINCT or a second full-size set. */
-export function selectedMemberIds(rows: { id: string }[]): string[] {
-  const ids: string[] = [];
-  for (const { id } of rows) {
+/** One statement gives all segments the same audience snapshot, without a spanning transaction. */
+export async function selectPreparationCandidates(
+  knex: Knex,
+  queries: Knex.QueryBuilder[],
+): Promise<string[][]> {
+  const candidates: string[][] = queries.map(() => []);
+  if (queries.length === 0) {
+    return candidates;
+  }
+  const rows: { id: string; segment_index: number }[] = await knex
+    .unionAll(
+      queries.map((query, index) =>
+        query.select('members.id', knex.raw('? as segment_index', [index])),
+      ),
+    )
+    .orderBy('segment_index')
+    .orderBy('id', 'desc');
+  for (const { id, segment_index: segmentIndex } of rows) {
+    const ids = candidates[segmentIndex]!;
+    // Ordered rows let us collapse duplicate IDs within a segment without another full-size set.
     if (id !== ids[ids.length - 1]) {
       ids.push(id);
     }
   }
-  return ids;
+  return candidates;
 }
 
 export type PreparationMember = { id: string; uuid: string; email: string; name: string | null };

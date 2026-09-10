@@ -89,7 +89,7 @@ async function main() {
       transient_id: crypto.randomUUID(),
       email: `member-${offset + i + 1}@example.com`,
       name: 'Benchmark Member',
-      status: 'free',
+      status: (offset + i) % 2 === 0 ? 'free' : 'paid',
       created_at: new Date(),
       updated_at: new Date(),
     }));
@@ -116,7 +116,7 @@ async function main() {
     db,
     models,
     batchCreationConcurrency: concurrency,
-    emailRenderer: { getSegments: async () => [null] },
+    emailRenderer: { getSegments: async () => ['status:free', 'status:-free'] },
     emailSegmenter: segmenter,
     domainWarmingService: { isEnabled: () => false },
     sendingService: { getMaximumRecipients: () => 1000 },

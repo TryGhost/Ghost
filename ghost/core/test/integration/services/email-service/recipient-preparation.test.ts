@@ -12,13 +12,6 @@ const logging = require('@tryghost/logging');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
 const EmailSegmenter = require('../../../../core/server/services/email-service/email-segmenter');
 
-type SweepQuery = {
-  orderByRaw: (order: string) => {
-    select: (...columns: string[]) => PromiseLike<{ id: string }[]>;
-  };
-};
-const memberQueries: { getFilteredCollectionQuery: (options: { filter: string }) => SweepQuery } =
-  models.Member;
 type TransactionHandler = (trx: Knex.Transaction) => Promise<unknown>;
 const batchTransactions: { transaction: (handler: TransactionHandler) => Promise<unknown> } =
   models.EmailBatch;
@@ -109,18 +102,19 @@ describe('Upfront recipient preparation through MySQL', () => {
     db.knex('email_recipients').where({ 'email_recipients.email_id': email.id });
 
   function interceptSweep(after: (rows: { id: string }[]) => Promise<void>) {
-    const original = models.Member.getFilteredCollectionQuery.bind(models.Member);
-    return sinon
-      .stub(memberQueries, 'getFilteredCollectionQuery')
-      .callsFake((options: { filter: string }) => ({
-        orderByRaw: (order: string) => ({
-          select: async (...columns: string[]) => {
-            const rows = await original(options).orderByRaw(order).select(columns);
+    const original = db.knex.unionAll.bind(db.knex);
+    return sinon.stub(db.knex, 'unionAll').callsFake((...args) => {
+      const query = original(...args);
+      const execute = query.then.bind(query);
+      query.then = (resolve, reject) =>
+        execute()
+          .then(async (rows) => {
             await after(rows);
             return rows;
-          },
-        }),
-      }));
+          })
+          .then(resolve, reject);
+      return query;
+    });
   }
 
   it('sweeps once and resolves pages without the audience filter or lookahead', async () => {
@@ -242,24 +236,126 @@ describe('Upfront recipient preparation through MySQL', () => {
     assert.equal(email.get('candidate_count'), 3);
   });
 
-  it('retries a failed later segment sweep without recounting or rebuilding the first', async () => {
-    segments = [`id:>'${id(2)}'`, `id:<='${id(2)}'`];
-    const original = models.Member.getFilteredCollectionQuery.bind(models.Member);
-    let attempts = 0;
-    const audience = sinon
-      .stub(memberQueries, 'getFilteredCollectionQuery')
-      .callsFake((options: { filter: string }) => {
-        attempts += 1;
-        if (attempts === 2) {
-          throw new Error('transient sweep failure');
-        }
-        return original(options);
-      });
+  it('selects every segment before preparation so status changes cannot duplicate or omit members', async () => {
+    segments = ['status:free', 'status:-free'];
+    await db
+      .knex('members')
+      .where({ id: id(3) })
+      .update({ status: 'paid' });
+    const original = models.EmailBatch.transaction.bind(models.EmailBatch);
+    let changed = false;
+    sinon.stub(batchTransactions, 'transaction').callsFake(async (handler) => {
+      if (!changed) {
+        changed = true;
+        await db
+          .knex('members')
+          .where({ id: id(4) })
+          .update({ status: 'paid' });
+        await db
+          .knex('members')
+          .where({ id: id(3) })
+          .update({ status: 'free' });
+      }
+      return original(handler);
+    });
     await prepare();
-    sinon.assert.callCount(audience, 3);
+    const rows = await recipients()
+      .join('email_batches as b', 'b.id', 'email_recipients.batch_id')
+      .select('member_id', 'b.member_segment', 'b.fallback_sending_domain')
+      .orderBy('member_id');
+    assert.deepEqual(
+      rows.map((row) => row.member_id),
+      [id(1), id(2), id(3), id(4)],
+    );
+    for (const row of rows) {
+      assert.equal(row.member_segment, row.member_id === id(3) ? 'status:-free' : 'status:free');
+      assert.equal(Boolean(row.fallback_sending_domain), row.member_id === id(3));
+    }
     assert.equal(email.get('candidate_count'), 4);
-    assert.equal((await recipients()).length, 4);
-    assert.equal((await service.getBatches(email)).length, 3);
+    const sweeps = queries.filter((query) => query.sql.startsWith('select `members`.`id`'));
+    assert.equal(sweeps.length, 1);
+    assert.match(sweeps[0]!.sql, /union all/);
+  });
+
+  for (const separateFreeContent of [false, true]) {
+    it(`prepares tier access and its complement in ${separateFreeContent ? 'three' : 'two'} segments`, async () => {
+      const product = await models.Product.add({
+        name: 'Sweep tier',
+        slug: 'sweep-tier',
+        type: 'paid',
+        active: true,
+      });
+      try {
+        await db
+          .knex('members')
+          .whereIn('id', [id(3), id(4)])
+          .update({ status: 'paid' });
+        await db
+          .knex('members_products')
+          .insert({ id: ObjectID().toHexString(), member_id: id(4), product_id: product.id });
+        const access = `product:'${product.get('slug')}'`;
+        const noAccess = `product:-'${product.get('slug')}'`;
+        segments = separateFreeContent
+          ? ['status:free', `status:-free+(${access})`, `status:-free+(${noAccess})`]
+          : [access, noAccess];
+        await prepare();
+        const rows = await recipients()
+          .join('email_batches as b', 'b.id', 'email_recipients.batch_id')
+          .select('member_id', 'b.member_segment')
+          .orderBy('member_id');
+        const assignments = separateFreeContent
+          ? [segments[0], segments[0], segments[2], segments[1]]
+          : [segments[1], segments[1], segments[1], segments[0]];
+        assert.deepEqual(
+          rows,
+          assignments.map((segment, index) => ({
+            member_id: id(index + 1),
+            member_segment: segment,
+          })),
+        );
+        assert.equal(email.get('candidate_count'), 4);
+        assert.equal(email.get('email_count'), 4);
+      } finally {
+        await models.Product.destroy({ id: product.id });
+      }
+    });
+  }
+
+  it('retries the entire selection before writing any batches', async () => {
+    segments = ['status:free', 'status:-free'];
+    filter += '+email_disabled:0';
+    let attempts = 0;
+    const batchCounts: number[] = [];
+    const audience = interceptSweep(async () => {
+      attempts += 1;
+      batchCounts.push((await service.getBatches(email)).length);
+      if (attempts === 1) {
+        await db
+          .knex('members')
+          .where({ id: id(4) })
+          .update({ email_disabled: true });
+        throw new Error('transient sweep failure');
+      }
+    });
+    await prepare();
+    sinon.assert.callCount(audience, 2);
+    assert.deepEqual(batchCounts, [0, 0]);
+    assert.equal(email.get('candidate_count'), 3);
+    assert.deepEqual((await recipients()).map((row) => row.member_id).sort(), [
+      id(1),
+      id(2),
+      id(3),
+    ]);
+    assert.equal((await service.getBatches(email)).length, 2);
+  });
+
+  it('does not begin preparation when shutdown starts during selection', async () => {
+    segments = ['status:free', 'status:-free'];
+    interceptSweep(async () => service.onPreStop());
+    await assert.rejects(prepare(), { code: 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS' });
+    assert.deepEqual(await service.getBatches(email), []);
+    assert.equal((await recipients()).length, 0);
+    assert.equal(email.get('prepared_at') ?? null, null);
   });
 
   it('drains concurrent transactions before freezing and preserves warming assignments', async () => {
