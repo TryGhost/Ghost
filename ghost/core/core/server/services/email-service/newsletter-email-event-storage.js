@@ -22,7 +22,7 @@ class NewsletterEmailEventStorage {
     // Initialize pending updates for batched processing
     this.#pendingUpdates = {
       delivered: new Map(), // recipientId -> timestamp
-      opened: new Map(), // recipientId -> timestamp
+      opened: new Map(), // recipientId -> {timestamp, emailId, memberId}
       failed: new Map(), // recipientId -> timestamp
     };
 
@@ -71,8 +71,12 @@ class NewsletterEmailEventStorage {
       const existing = this.#pendingUpdates.opened.get(event.emailRecipientId);
 
       // Keep the earliest timestamp (out-of-order protection)
-      if (!existing || timestamp < existing) {
-        this.#pendingUpdates.opened.set(event.emailRecipientId, timestamp);
+      if (!existing || timestamp < existing.timestamp) {
+        this.#pendingUpdates.opened.set(event.emailRecipientId, {
+          timestamp,
+          emailId: event.emailId,
+          memberId: event.memberId,
+        });
       }
     } else {
       // Sequential mode: immediate update
@@ -295,7 +299,7 @@ class NewsletterEmailEventStorage {
 
   /**
    * Flush all batched updates to the database
-   * @returns {Promise<void>}
+   * @returns {Promise<Array<{emailId: string, delivered: Array<{recipientId: string, memberId: string}>, opened: Array<{recipientId: string, memberId: string}>, failed: Array<{recipientId: string, memberId: string}>}>>}
    */
   async flushBatchedUpdates() {
     const deliveredCount = this.#pendingUpdates.delivered.size;
@@ -303,8 +307,9 @@ class NewsletterEmailEventStorage {
     const failedCount = this.#pendingUpdates.failed.size;
 
     if (deliveredCount === 0 && openedCount === 0 && failedCount === 0) {
-      return; // Nothing to flush
+      return []; // Nothing to flush
     }
+    const transitions = [];
 
     // Flush delivered events
     if (deliveredCount > 0) {
@@ -313,7 +318,7 @@ class NewsletterEmailEventStorage {
 
     // Flush opened events
     if (openedCount > 0) {
-      await this.#flushOpenedUpdates();
+      transitions.push(...(await this.#flushOpenedUpdates()));
     }
 
     // Flush failed events
@@ -325,6 +330,7 @@ class NewsletterEmailEventStorage {
     this.#pendingUpdates.delivered.clear();
     this.#pendingUpdates.opened.clear();
     this.#pendingUpdates.failed.clear();
+    return transitions;
   }
 
   /**
@@ -360,29 +366,57 @@ class NewsletterEmailEventStorage {
    * @private
    */
   async #flushOpenedUpdates() {
-    const updates = Array.from(this.#pendingUpdates.opened.entries());
-    if (updates.length === 0) {
-      return;
+    const groups = new Map();
+    for (const [recipientId, update] of this.#pendingUpdates.opened) {
+      if (!groups.has(update.emailId)) {
+        groups.set(update.emailId, new Map());
+      }
+      groups.get(update.emailId).set(recipientId, update);
     }
 
-    // Build CASE statement for batched update
-    const recipientIds = updates.map(([id]) => id);
-    const caseClauses = updates
-      .map(([id, timestamp]) => {
-        return `WHEN '${id}' THEN '${timestamp}'`;
-      })
-      .join(' ');
+    const transitions = [];
+    for (const emailId of Array.from(groups.keys()).sort()) {
+      const updates = groups.get(emailId);
+      const opened = await this.#db.knex.transaction(async (trx) => {
+        const query = trx('email_recipients');
+        if (['mysql', 'mysql2'].includes(trx.client.config.client)) {
+          // Lock in primary-key order, rather than whichever secondary index
+          // the optimizer chooses. Sorting the IN list alone is insufficient.
+          query.fromRaw('?? FORCE INDEX (PRIMARY)', ['email_recipients']);
+        }
+        const recipients = await query
+          .select('id', 'member_id')
+          .where('email_id', emailId)
+          .whereIn('id', Array.from(updates.keys()).sort())
+          .whereNull('opened_at')
+          .orderBy('id')
+          .forUpdate();
+        if (!recipients.length) {
+          return [];
+        }
 
-    const sql = `
-            UPDATE email_recipients
-            SET opened_at = CASE id ${caseClauses} END
-            WHERE id IN (${recipientIds.map(() => '?').join(',')})
-            AND opened_at IS NULL
-        `;
+        const bindings = recipients.flatMap(({ id }) => [id, updates.get(id).timestamp]);
+        await trx('email_recipients')
+          .whereIn(
+            'id',
+            recipients.map(({ id }) => id),
+          )
+          .whereNull('opened_at')
+          .update({
+            opened_at: trx.raw(
+              `CASE id ${recipients.map(() => 'WHEN ? THEN ?').join(' ')} END`,
+              bindings,
+            ),
+          });
 
-    const rowCount = await this.#db.knex.raw(sql, recipientIds);
-    this.recordEventStored('opened', updates.length);
-    return rowCount;
+        return recipients.map(({ id, member_id: memberId }) => ({ recipientId: id, memberId }));
+      });
+      if (opened.length) {
+        this.recordEventStored('opened', opened.length);
+        transitions.push({ emailId, delivered: [], opened, failed: [] });
+      }
+    }
+    return transitions;
   }
 
   /**
