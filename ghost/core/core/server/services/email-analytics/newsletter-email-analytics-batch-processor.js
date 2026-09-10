@@ -108,7 +108,9 @@ class NewsletterEmailAnalyticsBatchProcessor {
     /** @type {boolean} */ let shouldAggregate;
     if (isFinal) {
       shouldAggregate = Boolean(
-        processingResult.emailIds.length || processingResult.memberIds.length,
+        processingResult.emailIds.length ||
+        processingResult.memberIds.length ||
+        this.#emailCounters?.hasPendingReconciliation,
       );
     } else {
       // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
@@ -121,7 +123,14 @@ class NewsletterEmailAnalyticsBatchProcessor {
       return null;
     }
 
-    const result = await this.#aggregateStats(processingResult, includeOpenedEvents);
+    const incrementalEmails = this.#emailCounters?.mode === 'incremental';
+    if (incrementalEmails) {
+      // Member aggregation resets the result mid-fetch. Retain every touched
+      // email in the boot-lifetime queue until repair succeeds, even if the
+      // next fetch creates a new processor after a failed final aggregation.
+      this.#emailCounters.deferReconciliation(processingResult.emailIds);
+    }
+    const result = await this.#aggregateStats(processingResult, includeOpenedEvents, isFinal);
 
     processingResult.reset();
     this.#lastAggregation = Date.now();
@@ -249,14 +258,25 @@ class NewsletterEmailAnalyticsBatchProcessor {
   /**
    * @param {{emailIds?: string[], memberIds?: string[]}} stats
    * @param {boolean} includeOpenedEvents
+   * @param {boolean} isFinal
    * @returns {Promise<{emailAggregationTimeMs: number, memberAggregationTimeMs: number}>}
    */
-  async #aggregateStats({ emailIds = [], memberIds = [] }, includeOpenedEvents = true) {
+  async #aggregateStats(
+    { emailIds = [], memberIds = [] },
+    includeOpenedEvents = true,
+    isFinal = false,
+  ) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     const emailAggregationStart = Date.now();
-    for (const emailId of emailIds) {
-      await this.#aggregateEmailStats(emailId, includeOpenedEvents);
+    if (this.#emailCounters?.mode === 'incremental') {
+      if (isFinal) {
+        await this.#emailCounters.reconcilePending();
+      }
+    } else {
+      for (const emailId of emailIds) {
+        await this.#aggregateEmailStats(emailId, includeOpenedEvents);
+      }
     }
     const emailAggregationTimeMs = Date.now() - emailAggregationStart;
 

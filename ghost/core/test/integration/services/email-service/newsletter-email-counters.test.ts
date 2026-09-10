@@ -261,6 +261,113 @@ describe('Newsletter email counters', function () {
     }
   });
 
+  it('repairs all email counters from opens-inclusive truth at final reconciliation', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    await db
+      .knex('emails')
+      .where('id', recipient.email_id)
+      .update({ delivered_count: 7, opened_count: 0, failed_count: 9 });
+    assert.deepEqual(await counters.reconcile(recipient.email_id), {
+      delivered: 7,
+      opened: -1,
+      failed: 9,
+    });
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
+    const row = await db.knex('emails').where('id', recipient.email_id).first();
+    assert.equal(row.opened_count, 1);
+  });
+
+  it('retries failed final repair after recreating the processor, even without new events', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 0 });
+    const reconcile = counters.reconcile.bind(counters);
+    const repair = sinon.stub(counters, 'reconcile').callsFake(reconcile);
+    repair.onFirstCall().rejects(new Error('repair unavailable'));
+    const createProcessor = () =>
+      new NewsletterEmailAnalyticsBatchProcessor({
+        config: { get: () => true },
+        emailCounters: counters,
+        queries: { aggregateMemberStatsBatch: sinon.stub() },
+      });
+    await assert.rejects(
+      createProcessor().aggregate({
+        includeOpenedEvents: false,
+        isFinal: true,
+        processingResult: new EventProcessingResult({ emailIds: [recipient.email_id] }),
+      }),
+      /repair unavailable/,
+    );
+    await createProcessor().aggregate({
+      includeOpenedEvents: false,
+      isFinal: true,
+      processingResult: new EventProcessingResult(),
+    });
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
+    sinon.assert.calledTwice(repair);
+  });
+
+  it('serializes repair drains and retains an email requeued while an earlier repair finishes', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    let finishRepair;
+    let firstRepairCompleted;
+    const hold = new Promise((resolve) => {
+      finishRepair = resolve;
+    });
+    const ready = new Promise((resolve) => {
+      firstRepairCompleted = resolve;
+    });
+    const reconcile = counters.reconcile.bind(counters);
+    const repair = sinon.stub(counters, 'reconcile').callsFake(reconcile);
+    repair.onFirstCall().callsFake(async (emailId) => {
+      const drift = await reconcile(emailId);
+      firstRepairCompleted();
+      await hold;
+      return drift;
+    });
+    counters.deferReconciliation([recipient.email_id]);
+    const first = counters.reconcilePending();
+    await ready;
+    let second;
+    let callsBeforeRelease;
+    try {
+      await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
+      counters.deferReconciliation([recipient.email_id]);
+      second = counters.reconcilePending();
+      callsBeforeRelease = repair.callCount;
+    } finally {
+      finishRepair();
+    }
+    await Promise.all([first, second]);
+    assert.equal(callsBeforeRelease, 1);
+    sinon.assert.calledTwice(repair);
+    assert.equal(counters.hasPendingReconciliation, false);
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
+  });
+
   it('detects deliberately incorrect counters without overwriting them', async function () {
     await resetFacts();
     const counters = new NewsletterEmailCounters({ knex: db.knex });
@@ -376,53 +483,69 @@ describe('Newsletter email counters', function () {
     assert.equal(row.failed_count, 1);
   });
 
-  it('compares against the committed view when an event transaction is still in flight', async function () {
-    await resetFacts();
-    const counters = new NewsletterEmailCounters({ knex: db.knex });
-    const initial = createStorage(counters);
-    await initial.handleDelivered(makeEvent());
-    await initial.flushBatchedUpdates();
+  it.each(['compare', 'reconcile'] as const)(
+    '%s uses the committed view when an event transaction is still in flight',
+    async function (operation) {
+      await resetFacts();
+      const counters = new NewsletterEmailCounters({ knex: db.knex });
+      const initial = createStorage(counters);
+      await initial.handleDelivered(makeEvent());
+      await initial.flushBatchedUpdates();
 
-    let allowCommit!: () => void;
-    let writesCompleted!: () => void;
-    const hold = new Promise<void>((resolve) => {
-      allowCommit = resolve;
-    });
-    const ready = new Promise<void>((resolve) => {
-      writesCompleted = resolve;
-    });
-    const writer = createStorage(counters, {
-      knex: {
-        transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
-          db.knex.transaction(async (trx) => {
-            const result = await callback(trx);
-            writesCompleted();
-            await hold;
-            return result;
-          }),
-      },
-    });
-    await writer.handleOpened(makeEvent());
-    const flush = writer.flushBatchedUpdates();
-    await ready;
-    let comparisonIssued!: () => void;
-    const issued = new Promise<void>((resolve) => {
-      comparisonIssued = resolve;
-    });
-    const onQuery = (query: { sql: string }) => {
-      if (query.sql.includes('emails') && query.sql.includes('for update')) {
-        comparisonIssued();
+      if (operation === 'reconcile') {
+        await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
       }
-    };
-    db.knex.on('query', onQuery);
-    const comparison = counters.compare(recipient.email_id);
-    try {
-      await issued;
-    } finally {
-      db.knex.removeListener('query', onQuery);
-      allowCommit();
-    }
-    await flush;
-    assert.deepEqual(await comparison, { delivered: 0, opened: 0, failed: 0 });
-  });
+
+      let allowCommit!: () => void;
+      let writesCompleted!: () => void;
+      const hold = new Promise<void>((resolve) => {
+        allowCommit = resolve;
+      });
+      const ready = new Promise<void>((resolve) => {
+        writesCompleted = resolve;
+      });
+      const writer = createStorage(counters, {
+        knex: {
+          transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
+            db.knex.transaction(async (trx) => {
+              const result = await callback(trx);
+              writesCompleted();
+              await hold;
+              return result;
+            }),
+        },
+      });
+      await writer.handleOpened(makeEvent());
+      const flush = writer.flushBatchedUpdates();
+      await ready;
+      let comparisonIssued!: () => void;
+      const issued = new Promise<void>((resolve) => {
+        comparisonIssued = resolve;
+      });
+      const onQuery = (query: { sql: string }) => {
+        if (query.sql.includes('emails') && query.sql.includes('for update')) {
+          comparisonIssued();
+        }
+      };
+      db.knex.on('query', onQuery);
+      const comparison = counters[operation](recipient.email_id);
+      try {
+        await issued;
+      } finally {
+        db.knex.removeListener('query', onQuery);
+        allowCommit();
+      }
+      await flush;
+      assert.deepEqual(await comparison, {
+        delivered: 0,
+        opened: operation === 'reconcile' ? 7 : 0,
+        failed: 0,
+      });
+      assert.deepEqual(await counters.compare(recipient.email_id), {
+        delivered: 0,
+        opened: 0,
+        failed: 0,
+      });
+    },
+  );
 });

@@ -3,12 +3,19 @@
 Newsletter events update recipient facts before refreshing email and member
 statistics. Automation and gift events use their own outcome APIs.
 
-## Newsletter email counter comparison
+## Newsletter email counters
 
-`emailAnalytics.emailCounterMode` defaults to `off`. Setting it to `compare`
-also requires `emailAnalytics.batchProcessing: true`. This enables atomic
-delivered, opened and failed email counters and changes email aggregation to
-comparison without repair. Member statistics still use recomputation, including
+`emailAnalytics.emailCounterMode` defaults to `off`. Both opt-in modes require
+`emailAnalytics.batchProcessing: true` and maintain delivered, opened and failed
+email counters atomically with recipient transitions:
+
+| Mode          | Mid-fetch email aggregation             | Final email aggregation                 |
+| ------------- | --------------------------------------- | --------------------------------------- |
+| `compare`     | Recount and report drift without repair | Recount and report drift without repair |
+| `incremental` | Defer recounts                          | Recount all outcomes and repair drift   |
+
+Enable `incremental` only after a comparison soak has established correctness.
+This removes email recounts from intermediate aggregation. Member statistics still use recomputation, including
 replayed members needed to recover an interrupted recount.
 
 The mode is selected at analytics boot. Stop and drain existing analytics
@@ -51,5 +58,14 @@ email ID and signed differences. The Prometheus counters
 differences by event type. Repeated observations of the same drift contribute
 again; a worker restart rebaselines, so monitor drift before restarting.
 
-Comparison retains the recount query load. Removing mid-cycle email recounts
-is a separate rollout step after comparison has established correctness.
+In incremental mode, the counter service retains pending email IDs across fetch
+processors. A failed final repair is retried by the next final aggregation,
+even when it fetched no new events. Drains are serialized and process a snapshot
+of queued emails. Only successful repairs clear entries; an email requeued
+during repair remains pending. Each repair uses the same email lock as event
+increments. Repair logs carry `phase: "repair"` with the differences observed
+before correction; comparison mode continues to report drift without repair.
+
+This email-only mode does not remove member history queries. Removing those
+requires initialized member counters and scheduled member reconciliation.
+Comparison retains email recount load until the incremental mode is enabled.

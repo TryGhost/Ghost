@@ -9,6 +9,7 @@ const events = ['delivered', 'opened', 'failed'] as const;
 type Event = (typeof events)[number];
 type Drift = Record<Event, number>;
 type Transitions = Record<Event, readonly unknown[]>;
+type Phase = 'baseline' | 'comparison' | 'repair';
 
 // Projection of the `emails` counter columns; the Bookshelf model owns the row.
 const DbEmailCounters = z.object({
@@ -25,23 +26,29 @@ const BASELINE_METRIC = 'email_analytics_email_counter_baseline_corrections';
 
 /** Newsletter-only counter maintenance. Constructed once at analytics boot. */
 export class NewsletterEmailCounters {
+  readonly mode: 'compare' | 'incremental';
   // Emails whose baseline this process has committed. Grows with the distinct
   // emails touched during the process lifetime; a restart rebaselines.
   #initialized = new Set<string>();
   // Corrections written by a baseline in a transaction that has not yet been
   // acknowledged as committed; reported once the commit is acknowledged.
   #prepared = new Map<string, Drift>();
+  #pendingReconciliation = new Map<string, symbol>();
+  #draining: Promise<void> | null = null;
   #knex: Pick<Knex, 'transaction'>;
   #prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
 
   constructor({
     knex,
+    mode = 'compare',
     prometheusClient = null,
   }: {
     knex: Pick<Knex, 'transaction'>;
+    mode?: 'compare' | 'incremental';
     prometheusClient?: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
   }) {
     this.#knex = knex;
+    this.mode = mode;
     this.#prometheusClient = prometheusClient;
     prometheusClient?.registerCounter({
       name: COMPARISONS_METRIC,
@@ -147,22 +154,73 @@ export class NewsletterEmailCounters {
     }
   }
 
+  get hasPendingReconciliation(): boolean {
+    return this.#pendingReconciliation.size > 0;
+  }
+
+  deferReconciliation(emailIds: readonly string[]): void {
+    for (const emailId of emailIds) {
+      this.#pendingReconciliation.set(emailId, Symbol());
+    }
+  }
+
+  async reconcilePending(): Promise<void> {
+    // Different fetch processors share this boot-lifetime queue. Serialize
+    // drains, but let each drain finish a bounded snapshot of pending work.
+    while (this.#draining) {
+      // A failed drain is reported to its own caller; waiters only need it over.
+      await this.#draining.catch(() => {});
+    }
+    this.#draining = this.#drain();
+    try {
+      await this.#draining;
+    } finally {
+      this.#draining = null;
+    }
+  }
+
+  async #drain(): Promise<void> {
+    for (const [emailId, generation] of [...this.#pendingReconciliation]) {
+      await this.reconcile(emailId);
+      // An event arriving during repair must retain its newly queued work.
+      if (this.#pendingReconciliation.get(emailId) === generation) {
+        this.#pendingReconciliation.delete(emailId);
+      }
+    }
+  }
+
   async compare(emailId: string): Promise<Drift | null> {
+    return this.#observe(emailId, false);
+  }
+
+  async reconcile(emailId: string): Promise<Drift | null> {
+    return this.#observe(emailId, true);
+  }
+
+  async #observe(emailId: string, repair: boolean): Promise<Drift | null> {
     const drift = await transactionWithRetry(this.#knex, async (trx) => {
       const state = await this.prepare(trx, emailId);
       if (!state) {
         return null;
       }
-      // A baseline just replaced the counters with truth; do not recount twice.
+      // A baseline just replaced the counters with truth; there is nothing
+      // left to compare or repair, and recounting again would be wasted.
       if (state.baseline) {
         return { delivered: 0, opened: 0, failed: 0 };
       }
-      return this.#diff(state.current, await this.#recount(trx, emailId));
+      const truth = await this.#recount(trx, emailId);
+      if (repair) {
+        // Keep the email lock through repair so a concurrent event increment
+        // cannot be overwritten with counts from an earlier snapshot.
+        await trx('emails').where('id', emailId).update(truth);
+      }
+      return this.#diff(state.current, truth);
     });
     this.committed(emailId);
     if (drift) {
-      // Comparison observes drift; it must not hide a bad counter by repairing it.
-      this.#report(emailId, drift, 'comparison');
+      // Comparison stays observe-only. Final reconciliation reports the drift
+      // observed before repair so operators can distinguish repair from parity.
+      this.#report(emailId, drift, repair ? 'repair' : 'comparison');
     }
     return drift;
   }
@@ -175,7 +233,7 @@ export class NewsletterEmailCounters {
     };
   }
 
-  #report(emailId: string, drift: Drift, phase: 'baseline' | 'comparison'): void {
+  #report(emailId: string, drift: Drift, phase: Phase): void {
     if (events.some((event) => drift[event] !== 0)) {
       logging.warn(
         `[EmailAnalytics] Newsletter email counter drift: ${JSON.stringify({ emailId, drift, phase })}`,
@@ -183,11 +241,11 @@ export class NewsletterEmailCounters {
     }
     try {
       for (const event of events) {
-        if (phase === 'comparison') {
+        if (phase === 'baseline') {
+          this.#inc(BASELINE_METRIC, event, Math.abs(drift[event]));
+        } else {
           this.#inc(COMPARISONS_METRIC, event, 1);
           this.#inc(DRIFT_METRIC, event, Math.abs(drift[event]));
-        } else {
-          this.#inc(BASELINE_METRIC, event, Math.abs(drift[event]));
         }
       }
     } catch (error) {

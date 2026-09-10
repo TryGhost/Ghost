@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
+const {
+  NewsletterEmailCounters,
+} = require('../../../../../core/server/services/email-analytics/newsletter-email-counters');
 
 const {
   NewsletterEmailAnalyticsBatchProcessor,
@@ -671,6 +674,63 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         queries,
       });
     }
+
+    function createIncrementalCounters() {
+      const counters = new NewsletterEmailCounters({ knex: sinon.stub(), mode: 'incremental' });
+      sinon.stub(counters, 'compare').resolves();
+      sinon.stub(counters, 'reconcile').resolves();
+      return counters;
+    }
+
+    it('defers email reconciliation until final aggregation while preserving drained email IDs', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      const emailCounters = createIncrementalCounters();
+      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        queries,
+        emailCounters,
+      });
+      const processingResult = new EventProcessingResult({ emailIds: ['e-1'], memberIds: ['m-1'] });
+      clock.tick(5 * 60 * 1000 + 1);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: false });
+      sinon.assert.notCalled(emailCounters.compare);
+      sinon.assert.notCalled(emailCounters.reconcile);
+      sinon.assert.notCalled(queries.aggregateEmailStats);
+      sinon.assert.calledOnceWithExactly(queries.aggregateMemberStatsBatch, ['m-1']);
+      assert.deepEqual(processingResult.emailIds, []);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledOnceWithExactly(emailCounters.reconcile, 'e-1');
+      assert.equal(
+        await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
+        null,
+      );
+    });
+
+    it('retains every deferred email when final repair fails, including those from earlier pages', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      const emailCounters = createIncrementalCounters();
+      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        queries,
+        emailCounters,
+      });
+      const processingResult = new EventProcessingResult({ emailIds: ['e-1'], memberIds: ['m-1'] });
+      clock.tick(5 * 60 * 1000 + 1);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: false });
+      processingResult.merge({ emailIds: ['e-2'], memberIds: ['m-2'] });
+      emailCounters.reconcile.withArgs('e-2').onFirstCall().rejects(new Error('repair failed'));
+      await assert.rejects(
+        processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
+        /repair failed/,
+      );
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-1'));
+      sinon.assert.calledTwice(emailCounters.reconcile.withArgs('e-2'));
+      assert.equal(
+        await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
+        null,
+      );
+    });
 
     describe('final aggregation', function () {
       it('aggregates stats from the processing result', async function () {
