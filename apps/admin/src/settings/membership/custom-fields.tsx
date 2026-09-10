@@ -23,7 +23,6 @@ import { TextCursorInput } from 'lucide-react';
 import { arrayMove } from '@dnd-kit/sortable';
 import {
   inOrderOf,
-  memberAccessLabel,
   memberCustomFieldsDataType,
   useBrowseMemberCustomFieldsIncludingArchived,
   useReorderMemberCustomFields,
@@ -65,9 +64,14 @@ const FieldRow: React.FC<{
             <CustomFieldIcon className="size-[18px]" type={userType.id} />
           </span>
           <span className="min-w-0 grow">
-            <span className="block font-semibold">{field.name}</span>
-            <span className="block text-sm text-muted-foreground">
-              {userType.label} &middot; {memberAccessLabel(field.access.member)}
+            <span className="block truncate font-semibold">{field.name}</span>
+            {/* Where the row already says what the field is, it says who can see it. An
+                archived field is closed to members whatever its access says, so it is never marked. */}
+            <span className="block truncate text-sm text-muted-foreground">
+              {userType.label}
+              {field.status === 'active' &&
+                field.access.member !== 'none' &&
+                ' · Visible to members'}
             </span>
           </span>
         </button>
