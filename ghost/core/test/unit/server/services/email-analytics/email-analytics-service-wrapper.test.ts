@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import nock from 'nock';
 import logging from '@tryghost/logging';
 import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
+import { MailgunLogsClient } from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
 
 class FakeEvent {
   timestamp = new Date();
@@ -18,10 +20,14 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   afterEach(async function () {
+    nock.cleanAll();
     sinon.restore();
   });
 
-  function logLatestOpenedJob(logName: string) {
+  function logLatestOpenedJob(
+    logName: string,
+    overrides: Partial<Parameters<EmailAnalyticsServiceWrapper['init']>[0]> = {},
+  ) {
     const wrapper = new EmailAnalyticsServiceWrapper({ logName });
     wrapper.init({
       config: {
@@ -65,6 +71,7 @@ describe('EmailAnalyticsServiceWrapper', function () {
       metrics: {
         metric: metricStub,
       },
+      ...overrides,
     });
     wrapper._logJobCompletion(
       'latest-opened',
@@ -149,6 +156,168 @@ describe('EmailAnalyticsServiceWrapper', function () {
         '[Background Job] email-analytics-fetch-latest failed while restoring scheduled events',
       ),
     );
+  });
+
+  it('drains schedule restoration and prevents polling after shutdown starts', async function () {
+    const wrapper = logLatestOpenedJob('newsletters');
+    let restored!: () => void;
+    sinon.stub(wrapper.service, 'restoreScheduled').returns(
+      new Promise((resolve) => {
+        restored = resolve;
+      }),
+    );
+    const opened = sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(0);
+    const running = wrapper.startFetch();
+    wrapper.onPreStop();
+    let drained = false;
+    const shutdown = wrapper.onShutdown().then(() => {
+      drained = true;
+    });
+    await Promise.resolve();
+    assert.equal(drained, false);
+    await wrapper.startFetch();
+    restored();
+    await Promise.all([running, shutdown]);
+    assert.equal(drained, true);
+    sinon.assert.notCalled(opened);
+  });
+
+  it('can initialize again after a drained stop without duplicating event subscriptions', async function () {
+    const initialize = sinon.spy(EmailAnalyticsServiceWrapper.prototype, 'init');
+    const subscribe = sinon.stub();
+    const wrapper = logLatestOpenedJob('newsletters', { domainEvents: { subscribe } });
+    const options = initialize.firstCall.args[0];
+    await wrapper.onShutdown();
+    wrapper.init(options);
+    const restore = sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    const opened = sinon.stub(wrapper, 'fetchLatestOpenedEvents').resolves(0);
+    sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+    sinon.stub(wrapper, 'fetchMissing').resolves(0);
+    sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+    await wrapper.startFetch();
+    sinon.assert.calledOnce(opened);
+    sinon.assert.calledOnce(restore);
+    sinon.assert.calledOnce(subscribe);
+  });
+
+  it('drains an immediate restart without beginning a lower-priority lane', async function () {
+    const wrapper = logLatestOpenedJob('newsletters');
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    let finish!: () => void;
+    let started!: () => void;
+    const secondStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const opened = sinon.stub(wrapper, 'fetchLatestOpenedEvents');
+    opened.onFirstCall().resolves(10000);
+    opened.onSecondCall().callsFake(() => {
+      started();
+      return new Promise<number>((resolve) => {
+        finish = () => resolve(0);
+      });
+    });
+    const others = sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+    sinon.stub(wrapper, 'fetchMissing').resolves(0);
+    sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+    await wrapper.startFetch();
+    await secondStarted;
+    let drained = false;
+    const shutdown = wrapper.onShutdown().then(() => {
+      drained = true;
+    });
+    await Promise.resolve();
+    assert.equal(drained, false);
+    finish();
+    await shutdown;
+    sinon.assert.calledTwice(opened);
+    sinon.assert.notCalled(others);
+  });
+
+  it('aborts a prefetched Logs read and drains the final flush before shutdown resolves', async function () {
+    const pageRequests = sinon.spy(MailgunLogsClient.prototype, 'getPage');
+    const queries = sinon.createStubInstance(Queries);
+    const begin = new Date(Date.now() - 600000);
+    queries.getLastEventTimestamp.resolves(begin);
+    let finishFlush!: () => void;
+    let flushing!: () => void;
+    const finalFlushStarted = new Promise<void>((resolve) => {
+      flushing = resolve;
+    });
+    const processBatch = sinon.stub().resolves();
+    const aggregate = async ({ isFinal }: { isFinal: boolean }) => {
+      if (isFinal) {
+        flushing();
+        await new Promise<void>((resolve) => {
+          finishFlush = resolve;
+        });
+      }
+      return null;
+    };
+    const wrapper = logLatestOpenedJob('newsletters', {
+      config: {
+        get: (key = '') =>
+          (
+            ({
+              bulkEmail: {
+                mailgun: {
+                  apiKey: 'test-key',
+                  domain: 'primary.example.com',
+                  baseUrl: 'https://api.mailgun.net/v3',
+                },
+              },
+              'emailAnalytics:fetchSource': 'logs',
+              'emailAnalytics:fetchPrefetch': true,
+            }) as Record<string, unknown>
+          )[key],
+      },
+      queries,
+      mailgunTags: ['bulk-email'],
+      createEventProcessor: () => ({ processBatch, aggregate }),
+    });
+    const first = nock('https://api.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, {
+        items: [
+          {
+            id: 'one',
+            event: 'opened',
+            '@timestamp': new Date(Date.now() - 120000).toISOString(),
+            domain: { name: 'primary.example.com' },
+            tags: ['bulk-email'],
+            recipient: 'member@example.com',
+            'user-variables': { 'email-id': 'email-1' },
+          },
+        ],
+        pagination: { next: 'two' },
+      });
+    const second = nock('https://api.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'two')
+      .delay(500)
+      .reply(200, { items: [], pagination: {} });
+    const requested = new Promise<void>((resolve) => {
+      second.on('request', () => resolve());
+    });
+    const run = wrapper.startFetch();
+    await requested;
+    wrapper.onPreStop();
+    let drained = false;
+    const shutdown = wrapper.onShutdown().then(() => {
+      drained = true;
+    });
+    await finalFlushStarted;
+    assert.equal(drained, false);
+    finishFlush();
+    await Promise.all([run, shutdown]);
+    await assert.rejects(pageRequests.secondCall.returnValue);
+    first.done();
+    sinon.assert.calledOnce(processBatch);
+    sinon.assert.calledOnceWithExactly(
+      queries.setJobTimestamp,
+      'email-analytics-latest-opened',
+      'started',
+      begin,
+    );
+    assert.equal(drained, true);
   });
 
   it('logs exactly one terminal event with a run duration', async function () {

@@ -13,6 +13,7 @@ import {
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
 import { fetchMailgunEvents } from './fetch-mailgun-events';
+import type { MailgunRateLimit } from './mailgun-rate-limit';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
@@ -22,6 +23,9 @@ export class EmailAnalyticsServiceWrapper {
   #fetching = false;
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
+  #stopping = false;
+  #activeFetches = new Set<Promise<void>>();
+  #abortController = new AbortController();
 
   get #logPrefix(): string {
     return `[EmailAnalytics:${this.#logName}]`;
@@ -55,6 +59,7 @@ export class EmailAnalyticsServiceWrapper {
     createEventProcessor,
     metrics,
     settingsCache,
+    rateLimiter,
   }: Readonly<{
     config: Pick<ConfigInstance, 'get'>;
     domainEvents: Pick<DomainEvents, 'subscribe'>;
@@ -66,18 +71,36 @@ export class EmailAnalyticsServiceWrapper {
     createEventProcessor: () => BatchEventProcessor;
     metrics: Pick<GhostMetrics, 'metric'>;
     settingsCache: { get: (key: string) => unknown };
+    rateLimiter?: MailgunRateLimit;
   }>): void {
-    if (this.#service) {
+    const initialized = Boolean(this.#service);
+    if (initialized && !this.#stopping) {
       return;
     }
+    if (this.#activeFetches.size) {
+      throw new errors.InternalServerError({
+        message: 'Email analytics must drain before reinitializing',
+      });
+    }
+    this.#stopping = false;
+    this.#abortController = new AbortController();
+    this.#fetching = false;
+    this.#restoredSchedule = false;
 
     this.#config = config;
     this.#metrics = metrics;
     this.#fetchOpenedEvents = Boolean(cursorSeed.eventColumns.opened);
 
     this.#service = new EmailAnalyticsService({
+      signal: this.#abortController.signal,
       fetchEvents: (options) =>
-        fetchMailgunEvents({ ...options, config, settings: settingsCache, tags: mailgunTags }),
+        fetchMailgunEvents({
+          ...options,
+          config,
+          settings: settingsCache,
+          tags: mailgunTags,
+          rateLimiter,
+        }),
       queries,
       jobNames,
       cursorSeed,
@@ -92,9 +115,11 @@ export class EmailAnalyticsServiceWrapper {
 
     // We currently cannot trigger a non-offloaded job from the job manager
     // So the email analytics jobs simply emits an event.
-    domainEvents.subscribe(event, async () => {
-      await this.startFetch();
-    });
+    if (!initialized) {
+      domainEvents.subscribe(event, async () => {
+        await this.startFetch();
+      });
+    }
   }
 
   get service(): EmailAnalyticsService {
@@ -257,7 +282,31 @@ export class EmailAnalyticsServiceWrapper {
     return fetchResult.eventCount;
   }
 
-  async startFetch(): Promise<void> {
+  onPreStop(): void {
+    this.#stopping = true;
+    this.#abortController.abort();
+  }
+
+  async onShutdown(): Promise<void> {
+    this.onPreStop();
+    await Promise.allSettled(this.#activeFetches);
+  }
+
+  startFetch(): Promise<void> {
+    if (this.#stopping) {
+      return Promise.resolve();
+    }
+    const run = this.#startFetch();
+    this.#activeFetches.add(run);
+    // Observe both outcomes without detaching a rejecting finally() promise.
+    void run.then(
+      () => this.#activeFetches.delete(run),
+      () => this.#activeFetches.delete(run),
+    );
+    return run;
+  }
+
+  async #startFetch(): Promise<void> {
     const startedAt = Date.now();
     if (!this.#restoredSchedule) {
       this.#restoredSchedule = true;
@@ -272,6 +321,9 @@ export class EmailAnalyticsServiceWrapper {
       }
     }
 
+    if (this.#stopping) {
+      return;
+    }
     if (this.#fetching) {
       logging.info(
         `[Background Job] ${this.#backgroundJobName} skipped because a fetch is already running`,
@@ -287,6 +339,9 @@ export class EmailAnalyticsServiceWrapper {
       const c1 = this.#fetchOpenedEvents
         ? await this.fetchLatestOpenedEvents({ maxEvents: 10000 })
         : 0;
+      if (this.#stopping) {
+        return;
+      }
       if (c1 >= 10000) {
         this._restartFetch('high opened event count');
         return;
@@ -295,7 +350,13 @@ export class EmailAnalyticsServiceWrapper {
       // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
       //  we want to make sure we don't spend too much time collecting delivery data.
       const c2 = await this.fetchLatestNonOpenedEvents({ maxEvents: 10000 - c1 });
+      if (this.#stopping) {
+        return;
+      }
       const c3 = await this.fetchMissing({ maxEvents: 10000 - c1 - c2 });
+      if (this.#stopping) {
+        return;
+      }
 
       // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
       if (c1 + c2 + c3 > 10000) {
@@ -305,6 +366,9 @@ export class EmailAnalyticsServiceWrapper {
 
       // Only backfill if we're not currently fetching a lot of events
       const c4 = await this.fetchScheduled({ maxEvents: 10000 });
+      if (this.#stopping) {
+        return;
+      }
       if (c4 > 0) {
         this._restartFetch('scheduled backfill');
         return;
