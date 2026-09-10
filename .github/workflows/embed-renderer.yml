@@ -1,0 +1,45 @@
+name: Embed renderer
+
+# Deploys the embed renderer to public.ghostembeds.com, which serves
+# self-hosted Ghost. See .github/embed-renderer/README.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'koenig/koenig-lexical/public/embed-renderer/**'
+      - '.github/embed-renderer/**'
+      - '.github/workflows/embed-renderer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: embed-renderer
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy public renderer
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # every version ships on every deploy: a Netlify deploy replaces the site,
+      # and editors request the renderer version they were built against
+      - name: Build upload directory
+        run: .github/embed-renderer/build.sh "$RUNNER_TEMP/embed-renderer"
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_EMBEDS_PUBLIC_SITE_ID }}
+        run: |
+          npx --yes netlify-cli@27 deploy \
+            --prod \
+            --no-build \
+            --dir="$RUNNER_TEMP/embed-renderer" \
+            --message "${GITHUB_SHA:0:7} via ${GITHUB_WORKFLOW}"

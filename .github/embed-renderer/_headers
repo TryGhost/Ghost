@@ -1,0 +1,6 @@
+/*
+  Content-Security-Policy: frame-ancestors https:
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cache-Control: public, max-age=3600

@@ -154,7 +154,8 @@
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin"
+          "{workspaceRoot}/ghost/core/core/built/admin",
+          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
         ],
         "dependsOn": [
           "^build",

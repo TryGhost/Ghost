@@ -1,5 +1,13 @@
+import fs from 'fs';
+import path from 'path';
+import {E2E_PORT} from '../../../playwright.config';
+import {EMBED_RENDERER_MAX_HEIGHT} from '../../../src/utils/embed-renderer';
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Embed card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
@@ -84,6 +92,76 @@ test.describe('Embed card', async () => {
                 </div>
             </div>
         `, {ignoreCardContents: false});
+    });
+
+    test.describe('With an embed preview url', async () => {
+        // serves the real renderer from a separate origin, as a dedicated embeds domain would
+        const rendererDirectory = 'http://embeds.test/embed-renderer/';
+        const rendererFile = path.resolve(__dirname, '../../../public/embed-renderer/v1.html');
+
+        test.beforeEach(async () => {
+            await page.route(`${rendererDirectory}**`, route => route.fulfill({path: rendererFile, contentType: 'text/html'}));
+        });
+
+        test.afterEach(async () => {
+            await page.unroute(`${rendererDirectory}**`);
+        });
+
+        function embedContent(embedHtml) {
+            return encodeURIComponent(JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'embed',
+                        html: embedHtml,
+                        metadata: {},
+                        embedType: 'rich',
+                        url: 'https://attacker.example/'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        }
+
+        test('renders embeds in the renderer on a separate origin', async function () {
+            const embedHtml = '<img src="x" onerror="document.body.dataset.ran = \'yes\'; try { window.parent.__embedEscaped = true; } catch (e) {}"><div style="height: 400px">Embedded content</div>';
+
+            await initialize({page, uri: `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent(embedHtml)}`});
+
+            const iframe = page.getByTestId('embed-iframe');
+            await expect(iframe).toHaveAttribute('src', `${rendererDirectory}v1.html`);
+
+            // the embed's own scripts ran inside the renderer and it reported its height
+            await expect(page.frameLocator('[data-testid="embed-iframe"]').locator('body[data-ran="yes"]')).toHaveCount(1);
+            await expect(iframe).toHaveCSS('height', '400px');
+
+            expect(await page.evaluate(() => (window as Window & {__embedEscaped?: boolean}).__embedEscaped)).toBeUndefined();
+        });
+
+        test('caps the height an embed can ask for', async function () {
+            // the height comes from the embed itself, so a huge one must not bury the post
+            const oversizedRenderer = fs.readFileSync(rendererFile, 'utf-8')
+                + `<script>setTimeout(function () { window.parent.postMessage({type: 'kg-embed-resize', version: 1, height: 100000000}, '*'); }, 250);</script>`;
+
+            await page.route(`${rendererDirectory}**`, route => route.fulfill({body: oversizedRenderer, contentType: 'text/html'}));
+
+            await initialize({page, uri: `/#/?embedPreviewUrl=${encodeURIComponent(rendererDirectory)}&content=${embedContent('<div style="height: 400px">Embedded content</div>')}`});
+
+            const iframe = page.getByTestId('embed-iframe');
+            await expect(iframe).toHaveCSS('height', `${EMBED_RENDERER_MAX_HEIGHT}px`);
+        });
+
+        test('shows a placeholder when the renderer is on the editor origin', async function () {
+            const sameOriginDirectory = `http://localhost:${E2E_PORT}/embed-renderer/`;
+
+            await initialize({page, uri: `/#/?embedPreviewUrl=${encodeURIComponent(sameOriginDirectory)}&content=${embedContent('<p>Embedded content</p>')}`});
+
+            await expect(page.getByTestId('embed-preview-unavailable')).toContainText('https://attacker.example/');
+            await expect(page.getByTestId('embed-iframe')).toHaveCount(0);
+        });
     });
 
     test('renders embed card node', async function () {

@@ -135,6 +135,8 @@ export type Config = {
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;

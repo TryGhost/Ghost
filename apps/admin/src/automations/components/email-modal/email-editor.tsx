@@ -122,6 +122,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
   const { fetchAutocompleteLinks, searchLinks } = useEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config?.klipy?.apiKey ? config.klipy : null;
+  const embedPreviewUrl = config?.security?.embedPreviewUrl || undefined;
   const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
   const cardConfig = useMemo(
@@ -129,6 +130,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
       unsplash: unsplashConfig,
       pinturaConfig,
       klipy: klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,
@@ -141,6 +143,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
       unsplashConfig,
       pinturaConfig,
       klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,
