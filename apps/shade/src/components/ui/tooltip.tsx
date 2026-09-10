@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
+import { useShade } from '@/providers/shade-provider';
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
@@ -18,7 +18,7 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const pointerInteraction = React.useRef(false);
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
 
   React.useEffect(() => {
     if (!isAdmin7Pill) {
@@ -94,7 +94,7 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, ...props }, ref) => {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>

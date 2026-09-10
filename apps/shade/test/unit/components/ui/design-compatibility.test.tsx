@@ -10,7 +10,7 @@ it('keeps each portaled menu in its owning design scope without changing the doc
         <PopoverTrigger>Admin 7 menu</PopoverTrigger>
         <PopoverContent>Admin 7 content</PopoverContent>
       </Popover>
-      <ShadeApp admin7={{ pill: false }} darkMode={false}>
+      <ShadeApp darkMode={false} isAdmin7Pill={false}>
         <Popover open>
           <PopoverTrigger>Previous menu</PopoverTrigger>
           <PopoverContent>Previous content</PopoverContent>

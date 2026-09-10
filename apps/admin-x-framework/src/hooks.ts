@@ -10,7 +10,7 @@ export type {
   SaveState,
 } from './hooks/use-form';
 export { default as useHandleError } from './hooks/use-handle-error';
-export { useFeatureFlag, useFeatureFlags } from './hooks/use-feature-flag';
+export { useFeatureFlag } from './hooks/use-feature-flag';
 export { useHostLimits } from './hooks/use-host-limits';
 export type { HostLimits } from './hooks/use-host-limits';
 export { useLimiter } from './hooks/use-limiter';

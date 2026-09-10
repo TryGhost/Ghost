@@ -1,4 +1,3 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { Accept, DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -91,8 +90,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
     },
     ref,
   ) => {
-    const { controlShape } = useShade();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { controlShape, isAdmin7Pill } = useShade();
     const {
       getRootProps,
       getInputProps,

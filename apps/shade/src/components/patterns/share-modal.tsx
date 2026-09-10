@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
+import { useShade } from '@/providers/shade-provider';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Check, Copy, Link, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -122,7 +122,7 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     return (
       <a
         ref={ref}
@@ -237,7 +237,7 @@ function SocialLinks({
   variant,
   ...props
 }: SocialLinksProps) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -375,7 +375,7 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { isAdmin7Pill } = useShade();
   return (
     <DialogFooter
       className={cn('justify-between gap-6', isAdmin7Pill && 'gap-8 sm:gap-8', className)}

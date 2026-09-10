@@ -1,7 +1,5 @@
 'use client';
 
-import { useAdmin7 } from '@/providers/admin7-provider';
-
 import type React from 'react';
 import {
   createContext,
@@ -2721,8 +2719,7 @@ const FilterAddButton = forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
 >(({ className, label, icon, ...props }, ref) => {
   const context = useFilterContext();
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
   const isInFilterBar = useFilterBarContext();
   const isPillFilterBar = isInFilterBar && isAdmin7Pill;
   const iconOnly = isPillFilterBar && context.hasFilters;
@@ -2777,7 +2774,7 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
     ref,
   ) => {
     const { hasFilters, keyboardShortcut } = useFilterContext();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
 
     if (isAdmin7Pill && !hasFilters) {
       return (
@@ -2884,8 +2881,7 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
   const isInFilterBar = useFilterBarContext();
   const isPillFilterBar = isInFilterBar && isAdmin7Pill;
   const [addFilterOpen, setAddFilterOpen] = useState(false);

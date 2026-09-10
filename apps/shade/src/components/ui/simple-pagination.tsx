@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Button, ButtonProps } from './button';
@@ -56,7 +56,7 @@ SimplePaginationNavigation.displayName = 'SimplePaginationNavigation';
 
 const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     return (
       <Button ref={ref} size={size ?? (isAdmin7Pill ? 'icon' : 'sm')} variant={variant} {...props}>
         <ArrowLeft />
@@ -69,7 +69,7 @@ SimplePaginationPreviousButton.displayName = 'SimplePaginationPreviousButton';
 
 const SimplePaginationNextButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'subtle', size, ...props }, ref) => {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     return (
       <Button ref={ref} size={size ?? (isAdmin7Pill ? 'icon' : 'sm')} variant={variant} {...props}>
         <ArrowRight />

@@ -1,4 +1,4 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -94,7 +94,7 @@ interface DataListRowProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(
   ({ children, className, ...props }, ref) => {
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     return (
       <div
         ref={ref}

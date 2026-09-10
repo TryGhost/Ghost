@@ -347,7 +347,7 @@ export const Admin7Disabled: Story = {
     },
   },
   render: () => (
-    <ShadeApp admin7={{ pill: false }} darkMode={false}>
+    <ShadeApp darkMode={false} isAdmin7Pill={false}>
       <PageHeader.ActionGroup>
         <PageHeader.Action label="Sort">
           <ArrowUpDown />

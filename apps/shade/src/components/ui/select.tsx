@@ -1,4 +1,3 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -73,8 +72,7 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { controlShape } = useShade();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { controlShape, isAdmin7Pill } = useShade();
     const resolvedShape = shape ?? controlShape;
     return (
       <SelectPrimitive.Trigger

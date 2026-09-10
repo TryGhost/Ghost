@@ -1,4 +1,3 @@
-import { useAdmin7 } from '@/providers/admin7-provider';
 import React from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Inline, type InlineProps } from '@/components/primitives/inline';
@@ -25,8 +24,7 @@ type FilterBarProps = React.PropsWithChildren & {
  *   </FilterBar>
  */
 function FilterBarRoot({ className, children }: FilterBarProps) {
-  const { controlShape } = useShade();
-  const { pill: isAdmin7Pill } = useAdmin7();
+  const { controlShape, isAdmin7Pill } = useShade();
 
   if (React.Children.count(children) === 0) {
     return null;
@@ -56,7 +54,7 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
 const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
   ({ className, gap = 'sm', ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
 
     return (
       <Inline
@@ -78,7 +76,7 @@ FilterBarActions.displayName = 'FilterBar.Actions';
 const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, size, variant, ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { pill: isAdmin7Pill } = useAdmin7();
+    const { isAdmin7Pill } = useShade();
     const usePillFilterBarStyle = isInFilterBar && isAdmin7Pill;
 
     return (
