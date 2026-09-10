@@ -5,7 +5,7 @@ import {
   preparationPages,
   resolvePreparationMembers,
   runPreparationWorkers,
-  selectedMemberIds,
+  selectPreparationCandidates,
   validatePreparationConcurrency,
   waitForPreparationRetry,
 } from '../../../../../core/server/services/email-service/recipient-preparation';
@@ -40,8 +40,8 @@ describe('Recipient preparation workers', () => {
     }
   });
 
-  it('counts ordered candidate IDs once and pages without lookahead', () => {
-    const ids = selectedMemberIds([{ id: 'c' }, { id: 'c' }, { id: 'b' }, { id: 'a' }]);
+  it('pages selected candidates without lookahead', () => {
+    const ids = ['c', 'b', 'a'];
     assert.deepEqual(
       [...preparationPages(ids, 2)],
       [
@@ -49,6 +49,43 @@ describe('Recipient preparation workers', () => {
         { ids: ['a'], offset: 2, useFallbackDomain: false },
       ],
     );
+  });
+
+  it('selects ordered candidates for every segment in one statement, including empty segments', async () => {
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    try {
+      await db.schema.createTable('members', (table) => {
+        table.string('id').primary();
+        table.string('status');
+      });
+      await db.schema.createTable('matches', (table) => table.string('member_id'));
+      await db('members').insert([
+        { id: 'a', status: 'free' },
+        { id: 'b', status: 'paid' },
+        { id: 'c', status: 'free' },
+      ]);
+      await db('matches').insert([{ member_id: 'c' }, { member_id: 'c' }]);
+      const queries: string[] = [];
+      db.on('query', (query) => queries.push(query.sql));
+      assert.deepEqual(
+        await selectPreparationCandidates(db, [
+          db('members').where('status', 'comped'),
+          db('members').where('status', 'free'),
+          db('members').where('status', 'paid'),
+          db('members').join('matches', 'matches.member_id', 'members.id'),
+        ]),
+        [[], ['c', 'a'], ['b'], ['c']],
+      );
+      assert.equal(queries.length, 1);
+      assert.deepEqual(await selectPreparationCandidates(db, []), []);
+      assert.equal(queries.length, 1);
+    } finally {
+      await db.destroy();
+    }
   });
 
   it('ends a page at the warming boundary and fills the next on the fallback domain', () => {
