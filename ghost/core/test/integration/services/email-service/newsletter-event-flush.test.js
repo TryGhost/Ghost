@@ -4,6 +4,13 @@ const db = require('../../../../core/server/data/db');
 const models = require('../../../../core/server/models');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
+const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
+const {
+  NewsletterEmailAnalyticsBatchProcessor,
+} = require('../../../../core/server/services/email-analytics/newsletter-email-analytics-batch-processor');
+const {
+  EventProcessingResult,
+} = require('../../../../core/server/services/email-analytics/event-processing-result');
 const {
   EmailDeliveredEvent,
 } = require('../../../../core/server/services/email-service/events/email-delivered-event');
@@ -34,6 +41,148 @@ describe('Newsletter event flush', function () {
       db,
       models,
     });
+  });
+
+  it('keeps replayed members available for recount until counter updates are atomic', async function () {
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config: { get: () => true },
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const event = {
+      type: 'opened',
+      emailId: recipient.email_id,
+      recipientEmail: recipient.member_email,
+      timestamp: new Date('2026-09-01T12:00:00.000Z'),
+    };
+    const first = new EventProcessingResult();
+    await processor.processBatch([event, event], first, {});
+    assert.equal(first.opened, 2);
+    assert.deepEqual(first.memberIds, [recipient.member_id]);
+    const replay = new EventProcessingResult();
+    const cursor = {};
+    await processor.processBatch([event], replay, cursor);
+    assert.equal(replay.opened, 1);
+    assert.deepEqual(replay.memberIds, [recipient.member_id]);
+    assert.deepEqual(cursor, { lastEventTimestamp: event.timestamp });
+  });
+
+  it('retains committed members and the old cursor when a later email fails, then replays safely', async function () {
+    const secondEmail = fixtureManager.get('emails', 1);
+    const batch = await models.EmailBatch.add({ email_id: secondEmail.id, status: 'pending' });
+    const second = await models.EmailRecipient.add({
+      ...fixtureManager.get('email_recipients', 1),
+      id: undefined,
+      email_id: secondEmail.id,
+      batch_id: batch.id,
+      opened_at: null,
+    });
+    const rows = [recipient, second.toJSON()].sort((a, b) => a.email_id.localeCompare(b.email_id));
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config: { get: () => true },
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const events = rows.toReversed().map((row) => ({
+      type: 'opened',
+      emailId: row.email_id,
+      recipientEmail: row.member_email,
+      timestamp: new Date('2026-09-01T12:00:00.000Z'),
+    }));
+    const result = new EventProcessingResult();
+    const previous = new Date('2026-09-01T11:00:00.000Z');
+    const cursor = { lastEventTimestamp: previous };
+    try {
+      await db.knex.raw(
+        `CREATE TRIGGER reject_later_email BEFORE UPDATE ON email_recipients
+        FOR EACH ROW BEGIN
+          IF NEW.email_id = ? AND NEW.opened_at IS NOT NULL THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'later email failed';
+          END IF;
+        END`,
+        [rows[1].email_id],
+      );
+      try {
+        await assert.rejects(processor.processBatch(events, result, cursor), /later email failed/);
+        assert.deepEqual(
+          result.memberIds,
+          rows.toReversed().map((row) => row.member_id),
+        );
+        assert.equal(cursor.lastEventTimestamp, previous);
+        const committed = await models.EmailRecipient.findOne(
+          { id: rows[0].id },
+          { require: true },
+        );
+        assert.equal(committed.get('opened_at').toISOString(), events[0].timestamp.toISOString());
+      } finally {
+        await db.knex.raw('DROP TRIGGER reject_later_email');
+      }
+      const replay = new EventProcessingResult();
+      await processor.processBatch(events, replay, cursor);
+      assert.equal(replay.opened, 2);
+      assert.deepEqual(
+        replay.memberIds,
+        rows.toReversed().map((row) => row.member_id),
+      );
+      assert.equal(cursor.lastEventTimestamp, events[0].timestamp);
+    } finally {
+      await models.EmailRecipient.destroy({ id: second.id });
+      await models.EmailBatch.destroy({ id: batch.id });
+    }
+  });
+
+  it('keeps recount candidates when a commit succeeds but its acknowledgement is lost', async function () {
+    const lostAckStorage = new NewsletterEmailEventStorage({
+      config: { get: () => true },
+      models,
+      db: {
+        knex: {
+          transaction: async (callback) => {
+            await db.knex.transaction(callback);
+            throw Object.assign(new Error('commit acknowledgement lost'), { code: 'ECONNRESET' });
+          },
+        },
+      },
+    });
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config: { get: () => true },
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: lostAckStorage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const event = {
+      type: 'opened',
+      emailId: recipient.email_id,
+      recipientEmail: recipient.member_email,
+      timestamp: new Date('2026-09-01T12:00:00.000Z'),
+    };
+    const result = new EventProcessingResult();
+    const cursor = {};
+    await assert.rejects(processor.processBatch([event], result, cursor), /acknowledgement lost/);
+    assert.deepEqual(result.memberIds, [recipient.member_id]);
+    assert.deepEqual(cursor, {});
+    const committed = await models.EmailRecipient.findOne({ id: recipient.id }, { require: true });
+    assert.equal(committed.get('opened_at').toISOString(), event.timestamp.toISOString());
+
+    const restarted = new NewsletterEmailAnalyticsBatchProcessor({
+      config: { get: () => true },
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const replay = new EventProcessingResult();
+    await restarted.processBatch([event], replay, {});
+    assert.deepEqual(replay.memberIds, [recipient.member_id]);
   });
 
   it('returns only the first open transition when events are duplicated and replayed', async function () {

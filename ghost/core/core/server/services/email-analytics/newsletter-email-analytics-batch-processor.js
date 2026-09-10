@@ -44,23 +44,27 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
+      let lastEventTimestamp = fetchData.lastEventTimestamp;
 
       for (const event of events) {
         const batchResult = await this.#processEvent(event, recipientCache);
 
         // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+        if (!lastEventTimestamp || (event.timestamp && event.timestamp > lastEventTimestamp)) {
+          lastEventTimestamp = event.timestamp;
         }
 
+        // Keep replayed members eligible for recount until counters are written
+        // atomically with recipient transitions. A prior run may have committed
+        // the recipient update but failed before refreshing member statistics.
         result.merge(batchResult);
       }
 
       // Flush all batched updates to the database
       await this.#emailEventProcessor.flushBatchedUpdates();
+      // Advance only after every email has committed. The caller can replay
+      // this page after a failure while still recounting earlier committed sets.
+      fetchData.lastEventTimestamp = lastEventTimestamp;
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {

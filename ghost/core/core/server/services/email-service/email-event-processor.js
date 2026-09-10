@@ -35,6 +35,7 @@ async function waitForEvent() {
  * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
  * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
  * @property {(event: SpamComplaintEvent) => Promise<void>} handleComplained
+ * @property {import('./newsletter-email-event-storage')['flushBatchedUpdates']} flushBatchedUpdates
  */
 
 /**
@@ -364,7 +365,7 @@ class EmailEventProcessor {
 
   /**
    * Flush any batched updates to the database
-   * @returns {Promise<void>}
+   * @returns {ReturnType<import('./newsletter-email-event-storage')['flushBatchedUpdates']>}
    */
   async flushBatchedUpdates() {
     return await this.#eventStorage.flushBatchedUpdates();
