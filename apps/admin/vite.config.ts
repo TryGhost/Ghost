@@ -49,11 +49,7 @@ export default defineConfig(({ command }) => ({
     // forwardConsole: { logLevels: ['warn', 'error'] }
   },
   optimizeDeps: {
-    // limit-service is CommonJS, and Vite only converts CommonJS while pre-bundling. A
-    // workspace package is treated as source and served raw, where `module` does not exist,
-    // so the import fails and the limiter silently falls back to reporting every host limit
-    // as absent. Force it through the pre-bundler until the package itself is converted.
-    include: ['@tryghost/koenig-lexical', '@tryghost/limit-service'],
+    include: ['@tryghost/koenig-lexical'],
   },
   resolve: sharedResolve,
   test: {
