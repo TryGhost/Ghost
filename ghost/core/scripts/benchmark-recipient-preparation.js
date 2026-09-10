@@ -25,7 +25,7 @@ process.env.database__client = 'mysql2';
 process.env.database__connection__host = '127.0.0.1';
 process.env.database__connection__port = '3306';
 process.env.database__connection__user ||= 'root';
-process.env.database__connection__password ||= '';
+process.env.database__connection__password ??= 'root';
 process.env.database__connection__database = database;
 process.env.database__pool__min = '0';
 process.env.database__pool__max = '5';
@@ -123,8 +123,21 @@ async function main() {
     BEFORE_RETRY_CONFIG: { maxRetries: 0 },
   });
   let queries = 0;
-  db.knex.on('query', () => {
+  const memberLookupStarts = new Map();
+  db.knex.on('query', (query) => {
     queries += 1;
+    if (query.sql.includes('`uuid`') && query.sql.includes('from `members`')) {
+      memberLookupStarts.set(query.__knexQueryUid, performance.now());
+    }
+  });
+  db.knex.on('query-response', (rows, query) => {
+    const startedAt = memberLookupStarts.get(query.__knexQueryUid);
+    if (startedAt !== undefined) {
+      metrics.member_lookup_ms = (metrics.member_lookup_ms ?? 0) + performance.now() - startedAt;
+      metrics.member_lookup_queries = (metrics.member_lookup_queries ?? 0) + 1;
+      metrics.member_lookup_rows = (metrics.member_lookup_rows ?? 0) + rows.length;
+      memberLookupStarts.delete(query.__knexQueryUid);
+    }
   });
   async function measure(email, phase) {
     global.gc?.();

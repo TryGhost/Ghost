@@ -3,6 +3,7 @@ const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const SendEmailJob = require('./jobs/send-email-job').default;
+const { validateMaxConcurrency } = require('../../lib/promise-pool');
 const {
   RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
@@ -12,9 +13,8 @@ const {
   missingRecipientFields,
 } = require('./recipient-accounting');
 const {
-  validatePreparationConcurrency,
   selectPreparationCandidates,
-  resolvePreparationMembers,
+  createPreparationMemberResolver,
   runPreparationWorkers,
   preparationPages,
   waitForPreparationRetry,
@@ -113,7 +113,10 @@ class BatchSendingService {
     this.#db = db;
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
-    this.#batchCreationConcurrency = validatePreparationConcurrency(batchCreationConcurrency);
+    this.#batchCreationConcurrency = validateMaxConcurrency(
+      batchCreationConcurrency,
+      'bulkEmail:batchCreationConcurrency',
+    );
 
     if (BEFORE_RETRY_CONFIG) {
       this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -458,7 +461,6 @@ class BatchSendingService {
     const startedAt = Date.now();
     await this.#startPreparation(email, attemptId);
     const counts = await this.#prepareAudience({ email, post, newsletter, attemptId });
-    this.#checkPreparationActive();
     const batches = await this.#completePreparation(email, { ...counts, attemptId });
     logging.info(
       {
@@ -490,19 +492,21 @@ class BatchSendingService {
 
   async #selectPreparationAudience({ email, newsletter, segments, attemptId }) {
     const startedAt = Date.now();
+    this.#checkPreparationActive();
+    // Parse once outside retries: malformed filters and newsletter settings cannot recover.
+    const queries = segments.map((segment) => {
+      const filter = this.#emailSegmenter.getMemberFilterForSegment(
+        newsletter,
+        email.get('recipient_filter'),
+        segment,
+      );
+      return this.#models.Member.getFilteredCollectionQuery({
+        filter: filter + `+id:<'${email.id}'`,
+      });
+    });
     const candidates = await this.retryDb(
       () => {
         this.#checkPreparationActive();
-        const queries = segments.map((segment) => {
-          const filter = this.#emailSegmenter.getMemberFilterForSegment(
-            newsletter,
-            email.get('recipient_filter'),
-            segment,
-          );
-          return this.#models.Member.getFilteredCollectionQuery({
-            filter: filter + `+id:<'${email.id}'`,
-          });
-        });
         return selectPreparationCandidates(this.#db.knex, queries);
       },
       {
@@ -543,8 +547,10 @@ class BatchSendingService {
       if (ids.length === 0) {
         continue;
       }
+      const resolveMembers = createPreparationMemberResolver(this.#db.knex);
       await runPreparationWorkers(
         preparationPages(ids, batchSize, remainingCapacity),
+        // Avoid allocating idle workers for a small audience and a large configured limit.
         // Warming can introduce one additional partial page.
         Math.min(this.#batchCreationConcurrency, Math.ceil(ids.length / batchSize) + 1),
         () => this.#checkPreparationActive(),
@@ -555,6 +561,7 @@ class BatchSendingService {
               segment,
               attemptId,
               page,
+              resolveMembers,
             },
             signal,
           );
@@ -567,11 +574,11 @@ class BatchSendingService {
     return { candidateCount, excludedCount };
   }
 
-  async #prepareSweptPage({ email, segment, attemptId, page }, signal) {
+  async #prepareSweptPage({ email, segment, attemptId, page, resolveMembers }, signal) {
     const rows = await this.retryDb(
       () => {
         this.#checkPreparationActive(signal);
-        return resolvePreparationMembers(this.#db.knex, page.ids);
+        return resolveMembers(page.ids);
       },
       {
         ...this.#getBeforeRetryConfig(email),
@@ -580,11 +587,9 @@ class BatchSendingService {
       },
     );
     this.#checkPreparationActive(signal);
-    const byId = new Map(rows.map((row) => [row.id, row]));
-    // Retain missing IDs so the page's exclusion count includes them.
-    const candidates = page.ids.map((id) => {
-      const member = byId.get(id);
-      if (!member) {
+    const foundIds = new Set(rows.map((row) => row.id));
+    for (const id of page.ids) {
+      if (!foundIds.has(id)) {
         logging.info(
           {
             event: { name: 'email.preparation.excluded' },
@@ -596,16 +601,16 @@ class BatchSendingService {
           'Member no longer found during newsletter preparation',
         );
       }
-      return member ?? { id, missing: true };
-    });
-    return this.#preparePage({
+    }
+    const excludedCount = await this.#preparePage({
       email,
       segment,
-      members: candidates,
+      members: rows,
       attemptId,
       useFallbackDomain: page.useFallbackDomain,
       signal,
     });
+    return page.ids.length - rows.length + excludedCount;
   }
 
   async #verifyFrozenPreparation(email, retryOptions) {
@@ -672,11 +677,7 @@ class BatchSendingService {
 
   async #preparePage({ email, segment, members, attemptId, useFallbackDomain, signal }) {
     this.#checkPreparationActive(signal);
-    const snapshot = this.#snapshotPreparationMembers(
-      email,
-      members.filter((member) => !member.missing),
-      attemptId,
-    );
+    const snapshot = this.#snapshotPreparationMembers(email, members, attemptId);
     if (snapshot.length > 0) {
       await this.#createBatchWithRecovery(
         email,
@@ -702,7 +703,8 @@ class BatchSendingService {
       email_count: verified.recipientCount,
       prepared_at: new Date(),
     };
-    this.#checkPreparationActive();
+    // Finish freezing fully prepared recipients during shutdown. The retry policy
+    // limits this final save to one attempt, avoiding a needless discard and rebuild.
     await this.retryDb(
       () => email.save(preparation, { patch: true, require: false, autoRefresh: false }),
       {
