@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { FocusGuards } from '@radix-ui/react-focus-guards';
+import { FocusScope } from '@radix-ui/react-focus-scope';
 import { UnsplashSearchModal } from '@tryghost/kg-unsplash-selector';
 import { Button } from '@tryghost/shade/components';
 import { ImageUploadActions } from '@tryghost/shade/patterns';
 import { cn } from '@tryghost/shade/utils';
 import { useFramework } from '@tryghost/admin-x-framework';
+import { unsplashSearchModal } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 
 export interface UnsplashSelection {
@@ -36,12 +39,22 @@ export function UnsplashPicker({
   onSelect,
 }: UnsplashPickerProps) {
   const { unsplashConfig } = useFramework();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
+
+  // A gate that goes off while the search is open closes it, so nothing is left
+  // listening for a field the writer can no longer see.
+  useEffect(() => {
+    if (!enabled) {
+      setIsOpen(false);
+    }
+  }, [enabled]);
 
   // The modal answers Escape itself but does not mark it, so a settings pane
   // behind it would read the same Escape as its own and close too.
   useEffect(() => {
-    if (!isOpen) {
+    if (!modalRoot) {
       return;
     }
 
@@ -51,9 +64,9 @@ export function UnsplashPicker({
       }
     };
 
-    window.addEventListener('keydown', markHandled, true);
-    return () => window.removeEventListener('keydown', markHandled, true);
-  }, [isOpen]);
+    modalRoot.addEventListener('keydown', markHandled, true);
+    return () => modalRoot.removeEventListener('keydown', markHandled, true);
+  }, [modalRoot]);
 
   if (!enabled) {
     return null;
@@ -63,6 +76,7 @@ export function UnsplashPicker({
     <>
       <ImageUploadActions className={cn('top-1 right-1 opacity-100', className)}>
         <Button
+          ref={triggerRef}
           aria-label={label}
           className="group/unsplash hover:bg-button-hover"
           disabled={disabled}
@@ -79,16 +93,32 @@ export function UnsplashPicker({
       </ImageUploadActions>
       {isOpen &&
         createPortal(
-          <UnsplashSearchModal
-            unsplashProviderConfig={unsplashConfig}
-            onClose={() => setIsOpen(false)}
-            onImageInsert={(inserted) => {
-              if (inserted.src) {
-                onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
-              }
-              setIsOpen(false);
-            }}
-          />,
+          // Keep keyboard navigation and gallery clicks inside the root that
+          // marks Escape, so the settings pane behind it never answers too.
+          <FocusGuards>
+            <FocusScope
+              asChild
+              loop
+              trapped
+              onUnmountAutoFocus={(event) => {
+                event.preventDefault();
+                triggerRef.current?.focus();
+              }}
+            >
+              <div ref={setModalRoot} data-testid={unsplashSearchModal} tabIndex={-1}>
+                <UnsplashSearchModal
+                  unsplashProviderConfig={unsplashConfig}
+                  onClose={() => setIsOpen(false)}
+                  onImageInsert={(inserted) => {
+                    if (inserted.src) {
+                      onSelect({ src: inserted.src, caption: inserted.caption ?? '' });
+                    }
+                    setIsOpen(false);
+                  }}
+                />
+              </div>
+            </FocusScope>
+          </FocusGuards>,
           document.body,
         )}
     </>

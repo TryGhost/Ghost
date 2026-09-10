@@ -25,6 +25,8 @@
     "@codemirror/state": "catalog:",
     "@codemirror/theme-one-dark": "catalog:",
     "@dnd-kit/sortable": "catalog:",
+    "@radix-ui/react-focus-guards": "catalog:",
+    "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
     "@svg-maps/world": "2.0.0",
     "@tanstack/react-query": "catalog:",
