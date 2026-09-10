@@ -41,6 +41,7 @@
     "@testing-library/react": "catalog:react17",
     "@testing-library/user-event": "14.6.6",
     "@tryghost/i18n": "workspace:*",
+    "@tryghost/metafield-types": "workspace:*",
     "@types/react": "catalog:react17",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
