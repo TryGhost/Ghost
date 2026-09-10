@@ -90,6 +90,8 @@ export default class App extends React.Component {
     this.state = {
       site: null,
       member: null,
+      // Custom fields open to members: null until the account popup asks for them.
+      customFields: null,
       offers: [],
       page: 'loading',
       showPopup: false,
@@ -1399,6 +1401,7 @@ export default class App extends React.Component {
       scrollbarWidth,
       otcRef,
       inboxLinks,
+      customFields,
     } = this.state;
     const contextPage = this.getContextPage({ site, page, member });
     const contextMember = this.getContextMember({
@@ -1420,6 +1423,7 @@ export default class App extends React.Component {
       pageQuery,
       pageData,
       member: contextMember,
+      customFields,
       lastPage,
       showPopup,
       popupNotification,

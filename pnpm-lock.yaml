@@ -1878,6 +1878,9 @@ importers:
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@tryghost/metafield-types':
+        specifier: workspace:*
+        version: link:../../packages/metafield-types
       '@types/react':
         specifier: catalog:react17
         version: 17.0.93

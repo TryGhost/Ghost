@@ -7,25 +7,53 @@ import BackButton from '../common/back-button';
 import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
+import { customFieldPartLabel } from '../../utils/helpers';
+import { FIELD_TYPE_IDS, subFieldsOf } from '@tryghost/metafield-types/structure';
+
+/**
+ * How an address is laid out: the short parts share a row, as Stripe's checkout does.
+ * Presentation only; which parts exist, and the order they are shown in, comes from
+ * the field type. A part this layout does not name gets a row of its own, so a part
+ * added to the type is still there to fill in.
+ */
+const ADDRESS_ROWS = [['line1'], ['line2'], ['city', 'state'], ['postal_code', 'country']];
+
+function addressRows(inputs) {
+  const named = ADDRESS_ROWS.flat();
+  const rows = ADDRESS_ROWS.map((parts) => inputs.filter((input) => parts.includes(input.part)));
+  inputs.filter((input) => !named.includes(input.part)).forEach((input) => rows.push([input]));
+  return rows.filter((row) => row.length > 0);
+}
+
+/** A part is changed when what the member has differs from what the site holds. */
+const changedParts = (parts, current, original) =>
+  parts.filter((part) => (current?.[part] ?? '') !== (original?.[part] ?? ''));
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
 
   constructor(props, context) {
     super(props, context);
-    const { name = '', email = '' } = context.member || {};
+    const { name = '', email = '', metafields } = context.member || {};
     this.state = {
       name,
       email,
+      metafields: metafields?.custom || {},
     };
   }
 
   componentDidMount() {
-    const { member } = this.context;
+    const { member, customFields } = this.context;
     if (!member) {
       this.context.doAction('switchPage', {
         page: 'signin',
       });
+      return;
+    }
+    // The account page asks for these on the way here; a link straight to this page
+    // arrives without them.
+    if (customFields === null) {
+      this.context.doAction('loadCustomFields');
     }
   }
 
@@ -51,7 +79,12 @@ export default class AccountProfilePage extends React.Component {
         const hasFormErrors = errors && Object.values(errors).filter((d) => !!d).length > 0;
         if (!hasFormErrors) {
           this.context.doAction('clearPopupNotification');
-          this.context.doAction('updateProfile', { email, name });
+          const metafields = this.getChangedMetafields();
+          this.context.doAction('updateProfile', {
+            email,
+            name,
+            ...(metafields ? { metafields } : {}),
+          });
         }
       },
     );
@@ -130,9 +163,90 @@ export default class AccountProfilePage extends React.Component {
   }
 
   handleInputChange(e, field) {
-    const fieldName = field.name;
+    const { value } = e.target;
+    if (field.customField) {
+      const { key } = field.customField;
+      this.setState(({ metafields }) => ({
+        metafields: {
+          ...metafields,
+          [key]: field.part ? { ...(metafields[key] || {}), [field.part]: value } : value,
+        },
+      }));
+      return;
+    }
     this.setState({
-      [fieldName]: e.target.value,
+      [field.name]: value,
+    });
+  }
+
+  /** The opened fields this build can draw: a type it has never heard of is left out. */
+  customFields() {
+    return (this.context.customFields || []).filter((field) => FIELD_TYPE_IDS.includes(field.type));
+  }
+
+  /**
+   * What the member changed, in the shape the members API takes: only writable fields,
+   * since naming one they may only read refuses the whole save, and only the parts of
+   * an address they touched, since each part records who last wrote it. An address
+   * emptied of every part is cleared rather than sent empty.
+   */
+  getChangedMetafields() {
+    const original = this.context.member.metafields?.custom || {};
+    const custom = {};
+    this.customFields()
+      .filter((field) => field.access.member === 'write')
+      .forEach((field) => {
+        const value = this.state.metafields[field.key];
+        const parts = subFieldsOf(field.type);
+        if (!parts) {
+          if ((value ?? '') !== (original[field.key] ?? '')) {
+            custom[field.key] = value;
+          }
+          return;
+        }
+        const changed = changedParts(parts, value, original[field.key]);
+        if (changed.length === 0) {
+          return;
+        }
+        custom[field.key] = parts.some((part) => value?.[part])
+          ? Object.fromEntries(changed.map((part) => [part, value[part]]))
+          : null;
+      });
+    return Object.keys(custom).length > 0 ? { custom } : undefined;
+  }
+
+  /** Input descriptors for one custom field: one for a scalar, one per part for an address. */
+  getCustomFieldInputs(field) {
+    const readOnly = field.access.member !== 'write';
+    const value = this.state.metafields[field.key];
+    const parts = subFieldsOf(field.type);
+    if (!parts) {
+      return [
+        {
+          type: field.type === 'long_text' ? 'textarea' : 'text',
+          value: value ?? '',
+          label: field.name,
+          name: `custom:${field.key}`,
+          readOnly,
+          customField: field,
+        },
+      ];
+    }
+    return parts.map((part) => {
+      const label = customFieldPartLabel(part);
+      return {
+        type: 'text',
+        value: value?.[part] ?? '',
+        // The part's label is read by assistive tech and shown as the placeholder; the
+        // field's own name labels the group.
+        label,
+        hideLabel: true,
+        placeholder: label,
+        name: `custom:${field.key}:${part}`,
+        readOnly,
+        customField: field,
+        part,
+      };
     });
   }
 
@@ -173,6 +287,34 @@ export default class AccountProfilePage extends React.Component {
     }
   }
 
+  renderCustomFields() {
+    const onChange = (e, input) => this.handleInputChange(e, input);
+    const onKeyDown = (e, input) => this.onKeyDown(e, input);
+    return this.customFields().map((field) => {
+      const inputs = this.getCustomFieldInputs(field);
+      if (!subFieldsOf(field.type)) {
+        return (
+          <InputForm key={field.key} fields={inputs} onChange={onChange} onKeyDown={onKeyDown} />
+        );
+      }
+      const labelId = `custom-${field.key}-label`;
+      return (
+        <section key={field.key} role="group" aria-labelledby={labelId}>
+          <div id={labelId} className="gh-portal-input-label">
+            {field.name}
+          </div>
+          <div className="gh-portal-input-group">
+            {addressRows(inputs).map((row) => (
+              <div key={row[0].part} className="gh-portal-input-group-row">
+                <InputForm fields={row} onChange={onChange} onKeyDown={onKeyDown} />
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    });
+  }
+
   renderProfileData() {
     return (
       <div className="gh-portal-section">
@@ -181,6 +323,7 @@ export default class AccountProfilePage extends React.Component {
           onChange={(e, field) => this.handleInputChange(e, field)}
           onKeyDown={(e, field) => this.onKeyDown(e, field)}
         />
+        {this.renderCustomFields()}
       </div>
     );
   }

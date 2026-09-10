@@ -1,6 +1,6 @@
 import React from 'react';
 import AppContext from '../../../app-context';
-import { getSupportAddress } from '../../../utils/helpers';
+import { getSupportAddress, hasCustomFieldsEnabled } from '../../../utils/helpers';
 
 import AccountFooter from './components/account-footer';
 import AccountMain from './components/account-main';
@@ -23,6 +23,13 @@ export default class AccountHomePage extends React.Component {
           redirect: window.location.href, // This includes the search/fragment of the URL (#/portal/account) which is missing from the default referer header
         },
       });
+      return;
+    }
+
+    // Asked for here, ahead of the settings page that shows them, so that page draws
+    // whole rather than growing when the site answers.
+    if (hasCustomFieldsEnabled({ site })) {
+      this.context.doAction('loadCustomFields');
     }
   }
 

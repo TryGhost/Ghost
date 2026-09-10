@@ -1,9 +1,11 @@
 import { t } from './i18n';
 
 export class HumanReadableError extends Error {
-  constructor(message, { code } = {}) {
+  constructor(message, { code, property } = {}) {
     super(message);
     this.code = code ?? null;
+    // Which part of the request the server refused, when it says (e.g. a custom field).
+    this.property = property ?? null;
   }
 
   /**
@@ -12,8 +14,8 @@ export class HumanReadableError extends Error {
    * @returns {HumanReadableError|undefined}
    */
   static async fromApiResponse(res) {
-    // Bad request + Too many requests
-    if (res.status === 400 || res.status === 429) {
+    // Bad request + Unprocessable + Too many requests
+    if (res.status === 400 || res.status === 422 || res.status === 429) {
       try {
         return fromErrorsJSON(await res.json());
       } catch (e) {
@@ -51,6 +53,7 @@ function fromErrorsJSON(json) {
 
   return new HumanReadableError(error.message, {
     code: error.code,
+    property: error.property,
   });
 }
 

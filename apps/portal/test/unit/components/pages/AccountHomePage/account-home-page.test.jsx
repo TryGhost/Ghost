@@ -33,6 +33,18 @@ describe('Account Home Page', () => {
     expect(mockDoActionFn).toHaveBeenCalledWith('signout');
   });
 
+  test('asks for the custom fields open to members on opening, when the site has them', () => {
+    const { mockDoActionFn } = setup({
+      site: getSiteData({ labs: { membersCustomFields: true } }),
+    });
+    expect(mockDoActionFn).toHaveBeenCalledWith('loadCustomFields');
+  });
+
+  test('does not ask for custom fields when the site does not have them', () => {
+    const { mockDoActionFn } = setup({ site: getSiteData() });
+    expect(mockDoActionFn).not.toHaveBeenCalledWith('loadCustomFields');
+  });
+
   test('can show Manage button for few newsletters', () => {
     const { mockDoActionFn, utils } = setup({ site: site });
 
