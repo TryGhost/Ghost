@@ -50,6 +50,58 @@ describe('Mailgun Logs API client', () => {
     sinon.restore();
   });
 
+  it.each<{ headers: Record<string, string>; expected: { retryAt: number } | undefined }>([
+    {
+      headers: { 'retry-after': 'Thu, 10 Sep 2026 15:00:09 GMT' },
+      expected: { retryAt: Date.parse('2026-09-10T15:00:09Z') },
+    },
+    {
+      headers: {
+        'retry-after': 'invalid',
+        'x-ratelimit-remaining': '-1',
+        'x-ratelimit-reset': '9007199254740993',
+      },
+      expected: undefined,
+    },
+  ])(
+    'normalizes HTTP-date hints and ignores malformed metadata: %j',
+    async ({ headers, expected }) => {
+      const scope = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs')
+        .reply(200, { items: [], pagination: {} }, headers);
+      assert.deepEqual((await client().getPage(pageOptions)).rateLimit, expected);
+      scope.done();
+    },
+  );
+
+  it.each([200, 429])('retains only normalized rate hints from a %i response', async (status) => {
+    const now = Date.parse('2026-09-10T15:00:00Z');
+    sinon.useFakeTimers({ now, toFake: ['Date'] });
+    const scope = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(
+        status,
+        { items: [], pagination: {} },
+        {
+          'x-ratelimit-remaining': '0',
+          'x-ratelimit-reset': String(now + 5000),
+          'retry-after': '7',
+          'x-private-provider': 'private-secret',
+        },
+      );
+    const expected = { remaining: 0, resetAt: now + 5000, retryAt: now + 7000 };
+    if (status === 200) {
+      assert.deepEqual((await client().getPage(pageOptions)).rateLimit, expected);
+    } else {
+      await assert.rejects(client().getPage(pageOptions), (error: unknown) => {
+        assert.deepEqual((error as { rateLimit?: unknown }).rateLimit, expected);
+        assert.equal(JSON.stringify(error).includes('private-secret'), false);
+        return true;
+      });
+    }
+    scope.done();
+  });
+
   it.each([200, 429])(
     'records request timing and safe HTTP status for a %i response',
     async (statusCode) => {

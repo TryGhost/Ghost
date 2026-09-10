@@ -40,6 +40,103 @@ describe('fetchMailgunEvents with Logs selected', () => {
     sinon.restore();
   });
 
+  it('aborts an in-progress quota wait when the current callback fails', async () => {
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(
+        200,
+        { items: [event('one')], pagination: { next: 'two' } },
+        { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(Date.now() + 10000) },
+      );
+    const failure = new Error('Processing failed');
+    await assert.rejects(
+      fetchMailgunEvents({
+        config: read({
+          bulkEmail: { mailgun },
+          'emailAnalytics:fetchSource': 'logs',
+          'emailAnalytics:fetchPrefetch': true,
+        }),
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        batchHandler: async () => {
+          throw failure;
+        },
+      }),
+      (error) => error === failure,
+    );
+    first.done();
+  }, 1500);
+
+  it('does not request another page before a reset that exceeds the wait budget', async () => {
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(
+        200,
+        { items: [event('one')], pagination: { next: 'two' } },
+        { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(Date.now() + 60000) },
+      );
+    const ids: string[] = [];
+    await assert.rejects(
+      fetchMailgunEvents({
+        config,
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        batchHandler: (items: MailgunAnalyticsEvent[]) => {
+          ids.push(...items.map((item) => item.id));
+        },
+      }),
+      /polling budget/,
+    );
+    assert.deepEqual(ids, ['one']);
+    first.done();
+  });
+
+  it.each([false, true])(
+    'retries only the rate-limited page with unchanged filters and prefetch %s',
+    async (prefetch) => {
+      sinon.stub(Math, 'random').returns(0);
+      const requests: unknown[] = [];
+      const first = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs', (body) => !body.pagination.token)
+        .reply(200, { items: [event('one')], pagination: { next: 'two' } });
+      const matchNext = (body: { pagination: { token: string } }) => {
+        requests.push(body);
+        return body.pagination.token === 'two';
+      };
+      const limited = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs', matchNext)
+        .reply(429, {}, { 'x-ratelimit-reset': String(Date.now() + 1000) });
+      const retried = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs', matchNext)
+        .reply(200, { items: [event('two')], pagination: {} });
+      const ids: string[] = [];
+      await fetchMailgunEvents({
+        config: read({
+          bulkEmail: { mailgun },
+          'emailAnalytics:fetchSource': 'logs',
+          'emailAnalytics:fetchPrefetch': prefetch,
+        }),
+        settings,
+        tags: ['bulk-email'],
+        begin,
+        end,
+        batchHandler: (items: MailgunAnalyticsEvent[]) => {
+          ids.push(...items.map((item) => item.id));
+        },
+      });
+      assert.deepEqual(ids, ['one', 'two']);
+      assert.equal(requests.length, 2);
+      assert.deepEqual(requests[0], requests[1]);
+      first.done();
+      limited.done();
+      retried.done();
+    },
+  );
+
   it('aborts and settles a prefetched HTTP request when processing fails', async () => {
     const pages = sinon.spy(MailgunLogsClient.prototype, 'getPage');
     let notifyRequested!: () => void;

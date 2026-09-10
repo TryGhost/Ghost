@@ -1,6 +1,7 @@
 import logging from '@tryghost/logging';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
+import { MailgunRateLimit } from './mailgun-rate-limit';
 
 // A domain whose pages keep paging without matching events still bounds its
 // work: raw records count toward the budget, and pages are capped outright.
@@ -34,6 +35,12 @@ export async function fetchMailgunLogs({
     return;
   }
   const client = new MailgunLogsClient(mailgun);
+  const limiter = new MailgunRateLimit();
+  const readPage = (options: Parameters<MailgunLogsClient['getPage']>[0]) =>
+    limiter.run(async () => {
+      const page = await client.getPage(options);
+      return { value: page, rateLimit: page.rateLimit };
+    }, options.signal);
   const prefetch = config.get('emailAnalytics:fetchPrefetch') === true;
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
@@ -79,7 +86,7 @@ export async function fetchMailgunLogs({
           }
           page = result.page;
         } else {
-          page = await client.getPage(options);
+          page = await readPage(options);
         }
         pages += 1;
         rawCount += page.rawCount;
@@ -108,7 +115,7 @@ export async function fetchMailgunLogs({
         if (prefetch && !stop) {
           // Attach both outcomes immediately: a fast failure must not become an
           // unhandled rejection while the current page is still being processed.
-          pending = client.getPage({ ...options, token: page.next }).then(
+          pending = readPage({ ...options, token: page.next }).then(
             (nextPage) => ({ ok: true, page: nextPage }),
             (error) => ({ ok: false, error }),
           );
