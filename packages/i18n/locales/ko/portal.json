@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "({highestYearlyDiscount}% 절약)",
     "{amount} days free": "{amount}일 무료",
     "{amount} off": "{amount} 할인",

@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "({highestYearlyDiscount}% tasarruf edin)",
     "{amount} days free": "{amount} gün ücretsiz",
     "{amount} off": "{amount} indirim",

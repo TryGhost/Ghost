@@ -125,14 +125,14 @@ test.describe('Portal - member custom fields', () => {
     try {
       await profile.partInput(key, 'line1').fill(OVER_LONG);
       await profile.partInput(key, 'line2').fill(OVER_LONG);
-      await profile.partInput(key, 'country').fill('nope');
+      await profile.partInput(key, 'city').fill(OVER_LONG);
       await profile.save();
 
       await expect(profile.partInput(key, 'line1')).toHaveClass(/error/);
       await expect(profile.partInput(key, 'line2')).toHaveClass(/error/);
-      await expect(profile.partInput(key, 'country')).toHaveClass(/error/);
+      await expect(profile.partInput(key, 'city')).toHaveClass(/error/);
       // Untouched, so still fine: the marking follows the refusals rather than the field.
-      await expect(profile.partInput(key, 'city')).not.toHaveClass(/error/);
+      await expect(profile.partInput(key, 'state')).not.toHaveClass(/error/);
     } finally {
       await context.close();
     }

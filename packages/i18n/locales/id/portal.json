@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(hemat {highestYearlyDiscount}%)",
     "{amount} days free": "Gratis {amount} hari",
     "{amount} off": "Diskon {amount}",

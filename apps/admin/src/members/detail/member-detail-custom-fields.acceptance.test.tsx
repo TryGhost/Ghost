@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
@@ -91,7 +91,7 @@ describe('Member detail custom fields', () => {
 
     await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
     await expect
-      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, DE'))
+      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, Germany'))
       .toBeVisible();
     // Company has no value: its row shows the empty dash, and nothing on
     // the page is an editable input for custom fields.
@@ -204,11 +204,15 @@ describe('Member detail custom fields', () => {
     await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByLabelText('Address line 1').fill('Flat 3, 8 Wan Chai Road');
     await modal().getByLabelText('City').fill('Hong Kong');
-    await modal().getByLabelText('Country').fill('HK');
+    await modal().getByRole('combobox', { name: 'Country' }).click();
+    await page.getByPlaceholder('Search countries...').fill('Hong Kong');
+    await page.getByRole('option', { name: /Hong Kong/ }).click();
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
+    // The country reads by name; its exact wording is the browser's ("Hong Kong" in
+    // Chromium, "Hong Kong SAR China" elsewhere), so only the stable part is pinned.
     await expect
-      .element(memberDetailScreen.fieldValue('Flat 3, 8 Wan Chai Road, Hong Kong, HK'))
+      .element(page.getByText(/^Flat 3, 8 Wan Chai Road, Hong Kong, Hong Kong/))
       .toBeVisible();
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
     expect(saved.members[0].metafields).toEqual({
@@ -218,7 +222,33 @@ describe('Member detail custom fields', () => {
     });
   });
 
-  it('blocks saving a malformed country code with an inline error, then saves once fixed', async () => {
+  it('reads a stored country the list does not hold, and lets staff pick away from it', async () => {
+    // Stripe's "unknown region" code is not a country a picker offers, but a checkout
+    // can store it, so the editor has to show it rather than nothing.
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {
+      home_address: { line1: '1 Main St', country: 'ZZ' },
+    });
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Home address').click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country' }))
+      .toHaveTextContent('Unknown Region');
+
+    await modal().getByRole('combobox', { name: 'Country' }).click();
+    await page.getByPlaceholder('Search countries...').fill('Germ');
+    await page.getByRole('option', { name: 'Germany' }).click();
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect.element(memberDetailScreen.fieldValue('1 Main St, Germany')).toBeVisible();
+    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
+    expect(saved.members[0].metafields).toEqual({
+      custom: { home_address: { line1: '1 Main St', country: 'DE' } },
+    });
+  });
+
+  it('saves the country picked from the list as its code', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
     await renderAdminApp(`/members/${m.id}`);
@@ -227,23 +257,80 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('Address line 1').fill('1 Main St');
     await modal().getByLabelText('City').fill('Berlin');
     await modal().getByLabelText('Postal code').fill('10115');
-    await modal().getByLabelText('Country').fill('DEU');
+    await modal().getByRole('combobox', { name: 'Country' }).click();
+    await page.getByPlaceholder('Search countries...').fill('Germ');
+    await page.getByRole('option', { name: 'Germany' }).click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country' }))
+      .toHaveTextContent('Germany');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect
+      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, Germany'))
+      .toBeVisible();
+    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
+    expect(saved.members[0].metafields).toEqual({ custom: { home_address: ADDRESS } });
+  });
+
+  it('clears a country by picking the chosen one again', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {
+      home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' },
+    });
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Home address').click();
+    await modal().getByRole('combobox', { name: 'Country' }).click();
+    await page.getByRole('option', { name: 'Germany' }).click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country' }))
+      .toHaveTextContent('Select...');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    // The emptied part is named in the write, since leaving it out would read as
+    // "no change"; the rest of the address stays.
+    await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin')).toBeVisible();
+    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
+    expect(saved.members[0].metafields).toEqual({
+      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: '' } },
+    });
+  });
+
+  it('blocks saving a stored malformed country code with an inline error, then saves once fixed', async () => {
+    // Staff cannot type a code any more, but an import can store one the picker would
+    // never offer. It loads as it is, so it can be seen, and is refused until replaced.
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {
+      home_address: { line1: '1 Main St', country: 'DEU' },
+    });
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Home address').click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country' }))
+      .toHaveTextContent('DEU');
+    await modal().getByLabelText('City').fill('Berlin');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     // No request went out; the error says what to do, in plain words.
     await expect
       .element(modal().getByText('Enter a 2-letter country code, like US.'))
       .toBeVisible();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country' }))
+      .toHaveAttribute('aria-invalid', 'true');
     expect(editApi.requests).toHaveLength(0);
 
-    await modal().getByLabelText('Country').fill('DE');
+    await modal().getByRole('combobox', { name: 'Country' }).click();
+    await page.getByPlaceholder('Search countries...').fill('Germ');
+    await page.getByRole('option', { name: 'Germany' }).click();
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    await expect
-      .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, DE'))
-      .toBeVisible();
+    await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, Germany')).toBeVisible();
     const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { home_address: ADDRESS } });
+    expect(saved.members[0].metafields).toEqual({
+      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' } },
+    });
   });
 
   it('pins a server-side 422 to the field it names, inside the editor', async () => {
