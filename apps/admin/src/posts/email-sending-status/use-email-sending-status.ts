@@ -29,21 +29,10 @@ export function useEmailSendingStatusPolling({
 }: UseEmailSendingStatusPollingOptions): EmailSendingStatusPollingResult {
   const shouldQuery = enabled && Boolean(emailId) && Boolean(emailStatus);
   const query = useEmailSendingStatus(emailId ?? '', {
-    enabled: (currentQuery) => {
-      const queriedStatus = currentQuery.state.data?.email_statuses[0]?.sending.status;
-      const missingBackend =
-        !currentQuery.state.data &&
-        currentQuery.state.error instanceof APIError &&
-        currentQuery.state.error.response?.status === 404;
-      const submittedBeforeStatusLoaded = !currentQuery.state.data && emailStatus === 'submitted';
-
-      return (
-        shouldQuery &&
-        !missingBackend &&
-        !submittedBeforeStatusLoaded &&
-        queriedStatus !== 'submitted'
-      );
-    },
+    // The post's terminal state needs no status check. For every other state,
+    // refresh on entry, even if a previous screen cached a failure or completion.
+    enabled: shouldQuery && emailStatus !== 'submitted',
+    staleTime: 0,
     defaultErrorHandler: false,
     refetchInterval: (currentQuery) => {
       const status = currentQuery.state.data?.email_statuses[0]?.sending.status;
@@ -53,7 +42,9 @@ export function useEmailSendingStatusPolling({
     refetchOnWindowFocus: true,
     retry: false,
   });
-  const data = query.data;
+  // Cached results must not drive banners or completion/failure effects before
+  // this screen's request succeeds (including when that request fails).
+  const data = query.isFetchedAfterMount && !query.isError ? query.data : undefined;
   const isUnsupported =
     !data && query.error instanceof APIError && query.error.response?.status === 404;
   const { refetch: refetchQuery } = query;
@@ -66,7 +57,7 @@ export function useEmailSendingStatusPolling({
 
   return {
     status: data?.email_statuses[0],
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || (!data && query.isFetching),
     isUnsupported,
     refetch,
   };
