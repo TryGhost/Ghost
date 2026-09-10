@@ -16,6 +16,7 @@ type LogPageOptions = {
   begin: Date;
   end: Date;
   token?: string;
+  signal?: AbortSignal;
 };
 
 export type MailgunAnalyticsEvent = {
@@ -147,6 +148,7 @@ export class MailgunLogsClient {
         method: 'POST',
         username: 'api',
         password: this.#apiKey,
+        signal: options.signal,
         responseType: 'json',
         followRedirect: false,
         retry: { limit: 0 },

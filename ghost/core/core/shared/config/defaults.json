@@ -300,6 +300,7 @@
   "emailAnalytics": {
     "enabled": true,
     "fetchSource": "events",
+    "fetchPrefetch": false,
     "batchProcessing": false,
     "metrics": {
       "openThroughput": {
