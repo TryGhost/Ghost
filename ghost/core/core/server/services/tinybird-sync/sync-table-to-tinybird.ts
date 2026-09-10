@@ -98,9 +98,9 @@ function* chunkByBytes(lines: string[], maxBytes: number): Generator<string[]> {
 async function postEvents(
   lines: string[],
   { table }: TinybirdSyncTarget,
-  { endpoint, trafficAnalyticsAuth, fetch: request, requestTimeoutMs }: TinybirdSyncOptions,
+  { endpoint, trafficAnalyticsAuth, fetch, requestTimeoutMs }: TinybirdSyncOptions,
 ): Promise<void> {
-  const response = await request(endpoint, {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${trafficAnalyticsAuth}`,
