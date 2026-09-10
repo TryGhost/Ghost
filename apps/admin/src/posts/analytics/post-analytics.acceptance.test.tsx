@@ -472,7 +472,7 @@ describe('Post analytics overview', () => {
       .toHaveTextContent(/Preparing emails\s*10% complete · 1,000 total/);
     await expect
       .element(postAnalyticsScreen.emailSendingStatusBanner())
-      .toHaveTextContent('Less than 1 minute left');
+      .not.toHaveTextContent('minute');
     // Advance the fake server only after the initial state is visible: extra
     // mount-time requests must not race the assertion straight into failure.
     const initialStatusRequests = statusRequestCount;

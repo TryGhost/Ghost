@@ -227,9 +227,8 @@ describe('Posts list email sending status', () => {
     });
 
     const row = postsListScreen.listItems().first();
-    await expect
-      .element(row)
-      .toHaveTextContent('Preparing emails · 250 of 1,000 · Less than 1 minute left');
+    await expect.element(row).toHaveTextContent('Preparing emails · 250 of 1,000');
+    await expect.element(row).not.toHaveTextContent('minute');
     await expect.element(row).not.toHaveTextContent('Published and sent');
     await expect.element(row.getByLabelText(/Visitors/)).toBeVisible();
     await expect.element(row.getByLabelText(/Sent/)).not.toBeInTheDocument();
