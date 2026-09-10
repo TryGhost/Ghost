@@ -5,6 +5,8 @@ import ObjectID from 'bson-objectid';
 import { z } from 'zod';
 import { DbCount } from '../../lib/db-types/count';
 import { deriveOpenRate } from './lib/open-rate';
+import logging from '@tryghost/logging';
+import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 
 export type MemberSweepPage = { afterId?: string; throughId?: string; limit?: number };
 export type MemberSweepResult = { afterId: string | undefined; processed: number };
@@ -22,6 +24,15 @@ const DerivedRow = z.object({
   email_tracked_count: DbCount,
   email_opened_count: DbCount,
 });
+type MemberDrift = Partial<
+  Record<keyof MemberCounts, { actual: number | null; expected: number | null }>
+>;
+const MEMBER_COUNTER_COLUMNS = [
+  'email_count',
+  'email_tracked_count',
+  'email_opened_count',
+  'email_open_rate',
+] as const;
 const MAX_SWEEP_PAGE_SIZE = 5000;
 const UPDATE_CHUNK_SIZE = 1000;
 const SWEEP_JOB_NAME = 'email-analytics-member-reconciliation';
@@ -43,9 +54,102 @@ export type MemberSweepCheckpoint = z.infer<typeof checkpointSchema>;
 /** Shared derived truth for initialization, repair and rollback re-baselining. */
 export class NewsletterMemberCounters {
   readonly #knex: Knex;
+  readonly #prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
 
-  constructor(knex: Knex) {
+  constructor(
+    knex: Knex,
+    {
+      prometheusClient = null,
+    }: {
+      prometheusClient?: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
+    } = {},
+  ) {
     this.#knex = knex;
+    this.#prometheusClient = prometheusClient;
+    prometheusClient?.registerCounter({
+      name: 'email_analytics_member_counter_comparisons',
+      help: 'Number of initialized newsletter member counter comparisons',
+      labelNames: ['statistic'],
+    });
+    prometheusClient?.registerCounter({
+      name: 'email_analytics_member_counter_drift',
+      help: 'Sum of absolute member counter differences; null rate mismatches count as one',
+      labelNames: ['statistic'],
+    });
+  }
+
+  /** Observe initialized counters against the same opens-inclusive derived truth. */
+  async compareMembers(memberIds: string[]): Promise<Map<string, MemberDrift>> {
+    const ids = [...new Set(memberIds)];
+    if (!ids.length) {
+      return new Map();
+    }
+    this.#validateLimit(ids.length);
+    const comparisons = await this.#knex.transaction(async (trx) => {
+      const members: ({ id: string } & MemberCounts)[] = await this.#members(trx)
+        .whereIn('id', ids)
+        .whereNotNull('email_tracked_count')
+        .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
+        .orderBy('id')
+        .forUpdate();
+      if (!members.length) {
+        return new Map<string, MemberDrift>();
+      }
+      const truth = await this.#derive(
+        trx,
+        members.map((member) => member.id),
+      );
+      const result = new Map<string, MemberDrift>();
+      for (const member of members) {
+        const expected = truth.get(member.id) ?? {
+          email_count: 0,
+          email_tracked_count: 0,
+          email_opened_count: 0,
+          email_open_rate: null,
+        };
+        const differences: MemberDrift = {};
+        for (const column of MEMBER_COUNTER_COLUMNS) {
+          if (member[column] !== expected[column]) {
+            differences[column] = { actual: member[column], expected: expected[column] };
+          }
+        }
+        result.set(member.id, differences);
+      }
+      return result;
+    }, this.#transactionConfig());
+    const drift = [...comparisons].filter(([, differences]) => Object.keys(differences).length);
+    if (drift.length) {
+      logging.warn(
+        `[EmailAnalytics] Newsletter member counter drift: ${JSON.stringify(drift.map(([memberId, differences]) => ({ memberId, differences })))}`,
+      );
+    }
+    try {
+      for (const differences of comparisons.values()) {
+        for (const statistic of MEMBER_COUNTER_COLUMNS) {
+          const observations = this.#prometheusClient?.getMetric(
+            'email_analytics_member_counter_comparisons',
+          );
+          const driftMetric = this.#prometheusClient?.getMetric(
+            'email_analytics_member_counter_drift',
+          );
+          if (observations && 'inc' in observations) {
+            observations.inc({ statistic });
+          }
+          const difference = differences[statistic];
+          if (driftMetric && 'inc' in driftMetric && difference) {
+            driftMetric.inc(
+              { statistic },
+              difference.actual === null || difference.expected === null
+                ? 1
+                : Math.abs(difference.actual - difference.expected),
+            );
+          }
+        }
+      }
+    } catch (error) {
+      logging.error('Error recording newsletter member counter comparison', error);
+    }
+    return comparisons;
   }
 
   /** Lock before either baseline reads history, and before recipient writes. */
@@ -125,8 +229,7 @@ export class NewsletterMemberCounters {
       totals.set(memberId, {
         ...current,
         email_opened_count: opened,
-        email_open_rate:
-          tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+        email_open_rate: deriveOpenRate(opened, tracked),
       });
     }
     if (totals.size) {
@@ -475,17 +578,11 @@ export class NewsletterMemberCounters {
     memberIds: string[],
     counts: Map<string, MemberCounts>,
   ): Promise<void> {
-    const columns = [
-      'email_count',
-      'email_tracked_count',
-      'email_opened_count',
-      'email_open_rate',
-    ] as const;
     // Bound the statement size: a full page carries four CASE ladders.
     for (let start = 0; start < memberIds.length; start += UPDATE_CHUNK_SIZE) {
       const chunk = memberIds.slice(start, start + UPDATE_CHUNK_SIZE);
       const updates: Record<string, Knex.Raw> = {};
-      for (const column of columns) {
+      for (const column of MEMBER_COUNTER_COLUMNS) {
         const bindings: (string | number | null)[] = [];
         const cases = chunk.map((memberId) => {
           bindings.push(

@@ -302,6 +302,7 @@
     "enabled": true,
     "batchProcessing": false,
     "memberCounterPreparation": false,
+    "memberCounterMode": "off",
     "metrics": {
       "openThroughput": {
         "enabled": false,

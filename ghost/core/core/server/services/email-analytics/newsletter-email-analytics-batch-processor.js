@@ -15,15 +15,24 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #prometheusClient;
   #queries;
   #emailCounters;
+  #memberCounters;
 
   #lastAggregation = Date.now();
 
-  constructor({ config, emailEventProcessor, prometheusClient, queries, emailCounters = null }) {
+  constructor({
+    config,
+    emailEventProcessor,
+    prometheusClient,
+    queries,
+    emailCounters = null,
+    memberCounters = null,
+  }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
     this.#emailCounters = emailCounters;
+    this.#memberCounters = memberCounters;
   }
 
   /**
@@ -58,15 +67,25 @@ class NewsletterEmailAnalyticsBatchProcessor {
           }
 
           // batchResult lists every matched member, not only those whose row will
-          // transition in the flush. Keep replayed members eligible for recount
-          // until counters are written atomically with recipient transitions: a
-          // prior run may have committed the recipient update but failed before
-          // refreshing member statistics.
-          result.merge(batchResult);
+          // transition in the flush. Without atomic member counters, keep replayed
+          // members eligible for recount: a prior run may have committed the
+          // recipient update but failed before refreshing member statistics.
+          // Atomic member mode instead queues only the exact committed transition
+          // sets below.
+          result.merge(this.#memberCounters ? { ...batchResult, memberIds: [] } : batchResult);
         }
 
         // Flush all batched updates to the database
-        await this.#emailEventProcessor.flushBatchedUpdates();
+        const transitions = await this.#emailEventProcessor.flushBatchedUpdates();
+        if (this.#memberCounters) {
+          for (const transition of transitions) {
+            result.merge({
+              memberIds: ['delivered', 'opened', 'failed'].flatMap((type) =>
+                transition[type].map((row) => row.memberId),
+              ),
+            });
+          }
+        }
       } finally {
         // The storage is shared across fetch jobs. Nothing queued for this page
         // may outlive it: a failure anywhere above leaves the cursor behind, and
@@ -338,6 +357,9 @@ class NewsletterEmailAnalyticsBatchProcessor {
    * @returns {Promise<void>}
    */
   async #aggregateMemberStatsBatch(memberIds) {
+    if (this.#memberCounters) {
+      return this.#memberCounters.compareMembers(memberIds);
+    }
     return this.#queries.aggregateMemberStatsBatch(memberIds);
   }
 }

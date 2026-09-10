@@ -10,6 +10,13 @@ import { NewsletterMemberCounters } from '../../../../core/server/services/email
 import { NewsletterEmailCounters } from '../../../../core/server/services/email-analytics/newsletter-email-counters';
 
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
+const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
+const {
+  NewsletterEmailAnalyticsBatchProcessor,
+} = require('../../../../core/server/services/email-analytics/newsletter-email-analytics-batch-processor');
+const {
+  EventProcessingResult,
+} = require('../../../../core/server/services/email-analytics/event-processing-result');
 
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
@@ -188,6 +195,103 @@ describe('Newsletter member counter baselines through MySQL', () => {
     emailRecipientId: target.recipientId,
     memberId: id(1),
     timestamp: new Date('2026-09-10T12:00:00Z'),
+  });
+
+  it('compares opens-inclusive member truth without repairing deliberately incorrect counters', async () => {
+    const observations = { inc: sinon.stub() };
+    const differences = { inc: sinon.stub() };
+    counters = new NewsletterMemberCounters(db.knex, {
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: sinon
+          .stub()
+          .callsFake((name) =>
+            name === 'email_analytics_member_counter_comparisons' ? observations : differences,
+          ),
+      },
+    });
+    for (let n = 0; n < 5; n++) {
+      await recipient({ opened: n === 0 });
+    }
+    await counters.sweepPage({ throughId: id(1) });
+    assert.deepEqual(await counters.compareMembers([id(1), id(2)]), new Map([[id(1), {}]]));
+    await db
+      .knex('members')
+      .where('id', id(1))
+      .update({ email_opened_count: 4, email_open_rate: 80 });
+    assert.deepEqual(
+      await counters.compareMembers([id(1)]),
+      new Map([
+        [
+          id(1),
+          {
+            email_opened_count: { actual: 4, expected: 1 },
+            email_open_rate: { actual: 80, expected: 20 },
+          },
+        ],
+      ]),
+    );
+    assert.equal((await stats()).email_opened_count, 4);
+    sinon.assert.callCount(observations.inc, 8);
+    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_opened_count' }, 3);
+    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_open_rate' }, 60);
+    await db.knex('members').where('id', id(1)).update({ email_open_rate: null });
+    await counters.compareMembers([id(1)]);
+    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_open_rate' }, 1);
+  });
+
+  it('uses member comparison for a missing-lane open and skips duplicate member recount work', async () => {
+    const target = await recipient();
+    const emailCounters = new NewsletterEmailCounters({ knex: db.knex });
+    const config = { get: () => true };
+    const storage = new NewsletterEmailEventStorage({
+      config,
+      db,
+      models,
+      emailCounters,
+      memberCounters: counters,
+    });
+    const queries = { aggregateEmailStats: sinon.stub(), aggregateMemberStatsBatch: sinon.stub() };
+    const compare = sinon.spy(counters, 'compareMembers');
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config,
+      queries,
+      emailCounters,
+      memberCounters: counters,
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const result = new EventProcessingResult();
+    const events = [
+      {
+        type: 'opened',
+        emailId: target.emailId,
+        recipientEmail: 'member-counter-1@example.com',
+        timestamp: new Date(),
+      },
+    ];
+    await processor.processBatch(events, result, {});
+    assert.deepEqual(result.memberIds, [id(1)]);
+    await processor.aggregate({
+      processingResult: result,
+      includeOpenedEvents: false,
+      isFinal: true,
+    });
+    sinon.assert.notCalled(queries.aggregateMemberStatsBatch);
+    sinon.assert.calledOnceWithExactly(compare, [id(1)]);
+    assert.deepEqual(await compare.firstCall.returnValue, new Map([[id(1), {}]]));
+    await processor.processBatch(events, result, {});
+    assert.deepEqual(result.memberIds, []);
+    await processor.aggregate({
+      processingResult: result,
+      includeOpenedEvents: false,
+      isFinal: true,
+    });
+    sinon.assert.calledOnce(compare);
+    assert.equal((await stats()).email_opened_count, 1);
   });
 
   it('counts multiple opened recipient rows for one member, including untracked emails', async () => {

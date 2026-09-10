@@ -24,6 +24,8 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
 import { NewsletterEmailCounters } from './newsletter-email-counters';
+import { NewsletterMemberCounters } from './newsletter-member-counters';
+import { IncorrectUsageError } from '@tryghost/errors';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
@@ -117,12 +119,31 @@ export const init = ({
   const emailCounters = emailCounterMode
     ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient, mode: emailCounterMode })
     : null;
+  const memberCounterMode = config.get('emailAnalytics:memberCounterMode') ?? 'off';
+  if (memberCounterMode !== 'off' && memberCounterMode !== 'compare') {
+    throw new IncorrectUsageError({ message: 'Unknown member counter mode' });
+  }
+  if (
+    memberCounterMode === 'compare' &&
+    (config.get('emailAnalytics:batchProcessing') !== true ||
+      !emailCounters ||
+      config.get('emailAnalytics:memberCounterPreparation') !== true)
+  ) {
+    throw new IncorrectUsageError({
+      message: 'Member counters require batched email counters and member counter preparation',
+    });
+  }
+  const memberCounters =
+    memberCounterMode === 'compare'
+      ? new NewsletterMemberCounters(db.knex, { prometheusClient })
+      : null;
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,
     db,
     eventStorage: new NewsletterEmailEventStorage({
       emailCounters,
+      memberCounters,
       config,
       db,
       membersRepository,
@@ -177,6 +198,7 @@ export const init = ({
     createEventProcessor: () =>
       new NewsletterEmailAnalyticsBatchProcessor({
         emailCounters,
+        memberCounters,
         config,
         emailEventProcessor: newsletterEmailEventProcessor,
         prometheusClient,
