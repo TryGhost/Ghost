@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const { validateMaxConcurrency } = require('../../lib/promise-pool');
 const {
   RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
@@ -10,6 +11,13 @@ const {
   countsDiffer,
   missingRecipientFields,
 } = require('./recipient-accounting');
+const {
+  selectPreparationCandidates,
+  resolvePreparationMembers,
+  runPreparationWorkers,
+  preparationPages,
+  waitForPreparationRetry,
+} = require('./recipient-preparation');
 const messages = {
   emailErrorPartialFailure:
     'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
@@ -44,6 +52,7 @@ class BatchSendingService {
   #db;
   #sentry;
   #getRequiredUrlRelations;
+  #batchCreationConcurrency;
   #shuttingDown = false;
   #inFlight = new Set();
 
@@ -74,6 +83,7 @@ class BatchSendingService {
    * @param {object} dependencies.db
    * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
    * @param {object} [dependencies.sentry]
+   * @param {number} [dependencies.batchCreationConcurrency] Maximum active preparation pages
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
@@ -88,6 +98,7 @@ class BatchSendingService {
     db,
     sentry,
     getRequiredUrlRelations = () => [],
+    batchCreationConcurrency = 2,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
@@ -101,6 +112,10 @@ class BatchSendingService {
     this.#db = db;
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
+    this.#batchCreationConcurrency = validateMaxConcurrency(
+      batchCreationConcurrency,
+      'bulkEmail:batchCreationConcurrency',
+    );
 
     if (BEFORE_RETRY_CONFIG) {
       this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -444,9 +459,157 @@ class BatchSendingService {
 
   async #rebuildPreparation({ email, post, newsletter }) {
     const attemptId = ObjectID().toHexString();
+    const startedAt = Date.now();
     await this.#startPreparation(email, attemptId);
-    const counts = await this.#prepareSegments({ email, post, newsletter, attemptId });
-    return this.#completePreparation(email, { ...counts, attemptId });
+    const counts = await this.#prepareAudience({ email, post, newsletter, attemptId });
+    const batches = await this.#completePreparation(email, { ...counts, attemptId });
+    logging.info(
+      {
+        event: { name: 'email.batches.created' },
+        email_id: email.id,
+        attempt_id: attemptId,
+        duration_ms: Date.now() - startedAt,
+        batches_total: batches.length,
+        email_count: email.get('email_count'),
+        candidate_count: counts.candidateCount,
+        preparation_excluded_count: counts.excludedCount,
+        concurrency: this.#batchCreationConcurrency,
+        recipient_filter: email.get('recipient_filter'),
+      },
+      'Created newsletter batches',
+    );
+    return batches;
+  }
+
+  #checkPreparationActive(signal) {
+    signal?.throwIfAborted();
+    if (this.#shuttingDown) {
+      throw new errors.InternalServerError({
+        code: SHUTDOWN_CODE,
+        message: 'Email batch creation stopped because the container is shutting down',
+      });
+    }
+  }
+
+  async #selectPreparationAudience({ email, newsletter, segments, attemptId }) {
+    const startedAt = Date.now();
+    this.#checkPreparationActive();
+    // Parse once outside retries: malformed filters and newsletter settings cannot recover.
+    const queries = segments.map((segment) => {
+      const filter = this.#emailSegmenter.getMemberFilterForSegment(
+        newsletter,
+        email.get('recipient_filter'),
+        segment,
+      );
+      return this.#models.Member.getFilteredCollectionQuery({
+        filter: filter + `+id:<'${email.id}'`,
+      });
+    });
+    const candidates = await this.retryDb(
+      () => {
+        this.#checkPreparationActive();
+        return selectPreparationCandidates(this.#db.knex, queries);
+      },
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `sweep audience for email ${email.id}`,
+      },
+    );
+    this.#checkPreparationActive();
+    logging.info(
+      {
+        event: { name: 'email.preparation.swept' },
+        email_id: email.id,
+        attempt_id: attemptId,
+        candidate_count: candidates.reduce((total, ids) => total + ids.length, 0),
+        duration_ms: Date.now() - startedAt,
+      },
+      'Selected newsletter candidate recipients',
+    );
+    return candidates;
+  }
+
+  async #prepareAudience({ email, post, newsletter, attemptId }) {
+    const segments = await this.#emailRenderer.getSegments(post);
+    const candidates = await this.#selectPreparationAudience({
+      email,
+      newsletter,
+      segments,
+      attemptId,
+    });
+    const batchSize = this.#sendingService.getMaximumRecipients();
+    const warmupLimit = this.#getDomainWarmupLimit(email);
+    let candidateCount = 0;
+    let excludedCount = 0;
+    for (const [index, ids] of candidates.entries()) {
+      const segment = segments[index];
+      const remainingCapacity = warmupLimit - candidateCount;
+      candidateCount += ids.length;
+      if (ids.length === 0) {
+        continue;
+      }
+      await runPreparationWorkers(
+        preparationPages(ids, batchSize, remainingCapacity),
+        // Avoid allocating idle workers for a small audience and a large configured limit.
+        // Warming can introduce one additional partial page.
+        Math.min(this.#batchCreationConcurrency, Math.ceil(ids.length / batchSize) + 1),
+        () => this.#checkPreparationActive(),
+        async (page, signal) => {
+          const pageExcludedCount = await this.#prepareSweptPage(
+            {
+              email,
+              segment,
+              attemptId,
+              page,
+            },
+            signal,
+          );
+          // Read the aggregate only after awaiting: compound assignment across
+          // an await would overwrite another worker's completed exclusions.
+          excludedCount += pageExcludedCount;
+        },
+      );
+    }
+    return { candidateCount, excludedCount };
+  }
+
+  async #prepareSweptPage({ email, segment, attemptId, page }, signal) {
+    const rows = await this.retryDb(
+      () => {
+        this.#checkPreparationActive(signal);
+        return resolvePreparationMembers(this.#db.knex, page.ids);
+      },
+      {
+        ...this.#getBeforeRetryConfig(email),
+        signal,
+        description: `resolve members for email ${email.id} segment ${segment} page ${page.offset}`,
+      },
+    );
+    this.#checkPreparationActive(signal);
+    const foundIds = new Set(rows.map((row) => row.id));
+    for (const id of page.ids) {
+      if (!foundIds.has(id)) {
+        logging.info(
+          {
+            event: { name: 'email.preparation.excluded' },
+            email_id: email.id,
+            attempt_id: attemptId,
+            member_id: id,
+            reason: 'member_not_found',
+          },
+          'Member no longer found during newsletter preparation',
+        );
+      }
+    }
+    const excludedCount = await this.#preparePage({
+      email,
+      segment,
+      members: rows,
+      attemptId,
+      useFallbackDomain: page.useFallbackDomain,
+      signal,
+    });
+    return page.ids.length - rows.length + excludedCount;
   }
 
   async #verifyFrozenPreparation(email, retryOptions) {
@@ -497,6 +660,7 @@ class BatchSendingService {
         event: { name: 'email.preparation.started' },
         email_id: email.id,
         attempt_id: attemptId,
+        concurrency: this.#batchCreationConcurrency,
       },
       'Starting email preparation',
     );
@@ -510,105 +674,15 @@ class BatchSendingService {
     return Infinity;
   }
 
-  async #prepareSegments({ email, post, newsletter, attemptId }) {
-    const segments = await this.#emailRenderer.getSegments(post);
-    const batchSize = this.#sendingService.getMaximumRecipients();
-    const domainWarmupLimit = this.#getDomainWarmupLimit(email);
-    let candidateCount = 0;
-    let excludedCount = 0;
-    for (const segment of segments) {
-      const prepared = await this.#prepareSegment({
-        email,
-        newsletter,
-        segment,
-        attemptId,
-        batchSize,
-        remainingCustomDomainCapacity: domainWarmupLimit - candidateCount,
-      });
-      candidateCount += prepared.candidateCount;
-      excludedCount += prepared.excludedCount;
-    }
-    return { candidateCount, excludedCount };
-  }
-
-  async #prepareSegment({
-    email,
-    newsletter,
-    segment,
-    attemptId,
-    batchSize,
-    remainingCustomDomainCapacity,
-  }) {
-    logging.info(`Creating batches for email ${email.id} segment ${segment}`);
-    const segmentFilter = this.#emailSegmenter.getMemberFilterForSegment(
-      newsletter,
-      email.get('recipient_filter'),
-      segment,
-    );
-    let candidateCount = 0;
-    let excludedCount = 0;
-    // ObjectIds exclude members created after the email, even with backdated imports.
-    let lastId = email.id;
-    do {
-      const useFallbackDomain = remainingCustomDomainCapacity <= 0;
-      const pageSize = useFallbackDomain
-        ? batchSize
-        : Math.min(remainingCustomDomainCapacity, batchSize);
-      const members = await this.#fetchPreparationPage(
-        email,
-        segment,
-        segmentFilter,
-        lastId,
-        pageSize,
-      );
-      const candidates = members.slice(0, pageSize);
-      // Count the consumed page once, before exclusions or retries, without lookahead.
-      candidateCount += candidates.length;
-      excludedCount += await this.#preparePage({
-        email,
-        segment,
-        members: candidates,
-        attemptId,
-        useFallbackDomain,
-      });
-      // Warming capacity counts candidates, including explicit exclusions.
-      remainingCustomDomainCapacity -= candidates.length;
-      if (members.length <= pageSize) {
-        break;
-      }
-      lastId = candidates[candidates.length - 1].id;
-    } while (lastId);
-    return { candidateCount, excludedCount };
-  }
-
-  async #fetchPreparationPage(email, segment, segmentFilter, lastId, batchSize) {
-    // Stop only at an atomic batch boundary; shutdown leaves the send resumable.
-    if (this.#shuttingDown) {
-      throw new errors.InternalServerError({
-        code: SHUTDOWN_CODE,
-        message: 'Email batch creation stopped because the container is shutting down',
-      });
-    }
-    const filter = segmentFilter + `+id:<'${lastId}'`;
-    logging.info(
-      `Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`,
-    );
-    // Each page reads live filter attributes; the ID cutoff only excludes newer members.
-    // Counts cover candidates consumed in this attempt, not a point-in-time audience snapshot.
-    // Avoid Bookshelf on the audience read for performance.
-    return this.#models.Member.getFilteredCollectionQuery({ filter })
-      .orderByRaw('id DESC')
-      .select('members.id', 'members.uuid', 'members.email', 'members.name')
-      .limit(batchSize + 1);
-  }
-
-  async #preparePage({ email, segment, members, attemptId, useFallbackDomain }) {
+  async #preparePage({ email, segment, members, attemptId, useFallbackDomain, signal }) {
+    this.#checkPreparationActive(signal);
     const snapshot = this.#snapshotPreparationMembers(email, members, attemptId);
     if (snapshot.length > 0) {
       await this.#createBatchWithRecovery(
         email,
         { segment, members: snapshot, useFallbackDomain },
         attemptId,
+        signal,
       );
     }
     return members.length - snapshot.length;
@@ -628,6 +702,8 @@ class BatchSendingService {
       email_count: verified.recipientCount,
       prepared_at: new Date(),
     };
+    // Finish freezing fully prepared recipients during shutdown. The retry policy
+    // limits this final save to one attempt, avoiding a needless discard and rebuild.
     await this.retryDb(
       () => email.save(preparation, { patch: true, require: false, autoRefresh: false }),
       {
@@ -870,7 +946,12 @@ class BatchSendingService {
     );
   }
 
-  async #createBatchWithRecovery(email, { segment, members, useFallbackDomain }, attemptId) {
+  async #createBatchWithRecovery(
+    email,
+    { segment, members, useFallbackDomain },
+    attemptId,
+    signal,
+  ) {
     // Retain this operation's identity and recipient snapshot across its database retries.
     // Restarting preparation reselects the audience until prepared_at freezes membership.
     const operation = {
@@ -883,6 +964,7 @@ class BatchSendingService {
     };
     const batch = await this.retryDb(() => this.#createOrRecoverBatch(operation), {
       ...this.#getBeforeRetryConfig(email),
+      signal,
       description: `createBatch email ${email.id} segment ${segment}${useFallbackDomain ? ' (fallback domain)' : ' (custom domain)'}`,
     });
     logging.info(
@@ -1652,9 +1734,11 @@ class BatchSendingService {
    * @param {number} [options.retryCount] (internal) Amount of retries already done. 0 intially.
    * @param {number} [options.maxTime] (ms)
    * @param {Date} [options.stopAfterDate]
+   * @param {AbortSignal} [options.signal] Stops preparation retries, not an in-flight operation
    * @returns {Promise<T>}
    */
   async retryDb(func, options) {
+    options.signal?.throwIfAborted();
     options = this.#resolveRetryOptions(options);
     const retryCount = options.retryCount ?? 0;
 
@@ -1678,6 +1762,7 @@ class BatchSendingService {
       if (e.retryable === false) {
         throw e;
       }
+      options.signal?.throwIfAborted();
       // Shutdown may have started while this attempt was pending — re-resolve so
       // the collapsed budget decides whether we retry at all
       options = this.#resolveRetryOptions(options);
@@ -1710,9 +1795,7 @@ class BatchSendingService {
       logging.error(ghostError);
 
       if (sleep) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, sleep);
-        });
+        await waitForPreparationRetry(sleep, options.signal);
       }
 
       // Budget is only checked after a failure, so recursing always spends another

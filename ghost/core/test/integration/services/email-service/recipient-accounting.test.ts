@@ -159,6 +159,9 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         sentry,
       }),
       BEFORE_RETRY_CONFIG: { maxRetries: 2, sleep: 0 },
+      // These transaction fault injections target one operation at a time.
+      // Concurrent scheduling is covered in recipient-preparation.test.ts.
+      batchCreationConcurrency: 1,
     });
   }
 
@@ -883,27 +886,31 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     return id;
   }
 
-  it('excludes newly added members even when their creation timestamp is backdated', async function () {
-    const query = models.Member.getFilteredCollectionQuery.bind(models.Member);
-    const audience = sinon.stub(models.Member, 'getFilteredCollectionQuery').callsFake(query);
-    const createBatch = service.createBatch.bind(service);
-    let newMemberId: string;
-    sinon.stub(service, 'createBatch').callsFake(async (...args) => {
-      const batch = await createBatch(...args);
-      if (!args[3]?.transacting && !newMemberId) {
-        newMemberId = await addMember();
-      }
-      return batch;
+  for (const batchSize of [0, -1]) {
+    it(`rejects configured batch size ${batchSize} before allocating preparation workers`, async function () {
+      sinon.stub(sender, 'getMaximumRecipients').returns(batchSize);
+      await assert.rejects(
+        service.createBatches(data),
+        /bulkEmail:batchSize must be a positive integer/,
+      );
+      assert.deepEqual(await service.getBatches(email), []);
     });
+  }
+
+  it('excludes members created at or after the email before its sweep, even with backdated timestamps', async function () {
+    const newerId = (BigInt(`0x${email.id}`) + 1n).toString(16).padStart(24, '0');
+    await addMember(email.id);
+    await addMember(newerId);
     await service.createBatches(data);
-    assert.ok(audience.callCount > 1);
     assert.equal(email.get('candidate_count'), 4);
     const recipients = await db.knex('email_recipients').where({ email_id: email.id });
-    assert.equal(recipients.length, 4);
-    assert.ok(recipients.every((row) => row.member_id !== newMemberId));
+    assert.deepEqual(
+      recipients.map((row) => row.member_id).sort(),
+      [1, 2, 3, 4].map((n) => n.toString(16).padStart(24, '0')),
+    );
   });
 
-  it('keeps a large numeric member ID as a string at the pagination boundary', async function () {
+  it('preserves large numeric member IDs selected by the sweep', async function () {
     await addMember('650706040078550001536020');
     await addMember('65070957007855000153605b');
     await service.createBatches(data);
@@ -1522,7 +1529,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(result?.sending.progress.total, 4);
   });
 
-  it('counts each consumed candidate once across lookahead pages and warming splits', async function () {
+  it('counts each selected candidate once across pages and warming splits', async function () {
     const batches = await service.createBatches(data);
     await email.refresh();
     assert.equal(email.get('candidate_count'), 4);
@@ -1739,15 +1746,23 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   });
 
   it('discards incomplete preparation and rebuilds the complete audience on retry', async function () {
-    const query = models.Member.getFilteredCollectionQuery.bind(models.Member);
-    const audience = sinon.stub(models.Member, 'getFilteredCollectionQuery');
-    audience.onFirstCall().callsFake(query);
-    audience.onSecondCall().throws(new Error('Preparation interrupted'));
+    const createBatch = service.createBatch.bind(service);
+    let writes = 0;
+    const interrupted = Object.assign(new Error('Preparation interrupted'), { retryable: false });
+    const writer = sinon.stub(service, 'createBatch').callsFake((...args) => {
+      if (!args[3]?.transacting) {
+        writes += 1;
+        if (writes > 1) {
+          throw interrupted;
+        }
+      }
+      return createBatch(...args);
+    });
     await assert.rejects(service.createBatches(data), /Preparation interrupted/);
     const partial = await service.getBatches(email);
     assert.equal(partial.length, 1);
     assert.equal(email.get('prepared_at'), null);
-    audience.restore();
+    writer.restore();
 
     const rebuilt = await service.createBatches(data);
     assert.equal(rebuilt.length, 3);

@@ -40,8 +40,12 @@ _Avoid_: Failure step
 A member selected for a newsletter email's audience before preparation exclusions. Selection does not mean the member has been prepared or submitted.
 _Avoid_: Subscriber count, delivered recipient
 
+**Prepared recipient**:
+A candidate whose address and personalization data have been recorded for a newsletter email. Preparation does not mean submission or delivery.
+_Avoid_: Candidate recipient, delivered recipient
+
 **Preparation exclusion**:
-A candidate explicitly omitted from a newsletter email's prepared audience because required recipient data is unavailable.
+A candidate omitted from preparation because the member can no longer be found or required recipient data is missing. Candidates equal prepared recipients plus preparation exclusions.
 _Avoid_: Failed delivery, silently skipped recipient
 
 **Accounted email**:
