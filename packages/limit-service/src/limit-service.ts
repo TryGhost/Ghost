@@ -38,11 +38,10 @@ export class LimitService {
       // NOTE: config module acts as an allowlist of supported config names, where each key
       // is a name of supported config
       if (config[name]) {
-        // The camelCased name, as the original did, not the key the host actually wrote.
-        // A name spelled another way therefore finds no settings and the limit is built
-        // empty, which is why such a limit ends up not limiting anything. Preserved: it is
-        // behaviour, and the pins record it.
-        const limitConfig: LimitConfig = Object.assign({}, config[name], limits[name]);
+        // Read under the key the host wrote, and store under the normalised one. Reading
+        // under the normalised name found nothing whenever the host spelled it another
+        // way, and built a limit that limited nothing.
+        const limitConfig: LimitConfig = Object.assign({}, config[name], limits[rawName]);
 
         if (has(limitConfig, 'allowlist')) {
           this.limits[name] = new AllowlistLimit({
@@ -87,7 +86,7 @@ export class LimitService {
   }
 
   isLimited(limitName: string): boolean {
-    return !!this.limits[camelCase(limitName)];
+    return !!this.limits[limitName];
   }
 
   /**
@@ -96,7 +95,7 @@ export class LimitService {
    */
   isDisabled(limitName: string): boolean | undefined {
     // The same lookup isLimited makes, kept as one read so the limit is narrowed by it.
-    const limit = this.limits[camelCase(limitName)];
+    const limit = this.limits[limitName];
 
     if (!limit) {
       return;
@@ -112,15 +111,14 @@ export class LimitService {
   }
 
   async checkIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
-    if (!this.isLimited(limitName)) {
+    const limit = this.limits[limitName];
+
+    if (!limit) {
       return;
     }
 
     try {
-      // Deliberately not camelCased, where the guard above is. A name that only matches
-      // after camelCasing passes the guard and then finds nothing here, and throws. Left as
-      // it is: changing it changes behaviour, which is not this commit's business.
-      await (this.limits[limitName] as Limit).errorIfIsOverLimit(options);
+      await limit.errorIfIsOverLimit(options);
       return false;
     } catch (error) {
       if (error instanceof this.errors.HostLimitError) {
@@ -132,15 +130,14 @@ export class LimitService {
   }
 
   async checkWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
-    if (!this.isLimited(limitName)) {
+    const limit = this.limits[limitName];
+
+    if (!limit) {
       return;
     }
 
     try {
-      // Deliberately not camelCased, where the guard above is. A name that only matches
-      // after camelCasing passes the guard and then finds nothing here, and throws. Left as
-      // it is: changing it changes behaviour, which is not this commit's business.
-      await (this.limits[limitName] as Limit).errorIfWouldGoOverLimit(options);
+      await limit.errorIfWouldGoOverLimit(options);
       return false;
     } catch (error) {
       if (error instanceof this.errors.HostLimitError) {
@@ -152,25 +149,23 @@ export class LimitService {
   }
 
   async errorIfIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
-    if (!this.isLimited(limitName)) {
+    const limit = this.limits[limitName];
+
+    if (!limit) {
       return;
     }
 
-    // Deliberately not camelCased, where the guard above is. A name that only matches
-    // after camelCasing passes the guard and then finds nothing here, and throws. Left as
-    // it is: changing it changes behaviour, which is not this commit's business.
-    await (this.limits[limitName] as Limit).errorIfIsOverLimit(options);
+    await limit.errorIfIsOverLimit(options);
   }
 
   async errorIfWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
-    if (!this.isLimited(limitName)) {
+    const limit = this.limits[limitName];
+
+    if (!limit) {
       return;
     }
 
-    // Deliberately not camelCased, where the guard above is. A name that only matches
-    // after camelCasing passes the guard and then finds nothing here, and throws. Left as
-    // it is: changing it changes behaviour, which is not this commit's business.
-    await (this.limits[limitName] as Limit).errorIfWouldGoOverLimit(options);
+    await limit.errorIfWouldGoOverLimit(options);
   }
 
   /** Checks if any of the configured limits acceded */

@@ -198,11 +198,27 @@ describe('Limit Service', function () {
             assert.ok(limitService.limits.customThemes instanceof FlagLimit);
             assert.equal(limitService.isLimited('staff'), false);
             assert.equal(limitService.isLimited('members'), false);
-            assert.equal(limitService.isLimited('custom_themes'), true);
             assert.equal(limitService.isLimited('customThemes'), true);
         });
 
-        it('can load incorrectly cased limits', function () {
+        it('applies a limit the host spelled another way', async function () {
+            const limitService = new LimitService();
+
+            // Loading reads the host's settings under the key the host wrote and stores the
+            // limit under its own name. Before, loading looked for those settings under the
+            // name it had normalised, found none, and built a limit that refused nothing.
+            limitService.loadLimits({limits: {custom_themes: {disabled: true}}, errors});
+
+            assert.equal(limitService.isLimited('customThemes'), true);
+            assert.equal(await limitService.checkWouldGoOverLimit('customThemes'), true);
+            await assert.rejects(() => limitService.errorIfWouldGoOverLimit('customThemes'));
+
+            // A flag limit is never reported as over, only as would-go-over.
+            assert.equal(await limitService.checkIsOverLimit('customThemes'), false);
+            await limitService.errorIfIsOverLimit('customThemes');
+        });
+
+        it('accepts a limit the host spelled another way', function () {
             const limitService = new LimitService();
 
             const limits = {custom_themes: {disabled: true}};
@@ -214,8 +230,11 @@ describe('Limit Service', function () {
             assert.ok(limitService.limits.customThemes instanceof FlagLimit);
             assert.equal(limitService.isLimited('staff'), false);
             assert.equal(limitService.isLimited('members'), false);
-            assert.equal(limitService.isLimited('custom_themes'), true);
+
+            // Spelling is tolerated when the limits are loaded, and nowhere else. The limit
+            // is known by one name afterwards, whichever name it arrived under.
             assert.equal(limitService.isLimited('customThemes'), true);
+            assert.equal(limitService.isLimited('custom_themes'), false);
         });
 
         it('answers correctly when no limits are provided', function () {

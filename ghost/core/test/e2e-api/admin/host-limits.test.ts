@@ -451,16 +451,17 @@ describe('Host limits', function () {
       assert.equal(limits.isLimited('aLimitNobodyShipped'), false);
     });
 
-    it('drops a known limit written in another case, leaving the site unlimited', async function () {
+    it('applies a known limit written in another case', async function () {
       await hostLimits.setHostLimits({ limit_stripe_connect: { disabled: true } });
       stubStripeToken();
 
-      // The name is matched camelCased but its settings are read under the original key, so
-      // the limit loads with nothing in it and the site is not actually limited.
+      // The name is normalised once, when the limit is loaded, so the host's settings are
+      // read under the key the host wrote. This used to load the limit with nothing in it,
+      // which left the site unlimited by a limit it had been given.
       await agent
         .put('settings/')
         .body({ settings: [{ key: 'stripe_connect_integration_token', value: 'token' }] })
-        .expectStatus(200);
+        .expectStatus(403);
     });
   });
 
