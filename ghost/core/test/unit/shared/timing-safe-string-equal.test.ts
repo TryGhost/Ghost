@@ -12,6 +12,10 @@ describe('timingSafeStringEqual', function () {
     assert.equal(timingSafeStringEqual(digest, `${'a'.repeat(63)}b`), false);
   });
 
+  it('rejects distinct strings that UTF-8 encodes identically', function () {
+    assert.equal(timingSafeStringEqual('\udc69', '\udc6a'), false);
+  });
+
   it('rejects a string of a different length without throwing', function () {
     assert.equal(timingSafeStringEqual(digest, 'a'.repeat(63)), false);
     assert.equal(timingSafeStringEqual(digest, 'a'.repeat(65)), false);
