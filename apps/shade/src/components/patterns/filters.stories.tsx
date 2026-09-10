@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Inline, Stack, Text } from '@/components/primitives';
+import { FilterBar } from '@/components/patterns/filter-bar';
+import { PageHeader } from '@/components/patterns/page-header';
+import { useShade } from '@/providers/shade-provider';
+import ShadeApp from '@/shade-app';
 import {
   Filters,
   FilterSegmentSelect,
@@ -441,6 +446,31 @@ export const FullRadius: Story = {
     docs: {
       description: {
         story: 'Filters with fully rounded corners.',
+      },
+    },
+  },
+};
+
+export const PillControls: Story = {
+  render: () => (
+    <ShadeApp darkMode={false}>
+      <Inline align="start" gap="lg">
+        <FilterDemo addButtonText="Filter" addButtonVariant="secondary" fields={basicFields} />
+        <FilterDemo
+          addButtonClassName="aspect-square gap-0 !px-0 text-[0px]"
+          addButtonText="Add filter"
+          fields={prePopulatedFields}
+          initialFilters={initialFilters}
+          showClearButton={true}
+        />
+      </Inline>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use inherited pill controls for filter actions while keeping joined filter segments unchanged.',
       },
     },
   },
@@ -1016,4 +1046,73 @@ export const GroupPreviewLimit: Story = {
       },
     },
   },
+};
+
+function HeaderTriggerExample({
+  isAdmin7Pill = true,
+  fallbackStyle = 'list',
+  disabled = false,
+}: {
+  isAdmin7Pill?: boolean;
+  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
+  disabled?: boolean;
+}) {
+  const { darkMode } = useShade();
+  const [filters, setFilters] = useState<Filter[]>([]);
+  const control = (
+    <Filters
+      addButton={
+        <Filters.Trigger disabled={disabled} fallbackStyle={fallbackStyle} collapseLabel />
+      }
+      fields={basicFields}
+      filters={filters}
+      keyboardShortcut={disabled ? undefined : 'f'}
+      onChange={setFilters}
+    />
+  );
+  return (
+    <ShadeApp admin7={{ pill: isAdmin7Pill }} className="h-auto!" darkMode={darkMode}>
+      <PageHeader.ActionGroup>
+        {filters.length ? <FilterBar>{control}</FilterBar> : control}
+      </PageHeader.ActionGroup>
+    </ShadeApp>
+  );
+}
+
+export const HeaderTrigger: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shared header trigger: hover for its shortcut, tab for focus, and choose a filter to see the compact add button. The disabled control stays inert.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      <HeaderTriggerExample />
+      <HeaderTriggerExample disabled />
+    </Stack>
+  ),
+};
+
+export const HeaderTriggerCompatibility: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Previous list, funnel and analytics triggers while Admin 7 is off. Resize below lg to check collapsed labels; add a filter to check each previous add-button treatment.',
+      },
+    },
+  },
+  render: () => (
+    <Stack gap="md">
+      {(['list', 'funnel', 'funnel-plus'] as const).map((fallbackStyle) => (
+        <Stack key={fallbackStyle} gap="sm">
+          <Text>{fallbackStyle}</Text>
+          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7Pill={false} />
+        </Stack>
+      ))}
+    </Stack>
+  ),
 };

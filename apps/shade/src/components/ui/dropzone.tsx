@@ -1,11 +1,13 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import { Accept, DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { buttonVariants } from '@/components/ui/button';
 import { inputSurface } from '@/components/ui/input-surface';
+import { useShade, type ControlShape } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 
-const dropzoneVariants = cva(
+const dropzoneBaseVariants = cva(
   'flex cursor-pointer flex-col items-center justify-center outline-hidden',
   {
     variants: {
@@ -18,8 +20,8 @@ const dropzoneVariants = cva(
           inputSurface('self'),
           'border-transparent bg-muted p-3 hover:bg-interactive-hover',
         ),
-        button: cn(buttonVariants({ variant: 'outline' }), 'flex-row'),
-        buttonSecondary: cn(buttonVariants({ size: 'sm', variant: 'secondary' }), 'flex-row'),
+        button: 'flex-row',
+        buttonSecondary: 'flex-row',
       },
     },
     defaultVariants: {
@@ -27,6 +29,21 @@ const dropzoneVariants = cva(
     },
   },
 );
+
+// Keep the exported recipe useful outside the component, with current defaults.
+function dropzoneVariants(
+  props: Parameters<typeof dropzoneBaseVariants>[0] = {},
+  isAdmin7Pill = true,
+  shape: ControlShape = isAdmin7Pill ? 'pill' : 'rounded',
+) {
+  return cn(
+    dropzoneBaseVariants(props),
+    props.variant === 'button' && buttonVariants({ isAdmin7Pill, shape, variant: 'outline' }),
+    props.variant === 'buttonSecondary' &&
+      buttonVariants({ isAdmin7Pill, shape, size: 'sm', variant: 'secondary' }),
+    props.className,
+  );
+}
 
 type DropzoneRenderProps = {
   isDragActive: boolean;
@@ -74,6 +91,8 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
     },
     ref,
   ) => {
+    const { controlShape } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
     const {
       getRootProps,
       getInputProps,
@@ -123,7 +142,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       'aria-disabled': disabled,
       'aria-invalid': isDragReject || undefined,
       className: cn(
-        dropzoneVariants({ variant }),
+        dropzoneVariants({ variant }, isAdmin7Pill, controlShape),
         disabled && 'pointer-events-none cursor-not-allowed opacity-60',
         isDragReject && 'border-state-danger bg-state-danger/10',
         isDragActive && !isDragReject && !disabled && 'border-state-success bg-state-success/10',

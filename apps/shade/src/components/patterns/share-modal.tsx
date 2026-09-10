@@ -1,3 +1,4 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Check, Copy, Link, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -121,11 +122,13 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
+    const { pill: isAdmin7Pill } = useAdmin7();
     return (
       <a
         ref={ref}
         className={cn(
           'flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40',
+          isAdmin7Pill && 'rounded-xl',
           className,
         )}
         href={href}
@@ -222,9 +225,19 @@ function SocialIcon({ service }: { service: ShareService }) {
 interface SocialLinksProps extends React.HTMLAttributes<HTMLDivElement> {
   layout?: 'footer' | 'stacked';
   links: ShareModalSocialLink[];
+  shape?: ButtonProps['shape'];
+  variant?: ButtonProps['variant'];
 }
 
-function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLinksProps) {
+function SocialLinks({
+  className,
+  layout = 'footer',
+  links,
+  shape,
+  variant,
+  ...props
+}: SocialLinksProps) {
+  const { pill: isAdmin7Pill } = useAdmin7();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -233,7 +246,8 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
             key={link.id ?? link.href}
             className="flex-1"
             id={link.id}
-            variant="outline"
+            shape={shape}
+            variant={variant ?? 'outline'}
             asChild
           >
             <a
@@ -254,19 +268,40 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
 
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
-      {links.map((link) => (
-        <a
-          key={link.id ?? link.href}
-          aria-label={link.label}
-          className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
-          href={link.href}
-          rel="noopener noreferrer"
-          target="_blank"
-          title={link.title || link.label}
-        >
-          <SocialIcon service={link.service} />
-        </a>
-      ))}
+      {links.map((link) =>
+        isAdmin7Pill || shape || variant ? (
+          <Button
+            key={link.id ?? link.href}
+            className="w-12 flex-none px-3"
+            shape={shape}
+            variant={variant ?? 'ghost'}
+            asChild
+          >
+            <a
+              aria-label={link.label}
+              href={link.href}
+              id={link.id}
+              rel="noopener noreferrer"
+              target="_blank"
+              title={link.title || link.label}
+            >
+              <SocialIcon service={link.service} />
+            </a>
+          </Button>
+        ) : (
+          <a
+            key={link.id ?? link.href}
+            aria-label={link.label}
+            className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
+            href={link.href}
+            rel="noopener noreferrer"
+            target="_blank"
+            title={link.title || link.label}
+          >
+            <SocialIcon service={link.service} />
+          </a>
+        ),
+      )}
     </div>
   );
 }
@@ -340,7 +375,13 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  return <DialogFooter className={cn('justify-between gap-6', className)} {...props} />;
+  const { pill: isAdmin7Pill } = useAdmin7();
+  return (
+    <DialogFooter
+      className={cn('justify-between gap-6', isAdmin7Pill && 'gap-8 sm:gap-8', className)}
+      {...props}
+    />
+  );
 }
 
 const ShareModal = {

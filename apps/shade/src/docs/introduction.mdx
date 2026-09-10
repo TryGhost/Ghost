@@ -31,4 +31,48 @@ If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/
 
 See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
 
+## Admin 7 milestones
+
+Shade previews use the new controls by default. New screens use ordinary
+`Button`, `SelectTrigger`, `InputGroup`, `Badge`, `FilterBar`, and `PageHeader`
+components; there is no need to add `shape="pill"` or copy milestone classes into
+pages. Explicit shapes remain available for a specific visual need.
+
+Admin resolves each milestone once at its application boundary and supplies the
+complete `Admin7Features` object to `ShadeApp`. Shade receives the result, without
+knowing about Labs storage or Admin routes.
+
+```tsx
+// The Admin host supplies every milestone; isolated previews use Shade defaults.
+<ShadeApp darkMode={darkMode} admin7={admin7}>
+    <App />
+</ShadeApp>
+```
+
+Components can read the relevant milestone for temporary structural or interaction
+differences:
+
+```tsx
+import {useAdmin7} from '@tryghost/shade/app';
+
+const {pill} = useAdmin7();
+```
+
+Pure appearance differences belong in shared recipes and scoped tokens.
+`Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
+`pill` enabled, outline chrome otherwise. Avoid using control shape as a proxy
+for behavior.
+
+Portals carry their owning milestone values through Shade's internal scope
+wrapper, including the `data-admin7-pill` attribute. Keep scope attributes off
+`document.body`: independently mounted surfaces must not change one another's
+menus or dialogs. Standalone surfaces use `ShadeApp` to provide context and the
+CSS scope, and explicitly choose the milestones they support.
+
+The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
+is the canonical source for milestone naming, resolution, supported surfaces,
+dependencies, tests and removal. At rollout, keep the enabled behavior and remove
+the milestone's compatibility branches; ordinary component calls already use the
+intended defaults.
+
 </div>

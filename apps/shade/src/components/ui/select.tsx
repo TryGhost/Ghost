@@ -1,7 +1,10 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
@@ -12,26 +15,90 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+const selectTriggerVariants = cva(
+  'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
+  {
+    variants: {
+      variant: {
+        default: '',
+        ghost: 'border-transparent bg-transparent shadow-none',
+        secondary:
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
+      },
+      isAdmin7Pill: { true: '', false: '' },
+      shape: {
+        rounded: 'rounded-control',
+        pill: 'rounded-full',
+      },
+    },
+    compoundVariants: [
+      {
+        isAdmin7Pill: true,
+        variant: ['secondary', 'ghost'],
+        className:
+          'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
+      },
+      {
+        isAdmin7Pill: true,
+        variant: 'ghost',
+        className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
+      },
+      {
+        isAdmin7Pill: true,
+        variant: 'secondary',
+        className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
+      },
+    ],
+    defaultVariants: {
+      variant: 'default',
+      shape: 'pill',
+      isAdmin7Pill: true,
+    },
+  },
+);
+
+export interface SelectTriggerProps
+  extends
+    React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
+    Omit<VariantProps<typeof selectTriggerVariants>, 'isAdmin7Pill'> {
+  /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
+  showChevron?: boolean;
+}
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      inputSurface('self'),
-      inputSurfaceClasses.disabledFieldSelf,
-      'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+  SelectTriggerProps
+>(
+  (
+    { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
+    ref,
+  ) => {
+    const { controlShape } = useShade();
+    const { pill: isAdmin7Pill } = useAdmin7();
+    const resolvedShape = shape ?? controlShape;
+    return (
+      <SelectPrimitive.Trigger
+        ref={ref}
+        className={cn(
+          inputSurface('self'),
+          inputSurfaceClasses.disabledFieldSelf,
+          selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7Pill }),
+          className,
+        )}
+        data-control-shape={resolvedShape}
+        data-variant={variant ?? 'default'}
+        {...props}
+      >
+        {children}
+        {showChevron && (
+          <SelectPrimitive.Icon asChild>
+            <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
+          </SelectPrimitive.Icon>
+        )}
+      </SelectPrimitive.Trigger>
+    );
+  },
+);
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<
@@ -71,7 +138,7 @@ const SelectContent = React.forwardRef<
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
-          'relative z-[9999] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
+          'relative z-[9999] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-menu border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
           position === 'popper' &&
             'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
           className,
@@ -116,7 +183,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-default items-center rounded-xs py-1.5 pr-8 pl-2 text-control outline-hidden select-none focus:bg-interactive-hover focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex w-full cursor-default items-center rounded-menu-item py-1.5 pr-8 pl-2 text-control outline-hidden select-none focus:bg-interactive-hover focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className,
     )}
     {...props}
@@ -154,4 +221,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  selectTriggerVariants,
 };

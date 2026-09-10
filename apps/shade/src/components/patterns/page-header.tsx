@@ -1,13 +1,20 @@
+import { useAdmin7 } from '@/providers/admin7-provider';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { SelectTrigger } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Kbd } from '@/components/ui/kbd';
 import { H1 } from '@/components/layout/heading';
 import { Inline, Stack, Text } from '@/components/primitives';
 import { cn } from '@/lib/utils';
 
 import React from 'react';
+import { ListFilter } from 'lucide-react';
+import { Slot } from '@radix-ui/react-slot';
 
 type PropsWithChildrenAndClassName = React.PropsWithChildren & {
   className?: string;
@@ -17,6 +24,138 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
   sticky?: boolean;
   blurredBackground?: boolean;
 };
+
+/** Header tooltips require Admin 7 and never belong on primary actions. */
+function PageHeaderTooltip({
+  children,
+  label,
+  shortcut,
+}: React.PropsWithChildren<{ label: string; shortcut?: string }>) {
+  const { pill: isAdmin7Pill } = useAdmin7();
+  if (!isAdmin7Pill) {
+    return <>{children}</>;
+  }
+  return (
+    <Tooltip>
+      {children}
+      <TooltipContent side="bottom" variant="white">
+        <Inline align="center" gap="sm">
+          {label}
+          {shortcut && <Kbd>{shortcut}</Kbd>}
+        </Inline>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+const PageHeaderTooltipTrigger = React.forwardRef<
+  React.ElementRef<typeof TooltipTrigger>,
+  React.ComponentPropsWithoutRef<typeof TooltipTrigger>
+>(({ children, asChild, ...props }, ref) => {
+  const { pill: isAdmin7Pill } = useAdmin7();
+  const PlainTrigger = asChild ? Slot : 'button';
+  return isAdmin7Pill ? (
+    <TooltipTrigger ref={ref} asChild={asChild} {...props}>
+      {children}
+    </TooltipTrigger>
+  ) : (
+    <PlainTrigger ref={ref} {...props}>
+      {children}
+    </PlainTrigger>
+  );
+});
+PageHeaderTooltipTrigger.displayName = 'PageHeaderTooltipTrigger';
+
+const PrimaryActionContext = React.createContext(false);
+
+type PageHeaderActionProps = ButtonProps & {
+  label: string;
+  iconOnly?: boolean;
+  primary?: boolean;
+  shortcut?: string;
+  /** Temporary compatibility for existing screens; new headers use the defaults. */
+  fallbackVariant?: ButtonProps['variant'];
+  fallbackSize?: ButtonProps['size'];
+};
+
+const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionProps>(
+  (
+    {
+      label,
+      iconOnly = false,
+      primary: primaryProp,
+      shortcut,
+      fallbackVariant = 'outline',
+      fallbackSize,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
+    const { pill: isAdmin7Pill } = useAdmin7();
+    const primaryContext = React.useContext(PrimaryActionContext);
+    const primary = primaryProp ?? primaryContext;
+    const button = (
+      <Button
+        ref={ref}
+        aria-keyshortcuts={shortcut}
+        aria-label={label}
+        className={cn(isAdmin7Pill && '[&_svg]:stroke-2!', className)}
+        size={isAdmin7Pill ? (iconOnly ? 'icon' : undefined) : fallbackSize}
+        variant={isAdmin7Pill ? (primary ? 'default' : 'ghost') : fallbackVariant}
+        {...props}
+      />
+    );
+    return primary || !isAdmin7Pill ? (
+      button
+    ) : (
+      <PageHeaderTooltip label={label} shortcut={shortcut}>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+      </PageHeaderTooltip>
+    );
+  },
+);
+PageHeaderAction.displayName = 'PageHeaderAction';
+
+const PageHeaderFilterTrigger = React.forwardRef<
+  HTMLButtonElement,
+  Omit<PageHeaderActionProps, 'label'>
+>((props, ref) => (
+  <PageHeaderAction
+    ref={ref}
+    data-slot="filters-add"
+    label="Filter"
+    shortcut="F"
+    type="button"
+    {...props}
+  >
+    <ListFilter className="size-4" />
+    Filter
+  </PageHeaderAction>
+));
+PageHeaderFilterTrigger.displayName = 'PageHeaderFilterTrigger';
+
+const PageHeaderSelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectTrigger>,
+  React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string }
+>(({ label, className, ...props }, ref) => {
+  const { pill: isAdmin7Pill } = useAdmin7();
+  return (
+    <PageHeaderTooltip label={label}>
+      <PageHeaderTooltipTrigger asChild>
+        <SelectTrigger
+          ref={ref}
+          aria-label={label}
+          className={cn('w-auto', isAdmin7Pill && 'font-medium [&_svg]:stroke-2!', className)}
+          showChevron={!isAdmin7Pill}
+          variant={isAdmin7Pill ? 'ghost' : 'default'}
+          {...props}
+        />
+      </PageHeaderTooltipTrigger>
+    </PageHeaderTooltip>
+  );
+});
+PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 
 // ---------------------------------------------------------------------------
 // Title-block primitives
@@ -134,9 +273,29 @@ function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) 
   );
 }
 
-type PageHeaderActionGroupPrimaryProps = React.PropsWithChildren;
-function PageHeaderActionGroupPrimary({ children }: PageHeaderActionGroupPrimaryProps) {
-  return <>{children}</>;
+type PageHeaderActionGroupPrimaryProps = PropsWithChildrenAndClassName;
+function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionGroupPrimaryProps) {
+  const { pill: isAdmin7Pill } = useAdmin7();
+  if (React.Children.toArray(children).length === 0) {
+    return null;
+  }
+  return (
+    <PrimaryActionContext.Provider value={true}>
+      {isAdmin7Pill ? (
+        <Inline
+          className={cn('ms-4 shrink-0 first:ms-0', className)}
+          data-page-header="primary"
+          gap="none"
+        >
+          {children}
+        </Inline>
+      ) : className ? (
+        <Slot className={className}>{children}</Slot>
+      ) : (
+        children
+      )}
+    </PrimaryActionContext.Provider>
+  );
 }
 
 type PageHeaderActionGroupMobileMenuProps = React.PropsWithChildren;
@@ -169,6 +328,17 @@ function PageHeaderActionGroupMobileMenuContent({
     <DropdownMenuContent align="end" sideOffset={8} {...props}>
       {children}
     </DropdownMenuContent>
+  );
+}
+
+function PageHeaderTooltipProvider({ children }: React.PropsWithChildren) {
+  const { pill: isAdmin7Pill } = useAdmin7();
+  return isAdmin7Pill ? (
+    <TooltipProvider delayDuration={1000} skipDelayDuration={300}>
+      {children}
+    </TooltipProvider>
+  ) : (
+    <>{children}</>
   );
 }
 
@@ -217,6 +387,8 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     children,
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
+    const { pill: isAdmin7Pill } = useAdmin7();
+    const gap = isAdmin7Pill ? 'xs' : 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];
     let mobileMenu: React.ReactElement | null = null;
@@ -237,8 +409,8 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
       }
 
       if (childElement.type === PageHeaderActionGroupPrimary) {
-        primaryAction = childElement.props.children ?? null;
-        desktopChildren.push(childElement.props.children ?? null);
+        primaryAction = childElement;
+        desktopChildren.push(childElement);
         return;
       }
 
@@ -247,49 +419,63 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
 
     if (!mobileMenu) {
       return (
-        <Inline
-          align="center"
-          className={className}
-          data-page-header="action-group"
-          gap="sm"
-          justify="end"
-        >
-          {children}
-        </Inline>
+        <PageHeaderTooltipProvider>
+          <Inline
+            align="center"
+            className={className}
+            data-page-header="action-group"
+            gap={gap}
+            justify="end"
+          >
+            {children}
+          </Inline>
+        </PageHeaderTooltipProvider>
       );
     }
 
     if (!shouldCollapse) {
       return (
-        <Inline
-          align="center"
-          className={className}
-          data-page-header="action-group"
-          gap="sm"
-          justify="end"
-        >
-          <Inline align="center" data-page-header="action-group-desktop" gap="sm" justify="end">
-            {desktopChildren}
+        <PageHeaderTooltipProvider>
+          <Inline
+            align="center"
+            className={className}
+            data-page-header="action-group"
+            gap={gap}
+            justify="end"
+          >
+            <Inline align="center" data-page-header="action-group-desktop" gap={gap} justify="end">
+              {desktopChildren}
+            </Inline>
           </Inline>
-        </Inline>
+        </PageHeaderTooltipProvider>
       );
     }
 
     return (
-      <Inline
-        align="center"
-        className={className}
-        data-page-header="action-group"
-        gap="sm"
-        justify="end"
-      >
-        <Inline align="center" className="ml-auto" data-page-header="action-group-mobile" gap="sm">
-          {mobileMenu}
-          {primaryAction && (
-            <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
-          )}
+      <PageHeaderTooltipProvider>
+        <Inline
+          align="center"
+          className={className}
+          data-page-header="action-group"
+          gap={gap}
+          justify="end"
+        >
+          <Inline
+            align="center"
+            className="ml-auto"
+            data-page-header="action-group-mobile"
+            gap={gap}
+          >
+            {mobileMenu}
+            {primaryAction &&
+              (isAdmin7Pill ? (
+                primaryAction
+              ) : (
+                <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
+              ))}
+          </Inline>
         </Inline>
-      </Inline>
+      </PageHeaderTooltipProvider>
     );
   },
   {
@@ -326,21 +512,20 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
   Meta: React.FC<PropsWithChildrenAndClassName>;
   Actions: React.FC<PropsWithChildrenAndClassName>;
   ActionGroup: PageHeaderActionGroupComponent;
+  Action: typeof PageHeaderAction;
+  FilterTrigger: typeof PageHeaderFilterTrigger;
+  SelectTrigger: typeof PageHeaderSelectTrigger;
+  Tooltip: typeof PageHeaderTooltip;
+  TooltipTrigger: typeof PageHeaderTooltipTrigger;
 };
 
 /**
  * PageHeader is the canonical page-chrome component for Ghost Admin pages.
  *
- * Structure (a vertical stack of three rows; any row collapses if its slots
- * are absent):
- *
- *   1. Main row — `Inline align=start justify=between`:
- *        `Left` (stack: `Breadcrumb` + `Title`) | `Actions`
- *   2. View row — `Inline align=center justify=between`:
- *        `ViewBar` | `ViewActions`
- *   3. Filter bar — plain container.
- *
+ * The main row contains `Left` (Breadcrumb + Title) and `Actions`.
+ * Compose optional ViewBar and FilterBar rows beside it in ListPage.Header.
  * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
+ * See page-header.mdx for the action ordering and interaction contract.
  */
 const PageHeader: PageHeaderComponent = Object.assign(
   function PageHeader({
@@ -375,6 +560,11 @@ const PageHeader: PageHeaderComponent = Object.assign(
     Meta: PageHeaderMeta,
     Actions: PageHeaderActions,
     ActionGroup: PageHeaderActionGroup,
+    Action: PageHeaderAction,
+    FilterTrigger: PageHeaderFilterTrigger,
+    SelectTrigger: PageHeaderSelectTrigger,
+    Tooltip: PageHeaderTooltip,
+    TooltipTrigger: PageHeaderTooltipTrigger,
   },
 );
 

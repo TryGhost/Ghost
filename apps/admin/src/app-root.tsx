@@ -6,6 +6,7 @@ import {
   useLocation,
 } from '@tryghost/admin-x-framework';
 import { ShadeApp } from '@tryghost/shade/app';
+import { cn } from '@tryghost/shade/utils';
 
 import App from './app.tsx';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
@@ -22,7 +23,7 @@ function ThemedAdminApp() {
   return (
     <ShadeApp
       admin7={admin7}
-      className="shade-admin"
+      className={cn('shade-admin', admin7.pill && 'admin7-pill')}
       darkMode={resolvedTheme === 'dark'}
       data-react-admin-mounted
     >

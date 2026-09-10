@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button } from '@/components/ui/button';
 import { FilterBar } from '@/components/patterns/filter-bar';
 import {
   Filters,
@@ -8,7 +7,7 @@ import {
   type Filter,
   type FilterFieldConfig,
 } from '@/components/patterns/filters';
-import { Circle, X } from 'lucide-react';
+import { Circle } from 'lucide-react';
 
 const meta = {
   title: 'Patterns / Filter Bar',
@@ -16,6 +15,11 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
+    docs: {
+      description: {
+        component: 'A full-width row for active filters with compact, consistent filter actions.',
+      },
+    },
   },
 } satisfies Meta<typeof FilterBar>;
 
@@ -38,6 +42,13 @@ const memberStatusFields: FilterFieldConfig[] = [
 
 export const WithFilters: Story = {
   name: 'With filters',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use for active filters with compact actions such as saving the current view.',
+      },
+    },
+  },
   render: () => {
     const [filters, setFilters] = useState<Filter[]>([
       createFilter('memberStatus', 'is', ['complimentary']),
@@ -47,20 +58,32 @@ export const WithFilters: Story = {
       <FilterBar>
         <Filters
           addButtonText="Add filter"
-          clearButtonIcon={<X className="size-4" />}
-          clearButtonText="Clear"
+          clearButton={
+            <FilterBar.Actions>
+              <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+                Clear
+              </FilterBar.Action>
+              <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+            </FilterBar.Actions>
+          }
           fields={memberStatusFields}
           filters={filters}
           showClearButton={true}
           onChange={setFilters}
         />
-        <Button variant="ghost">Save view</Button>
       </FilterBar>
     );
   },
 };
 
 export const Empty: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'An empty Filters instance keeps its labelled add action until filters are active.',
+      },
+    },
+  },
   render: () => {
     const [filters, setFilters] = useState<Filter[]>([]);
 

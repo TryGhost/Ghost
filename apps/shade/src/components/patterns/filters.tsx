@@ -1,8 +1,11 @@
 'use client';
 
+import { useAdmin7 } from '@/providers/admin7-provider';
+
 import type React from 'react';
 import {
   createContext,
+  forwardRef,
   useCallback,
   useContext,
   useEffect,
@@ -10,7 +13,9 @@ import {
   useRef,
   useState,
 } from 'react';
+import { PageHeader } from '@/components/patterns/page-header';
 import { Calendar } from '@/components/ui/calendar';
+import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import {
   Command,
   CommandEmpty,
@@ -29,8 +34,20 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useShade } from '@/providers/shade-provider';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { AlertCircle, Calendar as CalendarIcon, Check, Loader2, Plus, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Calendar as CalendarIcon,
+  Check,
+  Funnel,
+  FunnelPlus,
+  ListFilter,
+  ListFilterPlus,
+  Loader2,
+  Plus,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // i18n Configuration Interface
@@ -191,6 +208,9 @@ export const DEFAULT_I18N: FilterI18nConfig = {
 
 // Context for all Filter component props
 interface FilterContextValue {
+  hasFilters: boolean;
+  controlRadius: 'md' | 'full';
+  keyboardShortcut?: string;
   variant: 'solid' | 'outline';
   size: 'sm' | 'md' | 'lg';
   radius: 'md' | 'full';
@@ -201,6 +221,7 @@ interface FilterContextValue {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showSearchInput?: boolean;
   trigger?: React.ReactNode;
@@ -208,6 +229,8 @@ interface FilterContextValue {
 }
 
 const FilterContext = createContext<FilterContextValue>({
+  hasFilters: false,
+  controlRadius: 'md',
   variant: 'outline',
   size: 'md',
   radius: 'md',
@@ -218,6 +241,7 @@ const FilterContext = createContext<FilterContextValue>({
   addButtonText: undefined,
   addButtonIcon: undefined,
   addButtonClassName: undefined,
+  addButtonVariant: undefined,
   addButton: undefined,
   showSearchInput: true,
   trigger: undefined,
@@ -313,8 +337,10 @@ const filterAddButtonVariants = cva(
     variants: {
       variant: {
         solid: 'border border-input hover:bg-secondary/60',
-        outline:
-          'border border-control-border hover:bg-interactive-hover dark:hover:bg-interactive-hover',
+        outline: 'border border-control-border hover:bg-interactive-hover',
+        ghost: 'border border-transparent hover:bg-button-hover',
+        secondary:
+          'border border-transparent bg-tab-active text-secondary-foreground hover:bg-secondary',
       },
       size: {
         lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -1680,7 +1706,7 @@ function SelectOptionsList<T = unknown>({
           {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
           <div className="p-1.5">
             <button
-              className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
+              className="flex w-full items-center justify-center rounded-menu-item px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
               disabled={isLoadingMore}
               type="button"
               onClick={onLoadMore}
@@ -1875,6 +1901,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
           }),
           field.triggerClassName ?? 'max-w-60',
         )}
+        data-slot="filters-value"
       >
         <div className="flex min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2122,6 +2149,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly,
         })}
+        data-slot="filters-value"
       >
         {field.customRenderer({ field, values, onChange, operator, onOperatorChange, readOnly })}
       </div>
@@ -2138,6 +2166,7 @@ function FilterValueSelector<T = unknown>({
           cursorPointer: context.cursorPointer,
           readOnly: true,
         })}
+        data-slot="filters-value"
       >
         {field.customValueRenderer
           ? field.customValueRenderer(values, field.options ?? [])
@@ -2168,6 +2197,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex items-center gap-2">
           <Switch
@@ -2328,6 +2358,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <FilterDatePicker
           className={cn('max-w-full', field.className)}
@@ -2452,6 +2483,7 @@ function FilterValueSelector<T = unknown>({
           size: context.size,
           cursorPointer: context.cursorPointer,
         })}
+        data-slot="filters-value"
       >
         <div className="flex w-full min-w-0 items-center gap-1.5">
           {field.customValueRenderer ? (
@@ -2683,6 +2715,114 @@ export const FiltersContent = <T = unknown,>({
   );
 };
 
+// Both the default add button and the page-header trigger use this chrome.
+const FilterAddButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
+>(({ className, label, icon, ...props }, ref) => {
+  const context = useFilterContext();
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
+  const isInFilterBar = useFilterBarContext();
+  const isPillFilterBar = isInFilterBar && isAdmin7Pill;
+  const iconOnly = isPillFilterBar && context.hasFilters;
+  const buttonLabel = label ?? context.addButtonText ?? context.i18n.addFilter;
+
+  return (
+    <button
+      ref={ref}
+      aria-label={iconOnly ? buttonLabel : undefined}
+      className={cn(
+        filterAddButtonVariants({
+          variant: context.addButtonVariant ?? context.variant,
+          size: context.size,
+          cursorPointer: context.cursorPointer,
+          radius: context.controlRadius,
+        }),
+        isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
+        isAdmin7Pill && !isInFilterBar && 'font-medium',
+        isAdmin7Pill &&
+          (iconOnly
+            ? 'aspect-square border-0 !px-0 shadow-none'
+            : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
+              ? 'border-0 px-3 shadow-none active:shadow-none'
+              : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
+        context.addButtonClassName,
+        className,
+      )}
+      data-control-shape={controlShape}
+      data-slot="filters-add"
+      title={context.i18n.addFilterTitle}
+      type="button"
+      {...props}
+    >
+      {iconOnly ? <Plus /> : (icon ?? context.addButtonIcon ?? <Plus />)}
+      {!iconOnly && buttonLabel}
+    </button>
+  );
+});
+FilterAddButton.displayName = 'FilterAddButton';
+
+type FiltersTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Collapse the previous header label below lg; the accessible name remains. */
+  collapseLabel?: boolean;
+  /** Temporary appearance choices for existing screens while Admin 7 is disabled. */
+  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
+  fallbackClassName?: string;
+};
+
+const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
+  (
+    { collapseLabel = false, fallbackStyle = 'list', fallbackClassName, className, ...props },
+    ref,
+  ) => {
+    const { hasFilters, keyboardShortcut } = useFilterContext();
+    const { pill: isAdmin7Pill } = useAdmin7();
+
+    if (isAdmin7Pill && !hasFilters) {
+      return (
+        <PageHeader.FilterTrigger
+          ref={ref}
+          className={className}
+          shortcut={keyboardShortcut?.toUpperCase()}
+          {...props}
+        />
+      );
+    }
+
+    const iconStyle = isAdmin7Pill && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
+    const Icon =
+      iconStyle === 'list'
+        ? hasFilters
+          ? ListFilterPlus
+          : ListFilter
+        : hasFilters || fallbackStyle === 'funnel-plus'
+          ? FunnelPlus
+          : Funnel;
+
+    return (
+      <FilterAddButton
+        ref={ref}
+        className={cn(
+          !isAdmin7Pill &&
+            cn(
+              collapseLabel &&
+                !hasFilters &&
+                'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
+              hasFilters && (fallbackStyle === 'list' ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
+              fallbackClassName,
+            ),
+          className,
+        )}
+        icon={<Icon className={iconStyle === 'list' ? 'size-4' : undefined} />}
+        label={hasFilters ? 'Add filter' : 'Filter'}
+        {...props}
+      />
+    );
+  },
+);
+FiltersTrigger.displayName = 'Filters.Trigger';
+
 interface FiltersProps<T = unknown> {
   filters: Filter<T>[];
   fields: FilterFieldsConfig<T>;
@@ -2692,6 +2832,7 @@ interface FiltersProps<T = unknown> {
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
   addButtonClassName?: string;
+  addButtonVariant?: 'solid' | 'outline' | 'ghost' | 'secondary';
   addButton?: React.ReactNode;
   showClearButton?: boolean;
   clearButtonText?: string;
@@ -2722,6 +2863,7 @@ export function Filters<T = unknown>({
   addButtonText,
   addButtonIcon,
   addButtonClassName,
+  addButtonVariant,
   addButton,
   showClearButton = false,
   clearButtonText,
@@ -2731,7 +2873,7 @@ export function Filters<T = unknown>({
   onClear,
   variant = 'outline',
   size = 'md',
-  radius = 'md',
+  radius,
   i18n,
   showSearchInput = true,
   cursorPointer = true,
@@ -2742,6 +2884,10 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
+  const { controlShape } = useShade();
+  const { pill: isAdmin7Pill } = useAdmin7();
+  const isInFilterBar = useFilterBarContext();
+  const isPillFilterBar = isInFilterBar && isAdmin7Pill;
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2754,6 +2900,8 @@ export function Filters<T = unknown>({
   // clicked. Both reset when the picker closes.
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const filterRadius = radius ?? 'md';
+  const controlRadius = radius ?? (isAdmin7Pill ? 'full' : 'md');
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -3028,9 +3176,12 @@ export function Filters<T = unknown>({
   return (
     <FilterContext.Provider
       value={{
+        hasFilters: filters.length > 0,
+        controlRadius,
+        keyboardShortcut,
         variant,
         size,
-        radius,
+        radius: filterRadius,
         i18n: mergedI18n,
         cursorPointer,
         className,
@@ -3038,6 +3189,7 @@ export function Filters<T = unknown>({
         addButtonText,
         addButtonIcon,
         addButtonClassName,
+        addButtonVariant,
         addButton,
         showSearchInput,
         trigger,
@@ -3047,6 +3199,7 @@ export function Filters<T = unknown>({
       <div
         className={cn(
           filtersContainerVariants({ variant, size }),
+          isPillFilterBar && 'static',
           filters.length > 0 && 'w-full',
           showClearButton && filters.length > 0 && 'sm:pr-24',
           className,
@@ -3061,7 +3214,10 @@ export function Filters<T = unknown>({
           return (
             <div
               key={filter.id}
-              className={filterItemVariants({ variant })}
+              className={cn(
+                filterItemVariants({ variant }),
+                isAdmin7Pill && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
+              )}
               data-slot="filter-item"
             >
               {/* Field Label */}
@@ -3069,7 +3225,7 @@ export function Filters<T = unknown>({
                 className={filterFieldLabelVariants({
                   variant: variant,
                   size: size,
-                  radius: radius,
+                  radius: filterRadius,
                 })}
               >
                 {field.icon}
@@ -3119,28 +3275,7 @@ export function Filters<T = unknown>({
               }
             }}
           >
-            <PopoverTrigger asChild>
-              {addButton ? (
-                addButton
-              ) : (
-                <button
-                  className={cn(
-                    filterAddButtonVariants({
-                      variant: variant,
-                      size: size,
-                      cursorPointer: cursorPointer,
-                      radius: radius,
-                    }),
-                    addButtonClassName,
-                  )}
-                  title={mergedI18n.addFilterTitle}
-                  type="button"
-                >
-                  {addButtonIcon || <Plus />}
-                  {addButtonText || mergedI18n.addFilter}
-                </button>
-              )}
-            </PopoverTrigger>
+            <PopoverTrigger asChild>{addButton ?? <FilterAddButton />}</PopoverTrigger>
             <PopoverContent
               align={popoverAlign}
               className={cn(
@@ -3262,12 +3397,16 @@ export function Filters<T = unknown>({
                   variant: variant,
                   size: size,
                   cursorPointer: cursorPointer,
-                  radius: radius,
+                  radius: controlRadius,
                 }),
+                isAdmin7Pill && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                'sm:absolute sm:top-0 sm:right-0',
+                isAdmin7Pill && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
+                'sm:absolute',
+                isPillFilterBar ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
+              data-control-shape={controlShape}
               type="button"
               onClick={() => {
                 if (onClear) {
@@ -3285,6 +3424,8 @@ export function Filters<T = unknown>({
     </FilterContext.Provider>
   );
 }
+
+Filters.Trigger = FiltersTrigger;
 
 export const createFilter = <T = unknown,>(
   field: string,

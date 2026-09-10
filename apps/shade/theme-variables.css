@@ -80,10 +80,19 @@
   --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --button-hover: var(--color-gray-100);
   --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--color-gray-100);
+  --filter-bar-item-hover: var(--color-gray-50);
   --control-surface: var(--surface-elevated);
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
+  --control-outline-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px;
+  --control-outline-pressed-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-gray-50);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
@@ -114,10 +123,19 @@
   --tab-active: color-mix(in oklab, oklch(36.77% 0.006 248.2) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--surface-elevated-2);
+  --filter-bar-item-hover: var(--tab-hover);
   --control-surface: transparent;
   --control-readonly-surface: var(--color-gray-950);
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
+  --control-outline-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px;
+  --control-outline-pressed-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-sidebar-bg);
   /* Mixed into the page background rather than a step off the blue ramp: at
      dark-mode lightness the raw palette blues are far too saturated for a
@@ -210,4 +228,22 @@
 }
 .dark .shadow-2xl {
   --tw-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.4);
+}
+
+/* The current design is Shade's default. The flag-off scope is temporary rollout
+   compatibility and is repeated on portals, never inherited through body. */
+.shade,
+[data-admin7-pill='true'] {
+  --radius-control: var(--radius-lg);
+  --radius-control-sm: var(--radius-md);
+  --radius-menu: calc(var(--radius-lg) + 0.2rem);
+  --radius-menu-item: var(--radius-lg);
+  --radius-trend-badge: var(--radius-lg);
+}
+[data-admin7-pill='false'] {
+  --radius-control: var(--radius-md);
+  --radius-control-sm: var(--radius-sm);
+  --radius-menu: var(--radius-md);
+  --radius-menu-item: var(--radius-xs);
+  --radius-trend-badge: var(--radius-xs);
 }

@@ -8,7 +8,7 @@ import {
   SelectLabel,
   SelectGroup,
   SelectSeparator,
-} from './select';
+} from '@/components/ui/select';
 
 const meta = {
   title: 'Components / Select',
@@ -18,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Dropdown selection component built on Radix UI. Provides accessible keyboard navigation, search, and customizable styling.',
+          'Dropdown selection component built on Radix UI. Provides accessible keyboard navigation, search, and customizable styling. Ghost and secondary pill triggers share the button inset shadow while pressed and while their list is open. The open appearance follows aria-expanded and resets on selection or dismissal.',
       },
     },
   },
@@ -53,6 +53,72 @@ export const Default: Story = {
     docs: {
       description: {
         story: 'Basic select dropdown with simple options.',
+      },
+    },
+  },
+};
+
+export const Pill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Pill-shaped trigger for selects used alongside pill-shaped header controls.',
+      },
+    },
+  },
+};
+
+export const GhostPill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]" variant="ghost">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Borderless pill trigger for selects on low-emphasis surfaces such as page headers.',
+      },
+    },
+  },
+};
+
+export const SecondaryPill: Story = {
+  render: () => (
+    <Select defaultValue="banana">
+      <SelectTrigger className="w-[180px]" variant="secondary">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="orange">Orange</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Flat grey pill trigger for secondary selects in page headers.',
       },
     },
   },
@@ -194,6 +260,34 @@ export const LongList: Story = {
     docs: {
       description: {
         story: 'Select with many options showing scroll behavior and search functionality.',
+      },
+    },
+  },
+};
+
+export const WithoutChevron: Story = {
+  render: () => (
+    <Select defaultValue="month">
+      <SelectTrigger
+        aria-label="Date range"
+        className="w-[180px]"
+
+        showChevron={false}
+        variant="ghost"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="week">Last 7 days</SelectItem>
+        <SelectItem value="month">Last 30 days</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Set showChevron to false for a compact labelled header selector. The selected value remains visible, and keyboard navigation works as usual.',
       },
     },
   },

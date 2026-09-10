@@ -78,6 +78,46 @@ export const Icon: Story = {
   },
 };
 
+export const GhostPill: Story = {
+  render: () => (
+    <div className="w-full max-w-sm">
+      <InputGroup variant="ghost">
+        <InputGroupInput placeholder="Search..." />
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Borderless pill input group for low-emphasis search controls in page headers.',
+      },
+    },
+  },
+};
+
+export const SecondaryPill: Story = {
+  render: () => (
+    <div className="w-full max-w-sm">
+      <InputGroup variant="secondary">
+        <InputGroupInput placeholder="Search..." />
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Flat grey pill input group for secondary search controls in page headers.',
+      },
+    },
+  },
+};
+
 export const Text: Story = {
   render: () => (
     <div className="grid w-full max-w-sm gap-6">

@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
 import ShadeProvider from '@/providers/shade-provider';
+import type { ControlShape } from '@/providers/shade-provider';
 import {
   ADMIN7_PREVIEW_FEATURES,
   Admin7Provider,
@@ -17,12 +18,14 @@ export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
+  controlShape?: ControlShape;
   /** Hosts supply resolved milestones; standalone Shade previews use future defaults. */
   admin7?: Admin7Features;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
+  controlShape,
   admin7 = ADMIN7_PREVIEW_FEATURES,
   className,
   children,
@@ -33,7 +36,9 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   return (
     <div className={appClassName} {...props} {...getAdmin7ScopeAttributes(admin7)}>
       <Admin7Provider features={admin7}>
-        <ShadeProvider darkMode={darkMode}>{children}</ShadeProvider>
+        <ShadeProvider controlShape={controlShape} darkMode={darkMode}>
+          {children}
+        </ShadeProvider>
       </Admin7Provider>
     </div>
   );

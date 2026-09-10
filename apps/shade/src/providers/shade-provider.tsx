@@ -5,17 +5,22 @@ import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ShadeScope } from '@/shade-scope';
+import { useAdmin7 } from '@/providers/admin7-provider';
 
 interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
+  controlShape: ControlShape;
 }
+
+export type ControlShape = 'rounded' | 'pill';
 
 const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
+  controlShape: 'pill',
 });
 
 export const useShade = () => useContext(ShadeContext);
@@ -68,10 +73,12 @@ const ToasterPortal = () => {
 
 interface ShadeProviderProps {
   darkMode: boolean;
+  controlShape?: ControlShape;
   children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, children }) => {
+const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, controlShape, children }) => {
+  const { pill } = useAdmin7();
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
   const setFocusState = (value: boolean) => {
@@ -79,7 +86,14 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({ darkMode, children }) => 
   };
 
   return (
-    <ShadeContext.Provider value={{ isAnyTextFieldFocused, setFocusState, darkMode }}>
+    <ShadeContext.Provider
+      value={{
+        isAnyTextFieldFocused,
+        setFocusState,
+        darkMode,
+        controlShape: controlShape ?? (pill ? 'pill' : 'rounded'),
+      }}
+    >
       <GlobalDirtyStateProvider>
         {/* Default Radix tooltip timing for any Tooltip without a nearer
             provider; inner providers still win via nearest-provider scoping. */}
