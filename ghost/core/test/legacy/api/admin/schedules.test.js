@@ -9,6 +9,7 @@ const SchedulingDefault =
 const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
+const { mockManager } = require('../../../utils/e2e-framework');
 const localUtils = require('./utils');
 
 describe('Schedules API', function () {
@@ -21,13 +22,17 @@ describe('Schedules API', function () {
   });
 
   afterAll(function () {
+    mockManager.restore();
     sinon.restore();
   });
 
   beforeAll(async function () {
     await localUtils.startGhost();
+    mockManager.mockMailgun();
 
     request = supertest.agent(config.get('url'));
+
+    const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
     resources.push(
       testUtils.DataGenerator.forKnex.createPost({
@@ -106,6 +111,9 @@ describe('Schedules API', function () {
         published_at: moment().subtract(10, 'seconds').toDate(),
         status: 'scheduled',
         slug: 'sixth',
+        // Publishing with a newsletter creates the email, which is the path
+        // that must run exactly once when deliveries overlap
+        newsletter_id: defaultNewsletter.id,
         authors: [
           {
             id: testUtils.getExistingData().users[0].id,
@@ -246,6 +254,12 @@ describe('Schedules API', function () {
         { context: { internal: true } },
       );
       assert.equal(post.get('status'), 'published');
+
+      const emails = await models.Email.findAll({
+        filter: `post_id:'${resources[5].id}'`,
+        context: { internal: true },
+      });
+      assert.equal(emails.length, 1, 'the newsletter email is created once');
     });
 
     it('a deleted resource is a no-op, not an error', async function () {

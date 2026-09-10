@@ -3,7 +3,6 @@ const errors = require('@tryghost/errors');
 const moment = require('moment');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
-const models = require('../../models');
 const api = require('../../api').endpoints;
 
 const messages = {
@@ -17,6 +16,20 @@ const messages = {
 // retrying a publish that will never happen.
 const NO_OP = { scheduledResource: null, preScheduledResource: null };
 
+// A scheduler may deliver the same job twice, and the two deliveries can
+// overlap: a persistent queue can hold two jobs for one post and fire both in
+// the same tick. Deliveries for one resource are chained so the second runs
+// only after the first has finished, finds nothing left to publish and takes
+// the no-op path instead of publishing (and emailing) again.
+//
+// This is deliberately an in-process chain rather than a database row lock.
+// Publishing creates the newsletter email outside the edit's transaction and
+// hands it to the batch sender straight away, so a row lock held across the
+// edit blocks that insert on the locked post (and on gap locks from the
+// eagerly loaded relations) until the lock wait timeout, which fails the
+// publish and stalls unrelated writes in the meantime.
+const inFlight = new Map();
+
 /**
  * Publishes scheduled resource (a post or a page at the moment of writing)
  *
@@ -28,16 +41,22 @@ const NO_OP = { scheduledResource: null, preScheduledResource: null };
  *   `scheduledResource: null` when there was nothing to publish yet
  */
 exports.publish = async (resourceType, id, force, options) => {
-  // A scheduler may deliver the same job twice, and the two deliveries can
-  // overlap. Read and edit inside one transaction with the row locked so the
-  // second delivery waits for the first to commit, then finds nothing left to
-  // publish and takes the no-op path instead of publishing (and emailing) again.
-  if (!options.transacting) {
-    return models.Base.transaction((transacting) =>
-      exports.publish(resourceType, id, force, { ...options, transacting, forUpdate: true }),
-    );
-  }
+  const key = `${resourceType}:${id}`;
+  const previous = inFlight.get(key) || Promise.resolve();
+  const current = previous.catch(() => {}).then(() => publishNow(resourceType, id, force, options));
 
+  inFlight.set(key, current);
+
+  try {
+    return await current;
+  } finally {
+    if (inFlight.get(key) === current) {
+      inFlight.delete(key);
+    }
+  }
+};
+
+const publishNow = async (resourceType, id, force, options) => {
   const publishAPostBySchedulerToleranceInMinutes =
     config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
@@ -56,8 +75,8 @@ exports.publish = async (resourceType, id, force, options) => {
     throw err;
   }
 
-  // The read above is filtered to scheduled resources, so a resource that
-  // another delivery has already published normally surfaces as NotFound.
+  // The read above is filtered to scheduled resources, so a resource that an
+  // earlier delivery has already published normally surfaces as NotFound.
   // Keep an explicit check so the outcome doesn't depend on that filter.
   if (preScheduledResource.status !== 'scheduled') {
     return NO_OP;
