@@ -76,7 +76,7 @@ test.describe('Ghost Admin - Member custom field access', () => {
     const memberDetailsPage = new MemberDetailsPage(page);
 
     await settingsPage.goto();
-    await settingsPage.customFieldsSection.createField(fieldName, undefined, 'Only staff');
+    await settingsPage.customFieldsSection.createField(fieldName);
 
     await page.goto(`/ghost/#/members/${member.id}`);
     await memberDetailsPage.setCustomFieldValue(fieldName, 'Renewing, do not chase');
@@ -86,16 +86,17 @@ test.describe('Ghost Admin - Member custom field access', () => {
       expect(namesOf(await fieldsOfferedTo(memberPage))).not.toContain(fieldName);
       expect(await valuesHeldBy(memberPage)).toBeUndefined();
 
+      // Opening the field discloses what staff already recorded, and hands the member
+      // the pen: the switch has no view-only position, that level is the API's alone.
       await settingsPage.goto();
-      await settingsPage.customFieldsSection.setAudience(fieldName, 'Members can view');
+      await settingsPage.customFieldsSection.setVisibleToMembers(fieldName, true);
 
       const offered = await offeredFieldNamed(memberPage, fieldName);
-      expect(offered.access).toEqual({ member: 'read' });
+      expect(offered.access).toEqual({ member: 'write' });
       expect((await valuesHeldBy(memberPage))?.[offered.key]).toBe('Renewing, do not chase');
 
-      const refused = await memberWrites(memberPage, offered.key, 'Chase away');
-      expect(refused.status()).toBe(422);
-      expect((await refused.json()).errors[0].message).toMatch(/Cannot set custom field/);
+      const written = await memberWrites(memberPage, offered.key, 'Chase away');
+      expect(written.status()).toBe(200);
     } finally {
       await context.close();
     }
@@ -116,7 +117,7 @@ test.describe('Ghost Admin - Member custom field access', () => {
     const memberDetailsPage = new MemberDetailsPage(page);
 
     await settingsPage.goto();
-    await settingsPage.customFieldsSection.createField(fieldName, undefined, 'Members can edit');
+    await settingsPage.customFieldsSection.createField(fieldName, undefined, true);
 
     const { context, page: memberPage } = await asMember(browser, baseURL!, member);
     try {
@@ -130,7 +131,7 @@ test.describe('Ghost Admin - Member custom field access', () => {
       await expect(memberDetailsPage.customFieldsCard.getByText('Rear Admiral')).toBeVisible();
 
       await settingsPage.goto();
-      await settingsPage.customFieldsSection.setAudience(fieldName, 'Only staff');
+      await settingsPage.customFieldsSection.setVisibleToMembers(fieldName, false);
 
       expect(namesOf(await fieldsOfferedTo(memberPage))).not.toContain(fieldName);
       expect(await valuesHeldBy(memberPage)).toBeUndefined();
