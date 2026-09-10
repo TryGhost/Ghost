@@ -29,6 +29,7 @@ import {
   uploadErrorMessage,
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   X_DESCRIPTION_MAX,
   X_DESCRIPTION_TOO_LONG,
@@ -104,7 +105,9 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        session.editSettings({ twitter_image: getImageUrl(await uploadImage({ file })) });
+        session.editSettings({
+          twitter_image: getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })),
+        });
       } catch (error) {
         toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }

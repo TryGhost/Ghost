@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
@@ -219,6 +220,35 @@ describe('Post editor feature image', () => {
         feature_image_caption: null,
       });
       await expect.element(editorScreen.featureImageInput()).toBeInTheDocument();
+    },
+    SLOW,
+  );
+
+  it(
+    'stays in the editor when the upload finds no session',
+    async () => {
+      fakeSavablePost();
+      const uploadApi = fakeAdminEndpoint(
+        'POST',
+        '/images/upload/',
+        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      await editorScreen.titleInput().fill('Brand New Name');
+      await userEvent.upload(
+        editorScreen.featureImageInput().element(),
+        new File(['image'], 'hills.png', { type: 'image/png' }),
+      );
+
+      // A 401 mid-upload must not navigate away from work that is still unsaved.
+      await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.element(editorScreen.titleInput()).toHaveValue('Brand New Name');
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await expect.element(editorScreen.featureImageInput()).toBeInTheDocument();
+      await expect.element(page.getByText('Couldn’t upload the feature image.')).toBeVisible();
     },
     SLOW,
   );
