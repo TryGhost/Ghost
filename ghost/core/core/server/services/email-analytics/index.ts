@@ -25,6 +25,7 @@ import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
 import { NewsletterEmailCounters } from './newsletter-email-counters';
 import { NewsletterMemberCounters } from './newsletter-member-counters';
+import { NewsletterMemberReconciliation } from './newsletter-member-reconciliation';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
@@ -79,7 +80,7 @@ export function resolveEmailCounterMode(
   return mode;
 }
 
-const MemberCounterMode = z.enum(['off', 'compare']);
+const MemberCounterMode = z.enum(['off', 'compare', 'incremental']);
 type MemberCounterMode = z.infer<typeof MemberCounterMode>;
 
 /**
@@ -112,6 +113,9 @@ export function resolveMemberCounterMode(
   logging.info(`[EmailAnalytics] Newsletter member counter mode: ${mode}`);
   return mode;
 }
+
+/** Boot-owned recurring repair; configured by init() and registered with the jobs service. */
+export const memberReconciliation = new NewsletterMemberReconciliation();
 
 export const init = ({
   automationsApi,
@@ -152,9 +156,22 @@ export const init = ({
   const emailCounters = emailCounterMode
     ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient, mode: emailCounterMode })
     : null;
-  const memberCounters = resolveMemberCounterMode(config, emailCounterMode)
-    ? new NewsletterMemberCounters(db.knex, { prometheusClient })
+  const memberCounterMode = resolveMemberCounterMode(config, emailCounterMode);
+  const memberCounters = memberCounterMode
+    ? new NewsletterMemberCounters(db.knex, { prometheusClient, mode: memberCounterMode })
     : null;
+
+  memberReconciliation.configure({
+    counters: memberCounters,
+    enabled:
+      memberCounterMode === 'incremental' &&
+      Boolean(config.get('emailAnalytics:enabled')) &&
+      Boolean(config.get('backgroundJobs:emailAnalytics')),
+    settings: {
+      batchSize: config.get('emailAnalytics:memberReconciliationBatchSize'),
+      pauseHours: config.get('emailAnalytics:memberReconciliationPauseHours'),
+    },
+  });
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,

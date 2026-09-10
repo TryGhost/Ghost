@@ -6,6 +6,7 @@ import {
   gifts,
   init,
   newsletters,
+  memberReconciliation,
 } from '../../../../../core/server/services/email-analytics';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../../../../../core/server/services/gifts/constants';
 import { AUTOMATION_EMAIL_TAG } from '../../../../../core/server/services/member-welcome-emails/constants';
@@ -209,6 +210,54 @@ describe('email analytics service', function () {
     },
   );
 
+  it.each([
+    ['incremental', true, true, true],
+    ['compare', true, true, false],
+    ['off', true, true, false],
+    ['incremental', false, true, false],
+    ['incremental', true, false, false],
+  ])(
+    'gates scheduled member repair with mode=%s analytics=%s jobs=%s',
+    async (mode, analytics, background, scheduled) => {
+      config.get.withArgs('emailAnalytics:batchProcessing').returns(true);
+      config.get.withArgs('emailAnalytics:emailCounterMode').returns('incremental');
+      config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(true);
+      config.get.withArgs('emailAnalytics:memberCounterMode').returns(mode);
+      config.get.withArgs('emailAnalytics:enabled').returns(analytics);
+      config.get.withArgs('backgroundJobs:emailAnalytics').returns(background);
+      init(dependencies);
+      const jobs = { scheduleRecurring: sinon.stub().resolves() };
+      await memberReconciliation.schedule(jobs);
+      expect(jobs.scheduleRecurring.callCount).toBe(scheduled ? 1 : 0);
+    },
+  );
+
+  it('passes the configured reconciliation page size and pause to the scheduled repair', function () {
+    config.get.withArgs('emailAnalytics:batchProcessing').returns(true);
+    config.get.withArgs('emailAnalytics:emailCounterMode').returns('incremental');
+    config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(true);
+    config.get.withArgs('emailAnalytics:memberCounterMode').returns('incremental');
+    config.get.withArgs('emailAnalytics:enabled').returns(true);
+    config.get.withArgs('backgroundJobs:emailAnalytics').returns(true);
+    config.get.withArgs('emailAnalytics:memberReconciliationBatchSize').returns(500);
+    config.get.withArgs('emailAnalytics:memberReconciliationPauseHours').returns(1);
+    init(dependencies);
+    expect(memberReconciliation.enabled).toBe(true);
+    expect(memberReconciliation.settings).toEqual({ batchSize: 500, pauseHours: 1 });
+  });
+
+  it('keeps scheduled repair off with an unusable page size instead of failing boot', function () {
+    config.get.withArgs('emailAnalytics:batchProcessing').returns(true);
+    config.get.withArgs('emailAnalytics:emailCounterMode').returns('incremental');
+    config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(true);
+    config.get.withArgs('emailAnalytics:memberCounterMode').returns('incremental');
+    config.get.withArgs('emailAnalytics:enabled').returns(true);
+    config.get.withArgs('backgroundJobs:emailAnalytics').returns(true);
+    config.get.withArgs('emailAnalytics:memberReconciliationBatchSize').returns(10000);
+    init(dependencies);
+    expect(memberReconciliation.enabled).toBe(false);
+  });
+
   it('registers Prometheus metrics for member stat aggregation', function () {
     const registerCounter = sinon.stub();
 
@@ -247,6 +296,9 @@ describe('email analytics service', function () {
     [true, 'off', true, 'compare'],
     [true, 'compare', false, 'compare'],
     [true, 'compare', true, 'unknown'],
+    [false, 'incremental', true, 'incremental'],
+    [true, 'off', true, 'incremental'],
+    [true, 'incremental', false, 'incremental'],
   ])(
     'keeps member counters off for incompatible configuration (%s, %s, %s, %s)',
     function (batch, email, preparation, member) {

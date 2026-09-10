@@ -245,7 +245,13 @@ describe('Newsletter member counter baselines through MySQL', () => {
       ]),
     );
     assert.equal((await stats()).email_opened_count, 4);
+    // Each comparison counts the members observed once per statistic
     sinon.assert.callCount(observations.inc, 8);
+    sinon.assert.calledWithExactly(
+      observations.inc,
+      { statistic: 'email_count', phase: 'comparison' },
+      1,
+    );
     sinon.assert.calledWithExactly(
       differences.inc,
       { statistic: 'email_opened_count', phase: 'comparison' },
@@ -317,6 +323,70 @@ describe('Newsletter member counter baselines through MySQL', () => {
     });
     sinon.assert.calledOnce(compare);
     assert.equal((await stats()).email_opened_count, 1);
+  });
+
+  it('keeps incremental ingestion free of member history scans and repairs drift in the shared sweep', async () => {
+    const target = await recipient();
+    counters = new NewsletterMemberCounters(db.knex, { mode: 'incremental' });
+    await counters.sweepPage({ throughId: id(3) });
+    const emailCounters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const config = { get: () => true };
+    const storage = new NewsletterEmailEventStorage({
+      config,
+      db,
+      models,
+      emailCounters,
+      memberCounters: counters,
+    });
+    const compare = sinon.spy(counters, 'compareMembers');
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config,
+      queries: {},
+      emailCounters,
+      memberCounters: counters,
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const historyReads: string[] = [];
+    const capture = (query: unknown) => {
+      const sql = sqlOf(query);
+      if (/group by.*member_id/i.test(sql)) {
+        historyReads.push(sql);
+      }
+    };
+    db.knex.on('query', capture);
+    try {
+      const result = new EventProcessingResult();
+      await processor.processBatch(
+        [
+          {
+            type: 'opened',
+            emailId: target.emailId,
+            recipientEmail: 'member-counter-1@example.com',
+            timestamp: new Date(),
+          },
+        ],
+        result,
+        {},
+      );
+      await processor.aggregate({
+        processingResult: result,
+        includeOpenedEvents: false,
+        isFinal: true,
+      });
+      sinon.assert.notCalled(compare);
+      assert.deepEqual(historyReads, []);
+      assert.equal((await stats()).email_opened_count, 1);
+      await db.knex('members').where('id', id(1)).update({ email_opened_count: 7 });
+      await counters.runSweepPage({ limit: 1 });
+      assert.equal((await stats()).email_opened_count, 1);
+      assert.equal(historyReads.length, 1);
+    } finally {
+      db.knex.off('query', capture);
+    }
   });
 
   it('counts multiple opened recipient rows for one member, including untracked emails', async () => {
@@ -613,7 +683,11 @@ describe('Newsletter member counter baselines through MySQL', () => {
     }
     await counters.runSweepPage({ limit: 1 });
     assert.equal((await stats()).email_opened_count, 1);
-    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_opened_count' }, 6);
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_opened_count', phase: 'repair' },
+      6,
+    );
     sinon.assert.callCount(observations.inc, 4);
   });
 
@@ -623,8 +697,11 @@ describe('Newsletter member counter baselines through MySQL', () => {
     const completed = await counters.runSweepPage();
     assert.equal(completed.complete, true);
     await db.knex('members').where('id', id(1)).update({ email_opened_count: 7 });
-    const options = { limit: 1, restart: true, restartAfterMs: 6 * 60 * 60 * 1000 };
-    assert.deepEqual(await new NewsletterMemberCounters(db.knex).runSweepPage(options), completed);
+    const options = { limit: 1, startAnotherAfterMs: 6 * 60 * 60 * 1000 };
+    assert.deepEqual(await new NewsletterMemberCounters(db.knex).runSweepPage(options), {
+      ...completed,
+      paused: true,
+    });
     assert.equal((await stats()).email_opened_count, 7);
 
     clock.setSystemTime(new Date('2030-01-01T06:00:00Z'));

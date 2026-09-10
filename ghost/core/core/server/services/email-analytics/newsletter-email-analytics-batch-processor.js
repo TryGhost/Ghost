@@ -304,6 +304,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
     }
     const emailAggregationTimeMs = Date.now() - emailAggregationStart;
 
+    // Exact member increments already committed with recipient facts. Periodic
+    // reconciliation uses the shared bounded sweep outside the fetch loop.
+    if (this.#memberCounters?.mode === 'incremental') {
+      return { emailAggregationTimeMs, memberAggregationTimeMs: 0 };
+    }
+
     const memberMetric = this.#prometheusClient?.getMetric(AGGREGATE_MEMBER_STATS_METRIC_NAME);
 
     const memberAggregationStart = Date.now();

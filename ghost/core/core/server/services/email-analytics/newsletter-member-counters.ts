@@ -77,13 +77,18 @@ export type MemberSweepCheckpoint = z.infer<typeof checkpointSchema>;
 /** Shared derived truth for initialization, repair and rollback re-baselining. */
 export class NewsletterMemberCounters {
   readonly #knex: Knex;
+  readonly mode: 'compare' | 'incremental';
   readonly #prometheusClient: CounterMetricsClient | null;
 
   constructor(
     knex: Knex,
-    { prometheusClient = null }: { prometheusClient?: CounterMetricsClient | null } = {},
+    {
+      prometheusClient = null,
+      mode = 'compare',
+    }: { prometheusClient?: CounterMetricsClient | null; mode?: 'compare' | 'incremental' } = {},
   ) {
     this.#knex = knex;
+    this.mode = mode;
     this.#prometheusClient = prometheusClient;
     // `phase` matches the email counter metrics, so a later repair phase can
     // be told apart from observe-only comparison without changing the series.
@@ -127,7 +132,14 @@ export class NewsletterMemberCounters {
             email_opened_count: 0,
             email_open_rate: null,
           };
-          result.set(member.id, this.#differences(member, expected));
+          // #lockMembers only returned initialized members, so the denominator is set
+          result.set(
+            member.id,
+            this.#differences(
+              { ...member, email_tracked_count: member.email_tracked_count ?? 0 },
+              expected,
+            ),
+          );
         }
         return result;
       },
@@ -149,6 +161,9 @@ export class NewsletterMemberCounters {
 
   /** Publish observations only after the enclosing transaction is acknowledged. */
   #recordComparisons(comparisons: Map<string, MemberDrift>, phase: 'comparison' | 'repair'): void {
+    if (comparisons.size === 0) {
+      return;
+    }
     const drift = [...comparisons].filter(([, differences]) => Object.keys(differences).length);
     if (drift.length) {
       logging.warn(
@@ -466,8 +481,11 @@ export class NewsletterMemberCounters {
       if (state.complete && !restart) {
         // Check the persisted completion time under the checkpoint lock. A process
         // restart must not reset cadence, and an unfinished sweep must keep moving.
+        if (startAnotherAfterMs === undefined) {
+          return state;
+        }
         const finishedAt = job.finished_at ? new Date(job.finished_at).getTime() : 0;
-        if (startAnotherAfterMs === undefined || Date.now() < finishedAt + startAnotherAfterMs) {
+        if (Date.now() < finishedAt + startAnotherAfterMs) {
           return { ...state, paused: true };
         }
         Object.assign(state, initial);
@@ -572,9 +590,7 @@ export class NewsletterMemberCounters {
     if (throughId !== undefined) {
       members.where('id', '<=', throughId);
     }
-    const rows: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
-        email_tracked_count: number | null;
-      })[] = await members;
+    const rows = ((await members) as unknown[]).map((row) => DbMemberCounters.parse(row));
     if (rows.length === 0) {
       return { afterId, processed: 0 };
     }
