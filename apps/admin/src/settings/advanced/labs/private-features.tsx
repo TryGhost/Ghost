@@ -1,4 +1,5 @@
 import FeatureToggle from './feature-toggle';
+import { admin7Features } from '@/admin7/features';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
@@ -49,6 +50,13 @@ const features: Feature[] = [
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh',
   },
+  ...Object.values(admin7Features).map(({ title, description, flag, requires }) => ({
+    title,
+    flag,
+    description: requires.length
+      ? `${description} Requires ${requires.map((feature) => admin7Features[feature].title).join(', ')} to be enabled and available on the current page.`
+      : description,
+  })),
   {
     title: 'Tags X',
     description: 'Enables the new Tags UI',

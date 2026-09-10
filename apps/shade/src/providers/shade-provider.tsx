@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
@@ -38,7 +38,7 @@ const ToasterPortal = () => {
 
   return mounted
     ? createPortal(
-        <div className={SHADE_APP_NAMESPACES} style={{ width: 'unset', height: 'unset' }}>
+        <ShadeScope style={{ width: 'unset', height: 'unset' }}>
           <Toaster
             duration={5000}
             icons={{
@@ -60,7 +60,7 @@ const ToasterPortal = () => {
             }}
             closeButton
           />
-        </div>,
+        </ShadeScope>,
         document.body,
       )
     : null;

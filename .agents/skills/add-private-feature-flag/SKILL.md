@@ -13,6 +13,10 @@ Read and follow the canonical [feature flag guide](../../../docs/practices/featu
 before adding a flag. The guide covers when a Labs flag is appropriate, safe
 gating across server and Admin, testing, and the cleanup lifecycle.
 
+For Admin 7 milestone flags, also use the
+[Admin 7 feature flags skill](../admin7-feature-flags/SKILL.md) for shared resolution
+and the Shade integration contract.
+
 ## Steps
 
 1. **Add the flag to `ghost/core/core/shared/labs.js`**

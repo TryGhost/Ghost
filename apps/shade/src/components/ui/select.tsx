@@ -3,7 +3,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 const Select = SelectPrimitive.Root;
@@ -67,7 +67,7 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, onEscapeKeyDown, position = 'popper', ...props }, ref) => (
   <SelectPrimitive.Portal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
@@ -92,7 +92,7 @@ const SelectContent = React.forwardRef<
         </SelectPrimitive.Viewport>
         <SelectScrollDownButton />
       </SelectPrimitive.Content>
-    </div>
+    </ShadeScope>
   </SelectPrimitive.Portal>
 ));
 SelectContent.displayName = SelectPrimitive.Content.displayName;

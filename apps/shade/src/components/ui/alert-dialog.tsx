@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { SHADE_APP_NAMESPACES } from '@/shade-app';
+import { ShadeScope } from '@/shade-scope';
 
 const AlertDialog = AlertDialogPrimitive.Root;
 
@@ -37,7 +37,7 @@ const AlertDialogContent = React.forwardRef<
   AlertDialogContentProps
 >(({ className, overlayClassName, ...props }, ref) => (
   <AlertDialogPortal>
-    <div className={SHADE_APP_NAMESPACES}>
+    <ShadeScope>
       <AlertDialogOverlay className={overlayClassName} onClick={(e) => e.stopPropagation()} />
       <AlertDialogPrimitive.Content
         ref={ref}
@@ -47,7 +47,7 @@ const AlertDialogContent = React.forwardRef<
         )}
         {...props}
       />
-    </div>
+    </ShadeScope>
   </AlertDialogPortal>
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
