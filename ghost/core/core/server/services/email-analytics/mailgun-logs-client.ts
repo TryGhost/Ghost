@@ -1,4 +1,5 @@
 import { InternalServerError } from '@tryghost/errors';
+import metrics from '@tryghost/metrics';
 
 // @tryghost/request has no type declarations. Keep its untrusted response at the boundary.
 const request: (
@@ -68,6 +69,7 @@ export class MailgunLogsClient {
       });
     }
     let body: unknown;
+    const startedAt = Date.now();
     try {
       const response = await request(this.#url, {
         method: 'POST',
@@ -97,6 +99,11 @@ export class MailgunLogsClient {
         },
       });
       body = response.body;
+      metrics.metric('mailgun-get-events', {
+        value: Date.now() - startedAt,
+        statusCode: 200,
+        source: 'logs',
+      });
     } catch (error) {
       // The request wrapper copies credentials/options onto transport errors.
       // Never attach or rethrow that error into analytics logging.
@@ -108,6 +115,11 @@ export class MailgunLogsClient {
         statusCode <= 599
           ? statusCode
           : undefined;
+      metrics.metric('mailgun-get-events', {
+        value: Date.now() - startedAt,
+        statusCode: status,
+        source: 'logs',
+      });
       throw Object.assign(
         new InternalServerError({
           message: 'Mailgun Logs request failed',

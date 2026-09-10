@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import nock from 'nock';
+import sinon from 'sinon';
+import metrics from '@tryghost/metrics';
 import { MailgunLogsClient } from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
 
 const begin = new Date('2026-09-10T12:00:00.250Z');
@@ -39,7 +41,31 @@ const client = () =>
 describe('Mailgun Logs API client', () => {
   beforeAll(() => nock.disableNetConnect());
   afterAll(() => nock.enableNetConnect());
-  afterEach(() => nock.cleanAll());
+  afterEach(() => {
+    nock.cleanAll();
+    sinon.restore();
+  });
+
+  it.each([200, 429])(
+    'records request timing and safe HTTP status for a %i response',
+    async (statusCode) => {
+      const metric = sinon.stub(metrics, 'metric');
+      const scope = nock('https://api.eu.mailgun.net')
+        .post('/v1/analytics/logs')
+        .reply(statusCode, { items: [], pagination: {} });
+      if (statusCode === 200) {
+        await client().getPage(pageOptions);
+      } else {
+        await assert.rejects(client().getPage(pageOptions));
+      }
+      sinon.assert.calledOnceWithExactly(metric, 'mailgun-get-events', {
+        value: sinon.match.number,
+        statusCode,
+        source: 'logs',
+      });
+      scope.done();
+    },
+  );
 
   it.each([
     { domain: '' },
