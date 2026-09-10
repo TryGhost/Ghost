@@ -10,7 +10,7 @@ it('keeps each portaled menu in its owning design scope without changing the doc
         <PopoverTrigger>Admin 7 menu</PopoverTrigger>
         <PopoverContent>Admin 7 content</PopoverContent>
       </Popover>
-      <ShadeApp darkMode={false} isAdmin7Design={false}>
+      <ShadeApp admin7={{ pill: false }} darkMode={false}>
         <Popover open>
           <PopoverTrigger>Previous menu</PopoverTrigger>
           <PopoverContent>Previous content</PopoverContent>
@@ -20,10 +20,10 @@ it('keeps each portaled menu in its owning design scope without changing the doc
   );
 
   expect(
-    screen.getByText('Admin 7 content').closest('.shade')?.getAttribute('data-admin7-design'),
+    screen.getByText('Admin 7 content').closest('.shade')?.getAttribute('data-admin7-pill'),
   ).toBe('true');
   expect(
-    screen.getByText('Previous content').closest('.shade')?.getAttribute('data-admin7-design'),
+    screen.getByText('Previous content').closest('.shade')?.getAttribute('data-admin7-pill'),
   ).toBe('false');
-  expect(document.body.hasAttribute('data-admin7-design')).toBe(false);
+  expect(document.body.hasAttribute('data-admin7-pill')).toBe(false);
 });
