@@ -11,8 +11,8 @@ export function timingSafeStringEqual(expected: string, provided: unknown): bool
     return false;
   }
 
-  const expectedBuffer = Buffer.from(expected);
-  const providedBuffer = Buffer.from(provided);
+  const expectedBuffer = Buffer.from(expected, 'utf16le');
+  const providedBuffer = Buffer.from(provided, 'utf16le');
 
   // crypto.timingSafeEqual throws when the lengths differ. The digests compared
   // here have a fixed, public length, so returning early gives nothing away.
