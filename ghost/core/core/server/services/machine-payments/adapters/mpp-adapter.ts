@@ -41,10 +41,27 @@ type MppxModule = {
       compose: (...entries: unknown[]) => (request: Request) => Promise<MppPaymentResult>;
     };
   };
-  tempo: { charge: (config: unknown) => unknown };
+  tempo?: { charge: (config: unknown) => unknown };
   stripe: { charge: (config: unknown) => unknown };
   Store: { memory: () => unknown };
 };
+
+/**
+ * Load mppx via lightweight entrypoints. Stripe SPT uses `mppx/stripe/server/spt`
+ * (no Tempo/EVM). Tempo still requires the full `mppx/server` barrel — there is
+ * no public Tempo-only server export — so only pull it when that rail is active.
+ */
+function requireMppxModule({ needsTempo }: { needsTempo: boolean }): MppxModule {
+  const { Mppx, Store } = require('mppx/server/core') as Pick<MppxModule, 'Mppx' | 'Store'>;
+  const { stripe } = require('mppx/stripe/server/spt') as Pick<MppxModule, 'stripe'>;
+
+  if (!needsTempo) {
+    return { Mppx, Store, stripe };
+  }
+
+  const { tempo } = require('mppx/server') as Pick<MppxModule, 'tempo'>;
+  return { Mppx, Store, stripe, tempo };
+}
 
 type MppAdapterDeps = {
   depositAddressStore: DepositAddressStoreLike;
@@ -139,13 +156,6 @@ export class MppAdapter implements PaymentAdapter {
   }
 
   async #run(request: Request, terms: PaymentAmountTerms): Promise<MppPaymentResult> {
-    const {
-      Mppx,
-      tempo,
-      stripe: mppStripe,
-      Store,
-    } = this.mppxFactory ? this.mppxFactory() : (require('mppx/server') as MppxModule);
-
     const profileId =
       this.settingsCache.get('machine_payments_stripe_profile_id') ||
       config.get('machinePayments:mpp:networkId');
@@ -168,6 +178,13 @@ export class MppAdapter implements PaymentAdapter {
       });
     }
 
+    const {
+      Mppx,
+      tempo,
+      stripe: mppStripe,
+      Store,
+    } = this.mppxFactory ? this.mppxFactory() : requireMppxModule({ needsTempo: hasTempo });
+
     if (!this.#replayStore) {
       this.#replayStore = Store.memory();
     }
@@ -180,6 +197,11 @@ export class MppAdapter implements PaymentAdapter {
     if (!this.#mppx || this.#mppxKey !== key) {
       const methods: unknown[] = [];
       if (hasTempo) {
+        if (!tempo) {
+          throw new errors.InternalServerError({
+            message: 'Machine payment Tempo rail is unavailable',
+          });
+        }
         methods.push(
           tempo.charge({
             currency: tempoCurrency,
