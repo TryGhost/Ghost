@@ -12,8 +12,10 @@ import {
   getProductCadenceFromPrice,
   removePortalLinkFromUrl,
   getRefDomain,
+  hasCustomFieldsEnabled,
 } from './utils/helpers';
 import { t } from './utils/i18n';
+import { isPreviewMode } from './utils/check-mode';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
 
@@ -803,11 +805,12 @@ async function updateMemberEmail({ data, state, api }) {
 
 async function updateMemberData({ data, state, api }) {
   const name = data?.name?.trim();
+  const metafields = data?.metafields;
   const originalName = getMemberName({ member: state.member });
 
-  if (originalName !== name) {
+  if (originalName !== name || metafields) {
     try {
-      const member = await api.member.update({ name });
+      const member = await api.member.update({ name, metafields });
       if (!member) {
         throw new Error('Failed to update member');
       }
@@ -848,6 +851,37 @@ async function refreshMemberData({ state, api }) {
   return null;
 }
 
+/**
+ * The custom fields the publisher has opened to members, loaded once the account
+ * popup opens so the settings page has them before it is drawn.
+ */
+async function loadCustomFields({ state, api }) {
+  if (!hasCustomFieldsEnabled({ site: state.site }) || !state.member || isPreviewMode()) {
+    return null;
+  }
+  let customFields = [];
+  try {
+    customFields = await api.member.customFields();
+  } catch (err) {
+    // A site that cannot answer shows no fields, the same as one with none.
+  }
+  return { customFields, action: 'loadCustomFields:success' };
+}
+
+/**
+ * What a member is told when the site refuses their save. A refused custom field is
+ * named, so they know which of their answers to fix; anything else keeps the fallback.
+ */
+function updateFailureMessage(error, state, fallback) {
+  // The server names a refused value as `metafields.custom.<key>[.<part>]`.
+  const [qualifier, , key] = error?.property?.split('.') ?? [];
+  const field = qualifier === 'metafields' && state.customFields?.find((f) => f.key === key);
+  if (!field) {
+    return fallback;
+  }
+  return t('{field}: {message}', { field: field.name, message: chooseBestErrorMessage(error) });
+}
+
 async function updateProfile({ data, state, api }) {
   const [dataUpdate, emailUpdate] = await Promise.all([
     updateMemberData({ data, state, api }),
@@ -871,7 +905,7 @@ async function updateProfile({ data, state, api }) {
     }
 
     const message = !dataUpdate.success
-      ? t('Failed to update account data')
+      ? updateFailureMessage(dataUpdate.error, state, t('Failed to update account data'))
       : t('Failed to send verification email');
     return {
       action: 'updateProfile:failed',
@@ -889,7 +923,7 @@ async function updateProfile({ data, state, api }) {
     const action = dataUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
     const status = dataUpdate.success ? 'success' : 'error';
     const message = !dataUpdate.success
-      ? t('Failed to update account details')
+      ? updateFailureMessage(dataUpdate.error, state, t('Failed to update account details'))
       : t('Account details updated successfully');
     return {
       action,
@@ -1024,6 +1058,7 @@ const Actions = {
   updateNewsletter,
   updateProfile,
   refreshMemberData,
+  loadCustomFields,
   clearPopupNotification,
   editBilling,
   manageBilling,
