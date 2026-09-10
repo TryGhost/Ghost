@@ -100,6 +100,26 @@ describe('Emails API', function () {
     mockManager.assert.emittedEvent('email.edited');
   });
 
+  it('Can read the analytics status', async function () {
+    const { body } = await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/analytics/`)
+      .expectStatus(200)
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    assert.deepEqual(Object.keys(body).sort(), ['latest', 'latestOpened', 'missing', 'scheduled']);
+    for (const pipeline of Object.values(body)) {
+      assert.equal(pipeline.running, false);
+      assert.equal(typeof pipeline.jobName, 'string');
+    }
+    // Lag is only known once the pipeline has run in this process
+    assert.equal(body.latest.lagMinutes, null);
+    assert.equal(body.latestOpened.lagMinutes, null);
+    assert.equal('lagMinutes' in body.missing, false);
+  });
+
   it('Can browse email batches', async function () {
     await agent
       .get(`emails/${fixtureManager.get('emails', 0).id}/batches/`)

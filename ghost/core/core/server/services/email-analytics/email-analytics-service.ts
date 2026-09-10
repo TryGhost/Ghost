@@ -16,6 +16,12 @@ export type FetchData = {
   /** The begin time used during the last fetch */
   lastBegin?: Date;
   lastEventTimestamp?: Date;
+  /**
+   * End of the last fetch window that completed without an error and without hitting its
+   * event budget. Everything up to this point has been processed, even when no event moved
+   * lastEventTimestamp, so lag is measured from whichever of the two is later.
+   */
+  caughtUpTo?: Date;
   /** Set to quit the job early */
   canceled?: boolean;
 };
@@ -163,76 +169,44 @@ export class EmailAnalyticsService {
 
   /**
    * Returns the fetch status with a lagMinutes field for the latest pipelines: how far
-   * behind now() each cursor is, rounded to one decimal. Uses the persisted cursors, so it
-   * works before the first in-process fetch, and is read-only — it never seeds jobs rows.
-   * lagMinutes is null when a pipeline has no cursor yet, rather than fabricating lag from
-   * the fetch fallbacks. The missing pipeline gets no lagMinutes at all: its cursor
-   * deliberately trails now by at least 30 minutes and only advances when missing events
-   * are found (see fetchMissing), so cursor age is not a health signal there.
+   * behind now() processing is, rounded to one decimal, measured from the later of the last
+   * processed event and the end of the last clean fetch window (see FetchData.caughtUpTo).
+   * It is null until the pipeline has run in this process. The missing pipeline gets no
+   * lagMinutes: its cursor deliberately trails now by at least 30 minutes, so cursor age is
+   * not a health signal there.
    */
-  async getStatusWithLag() {
+  getStatusWithLag() {
     const status = this.getStatus();
     const now = Date.now();
-    const [openedTimestamp, nonOpenedTimestamp] = await Promise.all([
-      this.#getLastOpenedEventTimestamp({ createJobIfMissing: false }),
-      this.#getLastNonOpenedEventTimestamp({ createJobIfMissing: false }),
-    ]);
-
     return {
-      latest: { ...status.latest, lagMinutes: this.#lagMinutes(nonOpenedTimestamp, now) },
+      latest: { ...status.latest, lagMinutes: this.#lagMinutes(status.latest, now) },
       missing: { ...status.missing },
       scheduled: { ...status.scheduled },
       latestOpened: {
         ...status.latestOpened,
-        lagMinutes: this.#lagMinutes(openedTimestamp, now),
+        lagMinutes: this.#lagMinutes(status.latestOpened, now),
       },
     };
   }
 
   /**
-   * How far behind now() the opened-events cursor is, rounded to one decimal, or null when
-   * there is no cursor yet. Shared by the status API and the wrapper's lag reporting so
-   * both surfaces measure lag the same way. Read-only — never seeds jobs rows.
+   * How far behind now() opened-events processing is, rounded to one decimal, or null until
+   * the pipeline has run in this process. Shared by the status API and the wrapper's lag
+   * reporting so both surfaces measure lag the same way.
    */
-  async getOpenedEventsLagMinutes(): Promise<number | null> {
-    return this.#lagMinutes(await this.#getLastOpenedEventTimestamp({ createJobIfMissing: false }));
+  getOpenedEventsLagMinutes(): number | null {
+    return this.#lagMinutes(this.#fetchLatestOpenedData);
   }
 
-  #lagMinutes(timestamp: Date | null, now: number = Date.now()): number | null {
-    if (!timestamp) {
+  #lagMinutes(fetchData: FetchData, now: number = Date.now()): number | null {
+    const processedUpTo = Math.max(
+      fetchData.lastEventTimestamp?.getTime() ?? -Infinity,
+      fetchData.caughtUpTo?.getTime() ?? -Infinity,
+    );
+    if (!Number.isFinite(processedUpTo)) {
       return null;
     }
-    return Math.round(((now - timestamp.getTime()) / 60000) * 10) / 10;
-  }
-
-  async #getLastNonOpenedEventTimestamp({
-    createJobIfMissing = true,
-  }: { createJobIfMissing?: boolean } = {}): Promise<Date | null> {
-    return (
-      this.#fetchLatestNonOpenedData?.lastEventTimestamp ??
-      (await this.queries.getLastEventTimestamp(
-        this.#fetchLatestNonOpenedData.jobName,
-        ['delivered', 'failed'],
-        this.#cursorSeed,
-        { createJobIfMissing },
-      )) ??
-      null
-    );
-  }
-
-  async #getLastOpenedEventTimestamp({
-    createJobIfMissing = true,
-  }: { createJobIfMissing?: boolean } = {}): Promise<Date | null> {
-    return (
-      this.#fetchLatestOpenedData?.lastEventTimestamp ??
-      (await this.queries.getLastEventTimestamp(
-        this.#fetchLatestOpenedData.jobName,
-        ['opened'],
-        this.#cursorSeed,
-        { createJobIfMissing },
-      )) ??
-      null
-    );
+    return Math.round(((now - processedUpTo) / 60000) * 10) / 10;
   }
 
   /**
@@ -240,7 +214,13 @@ export class EmailAnalyticsService {
    */
   async getLastNonOpenedEventTimestamp() {
     return (
-      (await this.#getLastNonOpenedEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS)
+      this.#fetchLatestNonOpenedData?.lastEventTimestamp ??
+      (await this.queries.getLastEventTimestamp(
+        this.#fetchLatestNonOpenedData.jobName,
+        ['delivered', 'failed'],
+        this.#cursorSeed,
+      )) ??
+      new Date(Date.now() - TRUST_THRESHOLD_MS)
     );
   }
 
@@ -248,7 +228,15 @@ export class EmailAnalyticsService {
    * Returns the timestamp of the last opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
    */
   async getLastOpenedEventTimestamp() {
-    return (await this.#getLastOpenedEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+    return (
+      this.#fetchLatestOpenedData?.lastEventTimestamp ??
+      (await this.queries.getLastEventTimestamp(
+        this.#fetchLatestOpenedData.jobName,
+        ['opened'],
+        this.#cursorSeed,
+      )) ??
+      new Date(Date.now() - TRUST_THRESHOLD_MS)
+    );
   }
 
   /**
@@ -665,6 +653,13 @@ export class EmailAnalyticsService {
       }
     } else {
       await this.queries.setJobStatus(fetchData.jobName, 'finished');
+    }
+
+    // A clean run that stayed under its event budget has processed everything up to end,
+    // even if no event arrived to move lastEventTimestamp. A failed fetch or one that hit
+    // maxEvents leaves it alone so the remaining backlog still shows up as lag.
+    if (!error && eventCount < maxEvents) {
+      fetchData.caughtUpTo = end;
     }
 
     fetchData.running = false;
