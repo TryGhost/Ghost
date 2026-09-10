@@ -1,13 +1,12 @@
 import { buildLexicalParagraph, post, settingsResponse, type Post } from '@tryghost/test-data';
 import type { RenderAdminAppOptions } from './render-admin-app';
-import { fakeMembers, fakeNewsletters, fakePosts, fakeSnippets } from './resources';
+import { fakeNewsletters, fakePosts, fakeSnippets } from './resources';
 import { fakeAdminEndpoint, fakeEndpoint, type EndpointCapture } from './worker';
 
 /** Supporting reads shared by the editor's header and card configuration. */
 export function fakeEditorChrome(): void {
   fakeSnippets([]);
   fakePosts([]);
-  fakeMembers([]);
   fakeNewsletters([]);
 }
 
