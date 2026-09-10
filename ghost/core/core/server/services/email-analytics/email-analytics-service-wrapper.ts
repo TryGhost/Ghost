@@ -201,12 +201,11 @@ export class EmailAnalyticsServiceWrapper {
     }
   }
 
-  // Reports how far behind the opened-events cursor is, warning on every cycle while
-  // behind and logging a single recovery line once the lag drops back under the threshold.
+  // Reports how far behind opened-events processing is, warning on every cycle while
+  // behind and logging a single recovery line once it has recovered. Lagging starts when
+  // the lag exceeds the warning threshold and ends once it drops below half of it, so a
+  // lag hovering around the threshold does not bounce between the two states.
   // lagMinutes comes pre-rounded to one decimal from the service.
-  // NOTE: We only update the begin timestamp when we process events, so there's cases where we can have a false positive
-  //  - Ghost or Mailgun outages
-  //  - Lack of actual email activity
   #reportOpenedEventsLag(lagMinutes: number, config: Pick<ConfigInstance, 'get'>): void {
     if (config.get('emailAnalytics:metrics:openedLag:enabled')) {
       this.#getMetrics().metric(this.#metricName('opened-lag'), { value: lagMinutes });
@@ -217,7 +216,11 @@ export class EmailAnalyticsServiceWrapper {
       return;
     }
 
-    if (lagMinutes > lagThreshold) {
+    const lagging = this.#lagFirstDetectedAt
+      ? lagMinutes >= lagThreshold / 2
+      : lagMinutes > lagThreshold;
+
+    if (lagging) {
       // Duration is measured from the cycle where we first saw the threshold crossed
       // (one fetch-cycle granularity), and the state is in-memory, so it resets on restart.
       this.#lagFirstDetectedAt = this.#lagFirstDetectedAt ?? new Date();
@@ -258,16 +261,20 @@ export class EmailAnalyticsServiceWrapper {
     maxEvents = Infinity,
   }: { maxEvents?: number } = {}): Promise<number> {
     const config = this.#getConfig();
-
-    // null means there's no cursor yet (no events processed and nothing to seed from),
-    // so there's no real lag to report.
-    const lagMinutes = await this.service.getOpenedEventsLagMinutes();
-    if (lagMinutes !== null) {
-      this.#reportOpenedEventsLag(lagMinutes, config);
-    }
-
     const fetchStartedAt = Date.now();
-    const fetchResult = await this.service.fetchLatestOpenedEvents({ maxEvents });
+
+    let fetchResult: EmailAnalyticsFetchResult;
+    try {
+      fetchResult = await this.service.fetchLatestOpenedEvents({ maxEvents });
+    } finally {
+      // Measured after the fetch so a clean run counts as caught up, and still reported
+      // when the fetch fails since that is exactly when lag builds up. null means the
+      // pipeline has not run yet in this process, so there is nothing to report.
+      const lagMinutes = this.service.getOpenedEventsLagMinutes();
+      if (lagMinutes !== null) {
+        this.#reportOpenedEventsLag(lagMinutes, config);
+      }
+    }
     const totalDuration = Date.now() - fetchStartedAt;
 
     this._logJobCompletion('latest-opened', fetchResult, totalDuration);

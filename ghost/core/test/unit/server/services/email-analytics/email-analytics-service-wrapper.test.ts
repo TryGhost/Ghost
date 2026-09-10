@@ -175,14 +175,14 @@ describe('EmailAnalyticsServiceWrapper', function () {
   });
 
   function createLagWrapper(configOverrides: Record<string, unknown> = {}) {
-    sinon.useFakeTimers(new Date(2026, 0, 1));
+    const clock = sinon.useFakeTimers(new Date(2026, 0, 1));
     const wrapper = initWrapper('newsletters', {
       'emailAnalytics:openedJobLagWarningMinutes': 30,
       ...configOverrides,
     });
 
-    const lagStub = sinon.stub(wrapper.service, 'getOpenedEventsLagMinutes').resolves(null);
-    sinon.stub(wrapper.service, 'fetchLatestOpenedEvents').resolves({
+    const lagStub = sinon.stub(wrapper.service, 'getOpenedEventsLagMinutes').returns(null);
+    const fetchStub = sinon.stub(wrapper.service, 'fetchLatestOpenedEvents').resolves({
       eventCount: 0,
       apiPollingTimeMs: 0,
       processingTimeMs: 0,
@@ -194,18 +194,29 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
     return {
       wrapper,
-      setLagMinutes(minutes: number) {
-        lagStub.resolves(minutes);
+      clock,
+      fetchStub,
+      lagStub,
+      // Runs one fetch cycle, with the lag the service reports once the fetch has finished
+      async cycle(lagMinutes: number | null) {
+        lagStub.returns(lagMinutes);
+        await wrapper.fetchLatestOpenedEvents();
       },
     };
   }
 
+  function caughtUpLogs(infoLog: sinon.SinonStub) {
+    return infoLog.args.filter(
+      ([payload]) =>
+        (payload as { system?: { event?: string } })?.system?.event === 'analytics.caught_up',
+    );
+  }
+
   it('warns with structured lag fields while opened event processing is behind', async function () {
     const warnLog = sinon.stub(logging, 'warn');
-    const { wrapper, setLagMinutes } = createLagWrapper();
-    setLagMinutes(45);
+    const { cycle } = createLagWrapper();
 
-    await wrapper.fetchLatestOpenedEvents();
+    await cycle(45);
 
     sinon.assert.calledOnceWithExactly(
       warnLog,
@@ -222,17 +233,27 @@ describe('EmailAnalyticsServiceWrapper', function () {
     );
   });
 
-  it('logs a caught-up event with peak lag once processing recovers', async function () {
+  it('reports lag measured after the fetch, including when the fetch fails', async function () {
+    const warnLog = sinon.stub(logging, 'warn');
+    const { fetchStub, lagStub, cycle } = createLagWrapper();
+    fetchStub.rejects(new Error('mailgun down'));
+
+    await assert.rejects(cycle(45), /mailgun down/);
+
+    sinon.assert.calledOnce(warnLog);
+    sinon.assert.callOrder(fetchStub, lagStub, warnLog);
+  });
+
+  it('logs a caught-up event with peak lag and time behind once processing recovers', async function () {
     sinon.stub(logging, 'warn');
     const infoLog = sinon.stub(logging, 'info');
-    const { wrapper, setLagMinutes } = createLagWrapper();
+    const { clock, cycle } = createLagWrapper();
 
-    setLagMinutes(45);
-    await wrapper.fetchLatestOpenedEvents();
-    setLagMinutes(60);
-    await wrapper.fetchLatestOpenedEvents();
-    setLagMinutes(5);
-    await wrapper.fetchLatestOpenedEvents();
+    await cycle(45);
+    clock.tick(5 * 60000);
+    await cycle(60);
+    clock.tick(5 * 60000);
+    await cycle(5);
 
     sinon.assert.calledWith(
       infoLog,
@@ -242,33 +263,54 @@ describe('EmailAnalyticsServiceWrapper', function () {
           job_type: 'email-analytics-fetch-latest',
           task: 'latest-opened',
           lag_minutes: 5,
+          behind_duration_ms: 10 * 60000,
           peak_lag_minutes: 60,
         }),
       }),
-      sinon.match('Opened events processing caught up after'),
+      sinon.match(
+        'Opened events processing caught up after 10.0 minutes behind (peak lag: 60.0 minutes)',
+      ),
     );
 
     // A later recovery cycle must not log caught-up again
     infoLog.resetHistory();
-    setLagMinutes(5);
-    await wrapper.fetchLatestOpenedEvents();
-    const caughtUpLogs = infoLog.args.filter(
-      ([payload]) =>
-        (payload as { system?: { event?: string } })?.system?.event === 'analytics.caught_up',
-    );
-    assert.equal(caughtUpLogs.length, 0);
+    await cycle(5);
+    assert.equal(caughtUpLogs(infoLog).length, 0);
+  });
+
+  it('stays lagging until the lag drops below half the threshold', async function () {
+    const warnLog = sinon.stub(logging, 'warn');
+    const infoLog = sinon.stub(logging, 'info');
+    const { cycle } = createLagWrapper();
+
+    // Below the threshold on its own does not enter the lagging state
+    await cycle(20);
+    sinon.assert.notCalled(warnLog);
+
+    await cycle(31);
+    // Hovering just under the entry threshold keeps warning instead of bouncing
+    await cycle(29);
+    await cycle(15);
+    assert.equal(caughtUpLogs(infoLog).length, 0);
+    assert.equal(warnLog.callCount, 3);
+
+    await cycle(14.9);
+    assert.equal(caughtUpLogs(infoLog).length, 1);
+    assert.equal(caughtUpLogs(infoLog)[0][0].system.lag_minutes, 14.9);
+
+    // Re-entering requires crossing the full threshold again
+    await cycle(20);
+    assert.equal(warnLog.callCount, 3);
   });
 
   it('emits an opened lag metric every cycle when enabled', async function () {
     sinon.stub(logging, 'warn');
-    const { wrapper, setLagMinutes } = createLagWrapper({
+    const { cycle } = createLagWrapper({
       'emailAnalytics:metrics:openedLag:enabled': true,
     });
 
-    setLagMinutes(45);
-    await wrapper.fetchLatestOpenedEvents();
-    setLagMinutes(5);
-    await wrapper.fetchLatestOpenedEvents();
+    await cycle(45);
+    await cycle(5);
 
     const lagMetrics = metricStub.args.filter(([name]) => name === 'email-analytics-opened-lag');
     assert.equal(lagMetrics.length, 2);
@@ -278,25 +320,24 @@ describe('EmailAnalyticsServiceWrapper', function () {
 
   it('emits the lag metric but does not warn when the warning threshold is unset', async function () {
     const warnLog = sinon.stub(logging, 'warn');
-    const { wrapper, setLagMinutes } = createLagWrapper({
+    const { cycle } = createLagWrapper({
       'emailAnalytics:openedJobLagWarningMinutes': undefined,
       'emailAnalytics:metrics:openedLag:enabled': true,
     });
-    setLagMinutes(500);
 
-    await wrapper.fetchLatestOpenedEvents();
+    await cycle(500);
 
     sinon.assert.notCalled(warnLog);
     sinon.assert.calledOnceWithExactly(metricStub, 'email-analytics-opened-lag', { value: 500 });
   });
 
-  it('skips lag reporting entirely when there is no cursor yet', async function () {
+  it('skips lag reporting entirely before the pipeline has run', async function () {
     const warnLog = sinon.stub(logging, 'warn');
-    const { wrapper } = createLagWrapper({
+    const { cycle } = createLagWrapper({
       'emailAnalytics:metrics:openedLag:enabled': true,
     });
 
-    await wrapper.fetchLatestOpenedEvents();
+    await cycle(null);
 
     sinon.assert.notCalled(warnLog);
     sinon.assert.notCalled(metricStub);
