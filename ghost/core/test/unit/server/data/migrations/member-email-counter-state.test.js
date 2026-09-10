@@ -39,6 +39,7 @@ describe('Member email counter state migration (SQLite compatibility)', function
     assert.deepEqual(await connection('email_batches').first(), {
       id: 'batch-1',
       status: 'submitted',
+      member_counters_enabled: 0,
       member_counters_applied_at: null,
     });
   });
@@ -46,9 +47,13 @@ describe('Member email counter state migration (SQLite compatibility)', function
   it('preserves applied state when rerun and supports rollback followed by reapplication', async function () {
     await migration.up({ connection });
     await connection('members').update({ email_tracked_count: 0 });
-    await connection('email_batches').update({ member_counters_applied_at: '2026-09-10 12:00:00' });
+    await connection('email_batches').update({
+      member_counters_enabled: true,
+      member_counters_applied_at: '2026-09-10 12:00:00',
+    });
     await migration.up({ connection });
     assert.equal((await connection('members').first()).email_tracked_count, 0);
+    assert.equal((await connection('email_batches').first()).member_counters_enabled, 1);
     assert.equal(
       (await connection('email_batches').first()).member_counters_applied_at,
       '2026-09-10 12:00:00',
@@ -57,6 +62,10 @@ describe('Member email counter state migration (SQLite compatibility)', function
     await migration.down({ connection });
     await migration.down({ connection });
     assert.equal(await connection.schema.hasColumn('members', 'email_tracked_count'), false);
+    assert.equal(
+      await connection.schema.hasColumn('email_batches', 'member_counters_enabled'),
+      false,
+    );
     assert.equal(
       await connection.schema.hasColumn('email_batches', 'member_counters_applied_at'),
       false,
@@ -73,6 +82,7 @@ describe('Member email counter state migration (SQLite compatibility)', function
 
     await migration.up({ connection });
     assert.equal((await connection('members').first()).email_tracked_count, null);
+    assert.equal((await connection('email_batches').first()).member_counters_enabled, 0);
     assert.equal((await connection('email_batches').first()).member_counters_applied_at, null);
   });
 });
