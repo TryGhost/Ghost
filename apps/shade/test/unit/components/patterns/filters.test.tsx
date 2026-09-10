@@ -6,6 +6,7 @@ import {
   Filter,
   FilterFieldConfig,
   Filters,
+  FilterSegmentMultiSelect,
   ValueSource,
 } from '../../../../src/components/patterns/filters';
 
@@ -737,6 +738,104 @@ describe('Filters', () => {
       // ...but there is nothing to edit: no input and no operator menu button.
       expect(screen.queryByRole('textbox')).toBeNull();
       expect(screen.queryByRole('button', { name: 'is' })).toBeNull();
+    });
+  });
+
+  describe('FilterSegmentMultiSelect', () => {
+    const originalResizeObserver = global.ResizeObserver;
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {
+          return undefined;
+        }
+
+        unobserve() {
+          return undefined;
+        }
+
+        disconnect() {
+          return undefined;
+        }
+      } as unknown as typeof ResizeObserver;
+      HTMLElement.prototype.scrollIntoView = vi.fn();
+    });
+
+    afterAll(() => {
+      global.ResizeObserver = originalResizeObserver;
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    });
+
+    const COUNTRIES = [
+      { value: 'DE', label: 'Germany' },
+      { value: 'GB', label: 'United Kingdom' },
+      { value: 'US', label: 'United States' },
+    ];
+
+    it('opens a searchable list and adds to the selection without closing', async () => {
+      const onChange = vi.fn();
+      render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          searchPlaceholder="Search countries..."
+          values={['DE']}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByLabelText('Country').textContent).toBe('Germany');
+      fireEvent.click(screen.getByLabelText('Country'));
+      await screen.findByRole('listbox');
+      expect(screen.getAllByRole('option')).toHaveLength(3);
+
+      fireEvent.change(screen.getByPlaceholderText('Search countries...'), {
+        target: { value: 'united' },
+      });
+      expect(screen.queryByRole('option', { name: 'Germany' })).toBeNull();
+      fireEvent.click(screen.getByRole('option', { name: 'United States' }));
+      expect(onChange).toHaveBeenCalledWith(['DE', 'US']);
+      expect(screen.getByRole('listbox')).toBeTruthy();
+    });
+
+    it('sums up more than one pick and falls back to the placeholder for none', () => {
+      const { rerender } = render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          values={['DE', 'US']}
+          onChange={() => {}}
+        />,
+      );
+      expect(screen.getByLabelText('Country').textContent).toBe('2 selected');
+
+      rerender(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          placeholder="Select country..."
+          values={[]}
+          onChange={() => {}}
+        />,
+      );
+      expect(screen.getByLabelText('Country').textContent).toBe('Select country...');
+    });
+
+    it('stays static text when read-only', () => {
+      render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          values={['DE']}
+          readOnly
+          onChange={() => {}}
+        />,
+      );
+
+      fireEvent.click(screen.getByLabelText('Country'));
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(screen.getByLabelText('Country').textContent).toBe('Germany');
     });
   });
 

@@ -249,7 +249,7 @@ describe('custom field columns', () => {
 
     expect(
       columnFor('metafields.custom.shipping_address', { customFields }).getValue(m, 'UTC'),
-    ).toEqual({ text: '1 Main St, Berlin, 10115, DE' });
+    ).toEqual({ text: '1 Main St, Berlin, 10115, Germany' });
   });
 
   it('returns null when the member has no value', () => {

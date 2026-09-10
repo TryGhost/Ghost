@@ -110,8 +110,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
       'Address line 1': '1 King St',
       City: 'London',
-      // The country part validates as a 2-letter code.
-      Country: 'GB',
+      Country: 'United Kingdom',
     });
 
     // 'London' sits in this member's Address line 1, so a filter on City must not match it.
@@ -119,7 +118,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
       'Address line 1': 'London House',
       City: 'Boston',
-      Country: 'US',
+      Country: 'United States',
     });
 
     await page.goto('/ghost/#/members');
@@ -133,6 +132,69 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     });
 
     await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
+  });
+
+  test('a country filter matches any of the picked countries and reopens intact', async ({
+    page,
+  }) => {
+    test.slow();
+
+    const stamp = Date.now();
+    const fieldName = `Shipping ${stamp}`;
+    const viewName = `Europe ${stamp}`;
+    const memberFactory = createMemberFactory(page.request);
+
+    const inLondon = await memberFactory.create({
+      name: `London Buyer ${stamp}`,
+      email: `london-${stamp}@example.com`,
+    });
+    const inBerlin = await memberFactory.create({
+      name: `Berlin Buyer ${stamp}`,
+      email: `berlin-${stamp}@example.com`,
+    });
+    const inBoston = await memberFactory.create({
+      name: `Boston Buyer ${stamp}`,
+      email: `boston-${stamp}@example.com`,
+    });
+
+    const settingsPage = new SettingsPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+    const membersPage = new MembersListPage(page);
+    const sidebar = new SidebarPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.customFieldsSection.createAddressField(fieldName);
+
+    for (const [member, country] of [
+      [inLondon, 'United Kingdom'],
+      [inBerlin, 'Germany'],
+      [inBoston, 'United States'],
+    ] as const) {
+      await page.goto(`/ghost/#/members/${member.id}`);
+      await memberDetailsPage.setCompositeCustomFieldValue(fieldName, { Country: country });
+    }
+
+    await page.goto('/ghost/#/members');
+    // A country is picked from a list, so it filters as a set: any of the picks.
+    await membersPage.addCustomFieldFilter({
+      field: fieldName,
+      subfield: 'Country',
+      operator: 'is any of',
+      values: ['United Kingdom', 'Germany'],
+    });
+
+    await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Berlin Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
+
+    // The list of codes survives a save and a reload of the segment.
+    await membersPage.saveCurrentView(viewName);
+    await sidebar.getNavLink('Members').click();
+    await sidebar.getNavLink(viewName).click();
+
+    await expect(sidebar.getNavLink(viewName)).toHaveAttribute('aria-current', 'page');
+    await expect(membersPage.getFilterItem(fieldName)).toContainText('2 selected');
     await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
   });
 

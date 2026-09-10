@@ -50,8 +50,14 @@ interface UseMemberFilterFieldsOptions {
   }>;
   // Archived fields still referenced by the current filter. Rendered as disabled,
   // removable-only pills so a saved segment stays visible and undoable even though
-  // the field is no longer offered in the picker.
-  archivedCustomFields?: Array<{ namespace: string; key: string; name: string }>;
+  // the field is no longer offered in the picker. The type still decides how the
+  // pill reads: a country picked from a list is not text.
+  archivedCustomFields?: Array<{
+    namespace: string;
+    key: string;
+    name: string;
+    type: MemberCustomField['type'];
+  }>;
   siteTimezone?: string;
 }
 
@@ -303,10 +309,7 @@ export function useMemberFilterFields({
 
     return buildMemberFields({
       newsletters: catalogNewsletters,
-      customFields: [
-        ...customFields,
-        ...archivedCustomFields.map((field) => ({ ...field, type: 'short_text' as const })),
-      ],
+      customFields: [...customFields, ...archivedCustomFields],
     });
   }, [newsletters, hydratedNewsletterSlugs, customFields, archivedCustomFields]);
 

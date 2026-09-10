@@ -163,7 +163,12 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
             field.status === 'archived' &&
             referencedCustomFieldKeys.has(`${field.namespace}.${field.key}`),
         )
-        .map((field) => ({ namespace: field.namespace, key: field.key, name: field.name })),
+        .map((field) => ({
+          namespace: field.namespace,
+          key: field.key,
+          name: field.name,
+          type: field.type,
+        })),
     [catalogCustomFields, referencedCustomFieldKeys],
   );
 

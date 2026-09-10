@@ -441,7 +441,7 @@ describe('member-filter-query - custom fields', () => {
   const cases: Array<{
     field: string;
     operator: string;
-    values: [subfield: string, value: string];
+    values: [subfield: string, ...values: string[]];
     nql: string;
   }> = [
     {
@@ -512,6 +512,26 @@ describe('member-filter-query - custom fields', () => {
       values: ['', ''],
       nql: "metafields.key:-'custom.phone'",
     },
+    // A part picked from a list filters as a set, the way labels do: a list of codes,
+    // even one, so it reads back as "is any of" rather than "is".
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-any',
+      values: ['country', 'DE', 'GB'],
+      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
+    },
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-any',
+      values: ['country', 'GB'],
+      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['GB'])",
+    },
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-not-any',
+      values: ['country', 'DE', 'GB'],
+      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
+    },
     // A part's set / not-set targets its presence via `path`, not the whole field.
     {
       field: 'metafields.custom.shipping_address',
@@ -538,6 +558,24 @@ describe('member-filter-query - custom fields', () => {
       expect(serialized).toBe(nql);
     },
   );
+
+  // A presence pill carries an empty value slot. Switching it to "is any of" leaves that
+  // slot in place until a country is picked, and it must not go out as a list of nothing.
+  it('sends nothing for "is any of" before a country is picked', () => {
+    const serialized = serializeMemberFilters(
+      [
+        {
+          id: 'x',
+          field: 'metafields.custom.shipping_address',
+          operator: 'is-any',
+          values: ['country', ''],
+        },
+      ],
+      'UTC',
+      memberFields,
+    );
+    expect(serialized).toBeUndefined();
+  });
 
   it.each(cases)(
     'parses $field $operator back into the same predicate',

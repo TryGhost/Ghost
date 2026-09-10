@@ -1,5 +1,6 @@
 import { render, fireEvent } from '../../../utils/test-utils';
 import { getSiteData, getMemberData } from '../../../../src/utils/fixtures-generator';
+import { COUNTRY_CODES } from '@tryghost/metafield-types/countries';
 import AccountProfilePage from '../../../../src/components/pages/account-profile-page';
 
 const setup = (overrides = {}) => {
@@ -151,6 +152,88 @@ describe('Account Profile Page', () => {
         email: member.email,
         name: member.name,
       });
+    });
+
+    test('offers the country as a list of the countries an address may name', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      expect(country.tagName).toBe('SELECT');
+      const labels = Array.from(country.options).map((option) => option.textContent);
+      expect(labels).toContain('Finland');
+      expect(labels).toContain('Germany');
+      expect(labels).toContain('Iran');
+      // Every country, plus the placeholder option.
+      expect(labels).toHaveLength(COUNTRY_CODES.length + 1);
+
+      fireEvent.change(country, { target: { value: 'FI' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({
+          metafields: { custom: { shipping_address: { country: 'FI' } } },
+        }),
+      );
+    });
+
+    test('shows a stored country the list does not hold rather than nothing', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      // Stripe's "unknown region" code: a checkout can store it, the list never offers it.
+      const stored = { ...member, metafields: { custom: { shipping_address: { country: 'ZZ' } } } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member: stored,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      expect(country).toHaveValue('ZZ');
+      // Named the way Admin names it, rather than shown as the bare code.
+      expect(country.options[country.selectedIndex]).toHaveTextContent('Unknown Region');
+      fireEvent.click(saveBtn);
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: stored.email,
+        name: stored.name,
+      });
+    });
+
+    test('renders a view-only country as a disabled select', () => {
+      const { getByLabelText } = setup({ site, member, customFields: [address] });
+
+      const country = getByLabelText('Country');
+      expect(country.tagName).toBe('SELECT');
+      expect(country).toBeDisabled();
+    });
+
+    test('clears a country through the empty option', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const stored = {
+        ...member,
+        metafields: { custom: { shipping_address: { city: 'Berlin', country: 'DE' } } },
+      };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member: stored,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      // With a country chosen the empty option is offered as the way to clear it.
+      expect(country.options[0]).toHaveTextContent('(None)');
+      expect(country.options[0]).not.toBeDisabled();
+      fireEvent.change(country, { target: { value: '' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({ metafields: { custom: { shipping_address: { country: '' } } } }),
+      );
     });
 
     test('sends only the parts of an address the member changed', () => {

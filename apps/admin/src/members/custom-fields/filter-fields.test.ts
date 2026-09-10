@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PART_FILTER_TYPE, SCALAR_KIND_FILTER_TYPE, customFieldDescriptor } from './filter-fields';
+import { SCALAR_KIND_FILTER_TYPE, customFieldDescriptor, partFilterType } from './filter-fields';
+import { FILTER_TYPES } from '@/shared/filters';
 import { MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type {
   MemberCustomFieldKind,
   MemberCustomFieldPartType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FilterTypeId } from '@/shared/filters';
+import type { FieldDescriptor, FilterTypeId } from '@/shared/filters';
 
 type ScalarKind = Exclude<MemberCustomFieldKind, 'record'>;
 
@@ -32,30 +33,74 @@ describe('SCALAR_KIND_FILTER_TYPE', () => {
 });
 
 describe('a composite field descriptor', () => {
-  it('filters parts as text and starts the whole field at presence', () => {
-    const descriptor = customFieldDescriptor({
-      namespace: 'custom',
-      key: 'shipping',
-      name: 'Shipping',
-      type: 'address',
-    });
+  const descriptor = customFieldDescriptor({
+    namespace: 'custom',
+    key: 'shipping',
+    name: 'Shipping',
+    type: 'address',
+  });
 
-    expect(descriptor.type).toBe('text');
+  it('reads its parts with their own types combined and starts the whole field at presence', () => {
+    expect(descriptor.type).toBeUndefined();
+    expect(descriptor.operators).toEqual([
+      ...FILTER_TYPES.text.operators,
+      ...FILTER_TYPES.set.operators,
+      'is-set',
+      'is-not-set',
+    ]);
     expect(descriptor.ui.defaultOperator).toBe('is-set');
+  });
+
+  it('serializes each operator through the type that owns it', () => {
+    const ctx = { key: 'metafields.custom.shipping', pattern: '', params: {}, timezone: 'UTC' };
+    const semantics = describeSemantics(descriptor);
+
+    expect(semantics.serialize({ operator: 'contains', values: ['Lon'] }, ctx)).toBe("~'Lon'");
+    expect(semantics.serialize({ operator: 'is-any', values: ['GB', 'DE'] }, ctx)).toBe(
+      "['DE','GB']",
+    );
+    expect(semantics.serialize({ operator: 'is-greater', values: ['1'] }, ctx)).toBeNull();
+  });
+
+  it('parses a plain string as text and only a list as a set', () => {
+    const ctx = { key: 'metafields.custom.shipping', pattern: '', params: {}, timezone: 'UTC' };
+    const semantics = describeSemantics(descriptor);
+
+    expect(semantics.parse({ operator: '$eq', value: 'GB' }, ctx)).toEqual({
+      operator: 'is',
+      values: ['GB'],
+    });
+    expect(semantics.parse({ operator: '$in', value: ['GB', 'DE'] }, ctx)).toEqual({
+      operator: 'is-any',
+      values: ['GB', 'DE'],
+    });
+    expect(semantics.parse({ operator: '$nin', value: ['GB'] }, ctx)).toEqual({
+      operator: 'is-not-any',
+      values: ['GB'],
+    });
   });
 });
 
+function describeSemantics(field: FieldDescriptor) {
+  if (field.type !== undefined) {
+    throw new Error('expected a domain field carrying its own semantics');
+  }
+  return field.semantics;
+}
+
 // @ts-expect-error -- must not compile, or PART_FILTER_TYPE is no longer exhaustive
 const _partMappingWithAMissingTypeDoesNotCompile: {
-  [P in MemberCustomFieldPartType]: FilterTypeId;
+  [P in MemberCustomFieldPartType]: 'text' | 'set';
 } = {
   short_text: 'text',
   postal_code: 'text',
 };
 void _partMappingWithAMissingTypeDoesNotCompile;
 
-describe('PART_FILTER_TYPE', () => {
-  it('filters every part type the same way, because a composite is read with one semantics', () => {
-    expect(new Set(Object.values(PART_FILTER_TYPE)).size).toBe(1);
+describe('partFilterType', () => {
+  it('types a part from a list as a set and a typed part as text', () => {
+    expect(partFilterType('address', 'country')).toBe('set');
+    expect(partFilterType('address', 'city')).toBe('text');
+    expect(partFilterType('address', '')).toBeUndefined();
   });
 });

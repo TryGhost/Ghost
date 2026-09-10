@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(экономия {highestYearlyDiscount}%)",
     "{amount} days free": "{amount} бесплатных дня(ей)",
     "{amount} off": "Скидка — {amount}",

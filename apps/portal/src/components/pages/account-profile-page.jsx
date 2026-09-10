@@ -8,7 +8,8 @@ import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import { customFieldPartLabel } from '../../utils/helpers';
-import { FIELD_TYPE_IDS, subFieldsOf } from '@tryghost/metafield-types/structure';
+import { countryOptions } from '../../utils/countries';
+import { FIELD_TYPE_IDS, partTypesOf, subFieldsOf } from '@tryghost/metafield-types/structure';
 
 /**
  * How an address is laid out: the short parts share a row, as Stripe's checkout does.
@@ -232,10 +233,13 @@ export default class AccountProfilePage extends React.Component {
         },
       ];
     }
+    const partTypes = partTypesOf(field.type);
     return parts.map((part) => {
       const label = customFieldPartLabel(part);
+      const isCountry = partTypes[part] === 'country_code';
       return {
-        type: 'text',
+        type: isCountry ? 'select' : 'text',
+        options: isCountry ? countryOptions(value?.[part]) : undefined,
         value: value?.[part] ?? '',
         // The part's label is read by assistive tech and shown as the placeholder; the
         // field's own name labels the group.
