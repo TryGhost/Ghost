@@ -5,6 +5,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel } from '@/posts/list/post-filter-fields';
@@ -28,39 +31,48 @@ export function PostsSortMenu({ order, onOrderChange }: PostsSortMenuProps) {
   const { controlShape } = useShade();
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {/*
+    <Tooltip>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <TooltipTrigger asChild>
+            {/*
                     The label names the control *and* its value: a bare
                     aria-label of "Sort" would override the button text, so
                     assistive tech would never hear which sort is active.
                 */}
-        <Button
-          aria-label={`Sort: ${getOrderLabel(order)}`}
-          data-testid="posts-sort"
-          variant={controlShape === 'pill' ? 'secondary' : 'outline'}
-        >
-          <LucideIcon.ArrowUpDown className="size-4" />
-          {getOrderLabel(order)}
-          {controlShape !== 'pill' && <LucideIcon.ChevronDown className="size-4" />}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {/* Radio items so the active sort is announced, and visible. */}
-        <DropdownMenuRadioGroup
-          value={order ?? ''}
-          onValueChange={(value) => {
-            onOrderChange(value || null);
-          }}
-        >
-          <DropdownMenuRadioItem value="">{DEFAULT_ORDER_LABEL}</DropdownMenuRadioItem>
-          {ORDER_OPTIONS.map((option) => (
-            <DropdownMenuRadioItem key={option.value} value={option.value}>
-              {option.label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <Button
+              aria-label={`Sort: ${getOrderLabel(order)}`}
+              data-testid="posts-sort"
+              variant={controlShape === 'pill' ? 'ghost' : 'outline'}
+            >
+              <LucideIcon.ArrowUpDown
+                className={controlShape === 'pill' ? 'size-4 stroke-2!' : 'size-4'}
+              />
+              {getOrderLabel(order)}
+              {controlShape !== 'pill' && <LucideIcon.ChevronDown className="size-4" />}
+            </Button>
+          </TooltipTrigger>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {/* Radio items so the active sort is announced, and visible. */}
+          <DropdownMenuRadioGroup
+            value={order ?? ''}
+            onValueChange={(value) => {
+              onOrderChange(value || null);
+            }}
+          >
+            <DropdownMenuRadioItem value="">{DEFAULT_ORDER_LABEL}</DropdownMenuRadioItem>
+            {ORDER_OPTIONS.map((option) => (
+              <DropdownMenuRadioItem key={option.value} value={option.value}>
+                {option.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TooltipContent side="bottom" variant="white">
+        Sort
+      </TooltipContent>
+    </Tooltip>
   );
 }

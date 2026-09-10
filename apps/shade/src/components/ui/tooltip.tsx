@@ -1,27 +1,48 @@
 import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { cn } from '@/lib/utils';
 import { SHADE_APP_NAMESPACES } from '@/shade-app';
 
+/**
+ * Shared hover timing: `delayDuration` (ms) waits before the first tooltip;
+ * `skipDelayDuration` (ms) lets nearby triggers open immediately after it.
+ * Individual Tooltip roots can override delayDuration. Keyboard focus opens immediately.
+ */
 const TooltipProvider = TooltipPrimitive.Provider;
 
 const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
+const tooltipContentVariants = cva(
+  'z-50 animate-in overflow-hidden rounded-menu px-3 py-1.5 text-xs fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground dark:bg-popover dark:text-popover-foreground',
+        white: 'bg-surface-elevated-2 text-foreground shadow-md',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
+);
+
+export interface TooltipContentProps
+  extends
+    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>,
+    VariantProps<typeof tooltipContentVariants> {}
+
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+  TooltipContentProps
+>(({ className, sideOffset = 4, variant, ...props }, ref) => (
   <TooltipPrimitive.Portal>
     <div className={SHADE_APP_NAMESPACES}>
       <TooltipPrimitive.Content
         ref={ref}
-        className={cn(
-          'z-50 animate-in overflow-hidden rounded-menu bg-primary px-3 py-1.5 text-xs text-primary-foreground fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 dark:bg-popover dark:text-popover-foreground',
-          className,
-        )}
+        className={cn(tooltipContentVariants({ variant }), className)}
         sideOffset={sideOffset}
         {...props}
       />

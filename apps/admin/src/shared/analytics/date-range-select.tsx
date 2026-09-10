@@ -10,6 +10,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 
 interface DateRangeSelectProps {
@@ -42,31 +45,44 @@ const DateRangeSelect: React.FC<DateRangeSelectProps> = ({
   }, [range, excludeValues, filteredOptions, onRangeChange]);
 
   return (
-    <Select
-      value={`${range}`}
-      onValueChange={(value) => {
-        onRangeChange(Number(value));
-      }}
-    >
-      <SelectTrigger
-        className="w-auto"
-        shape={controlShape}
-        variant={controlShape === 'pill' ? 'secondary' : 'default'}
+    <Tooltip>
+      <Select
+        value={`${range}`}
+        onValueChange={(value) => {
+          onRangeChange(Number(value));
+        }}
       >
-        <LucideIcon.Calendar className="mr-2" size={16} strokeWidth={1.5} />
-        <SelectValue placeholder="Select a period" />
-      </SelectTrigger>
-      <SelectContent align="end">
-        <SelectGroup>
-          <SelectLabel>Period</SelectLabel>
-          {filteredOptions.map((option) => (
-            <SelectItem key={option.value} value={`${option.value}`}>
-              {option.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        <TooltipTrigger asChild>
+          <SelectTrigger
+            aria-label="Date range"
+            className="w-auto"
+            shape={controlShape}
+            showChevron={controlShape === 'pill' ? false : undefined}
+            variant={controlShape === 'pill' ? 'ghost' : 'default'}
+          >
+            <LucideIcon.Calendar
+              className="mr-2"
+              size={16}
+              strokeWidth={controlShape === 'pill' ? 2 : 1.5}
+            />
+            <SelectValue placeholder="Select a period" />
+          </SelectTrigger>
+        </TooltipTrigger>
+        <SelectContent align="end">
+          <SelectGroup>
+            <SelectLabel>Period</SelectLabel>
+            {filteredOptions.map((option) => (
+              <SelectItem key={option.value} value={`${option.value}`}>
+                {option.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <TooltipContent side="bottom" variant="white">
+        Date range
+      </TooltipContent>
+    </Tooltip>
   );
 };
 

@@ -5,10 +5,13 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { POST_VIEW_COLORS, type PostViewColor, pickPostViewColor } from '@/posts/list/post-views';
 import { getColorHex } from '@/layout/app-sidebar/shared-views';
 import { useDeletePostView, useSavePostView } from '@/posts/list/hooks/use-post-views';
@@ -180,27 +183,35 @@ export function ManagePostViewPopover({
   const [open, setOpen] = useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {/* Labelled in words. No `aria-label`: it would override the
+    <Tooltip>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            {/* Labelled in words. No `aria-label`: it would override the
                     visible text as the accessible name, leaving the two out of
                     step. */}
-        <FilterBar.Action data-testid="manage-post-view" variant={triggerVariant}>
-          {activeView ? 'Edit view' : 'Save view'}
-        </FilterBar.Action>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72">
-        {/* Keyed so reopening starts from the current view's name. */}
-        <PopoverBody
-          key={activeView?.name ?? 'new'}
-          activeView={activeView}
-          params={params}
-          resource={resource}
-          onClose={() => {
-            setOpen(false);
-          }}
-        />
-      </PopoverContent>
-    </Popover>
+            <FilterBar.Action data-testid="manage-post-view" variant={triggerVariant}>
+              {triggerVariant === 'ghost' && <LucideIcon.Bookmark className="size-4 stroke-2!" />}
+              {activeView ? 'Edit view' : 'Save view'}
+            </FilterBar.Action>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72">
+          {/* Keyed so reopening starts from the current view's name. */}
+          <PopoverBody
+            key={activeView?.name ?? 'new'}
+            activeView={activeView}
+            params={params}
+            resource={resource}
+            onClose={() => {
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      <TooltipContent side="bottom" variant="white">
+        {activeView ? 'Edit view' : 'Save view'}
+      </TooltipContent>
+    </Tooltip>
   );
 }

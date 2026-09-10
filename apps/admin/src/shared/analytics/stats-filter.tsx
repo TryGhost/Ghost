@@ -1,3 +1,5 @@
+import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
@@ -683,9 +685,25 @@ function StatsFilter({
 
   const filtersElement = (
     <Filters
+      addButton={
+        !hasFilters && hasPillControls ? (
+          <TooltipTrigger asChild>
+            <Button
+              aria-keyshortcuts="F"
+              aria-label="Filter"
+              data-slot="filters-add"
+              type="button"
+              variant="ghost"
+            >
+              <LucideIcon.ListFilter className="size-4 stroke-2!" />
+              Filter
+            </Button>
+          </TooltipTrigger>
+        ) : undefined
+      }
       addButtonIcon={<LucideIcon.FunnelPlus />}
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={hasPillControls && !hasFilters ? 'secondary' : undefined}
+      addButtonVariant={hasPillControls && !hasFilters ? 'ghost' : undefined}
       allowMultiple={false}
       className={cn(
         '[&>button]:order-last',
@@ -729,7 +747,18 @@ function StatsFilter({
       className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
       data-testid="stats-filter-container"
     >
-      {filtersElement}
+      {hasPillControls ? (
+        <Tooltip>
+          {filtersElement}
+          <TooltipContent side="bottom" variant="white">
+            <Inline align="center" gap="sm">
+              Filter <Kbd>F</Kbd>
+            </Inline>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        filtersElement
+      )}
     </div>
   );
 }

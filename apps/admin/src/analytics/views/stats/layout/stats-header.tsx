@@ -1,7 +1,13 @@
 import React from 'react';
 import { H1 } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { Navbar, NavbarNavigation, PageMenu, PageMenuItem } from '@tryghost/shade/components';
+import {
+  Navbar,
+  NavbarNavigation,
+  PageMenu,
+  PageMenuItem,
+  TooltipProvider,
+} from '@tryghost/shade/components';
 import { useActiveVisitors, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import {
   useNewslettersEnabled,
@@ -28,7 +34,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
     : `${location.pathname}/`;
 
   return (
-    <>
+    <TooltipProvider delayDuration={500} skipDelayDuration={300}>
       <header className="z-40 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex w-full flex-wrap items-center justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
@@ -117,7 +123,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
         </NavbarNavigation>
         {children}
       </Navbar>
-    </>
+    </TooltipProvider>
   );
 };
 

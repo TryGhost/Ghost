@@ -27,11 +27,14 @@ import {
   Navbar,
   PageMenu,
   PageMenuItem,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
-import { H1 } from '@tryghost/shade/primitives';
+import { H1, Inline } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
-  cn,
   formatDisplayDate,
   formatDisplayTime,
   formatNumber,
@@ -161,8 +164,95 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     }
   };
 
+  const shareAction = !post?.email_only && (
+    <Tooltip>
+      <PostShareModal
+        author={post?.authors?.[0]?.name || ''}
+        canShareAsGift={canManageGiftLink}
+        description=""
+        faviconURL={site?.icon || ''}
+        featureImageURL={post?.feature_image ?? undefined}
+        giftAccessLabel={giftAccessLabel(post?.visibility)}
+        open={isShareOpen}
+        postExcerpt={post?.excerpt || ''}
+        postTitle={post?.title}
+        postURL={post?.url}
+        siteTitle={site?.title || ''}
+        onClose={() => setIsShareOpen(false)}
+        onOpenChange={setIsShareOpen}
+        onShareAsGift={() => {
+          setIsShareOpen(false);
+          setIsGiftLinkOpen(true);
+        }}
+      >
+        <TooltipTrigger asChild>
+          <Button
+            className={isAdmin7Pill ? 'ml-3' : undefined}
+            variant={isAdmin7Pill ? 'default' : 'outline'}
+            onClick={() => setIsShareOpen(true)}
+          >
+            <LucideIcon.Share className={isAdmin7Pill ? 'stroke-2!' : undefined} /> Share
+          </Button>
+        </TooltipTrigger>
+      </PostShareModal>
+      <TooltipContent side="bottom" variant="white">
+        Share post
+      </TooltipContent>
+    </Tooltip>
+  );
+
+  const moreActions = (
+    <Tooltip>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <TooltipTrigger asChild>
+            <Button
+              aria-label="More post actions"
+              size={isAdmin7Pill ? 'icon' : undefined}
+              variant={isAdmin7Pill ? 'ghost' : 'outline'}
+            >
+              <LucideIcon.Ellipsis className={isAdmin7Pill ? 'stroke-2!' : undefined} />
+            </Button>
+          </TooltipTrigger>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <a href={post?.url} rel="noopener noreferrer" target="_blank">
+                <LucideIcon.ExternalLink />
+                View in browser
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                navigate(editorPath, { crossApp: editorIsEmberOwned });
+              }}
+            >
+              <LucideIcon.Pen />
+              Edit post
+              {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={handleDeletePost}
+            >
+              <LucideIcon.Trash />
+              Delete post
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TooltipContent side="bottom" variant="white">
+        More post actions
+      </TooltipContent>
+    </Tooltip>
+  );
+
   return (
-    <>
+    <TooltipProvider delayDuration={500} skipDelayDuration={300}>
       <header className="z-50 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
           className="relative flex min-h-[102px] w-full items-start justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
@@ -208,77 +298,19 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                 {/* <Button variant='outline'><LucideIcon.RefreshCw /></Button> */}
                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                 {!isPostLoading && (
-                  <div
-                    className={cn('flex items-center gap-2', isAdmin7Pill && 'flex-row-reverse')}
-                  >
-                    {!post?.email_only && (
-                      <PostShareModal
-                        author={post?.authors?.[0]?.name || ''}
-                        canShareAsGift={canManageGiftLink}
-                        description=""
-                        faviconURL={site?.icon || ''}
-                        featureImageURL={post?.feature_image ?? undefined}
-                        giftAccessLabel={giftAccessLabel(post?.visibility)}
-                        open={isShareOpen}
-                        postExcerpt={post?.excerpt || ''}
-                        postTitle={post?.title}
-                        postURL={post?.url}
-                        siteTitle={site?.title || ''}
-                        onClose={() => setIsShareOpen(false)}
-                        onOpenChange={setIsShareOpen}
-                        onShareAsGift={() => {
-                          setIsShareOpen(false);
-                          setIsGiftLinkOpen(true);
-                        }}
-                      >
-                        <Button
-                          variant={isAdmin7Pill ? 'default' : 'outline'}
-                          onClick={() => setIsShareOpen(true)}
-                        >
-                          <LucideIcon.Share /> Share
-                        </Button>
-                      </PostShareModal>
+                  <Inline align="center" gap="sm">
+                    {isAdmin7Pill ? (
+                      <>
+                        {moreActions}
+                        {shareAction}
+                      </>
+                    ) : (
+                      <>
+                        {shareAction}
+                        {moreActions}
+                      </>
                     )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size={isAdmin7Pill ? 'icon' : undefined}
-                          variant={isAdmin7Pill ? 'secondary' : 'outline'}
-                        >
-                          <LucideIcon.Ellipsis />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem asChild>
-                            <a href={post?.url} rel="noopener noreferrer" target="_blank">
-                              <LucideIcon.ExternalLink />
-                              View in browser
-                            </a>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              navigate(editorPath, { crossApp: editorIsEmberOwned });
-                            }}
-                          >
-                            <LucideIcon.Pen />
-                            Edit post
-                            {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={handleDeletePost}
-                          >
-                            <LucideIcon.Trash />
-                            Delete post
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  </Inline>
                 )}
               </div>
             </div>
@@ -394,7 +426,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
   );
 };
 

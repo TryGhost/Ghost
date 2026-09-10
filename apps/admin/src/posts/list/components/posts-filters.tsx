@@ -1,3 +1,4 @@
+import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
@@ -65,7 +66,7 @@ export function PostsFilters({
     </FilterBar.Actions>
   ) : undefined;
 
-  return (
+  const controls = (
     // Testid on the wrapper — `Filters` doesn't forward arbitrary props.
     <Inline
       align="center"
@@ -74,6 +75,22 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
+        addButton={
+          !hasFilters && controlShape === 'pill' ? (
+            <TooltipTrigger asChild>
+              <Button
+                aria-keyshortcuts="F"
+                aria-label="Filter"
+                data-slot="filters-add"
+                type="button"
+                variant="ghost"
+              >
+                <LucideIcon.ListFilter className="size-4 stroke-2!" />
+                Filter
+              </Button>
+            </TooltipTrigger>
+          ) : undefined
+        }
         // Collapsed with `text-[0px]`, not by dropping the label: the
         // word "Filter" stays in the accessible name at every width.
         addButtonClassName={cn(
@@ -92,7 +109,7 @@ export function PostsFilters({
           )
         }
         addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-        addButtonVariant={controlShape === 'pill' && !hasFilters ? 'secondary' : undefined}
+        addButtonVariant={controlShape === 'pill' && !hasFilters ? 'ghost' : undefined}
         // Each field maps to one URL param holding one value; a second
         // chip per field would sit there without being in the URL.
         allowMultiple={false}
@@ -115,5 +132,18 @@ export function PostsFilters({
         onChange={onFiltersChange}
       />
     </Inline>
+  );
+
+  return !hasFilters && controlShape === 'pill' ? (
+    <Tooltip>
+      {controls}
+      <TooltipContent side="bottom" variant="white">
+        <Inline align="center" gap="sm">
+          Filter <Kbd>F</Kbd>
+        </Inline>
+      </TooltipContent>
+    </Tooltip>
+  ) : (
+    controls
   );
 }

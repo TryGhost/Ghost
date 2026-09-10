@@ -2,6 +2,8 @@ import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
+import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
@@ -190,6 +192,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const showIconOnlyTrigger = iconOnly && !hasFilters;
   const addFilterButtonClassName = cn(
     showIconOnlyTrigger &&
+      !isAdmin7Pill &&
       'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
     hasFilters && !isAdmin7Pill && 'border-none',
   );
@@ -223,8 +226,24 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     </FilterBar.Actions>
   ) : undefined;
 
-  return (
+  const filterControls = (
     <Filters
+      addButton={
+        !hasFilters && isAdmin7Pill ? (
+          <TooltipTrigger asChild>
+            <Button
+              aria-keyshortcuts="F"
+              aria-label="Filter"
+              data-slot="filters-add"
+              type="button"
+              variant="ghost"
+            >
+              <LucideIcon.ListFilter className="size-4 stroke-2!" />
+              Filter
+            </Button>
+          </TooltipTrigger>
+        ) : undefined
+      }
       addButtonClassName={addFilterButtonClassName}
       addButtonIcon={
         isAdmin7Pill ? (
@@ -240,7 +259,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         )
       }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-      addButtonVariant={isAdmin7Pill && !hasFilters ? 'secondary' : undefined}
+      addButtonVariant={isAdmin7Pill && !hasFilters ? 'ghost' : undefined}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
@@ -253,6 +272,19 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       showSearchInput={true}
       onChange={handleFiltersChange}
     />
+  );
+
+  return !hasFilters && isAdmin7Pill ? (
+    <Tooltip>
+      {filterControls}
+      <TooltipContent side="bottom" variant="white">
+        <Inline align="center" gap="sm">
+          Filter <Kbd>F</Kbd>
+        </Inline>
+      </TooltipContent>
+    </Tooltip>
+  ) : (
+    filterControls
   );
 };
 

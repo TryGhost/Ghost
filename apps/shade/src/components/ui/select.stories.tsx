@@ -8,7 +8,7 @@ import {
   SelectLabel,
   SelectGroup,
   SelectSeparator,
-} from './select';
+} from '@/components/ui/select';
 
 const meta = {
   title: 'Components / Select',
@@ -260,6 +260,34 @@ export const LongList: Story = {
     docs: {
       description: {
         story: 'Select with many options showing scroll behavior and search functionality.',
+      },
+    },
+  },
+};
+
+export const WithoutChevron: Story = {
+  render: () => (
+    <Select defaultValue="month">
+      <SelectTrigger
+        aria-label="Date range"
+        className="w-[180px]"
+        shape="pill"
+        showChevron={false}
+        variant="ghost"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="week">Last 7 days</SelectItem>
+        <SelectItem value="month">Last 30 days</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Set showChevron to false for a compact labelled header selector. The selected value remains visible, and keyboard navigation works as usual.',
       },
     },
   },

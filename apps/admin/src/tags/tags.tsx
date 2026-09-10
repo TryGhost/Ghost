@@ -58,7 +58,7 @@ const Tags: React.FC = () => {
                       <Button
                         aria-label="More tag actions"
                         size={isAdmin7Pill ? 'icon' : undefined}
-                        variant={isAdmin7Pill ? 'secondary' : 'outline'}
+                        variant={isAdmin7Pill ? 'ghost' : 'outline'}
                       >
                         <LucideIcon.MoreHorizontal className="size-4" />
                       </Button>

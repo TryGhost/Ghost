@@ -10,6 +10,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 
@@ -48,31 +51,44 @@ const NewsletterSelect: React.FC<NewsletterSelectProps> = ({ newsletters }) => {
   }
 
   return (
-    <Select
-      value={selectedNewsletterId || ''}
-      onValueChange={(value) => {
-        setSelectedNewsletterId(value);
-      }}
-    >
-      <SelectTrigger
-        className="w-auto"
-        shape={controlShape}
-        variant={controlShape === 'pill' ? 'secondary' : 'default'}
+    <Tooltip>
+      <Select
+        value={selectedNewsletterId || ''}
+        onValueChange={(value) => {
+          setSelectedNewsletterId(value);
+        }}
       >
-        <LucideIcon.Mails className="mr-2" size={16} strokeWidth={1.5} />
-        <SelectValue placeholder="Select a newsletter" />
-      </SelectTrigger>
-      <SelectContent align="end">
-        <SelectGroup>
-          <SelectLabel>Newsletters</SelectLabel>
-          {activeNewsletters.map((newsletter) => (
-            <SelectItem key={newsletter.id} value={newsletter.id}>
-              {newsletter.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        <TooltipTrigger asChild>
+          <SelectTrigger
+            aria-label="Newsletter"
+            className="w-auto"
+            shape={controlShape}
+            showChevron={controlShape === 'pill' ? false : undefined}
+            variant={controlShape === 'pill' ? 'ghost' : 'default'}
+          >
+            <LucideIcon.Mails
+              className="mr-2"
+              size={16}
+              strokeWidth={controlShape === 'pill' ? 2 : 1.5}
+            />
+            <SelectValue placeholder="Select a newsletter" />
+          </SelectTrigger>
+        </TooltipTrigger>
+        <SelectContent align="end">
+          <SelectGroup>
+            <SelectLabel>Newsletters</SelectLabel>
+            {activeNewsletters.map((newsletter) => (
+              <SelectItem key={newsletter.id} value={newsletter.id}>
+                {newsletter.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <TooltipContent side="bottom" variant="white">
+        Newsletter
+      </TooltipContent>
+    </Tooltip>
   );
 };
 

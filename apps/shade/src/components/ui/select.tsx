@@ -38,32 +38,40 @@ const selectTriggerVariants = cva(
 export interface SelectTriggerProps
   extends
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
-    VariantProps<typeof selectTriggerVariants> {}
+    VariantProps<typeof selectTriggerVariants> {
+  /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
+  showChevron?: boolean;
+}
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
->(({ className, children, shape, variant, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      inputSurface('self'),
-      inputSurfaceClasses.disabledFieldSelf,
-      selectTriggerVariants({ shape, variant }),
-      className,
-    )}
-    data-control-shape={shape ?? 'rounded'}
-    data-variant={variant ?? 'default'}
-    {...props}
-  >
-    {children}
-    {variant !== 'secondary' && (
-      <SelectPrimitive.Icon asChild>
-        <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
-      </SelectPrimitive.Icon>
-    )}
-  </SelectPrimitive.Trigger>
-));
+>(
+  (
+    { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
+    ref,
+  ) => (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        inputSurface('self'),
+        inputSurfaceClasses.disabledFieldSelf,
+        selectTriggerVariants({ shape, variant }),
+        className,
+      )}
+      data-control-shape={shape ?? 'rounded'}
+      data-variant={variant ?? 'default'}
+      {...props}
+    >
+      {children}
+      {showChevron && (
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className="-mr-0.5 ml-1 size-4 opacity-50" />
+        </SelectPrimitive.Icon>
+      )}
+    </SelectPrimitive.Trigger>
+  ),
+);
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<

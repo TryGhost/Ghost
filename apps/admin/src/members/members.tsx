@@ -6,7 +6,12 @@ import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
 import MultipleActiveSubscriptionsBanner from './components/multiple-active-subscriptions-banner';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
+import {
+  Button,
+  EmptyIndicator,
+  LoadingIndicator,
+  TooltipProvider,
+} from '@tryghost/shade/components';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -148,6 +153,39 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
+  const headerSearch =
+    shouldShowMemberControls &&
+    (isAdmin7Pill ? (
+      <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
+    ) : (
+      <>
+        <Box className="hidden lg:block">
+          <MembersHeaderSearch search={searchInput} onSearchChange={handleSearchChange} />
+        </Box>
+        <Button
+          aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+          className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+          size={isAdmin7Pill ? 'icon' : undefined}
+          variant={isAdmin7Pill ? 'ghost' : 'outline'}
+          onClick={handleMobileSearchToggle}
+        >
+          <LucideIcon.Search className="size-4" />
+        </Button>
+      </>
+    ));
+
+  const headerFilters = shouldShowMemberControls && !hasFilters && (
+    <MembersFilters
+      activeView={activeView}
+      filters={filters}
+      iconOnly={!isAdmin7Pill}
+      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+      nql={nql}
+      savedViews={savedViews}
+      onFiltersChange={setFilters}
+    />
+  );
+
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
@@ -166,55 +204,25 @@ const MembersPage: React.FC<MembersPageProps> = ({
                   </PageHeader.Title>
                 </PageHeader.Left>
                 <PageHeader.Actions>
-                  <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {shouldShowMemberControls && (
-                      <>
-                        <div className="hidden lg:flex">
-                          <MembersHeaderSearch
-                            search={searchInput}
-                            onSearchChange={handleSearchChange}
-                          />
-                        </div>
-                        <Button
-                          aria-label={
-                            showMobileSearch ? 'Hide member search' : 'Show member search'
-                          }
-                          className={cn(
-                            'lg:hidden',
-                            showMobileSearch && 'bg-secondary hover:bg-secondary',
-                          )}
-                          size={isAdmin7Pill ? 'icon' : undefined}
-                          variant={isAdmin7Pill ? 'secondary' : 'outline'}
-                          onClick={handleMobileSearchToggle}
-                        >
-                          <LucideIcon.Search className="size-4" />
-                        </Button>
-                        {!hasFilters && (
-                          <MembersFilters
-                            activeView={activeView}
-                            filters={filters}
-                            iconOnly={true}
-                            multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                            nql={nql}
-                            savedViews={savedViews}
-                            onFiltersChange={setFilters}
-                          />
-                        )}
-                      </>
-                    )}
-                    <MembersActions
-                      canBulkDelete={canBulkDelete}
-                      hasFilterOrSearch={hasFilterOrSearch}
-                      memberCount={totalMembers}
-                      nql={nql}
-                      search={search}
-                      showMenu={shouldShowMemberControls}
-                      showNewMember={shouldShowMemberControls}
-                      onImportComplete={() => {
-                        void refetch();
-                      }}
-                    />
-                  </PageHeader.ActionGroup>
+                  <TooltipProvider delayDuration={500} skipDelayDuration={300}>
+                    <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                      {isAdmin7Pill && headerFilters}
+                      {headerSearch}
+                      {!isAdmin7Pill && headerFilters}
+                      <MembersActions
+                        canBulkDelete={canBulkDelete}
+                        hasFilterOrSearch={hasFilterOrSearch}
+                        memberCount={totalMembers}
+                        nql={nql}
+                        search={search}
+                        showMenu={shouldShowMemberControls}
+                        showNewMember={shouldShowMemberControls}
+                        onImportComplete={() => {
+                          void refetch();
+                        }}
+                      />
+                    </PageHeader.ActionGroup>
+                  </TooltipProvider>
                 </PageHeader.Actions>
               </PageHeader>
 
