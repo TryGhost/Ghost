@@ -14,7 +14,7 @@ fi
 
 export PATH="$node_dir/bin:$PATH"
 corepack enable --install-directory "$node_dir/bin"
-pnpm setup
+pnpm bootstrap
 
 profile_marker="# Ghost orb Node.js"
 profile_export="export PATH=\"$node_dir/bin:\$PATH\""

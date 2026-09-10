@@ -44,7 +44,7 @@ class EmailServiceWrapper {
     const limitService = require('../limits');
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
-    const i18nLib = require('@tryghost/i18n');
+    const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
     const memberAttribution = require('../member-attribution');

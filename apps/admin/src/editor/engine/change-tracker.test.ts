@@ -73,6 +73,23 @@ function post(overrides: Partial<EditablePostProjection> = {}): EditablePostProj
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
+    featured: false,
+    visibility: 'public',
+    tiers: [],
+    authors: [{ id: 'author-1' }],
+    meta_title: null,
+    meta_description: null,
+    canonical_url: null,
+    custom_template: null,
+    codeinjection_head: null,
+    codeinjection_foot: null,
+    og_image: null,
+    og_title: null,
+    og_description: null,
+    twitter_image: null,
+    twitter_title: null,
+    twitter_description: null,
+    show_title_and_feature_image: null,
     updated_at: T0,
     ...overrides,
   };
@@ -350,7 +367,7 @@ describe('createChangeTracker', () => {
   });
 
   describe('tags', () => {
-    it('compares tags by ordered name list', () => {
+    it('compares tags in order', () => {
       const tracker = loadedTracker();
       tracker.setLive(POST_ID, { tags: [{ name: 'News' }, { name: 'Tech' }] });
 
@@ -363,11 +380,19 @@ describe('createChangeTracker', () => {
       ]);
     });
 
-    it('ignores identity when the names match', () => {
-      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' } as never] }));
-      tracker.setLive(POST_ID, { tags: [{ name: 'News', id: 'unsaved' } as never] });
+    it('settles a typed tag against the record it was saved as', () => {
+      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' }] }));
+      tracker.setLive(POST_ID, { tags: [{ name: 'news' }] });
 
       expect(tracker.verdict().dirty).toBe(false);
+    });
+
+    it('reads a tag swapped for a same-named one as a change', () => {
+      const tracker = loadedTracker(post({ tags: [{ name: 'News', id: '1' }] }));
+      tracker.setLive(POST_ID, { tags: [{ name: 'News', id: '2' }] });
+
+      expect(codes(tracker)).toEqual(['POST_TAGS_DIVERGED']);
+      expect(tracker.isFieldDirty('tags')).toBe(true);
     });
 
     it('treats reordered tags as a change', () => {
@@ -506,6 +531,61 @@ describe('createChangeTracker', () => {
     });
   });
 
+  describe('isFieldDirty', () => {
+    it('answers for one field at a time and releases it when the edit is undone', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, { visibility: 'paid' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(true);
+      expect(tracker.isFieldDirty('meta_title')).toBe(false);
+
+      tracker.setLive(POST_ID, { visibility: 'public' });
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('applies the field compare rules: tags by name when one has no id, relations by identity', () => {
+      const tracker = loadedTracker();
+
+      tracker.setLive(POST_ID, {
+        tags: [{ name: 'News', id: 'unsaved' }],
+        authors: [{ id: 'author-1', name: 'Renamed' } as never],
+      });
+
+      expect(tracker.isFieldDirty('tags')).toBe(false);
+      expect(tracker.isFieldDirty('authors')).toBe(false);
+
+      tracker.setLive(POST_ID, { authors: [{ id: 'author-2' }] });
+
+      expect(tracker.isFieldDirty('authors')).toBe(true);
+    });
+
+    it('never reports the collision token, and answers false with no post loaded', () => {
+      const tracker = loadedTracker(post({ updated_at: T0 }));
+      tracker.setSaved(POST_ID, post({ updated_at: T1 }));
+
+      expect(tracker.isFieldDirty('updated_at')).toBe(false);
+
+      tracker.dispose();
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+
+    it('releases a field the acknowledgement rebased onto the server value', () => {
+      const tracker = loadedTracker(post({ visibility: 'public', updated_at: T0 }));
+      tracker.setLive(POST_ID, { visibility: 'members' });
+
+      tracker.saveAcknowledged(
+        POST_ID,
+        { visibility: 'members' },
+        post({ visibility: 'paid', updated_at: T1 }),
+      );
+
+      expect(tracker.isFieldDirty('visibility')).toBe(false);
+    });
+  });
+
   describe('mutable aliasing', () => {
     it('clones the saved state at ingress', () => {
       const saved = post({ tags: [{ name: 'News' }], feature_image_caption: 'Caption' });
@@ -592,6 +672,36 @@ describe('createChangeTracker', () => {
       tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
       expect(tracker.verdict().dirty).toBe(false);
     });
+
+    it.each(['before', 'during', 'after'] as const)(
+      'keeps untouched content clean when a field save finishes %s body initialization',
+      (timing) => {
+        const tracker = createChangeTracker();
+        tracker.load(POST_ID, post({ lexical: null }));
+        tracker.setLive(POST_ID, { slug: 'new-slug' });
+        const submitted = post({ lexical: null, slug: 'new-slug' });
+        const initialize = () => {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        };
+
+        if (timing === 'after') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setBaseline(POST_ID, serialize(BLANK_DOC));
+        }
+        tracker.saveAcknowledged(POST_ID, submitted, { ...submitted, updated_at: T1 });
+        if (timing === 'before') {
+          initialize();
+        } else if (timing === 'during') {
+          tracker.setLive(POST_ID, { lexical: serialize(BLANK_DOC) });
+        }
+
+        expect(tracker.verdict()).toEqual({ dirty: false, reasons: [] });
+        tracker.setLive(POST_ID, { lexical: serialize(doc([paragraph('An actual edit')])) });
+        expect(codes(tracker)).toEqual(['SCRATCH_DIVERGED_FROM_SECONDARY']);
+      },
+    );
 
     it('re-baselines on an acknowledged save', () => {
       const [fixture] = OLD_SCHEMA_CORPUS;

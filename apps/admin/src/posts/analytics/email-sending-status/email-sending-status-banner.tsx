@@ -1,25 +1,34 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useSendingEta } from './use-sending-eta';
 import { useEmailSendingStatusContext } from './email-sending-status-context';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
 import type { ReactNode } from 'react';
 
-const formatEta = (seconds: number): string => {
-  if (seconds > 80) {
-    const minutes = Math.round(seconds / 60);
-    return `About ${formatNumber(minutes)} ${minutes === 1 ? 'minute' : 'minutes'} left`;
-  }
-  if (seconds > 40) {
-    return 'About 1 minute left';
-  }
-  return 'Less than 1 minute left';
-};
+const FILL_CLIP_ID = 'email-sending-fill-clip';
 
-const HalfFullGlyph = () => (
+/** A grey level rising over a white face and dropping back, on the arrow's tempo. */
+const FillingGlyph = () => (
   <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 12 12" width="12">
-    <path d="M1.2 6 A4.8 4.8 0 0 1 10.8 6 Z" fill="currentColor" />
+    {/* Wider than the 4.8 face: cut to the same radius, the two anti-aliased
+        edges stack and the white bleeds through as a pale ring. */}
+    <clipPath id={FILL_CLIP_ID}>
+      <circle cx="6" cy="6" r="5.1" />
+    </clipPath>
+    <circle cx="6" cy="6" fill="currentColor" r="4.8" />
+    {/* Clip on the group, animation on the child: a transform on a clipped
+        element carries its own clip path along with it. */}
+    <g clipPath={`url(#${FILL_CLIP_ID})`}>
+      <rect
+        className="animate-email-sending-fill-rise fill-muted-foreground motion-reduce:translate-y-1/2 motion-reduce:animate-none"
+        height="12"
+        width="12"
+        x="0"
+        y="0"
+      />
+    </g>
   </svg>
 );
 
@@ -27,7 +36,7 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   if (sending.status === 'preparing') {
     return (
       <span className="relative flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted-foreground text-white ring-1 ring-muted-foreground ring-offset-1 ring-offset-background">
-        <HalfFullGlyph />
+        <FillingGlyph />
       </span>
     );
   }
@@ -49,9 +58,11 @@ const StatusGlyph = ({ sending }: { sending: EmailSendingState }) => {
   );
 };
 
-const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>): ReactNode => {
-  const { completed, total, estimated_seconds_remaining: eta } = sending.progress;
-  const estimate = eta === null ? null : formatEta(eta);
+const activeDetail = (
+  sending: Exclude<EmailSendingState, { status: 'failed' }>,
+  estimate: string | null,
+): ReactNode => {
+  const { completed, total } = sending.progress;
 
   if (total === 0) {
     return estimate;
@@ -59,8 +70,7 @@ const activeDetail = (sending: Exclude<EmailSendingState, { status: 'failed' }>)
 
   return (
     <>
-      <span className="inline-block min-w-[7ch] text-right">{formatNumber(completed)}</span>
-      {` of ${formatNumber(total)}`}
+      {`${formatNumber(completed)} of ${formatNumber(total)}`}
       {estimate && ` · ${estimate}`}
     </>
   );
@@ -84,11 +94,12 @@ const failureDetail = (
 
 const EmailSendingStatusBanner = () => {
   const { post } = usePostAnalytics();
-  const { status, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
+  const { status, isNewsletterDataHidden, hasUnknownDeliveryOutcome, isRetrying, retrySending } =
     useEmailSendingStatusContext();
   const sending = status?.sending;
+  const estimate = useSendingEta(status);
 
-  if (!sending || sending.status === 'submitted') {
+  if (!sending || (sending.status === 'submitted' && !isNewsletterDataHidden)) {
     return null;
   }
 
@@ -109,7 +120,7 @@ const EmailSendingStatusBanner = () => {
     ? hasUnknownDeliveryOutcome
       ? post?.email?.error || 'Something went wrong while sending this email.'
       : failureDetail(sending, post?.email?.error)
-    : activeDetail(sending);
+    : activeDetail(sending, estimate);
   const retryLabel = hasSentEmails ? 'Send remaining emails' : 'Retry sending email';
 
   return (

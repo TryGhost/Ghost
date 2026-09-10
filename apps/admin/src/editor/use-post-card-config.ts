@@ -38,12 +38,12 @@ export function usePostCardConfig({
   createSnippet,
   deleteSnippet,
 }: PostCardConfigOptions): PostCardConfig | null {
-  const { data: settingsData } = useBrowseSettings();
-  const { data: configData } = useBrowseConfig();
-  const { data: siteData } = useBrowseSite();
-  const { data: currentUser } = useCurrentUser();
+  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: siteData } = useBrowseSite({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { unsplashConfig } = useFramework();
-  const pinturaConfig = usePinturaConfig();
+  const pinturaConfig = usePinturaConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const fetchEmbed = useKoenigFetchEmbed(EDITOR_REQUEST_OPTIONS);
   const fetchApi = useFetchApi();
 

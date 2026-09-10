@@ -62,6 +62,7 @@ export const tiersSelect = 'tiers-select';
 export const customFields = 'custom-fields';
 export const customFieldListItem = 'custom-field-list-item';
 export const customFieldModal = 'custom-field-modal';
+export const customFieldAccess = 'custom-field-access';
 export const stripeModal = 'stripe-modal';
 export const tiers = 'tiers';
 export const tierDetailModal = 'tier-detail-modal';

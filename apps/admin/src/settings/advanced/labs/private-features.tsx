@@ -25,6 +25,11 @@ const features: Feature[] = [
     flag: 'automationRunAnalytics',
   },
   {
+    title: 'Automations Tinybird sync',
+    description: 'Sync automations data to Tinybird.',
+    flag: 'automationsTinybirdSync',
+  },
+  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',
@@ -43,11 +48,6 @@ const features: Feature[] = [
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
   },
   {
     title: 'Tags X',

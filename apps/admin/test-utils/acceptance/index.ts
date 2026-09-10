@@ -1,5 +1,6 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { fakeAnalyticsOverview } from './analytics';
+export { fakeEditorChrome, fakeEditorPost, submittedPost } from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export {
@@ -91,6 +92,7 @@ export {
   post,
   postGrowthStat,
   postReferrerStat,
+  postRevision,
   postStats,
   reply,
   retentionOffer,
@@ -137,6 +139,7 @@ export type {
   Post,
   PostGrowthStat,
   PostReferrerStat,
+  PostRevision,
   PostStats,
   ReplySpec,
   SettingsResponse,
@@ -147,6 +150,7 @@ export type {
   SubscriptionStat,
   Tag,
   Theme,
+  ThemeTemplate,
   Tier,
   TinybirdPipeName,
   TinybirdPipeRows,

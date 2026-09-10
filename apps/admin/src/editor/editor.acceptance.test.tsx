@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
   fakePosts,
   fakeSnippets,
   post,
@@ -20,6 +22,9 @@ describe('Editor flag', () => {
   function fakeEditorWorld() {
     fakeSnippets([]);
     fakePosts([]);
+    // The header's publish inputs read the site's member total and newsletter list.
+    fakeMembers([]);
+    fakeNewsletters([]);
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
     fakeAdminEndpoint('GET', /^\/pages\/abc123\/\?/, { pages: [post({ id: 'abc123' })] });
   }

@@ -8,7 +8,14 @@ import { z } from 'zod';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
-const settingValueSchema = z.union([z.string(), z.boolean(), z.number(), z.null()]);
+// Core's `all_blocked_email_domains` is array-valued, so a scalar-only union rejects a real response.
+const settingValueSchema = z.union([
+  z.string(),
+  z.boolean(),
+  z.number(),
+  z.null(),
+  z.array(z.string()),
+]);
 const settingSchema = z.looseObject({ key: z.string(), value: settingValueSchema });
 const defaultRecipientsSchema = z.enum(['disabled', 'visibility', 'filter']);
 const newsletterSchema = z
@@ -149,6 +156,7 @@ export function usePublishInputs(): PublishInputs {
   });
   const newslettersQuery = useBrowseNewsletters({
     defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
     searchParams: { limit: 'all' },
   });
   const {
@@ -170,8 +178,7 @@ export function usePublishInputs(): PublishInputs {
     isFetchingNextNewsletterPage,
     newslettersError,
   ]);
-  // `useCurrentUser` takes no options; it is a shared boot query, not the flow's.
-  const currentUserQuery = useCurrentUser();
+  const currentUserQuery = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   // Site-wide total, the way Ember's publish options read it.
   const {
     count: memberCount,
@@ -179,7 +186,7 @@ export function usePublishInputs(): PublishInputs {
     isFetching: memberCountFetching,
     error: memberCountError,
     refetch: refetchMemberCount,
-  } = useMembersCount('');
+  } = useMembersCount('', { requestOptions: EDITOR_REQUEST_OPTIONS });
   const settingsData = settingsQuery.data;
   const configData = configQuery.data;
   const newslettersData = newslettersQuery.data;

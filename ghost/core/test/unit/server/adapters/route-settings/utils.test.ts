@@ -3,7 +3,7 @@ import { afterEach, describe, it, vi } from 'vitest';
 
 import { getBackupRouteSettingsFilePath } from '../../../../../core/server/adapters/route-settings/utils';
 
-describe('UNIT: route-settings adapter utils', function () {
+describe('route-settings adapter utils', function () {
   describe('getBackupRouteSettingsFilePath', function () {
     afterEach(function () {
       vi.useRealTimers();

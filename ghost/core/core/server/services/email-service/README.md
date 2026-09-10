@@ -22,15 +22,15 @@ attempts, so a retried email reports submitting with frozen progress while it
 waits for its job, and `failed_during` is the same derivation applied to a
 failed email.
 
-The rough ETA extrapolates from a rolling window of recently completed batches:
-their creation times while preparing and their update times while submitting.
-It is `0` once nothing remains in the current phase, always `null` for failed
-emails, and otherwise `null` until at least two batches with distinct
-timestamps have completed in the current attempt. A batch that failed during
-the current attempt is only retried together with its email, so it does not
-count as remaining work; the ETA can therefore reach `0` while completed is
-still below total, and consumers should key completion on the status, never
-on the ETA.
+The rough ETA measures recent recipient throughput, including work completed by
+concurrent workers. It stays `null` until enough timing samples are available in
+the current phase and attempt, so short sends may finish without showing an ETA.
+Progress counts update independently of the estimate.
+
+The ETA is always `null` for failed emails and `0` once no work remains in the
+current phase. Batches that failed during the current attempt are not remaining
+work until the email is retried, so the ETA can reach `0` while completed is
+still below total. Consumers should key completion on the status, never the ETA.
 
 Ghost does not record when a sending attempt or phase started, so the ETA uses
 the email's `updated_at` as a proxy for the start of the current attempt: the

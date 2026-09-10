@@ -1,8 +1,11 @@
-import { useCurrentUser } from '../api/current-user';
+import { useCurrentUser, type CurrentUserOptions } from '../api/current-user';
 import { UserRoleType } from '../api/roles';
 
-export const usePermission = (requiredRoles?: UserRoleType[] | null) => {
-  const { data: currentUser } = useCurrentUser();
+export const usePermission = (
+  requiredRoles?: UserRoleType[] | null,
+  currentUserOptions?: CurrentUserOptions,
+) => {
+  const { data: currentUser } = useCurrentUser(currentUserOptions);
 
   // No permissions required = allow all
   if (!requiredRoles || requiredRoles.length === 0) {

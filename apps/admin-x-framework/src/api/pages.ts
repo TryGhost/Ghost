@@ -37,6 +37,8 @@ export interface PageResponseType {
 
 const dataType = 'PagesResponseType';
 
+export const pagesDataType = dataType;
+
 export const useBrowsePages = createQuery<PagesResponseType>({
   dataType,
   path: '/pages/',
@@ -129,6 +131,18 @@ export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   invalidateQueries: { dataType },
+});
+
+export interface DeletePagePayload {
+  id: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useDeletePage = createMutation<unknown, DeletePagePayload>({
+  method: 'DELETE',
+  path: ({ id }) => `/pages/${id}/`,
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
 });
 
 /** Duplicate a page. As with posts, the copy is always a draft. */

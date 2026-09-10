@@ -108,6 +108,7 @@ Times are ISO 8601 strings with milliseconds zeroed, because the API stores seco
 - `scheduledAt` starts at that floor.
 - `setIsScheduled(true)` snaps a time that is earlier than ten minutes ahead of now forward to exactly that default; calling it with no argument toggles.
 - `setScheduledAt()` zeroes milliseconds and clamps anything before the floor up to it. An unparseable date is ignored.
+- The date and time fields commit at minute granularity, so a time the writer chooses carries no seconds of its own; an untouched default still carries the floor's.
 - `resetPastScheduledAt()` turns scheduling off when the chosen time has fallen into the past. It leaves the stale time in place: re-enabling scheduling snaps it forward to the default, so the stale value is never offered.
 
 ## Producing a save command
@@ -193,11 +194,19 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 ## Requests
 
-The shared editor `EDITOR_REQUEST_OPTIONS` opts requests out of the transport's session-expiry redirect wherever the framework supports a per-call option.
+Every request the flow makes opts out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), its settings, config, newsletter, tier and label queries, each recipient count, and the current-user read those counts depend on all pass the shared editor `EDITOR_REQUEST_OPTIONS`, and the email retry carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
 
-The two requests the flow issues directly — the poller's reload and the published-post count — opt out, as do its settings and config queries. The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
+The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
-`createInfiniteQuery` does not yet accept transport options, so newsletter, tier and label queries remain redirect-capable; `useMembersCount`, `useCurrentUser` and `useRetryEmail` also own their request options. Flow-owned queries disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
+The opt-out belongs to whichever component starts a fetch, not to the cache entry: a query key shared with a screen outside the flow is refetched with the options of whoever triggered that fetch. Every editor component reading a shared key therefore opts out too — the status line's count and settings reads, the card config's boot reads, and the preview modal's — so that a refetch one of them initiates cannot navigate away mid-edit. Most of those reads keep the global error handler, while the flow-owned and status reads disable it; either way a session-expiry error is silent because the handler deliberately swallows it. The editor reports the expiry from the save engine instead.
+
+The same options reach the less-visible reads behind those hooks too. `createQuery` and `createInfiniteQuery` forward them through `usePermission` to its current-user observer; the editor's feature-flag, settings-selector and Pintura hooks accept them; and the editor screen's direct current-user reads opt out. That matters because an opted-out outer query cannot protect a second observer of the same cache key when that observer initiates its own refetch.
+
+If the current-user prerequisite for `useMembersCount` fails, the hook exposes that error and its retry rather than staying in a loading state forever. Callers that need the count to proceed can therefore recover in place.
+
+An audience that could not be counted is not an audience of none: `useMembersCount` resolves a failed request to `null`, never to `0`. Where the flow states a recipient count in a sentence it drops to descriptive copy ("all members"); the segment checkboxes, which have nothing to say without a number, render no count at all. A 401 on the tier or label queries is quieter still — those segments simply do not appear in the recipient picker, leaving the free/paid split. That is pre-existing behaviour and is not surfaced to the user.
+
+Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
 
 ## Update flow
 
@@ -207,7 +216,7 @@ It reads the newsletter from the post rather than from the options machine, beca
 
 Its email copy also follows the persisted post rather than the draft-only machine. A scheduled post will email when it has a newsletter and no email record yet; a published or sent post counts as emailed only when it is a post with a non-failed email. A scheduled post with an existing email describes that record separately as a previous send.
 
-That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the flow's own reads ask only for `include: 'email'`, and the framework's `Email` type carries no created date yet. Without those fields the copy degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
+That reading depends on what the caller supplies. `newsletterName` and `newsletterStatus` need a post read that includes the newsletter relation, and the earlier-send sentence needs `emailCreatedAt`; the editor's read carries both. A caller whose read omits them gets copy that degrades rather than lying — the newsletter goes unnamed, and the sentence drops its date.
 
 ## Not yet ported
 

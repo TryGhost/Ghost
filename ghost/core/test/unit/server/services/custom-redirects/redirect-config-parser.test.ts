@@ -6,7 +6,7 @@ import {
   serializeToYaml,
 } from '../../../../../core/server/services/custom-redirects/redirect-config-parser';
 
-describe('UNIT: redirect-config-parser', function () {
+describe('redirect-config-parser', function () {
   describe('parseJson', function () {
     it('parses a JSON string into a RedirectConfig[]', function () {
       const content = JSON.stringify([

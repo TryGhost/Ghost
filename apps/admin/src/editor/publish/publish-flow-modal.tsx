@@ -14,7 +14,8 @@ import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
 import { PUBLIC_PREVIEW_WARNING_COPY, getPublicPreviewWarning } from './public-preview-warning';
-import { usePublishFlow, type PublishDispatcher } from './use-publish-flow';
+import { usePublishFlow } from './use-publish-flow';
+import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './publish-options';
 
@@ -147,18 +148,11 @@ function PublishFlowDialog({
     onBeforePublish,
     onCompleted,
   });
-  const { machine, state, step } = flow;
+  const { state, step } = flow;
   const close = () => {
     flow.cancel();
     onClose();
   };
-
-  const transition =
-    <T,>(apply: (value: T) => void) =>
-    (value: T) => {
-      apply(value);
-      flow.refresh();
-    };
 
   return (
     <Dialog modal={false} open onOpenChange={(open) => !open && close()}>
@@ -231,11 +225,11 @@ function PublishFlowDialog({
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
-              onSetNewsletter={transition((value) => machine.setNewsletter(value))}
-              onSetPublishType={transition((value) => machine.setPublishType(value))}
-              onSetRecipientFilter={transition((value) => machine.setRecipientFilter(value))}
-              onSetScheduledAt={transition((value) => machine.setScheduledAt(value))}
-              onToggleScheduled={transition((value) => machine.setIsScheduled(value))}
+              onSetNewsletter={flow.setNewsletter}
+              onSetPublishType={flow.setPublishType}
+              onSetRecipientFilter={flow.setRecipientFilter}
+              onSetScheduledAt={flow.setScheduledAt}
+              onToggleScheduled={flow.setIsScheduled}
             />
           )}
         </Stack>

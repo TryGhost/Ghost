@@ -58,6 +58,7 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
       name: input.name.trim(),
       type: input.type,
       status: 'active',
+      access: { member: 'none' },
       created_at: '2026-08-05T00:00:00.000Z',
       updated_at: null,
     };
@@ -74,6 +75,7 @@ const NICKNAME_FIELD: MemberCustomField = {
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
+  access: { member: 'none' },
   created_at: '2026-08-05T00:00:00.000Z',
   updated_at: null,
 };
@@ -134,7 +136,7 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_metafields: [{ name: 'Nickname', type: 'short_text' }],
+        members_metafields: [{ name: 'Nickname', type: 'short_text', access: { member: 'none' } }],
       });
 
     // The row carries the new field immediately, from the create response: the browse query
@@ -284,7 +286,9 @@ describe('Import members custom fields', () => {
     await expect
       .poll(() => createApi.lastRequest?.body)
       .toEqual({
-        members_metafields: [{ name: 'Shipping address', type: 'address' }],
+        members_metafields: [
+          { name: 'Shipping address', type: 'address', access: { member: 'none' } },
+        ],
       });
 
     // The form is gone and its row's picker is open in its place, showing that field's

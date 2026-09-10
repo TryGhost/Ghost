@@ -5,7 +5,7 @@ const {
   resolveResourceRead,
 } = require('../../../../../core/frontend/services/routing/api-adapter');
 
-describe('UNIT - services/routing/api-adapter', function () {
+describe('services/routing/api-adapter', function () {
   describe('resolveApiCall - short form', function () {
     it('resolves tag shorthand to the public tags controller', function () {
       assert.deepEqual(resolveApiCall('tag.food'), {

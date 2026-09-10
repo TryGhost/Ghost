@@ -85,7 +85,7 @@ export function EmailPreview({
   onNewsletterChange,
   onRetryNewsletterLookup,
 }: EmailPreviewProps) {
-  const { data: settingsData } = useBrowseSettings();
+  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const [defaultEmailAddress] = getSettingValues<string>(settingsData?.settings ?? [], [
     'default_email_address',
   ]);

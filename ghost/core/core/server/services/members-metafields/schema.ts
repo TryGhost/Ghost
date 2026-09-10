@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import { FieldTypeSchema } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
+import { MemberAccessSchema } from './access';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
 // list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
@@ -18,6 +19,7 @@ export const DbMetafield = z.object({
   name: z.string(),
   type: FieldTypeSchema,
   status: FieldStatusSchema,
+  member_access: MemberAccessSchema,
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });

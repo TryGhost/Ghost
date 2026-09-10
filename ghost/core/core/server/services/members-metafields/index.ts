@@ -13,7 +13,15 @@ export type { WrittenBy } from './schema';
 // Which door a request came through, which is what decides how much of a member's
 // answers it may see or change. Required wherever that is asked, so a new caller
 // has to name itself rather than inherit an answer by default.
-export { ADMIN, INTERNAL, MEMBERS, canWrite, readableFields, type Audience } from './access';
+export {
+  ADMIN,
+  INTERNAL,
+  MEMBERS,
+  MEMBER_ACCESS,
+  canWrite,
+  type Audience,
+  type MemberAccess,
+} from './access';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the

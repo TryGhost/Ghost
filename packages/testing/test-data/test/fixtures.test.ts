@@ -48,6 +48,23 @@ describe('boot fixtures', () => {
     expect(settingsResponse().settings.length).toBeGreaterThan(0);
   });
 
+  it('isolates array settings from other responses and caller-owned overrides', () => {
+    const first = settingsResponse();
+    const blockedDomains = getSetting(first, 'all_blocked_email_domains') as string[];
+    blockedDomains.push('spam.xyz');
+
+    expect(getSetting(settingsResponse(), 'all_blocked_email_domains')).toEqual([]);
+
+    const overrides = ['blocked.example'];
+    const overridden = settingsResponse({ settings: { all_blocked_email_domains: overrides } });
+    const overriddenDomains = getSetting(overridden, 'all_blocked_email_domains') as string[];
+    overriddenDomains.push('another.example');
+    expect(overrides).toEqual(['blocked.example']);
+
+    overrides.push('later.example');
+    expect(overriddenDomains).toEqual(['blocked.example', 'another.example']);
+  });
+
   it('serves one active casper theme with declarable gscan problems', () => {
     const errors = [{ code: 'GS001', details: 'boom' }];
     const response = activeThemeResponse({ errors });

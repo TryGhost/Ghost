@@ -11,7 +11,7 @@ root:
 
 ```bash
 corepack enable pnpm
-pnpm setup
+pnpm bootstrap
 ```
 
 After setup, run package commands from `packages/i18n` or with

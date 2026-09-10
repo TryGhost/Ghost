@@ -100,7 +100,7 @@ const putCommands = (sent: S3Command[]): PutObjectCommand[] =>
 const copyCommands = (sent: S3Command[]): CopyObjectCommand[] =>
   sent.filter((c): c is CopyObjectCommand => c instanceof CopyObjectCommand);
 
-describe('UNIT: S3RouteSettingsStore', function () {
+describe('S3RouteSettingsStore', function () {
   afterEach(function () {
     sinon.restore();
   });

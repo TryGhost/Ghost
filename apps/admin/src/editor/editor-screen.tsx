@@ -1,23 +1,16 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLink } from '@/shared/admin-link';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import {
-  type PageEditorRecord,
-  useEditPage,
-  useEditorPage,
-} from '@tryghost/admin-x-framework/api/pages';
-import {
-  type PostEditorRecord,
-  useEditPost,
-  useEditorPost,
-} from '@tryghost/admin-x-framework/api/posts';
+import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
+import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
 import {
   type User,
   isAdminUser,
@@ -26,19 +19,27 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import type { CardConfigPostSource, PostCardConfig, PostType } from './card-config';
+import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
+import {
+  type CardConfigPostSource,
+  type PostCardConfig,
+  type PostType,
+  withLiveSettings,
+} from './card-config';
+import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
 import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
+import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-save-shortcut';
-
-type EditorRecord = PostEditorRecord | PageEditorRecord;
+import { useSaveShortcut } from './use-editor-shortcuts';
+import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
   return (
@@ -107,6 +108,7 @@ interface EditorContentProps {
   record?: EditorRecord;
   createdId?: string;
   cardConfig: PostCardConfig;
+  currentUser?: User;
   showExcerpt: boolean;
   snippetDialog: ReactNode;
 }
@@ -118,11 +120,32 @@ function EditorContent({
   record,
   createdId,
   cardConfig,
+  currentUser,
   showExcerpt,
   snippetDialog,
 }: EditorContentProps) {
-  const session = useEditorSession({ postType, record, siteUrl: cardConfig.siteUrl });
-  const featureImage = useFeatureImageBinding(session, record);
+  const session = useEditorSession({
+    postType,
+    record,
+    siteUrl: cardConfig.siteUrl,
+    currentUserId: currentUser?.id,
+  });
+  const [tkCount, setTkCount] = useState(0);
+  // Closed on every editor entry, as the menu it replaces was.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const toggleSettings = useCallback(() => setSettingsOpen((open) => !open), []);
+  const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
+  const leaveGuard = useEditorLeaveGuard(session, postType);
+  const liveVisibility = session.settings.visibility;
+  const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
+  const currentCardConfig = useMemo(
+    () =>
+      withLiveSettings(cardConfig, {
+        visibility: liveVisibility,
+        showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
+      }),
+    [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
+  );
 
   useSaveShortcut(session.dispatchExplicit);
 
@@ -131,27 +154,67 @@ function EditorContent({
       <EditorHeader postType={postType}>
         <EditorStatus
           isDirty={session.isDirty()}
-          record={statusRecordOf(record, createdId)}
+          record={statusRecordOf(session.loadedRecord ?? record, createdId)}
           state={session.state}
         />
+        {/* One right-aligned group: two `ml-auto` siblings would split the free space. */}
+        <Inline className="ml-auto" gap="sm">
+          <EditorHeaderActions
+            currentUser={currentUser}
+            postType={postType}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+            tkCount={tkCount}
+          />
+          <Button
+            aria-expanded={settingsOpen}
+            aria-label="Settings"
+            data-testid={settingsMenuToggle}
+            size="sm"
+            variant="ghost"
+            onClick={toggleSettings}
+          >
+            <LucideIcon.PanelRight />
+          </Button>
+        </Inline>
       </EditorHeader>
       <SessionBanners
+        contentText={session.contentText}
+        hasUnsavedContent={session.hasUnsavedContent}
         state={session.state}
         onDismissReauth={session.reauthAbandoned}
+        onReload={session.reload}
         onRetryReauth={session.reauthSucceeded}
         onRetrySave={session.dispatchExplicit}
       />
-      <div className="min-h-0 flex-1">
-        <PostEditor
-          {...session.bind}
-          autofocusTitle={!record}
-          cardConfig={cardConfig}
-          featureImage={featureImage}
-          postType={postType}
-          showExcerpt={showExcerpt}
-        />
-      </div>
+      <Inline align="stretch" className="relative min-h-0 flex-1" gap="none">
+        <div className="min-h-0 min-w-0 flex-1">
+          <PostEditor
+            key={session.contentKey}
+            {...session.bind}
+            autofocusTitle={!record}
+            cardConfig={currentCardConfig}
+            featureImage={featureImage}
+            postType={postType}
+            showExcerpt={showExcerpt}
+            onExcerptBlur={session.commitSettings}
+            onTkCountChange={setTkCount}
+          />
+        </div>
+        {settingsOpen ? (
+          <PostSettingsSidebar
+            cardConfig={currentCardConfig}
+            currentUser={currentUser}
+            featureImage={featureImage.featureImage}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+          />
+        ) : null}
+      </Inline>
       {snippetDialog}
+      <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
     </Stack>
   );
 }
@@ -165,8 +228,10 @@ function EditorSurface({
   record?: EditorRecord;
   createdId?: string;
 }) {
-  const { data: currentUser } = useCurrentUser();
-  const showExcerpt = useFeatureFlag('editorExcerpt');
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const showExcerpt = useFeatureFlag('editorExcerpt', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
 
   const canManageSnippets =
     !!currentUser &&
@@ -198,6 +263,7 @@ function EditorSurface({
     <EditorContent
       cardConfig={cardConfig}
       createdId={createdId}
+      currentUser={currentUser}
       postType={postType}
       record={record}
       showExcerpt={showExcerpt}
@@ -255,7 +321,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
   const navigate = useNavigate();
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
