@@ -1,45 +1,35 @@
 import moment from 'moment-timezone';
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   fakeTiers,
   post,
   renderAdminApp,
   settingsResponse,
   staffRole,
+  submittedPost,
   unsavedChangesGuarded,
-  type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const FLAG_ON = { labs: { editorReact: true } };
-const LOADED_AT = '2026-01-01T00:00:00.000Z';
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // What a real publish stamps: seconds the minute-granular fields cannot show.
 const STAMPED_AT = '2025-12-01T10:00:37.000Z';
 const SYDNEY = 'Australia/Sydney';
-const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
 const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
-
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
 
 /**
  * A fixed-offset zone in which the current instant is around midday, so a later
@@ -66,10 +56,7 @@ function asContributor() {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeTiers([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -78,28 +65,11 @@ function editorChrome() {
 
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  return fakeEditorPost({
     visibility: 'public',
     tiers: [],
     tags: [],
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 

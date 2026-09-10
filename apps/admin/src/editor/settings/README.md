@@ -189,7 +189,8 @@ focused field before removing it, so Escape commits the edit as the back button
 does.
 
 An Escape something inside the pane has already answered — a dialog, a select,
-an uploader — leaves the pane open, so the writer dismisses one layer at a time.
+an uploader, the Unsplash search — leaves the pane open, so the writer dismisses
+one layer at a time.
 A pane whose section renders nothing, as a role-gated section does for a role
 that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
@@ -354,8 +355,10 @@ on the blur that ends the edit, and an uploaded or removed image is committed as
 it lands rather than waiting for a blur. Committing is not saving, so the save
 policy above still decides: a draft persists all three, and every other status
 stages them until Update. A field cleared back to empty is stored as no value.
-The image comes from the file picker or a drop; there is no Unsplash picker
-here, and an upload the server refuses is reported without changing the field.
+The image comes from the file picker, a drop, or Unsplash, and an upload the
+server refuses is reported without changing the field. The Unsplash picker is
+offered only while the site's Unsplash integration is on, and it writes the
+image it is given the same way an upload does.
 
 Nothing here is required, and each line falls back rather than emptying. The
 title is the X title, else the meta title, else the title the writer is looking
@@ -381,7 +384,9 @@ blur that ends the edit, and an uploaded or removed image is committed as it
 lands rather than waiting for a blur. Committing is not saving, so the save
 policy above still decides: a draft persists all three, and every other status
 stages them until Update. A field cleared back to empty is stored as no value.
-The image comes from the file picker or a drop; there is no Unsplash picker here.
+The image comes from the file picker, a drop, or Unsplash. The Unsplash picker
+is offered only while the site's Unsplash integration is on, and it writes the
+image it is given the same way an upload does.
 
 Nothing here is required, and each line falls back rather than emptying. The
 title is the Facebook title, else the meta title, else the title the writer is

@@ -15,7 +15,7 @@ import {
   renderAdminApp,
   settingsResponse,
   staffRole,
-  type EndpointCapture,
+  submittedPost,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -52,12 +52,6 @@ const MAILGUN_ON = {
 };
 
 type SavedPost = ReturnType<typeof post>;
-
-function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
-  const request = capture.requests.at(index);
-  const body = request?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
 
 /** The error body Ghost answers a failed save with, by status. */
 function failureBody(status: number) {

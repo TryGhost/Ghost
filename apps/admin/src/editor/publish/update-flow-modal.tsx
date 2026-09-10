@@ -23,7 +23,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { formatSiteDateTime } from './publish-copy';
-import type { PublishDispatcher } from './use-publish-flow';
+import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 import type { SaveCompletion } from '@/editor/engine/save-engine';

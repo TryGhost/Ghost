@@ -9,16 +9,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import {
-  type PageEditorRecord,
-  useEditPage,
-  useEditorPage,
-} from '@tryghost/admin-x-framework/api/pages';
-import {
-  type PostEditorRecord,
-  useEditPost,
-  useEditorPost,
-} from '@tryghost/admin-x-framework/api/posts';
+import { useEditPage, useEditorPage } from '@tryghost/admin-x-framework/api/pages';
+import { useEditPost, useEditorPost } from '@tryghost/admin-x-framework/api/posts';
 import {
   type User,
   isAdminUser,
@@ -46,9 +38,8 @@ import { useEditorLeaveGuard } from './session/use-leave-guard';
 import { useEditorSession, useEditorSessionKey } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
-import { useSaveShortcut } from './use-save-shortcut';
-
-type EditorRecord = PostEditorRecord | PageEditorRecord;
+import { useSaveShortcut } from './use-editor-shortcuts';
+import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
   return (

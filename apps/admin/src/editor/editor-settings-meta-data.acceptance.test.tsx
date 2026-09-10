@@ -1,20 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   fakeTiers,
   post,
   renderAdminApp,
   staffRole,
+  submittedPost,
   unsavedChangesGuarded,
-  type EndpointCapture,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -23,9 +20,7 @@ import { previewScreen } from '@/editor/preview/preview.screen';
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
-const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 const BACK_LABEL = 'Close meta data panel';
 const PLACEHOLDER =
   'Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.';
@@ -38,11 +33,6 @@ const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
-
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
@@ -50,11 +40,7 @@ function asRole(name: StaffRoleName) {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs and preview read these beyond the boot table.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeTiers([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -64,29 +50,12 @@ function editorChrome() {
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  return fakeEditorPost({
     custom_excerpt: null,
     meta_title: null,
     meta_description: null,
     tags: [],
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 
@@ -367,6 +336,33 @@ describe('Post settings meta data', () => {
       await expect.element(preview).toHaveTextContent('A better title for search');
       await expect.element(preview).toHaveTextContent('What this post is about');
       await expect.element(preview).not.toHaveTextContent('The excerpt this post already has');
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the preview in sync with the inline excerpt while published edits are staged',
+    async () => {
+      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+      await renderAdminApp(`/editor/post/${POST_ID}`, {
+        labs: { editorReact: true, editorExcerpt: true },
+      });
+      await openMetaData();
+
+      await editorScreen.excerptInput().fill('First unsaved summary');
+      await expect
+        .element(editorScreen.settingsSerpPreview())
+        .toHaveTextContent('First unsaved summary');
+      // Already dirty: another edit must update the preview without a save or dirty-state transition.
+      await editorScreen.excerptInput().fill('The latest unsaved summary');
+      await expect
+        .element(editorScreen.settingsSerpPreview())
+        .toHaveTextContent('The latest unsaved summary');
+      await expect
+        .element(editorScreen.settingsMetaDescription())
+        .toHaveAttribute('placeholder', 'The latest unsaved summary');
+      await expect.element(editorScreen.excerptInput()).toHaveValue('The latest unsaved summary');
+      expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,
   );

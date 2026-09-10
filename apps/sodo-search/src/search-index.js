@@ -56,7 +56,8 @@ const encoderSet = new Flexsearch.Encoder(Charset.Default, cjkEncoderPresetCodep
 
 export default class SearchIndex {
   constructor({ adminUrl, apiKey, dir }) {
-    const rtl = dir === 'rtl';
+    // flexsearch's own `rtl` option matches nothing at all in 0.8.x, even for
+    // ASCII, so right-to-left support comes from reverse tokenisation alone.
     const tokenize = dir === 'rtl' ? 'reverse' : 'forward';
 
     this.apiUrl = adminUrl;
@@ -64,7 +65,6 @@ export default class SearchIndex {
 
     this.postsIndex = new Flexsearch.Document({
       tokenize: tokenize,
-      rtl: rtl,
       document: {
         id: 'id',
         index: ['title', 'excerpt'],
@@ -75,7 +75,6 @@ export default class SearchIndex {
 
     this.authorsIndex = new Flexsearch.Document({
       tokenize: tokenize,
-      rtl: rtl,
       document: {
         id: 'id',
         index: ['name'],
@@ -86,7 +85,6 @@ export default class SearchIndex {
 
     this.tagsIndex = new Flexsearch.Document({
       tokenize: tokenize,
-      rtl: rtl,
       document: {
         id: 'id',
         index: ['name'],
