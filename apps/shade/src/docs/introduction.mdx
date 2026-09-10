@@ -39,10 +39,12 @@ components; there is no need to add `shape="pill"` or copy milestone classes int
 pages. Explicit shapes remain available for a specific visual need.
 
 Admin reads the existing `admin7Pill` Labs flag at its application boundary,
-excludes unsupported routes, and passes a boolean to Shade's existing provider:
+excludes unsupported routes, and passes a boolean to Shade's existing provider.
+The generic `isAdmin7` switch follows the current milestone without adding a
+separate Shade prop for each milestone:
 
 ```tsx
-<ShadeApp darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
+<ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
     <App />
 </ShadeApp>
 ```
@@ -53,19 +55,19 @@ differences:
 ```tsx
 import {useShade} from '@tryghost/shade/app';
 
-const {isAdmin7Pill} = useShade();
+const {isAdmin7} = useShade();
 ```
 
 Pure appearance differences belong in shared recipes and scoped tokens.
 `Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
-`isAdmin7Pill` enabled, outline chrome otherwise. Avoid using control shape as a
+`isAdmin7` enabled, outline chrome otherwise. Avoid using control shape as a
 proxy for behavior.
 
 Portals carry `data-admin7-pill` through Shade's internal scope wrapper. Keep
 scope attributes off `document.body`: independently mounted surfaces must not
 change one another's menus or dialogs. Shade previews default to the new
 appearance; Admin supplies its computed boolean and standalone ActivityPub
-explicitly passes `isAdmin7Pill={false}`.
+explicitly passes `isAdmin7={false}`.
 
 The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
 covers naming, shared presentation, testing and removal. At rollout, keep the

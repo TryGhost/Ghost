@@ -1049,11 +1049,11 @@ export const GroupPreviewLimit: Story = {
 };
 
 function HeaderTriggerExample({
-  isAdmin7Pill = true,
+  isAdmin7 = true,
   fallbackStyle = 'list',
   disabled = false,
 }: {
-  isAdmin7Pill?: boolean;
+  isAdmin7?: boolean;
   fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
   disabled?: boolean;
 }) {
@@ -1071,7 +1071,7 @@ function HeaderTriggerExample({
     />
   );
   return (
-    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7Pill={isAdmin7Pill}>
+    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7={isAdmin7}>
       <PageHeader.ActionGroup>
         {filters.length ? <FilterBar>{control}</FilterBar> : control}
       </PageHeader.ActionGroup>
@@ -1110,7 +1110,7 @@ export const HeaderTriggerCompatibility: Story = {
       {(['list', 'funnel', 'funnel-plus'] as const).map((fallbackStyle) => (
         <Stack key={fallbackStyle} gap="sm">
           <Text>{fallbackStyle}</Text>
-          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7Pill={false} />
+          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7={false} />
         </Stack>
       ))}
     </Stack>

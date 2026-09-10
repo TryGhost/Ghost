@@ -18,7 +18,7 @@ const toggleVariants = cva(
         default: 'h-[calc(var(--control-height)-2px)] min-w-[26px] px-2',
         button: 'h-[calc(var(--control-height)-2px)] min-w-[32px] px-3',
       },
-      isAdmin7Pill: { true: '', false: '' },
+      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -26,7 +26,7 @@ const toggleVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         size: ['default', 'button'],
         className: 'h-[calc(var(--control-height)-4px)] data-[state=off]:hover:bg-transparent',
       },
@@ -35,7 +35,7 @@ const toggleVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7Pill: true,
+      isAdmin7: true,
     },
   },
 );
@@ -43,17 +43,15 @@ const toggleVariants = cva(
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
-    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7Pill'>
+    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7'>
 >(({ className, variant, size, shape, ...props }, ref) => {
-  const { controlShape, isAdmin7Pill } = useShade();
+  const { controlShape, isAdmin7 } = useShade();
   const resolvedShape = shape ?? controlShape;
 
   return (
     <TogglePrimitive.Root
       ref={ref}
-      className={cn(
-        toggleVariants({ variant, size, isAdmin7Pill, shape: resolvedShape, className }),
-      )}
+      className={cn(toggleVariants({ variant, size, isAdmin7, shape: resolvedShape, className }))}
       data-control-shape={resolvedShape}
       {...props}
     />

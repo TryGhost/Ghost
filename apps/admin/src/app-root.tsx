@@ -18,14 +18,14 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
-  const isAdmin7Pill =
+  const isAdmin7 =
     useFeatureFlag('admin7Pill') && !/^\/editor(?:\/|$)/.test(pathname) && !isEmberOwnedRoute;
 
   return (
     <ShadeApp
-      className={cn('shade-admin', isAdmin7Pill && 'admin7-pill')}
+      className={cn('shade-admin', isAdmin7 && 'admin7-pill')}
       darkMode={resolvedTheme === 'dark'}
-      isAdmin7Pill={isAdmin7Pill}
+      isAdmin7={isAdmin7}
       data-react-admin-mounted
     >
       <App />

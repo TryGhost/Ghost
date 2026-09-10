@@ -24,7 +24,7 @@ const selectTriggerVariants = cva(
         secondary:
           'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
       },
-      isAdmin7Pill: { true: '', false: '' },
+      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -32,18 +32,18 @@ const selectTriggerVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: ['secondary', 'ghost'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'ghost',
         className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
@@ -51,7 +51,7 @@ const selectTriggerVariants = cva(
     defaultVariants: {
       variant: 'default',
       shape: 'pill',
-      isAdmin7Pill: true,
+      isAdmin7: true,
     },
   },
 );
@@ -59,7 +59,7 @@ const selectTriggerVariants = cva(
 export interface SelectTriggerProps
   extends
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
-    Omit<VariantProps<typeof selectTriggerVariants>, 'isAdmin7Pill'> {
+    Omit<VariantProps<typeof selectTriggerVariants>, 'isAdmin7'> {
   /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
   showChevron?: boolean;
 }
@@ -72,7 +72,7 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { controlShape, isAdmin7Pill } = useShade();
+    const { controlShape, isAdmin7 } = useShade();
     const resolvedShape = shape ?? controlShape;
     return (
       <SelectPrimitive.Trigger
@@ -80,7 +80,7 @@ const SelectTrigger = React.forwardRef<
         className={cn(
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
-          selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7Pill }),
+          selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7 }),
           className,
         )}
         data-control-shape={resolvedShape}

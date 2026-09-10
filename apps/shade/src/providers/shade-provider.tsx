@@ -10,7 +10,7 @@ interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
-  isAdmin7Pill: boolean;
+  isAdmin7: boolean;
   controlShape: ControlShape;
 }
 
@@ -20,7 +20,7 @@ const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
-  isAdmin7Pill: true,
+  isAdmin7: true,
   controlShape: 'pill',
 });
 
@@ -74,14 +74,14 @@ const ToasterPortal = () => {
 
 interface ShadeProviderProps {
   darkMode: boolean;
-  isAdmin7Pill?: boolean;
+  isAdmin7?: boolean;
   controlShape?: ControlShape;
   children: React.ReactNode;
 }
 
 const ShadeProvider: React.FC<ShadeProviderProps> = ({
   darkMode,
-  isAdmin7Pill = true,
+  isAdmin7 = true,
   controlShape,
   children,
 }) => {
@@ -97,8 +97,8 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
         isAnyTextFieldFocused,
         setFocusState,
         darkMode,
-        isAdmin7Pill,
-        controlShape: controlShape ?? (isAdmin7Pill ? 'pill' : 'rounded'),
+        isAdmin7,
+        controlShape: controlShape ?? (isAdmin7 ? 'pill' : 'rounded'),
       }}
     >
       <GlobalDirtyStateProvider>

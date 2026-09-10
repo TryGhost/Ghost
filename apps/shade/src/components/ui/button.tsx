@@ -30,7 +30,7 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-7 p-0 [&_svg]:size-3',
       },
-      isAdmin7Pill: { true: '', false: '' },
+      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -38,59 +38,59 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7Pill: false,
+        isAdmin7: false,
         variant: 'secondary',
         className: 'bg-secondary hover:bg-secondary/80',
       },
-      { isAdmin7Pill: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
+      { isAdmin7: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
       {
-        isAdmin7Pill: false,
+        isAdmin7: false,
         variant: 'subtle',
         className:
           'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'subtle',
         className: 'hover:bg-accent hover:text-accent-foreground',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: ['secondary', 'ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: ['ghost', 'subtle'],
         className:
           'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: ['destructive', 'outline', 'secondary', 'ghost', 'dropdown', 'subtle'],
         size: ['default', 'sm', 'lg'],
         className: 'px-3',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         variant: 'outline',
         className:
           'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
-        isAdmin7Pill: true,
+        isAdmin7: true,
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },
@@ -99,7 +99,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7Pill: true,
+      isAdmin7: true,
     },
   },
 );
@@ -107,13 +107,13 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7Pill'> {
+    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7'> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape, isAdmin7Pill } = useShade();
+    const { controlShape, isAdmin7 } = useShade();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
@@ -132,9 +132,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
-        className={cn(
-          buttonVariants({ variant, size, isAdmin7Pill, shape: resolvedShape, className }),
-        )}
+        className={cn(buttonVariants({ variant, size, isAdmin7, shape: resolvedShape, className }))}
         {...props}
         data-control-shape={resolvedShape}
       >
