@@ -26,6 +26,7 @@ import {
   postHistoryRevisionList,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { memberAvatarProps } from '@/members/api';
 import { revisionDate, type RevisionEntry, type RevisionTag } from './post-history';
 import { RevisionPreview } from './revision-preview';
@@ -217,9 +218,9 @@ export function PostHistoryModal({
         onOpenChange={(next) => !next && !restoring && setConfirming(null)}
       >
         <AlertDialogContent
-          className="z-[1100]"
+          className={EDITOR_CONFIRM_DIALOG_LAYER}
           data-testid={postHistoryRestoreConfirm}
-          overlayClassName="z-[1100]"
+          overlayClassName={EDITOR_CONFIRM_DIALOG_LAYER}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>

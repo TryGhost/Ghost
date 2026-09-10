@@ -14,6 +14,7 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { SaveError, SaveEngineState } from '@/editor/engine/save-engine';
+import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import type { ReloadOutcome } from './use-editor-session';
 
 const SESSION_EXPIRED = 'Your session expired. Sign in again in a new tab, then retry.';
@@ -119,9 +120,9 @@ function ConflictBanner({
       </Banner>
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent
-          className="z-[1100]"
+          className={EDITOR_CONFIRM_DIALOG_LAYER}
           data-testid="editor-conflict-reload-confirm"
-          overlayClassName="z-[1100]"
+          overlayClassName={EDITOR_CONFIRM_DIALOG_LAYER}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>Discard your unsaved changes?</AlertDialogTitle>
