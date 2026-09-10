@@ -21,6 +21,7 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 // @ts-expect-error This module lacks type definitions.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
+import { NewsletterEmailCounters } from './newsletter-email-counters';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
@@ -76,11 +77,19 @@ export const init = ({
   settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
   const queries = new Queries(db.knex);
+  // Mode changes take effect at boot. Drain old analytics workers before changing
+  // modes: sequential and legacy recount writers do not use the counter lock.
+  const emailCounters =
+    config.get('emailAnalytics:batchProcessing') &&
+    config.get('emailAnalytics:emailCounterMode') === 'compare'
+      ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient })
+      : null;
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,
     db,
     eventStorage: new NewsletterEmailEventStorage({
+      emailCounters,
       config,
       db,
       membersRepository,
@@ -134,6 +143,7 @@ export const init = ({
     settingsCache,
     createEventProcessor: () =>
       new NewsletterEmailAnalyticsBatchProcessor({
+        emailCounters,
         config,
         emailEventProcessor: newsletterEmailEventProcessor,
         prometheusClient,

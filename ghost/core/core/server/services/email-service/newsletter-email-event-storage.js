@@ -16,14 +16,24 @@ class NewsletterEmailEventStorage {
   #emailSuppressionList;
   #prometheusClient;
   #pendingUpdates;
+  #emailCounters;
 
-  constructor({ config, db, models, membersRepository, emailSuppressionList, prometheusClient }) {
+  constructor({
+    config,
+    db,
+    models,
+    membersRepository,
+    emailSuppressionList,
+    prometheusClient,
+    emailCounters = null,
+  }) {
     this.#config = config;
     this.#db = db;
     this.#models = models;
     this.#membersRepository = membersRepository;
     this.#emailSuppressionList = emailSuppressionList;
     this.#prometheusClient = prometheusClient;
+    this.#emailCounters = emailCounters;
 
     // Initialize pending updates for batched processing
     this.#pendingUpdates = {
@@ -345,6 +355,7 @@ class NewsletterEmailEventStorage {
     for (const emailId of Array.from(groups.keys()).sort()) {
       const updates = groups.get(emailId);
       const transitioned = await this.#transactionWithRetry(async (trx) => {
+        await this.#emailCounters?.prepare(trx, emailId);
         const query = trx('email_recipients');
         if (DatabaseInfo.isMySQL(trx)) {
           // Lock in primary-key order, rather than whichever secondary index
@@ -403,8 +414,10 @@ class NewsletterEmailEventStorage {
             memberId,
           }));
         }
+        await this.#emailCounters?.increment(trx, emailId, result);
         return result;
       });
+      this.#emailCounters?.committed(emailId);
       if (
         transitioned.delivered.length ||
         transitioned.opened.length ||
