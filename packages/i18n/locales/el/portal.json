@@ -1,4 +1,5 @@
 {
+    "(None)": "",
     "(save {highestYearlyDiscount}%)": "(εξοικονόμηση {highestYearlyDiscount}%)",
     "{amount} days free": "{amount} ημέρες δωρεάν",
     "{amount} off": "{amount} έκπτωση",

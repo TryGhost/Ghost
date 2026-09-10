@@ -26,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { MultiSelectCombobox } from '@/components/ui/multi-select-combobox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1415,6 +1416,98 @@ export function FilterSegmentSelect({
       value={value}
       onChange={onChange}
     />
+  );
+}
+
+export interface FilterSegmentMultiSelectProps {
+  values: string[];
+  options: FilterSegmentOption[];
+  onChange: (values: string[]) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  ariaLabel?: string;
+  className?: string;
+  testId?: string;
+  // Render the selection as static text (no picker) — for an applied filter that
+  // should stay legible but not editable.
+  readOnly?: boolean;
+}
+
+// A multi-value segment in the same chrome as FilterSegmentSelect, opening the
+// searchable MultiSelectCombobox the label picker uses, so a custom renderer can
+// offer "is any of" over a long list (countries, say) without a second picker.
+export function FilterSegmentMultiSelect({
+  values,
+  options,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  ariaLabel,
+  className,
+  testId,
+  readOnly,
+}: FilterSegmentMultiSelectProps) {
+  const context = useFilterContext();
+  const selected = options.filter((option) => values.includes(option.value));
+
+  let text = placeholder ?? context.i18n.select;
+  if (selected.length === 1) {
+    text = selected[0].label;
+  } else if (selected.length > 1) {
+    text = `${selected.length} ${context.i18n.selectedCount}`;
+  }
+
+  const trigger = (
+    <span
+      className={cn('truncate', selected.length ? undefined : 'text-muted-foreground', className)}
+    >
+      {text}
+    </span>
+  );
+
+  if (readOnly) {
+    return (
+      <div
+        aria-label={ariaLabel}
+        className={filterOperatorVariants({
+          variant: context.variant,
+          size: context.size,
+          readOnly: true,
+        })}
+        data-testid={testId}
+      >
+        {trigger}
+      </div>
+    );
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        aria-label={ariaLabel}
+        className={cn(
+          'max-w-60',
+          filterOperatorVariants({ variant: context.variant, size: context.size }),
+        )}
+        data-testid={testId}
+      >
+        {trigger}
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-0">
+        <MultiSelectCombobox
+          i18n={{
+            searchPlaceholder:
+              searchPlaceholder ?? context.i18n.placeholders.searchField(ariaLabel ?? ''),
+            noResultsFound: context.i18n.noResultsFound,
+            loading: context.i18n.loading,
+            loadMore: context.i18n.loadMore,
+          }}
+          options={options}
+          values={values}
+          onChange={onChange}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 

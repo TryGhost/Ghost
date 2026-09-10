@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
+import { t } from '../../utils/i18n';
 
 export const InputFieldStyles = `
     .gh-portal-input-section.hidden {
@@ -63,6 +64,32 @@ export const InputFieldStyles = `
         resize: vertical;
     }
 
+    /* The chevron is drawn here because the appearance reset above takes the native one
+       with it, and the padding keeps the value clear of it. */
+    select.gh-portal-input {
+        padding-inline-end: 36px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeaeae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        cursor: pointer;
+    }
+
+    html[dir="rtl"] select.gh-portal-input {
+        background-position: left 12px center;
+    }
+
+    /* With nothing chosen the empty option shows, and reads as placeholder text. The
+       options do not inherit that grey: the browsers that paint the list from computed
+       styles would otherwise show every country as placeholder text. CanvasText follows
+       the list's own light or dark scheme. */
+    select.gh-portal-input.placeholder {
+        color: var(--grey8);
+    }
+
+    select.gh-portal-input option {
+        color: CanvasText;
+    }
+
     /* Several inputs presented as one field, the way an address is filled in at checkout.
        Neighbours overlap by a pixel so their borders read as one divider, and the focused
        or invalid input is lifted so its own border shows whole. */
@@ -122,7 +149,8 @@ export const InputFieldStyles = `
        and would take the disabled look while being perfectly usable. */
     .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled,
     .gh-portal-popup-container:not(.preview) .gh-portal-input[readonly] {
-        background: var(--grey13);
+        /* The colour alone: the shorthand would take a disabled select's chevron with it. */
+        background-color: var(--grey13);
         color: var(--grey9);
         box-shadow: none;
     }
@@ -159,6 +187,7 @@ function InputField({
   placeholder,
   disabled = false,
   readOnly = false,
+  options,
   onChange = () => {},
   onBlur = () => {},
   onKeyDown = () => {},
@@ -241,6 +270,33 @@ function InputField({
       {type === 'textarea' ? (
         // No onKeyDown: Enter adds a line here, where in an input it submits the form.
         <textarea {...fieldProps} className={`${inputClasses} gh-portal-input-textarea`} />
+      ) : type === 'select' ? (
+        // A select cannot be read-only, so a value the member may not change is disabled
+        // instead. The empty option stands for no value: with nothing chosen it carries
+        // the placeholder, since the closed control can only show an option's text, and
+        // is not a choice, so it is hidden from the list where the browser allows
+        // (Safari ignores `hidden` on an option and shows it greyed and unselectable
+        // instead). Once something is chosen it is offered as the way to clear it,
+        // parenthesised the way lists mark the row that is not one of the values, since
+        // an option's text is all a native list can style across browsers.
+        <select
+          {...fieldProps}
+          className={value ? inputClasses : `${inputClasses} placeholder`}
+          disabled={disabled || readOnly}
+        >
+          {value ? (
+            <option value="">{t('(None)')}</option>
+          ) : (
+            <option value="" disabled hidden>
+              {placeholder}
+            </option>
+          )}
+          {(options ?? []).map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       ) : (
         <input
           {...fieldProps}

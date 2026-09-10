@@ -218,7 +218,13 @@ describe('member custom fields api helpers', () => {
           postal_code: '00001',
           country: 'US',
         }),
-      ).toBe('1 Main St, 12 apt B, New York, NY 00001, US');
+      ).toBe('1 Main St, 12 apt B, New York, NY 00001, United States');
+    });
+
+    it('leaves a country code it cannot name in the line as it stands', () => {
+      expect(formatMemberCustomFieldValue('address', { city: 'Berlin', country: 'XX' })).toBe(
+        'Berlin, XX',
+      );
     });
 
     // The property this is built for. A part added to a type upstream has to appear in
@@ -247,7 +253,7 @@ describe('member custom fields api helpers', () => {
           postal_code: '10115',
           country: 'DE',
         }),
-      ).toBe('1 Main St, Berlin, 10115, DE');
+      ).toBe('1 Main St, Berlin, 10115, Germany');
       expect(formatMemberCustomFieldValue('address', { city: 'Berlin' })).toBe('Berlin');
     });
 

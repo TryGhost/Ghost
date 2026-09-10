@@ -1,4 +1,5 @@
 {
+    "(None)": "Option in a select (such as the country select in a member's address) that clears the chosen value; the parentheses mark it as not being one of the real values",
     "(save {highestYearlyDiscount}%)": "Appears in portal next to the yearly plan selector",
     "+1 (123) 456-7890": "Placeholder for phone number input field",
     "1 comment": "Comment count displayed above the comments section in case there is only one",
@@ -91,7 +92,7 @@
     "Could not create Stripe checkout session": "An error message indicating a problem with Stripe",
     "Could not sign in. Login link expired.": "Message when a login link has expired",
     "Could not update email! Invalid link.": "Message when an email update link is invalid",
-    "Country": "Label of the country input (two-letter code) when a member edits an address custom field in their Portal account settings",
+    "Country": "Label and placeholder of the country select when a member edits an address custom field in their Portal account settings",
     "Create a new contact": "A section title in email receiving FAQ",
     "Current plan": "Label for the current plan",
     "Delete": "Delete button",
