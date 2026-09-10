@@ -13,7 +13,7 @@ const {
 } = require('./recipient-accounting');
 const {
   selectPreparationCandidates,
-  createPreparationMemberResolver,
+  resolvePreparationMembers,
   runPreparationWorkers,
   preparationPages,
   waitForPreparationRetry,
@@ -548,7 +548,6 @@ class BatchSendingService {
       if (ids.length === 0) {
         continue;
       }
-      const resolveMembers = createPreparationMemberResolver(this.#db.knex);
       await runPreparationWorkers(
         preparationPages(ids, batchSize, remainingCapacity),
         // Avoid allocating idle workers for a small audience and a large configured limit.
@@ -562,7 +561,6 @@ class BatchSendingService {
               segment,
               attemptId,
               page,
-              resolveMembers,
             },
             signal,
           );
@@ -575,11 +573,11 @@ class BatchSendingService {
     return { candidateCount, excludedCount };
   }
 
-  async #prepareSweptPage({ email, segment, attemptId, page, resolveMembers }, signal) {
+  async #prepareSweptPage({ email, segment, attemptId, page }, signal) {
     const rows = await this.retryDb(
       () => {
         this.#checkPreparationActive(signal);
-        return resolveMembers(page.ids);
+        return resolvePreparationMembers(this.#db.knex, page.ids);
       },
       {
         ...this.#getBeforeRetryConfig(email),

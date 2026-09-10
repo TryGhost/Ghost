@@ -31,38 +31,22 @@ export async function selectPreparationCandidates(
 
 export type PreparationMember = { id: string; uuid: string; email: string; name: string | null };
 
-/** Keep range reads for dense pages; after a sparse page, use IDs for the rest of this segment. */
-export function createPreparationMemberResolver(knex: Knex) {
-  let useIdList = false;
-  return async function resolveMembers(ids: string[]): Promise<PreparationMember[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-    const columns = ['id', 'uuid', 'email', 'name'];
-    let rows: PreparationMember[] = [];
-    if (useIdList) {
-      rows = await knex('members').select(columns).whereIn('id', ids);
-    } else {
-      const limit = ids.length * 8;
-      rows = await knex('members')
-        .select(columns)
-        .whereBetween('id', [ids[ids.length - 1]!, ids[0]!])
-        .orderBy('id', 'desc')
-        .limit(limit + 1);
-      if (rows.length > limit) {
-        // Monotonic across concurrent workers. Pages already reading a range may still finish it.
-        useIdList = true;
-        // Release the overfull range while the ID query is in flight.
-        rows = [];
-        rows = await knex('members').select(columns).whereIn('id', ids);
-      }
-    }
-    const byId = new Map(rows.map((row) => [row.id, row]));
-    return ids.flatMap((id) => {
-      const row = byId.get(id);
-      return row ? [row] : [];
-    });
-  };
+/** Load only selected members and preserve candidate order, omitting members no longer present. */
+export async function resolvePreparationMembers(
+  knex: Knex,
+  ids: string[],
+): Promise<PreparationMember[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+  const rows: PreparationMember[] = await knex('members')
+    .select('id', 'uuid', 'email', 'name')
+    .whereIn('id', ids);
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
 }
 
 /** Only waits are abortable: callers must settle writes and recovery before returning. */

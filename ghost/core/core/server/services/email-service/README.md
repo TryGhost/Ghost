@@ -54,13 +54,8 @@ in one transaction. Warming allocation follows selected candidate order,
 including exclusions, rather than transaction completion order. Each nonempty
 batch stores `recipient_count` atomically with its recipients.
 
-Member lookup happens outside the write transaction. A bounded primary-key range
-read avoids the repeated primary-key lookups of a large ID list for dense pages;
-local lookup measurements favor it for dense audiences. Results are filtered
-against the page's selected IDs. If the range contains more than eight times the
-page size, that page falls back to an ID-list query and the segment remembers
-that choice for its remaining pages. Concurrent range reads already started may
-still finish their own probes. Each new segment starts with the range strategy. Required member data
+Member lookup happens outside the write transaction. Each page loads its selected
+IDs in one query and restores candidate order before preparation. Required member data
 missing from an existing record is an explicit exclusion with error logging and
 Sentry reporting. A selected member no longer found is a `member_not_found`
 exclusion logged at information level. Database failures are not exclusions.
@@ -273,10 +268,10 @@ between free and paid segments to exercise the combined audience selection.
 It measures the full audience, discard and rebuild after a complete pending attempt, and a label
 audience containing every fifth member. JSON output includes database settings,
 query counts, elapsed times, sweep and discard durations, and sampled memory.
-Member lookups also report query count, rows transferred (including range probes),
+Member lookups also report query count, rows transferred,
 and summed query duration. These query durations overlap under concurrency and
 are not the phase's wall-clock duration. Compare both the full and label-filtered
-audiences when changing the lookup strategy.
+audiences when measuring preparation.
 
 Repeat at 500,000 and 1,000,000 members with concurrency 1, 2, and 4 to compare
 settings. RSS and heap samples every 10 ms may miss peaks during synchronous

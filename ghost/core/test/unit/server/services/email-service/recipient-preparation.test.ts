@@ -3,7 +3,7 @@ import knex from 'knex';
 import { vi } from 'vitest';
 import {
   preparationPages,
-  createPreparationMemberResolver,
+  resolvePreparationMembers,
   runPreparationWorkers,
   selectPreparationCandidates,
   waitForPreparationRetry,
@@ -184,13 +184,12 @@ describe('Recipient preparation workers', () => {
       await db('members').insert(
         ids.map((id) => ({ id, uuid: `uuid-${id}`, email: `${id}@example.com`, name: null })),
       );
-      const resolveMembers = createPreparationMemberResolver(db);
       await runPreparationWorkers(
         preparationPages(ids, 2),
         2,
         () => {},
         async (page) => {
-          const members = await resolveMembers(page.ids);
+          const members = await resolvePreparationMembers(db, page.ids);
           await db.transaction(async (trx) => {
             await trx('prepared').insert(members.map((member) => ({ member_id: member.id })));
           });
