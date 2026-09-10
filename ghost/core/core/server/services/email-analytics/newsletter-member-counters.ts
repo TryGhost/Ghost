@@ -127,28 +127,42 @@ export class NewsletterMemberCounters {
             email_opened_count: 0,
             email_open_rate: null,
           };
-          const differences: MemberDrift = {};
-          for (const column of MEMBER_COUNTER_COLUMNS) {
-            if (member[column] !== expected[column]) {
-              differences[column] = { actual: member[column], expected: expected[column] };
-            }
-          }
-          result.set(member.id, differences);
+          result.set(member.id, this.#differences(member, expected));
         }
         return result;
       },
       this.#transactionConfig(),
     );
+    this.#recordComparisons(comparisons, 'comparison');
+    return comparisons;
+  }
+
+  #differences(actual: MemberCounts, expected: MemberCounts): MemberDrift {
+    const differences: MemberDrift = {};
+    for (const column of MEMBER_COUNTER_COLUMNS) {
+      if (actual[column] !== expected[column]) {
+        differences[column] = { actual: actual[column], expected: expected[column] };
+      }
+    }
+    return differences;
+  }
+
+  /** Publish observations only after the enclosing transaction is acknowledged. */
+  #recordComparisons(comparisons: Map<string, MemberDrift>, phase: 'comparison' | 'repair'): void {
     const drift = [...comparisons].filter(([, differences]) => Object.keys(differences).length);
     if (drift.length) {
       logging.warn(
-        `[EmailAnalytics] Newsletter member counter drift: ${JSON.stringify(drift.map(([memberId, differences]) => ({ memberId, differences })))}`,
+        `[EmailAnalytics] Newsletter member counter drift: ${JSON.stringify({
+          phase,
+          members: drift.length,
+          sample: drift.slice(0, 20).map(([memberId, differences]) => ({ memberId, differences })),
+        })}`,
       );
     }
-    for (const differences of comparisons.values()) {
-      for (const statistic of MEMBER_COUNTER_COLUMNS) {
-        const labels = { statistic, phase: 'comparison' };
-        incrementCounter(this.#prometheusClient, MEMBER_COMPARISONS_METRIC, labels, 1);
+    for (const statistic of MEMBER_COUNTER_COLUMNS) {
+      const labels = { statistic, phase };
+      incrementCounter(this.#prometheusClient, MEMBER_COMPARISONS_METRIC, labels, comparisons.size);
+      for (const [, differences] of drift) {
         const difference = differences[statistic];
         if (difference) {
           incrementCounter(
@@ -162,7 +176,6 @@ export class NewsletterMemberCounters {
         }
       }
     }
-    return comparisons;
   }
 
   /** Lock member counter rows in primary-key order and validate them. */
@@ -395,11 +408,26 @@ export class NewsletterMemberCounters {
   async runSweepPage({
     limit = MAX_SWEEP_PAGE_SIZE,
     restart = false,
+    startAnotherAfterMs,
   }: {
     limit?: number;
+    /** Abandon any existing checkpoint, complete or not, and begin a fresh sweep. */
     restart?: boolean;
-  } = {}): Promise<MemberSweepCheckpoint> {
+    /**
+     * Continue an unfinished sweep; once one completes, begin another only after
+     * this pause has passed since its completion. Undefined never begins another.
+     */
+    startAnotherAfterMs?: number;
+  } = {}): Promise<MemberSweepCheckpoint & { paused?: boolean }> {
     this.#validateLimit(limit);
+    if (
+      startAnotherAfterMs !== undefined &&
+      (!Number.isSafeInteger(startAnotherAfterMs) || startAnotherAfterMs < 0)
+    ) {
+      throw new IncorrectUsageError({
+        message: 'Member sweep pause must be a nonnegative integer of milliseconds',
+      });
+    }
     // Outside the page transaction: this range lookup must not establish its
     // recipient snapshot before the member locks. New members are initialized
     // by preparation; a later full sweep will also visit them.
@@ -424,7 +452,8 @@ export class NewsletterMemberCounters {
       })
       .onConflict('name')
       .ignore();
-    return this.#knex.transaction(async (trx) => {
+    const comparisons = new Map<string, MemberDrift>();
+    const checkpoint = await this.#knex.transaction(async (trx) => {
       const job = await trx('jobs').where('name', SWEEP_JOB_NAME).forUpdate().first();
       if (!job) {
         throw this.#nonRetryable(
@@ -433,16 +462,27 @@ export class NewsletterMemberCounters {
         );
       }
       const state = restart ? initial : this.#parseCheckpoint(job.metadata);
+      let starting = restart;
       if (state.complete && !restart) {
-        return state;
+        // Check the persisted completion time under the checkpoint lock. A process
+        // restart must not reset cadence, and an unfinished sweep must keep moving.
+        const finishedAt = job.finished_at ? new Date(job.finished_at).getTime() : 0;
+        if (startAnotherAfterMs === undefined || Date.now() < finishedAt + startAnotherAfterMs) {
+          return { ...state, paused: true };
+        }
+        Object.assign(state, initial);
+        starting = true;
       }
-      const starting = restart;
       if (state.throughId !== null) {
-        const page = await this.#sweepPage(trx, {
-          afterId: state.afterId ?? undefined,
-          throughId: state.throughId,
-          limit,
-        });
+        const page = await this.#sweepPage(
+          trx,
+          {
+            afterId: state.afterId ?? undefined,
+            throughId: state.throughId,
+            limit,
+          },
+          comparisons,
+        );
         state.afterId = page.afterId ?? null;
         state.processed += page.processed;
         state.complete = page.processed === 0 || state.afterId === state.throughId;
@@ -458,6 +498,8 @@ export class NewsletterMemberCounters {
         });
       return state;
     }, this.#transactionConfig());
+    this.#recordComparisons(comparisons, 'repair');
+    return checkpoint;
   }
 
   #parseCheckpoint(metadata: unknown): MemberSweepCheckpoint {
@@ -490,10 +532,13 @@ export class NewsletterMemberCounters {
     limit = MAX_SWEEP_PAGE_SIZE,
   }: MemberSweepPage = {}): Promise<MemberSweepResult> {
     this.#validateLimit(limit);
-    return this.#knex.transaction(
-      (trx) => this.#sweepPage(trx, { afterId, throughId, limit }),
+    const comparisons = new Map<string, MemberDrift>();
+    const page = await this.#knex.transaction(
+      (trx) => this.#sweepPage(trx, { afterId, throughId, limit }, comparisons),
       this.#transactionConfig(),
     );
+    this.#recordComparisons(comparisons, 'repair');
+    return page;
   }
 
   #validateLimit(limit: number): void {
@@ -511,23 +556,48 @@ export class NewsletterMemberCounters {
   async #sweepPage(
     trx: Knex.Transaction,
     { afterId, throughId, limit }: MemberSweepPage & { limit: number },
+    comparisons: Map<string, MemberDrift>,
   ): Promise<MemberSweepResult> {
     // Lock before the first consistent read. Event and preparation increments
     // must take the same member locks before changing recipient-derived totals.
     // An IN-list's input order alone would not establish InnoDB lock order.
-    const members = this.#members(trx).select('id').orderBy('id').limit(limit).forUpdate();
+    const members = this.#members(trx)
+      .select('id', ...MEMBER_COUNTER_COLUMNS)
+      .orderBy('id')
+      .limit(limit)
+      .forUpdate();
     if (afterId !== undefined) {
       members.where('id', '>', afterId);
     }
     if (throughId !== undefined) {
       members.where('id', '<=', throughId);
     }
-    const rows: { id: string }[] = await members;
+    const rows: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
+        email_tracked_count: number | null;
+      })[] = await members;
     if (rows.length === 0) {
       return { afterId, processed: 0 };
     }
     const memberIds = rows.map((row) => row.id);
-    await this.#setCounts(trx, memberIds, await this.#derive(trx, memberIds));
+    const truth = await this.#derive(trx, memberIds);
+    for (const member of rows) {
+      // A NULL denominator denotes initialization, not drift.
+      if (member.email_tracked_count !== null) {
+        comparisons.set(
+          member.id,
+          this.#differences(
+            { ...member, email_tracked_count: member.email_tracked_count },
+            truth.get(member.id) ?? {
+              email_count: 0,
+              email_tracked_count: 0,
+              email_opened_count: 0,
+              email_open_rate: null,
+            },
+          ),
+        );
+      }
+    }
+    await this.#setCounts(trx, memberIds, truth);
     return { afterId: memberIds.at(-1), processed: rows.length };
   }
 

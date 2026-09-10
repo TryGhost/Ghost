@@ -136,3 +136,16 @@ drained baseline. The current sending code honors persisted enrollment, but an
 older send binary may not, so unresolved enrolled preparation must be reconciled
 before a binary rollback. Keep this fallback until the fleet rollout and retained
 aggregation paths have been decided.
+
+## Member sweep cadence and repair observations
+
+The shared sweep accepts a restart delay measured from its persisted completion
+at `jobs.finished_at`. This delay survives process recreation. It applies only
+to completed sweeps; an interrupted pass resumes immediately from its checkpoint.
+The manual CLI retains immediate explicit `--restart` behavior.
+
+Sweep observations use the same opens-inclusive truth as comparison. Initialized
+members contribute comparison and drift metrics only after the counter page and
+checkpoint commit. Drift logs identify repairs and include a bounded sample of
+affected members. First-use initialization is excluded from drift measurements.
+A failed page reports no successful repair and leaves the checkpoint unchanged.

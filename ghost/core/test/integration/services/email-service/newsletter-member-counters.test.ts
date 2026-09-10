@@ -581,6 +581,63 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal((await db.knex('jobs').where('id', job.id).first()).status, 'finished');
   });
 
+  it('reports repaired drift only after the member page and checkpoint commit', async () => {
+    const observations = { inc: sinon.stub() };
+    const differences = { inc: sinon.stub() };
+    counters = new NewsletterMemberCounters(db.knex, {
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: sinon
+          .stub()
+          .callsFake((name) =>
+            name === 'email_analytics_member_counter_comparisons' ? observations : differences,
+          ),
+      },
+    });
+    await recipient({ opened: true });
+    await counters.sweepPage({ throughId: id(1) });
+    await db.knex('members').where('id', id(1)).update({ email_opened_count: 7 });
+    await db.knex.raw(
+      "CREATE TRIGGER member_counter_repair_report_failure BEFORE UPDATE ON jobs FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'injected repair checkpoint failure'",
+    );
+    try {
+      await assert.rejects(
+        counters.runSweepPage({ limit: 1 }),
+        /injected repair checkpoint failure/,
+      );
+      assert.equal((await stats()).email_opened_count, 7);
+      sinon.assert.notCalled(differences.inc);
+      sinon.assert.notCalled(observations.inc);
+    } finally {
+      await db.knex.raw('DROP TRIGGER member_counter_repair_report_failure');
+    }
+    await counters.runSweepPage({ limit: 1 });
+    assert.equal((await stats()).email_opened_count, 1);
+    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_opened_count' }, 6);
+    sinon.assert.callCount(observations.inc, 4);
+  });
+
+  it('waits after a completed sweep across recreation, then resumes bounded repair pages', async () => {
+    const clock = sinon.useFakeTimers({ now: new Date('2030-01-01T00:00:00Z'), toFake: ['Date'] });
+    await recipient({ opened: true });
+    const completed = await counters.runSweepPage();
+    assert.equal(completed.complete, true);
+    await db.knex('members').where('id', id(1)).update({ email_opened_count: 7 });
+    const options = { limit: 1, restart: true, restartAfterMs: 6 * 60 * 60 * 1000 };
+    assert.deepEqual(await new NewsletterMemberCounters(db.knex).runSweepPage(options), completed);
+    assert.equal((await stats()).email_opened_count, 7);
+
+    clock.setSystemTime(new Date('2030-01-01T06:00:00Z'));
+    const restarted = await new NewsletterMemberCounters(db.knex).runSweepPage(options);
+    assert.equal(restarted.processed, 1);
+    assert.equal(restarted.afterId, id(1));
+    assert.equal(restarted.complete, false);
+    assert.equal((await stats()).email_opened_count, 1);
+    const next = await new NewsletterMemberCounters(db.knex).runSweepPage(options);
+    assert.equal(next.processed, 2);
+    assert.equal(next.afterId, id(2));
+  });
+
   it('rolls member updates back when persisting the checkpoint fails', async () => {
     await recipient();
     await db.knex.raw(
