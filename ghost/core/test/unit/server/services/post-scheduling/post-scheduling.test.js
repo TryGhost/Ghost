@@ -12,6 +12,8 @@ const PostScheduling =
   require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+const api = require('../../../../../core/server/api').endpoints;
+const postScheduling = require('../../../../../core/server/services/posts/post-scheduling');
 
 describe('PostScheduling', function () {
   let adapter;
@@ -41,6 +43,39 @@ describe('PostScheduling', function () {
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('returns a no-op for an overlapping delivery before the active publish finishes', async function () {
+    const post = {
+      id: 'post-id',
+      status: 'scheduled',
+      published_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const pending = Promise.withResolvers();
+    const read = sinon.stub().returns(pending.promise);
+    const edit = sinon.stub().resolves({ posts: [{ ...post, status: 'published' }] });
+    sinon.stub(api, 'posts').get(() => ({ read, edit }));
+    const publish = () =>
+      postScheduling.publish('posts', post.id, false, {
+        id: post.id,
+        context: { internal: true },
+      });
+    const active = publish();
+
+    try {
+      assert.deepEqual(await publish(), {
+        scheduledResource: null,
+        preScheduledResource: null,
+      });
+      sinon.assert.calledOnce(read);
+      sinon.assert.notCalled(edit);
+    } finally {
+      pending.resolve({ posts: [post] });
+      await active;
+    }
+
+    sinon.assert.calledOnce(edit);
   });
 
   describe('constructor', function () {
