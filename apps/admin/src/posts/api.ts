@@ -16,3 +16,5 @@ export const lazyPagesListRoute = () => import('./list/pages-route');
 // Lazy entry, not a component re-export: the shell's host loads the modal on
 // demand, so a static re-export would pull the chunk into the shell bundle.
 export const lazyGiftLinkModal = () => import('./analytics/modals/gift-link-modal');
+
+export const lazyPostDebugScreen = () => import('./debug/post-debug');
