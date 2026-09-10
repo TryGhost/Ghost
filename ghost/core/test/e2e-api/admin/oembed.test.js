@@ -377,6 +377,46 @@ describe('Oembed API', function () {
     assert.equal(res.body.metadata.thumbnail, 'http://127.0.0.1:5555/secret-thumbnail');
   });
 
+  it('does not store bookmark images that are not images', async function () {
+    const html = '<!doctype html><html><body><script>alert(1)</script></body></html>';
+
+    const pageMock = nock('http://attacker.example.com')
+      .get('/')
+      .reply(
+        200,
+        '<html><head><title>Totally normal article</title><meta property="og:image" content="http://attacker.example.com/cover.html"><link rel="icon" href="http://attacker.example.com/brandicon.html"></head><body></body></html>',
+        { 'content-type': 'text/html' },
+      );
+
+    // Served as images to show the response's Content-Type isn't trusted either
+    const thumbnailMock = nock('http://attacker.example.com')
+      .get('/cover.html')
+      .reply(200, html, { 'content-type': 'image/png' });
+
+    const iconMock = nock('http://attacker.example.com')
+      .get('/brandicon.html')
+      .reply(200, html, { 'content-type': 'image/png' });
+
+    processImageFromUrlStub.restore();
+
+    const url = encodeURIComponent('http://attacker.example.com');
+
+    const res = await request
+      .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    assert.equal(pageMock.isDone(), true);
+    assert.equal(thumbnailMock.isDone(), true);
+    assert.equal(iconMock.isDone(), true);
+
+    // Neither file was stored on the site, so the card keeps the fallbacks
+    assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    assert.equal(res.body.metadata.thumbnail, 'http://attacker.example.com/cover.html');
+  });
+
   describe('with unknown provider', function () {
     it('fetches url and follows redirects', async function () {
       const redirectMock = nock('http://test.com/')

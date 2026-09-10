@@ -42,6 +42,7 @@ const messages = {
   unableToFetchOembed: 'Unable to fetch requested embed.',
   unauthorized: 'URL contains a private resource.',
   unconvertibleSvg: 'SVG image is too large or compressed to convert.',
+  unsupportedImage: 'Image is not a supported file type.',
 };
 
 const SVG_RASTER_SIZE = 256;
@@ -66,6 +67,16 @@ const shouldRasterize = (buffer, ext) => {
   const head = buffer.subarray(0, SVG_SNIFF_BYTES).toString('utf8').trimStart();
 
   return head.startsWith('<') && /<svg[\s:>]/i.test(head);
+};
+
+let fileTypeFromBuffer;
+
+const detectFileType = async (buffer) => {
+  if (!fileTypeFromBuffer) {
+    ({ fileTypeFromBuffer } = await import('file-type'));
+  }
+
+  return fileTypeFromBuffer(buffer);
 };
 
 /**
@@ -234,6 +245,20 @@ class OEmbedService {
       });
 
       ext = '.png';
+    } else {
+      // The URL's extension is attacker-controlled and decides the
+      // Content-Type the stored file is later served with, so name the
+      // file after its contents and hold it to the same allowlist as image
+      // uploads. `file-type` never reports SVG, which is handled above.
+      const fileType = await detectFileType(imageBuffer);
+      ext = fileType ? `.${fileType.ext}` : '';
+
+      if (!this.config.get('uploads').images.extensions.includes(ext)) {
+        throw new errors.ValidationError({
+          message: tpl(messages.unsupportedImage),
+          context: imageUrl,
+        });
+      }
     }
 
     const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
