@@ -50,6 +50,17 @@ describe('Unit: models/member', function () {
 
       assert.equal(json.avatar_image, null);
     });
+
+    it('keeps the tracked-email baseline internal without changing stored attributes', function () {
+      for (const count of [null, 0, 10]) {
+        const member = new Member({ email_tracked_count: count, email_opened_count: 2 });
+
+        assert.equal(Object.hasOwn(member.toJSON(), 'email_tracked_count'), false);
+        assert.equal(Object.hasOwn(member.serialize(), 'email_tracked_count'), false);
+        assert.equal(member.toJSON().email_opened_count, 2);
+        assert.equal(member.get('email_tracked_count'), count);
+      }
+    });
   });
 
   describe('onFetchingCollection: deep offset pagination', function () {
