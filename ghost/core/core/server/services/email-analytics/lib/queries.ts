@@ -81,12 +81,14 @@ export class Queries {
    * @param jobName - The name of the job to update.
    * @param events - The email analytics events to consider.
    * @param cursorSeed - Recipient table and timestamp columns to read the initial cursor from. Used when the job has no stored timestamp yet.
+   * @param [options.createJobIfMissing] - Whether to seed a jobs row when none exists yet. Pass false for read-only callers (e.g. status endpoints): the seeded row's started_at would otherwise become the fetch job's cursor.
    * @returns The timestamp of the last seen event, or null if no events are found.
    */
   async getLastEventTimestamp(
     jobName: EmailAnalyticsJobName,
     events: EmailAnalyticsEvent[],
     cursorSeed: CursorSeed,
+    { createJobIfMissing = true }: { createJobIfMissing?: boolean } = {},
   ): Promise<Date | null> {
     const knex = this.#knex;
 
@@ -113,7 +115,9 @@ export class Queries {
         timestamps.push(row.maxTimestamp);
       }
 
-      await createJobIfNotExists(knex, jobName);
+      if (createJobIfMissing) {
+        await createJobIfNotExists(knex, jobName);
+      }
     }
 
     // Convert string dates to Date objects for SQLite compatibility

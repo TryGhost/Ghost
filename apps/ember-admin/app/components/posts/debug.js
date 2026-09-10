@@ -275,6 +275,7 @@ export default class Debug extends Component {
                 result[type] = {};
             }
             let object = result[type];
+            object.lag = typeof object.lagMinutes === 'number' ? `${object.lagMinutes} minutes behind` : 'N/A';
             for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp']) {
                 if (object[key]) {
                     object[key] = moment(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS');

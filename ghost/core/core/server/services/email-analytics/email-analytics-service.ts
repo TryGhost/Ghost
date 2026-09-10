@@ -162,17 +162,85 @@ export class EmailAnalyticsService {
   }
 
   /**
-   * Returns the timestamp of the last non-opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
+   * Returns the fetch status with a lagMinutes field for the latest pipelines: how far
+   * behind now() each cursor is, rounded to one decimal. Uses the persisted cursors, so it
+   * works before the first in-process fetch, and is read-only — it never seeds jobs rows.
+   * lagMinutes is null when a pipeline has no cursor yet, rather than fabricating lag from
+   * the fetch fallbacks. The missing pipeline gets no lagMinutes at all: its cursor
+   * deliberately trails now by at least 30 minutes and only advances when missing events
+   * are found (see fetchMissing), so cursor age is not a health signal there.
    */
-  async getLastNonOpenedEventTimestamp() {
+  async getStatusWithLag() {
+    const status = this.getStatus();
+    const now = Date.now();
+    const [openedTimestamp, nonOpenedTimestamp] = await Promise.all([
+      this.#getLastOpenedEventTimestamp({ createJobIfMissing: false }),
+      this.#getLastNonOpenedEventTimestamp({ createJobIfMissing: false }),
+    ]);
+
+    return {
+      latest: { ...status.latest, lagMinutes: this.#lagMinutes(nonOpenedTimestamp, now) },
+      missing: { ...status.missing },
+      scheduled: { ...status.scheduled },
+      latestOpened: {
+        ...status.latestOpened,
+        lagMinutes: this.#lagMinutes(openedTimestamp, now),
+      },
+    };
+  }
+
+  /**
+   * How far behind now() the opened-events cursor is, rounded to one decimal, or null when
+   * there is no cursor yet. Shared by the status API and the wrapper's lag reporting so
+   * both surfaces measure lag the same way. Read-only — never seeds jobs rows.
+   */
+  async getOpenedEventsLagMinutes(): Promise<number | null> {
+    return this.#lagMinutes(await this.#getLastOpenedEventTimestamp({ createJobIfMissing: false }));
+  }
+
+  #lagMinutes(timestamp: Date | null, now: number = Date.now()): number | null {
+    if (!timestamp) {
+      return null;
+    }
+    return Math.round(((now - timestamp.getTime()) / 60000) * 10) / 10;
+  }
+
+  async #getLastNonOpenedEventTimestamp({
+    createJobIfMissing = true,
+  }: { createJobIfMissing?: boolean } = {}): Promise<Date | null> {
     return (
       this.#fetchLatestNonOpenedData?.lastEventTimestamp ??
       (await this.queries.getLastEventTimestamp(
         this.#fetchLatestNonOpenedData.jobName,
         ['delivered', 'failed'],
         this.#cursorSeed,
+        { createJobIfMissing },
       )) ??
-      new Date(Date.now() - TRUST_THRESHOLD_MS)
+      null
+    );
+  }
+
+  async #getLastOpenedEventTimestamp({
+    createJobIfMissing = true,
+  }: { createJobIfMissing?: boolean } = {}): Promise<Date | null> {
+    return (
+      this.#fetchLatestOpenedData?.lastEventTimestamp ??
+      (await this.queries.getLastEventTimestamp(
+        this.#fetchLatestOpenedData.jobName,
+        ['opened'],
+        this.#cursorSeed,
+        { createJobIfMissing },
+      )) ??
+      null
+    );
+  }
+
+  /**
+   * Returns the timestamp of the last non-opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
+   */
+  async getLastNonOpenedEventTimestamp() {
+    return (
+      (await this.#getLastNonOpenedEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS)
     );
   }
 
@@ -180,15 +248,7 @@ export class EmailAnalyticsService {
    * Returns the timestamp of the last opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
    */
   async getLastOpenedEventTimestamp() {
-    return (
-      this.#fetchLatestOpenedData?.lastEventTimestamp ??
-      (await this.queries.getLastEventTimestamp(
-        this.#fetchLatestOpenedData.jobName,
-        ['opened'],
-        this.#cursorSeed,
-      )) ??
-      new Date(Date.now() - TRUST_THRESHOLD_MS)
-    );
+    return (await this.#getLastOpenedEventTimestamp()) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
   }
 
   /**

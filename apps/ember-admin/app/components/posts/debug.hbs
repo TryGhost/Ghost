@@ -329,6 +329,35 @@
                         <td colspan="2"><hr></td>
                     </tr>
                     <tr>
+                        <td>Analytics Opened running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.latestOpened this.analyticsStatus.latestOpened.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Processing lag:</td>
+                        <td>{{ this.analyticsStatus.latestOpened.lag }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
                         <td>Analytics Latest running:</td>
                         <td class="gh-email-debug-settings-icon">
                             {{#if (and this.analyticsStatus this.analyticsStatus.latest this.analyticsStatus.latest.running) }}
@@ -349,6 +378,10 @@
                     <tr>
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.latest.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td>Processing lag:</td>
+                        <td>{{ this.analyticsStatus.latest.lag }}</td>
                     </tr>
                     <tr>
                         <td colspan="2"><hr></td>

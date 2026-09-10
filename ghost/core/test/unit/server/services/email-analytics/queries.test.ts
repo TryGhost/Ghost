@@ -175,6 +175,23 @@ describe('Email analytics queries', function () {
       assert.equal(result, null);
       assert(await knex('jobs').where('name', 'email-analytics-missing').first());
     });
+
+    it('does not create a cursor job when createJobIfMissing is false', async function () {
+      await insertRecipient({ delivered_at: '2026-08-11T10:00:00.000Z' });
+
+      const result = await queries.getLastEventTimestamp(
+        'email-analytics-latest-others',
+        ['delivered'],
+        cursorSeed,
+        { createJobIfMissing: false },
+      );
+
+      assert.equal(result?.toISOString(), '2026-08-11T10:00:00.000Z');
+      assert.equal(
+        await knex('jobs').where('name', 'email-analytics-latest-others').first(),
+        undefined,
+      );
+    });
   });
 
   describe('getJobData', function () {
