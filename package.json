@@ -84,7 +84,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.1.1",
+    "nx": "23.2.0",
     "oxfmt": "catalog:",
     "remark-cli": "catalog:",
     "remark-validate-links": "catalog:",
