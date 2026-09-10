@@ -1,6 +1,8 @@
-import type { EditablePostProjection, PostRelationLike } from '@/editor/engine/change-tracker';
+import type { EditablePostProjection } from '@/editor/engine/change-tracker';
+import { pick } from '@/editor/engine/pick';
 import type { PostStatus } from '@/editor/engine/save-engine';
-import { tagIdentities, type TagLike } from '@/shared/tags/tag-selection';
+import { tagIdentities } from '@/shared/tags/tag-selection';
+import type { EditorCreatePayload } from './write-payload';
 
 /**
  * The projection keys the settings sidebar may write. Slug, status and publish
@@ -33,7 +35,11 @@ export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
 
 export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey>;
 
-export type EditorSettingsPatch = Partial<EditorSettingsFields>;
+export type EditorSettingsPatch = Partial<
+  Omit<EditorSettingsFields, 'show_title_and_feature_image'>
+> & {
+  show_title_and_feature_image?: boolean;
+};
 
 export const TIERS_REQUIRED = 'Please select at least one tier';
 
@@ -41,19 +47,34 @@ export const TIERS_REQUIRED = 'Please select at least one tier';
 export const AUTHORS_REQUIRED = 'At least one author is required.';
 
 /**
- * What a settings field writes. A relation travels as identity alone, so the
- * field can hold the whole record and still send nothing but order.
+ * What a settings field writes. Tags and authors travel as identity alone; a
+ * tier relation travels as the record the field holds, and the API reads its id.
  */
-export function identityFor(key: SettingsFieldKey, value: unknown): unknown {
+export function identityFor<Key extends SettingsFieldKey>(
+  key: Key,
+  fields: EditorSettingsFields,
+): EditorCreatePayload[Key];
+export function identityFor(
+  key: SettingsFieldKey,
+  fields: EditorSettingsFields,
+): EditorCreatePayload[SettingsFieldKey] {
   if (key === 'authors') {
-    return (value as ReadonlyArray<PostRelationLike>).map(({ id }) => ({ id }));
+    return fields.authors.map(({ id }) => ({ id }));
   }
   // The field holds the tag records the field displays; the relation is
   // written by identity alone.
   if (key === 'tags') {
-    return tagIdentities(value as ReadonlyArray<TagLike>);
+    return tagIdentities(fields.tags);
   }
-  return value;
+  if (key === 'tiers') {
+    return [...fields.tiers];
+  }
+  // The flag is a page's; a null is a record that carries none, never a write —
+  // the patch type admits only a boolean for it.
+  if (key === 'show_title_and_feature_image') {
+    return fields.show_title_and_feature_image ?? undefined;
+  }
+  return fields[key];
 }
 
 /** The column widths the schema gives these fields. */
@@ -118,9 +139,7 @@ export type ValidatedSettingsFields = Pick<EditorSettingsFields, ValidatedSettin
 
 /** The validator's own view of the live document. */
 export function validatedFieldsOf(fields: ValidatedSettingsFields): ValidatedSettingsFields {
-  return Object.fromEntries(
-    VALIDATED_SETTINGS_FIELD_KEYS.map((key) => [key, fields[key]]),
-  ) as ValidatedSettingsFields;
+  return pick(fields, VALIDATED_SETTINGS_FIELD_KEYS);
 }
 
 /** The first rule the settings fields break, in the post validator's order. */
