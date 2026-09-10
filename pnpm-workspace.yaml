@@ -34,7 +34,7 @@ allowBuilds:
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
-  'nx@23.1.1': true
+  'nx@23.2.0': true
   'protobufjs@7.6.4': true
   're2@1.26.1': true
   'sharp@0.35.3': true
