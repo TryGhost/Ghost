@@ -12,7 +12,7 @@ const {
 } = require('./recipient-accounting');
 const {
   validatePreparationConcurrency,
-  selectedMemberIds,
+  selectPreparationCandidates,
   resolvePreparationMembers,
   runPreparationWorkers,
   preparationPages,
@@ -458,7 +458,7 @@ class BatchSendingService {
     const attemptId = ObjectID().toHexString();
     const startedAt = Date.now();
     await this.#startPreparation(email, attemptId);
-    const counts = await this.#sweepPreparationSegments({ email, post, newsletter, attemptId });
+    const counts = await this.#prepareAudience({ email, post, newsletter, attemptId });
     this.#checkPreparationActive();
     const batches = await this.#completePreparation(email, { ...counts, attemptId });
     logging.info(
@@ -489,48 +489,56 @@ class BatchSendingService {
     }
   }
 
-  async #sweepPreparationSegments({ email, post, newsletter, attemptId }) {
+  async #selectPreparationAudience({ email, newsletter, segments, attemptId }) {
+    const startedAt = Date.now();
+    const candidates = await this.retryDb(
+      () => {
+        this.#checkPreparationActive();
+        const queries = segments.map((segment) => {
+          const filter = this.#emailSegmenter.getMemberFilterForSegment(
+            newsletter,
+            email.get('recipient_filter'),
+            segment,
+          );
+          return this.#models.Member.getFilteredCollectionQuery({
+            filter: filter + `+id:<'${email.id}'`,
+          });
+        });
+        return selectPreparationCandidates(this.#db.knex, queries);
+      },
+      {
+        ...this.#getBeforeRetryConfig(email),
+        description: `sweep audience for email ${email.id}`,
+      },
+    );
+    this.#checkPreparationActive();
+    logging.info(
+      {
+        event: { name: 'email.preparation.swept' },
+        email_id: email.id,
+        attempt_id: attemptId,
+        candidate_count: candidates.reduce((total, ids) => total + ids.length, 0),
+        duration_ms: Date.now() - startedAt,
+      },
+      'Selected newsletter candidate recipients',
+    );
+    return candidates;
+  }
+
+  async #prepareAudience({ email, post, newsletter, attemptId }) {
     const segments = await this.#emailRenderer.getSegments(post);
+    const candidates = await this.#selectPreparationAudience({
+      email,
+      newsletter,
+      segments,
+      attemptId,
+    });
     const batchSize = this.#sendingService.getMaximumRecipients();
     const warmupLimit = this.#getDomainWarmupLimit(email);
     let candidateCount = 0;
     let excludedCount = 0;
-    for (const segment of segments) {
-      const segmentFilter = this.#emailSegmenter.getMemberFilterForSegment(
-        newsletter,
-        email.get('recipient_filter'),
-        segment,
-      );
-      const startedAt = Date.now();
-      const ids = await this.retryDb(
-        async () => {
-          this.#checkPreparationActive();
-          // Each segment reads current filter attributes; the ID cutoff only excludes newer members.
-          // Counts cover this attempt's selected IDs, not one snapshot shared by all segments.
-          const rows = await this.#models.Member.getFilteredCollectionQuery({
-            filter: segmentFilter + `+id:<'${email.id}'`,
-          })
-            .orderByRaw('members.id DESC')
-            .select('members.id');
-          return selectedMemberIds(rows);
-        },
-        {
-          ...this.#getBeforeRetryConfig(email),
-          description: `sweep audience for email ${email.id} segment ${segment}`,
-        },
-      );
-      this.#checkPreparationActive();
-      logging.info(
-        {
-          event: { name: 'email.preparation.swept' },
-          email_id: email.id,
-          attempt_id: attemptId,
-          segment,
-          candidate_count: ids.length,
-          duration_ms: Date.now() - startedAt,
-        },
-        'Selected newsletter candidate recipients',
-      );
+    for (const [index, ids] of candidates.entries()) {
+      const segment = segments[index];
       const remainingCapacity = warmupLimit - candidateCount;
       candidateCount += ids.length;
       if (ids.length === 0) {

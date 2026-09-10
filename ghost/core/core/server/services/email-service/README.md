@@ -27,14 +27,20 @@ rebuilding may refresh the eligible audience even if preparation finished
 immediately before a crash. No submission has started. After `prepared_at` is
 saved, the audience stays frozen.
 
-Select ordered member IDs upfront for each segment, using the existing audience
-filter and the email's member-ID cutoff. Failed sweeps retry within the existing
-database budget; only a complete successful result contributes candidates.
-Collapse adjacent duplicate IDs in memory and count candidates before dividing
-them into pages. Choose each page's domain and cap its size at the remaining
-warming capacity before dispatching it; after that capacity is exhausted, use
-full-size fallback pages. Segments are prepared sequentially and do not share a
-snapshot.
+Select member IDs for every segment upfront in one `UNION ALL` statement, using
+the existing audience filters and the email's member-ID cutoff. The statement
+gives all segments the same database view without holding a transaction open
+across selection queries or batch writes. Failed selections retry as a whole
+within the existing database budget, before any batches are written. Only a
+complete successful result contributes candidates.
+
+Order the result by segment and descending member ID, collapse adjacent duplicate
+IDs within each segment, and count candidates before dividing them into pages.
+Choose each page's domain and cap its size at the remaining warming capacity
+before dispatching it; after that capacity is exhausted, use full-size fallback
+pages. Prepare the selected segments sequentially. All segments' candidate IDs
+remain in memory until preparation finishes; the combined ordering can require a
+database sort over the full audience.
 
 `bulkEmail:batchCreationConcurrency` defaults to 2 and directly bounds active
 pages per email, independently of database pool settings. Explicit per-site
@@ -51,18 +57,13 @@ missing from an existing record is an explicit exclusion with error logging and
 Sentry reporting. A selected member no longer found is a `member_not_found`
 exclusion logged at information level. Database failures are not exclusions.
 
-Selection fixes eligibility for that segment: unsubscribing, disabling email, or
-changing audience attributes after selection does not remove a candidate whose
-data remains valid. Newly eligible members are not added. Earlier paged preparation
-rechecked eligibility per page; submission validation remains unchanged. Faster
-preparation can shorten this window, but retries can extend it. Members changing
-segment between sweeps can still be selected twice or missed by both segments.
-
-Each segment's sweep reads current member filter attributes. The member-ID
-cutoff excludes newer members but does not freeze those attributes across
-segments or preparation attempts. The candidate/recipient/exclusion equation
-accounts for IDs selected during that attempt; it does not establish a single
-point-in-time audience snapshot across all segments.
+Selection fixes eligibility and segment assignment for the whole email:
+unsubscribing, disabling email, or changing audience attributes after selection
+does not remove a candidate whose data remains valid. Newly eligible members are
+not added. Earlier paged preparation rechecked eligibility per page; submission
+validation remains unchanged. Retries of incomplete preparation select a fresh
+audience. The member-ID cutoff excludes newer members across those attempts,
+but does not freeze existing members' attributes between attempts.
 
 Each batch creation operation retains its ID and intended recipient data across
 database retries of that operation. Restarting incomplete preparation before
@@ -250,8 +251,9 @@ NODE_OPTIONS=--conditions=source node --expose-gc scripts/benchmark-recipient-pr
 
 The arguments are member count and preparation concurrency. The harness creates
 and drops its own database on `127.0.0.1:3306`, uses Ghost's schema and preparation
-service with a pool of five, and never submits email. It measures the full
-audience, discard and rebuild after a complete pending attempt, and a label
+service with a pool of five, and never submits email. Members are split evenly
+between free and paid segments to exercise the combined audience selection.
+It measures the full audience, discard and rebuild after a complete pending attempt, and a label
 audience containing every fifth member. JSON output includes database settings,
 query counts, elapsed times, sweep and discard durations, and sampled memory.
 
