@@ -14,10 +14,11 @@ const MAX_ATTEMPTS = 3;
 export async function transactionWithRetry<T>(
   knex: Pick<Knex, 'transaction'>,
   callback: (trx: Knex.Transaction) => Promise<T>,
+  config?: Knex.TransactionConfig,
 ): Promise<T> {
   for (let attempt = 0; ; attempt += 1) {
     try {
-      return await knex.transaction(callback);
+      return await knex.transaction(callback, config);
     } catch (error) {
       const code =
         typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;

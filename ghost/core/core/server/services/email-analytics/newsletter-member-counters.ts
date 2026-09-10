@@ -48,6 +48,92 @@ export class NewsletterMemberCounters {
     this.#knex = knex;
   }
 
+  /** Lock before either baseline reads history, and before recipient writes. */
+  async prepareEventMembers(
+    trx: Knex.Transaction,
+    emailId: string,
+    recipients: { member_id: string; batch_id: string }[],
+  ): Promise<Map<string, MemberCounts>> {
+    if (!recipients.length) {
+      return new Map();
+    }
+    // These locking reads must also precede the first baseline snapshot. The
+    // email lock already serializes preparation and events for this email.
+    const email = await trx('emails').where('id', emailId).forShare().first();
+    const batches = await trx('email_batches')
+      .whereIn('id', [...new Set(recipients.map((row) => row.batch_id))])
+      .orderBy('id')
+      .forShare();
+    if (
+      !email ||
+      (email.preflight_email_count !== null && email.prepared_at === null) ||
+      batches.some(
+        (batch) => batch.member_counters_enabled && batch.member_counters_applied_at === null,
+      )
+    ) {
+      throw new IncorrectUsageError({
+        message: 'Recipient events require completed member counter preparation',
+        context: `Email ${emailId}`,
+      });
+    }
+    const memberIds = [...new Set(recipients.map((row) => row.member_id))];
+    const members: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
+        email_tracked_count: number | null;
+      })[] = await this.#members(trx)
+      .whereIn('id', memberIds)
+      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
+      .orderBy('id')
+      .forUpdate();
+    const uninitialized = members
+      .filter((row) => row.email_tracked_count === null)
+      .map((row) => row.id);
+    const baseline = uninitialized.length
+      ? await this.#derive(trx, uninitialized)
+      : new Map<string, MemberCounts>();
+    if (uninitialized.length) {
+      await this.#setCounts(trx, uninitialized, baseline);
+    }
+    return new Map(
+      members.map((member) => [
+        member.id,
+        member.email_tracked_count === null
+          ? (baseline.get(member.id) ?? {
+              email_count: 0,
+              email_tracked_count: 0,
+              email_opened_count: 0,
+              email_open_rate: null,
+            })
+          : { ...member, email_tracked_count: member.email_tracked_count },
+      ]),
+    );
+  }
+
+  /** Apply exact recipient transitions; multiple recipients may share a member. */
+  async incrementOpened(
+    trx: Knex.Transaction,
+    transitions: { memberId: string }[],
+    baseline: Map<string, MemberCounts>,
+  ): Promise<void> {
+    const totals = new Map<string, MemberCounts>();
+    for (const { memberId } of transitions) {
+      const current = totals.get(memberId) ?? baseline.get(memberId);
+      if (!current) {
+        continue;
+      }
+      const opened = Number(current.email_opened_count) + 1;
+      const tracked = Number(current.email_tracked_count);
+      totals.set(memberId, {
+        ...current,
+        email_opened_count: opened,
+        email_open_rate:
+          tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+      });
+    }
+    if (totals.size) {
+      await this.#setCounts(trx, [...totals.keys()], totals);
+    }
+  }
+
   /** Apply only explicitly enrolled, frozen batches, atomically with their marker. */
   async applyPreparedBatch(batchId: string): Promise<boolean> {
     const owner = await this.#knex('email_batches').where('id', batchId).first('email_id');

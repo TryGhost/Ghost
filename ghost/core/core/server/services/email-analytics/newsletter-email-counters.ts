@@ -79,6 +79,11 @@ export class NewsletterEmailCounters {
     });
   }
 
+  /** Acquire before recipient and member locks, without establishing a snapshot. */
+  async lock(trx: Knex.Transaction, emailId: string): Promise<void> {
+    await trx('emails').where('id', emailId).forUpdate().first('id');
+  }
+
   /**
    * Lock the email row and, on the first touch per process, replace its
    * counters with recounted truth. Must precede recipient locks, within a
