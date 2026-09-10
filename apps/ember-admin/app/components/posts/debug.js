@@ -308,8 +308,8 @@ export default class Debug extends Component {
             [duration.hours(), 'h'],
             [duration.minutes(), 'm'],
             [duration.seconds(), 's']
-        ].filter(([value, unit]) => value > 0 || unit === 's')
-            .map(([value, unit]) => `${value}${unit}`).join(' ');
+        ].filter(([value]) => value > 0)
+            .map(([value, unit]) => `${value}${unit}`).join(' ') || '0s';
     }
 
     @action

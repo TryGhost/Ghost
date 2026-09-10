@@ -75,28 +75,22 @@ describe('EmailAnalyticsService', function () {
           running: false,
           fetchedThrough: null,
           lagSeconds: null,
-          measuredAt: new Date(),
         },
         latestOpened: {
           jobName: 'email-analytics-latest-opened',
           running: false,
           fetchedThrough: null,
           lagSeconds: null,
-          measuredAt: new Date(),
         },
         missing: {
           jobName: 'email-analytics-missing',
           running: false,
           fetchedThrough: null,
           lagSeconds: null,
-          measuredAt: new Date(),
         },
         scheduled: {
           jobName: 'email-analytics-scheduled',
           running: false,
-          fetchedThrough: null,
-          lagSeconds: null,
-          measuredAt: new Date(),
         },
       });
     });
@@ -159,7 +153,6 @@ describe('EmailAnalyticsService', function () {
 
       clock.tick(90_000);
       assert.equal(service.getStatus().latest.lagSeconds, 150);
-      assert.deepEqual(service.getStatus().latest.measuredAt, new Date());
     });
 
     it('uses the safe cursor when a domain hits its event limit', async function () {
@@ -240,6 +233,24 @@ describe('EmailAnalyticsService', function () {
       assert.equal(service.getStatus().latestOpened.lagSeconds, 1500);
       assert.equal(service.getStatus().latest.lagSeconds, 60);
       assert.equal(service.getStatus().missing.lagSeconds, null);
+    });
+
+    it('reports scheduled refetch progress without wall-clock lag', async function () {
+      const begin = new Date(2023, 0, 1);
+      const end = new Date(2023, 0, 8);
+      const safeCursor = new Date(2023, 0, 2);
+      const fetchEvents = sinon.stub().callsFake(async ({ batchHandler }) => {
+        await batchHandler([{ timestamp: safeCursor }]);
+        return { safeCursor };
+      });
+      const service = createService({ fetchEvents });
+      await service.schedule({ begin, end });
+      await service.fetchScheduled({ maxEvents: 1 });
+
+      const { scheduled } = service.getStatus();
+      assert.deepEqual(scheduled.schedule, { begin, end });
+      assert.deepEqual(scheduled.fetchedThrough, safeCursor);
+      assert.equal(Object.hasOwn(scheduled, 'lagSeconds'), false);
     });
 
     it('reports the missing-events recovery window separately', async function () {

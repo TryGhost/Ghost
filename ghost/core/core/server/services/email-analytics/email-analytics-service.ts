@@ -155,20 +155,19 @@ export class EmailAnalyticsService {
   }
 
   getStatus() {
-    const measuredAt = new Date();
+    const now = Date.now();
     const withLag = <T extends FetchData>(data: T) =>
       Object.assign(data, {
         fetchedThrough: data.fetchedThrough ?? null,
         lagSeconds: data.fetchedThrough
-          ? Math.max(0, Math.floor((measuredAt.getTime() - data.fetchedThrough.getTime()) / 1000))
+          ? Math.max(0, Math.floor((now - data.fetchedThrough.getTime()) / 1000))
           : null,
-        measuredAt,
       });
 
     return {
       latest: withLag(this.#fetchLatestNonOpenedData),
       missing: withLag(this.#fetchMissingData),
-      scheduled: withLag(this.#fetchScheduledData),
+      scheduled: this.#fetchScheduledData,
       latestOpened: withLag(this.#fetchLatestOpenedData),
     };
   }
@@ -637,7 +636,7 @@ export class EmailAnalyticsService {
       throw error;
     }
 
-    if (fetchedThrough && !fetchData.canceled) {
+    if (fetchedThrough) {
       fetchData.fetchedThrough = fetchedThrough;
     }
 
