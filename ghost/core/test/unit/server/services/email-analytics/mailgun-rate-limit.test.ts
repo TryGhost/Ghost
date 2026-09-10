@@ -5,6 +5,59 @@ import { MailgunRateLimit } from '../../../../../core/server/services/email-anal
 describe('Mailgun polling rate limits', () => {
   afterEach(() => sinon.restore());
 
+  it('retains the final reset after retry exhaustion for later polling cycles', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    let calls = 0;
+    const failed = assert.rejects(
+      limiter.run(async () => {
+        calls += 1;
+        throw Object.assign(new Error('Rate limited'), {
+          status: 429,
+          rateLimit: calls === 4 ? { resetAt: 60000 } : undefined,
+        });
+      }),
+      /Rate limited/,
+    );
+    await clock.tickAsync(7000);
+    await failed;
+    const nextRead = sinon.stub().resolves({ value: 'next' });
+    await assert.rejects(limiter.run(nextRead), /polling budget/);
+    sinon.assert.notCalled(nextRead);
+    await clock.tickAsync(53000);
+    assert.equal(await limiter.run(nextRead), 'next');
+  });
+
+  it('rechecks a shared reset extended by another in-flight response while waiting', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    const limiter = new MailgunRateLimit();
+    let finish!: (value: {
+      value: string;
+      rateLimit: { remaining: number; resetAt: number };
+    }) => void;
+    const inFlight = limiter.run<string>(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await limiter.run(async () => ({ value: 'quota', rateLimit: { remaining: 0, resetAt: 5000 } }));
+    const requestedAt: number[] = [];
+    const waiting = limiter.run(async () => {
+      requestedAt.push(Date.now());
+      return { value: 'next' };
+    });
+    await clock.tickAsync(1000);
+    finish({ value: 'late response', rateLimit: { remaining: 0, resetAt: 10000 } });
+    await inFlight;
+    await clock.tickAsync(8999);
+    assert.deepEqual(requestedAt, []);
+    await clock.tickAsync(1);
+    assert.equal(await waiting, 'next');
+    assert.deepEqual(requestedAt, [10000]);
+  });
+
   it('does not retry errors other than HTTP 429', async () => {
     const limiter = new MailgunRateLimit();
     const failure = Object.assign(new Error('Unavailable'), { status: 503 });

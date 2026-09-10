@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import nock from 'nock';
 import sinon from 'sinon';
 import { fetchMailgunEvents } from '../../../../../core/server/services/email-analytics/fetch-mailgun-events';
+import { MailgunRateLimit } from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
 import {
   MailgunLogsClient,
   type MailgunAnalyticsEvent,
@@ -38,6 +39,60 @@ describe('fetchMailgunEvents with Logs selected', () => {
   afterEach(() => {
     nock.cleanAll();
     sinon.restore();
+  });
+
+  it('cancels an active provider read before handing its page to the processor', async () => {
+    const controller = new AbortController();
+    const scope = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .delay(500)
+      .reply(200, { items: [event('one')], pagination: {} });
+    const requested = new Promise<void>((resolve) => {
+      scope.on('request', () => resolve());
+    });
+    const batchHandler = sinon.stub();
+    const run = fetchMailgunEvents({
+      config,
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      signal: controller.signal,
+      batchHandler,
+    });
+    const rejected = assert.rejects(run, /Fetching canceled/);
+    await requested;
+    controller.abort();
+    await rejected;
+    sinon.assert.notCalled(batchHandler);
+  });
+
+  it('shares a provider cooldown with the next polling cycle', async () => {
+    const rateLimiter = new MailgunRateLimit();
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(
+        200,
+        { items: [event('one')], pagination: {} },
+        { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(Date.now() + 60000) },
+      );
+    const next = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(200, { items: [], pagination: {} });
+    const options = {
+      config,
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      rateLimiter,
+      batchHandler: sinon.stub(),
+    };
+    await fetchMailgunEvents(options);
+    await assert.rejects(fetchMailgunEvents(options), /polling budget/);
+    first.done();
+    assert.equal(next.isDone(), false);
+    sinon.assert.calledOnce(options.batchHandler);
   });
 
   it('aborts an in-progress quota wait when the current callback fails', async () => {

@@ -75,6 +75,7 @@ type FetchEvents = (options: {
   end: Date;
   maxEvents: number;
   events?: EmailAnalyticsEvent[];
+  signal?: AbortSignal;
 }) => Promise<FetchEventsResult | void>;
 
 const TRUST_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
@@ -101,6 +102,7 @@ export class EmailAnalyticsService {
   queries: Queries;
   #fetchEvents: FetchEvents;
   #createEventProcessor: () => BatchEventProcessor;
+  #signal?: AbortSignal;
 
   #jobNames: JobNames;
   #cursorSeed: CursorSeed;
@@ -116,18 +118,21 @@ export class EmailAnalyticsService {
     createEventProcessor,
     jobNames,
     cursorSeed,
+    signal,
   }: {
     queries: Queries;
     fetchEvents: FetchEvents;
     createEventProcessor: () => BatchEventProcessor;
     jobNames: JobNames;
     cursorSeed: CursorSeed;
+    signal?: AbortSignal;
   }) {
     this.queries = queries;
     this.#fetchEvents = fetchEvents;
     this.#createEventProcessor = createEventProcessor;
     this.#jobNames = jobNames;
     this.#cursorSeed = cursorSeed;
+    this.#signal = signal;
 
     this.#fetchLatestNonOpenedData = {
       running: false,
@@ -153,6 +158,15 @@ export class EmailAnalyticsService {
       jobName: this.#jobNames.scheduled,
     };
     this.queries.setJobMetadata(this.#jobNames.scheduled, null);
+  }
+
+  #throwIfStopped(): void {
+    if (this.#signal?.aborted) {
+      throw new errors.InternalServerError({
+        message: 'Fetching canceled',
+        code: 'MAILGUN_POLLING_CANCELED',
+      });
+    }
   }
 
   getStatus() {
@@ -455,6 +469,7 @@ export class EmailAnalyticsService {
     },
   ): Promise<EmailAnalyticsFetchResult> {
     // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
+    this.#throwIfStopped();
     // Store that we started fetching
     fetchData.running = true;
     fetchData.lastStarted = new Date();
@@ -481,6 +496,7 @@ export class EmailAnalyticsService {
     // A fetcher that stops early returns the cursor it covered; the window past
     // it was never read, so the cursor must not skip ahead afterwards.
     let capped = false;
+    let interrupted = false;
 
     const aggregate = async (isFinal: boolean): Promise<void> => {
       if (!eventProcessor.aggregate) {
@@ -501,6 +517,7 @@ export class EmailAnalyticsService {
     };
 
     const processBatch = async (events: any[]): Promise<void> => {
+      this.#throwIfStopped();
       // Even if the fetching is interrupted because of an error, we still store the last event timestamp
       const processingStart = Date.now();
       // Capture the state before processing to calculate delta
@@ -555,13 +572,16 @@ export class EmailAnalyticsService {
     };
 
     try {
+      this.#throwIfStopped();
       const fetchResult = await this.#fetchEvents({
         batchHandler: processBatch,
         begin,
         end,
         maxEvents,
         events: eventTypes,
+        ...(this.#signal ? { signal: this.#signal } : {}),
       });
+      this.#throwIfStopped();
 
       capped = Boolean(fetchResult?.safeCursor);
       // Everything before a capped cursor was processed or irrelevant. Keep the
@@ -577,6 +597,7 @@ export class EmailAnalyticsService {
         fetchData.lastEventTimestamp = fetchResult.safeCursor;
       }
     } catch (err) {
+      interrupted = true;
       // A fetch can process events from one domain before another domain fails. Keep the
       // in-memory cursor at the start of this run so the next attempt retries every domain.
       fetchData.lastEventTimestamp = begin;
@@ -587,6 +608,9 @@ export class EmailAnalyticsService {
         error = err;
       } else {
         logging.error('[EmailAnalytics] Canceled fetching');
+        if (this.#signal?.aborted) {
+          error = err;
+        }
       }
     }
 
@@ -605,8 +629,17 @@ export class EmailAnalyticsService {
     // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
     // to avoid re-fetching the same batch on the next cycle. When we hit the maxEvents budget mid-second,
     // do NOT advance — the next pass needs to re-cover that second to pick up any remaining events.
+    // Shutdown can begin during the final flush too. Keep the window for replay.
+    if (this.#signal?.aborted) {
+      fetchData.lastEventTimestamp = begin;
+      error ??= new errors.InternalServerError({
+        message: 'Fetching canceled',
+        code: 'MAILGUN_POLLING_CANCELED',
+      });
+    }
     if (
       !error &&
+      !interrupted &&
       eventCount > 0 &&
       fetchData.lastEventTimestamp &&
       fetchData.lastEventTimestamp.getTime() < Date.now() - 2000
