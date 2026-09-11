@@ -4,7 +4,7 @@
 
 ARG NODE_VERSION=22.23.1
 
-FROM node:$NODE_VERSION-bullseye-slim
+FROM node:$NODE_VERSION-bookworm-slim
 
 # Install system dependencies needed for building native modules.
 # watchman: ember-cli (ghost/admin's dev server) auto-detects and prefers it

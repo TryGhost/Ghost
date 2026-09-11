@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const i18nLib = require('@tryghost/i18n');
+const i18nLib = require('@tryghost/i18n').default;
 const testUtils = require('../../utils');
 const { assertMatchSnapshot } = require('../../utils/assertions');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');

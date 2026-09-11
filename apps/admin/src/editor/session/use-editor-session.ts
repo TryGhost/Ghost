@@ -33,22 +33,22 @@ import {
   isCollisionToken,
   type LeaveDecision,
   type SaveCompletion,
-  type PostStatus,
   type SaveEngineState,
 } from '@/editor/engine/save-engine';
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
-import { createEditorSession, type EditorSession, type EditorWritePayload } from './editor-session';
-import { createPublishDispatcher } from './publish-dispatch';
-import type { PublishDispatcher } from '@/editor/publish/use-publish-flow';
-import type { EditorRecord } from './projection';
 import {
-  SETTINGS_FIELD_KEYS,
-  type EditorSettingsFields,
-  type EditorSettingsPatch,
-} from './settings-fields';
+  createEditorSession,
+  type EditorSession,
+  type EditorSessionView,
+  type EditorWritePayload,
+} from './editor-session';
+import { createPublishDispatcher } from './publish-dispatch';
+import type { PublishDispatcher } from '@/editor/publish/publish-options';
+import type { EditorRecord } from './projection';
+import type { EditorSettingsFields, EditorSettingsPatch } from './settings-fields';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 /** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
@@ -120,7 +120,7 @@ export interface EditorSessionHandle {
   /** Routes a manual slug edit through the slug machine, then the save policy. */
   editSlug: EditorSession['editSlug'];
   /** The status and publish time the sidebar's date field reads. */
-  publishTime: PublishTimeView;
+  publishTime: EditorSessionView['publishTime'];
   /** Stages the publish time, then applies the sidebar's save policy. */
   editPublishedAt: (publishedAt: string) => void;
   /** The post as the engine reads it: identity, status, publish time and title. */
@@ -149,28 +149,6 @@ export interface UseEditorSessionOptions {
   currentUserId?: string;
 }
 
-export interface PublishTimeView {
-  status: PostStatus;
-  publishedAt: string | null;
-}
-
-function publishTimeOf(session: EditorSession): PublishTimeView {
-  const snapshot = session.getSaveSnapshot();
-  return { status: snapshot.status, publishedAt: snapshot.publishedAt };
-}
-
-function samePublishTime(a: PublishTimeView, b: PublishTimeView): boolean {
-  return a.status === b.status && a.publishedAt === b.publishedAt;
-}
-
-function settingsFieldsOf(projection: EditorSettingsFields): EditorSettingsFields {
-  const fields = {} as Record<string, unknown>;
-  for (const key of SETTINGS_FIELD_KEYS) {
-    fields[key] = projection[key];
-  }
-  return fields as EditorSettingsFields;
-}
-
 function reportError(error: unknown): void {
   // eslint-disable-next-line no-console
   console.error(error);
@@ -195,7 +173,6 @@ export function useEditorSession({
   const [title, setTitle] = useState(() =>
     record?.title === DEFAULT_TITLE ? '' : (record?.title ?? ''),
   );
-  const [excerpt, setExcerpt] = useState(() => record?.custom_excerpt ?? '');
   const [initialLexical, setInitialLexical] = useState(() => record?.lexical ?? null);
   const [loadedRecord, setLoadedRecord] = useState(record);
   const [contentKey, setContentKey] = useState(0);
@@ -267,38 +244,22 @@ export function useEditorSession({
     };
   }, [session]);
 
-  const state = useSyncExternalStore(session.subscribe, session.getState);
-  const isDirty = useSyncExternalStore(session.subscribe, session.isDirty);
-  const slug = useSyncExternalStore(session.subscribe, session.getSlug);
-
-  // Mirrored into React state, as the title and excerpt are: the session
-  // notifies on engine and dirtiness changes, not on every field edit.
-  const [settings, setSettings] = useState<EditorSettingsFields>(() =>
-    settingsFieldsOf(session.getFields()),
+  const { state, isDirty, slug, settings, publishTime } = useSyncExternalStore(
+    session.subscribe,
+    session.getView,
   );
 
-  // The engine's own status and publish time, mirrored for the same reason the
-  // settings fields are: an edit is not an engine state change.
-  const [publishTime, setPublishTime] = useState<PublishTimeView>(() => publishTimeOf(session));
-
-  const stageSettings = useCallback(
-    (patch: EditorSettingsPatch) => {
-      session.patchFields(patch);
-      setSettings(settingsFieldsOf(session.getFields()));
-    },
-    [session],
-  );
+  const stageSettings = session.patchFields;
 
   const editPublishedAt = useCallback(
     (next: string) => {
-      const before = publishTimeOf(session);
+      const before = session.getPublishedAt();
       session.editPublishedAt(next);
-      const after = publishTimeOf(session);
+      const after = session.getPublishedAt();
       // The field commits on blur, so most commits carry the time already held.
-      if (samePublishTime(before, after)) {
+      if (before === after) {
         return;
       }
-      setPublishTime(after);
       session.commitField();
     },
     [session],
@@ -313,18 +274,6 @@ export function useEditorSession({
     },
     [session, stageSettings],
   );
-
-  // An acknowledgement adopts the server's copy of the fields nobody edited
-  // here, and that adoption has no edit of its own to mirror the session on.
-  useEffect(() => {
-    const next = settingsFieldsOf(session.getFields());
-    setSettings((current) =>
-      SETTINGS_FIELD_KEYS.every((key) => current[key] === next[key]) ? current : next,
-    );
-    setExcerpt(next.custom_excerpt ?? '');
-    const time = publishTimeOf(session);
-    setPublishTime((current) => (samePublishTime(current, time) ? current : time));
-  }, [session, state]);
 
   // The saved record: the same query key the screen loaded with, so an existing
   // post shares one cache entry and a created one starts observing its own.
@@ -348,12 +297,6 @@ export function useEditorSession({
     // non-older collision token may replace what the screen describes.
     if (session.recordRefetched(saved)) {
       setLoadedRecord(saved);
-      // The session adopts the server's copy of the fields nobody edited here,
-      // so the inputs mirroring them are re-read rather than left behind.
-      const fields = session.getFields();
-      setSettings(settingsFieldsOf(fields));
-      setExcerpt(fields.custom_excerpt ?? '');
-      setPublishTime(publishTimeOf(session));
     }
   }, [saved, session]);
 
@@ -403,9 +346,6 @@ export function useEditorSession({
     await queryClient.cancelQueries({ queryKey, exact: true });
     queryClient.setQueryData(queryKey, data);
     setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
-    setExcerpt(fresh.custom_excerpt ?? '');
-    setSettings(settingsFieldsOf(session.getFields()));
-    setPublishTime(publishTimeOf(session));
     setInitialLexical(fresh.lexical ?? null);
     setLoadedRecord(fresh);
     setContentKey((key) => key + 1);
@@ -424,8 +364,6 @@ export function useEditorSession({
       // The session normalizes a blank restored title, so the surface reads it back.
       const fields = session.getFields();
       setTitle(fields.title === DEFAULT_TITLE ? '' : fields.title);
-      setExcerpt(fields.custom_excerpt ?? '');
-      setSettings(settingsFieldsOf(fields));
       setInitialLexical(restored.lexical);
       setLoadedRecord((current) =>
         current ? { ...current, ...restored, title: fields.title } : current,
@@ -452,10 +390,9 @@ export function useEditorSession({
 
   const onExcerptChange = useCallback(
     (next: string) => {
-      setExcerpt(next);
-      session.patchExcerpt(next);
+      stageSettings({ custom_excerpt: next || null });
     },
-    [session],
+    [stageSettings],
   );
 
   const onTitleBlur = useCallback(() => {
@@ -494,7 +431,7 @@ export function useEditorSession({
   return {
     bind: {
       title,
-      excerpt,
+      excerpt: settings.custom_excerpt ?? '',
       initialLexical,
       onTitleChange,
       onTitleBlur,

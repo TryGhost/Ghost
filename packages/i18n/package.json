@@ -5,34 +5,58 @@
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/i18n",
   "files": [
-    "index.js",
-    "index.d.ts",
-    "registry.d.ts",
-    "lib",
+    "build",
     "locales"
   ],
-  "main": "index.js",
-  "types": "./index.d.ts",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "require": "./index.js",
-      "default": "./index.js"
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
     },
-    "./registry/*": {
-      "types": "./registry.d.ts",
-      "default": "./lib/registry/*.mjs"
+    "./registry/comments": {
+      "source": "./src/registry/comments.ts",
+      "types": "./build/registry/comments.d.ts",
+      "default": "./build/registry/comments.js"
     },
-    "./lib/locale-data.json": "./lib/locale-data.json",
+    "./registry/ghost": {
+      "source": "./src/registry/ghost.ts",
+      "types": "./build/registry/ghost.d.ts",
+      "default": "./build/registry/ghost.js"
+    },
+    "./registry/portal": {
+      "source": "./src/registry/portal.ts",
+      "types": "./build/registry/portal.d.ts",
+      "default": "./build/registry/portal.js"
+    },
+    "./registry/search": {
+      "source": "./src/registry/search.ts",
+      "types": "./build/registry/search.d.ts",
+      "default": "./build/registry/search.js"
+    },
+    "./registry/signup-form": {
+      "source": "./src/registry/signup-form.ts",
+      "types": "./build/registry/signup-form.d.ts",
+      "default": "./build/registry/signup-form.js"
+    },
+    "./locale-data.json": {
+      "source": "./src/locale-data.json",
+      "default": "./build/locale-data.json"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test:base": "NODE_ENV=testing vitest run --coverage",
-    "test": "pnpm test:base && pnpm translate",
-    "lint:code": "eslint *.js *.mjs lib/ --cache",
-    "lint": "pnpm run '/^lint:/'",
+    "build": "tsc",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/' && pnpm translate",
+    "lint:code": "eslint src/ ./*.js --cache",
     "lint:test": "eslint test/ --cache",
     "lint:translations": "node ./test/i18n.lint.js",
+    "lint": "pnpm run '/^lint:/'",
     "translate": "pnpm translate:ghost && pnpm translate:portal && pnpm translate:signup-form && pnpm translate:comments && pnpm translate:search && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../../ghost/core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../../ghost/core/core/frontend/public/*.min.js' '../../ghost/core/core/server/services/email-rendering/partials/**/*.hbs' '../../ghost/core/core/server/services/email-service/email-templates/**/*.hbs' '../../ghost/core/core/server/services/comments/email-templates/**/*.hbs' '../../ghost/core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../../ghost/core/core/server/services/gifts/**/*.{ts,hbs}'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx,ts,tsx}'",
@@ -42,24 +66,36 @@
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
-    "i18next": "23.16.8"
+    "i18next": "23.16.8",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "fs-extra": "catalog:",
     "glob": "catalog:",
     "i18next-parser": "9.4.0",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "ghostPackage": {
     "goldenPath": "exempt",
-    "reason": "Ships locale assets and dedicated CommonJS and ESM loaders for browser and server consumers."
+    "reason": "Ships 3.5MB of runtime locale JSON that tsc cannot emit into build/, so files cannot be limited to [\"build\"]."
   },
   "nx": {
     "tags": [
       "i18n"
-    ]
+    ],
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }

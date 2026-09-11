@@ -19,8 +19,7 @@ import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut } from './use-preview-shortcut';
-import { usePublishShortcut } from './use-publish-shortcut';
+import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
 
 type OpenFlow = 'none' | 'publish' | 'update';
 

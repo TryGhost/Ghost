@@ -109,7 +109,7 @@ export function PostSettingsSidebar({
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
 
-  const sections: Partial<Record<SettingsSectionId, ReactNode>> = {
+  const sections: Record<SettingsSectionId, ReactNode> = {
     url: <UrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <PublishDateSection session={session} />,
     tags: canTag ? <TagsSection session={session} /> : null,
@@ -181,7 +181,7 @@ export function PostSettingsSidebar({
           </>
         )}
         {SETTINGS_SECTION_ORDER.map((id) => (
-          <Fragment key={id}>{open && open.id !== id ? null : (sections[id] ?? null)}</Fragment>
+          <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
         ))}
       </aside>
     </SubviewContext.Provider>

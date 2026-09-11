@@ -18,7 +18,7 @@ import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
 import type {
-  PublishDispatch,
+  PublishDispatcher,
   PublishLimitPorts,
   PublishOptionsMachine,
   PublishOptionsState,
@@ -29,8 +29,6 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
-
-export type PublishDispatcher = (dispatch: PublishDispatch) => Promise<SaveCompletion>;
 
 export interface PublishFlowOptions {
   post: PublishFlowPost;
@@ -44,8 +42,12 @@ export interface PublishFlowOptions {
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
 
-export interface PublishFlow {
-  machine: PublishOptionsMachine;
+type PublishOptionActions = Pick<
+  PublishOptionsMachine,
+  'setPublishType' | 'setNewsletter' | 'setRecipientFilter' | 'setScheduledAt' | 'setIsScheduled'
+>;
+
+export interface PublishFlow extends PublishOptionActions {
   state: PublishOptionsState;
   step: PublishStep;
   confirmStatus: ConfirmStatus;
@@ -68,8 +70,6 @@ export interface PublishFlow {
     willOnlyEmail: boolean;
     isScheduled: boolean;
   };
-  /** Re-renders after a machine transition; the machine has no subscription. */
-  refresh: () => void;
   retryLimits: () => void;
   toConfirm: () => void;
   toOptions: () => void;
@@ -125,6 +125,33 @@ export function usePublishFlow({
       now: current.now,
     });
   }, [post.id]);
+
+  // Keep model changes and React updates together; callers only receive actions.
+  const optionActions = useMemo<PublishOptionActions>(
+    () => ({
+      setPublishType: (value) => {
+        machine.setPublishType(value);
+        refresh();
+      },
+      setNewsletter: (value) => {
+        machine.setNewsletter(value);
+        refresh();
+      },
+      setRecipientFilter: (value) => {
+        machine.setRecipientFilter(value);
+        refresh();
+      },
+      setScheduledAt: (value) => {
+        machine.setScheduledAt(value);
+        refresh();
+      },
+      setIsScheduled: (value) => {
+        machine.setIsScheduled(value);
+        refresh();
+      },
+    }),
+    [machine],
+  );
 
   // The email is created by the save, so its id is only knowable from a reload.
   const emailIdRef = useRef<string | null>(post.email?.id ?? null);
@@ -501,7 +528,7 @@ export function usePublishFlow({
   }, [complete, confirmation, post.id]);
 
   return {
-    machine,
+    ...optionActions,
     state,
     step,
     confirmStatus,
@@ -513,7 +540,6 @@ export function usePublishFlow({
     limitsFailure,
     emailNote,
     captured,
-    refresh,
     retryLimits: () => void checkLimits(),
     toConfirm,
     toOptions,

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useSaveShortcut } from './use-save-shortcut';
+import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
 
 function pressSave(key = 's', modifiers: Partial<KeyboardEventInit> = { metaKey: true }) {
   const event = new KeyboardEvent('keydown', { key, cancelable: true, ...modifiers });
@@ -24,6 +24,53 @@ async function flush() {
     });
   });
 }
+
+describe('preview and publish shortcuts', () => {
+  it('routes each chord once and leaves unrelated keys alone', () => {
+    const preview = vi.fn();
+    const publish = vi.fn();
+    renderHook(() => {
+      usePreviewShortcut(preview);
+      usePublishShortcut(publish);
+    });
+
+    expect(pressSave('p').defaultPrevented).toBe(true);
+    expect(pressSave('P', { ctrlKey: true, shiftKey: true }).defaultPrevented).toBe(true);
+    expect(pressSave('p', { metaKey: true, repeat: true }).defaultPrevented).toBe(true);
+    expect(pressSave('p', { metaKey: true, shiftKey: true, repeat: true }).defaultPrevented).toBe(
+      true,
+    );
+    expect(pressSave('p', {}).defaultPrevented).toBe(false);
+    expect(pressSave('p', { metaKey: true, altKey: true }).defaultPrevented).toBe(false);
+
+    expect(preview).toHaveBeenCalledTimes(1);
+    expect(publish).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses current callbacks and permissions, then stops listening on unmount', () => {
+    const previous = vi.fn();
+    const current = vi.fn();
+    const { rerender, unmount } = renderHook(
+      ({ callback, enabled }) => {
+        usePreviewShortcut(callback, enabled);
+        usePublishShortcut(callback, enabled);
+      },
+      { initialProps: { callback: previous, enabled: false } },
+    );
+
+    expect(pressSave('p').defaultPrevented).toBe(false);
+    expect(pressSave('p', { metaKey: true, shiftKey: true }).defaultPrevented).toBe(false);
+    rerender({ callback: current, enabled: true });
+    pressSave('p');
+    pressSave('p', { metaKey: true, shiftKey: true });
+    expect(previous).not.toHaveBeenCalled();
+    expect(current).toHaveBeenCalledTimes(2);
+
+    unmount();
+    expect(pressSave('p').defaultPrevented).toBe(false);
+    expect(pressSave('p', { metaKey: true, shiftKey: true }).defaultPrevented).toBe(false);
+  });
+});
 
 describe('useSaveShortcut', () => {
   afterEach(() => {

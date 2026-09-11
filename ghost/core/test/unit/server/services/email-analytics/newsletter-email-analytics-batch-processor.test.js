@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
+const {
+  NewsletterEmailCounters,
+} = require('../../../../../core/server/services/email-analytics/newsletter-email-counters');
 
 const {
   NewsletterEmailAnalyticsBatchProcessor,
@@ -52,6 +55,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             emailEventProcessor = {};
             emailEventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
             emailEventProcessor.flushBatchedUpdates = sinon.stub().resolves();
+            emailEventProcessor.discardBatchedUpdates = sinon.stub();
             emailEventProcessor.handleDelivered = sinon.stub().callsFake(({ emailId }) => {
               return {
                 emailId,
@@ -420,6 +424,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             emailEventProcessor = {};
             emailEventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
             emailEventProcessor.flushBatchedUpdates = sinon.stub().resolves();
+            emailEventProcessor.discardBatchedUpdates = sinon.stub();
             emailEventProcessor.handleDelivered = sinon.stub().returns(null);
             emailEventProcessor.handleOpened = sinon.stub().returns(null);
             emailEventProcessor.handlePermanentFailed = sinon.stub().returns(null);
@@ -609,6 +614,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
           const emailEventProcessor = {
             batchGetRecipients: sinon.stub().resolves(new Map()),
             flushBatchedUpdates: sinon.stub().resolves(),
+            discardBatchedUpdates: sinon.stub(),
             handleDelivered: sinon
               .stub()
               .resolves({ emailId: 1, emailRecipientId: 1, memberId: 1 }),
@@ -668,6 +674,67 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         queries,
       });
     }
+
+    function createIncrementalCounters() {
+      const counters = new NewsletterEmailCounters({ knex: sinon.stub(), mode: 'incremental' });
+      sinon.stub(counters, 'compare').resolves();
+      sinon.stub(counters, 'reconcile').resolves();
+      return counters;
+    }
+
+    it('defers email reconciliation until final aggregation while preserving drained email IDs', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      const emailCounters = createIncrementalCounters();
+      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        queries,
+        emailCounters,
+      });
+      const processingResult = new EventProcessingResult({ emailIds: ['e-1'], memberIds: ['m-1'] });
+      clock.tick(5 * 60 * 1000 + 1);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: false });
+      sinon.assert.notCalled(emailCounters.compare);
+      sinon.assert.notCalled(emailCounters.reconcile);
+      sinon.assert.notCalled(queries.aggregateEmailStats);
+      sinon.assert.calledOnceWithExactly(queries.aggregateMemberStatsBatch, ['m-1']);
+      assert.deepEqual(processingResult.emailIds, []);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledOnceWithExactly(emailCounters.reconcile, 'e-1');
+      assert.equal(
+        await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
+        null,
+      );
+    });
+
+    it('retains a failed repair for the next drain without failing the fetch or blocking later emails', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      const emailCounters = createIncrementalCounters();
+      const processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        queries,
+        emailCounters,
+      });
+      const processingResult = new EventProcessingResult({ emailIds: ['e-1'], memberIds: ['m-1'] });
+      clock.tick(5 * 60 * 1000 + 1);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: false });
+      processingResult.merge({ emailIds: ['e-2'], memberIds: ['m-2'] });
+      emailCounters.reconcile.withArgs('e-1').onFirstCall().rejects(new Error('repair failed'));
+      // The failed email stays queued without failing the fetch or blocking
+      // the emails queued behind it
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-1'));
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-2'));
+      sinon.assert.calledOnce(queries.aggregateMemberStatsBatch.withArgs(['m-2']));
+      assert.equal(emailCounters.hasPendingReconciliation, true);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledTwice(emailCounters.reconcile.withArgs('e-1'));
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-2'));
+      assert.equal(emailCounters.hasPendingReconciliation, false);
+      assert.equal(
+        await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
+        null,
+      );
+    });
 
     describe('final aggregation', function () {
       it('aggregates stats from the processing result', async function () {

@@ -504,8 +504,9 @@ export class EmailAnalyticsService {
         unhandled: processingResult.unhandled,
         unprocessable: processingResult.unprocessable,
       };
-      const beforeEmailIds = new Set(processingResult.emailIds);
-      const beforeMemberIds = new Set(processingResult.memberIds);
+      // IDs are appended in first-seen order, so everything past these offsets is new to this batch
+      const beforeEmailIdCount = processingResult.emailIds.length;
+      const beforeMemberIdCount = processingResult.memberIds.length;
 
       await eventProcessor.processBatch(events, processingResult, fetchData);
       processingTimeMs += Date.now() - processingStart;
@@ -521,8 +522,8 @@ export class EmailAnalyticsService {
         complained: processingResult.complained - beforeCounts.complained,
         unhandled: processingResult.unhandled - beforeCounts.unhandled,
         unprocessable: processingResult.unprocessable - beforeCounts.unprocessable,
-        emailIds: processingResult.emailIds.filter((id) => !beforeEmailIds.has(id)),
-        memberIds: processingResult.memberIds.filter((id) => !beforeMemberIds.has(id)),
+        emailIds: processingResult.emailIds.slice(beforeEmailIdCount),
+        memberIds: processingResult.memberIds.slice(beforeMemberIdCount),
       });
       cumulativeResult.merge(batchDelta);
 

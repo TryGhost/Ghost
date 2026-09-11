@@ -14,14 +14,16 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
+  #emailCounters;
 
   #lastAggregation = Date.now();
 
-  constructor({ config, emailEventProcessor, prometheusClient, queries }) {
+  constructor({ config, emailEventProcessor, prometheusClient, queries, emailCounters = null }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
+    this.#emailCounters = emailCounters;
   }
 
   /**
@@ -44,23 +46,36 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
+      let lastEventTimestamp = fetchData.lastEventTimestamp;
 
-      for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+      try {
+        for (const event of events) {
+          const batchResult = await this.#processEvent(event, recipientCache);
 
-        // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+          // Save last event timestamp
+          if (!lastEventTimestamp || (event.timestamp && event.timestamp > lastEventTimestamp)) {
+            lastEventTimestamp = event.timestamp;
+          }
+
+          // batchResult lists every matched member, not only those whose row will
+          // transition in the flush. Keep replayed members eligible for recount
+          // until counters are written atomically with recipient transitions: a
+          // prior run may have committed the recipient update but failed before
+          // refreshing member statistics.
+          result.merge(batchResult);
         }
 
-        result.merge(batchResult);
+        // Flush all batched updates to the database
+        await this.#emailEventProcessor.flushBatchedUpdates();
+      } finally {
+        // The storage is shared across fetch jobs. Nothing queued for this page
+        // may outlive it: a failure anywhere above leaves the cursor behind, and
+        // the caller replays the page rather than letting a later job flush it.
+        this.#emailEventProcessor.discardBatchedUpdates();
       }
-
-      // Flush all batched updates to the database
-      await this.#emailEventProcessor.flushBatchedUpdates();
+      // Advance only after every email has committed. The caller can replay
+      // this page after a failure while still recounting earlier committed sets.
+      fetchData.lastEventTimestamp = lastEventTimestamp;
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
@@ -93,7 +108,9 @@ class NewsletterEmailAnalyticsBatchProcessor {
     /** @type {boolean} */ let shouldAggregate;
     if (isFinal) {
       shouldAggregate = Boolean(
-        processingResult.emailIds.length || processingResult.memberIds.length,
+        processingResult.emailIds.length ||
+        processingResult.memberIds.length ||
+        this.#emailCounters?.hasPendingReconciliation,
       );
     } else {
       // Every 5 minutes or 5000 members we do an aggregation and clear the processingResult
@@ -106,7 +123,13 @@ class NewsletterEmailAnalyticsBatchProcessor {
       return null;
     }
 
-    const result = await this.#aggregateStats(processingResult, includeOpenedEvents);
+    if (this.#emailCounters?.incremental) {
+      // Member aggregation resets the result mid-fetch. Retain every touched
+      // email in the boot-lifetime queue until repair succeeds, even if the
+      // next fetch creates a new processor after a failed final aggregation.
+      this.#emailCounters.deferReconciliation(processingResult.emailIds);
+    }
+    const result = await this.#aggregateStats(processingResult, includeOpenedEvents, isFinal);
 
     processingResult.reset();
     this.#lastAggregation = Date.now();
@@ -234,14 +257,26 @@ class NewsletterEmailAnalyticsBatchProcessor {
   /**
    * @param {{emailIds?: string[], memberIds?: string[]}} stats
    * @param {boolean} includeOpenedEvents
+   * @param {boolean} isFinal
    * @returns {Promise<{emailAggregationTimeMs: number, memberAggregationTimeMs: number}>}
    */
-  async #aggregateStats({ emailIds = [], memberIds = [] }, includeOpenedEvents = true) {
+  async #aggregateStats(
+    { emailIds = [], memberIds = [] },
+    includeOpenedEvents = true,
+    isFinal = false,
+  ) {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     const emailAggregationStart = Date.now();
-    for (const emailId of emailIds) {
-      await this.#aggregateEmailStats(emailId, includeOpenedEvents);
+    if (this.#emailCounters?.incremental) {
+      if (isFinal) {
+        // Failed repairs stay queued and are logged; they must not fail the fetch.
+        await this.#emailCounters.reconcilePending();
+      }
+    } else {
+      for (const emailId of emailIds) {
+        await this.#aggregateEmailStats(emailId, includeOpenedEvents);
+      }
     }
     const emailAggregationTimeMs = Date.now() - emailAggregationStart;
 
@@ -281,6 +316,10 @@ class NewsletterEmailAnalyticsBatchProcessor {
    * @returns {Promise<void>}
    */
   async #aggregateEmailStats(emailId, includeOpenedEvents) {
+    if (this.#emailCounters) {
+      await this.#emailCounters.compare(emailId);
+      return;
+    }
     return this.#queries.aggregateEmailStats(emailId, includeOpenedEvents);
   }
 

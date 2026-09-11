@@ -1,22 +1,38 @@
-const assert = require('node:assert/strict');
-const fs = require('fs/promises');
-const path = require('path');
-const fsExtra = require('fs-extra');
-const i18n = require('../');
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+import { afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
+
+import { i18nFromGlob } from '../src/esm-factory.ts';
+import { createGenerateResources } from '../src/i18n-core.ts';
+import i18n from '../src/index.ts';
+import type { I18nFactory, Resources } from '../src/types.ts';
+
+type I18nextInstance = ReturnType<I18nFactory>;
+
+// i18next types these loosely (options.fallbackLng is a union, interpolation is
+// optional); the assertions below know the concrete shape this package sets.
+const fallbackOf = (instance: I18nextInstance) =>
+  instance.options.fallbackLng as { no: string[]; default: string[] };
+const interpolationOf = (instance: I18nextInstance) => instance.options.interpolation!;
+
+const requireJson = createRequire(import.meta.url);
 
 describe('i18n', function () {
   describe('ESM/browser entries (per-namespace static registries)', function () {
     // The real browser path: each public app imports '@tryghost/i18n/registry/<ns>',
-    // resolved here from the actual shipped registry entries (lib/registry/*.mjs).
+    // resolved here from the actual shipped registry entries (src/registry/*.ts).
     // There is no root ESM entry and no CJS "browser" entry any more — apps must use
     // the per-namespace subpaths. These import()s cover ESM locale resolution, the
     // English fallback and the theme-stub behaviour public apps rely on.
-    let portalI18n;
-    let ghostI18n;
+    let portalI18n: I18nFactory;
+    let ghostI18n: I18nFactory;
 
     beforeAll(async function () {
-      portalI18n = (await import('../lib/registry/portal.mjs')).default;
-      ghostI18n = (await import('../lib/registry/ghost.mjs')).default;
+      portalI18n = (await import('../src/registry/portal.ts')).default;
+      ghostI18n = (await import('../src/registry/ghost.ts')).default;
     });
 
     it('loads bundled public app translations without server-only helpers', function () {
@@ -57,57 +73,9 @@ describe('i18n', function () {
     });
   });
 
-  describe('CJS/ESM core parity', function () {
-    // lib/i18n-core.js (Node) and lib/i18n-core.mjs (browser) are deliberate
-    // twins: the browser path must be pure ESM (a CJS file leaks require()/
-    // module.exports into the UMD bundle and throws at load), while Ghost core
-    // require()s the package synchronously. This test guards against drift.
-    let cjsCore;
-    let esmCore;
-
-    beforeAll(async function () {
-      cjsCore = require('../lib/i18n-core');
-      esmCore = await import('../lib/i18n-core.mjs');
-    });
-
-    it('exposes identical locale data and supported locales', function () {
-      assert.deepEqual(esmCore.SUPPORTED_LOCALES, cjsCore.SUPPORTED_LOCALES);
-      assert.deepEqual(esmCore.LOCALE_DATA, cjsCore.LOCALE_DATA);
-    });
-
-    it('mergeDefaultExport behaves identically', function () {
-      const input = { Name: 'Direct', default: { Name: 'FromDefault', Extra: 'x' } };
-
-      assert.deepEqual(esmCore.mergeDefaultExport(input), cjsCore.mergeDefaultExport(input));
-    });
-
-    it('createGenerateResources produces identical output for the same loader', function () {
-      const loader = (locale) => (locale === 'en' ? { Name: 'English' } : { Name: locale });
-      const esmGen = esmCore.createGenerateResources(loader);
-      const cjsGen = cjsCore.createGenerateResources(loader);
-
-      assert.deepEqual(esmGen(['de', 'xx'], 'portal'), cjsGen(['de', 'xx'], 'portal'));
-    });
-
-    it('createI18n produces instances that translate identically', function () {
-      const generateResources = (locales) =>
-        locales.reduce((acc, l) => {
-          acc[l] = { portal: { Hello: l === 'nl' ? 'Hallo' : 'Hello' } };
-          return acc;
-        }, {});
-      const generateThemeResources = (lng) => ({ [lng]: { theme: {} } });
-
-      const esm = esmCore.createI18n({ generateResources, generateThemeResources })('nl', 'portal');
-      const cjs = cjsCore.createI18n({ generateResources, generateThemeResources })('nl', 'portal');
-
-      assert.equal(esm.t('Hello'), 'Hallo');
-      assert.equal(esm.t('Hello'), cjs.t('Hello'));
-    });
-  });
-
   it('does not have too-long strings for the Stripe personal note label', async function () {
     for (const locale of i18n.SUPPORTED_LOCALES) {
-      const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
+      const translationFile = requireJson(path.join(`../locales/`, locale, 'portal.json'));
 
       if (translationFile['Add a personal note']) {
         assert(
@@ -119,7 +87,7 @@ describe('i18n', function () {
   });
 
   it('is uses default export if available', async function () {
-    const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+    const translationFile = requireJson(path.join(`../locales/`, 'nl', 'portal.json'));
     translationFile.Name = undefined;
     translationFile.default = {
       Name: 'Naam',
@@ -137,11 +105,62 @@ describe('i18n', function () {
     assert.equal(resources.xx.portal.Name, i18n.generateResources(['en'], 'portal').en.portal.Name);
   });
 
+  describe('per-namespace registry entries', function () {
+    // Each entry wires together three things that only it knows: its glob
+    // literal, the namespace it binds, and its package.json subpath. A mismatch
+    // in any of them degrades silently to English, because the translation keys
+    // are the English strings — so each fixture asserts a Dutch string that
+    // exists in that namespace and no other.
+    const REGISTRIES = {
+      comments: () => import('../src/registry/comments.ts'),
+      ghost: () => import('../src/registry/ghost.ts'),
+      portal: () => import('../src/registry/portal.ts'),
+      search: () => import('../src/registry/search.ts'),
+      'signup-form': () => import('../src/registry/signup-form.ts'),
+    };
+
+    const FIXTURES = [
+      { ns: 'comments', key: 'Anonymous', dutch: 'Anoniem' },
+      { ns: 'ghost', key: 'All the best!', dutch: 'Tot snel!' },
+      { ns: 'portal', key: 'Account settings', dutch: 'Gegevens' },
+      { ns: 'search', key: 'No matches found', dutch: 'Geen resultaten gevonden' },
+      { ns: 'signup-form', key: 'Email sent', dutch: 'E-mail verzonden' },
+    ] as const;
+
+    for (const { ns, key, dutch } of FIXTURES) {
+      it(`resolves ${ns} translations from its own locale files`, async function () {
+        const factory = (await REGISTRIES[ns]()).default;
+
+        assert.equal(factory.namespace, ns);
+        assert.equal(factory('nl', ns).t(key), dutch);
+        assert.deepEqual(factory.SUPPORTED_LOCALES, i18n.SUPPORTED_LOCALES);
+      });
+
+      it(`falls back to English for an unknown ${ns} locale`, async function () {
+        const factory = (await REGISTRIES[ns]()).default;
+
+        assert.equal(factory('xx', ns).t(key), key);
+      });
+    }
+  });
+
+  describe('i18nFromGlob', function () {
+    it('keys the registry by the locale segment of each glob path', function () {
+      const factory = i18nFromGlob({ '/pkg/locales/nl/portal.json': { Name: 'Naam' } }, 'portal');
+
+      assert.equal(factory.generateResources(['nl'], 'portal').nl.portal.Name, 'Naam');
+    });
+
+    it('skips glob keys that are not locale paths', function () {
+      const factory = i18nFromGlob({ '/pkg/not-locales/portal.json': { Name: 'Nope' } }, 'portal');
+
+      assert.deepEqual(factory.generateResources(['nl'], 'portal').nl.portal, {});
+    });
+  });
+
   describe('createGenerateResources', function () {
     // Unit-tests the injectable-loader factory directly (the shape the static ESM
     // registry uses), covering the English fallback + floor without a bundler.
-    const { createGenerateResources } = require('../lib/i18n-core');
-
     it('uses the loaded resource when present', function () {
       const gen = createGenerateResources((locale, ns) => ({ [`${locale}.${ns}`]: 'hit' }));
       const res = gen(['de'], 'ghost');
@@ -188,7 +207,7 @@ describe('i18n', function () {
 
   describe('Can use Portal resources', function () {
     describe('Dutch', function () {
-      let t;
+      let t: I18nextInstance['t'];
 
       beforeAll(function () {
         t = i18n('nl', 'portal').t;
@@ -202,7 +221,7 @@ describe('i18n', function () {
 
   describe('Can use Signup-form resources', function () {
     describe('Afrikaans', function () {
-      let t;
+      let t: I18nextInstance['t'];
 
       beforeAll(function () {
         t = i18n('af', 'signup-form').t;
@@ -216,7 +235,7 @@ describe('i18n', function () {
 
   describe('Fallback when no language is chosen will be english', function () {
     describe('English fallback', function () {
-      let t;
+      let t: I18nextInstance['t'];
       beforeAll(function () {
         t = i18n().t;
       });
@@ -228,7 +247,7 @@ describe('i18n', function () {
 
   describe('Fallback will be nb when no is chosen', function () {
     describe('Norwegian bokmål fallback', function () {
-      let t;
+      let t: I18nextInstance['t'];
       beforeAll(function () {
         t = i18n('no', 'portal').t;
       });
@@ -240,7 +259,7 @@ describe('i18n', function () {
 
   describe('Language will be nb when nb is chosen', function () {
     describe('Norwegian bokmål', function () {
-      let t;
+      let t: I18nextInstance['t'];
       beforeAll(function () {
         t = i18n('nb', 'portal').t;
       });
@@ -252,7 +271,7 @@ describe('i18n', function () {
 
   describe('Language is properly "nn" when "nn" is chosen', function () {
     describe('Norwegian Nynorsk', function () {
-      let t;
+      let t: I18nextInstance['t'];
       beforeAll(function () {
         t = i18n('nn', 'portal').t;
       });
@@ -264,7 +283,7 @@ describe('i18n', function () {
 
   describe('directories and locales in i18n.js will match', function () {
     it('should have a key for each directory in the locales directory', async function () {
-      const locales = await fs.readdir(path.join(__dirname, '../locales'));
+      const locales = await fs.readdir(path.join(import.meta.dirname, '../locales'));
       const supportedLocales = i18n.SUPPORTED_LOCALES;
 
       for (const locale of locales) {
@@ -277,11 +296,11 @@ describe('i18n', function () {
       }
     });
 
-    it('should have a directory for each key in lib/i18n.js', async function () {
+    it('should have a directory for each key in SUPPORTED_LOCALES', async function () {
       const supportedLocales = i18n.SUPPORTED_LOCALES;
 
       for (const locale of supportedLocales) {
-        const localeDir = path.join(__dirname, `../locales/${locale}`);
+        const localeDir = path.join(import.meta.dirname, `../locales/${locale}`);
         const stats = await fs.stat(localeDir);
         assert(stats.isDirectory(), `The locale ${locale} does not have a directory`);
       }
@@ -333,15 +352,15 @@ describe('i18n', function () {
 
   // i18n theme translations when feature flag is enabled
   describe('theme resources', function () {
-    let themeLocalesPath;
-    let cleanup;
+    let themeLocalesPath: string;
+    let cleanup: () => Promise<void>;
 
     beforeEach(async function () {
       // Create a temporary theme locales directory
-      themeLocalesPath = path.join(__dirname, 'temp-theme-locales');
-      await fsExtra.ensureDir(themeLocalesPath);
+      themeLocalesPath = path.join(import.meta.dirname, 'temp-theme-locales');
+      await fs.mkdir(themeLocalesPath, { recursive: true });
       cleanup = async () => {
-        await fsExtra.remove(themeLocalesPath);
+        await fs.rm(themeLocalesPath, { recursive: true, force: true });
       };
     });
 
@@ -360,8 +379,8 @@ describe('i18n', function () {
         Subscribe: "S'abonner",
       };
 
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'fr.json'), frContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
+      await fs.writeFile(path.join(themeLocalesPath, 'fr.json'), JSON.stringify(frContent));
 
       const t = i18n('fr', 'theme', { themePath: themeLocalesPath }).t;
       assert.equal(t('Read more'), 'Lire plus');
@@ -374,7 +393,7 @@ describe('i18n', function () {
         'Read more': 'Read more',
         Subscribe: 'Subscribe',
       };
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
 
       const t = i18n('fr', 'theme', { themePath: themeLocalesPath }).t;
       assert.equal(t('Read more'), 'Read more');
@@ -389,7 +408,7 @@ describe('i18n', function () {
 
     it('handles invalid JSON files gracefully', async function () {
       // Create invalid JSON file
-      await fsExtra.writeFile(path.join(themeLocalesPath, 'fr.json'), 'invalid json');
+      await fs.writeFile(path.join(themeLocalesPath, 'fr.json'), 'invalid json');
 
       const t = i18n('fr', 'theme', { themePath: themeLocalesPath }).t;
       assert.equal(t('Read more'), 'Read more');
@@ -398,8 +417,8 @@ describe('i18n', function () {
 
     it('handles errors when both requested locale and English fallback files are invalid', async function () {
       // Create invalid JSON files for both requested locale and English fallback
-      await fsExtra.writeFile(path.join(themeLocalesPath, 'de.json'), 'invalid json');
-      await fsExtra.writeFile(path.join(themeLocalesPath, 'en.json'), 'also invalid json');
+      await fs.writeFile(path.join(themeLocalesPath, 'de.json'), 'invalid json');
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), 'also invalid json');
 
       const t = i18n('de', 'theme', { themePath: themeLocalesPath }).t;
 
@@ -408,51 +427,147 @@ describe('i18n', function () {
       assert.equal(t('Subscribe'), 'Subscribe');
     });
 
-    it('handles theme files with TypeScript default export structure', async function () {
-      // Create a theme translation file that mimics TypeScript's default export behavior
-      // where translations are nested under a 'default' property
-      const themeContent = {
-        'Read more': 'Read more directly',
-        Subscribe: 'Subscribe directly',
-        default: {
-          'Welcome message': 'Welcome from default',
-          'Footer text': 'Footer from default',
-        },
-      };
+    it('ignores a symlinked locale file and falls back to English', async function () {
+      // The symlink target is valid JSON, so only the symlink check can reject it.
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'target.txt'),
+        JSON.stringify({ 'Read more': 'Read more (symlink)' }),
+      );
+      await fs.symlink('target.txt', path.join(themeLocalesPath, 'fr.json'));
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify({ 'Read more': 'Read more (en)' }),
+      );
 
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), themeContent);
+      const instance = i18n('fr', 'theme', { themePath: themeLocalesPath });
 
-      const t = i18n('en', 'theme', { themePath: themeLocalesPath }).t;
-
-      // Should be able to access both direct properties and properties from the default export
-      assert.equal(t('Read more'), 'Read more directly');
-      assert.equal(t('Subscribe'), 'Subscribe directly');
-      assert.equal(t('Welcome message'), 'Welcome from default');
-      assert.equal(t('Footer text'), 'Footer from default');
+      assert.equal(instance.t('Read more'), 'Read more (en)');
+      assert.deepEqual((instance.store.data as Resources).fr.theme, {
+        'Read more': 'Read more (en)',
+      });
     });
 
-    it('handles theme files with non-object default export', async function () {
-      // Create a theme translation file where the default export is not an object
-      const themeContent = {
-        'Read more': 'Read more',
-        Subscribe: 'Subscribe',
-        default: 'not an object',
-      };
+    it('ignores a symlinked English fallback', async function () {
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'target.txt'),
+        JSON.stringify({ 'Read more': 'Read more (symlink)' }),
+      );
+      await fs.symlink('target.txt', path.join(themeLocalesPath, 'en.json'));
 
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), themeContent);
+      const instance = i18n('en', 'theme', { themePath: themeLocalesPath });
 
-      const t = i18n('en', 'theme', { themePath: themeLocalesPath }).t;
+      assert.deepEqual((instance.store.data as Resources).en.theme, {});
+      assert.equal(instance.t('Read more'), 'Read more');
+    });
 
-      // Should only use direct properties, ignoring the non-object default export
-      assert.equal(t('Read more'), 'Read more');
-      assert.equal(t('Subscribe'), 'Subscribe');
+    it('does not treat a directory named like a locale file as a locale', async function () {
+      await fs.mkdir(path.join(themeLocalesPath, 'de.json'), { recursive: true });
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify({ 'Read more': 'Read more (en)' }),
+      );
+
+      const instance = i18n('fr', 'theme', { themePath: themeLocalesPath });
+
+      // Only the requested locale and the English fallback should be registered.
+      assert.deepEqual(Object.keys(instance.store.data).sort(), ['en', 'fr']);
+      assert.equal(instance.t('Read more'), 'Read more (en)');
+    });
+
+    it('only reads locale files from inside the theme locales directory', async function () {
+      const nested = path.join(themeLocalesPath, 'theme', 'locales');
+      await fs.mkdir(nested, { recursive: true });
+      await fs.writeFile(
+        path.join(nested, 'en.json'),
+        JSON.stringify({ 'Read more': 'Read more (en)' }),
+      );
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'secret.json'),
+        JSON.stringify({ 'Read more': 'LEAKED' }),
+      );
+
+      const instance = i18n('../../secret', 'theme', { themePath: nested });
+
+      assert.equal(instance.t('Read more'), 'Read more (en)');
+    });
+
+    it('ignores a locale containing a path separator', async function () {
+      const nestedDirectory = path.join(themeLocalesPath, 'nested');
+      await fs.mkdir(nestedDirectory, { recursive: true });
+      await fs.writeFile(
+        path.join(nestedDirectory, 'secret.json'),
+        JSON.stringify({ 'Read more': 'LEAKED' }),
+      );
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify({ 'Read more': 'Read more (en)' }),
+      );
+
+      const instance = i18n('nested/secret', 'theme', { themePath: themeLocalesPath });
+
+      assert.equal(instance.t('Read more'), 'Read more (en)');
+    });
+
+    it('treats a `default` key as an ordinary translation, not a nested export', async function () {
+      // Theme files are read with fs + JSON.parse, so they never carry the bundler
+      // `default` wrapper that the bundled locales have to work around.
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify({
+          'Read more': 'Read more directly',
+          default: { 'Welcome message': 'Welcome from default' },
+        }),
+      );
+
+      const instance = i18n('en', 'theme', { themePath: themeLocalesPath });
+
+      assert.equal(instance.t('Read more'), 'Read more directly');
+      assert.equal(instance.exists('Welcome message'), false);
+      assert.equal(instance.t('Welcome message'), 'Welcome message');
+      assert.equal(instance.exists('default'), false);
+    });
+
+    it('ignores a theme locale file that is valid JSON but not an object', async function () {
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify(['not', 'an', 'object']),
+      );
+
+      const instance = i18n('en', 'theme', { themePath: themeLocalesPath });
+
+      assert.deepEqual((instance.store.data as Resources).en.theme, {});
+      assert.equal(instance.t('Read more'), 'Read more');
+    });
+
+    it('drops non-string values from a theme locale file', async function () {
+      // A theme author can put any JSON in a locale file. i18next renders a nested
+      // object as the literal text "returned an object instead of string", so those
+      // values must never reach the store as translations.
+      await fs.writeFile(
+        path.join(themeLocalesPath, 'en.json'),
+        JSON.stringify({
+          'Read more': 'Read more',
+          Subscribe: { nested: 'object' },
+          Count: 42,
+        }),
+      );
+
+      const instance = i18n('en', 'theme', { themePath: themeLocalesPath });
+
+      assert.equal(instance.t('Read more'), 'Read more');
+      // Non-string values land as undefined, which i18next reports as missing, so
+      // the key comes back instead of the diagnostic.
+      assert.equal(instance.exists('Subscribe'), false);
+      assert.equal(instance.t('Subscribe'), 'Subscribe');
+      assert.equal(instance.exists('Count'), false);
+      assert.equal(instance.t('Count'), 'Count');
     });
 
     it('initializes i18next with correct configuration', async function () {
       const enContent = {
         'Read more': 'Read more',
       };
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
 
       const instance = i18n('fr', 'theme', { themePath: themeLocalesPath });
 
@@ -460,11 +575,11 @@ describe('i18n', function () {
       assert.equal(instance.language, 'fr');
       assert.deepEqual(instance.options.ns, ['theme']);
       assert.equal(instance.options.defaultNS, 'theme');
-      assert.equal(instance.options.fallbackLng.default[0], 'en');
+      assert.equal(fallbackOf(instance).default[0], 'en');
       assert.equal(instance.options.returnEmptyString, false);
 
       // Verify resources are loaded correctly
-      const resources = instance.store.data;
+      const resources = instance.store.data as Resources;
       assert(resources.fr);
       assert(resources.fr.theme);
       assert.equal(resources.fr.theme['Read more'], 'Read more');
@@ -475,7 +590,7 @@ describe('i18n', function () {
         'Welcome, {name}': 'Welcome, {name}',
         'Hello {firstName} {lastName}': 'Hello {firstName} {lastName}',
       };
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
 
       const t = i18n('en', 'theme', { themePath: themeLocalesPath }).t;
 
@@ -493,7 +608,7 @@ describe('i18n', function () {
       const enContent = {
         'Welcome, {name}': 'Welcome, {name}',
       };
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
 
       const t = i18n('en', 'theme', { themePath: themeLocalesPath }).t;
       assert.equal(t('Welcome, {name}', { name: 'John' }), 'Welcome, John');
@@ -513,7 +628,7 @@ describe('i18n', function () {
       const enContent = {
         'Welcome, {name}': 'Welcome, {name}',
       };
-      await fsExtra.writeJson(path.join(themeLocalesPath, 'en.json'), enContent);
+      await fs.writeFile(path.join(themeLocalesPath, 'en.json'), JSON.stringify(enContent));
       const t = i18n('en', 'theme', { themePath: themeLocalesPath }).t;
       assert.equal(
         t('Welcome, {name}', { name: "<b>John O'Nolan</b>" }),
@@ -530,14 +645,14 @@ describe('i18n', function () {
       assert.equal(instance.language, 'en');
       assert.deepEqual(instance.options.ns, ['portal']);
       assert.equal(instance.options.defaultNS, 'portal');
-      assert.equal(instance.options.fallbackLng.default[0], 'en');
+      assert.equal(fallbackOf(instance).default[0], 'en');
       assert.equal(instance.options.returnEmptyString, false);
       assert.equal(instance.options.nsSeparator, false);
       assert.equal(instance.options.keySeparator, false);
 
       // Verify interpolation configuration for portal namespace
-      assert.equal(instance.options.interpolation.prefix, '{');
-      assert.equal(instance.options.interpolation.suffix, '}');
+      assert.equal(interpolationOf(instance).prefix, '{');
+      assert.equal(interpolationOf(instance).suffix, '}');
     });
 
     it('initializes with correct theme configuration', function () {
@@ -547,14 +662,14 @@ describe('i18n', function () {
       assert.equal(instance.language, 'en');
       assert.deepEqual(instance.options.ns, ['theme']);
       assert.equal(instance.options.defaultNS, 'theme');
-      assert.equal(instance.options.fallbackLng.default[0], 'en');
+      assert.equal(fallbackOf(instance).default[0], 'en');
       assert.equal(instance.options.returnEmptyString, false);
       assert.equal(instance.options.nsSeparator, false);
       assert.equal(instance.options.keySeparator, false);
 
       // Verify interpolation configuration for theme namespace
-      assert.equal(instance.options.interpolation.prefix, '{');
-      assert.equal(instance.options.interpolation.suffix, '}');
+      assert.equal(interpolationOf(instance).prefix, '{');
+      assert.equal(interpolationOf(instance).suffix, '}');
     });
 
     it('initializes with correct newsletter (now ghost) configuration', function () {
@@ -565,22 +680,22 @@ describe('i18n', function () {
       assert.equal(instance.language, 'en');
       assert.deepEqual(instance.options.ns, ['ghost']);
       assert.equal(instance.options.defaultNS, 'ghost');
-      assert.equal(instance.options.fallbackLng.default[0], 'en');
+      assert.equal(fallbackOf(instance).default[0], 'en');
       assert.equal(instance.options.returnEmptyString, false);
       assert.equal(instance.options.nsSeparator, false);
       assert.equal(instance.options.keySeparator, false);
 
       // Verify interpolation configuration for ghost namespace
-      assert.equal(instance.options.interpolation.prefix, '{');
-      assert.equal(instance.options.interpolation.suffix, '}');
+      assert.equal(interpolationOf(instance).prefix, '{');
+      assert.equal(interpolationOf(instance).suffix, '}');
     });
 
     it('initializes with correct fallback language configuration', function () {
       const instance = i18n('no', 'portal');
 
       // Verify Norwegian fallback chain
-      assert.deepEqual(instance.options.fallbackLng.no, ['nb', 'en']);
-      assert.deepEqual(instance.options.fallbackLng.default, ['en']);
+      assert.deepEqual(fallbackOf(instance).no, ['nb', 'en']);
+      assert.deepEqual(fallbackOf(instance).default, ['en']);
     });
 
     it('initializes with empty theme resources when no theme path provided', function () {
