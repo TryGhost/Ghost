@@ -52,6 +52,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             emailEventProcessor = {};
             emailEventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
             emailEventProcessor.flushBatchedUpdates = sinon.stub().resolves();
+            emailEventProcessor.discardBatchedUpdates = sinon.stub();
             emailEventProcessor.handleDelivered = sinon.stub().callsFake(({ emailId }) => {
               return {
                 emailId,
@@ -420,6 +421,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             emailEventProcessor = {};
             emailEventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
             emailEventProcessor.flushBatchedUpdates = sinon.stub().resolves();
+            emailEventProcessor.discardBatchedUpdates = sinon.stub();
             emailEventProcessor.handleDelivered = sinon.stub().returns(null);
             emailEventProcessor.handleOpened = sinon.stub().returns(null);
             emailEventProcessor.handlePermanentFailed = sinon.stub().returns(null);
@@ -609,6 +611,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
           const emailEventProcessor = {
             batchGetRecipients: sinon.stub().resolves(new Map()),
             flushBatchedUpdates: sinon.stub().resolves(),
+            discardBatchedUpdates: sinon.stub(),
             handleDelivered: sinon
               .stub()
               .resolves({ emailId: 1, emailRecipientId: 1, memberId: 1 }),

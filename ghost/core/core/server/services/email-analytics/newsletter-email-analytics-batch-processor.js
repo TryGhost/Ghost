@@ -44,23 +44,36 @@ class NewsletterEmailAnalyticsBatchProcessor {
 
       const recipientCache =
         await this.#emailEventProcessor.batchGetRecipients(emailIdentifications);
+      let lastEventTimestamp = fetchData.lastEventTimestamp;
 
-      for (const event of events) {
-        const batchResult = await this.#processEvent(event, recipientCache);
+      try {
+        for (const event of events) {
+          const batchResult = await this.#processEvent(event, recipientCache);
 
-        // Save last event timestamp
-        if (
-          !fetchData.lastEventTimestamp ||
-          (event.timestamp && event.timestamp > fetchData.lastEventTimestamp)
-        ) {
-          fetchData.lastEventTimestamp = event.timestamp;
+          // Save last event timestamp
+          if (!lastEventTimestamp || (event.timestamp && event.timestamp > lastEventTimestamp)) {
+            lastEventTimestamp = event.timestamp;
+          }
+
+          // batchResult lists every matched member, not only those whose row will
+          // transition in the flush. Keep replayed members eligible for recount
+          // until counters are written atomically with recipient transitions: a
+          // prior run may have committed the recipient update but failed before
+          // refreshing member statistics.
+          result.merge(batchResult);
         }
 
-        result.merge(batchResult);
+        // Flush all batched updates to the database
+        await this.#emailEventProcessor.flushBatchedUpdates();
+      } finally {
+        // The storage is shared across fetch jobs. Nothing queued for this page
+        // may outlive it: a failure anywhere above leaves the cursor behind, and
+        // the caller replays the page rather than letting a later job flush it.
+        this.#emailEventProcessor.discardBatchedUpdates();
       }
-
-      // Flush all batched updates to the database
-      await this.#emailEventProcessor.flushBatchedUpdates();
+      // Advance only after every email has committed. The caller can replay
+      // this page after a failure while still recounting earlier committed sets.
+      fetchData.lastEventTimestamp = lastEventTimestamp;
     } else {
       // Sequential mode: process events one by one (original behavior)
       for (const event of events) {
