@@ -71,6 +71,26 @@ describe('email analytics service', function () {
     sinon.restore();
   });
 
+  it.each([
+    [false, 'compare', false],
+    [true, 'off', false],
+    [true, undefined, false],
+    [true, 'Compare', false],
+    [true, 'compare', true],
+  ])(
+    'gates newsletter counter comparison with batchProcessing=%s and mode=%s',
+    function (batchProcessing, mode, enabled) {
+      config.get.withArgs('emailAnalytics:batchProcessing').returns(batchProcessing);
+      config.get.withArgs('emailAnalytics:emailCounterMode').returns(mode);
+      const registerCounter = sinon.stub();
+      dependencies.prometheusClient = { registerCounter, getMetric: sinon.stub() };
+      init(dependencies);
+      const names = registerCounter.args.map(([definition]) => definition.name);
+      expect(names.includes('email_analytics_email_counter_comparisons')).toBe(enabled);
+      expect(names.includes('email_analytics_email_counter_drift')).toBe(enabled);
+    },
+  );
+
   it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {
     init(dependencies);
 

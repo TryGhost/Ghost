@@ -14,14 +14,16 @@ class NewsletterEmailAnalyticsBatchProcessor {
   #emailEventProcessor;
   #prometheusClient;
   #queries;
+  #emailCounters;
 
   #lastAggregation = Date.now();
 
-  constructor({ config, emailEventProcessor, prometheusClient, queries }) {
+  constructor({ config, emailEventProcessor, prometheusClient, queries, emailCounters = null }) {
     this.#config = config;
     this.#emailEventProcessor = emailEventProcessor;
     this.#prometheusClient = prometheusClient;
     this.#queries = queries;
+    this.#emailCounters = emailCounters;
   }
 
   /**
@@ -294,6 +296,10 @@ class NewsletterEmailAnalyticsBatchProcessor {
    * @returns {Promise<void>}
    */
   async #aggregateEmailStats(emailId, includeOpenedEvents) {
+    if (this.#emailCounters) {
+      await this.#emailCounters.compare(emailId);
+      return;
+    }
     return this.#queries.aggregateEmailStats(emailId, includeOpenedEvents);
   }
 

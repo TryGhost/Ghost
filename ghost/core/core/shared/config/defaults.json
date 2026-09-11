@@ -298,6 +298,7 @@
   "enableStripePromoCodes": false,
   "enableTipsAndDonations": true,
   "emailAnalytics": {
+    "emailCounterMode": "off",
     "enabled": true,
     "batchProcessing": false,
     "metrics": {
