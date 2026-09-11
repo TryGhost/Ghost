@@ -5,6 +5,7 @@ import ObjectID from 'bson-objectid';
 import { z } from 'zod';
 import { DbCount } from '../../lib/db-types/count';
 import { deriveOpenRate } from './lib/open-rate';
+import { transactionWithRetry } from './lib/transaction-with-retry';
 import logging from '@tryghost/logging';
 import { incrementCounter, type CounterMetricsClient } from './lib/counter-metrics';
 
@@ -94,33 +95,39 @@ export class NewsletterMemberCounters {
       return new Map();
     }
     this.#validateLimit(ids.length);
-    const comparisons = await this.#knex.transaction(async (trx) => {
-      const members = await this.#lockMembers(trx, ids, { initializedOnly: true });
-      if (!members.length) {
-        return new Map<string, MemberDrift>();
-      }
-      const truth = await this.#derive(
-        trx,
-        members.map((member) => member.id),
-      );
-      const result = new Map<string, MemberDrift>();
-      for (const member of members) {
-        const expected = truth.get(member.id) ?? {
-          email_count: 0,
-          email_tracked_count: 0,
-          email_opened_count: 0,
-          email_open_rate: null,
-        };
-        const differences: MemberDrift = {};
-        for (const column of MEMBER_COUNTER_COLUMNS) {
-          if (member[column] !== expected[column]) {
-            differences[column] = { actual: member[column], expected: expected[column] };
-          }
+    // Observe-only, so a lock wait against batch preparation can retry the
+    // whole rolled-back transaction as the email counter comparison does.
+    const comparisons = await transactionWithRetry(
+      this.#knex,
+      async (trx) => {
+        const members = await this.#lockMembers(trx, ids, { initializedOnly: true });
+        if (!members.length) {
+          return new Map<string, MemberDrift>();
         }
-        result.set(member.id, differences);
-      }
-      return result;
-    }, this.#transactionConfig());
+        const truth = await this.#derive(
+          trx,
+          members.map((member) => member.id),
+        );
+        const result = new Map<string, MemberDrift>();
+        for (const member of members) {
+          const expected = truth.get(member.id) ?? {
+            email_count: 0,
+            email_tracked_count: 0,
+            email_opened_count: 0,
+            email_open_rate: null,
+          };
+          const differences: MemberDrift = {};
+          for (const column of MEMBER_COUNTER_COLUMNS) {
+            if (member[column] !== expected[column]) {
+              differences[column] = { actual: member[column], expected: expected[column] };
+            }
+          }
+          result.set(member.id, differences);
+        }
+        return result;
+      },
+      this.#transactionConfig(),
+    );
     const drift = [...comparisons].filter(([, differences]) => Object.keys(differences).length);
     if (drift.length) {
       logging.warn(
