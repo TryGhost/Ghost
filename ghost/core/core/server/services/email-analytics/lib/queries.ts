@@ -7,7 +7,7 @@ import type { JsonObject } from 'type-fest';
 
 const debug = debugFactory('services:email-analytics');
 
-const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
+import { MIN_EMAIL_COUNT_FOR_OPEN_RATE, deriveOpenRate } from './open-rate';
 
 type EmailAnalyticsJobName = string;
 type EmailAnalyticsEvent = 'delivered' | 'opened' | 'failed';
@@ -360,10 +360,7 @@ export class Queries {
       { email_count: number; email_opened_count: number; email_open_rate: number | null }
     >();
     for (const stat of stats) {
-      const emailOpenRate =
-        stat.tracked_count >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
-          ? Math.round((stat.email_opened_count / stat.tracked_count) * 100)
-          : null;
+      const emailOpenRate = deriveOpenRate(stat.email_opened_count, stat.tracked_count);
 
       memberStatsMap.set(stat.member_id, {
         email_count: stat.email_count,

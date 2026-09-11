@@ -53,6 +53,8 @@ class BatchSendingService {
   #sentry;
   #getRequiredUrlRelations;
   #batchCreationConcurrency;
+  #memberCounterPreparation;
+  #memberCounters;
   #shuttingDown = false;
   #inFlight = new Set();
 
@@ -84,6 +86,8 @@ class BatchSendingService {
    * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
    * @param {object} [dependencies.sentry]
    * @param {number} [dependencies.batchCreationConcurrency] Maximum active preparation pages
+   * @param {boolean} [dependencies.memberCounterPreparation] Enroll newly prepared batches
+   * @param {import('../email-analytics/newsletter-member-counters').NewsletterMemberCounters} [dependencies.memberCounters]
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
@@ -99,6 +103,8 @@ class BatchSendingService {
     sentry,
     getRequiredUrlRelations = () => [],
     batchCreationConcurrency = 2,
+    memberCounterPreparation = false,
+    memberCounters,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
@@ -116,6 +122,17 @@ class BatchSendingService {
       batchCreationConcurrency,
       'bulkEmail:batchCreationConcurrency',
     );
+    if (
+      typeof memberCounterPreparation !== 'boolean' ||
+      (memberCounterPreparation && !memberCounters)
+    ) {
+      throw new errors.IncorrectUsageError({
+        message:
+          'Member counter preparation requires a boolean flag and a counter service when enabled',
+      });
+    }
+    this.#memberCounterPreparation = memberCounterPreparation;
+    this.#memberCounters = memberCounters;
 
     if (BEFORE_RETRY_CONFIG) {
       this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -961,6 +978,7 @@ class BatchSendingService {
       useFallbackDomain,
       batchId: ObjectID().toHexString(),
       attemptId,
+      memberCountersEnabled: this.#memberCounterPreparation,
     };
     const batch = await this.retryDb(() => this.#createOrRecoverBatch(operation), {
       ...this.#getBeforeRetryConfig(email),
@@ -1004,12 +1022,14 @@ class BatchSendingService {
   }
 
   async #createOrRecoverBatch(operation) {
-    const { email, segment, members, useFallbackDomain, batchId } = operation;
+    const { email, segment, members, useFallbackDomain, batchId, memberCountersEnabled } =
+      operation;
     try {
       return await this.createBatch(email, segment, members, {
         useFallbackDomain,
         batchId,
         recipientCount: members.length,
+        memberCountersEnabled,
       });
     } catch (error) {
       return this.#recoverCommittedBatch(operation, error);
@@ -1049,7 +1069,7 @@ class BatchSendingService {
   }
 
   #verifyRecoveredBatch(
-    { email, batchId, segment, members, useFallbackDomain },
+    { email, batchId, segment, members, useFallbackDomain, memberCountersEnabled },
     committed,
     recipients,
   ) {
@@ -1074,6 +1094,7 @@ class BatchSendingService {
       (committed.get('member_segment') ?? null) !== (segment ?? null) ||
       Boolean(committed.get('fallback_sending_domain')) !== Boolean(useFallbackDomain) ||
       committed.get('recipient_count') !== members.length ||
+      Boolean(committed.get('member_counters_enabled')) !== memberCountersEnabled ||
       JSON.stringify(identities) !== JSON.stringify(intended)
     ) {
       throw this.#verificationFailure(
@@ -1098,6 +1119,7 @@ class BatchSendingService {
    * @param {boolean} options.useFallbackDomain
    * @param {string} [options.batchId] Stable operation identity for accounted preparation
    * @param {number} [options.recipientCount] Expected size of the accounted recipient snapshot
+   * @param {boolean} [options.memberCountersEnabled] Enrollment captured for this preparation operation
    * @param {import('knex').Knex} [options.transacting]
    * @returns {Promise<EmailBatch>}
    */
@@ -1141,6 +1163,7 @@ class BatchSendingService {
         member_segment: segment,
         status: 'pending',
         fallback_sending_domain: Boolean(options.useFallbackDomain),
+        member_counters_enabled: Boolean(options.memberCountersEnabled),
         ...(options.recipientCount !== undefined
           ? { recipient_count: options.recipientCount }
           : {}),
@@ -1166,6 +1189,40 @@ class BatchSendingService {
   }
 
   async sendBatches({ email, batches, post, newsletter }) {
+    // Finish persisted enrollment even if new opt-in has since been disabled.
+    // All batches must be accounted before any provider submission can start.
+    for (const batch of batches) {
+      if (this.#shuttingDown) {
+        break;
+      }
+      if (!batch.get('member_counters_enabled')) {
+        continue;
+      }
+      if (!this.#memberCounters) {
+        throw this.#verificationFailure(email, 'member_counter_service_unavailable', {
+          batch_id: batch.id,
+        });
+      }
+      await this.retryDb(
+        async () => {
+          try {
+            await this.#memberCounters.applyPreparedBatch(batch.id);
+          } catch (error) {
+            if (error.retryable === false) {
+              throw this.#verificationFailure(email, 'member_counter_application', {
+                batch_id: batch.id,
+                error: error.message,
+              });
+            }
+            throw error;
+          }
+        },
+        {
+          ...this.#getBeforeRetryConfig(email),
+          description: `apply member counters for batch ${batch.id}`,
+        },
+      );
+    }
     logging.info(`Sending ${batches.length} batches for email ${email.id}`);
     const deadline = this.getDeliveryDeadline(email);
 

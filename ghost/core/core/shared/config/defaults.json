@@ -300,6 +300,7 @@
   "emailAnalytics": {
     "enabled": true,
     "batchProcessing": false,
+    "memberCounterPreparation": false,
     "metrics": {
       "openThroughput": {
         "enabled": false,

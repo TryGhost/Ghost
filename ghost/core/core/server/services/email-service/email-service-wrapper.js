@@ -2,6 +2,8 @@ const debug = require('@tryghost/debug')('i18n');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
+const logging = require('@tryghost/logging');
+
 class EmailServiceWrapper {
   getPostUrl(post) {
     const jsonModel = post.toJSON();
@@ -24,6 +26,7 @@ class EmailServiceWrapper {
     const EmailRenderer = require('./email-renderer');
     const SendingService = require('./sending-service');
     const BatchSendingService = require('./batch-sending-service');
+    const { NewsletterMemberCounters } = require('../email-analytics/newsletter-member-counters');
     const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
     const MailgunEmailProvider = require('./mailgun-email-provider');
@@ -35,6 +38,16 @@ class EmailServiceWrapper {
     const MailgunClient = require('../lib/mailgun-client');
     const configService = require('../../../shared/config');
     const batchCreationConcurrency = configService.get('bulkEmail:batchCreationConcurrency');
+    let memberCounterPreparation =
+      configService.get('emailAnalytics:memberCounterPreparation') === true;
+    if (memberCounterPreparation && configService.get('emailAnalytics:batchProcessing') !== true) {
+      // Config is boundary data: a mismatch must be visible, but a newsletter
+      // counter flag must not stop the whole site from booting.
+      logging.warn(
+        '[EmailService] emailAnalytics.memberCounterPreparation requires emailAnalytics.batchProcessing; member counter preparation is off',
+      );
+      memberCounterPreparation = false;
+    }
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
     const jobsService = require('../jobs');
@@ -130,6 +143,8 @@ class EmailServiceWrapper {
       sentry,
       getRequiredUrlRelations,
       batchCreationConcurrency,
+      memberCounterPreparation,
+      memberCounters: new NewsletterMemberCounters(db.knex),
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 

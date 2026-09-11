@@ -25,6 +25,21 @@ describe('Batch Sending Service', function () {
   });
 
   describe('constructor', function () {
+    it('rejects invalid or incomplete preparation counter configuration', function () {
+      for (const memberCounterPreparation of ['true', 1, null, true]) {
+        assert.throws(
+          () => new BatchSendingService({ memberCounterPreparation }),
+          /Member counter preparation/,
+        );
+      }
+      assert.doesNotThrow(
+        () =>
+          new BatchSendingService({
+            memberCounterPreparation: true,
+            memberCounters: { applyPreparedBatch: async () => true },
+          }),
+      );
+    });
     it('works in development mode', async function () {
       const env = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';

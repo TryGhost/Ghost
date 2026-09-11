@@ -328,3 +328,81 @@ saves it when re-queuing the email. Batches completed before that timestamp
 belong to an earlier attempt and are left out of the rate window. The proxy
 only holds while nothing saves the Email model, or sets `emails.updated_at`
 through a raw update, while batches are being submitted.
+
+## Member counter reconciliation
+
+`NewsletterMemberCounters` provides one bounded sweep for member counter
+initialization, repair and rollback re-baselining. Its checkpoint lives in the
+`email-analytics-member-reconciliation` jobs row. A page locks members in primary-key
+order before reading recipient facts, then writes all four member statistics and
+the checkpoint in one transaction. An interrupted or uncertain commit resumes
+from persisted state. NULL `email_tracked_count` means uninitialized; zero is a
+valid initialized denominator. Open rates remain null below five tracked emails.
+
+Historical batches have `member_counters_enabled = false` and are never enrolled
+by an absent application marker. The derived baseline includes their recipients,
+except discardable incomplete preparation under the recipient-accounting protocol.
+Unfrozen legacy emails whose batches are all pending are also discardable: resumed
+preparation replaces their recipient set. Once any legacy batch has started
+submission, the entire set remains part of derived truth, including its pending
+batches. A frozen legacy set also remains part of derived truth.
+An accounted email without frozen preparation but with non-pending or already
+counter-applied batches, which only a rollback to older send code can produce,
+is treated as frozen: its recipient facts stay in derived truth, because the
+send path refuses to discard such a set. This keeps live ingestion and
+comparison running on one anomalous email rather than stopping every
+newsletter's counters; the send itself still needs preparation reconciliation.
+Opted-in batches contribute only after `member_counters_applied_at` is persisted.
+Preparation increments and that marker must commit together under the same member
+locks, after the preparation boundary freezes the recipient membership. This keeps
+pending preparation recipients out of the baseline that precedes their increments.
+
+Run the manual sweep from a bootstrapped source checkout configured for the target
+blog database. The blog must already have its jobs table initialized. This operator
+script uses source-checkout dependencies and is not included in the published release:
+
+```sh
+NODE_ENV=production node --import tsx scripts/reconcile-member-email-counters.ts --limit 5000 --pages 1
+```
+
+The script uses the configured database and prints the durable checkpoint after
+each page. Repeat to resume; `--restart` abandons the existing checkpoint,
+complete or not, and begins a new sweep; `--pause-ms` waits between pages so
+member-facing writes that queued behind a page's locks can proceed. A sweep
+fixes its upper member-ID boundary when it starts. New members are handled by
+preparation or a later sweep. The script neither schedules work nor enables
+incremental ingestion. An unreadable checkpoint row (for example after a
+database restore, or written by a newer version) stops the sweep with an
+explicit error rather than being overwritten; pass `--restart` to replace it.
+
+Drain legacy analytics and preparation writers before manually initializing or
+re-baselining. The sweep's live concurrency guarantee requires every counter
+writer to acquire member locks before establishing its recipient snapshot.
+Legacy recounts and recipient creation do not follow this protocol. The later
+incremental-ingestion integration must establish that boundary before allowing
+periodic repair alongside live ingestion. MySQL pages explicitly use repeatable
+read; multiple metadata and recipient reads share the same snapshot.
+
+`emailAnalytics.memberCounterPreparation` defaults to false and requires batched
+analytics; without `emailAnalytics.batchProcessing` it logs a warning at boot and
+stays off. When enabled, new preparation operations persist batch enrollment with
+their recipient rows. Creation and discard/rebuild never increment member counters.
+After frozen preparation verifies, submission applies each enrolled batch's member
+totals and marker atomically. A resumed send honors existing enrollment even if
+new enrollment has been disabled. Historical batches remain opted out.
+
+Keep this flag off with legacy analytics workers. For isolated preparation testing,
+stop analytics jobs first: legacy recounts include pending recipient rows and do
+not coordinate with these increments. Enabling preparation with live analytics
+requires the subsequent member-event counter integration and a drained-worker
+cutover. The flag does not itself enable that integration.
+
+Application locks the email, batch, persisted recipient rows and then members in
+primary-key order, before its first consistent read. Uninitialized members use the
+same derived baseline as the sweep; pending enrolled recipients are excluded, then
+this batch is added exactly once. Deleted members are skipped. Application rejects
+unfrozen, already-submitting or inconsistent batches before changing counters.
+All batch applications finish before the first provider submission. An uncertain
+commit is retried through the persisted marker, so it cannot increment twice.
+A transaction handles at most 5,000 recipient rows; a larger `bulkEmail.batchSize`
+fails application with an explicit message before enabling this mode.
