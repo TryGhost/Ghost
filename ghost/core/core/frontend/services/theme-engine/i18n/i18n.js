@@ -23,6 +23,7 @@ class I18n {
     this._stringMode = options.stringMode || 'dot';
 
     this._strings = null;
+    this._messageFormats = new Map();
   }
 
   /**
@@ -87,6 +88,7 @@ class I18n {
    *  - Load proper language file into memory
    */
   init() {
+    this._messageFormats.clear();
     this._strings = this._loadStrings();
   }
 
@@ -219,20 +221,30 @@ class I18n {
    * @param {Object} bindings
    */
   _formatMessage(string, bindings) {
-    let currentLocale = this.locale();
-    let msg = new MessageFormat(string, currentLocale);
+    const currentLocale = this.locale();
+    const key = JSON.stringify([currentLocale, string]);
 
     try {
-      msg = msg.format(bindings);
+      const cached = this._messageFormats.get(key);
+      const formatter = cached || new MessageFormat(string, currentLocale);
+      const msg = formatter.format(bindings);
+
+      if (!cached) {
+        // Fulltext keys can contain arbitrary content; keep the memo bounded.
+        if (this._messageFormats.size >= 5000) {
+          this._messageFormats.clear();
+        }
+        this._messageFormats.set(key, formatter);
+      }
+
+      return msg;
     } catch (err) {
+      this._messageFormats.delete(key);
       this._handleFormatError(err);
 
       // fallback
-      msg = new MessageFormat(this._fallbackError(), currentLocale);
-      msg = msg.format();
+      return new MessageFormat(this._fallbackError(), currentLocale).format();
     }
-
-    return msg;
   }
 
   _handleUninitialisedError(key) {
