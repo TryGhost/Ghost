@@ -2,11 +2,7 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
-const { setTimeout: delay } = require('node:timers/promises');
-
-// Lock waits are expected while batch creation inserts recipients for the same
-// email; both errors leave the transaction rolled back and safe to retry.
-const RETRYABLE_LOCK_ERRORS = new Set(['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT']);
+const { transactionWithRetry } = require('../email-analytics/lib/transaction-with-retry');
 
 class NewsletterEmailEventStorage {
   #config;
@@ -354,7 +350,7 @@ class NewsletterEmailEventStorage {
     const transitions = [];
     for (const emailId of Array.from(groups.keys()).sort()) {
       const updates = groups.get(emailId);
-      const transitioned = await this.#transactionWithRetry(async (trx) => {
+      const transitioned = await transactionWithRetry(this.#db.knex, async (trx) => {
         await this.#emailCounters?.prepare(trx, emailId);
         const query = trx('email_recipients');
         if (DatabaseInfo.isMySQL(trx)) {
@@ -432,21 +428,6 @@ class NewsletterEmailEventStorage {
       }
     }
     return transitions;
-  }
-
-  async #transactionWithRetry(callback) {
-    for (let attempt = 0; ; attempt++) {
-      try {
-        return await this.#db.knex.transaction(callback);
-      } catch (error) {
-        // Retry the whole rolled-back transaction, never an individual write.
-        // Connection/commit errors can have an unknown outcome and must escape.
-        if (!RETRYABLE_LOCK_ERRORS.has(error.code) || attempt >= 2) {
-          throw error;
-        }
-        await delay(10 * 2 ** attempt + Math.random() * 10);
-      }
-    }
   }
 }
 

@@ -139,6 +139,115 @@ describe('Newsletter email counters', function () {
     });
   }
 
+  it('reports the correction a baseline applies to counters left by another process', async function () {
+    await resetFacts();
+    await db.knex('email_recipients').where('id', recipient.id).update({
+      delivered_at: '2026-09-01 11:00:00',
+    });
+    const metrics = {
+      email_analytics_email_counter_comparisons: { inc: sinon.stub() },
+      email_analytics_email_counter_drift: { inc: sinon.stub() },
+      email_analytics_email_counter_baseline_corrections: { inc: sinon.stub() },
+    };
+    const counters = new NewsletterEmailCounters({
+      knex: db.knex,
+      prometheusClient: { registerCounter: sinon.stub(), getMetric: (name) => metrics[name] },
+    });
+    const warn = sinon.stub(require('@tryghost/logging'), 'warn');
+    try {
+      assert.deepEqual(await counters.compare(recipient.email_id), {
+        delivered: 0,
+        opened: 0,
+        failed: 0,
+      });
+    } finally {
+      warn.restore();
+    }
+    // 99/99/99 counters were corrected to 1/0/0 before the zero-drift comparison
+    sinon.assert.calledOnce(warn);
+    sinon.assert.calledWithMatch(warn, /"phase":"baseline"/);
+    sinon.assert.calledWithMatch(warn, /"drift":\{"delivered":98,"opened":99,"failed":99\}/);
+    const corrections = metrics.email_analytics_email_counter_baseline_corrections.inc;
+    sinon.assert.calledWithExactly(corrections, { event: 'delivered' }, 98);
+    sinon.assert.calledWithExactly(corrections, { event: 'opened' }, 99);
+    sinon.assert.calledWithExactly(corrections, { event: 'failed' }, 99);
+    for (const event of ['delivered', 'opened', 'failed']) {
+      sinon.assert.calledWithExactly(metrics.email_analytics_email_counter_drift.inc, { event }, 0);
+      sinon.assert.calledWithExactly(
+        metrics.email_analytics_email_counter_comparisons.inc,
+        { event },
+        1,
+      );
+    }
+  });
+
+  it('retries a comparison that loses a lock wait and reports its baseline correction once', async function () {
+    await resetFacts();
+    let attempts = 0;
+    const warn = sinon.stub(require('@tryghost/logging'), 'warn');
+    try {
+      const counters = new NewsletterEmailCounters({
+        knex: {
+          transaction: (callback) =>
+            db.knex.transaction(async (trx) => {
+              const result = await callback(trx);
+              attempts += 1;
+              if (attempts === 1) {
+                throw Object.assign(new Error('lock wait'), { code: 'ER_LOCK_WAIT_TIMEOUT' });
+              }
+              return result;
+            }),
+        },
+      });
+      assert.deepEqual(await counters.compare(recipient.email_id), {
+        delivered: 0,
+        opened: 0,
+        failed: 0,
+      });
+    } finally {
+      warn.restore();
+    }
+    assert.equal(attempts, 2);
+    sinon.assert.calledOnce(warn);
+    sinon.assert.calledWithMatch(warn, /"phase":"baseline"/);
+    const row = await db.knex('emails').where('id', recipient.email_id).first();
+    assert.equal(row.delivered_count, 0);
+  });
+
+  it('does not treat a missing email as initialized, even after a rolled-back baseline', async function () {
+    const email = await models.Email.add({
+      post_id: '000000000000000000000001',
+      submitted_at: new Date(),
+      email_count: 0,
+      recipient_filter: 'all',
+      delivered_count: 5,
+    });
+    const counters = new NewsletterEmailCounters({ knex: db.knex });
+    try {
+      // A baseline is written, then the transaction fails for a non-retryable reason
+      await assert.rejects(
+        db.knex.transaction(async (trx) => {
+          await counters.prepare(trx, email.id);
+          throw new Error('lost before commit');
+        }),
+        /lost before commit/,
+      );
+      assert.equal((await db.knex('emails').where('id', email.id).first()).delivered_count, 5);
+      // The row disappears before the next touch, so no baseline can be taken
+      await db.knex('emails').where('id', email.id).del();
+      assert.equal(await counters.compare(email.id), null);
+      const storage = createStorage(counters);
+      await storage.handleOpened({ ...makeEvent(), emailId: email.id });
+      assert.deepEqual(await storage.flushBatchedUpdates(), []);
+      // A row that exists again under that ID still receives a baseline on first touch
+      await db.knex('emails').insert({ ...email.toJSON(), delivered_count: 5 });
+      assert.deepEqual(await counters.compare(email.id), { delivered: 0, opened: 0, failed: 0 });
+      assert.equal((await db.knex('emails').where('id', email.id).first()).delivered_count, 0);
+    } finally {
+      await db.knex('emails').where('id', email.id).del();
+    }
+  });
+
   it('detects deliberately incorrect counters without overwriting them', async function () {
     await resetFacts();
     const counters = new NewsletterEmailCounters({ knex: db.knex });
@@ -188,6 +297,9 @@ describe('Newsletter email counters', function () {
     } finally {
       await db.knex.raw('DROP TRIGGER reject_email_counter');
     }
+    // The failed page was discarded; the caller replays it
+    await storage.handleDelivered(makeEvent());
+    await storage.handleOpened(makeEvent());
     await storage.flushBatchedUpdates();
     assert.deepEqual(await counters.compare(recipient.email_id), {
       delivered: 0,

@@ -24,6 +24,17 @@ and emails still inside the fetch trust window; scheduled recovery can also
 touch an older email. That recount always includes opens, then hands off to
 increments within the same transaction. Restart repeats this bounded-by-touched-
 emails work, rather than remembering readiness durably or scanning history.
+The correction a baseline applies is logged with `phase: "baseline"` and summed
+into `email_analytics_email_counter_baseline_corrections`, so a counter left
+wrong by an earlier process remains observable even though the comparison that
+follows starts from corrected values. A missing email row takes no baseline and
+is not remembered as initialized.
+
+The recount issues one covering-index count per outcome, matching the legacy
+recount. It runs while the email row is locked, so keep it short: recipient
+inserts for the same email take a shared lock on that row through their foreign
+key and wait for the counter transaction to finish. Comparison transactions
+retry lock waits and deadlocks the same way event flushes do.
 
 Counter transactions lock the email row first, then eligible recipients in
 primary-key order. Both the startup recount and shadow comparison acquire the

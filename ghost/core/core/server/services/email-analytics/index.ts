@@ -1,4 +1,6 @@
 import type { Knex } from 'knex';
+import logging from '@tryghost/logging';
+import { z } from 'zod';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
@@ -44,6 +46,38 @@ export const gifts = new EmailAnalyticsServiceWrapper({
   logName: 'gifts',
 });
 
+const EmailCounterMode = z.enum(['off', 'compare']);
+type EmailCounterMode = z.infer<typeof EmailCounterMode>;
+
+/**
+ * Config is boundary data: an unrecognised or unsupported mode must be visible
+ * in the logs rather than silently behaving like `off`.
+ */
+export function resolveEmailCounterMode(
+  config: Pick<ConfigInstance, 'get'>,
+): Exclude<EmailCounterMode, 'off'> | null {
+  const configured: unknown = config.get('emailAnalytics:emailCounterMode') ?? 'off';
+  const parsed = EmailCounterMode.safeParse(configured);
+  if (!parsed.success) {
+    logging.warn(
+      `[EmailAnalytics] Ignoring unknown emailAnalytics.emailCounterMode ${JSON.stringify(configured)}; email counters are off`,
+    );
+    return null;
+  }
+  const mode = parsed.data;
+  if (mode === 'off') {
+    return null;
+  }
+  if (!config.get('emailAnalytics:batchProcessing')) {
+    logging.warn(
+      `[EmailAnalytics] emailAnalytics.emailCounterMode ${mode} requires emailAnalytics.batchProcessing; email counters are off`,
+    );
+    return null;
+  }
+  logging.info(`[EmailAnalytics] Newsletter email counter mode: ${mode}`);
+  return mode;
+}
+
 export const init = ({
   automationsApi,
   config,
@@ -79,11 +113,9 @@ export const init = ({
   const queries = new Queries(db.knex);
   // Mode changes take effect at boot. Drain old analytics workers before changing
   // modes: sequential and legacy recount writers do not use the counter lock.
-  const emailCounters =
-    config.get('emailAnalytics:batchProcessing') &&
-    config.get('emailAnalytics:emailCounterMode') === 'compare'
-      ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient })
-      : null;
+  const emailCounters = resolveEmailCounterMode(config)
+    ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient })
+    : null;
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,

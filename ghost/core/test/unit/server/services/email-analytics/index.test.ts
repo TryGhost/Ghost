@@ -75,6 +75,7 @@ describe('email analytics service', function () {
     [false, 'compare', false],
     [true, 'off', false],
     [true, undefined, false],
+    [true, 'Compare', false],
     [true, 'compare', true],
   ])(
     'gates newsletter counter comparison with batchProcessing=%s and mode=%s',
