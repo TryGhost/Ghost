@@ -47,6 +47,16 @@ describe('fetchMailgunEvents with Logs selected', () => {
         tags: [tag, 'site-tag'],
         'user-variables': { 'email-id': 'email-1' },
         message: { headers: { 'message-id': 'provider-1' } },
+        ...(type === 'failed'
+          ? {
+              severity: 'permanent',
+              'delivery-status': {
+                code: 550,
+                message: 'Mailbox unavailable',
+                'enhanced-code': '5.1.1',
+              },
+            }
+          : {}),
       }));
       const scope = nock('https://api.eu.mailgun.net')
         .post('/v1/analytics/logs', (body) => {
@@ -245,27 +255,86 @@ describe('fetchMailgunEvents with Logs selected', () => {
     pages.done();
   });
 
-  it('rejects repeated pagination tokens before delivering the repeated page', async () => {
+  it('stops at a repeated pagination token after delivering its page and rests the cursor on covered events', async () => {
     const pages = nock('https://api.eu.mailgun.net')
-      .post('/v1/analytics/logs')
-      .twice()
-      .reply(200, { items: [event('same')], pagination: { next: 'repeated' } });
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, { items: [event('first')], pagination: { next: 'repeated' } });
+    const echoed = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'repeated')
+      .reply(200, {
+        items: [event('second', mailgun.domain, '2026-09-01T13:05:00Z')],
+        pagination: { next: 'repeated' },
+      });
     const ids: string[] = [];
-    await assert.rejects(
-      fetchMailgunEvents({
-        config,
-        settings,
-        tags: ['bulk-email'],
-        begin,
-        end,
-        batchHandler: (items: MailgunAnalyticsEvent[]) => {
-          ids.push(...items.map((item) => item.id));
-        },
-      }),
-      /Invalid Mailgun Logs pagination/,
-    );
-    assert.deepEqual(ids, ['same']);
+    const result = await fetchMailgunEvents({
+      config,
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      batchHandler: (items: MailgunAnalyticsEvent[]) => {
+        ids.push(...items.map((item) => item.id));
+      },
+    });
+    // The echoed page may hold new events, so it is delivered before stopping
+    assert.deepEqual(ids, ['first', 'second']);
+    // The next fetch resumes from the covered timestamp rather than skipping the window
+    assert.deepEqual(result, { safeCursor: new Date('2026-09-01T13:05:00Z') });
     pages.done();
+    echoed.done();
+  });
+
+  it('continues past an empty page that still carries a token', async () => {
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, { items: [], pagination: { next: 'second' } });
+    const second = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => body.pagination.token === 'second')
+      .reply(200, { items: [event('later')], pagination: {} });
+    const ids: string[] = [];
+    const result = await fetchMailgunEvents({
+      config,
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      batchHandler: (items: MailgunAnalyticsEvent[]) => {
+        ids.push(...items.map((item) => item.id));
+      },
+    });
+    assert.deepEqual(ids, ['later']);
+    assert.deepEqual(result, { safeCursor: undefined });
+    first.done();
+    second.done();
+  });
+
+  it('counts filtered records toward the budget and caps at the last covered timestamp', async () => {
+    // Every record belongs to another site's tag, so nothing is delivered, but
+    // the domain must not page through the whole account window unbounded.
+    const first = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs', (body) => !body.pagination.token)
+      .reply(200, {
+        items: [
+          { ...event('other-1', mailgun.domain, '2026-09-01T12:30:00Z'), tags: ['other-site'] },
+          { ...event('other-2', mailgun.domain, '2026-09-01T12:45:00Z'), tags: ['other-site'] },
+        ],
+        pagination: { next: 'second' },
+      });
+    const ids: string[] = [];
+    const result = await fetchMailgunEvents({
+      config,
+      settings,
+      tags: ['bulk-email'],
+      begin,
+      end,
+      maxEvents: 2,
+      batchHandler: (items: MailgunAnalyticsEvent[]) => {
+        ids.push(...items.map((item) => item.id));
+      },
+    });
+    assert.deepEqual(ids, []);
+    assert.deepEqual(result, { safeCursor: new Date('2026-09-01T12:45:00Z') });
+    first.done();
   });
 
   it('finishes begin-time ties and returns the earliest capped cursor across sending domains', async () => {

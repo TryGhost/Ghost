@@ -844,6 +844,39 @@ describe('EmailAnalyticsService', function () {
         );
       });
 
+      it('does not advance the cursor past a capped fetch that read fewer events than its budget', async function () {
+        const lastEventTimestamp = new Date(Date.now() - 10_000);
+        const setJobTimestamp = sinon.stub().resolves();
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (_events, _result, fetchData) => {
+          fetchData.lastEventTimestamp = lastEventTimestamp;
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp,
+            setJobStatus: sinon.stub().resolves(),
+          },
+          // A Logs fetch can stop on its record or page budget before the event
+          // budget is spent; the window after its cursor was never read.
+          fetchEvents: async ({ batchHandler }: { batchHandler: BatchHandler }) => {
+            await batchHandler([1]);
+            return { safeCursor: new Date(lastEventTimestamp.getTime() + 500) };
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+
+        await service.fetchLatestOpenedEvents({ maxEvents: 10 });
+
+        sinon.assert.calledWithExactly(
+          setJobTimestamp,
+          JOB_NAMES.latestOpened,
+          'finished',
+          lastEventTimestamp,
+        );
+        assert.deepEqual(service.getStatus().latestOpened.lastEventTimestamp, lastEventTimestamp);
+      });
+
       it('resumes from a capped sending domain until all of its events are processed', async function () {
         const newerDomainTimestamp = new Date(Date.now() - 70_000);
         const fallbackTimestamps = [

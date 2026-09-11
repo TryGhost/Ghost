@@ -1,7 +1,10 @@
 import logging from '@tryghost/logging';
-import { InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
+
+// A domain whose pages keep paging without matching events still bounds its
+// work: raw records count toward the budget, and pages are capped outright.
+const MAX_PAGES_PER_DOMAIN = 1000;
 
 export async function fetchMailgunLogs({
   config,
@@ -32,40 +35,82 @@ export async function fetchMailgunLogs({
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
   const windowBegin = begin ?? new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
   let safeCursor: Date | undefined;
+  const cap = (at: Date) => {
+    if (!safeCursor || at < safeCursor) {
+      safeCursor = at;
+    }
+  };
   // Keep callbacks serial: all domains share the active lane's processor state.
   for (const domain of getMailgunDomains(config, mailgun.domain)) {
+    const prefix = `[MailgunLogs fetch ${domain}]`;
     let token: string | undefined;
     const seenTokens = new Set<string>();
     let eventCount = 0;
-    do {
-      const page = await client.getPage({
-        domain,
-        tags,
-        events,
-        begin: windowBegin,
-        end: windowEnd,
-        token,
-      });
-      if (!page.empty && page.next) {
-        if (seenTokens.has(page.next)) {
-          throw new InternalServerError({ message: 'Invalid Mailgun Logs pagination' });
+    let rawCount = 0;
+    let skipped = 0;
+    let pages = 0;
+    let status = 'exhausted';
+    // Everything the provider returned up to this timestamp was either
+    // processed or irrelevant, so a capped cursor may safely rest here.
+    let covered: Date | undefined;
+    try {
+      do {
+        const page = await client.getPage({
+          domain,
+          tags,
+          events,
+          begin: windowBegin,
+          end: windowEnd,
+          token,
+        });
+        pages += 1;
+        rawCount += page.rawCount;
+        skipped += page.skipped;
+        if (page.lastTimestamp && (!covered || page.lastTimestamp > covered)) {
+          covered = page.lastTimestamp;
         }
-        seenTokens.add(page.next);
-      }
-      if (page.items.length) {
-        await batchHandler(page.items);
-        eventCount += page.items.length;
-        const last = page.items[page.items.length - 1].timestamp;
+        if (page.items.length) {
+          await batchHandler(page.items);
+          eventCount += page.items.length;
+        }
         // Re-cover the boundary on the next fetch, but finish begin-time ties to make progress.
-        if (eventCount >= maxEvents && last > windowBegin) {
-          if (!safeCursor || last < safeCursor) {
-            safeCursor = last;
+        const budgetSpent = eventCount >= maxEvents || rawCount >= maxEvents;
+        if (budgetSpent && covered && covered > windowBegin) {
+          cap(covered);
+          status = 'capped';
+          break;
+        }
+        if (!page.next) {
+          break;
+        }
+        // A provider that echoes the last token has nothing more; one that
+        // repeats an earlier token must not skip anything. The page was still
+        // delivered, and the cursor rests on what the domain covered so far.
+        const repeated = seenTokens.has(page.next);
+        seenTokens.add(page.next);
+        if (repeated || pages >= MAX_PAGES_PER_DOMAIN) {
+          logging.warn(
+            repeated
+              ? `${prefix}: repeated pagination token after ${pages} pages`
+              : `${prefix}: stopped after ${pages} pages`,
+          );
+          if (covered && covered > windowBegin) {
+            cap(covered);
+            status = 'capped';
           }
           break;
         }
-      }
-      token = page.empty ? undefined : page.next;
-    } while (token);
+        // An empty page can still carry a token; the page and record budgets
+        // bound how far a domain keeps paging without matching events.
+        token = page.next;
+      } while (token);
+    } catch (error) {
+      logging.error(`${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`);
+      throw error;
+    }
+    logging.info(
+      `${prefix}: Processed ${eventCount} events in ${pages} pages (${rawCount} records, ${skipped} skipped). Status: ${status}. Cursor: ${safeCursor?.toISOString() ?? 'none'}`,
+    );
   }
   return { safeCursor };
 }

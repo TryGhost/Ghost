@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import nock from 'nock';
 import sinon from 'sinon';
 import metrics from '@tryghost/metrics';
-import { MailgunLogsClient } from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
+import logging from '@tryghost/logging';
+import {
+  MailgunLogsClient,
+  resolveLogsUrl,
+} from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
 
 const begin = new Date('2026-09-10T12:00:00.250Z');
 const end = new Date('2026-09-10T14:00:00.750Z');
@@ -107,17 +111,69 @@ describe('Mailgun Logs API client', () => {
     scope.done();
   });
 
-  it.each([
-    { items: [] },
-    { items: [event()], pagination: { next: 42 } },
-    { items: [event({ domain: null })], pagination: {} },
-    { items: [event({ tags: null })], pagination: {} },
-    { items: [event({ '@timestamp': 'invalid' })], pagination: {} },
-    { items: [null], pagination: {} },
-  ])('rejects malformed pages rather than treating them as exhausted: %j', async (body) => {
-    const scope = nock('https://api.eu.mailgun.net').post('/v1/analytics/logs').reply(200, body);
-    await assert.rejects(client().getPage(pageOptions), /Invalid Mailgun Logs/);
+  it.each([{ items: [] }, { items: [event()], pagination: { next: 42 } }, { pagination: {} }])(
+    'rejects malformed pages rather than treating them as exhausted: %j',
+    async (body) => {
+      const scope = nock('https://api.eu.mailgun.net').post('/v1/analytics/logs').reply(200, body);
+      await assert.rejects(client().getPage(pageOptions), /Invalid Mailgun Logs page/);
+      scope.done();
+    },
+  );
+
+  it('skips unreadable records with a warning instead of failing the page', async () => {
+    const warn = sinon.stub(logging, 'warn');
+    const scope = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .reply(200, {
+        items: [
+          event({ domain: null }),
+          event({ '@timestamp': 'invalid' }),
+          null,
+          event({ tags: null }),
+          event({ id: 'unattributable', recipient: null, 'user-variables': {} }),
+          event({ id: 'readable', '@timestamp': end.toISOString() }),
+        ],
+        pagination: { next: 'more' },
+      });
+    const page = await client().getPage(pageOptions);
+    // An untagged record is readable but does not match the requested tags
+    assert.deepEqual(
+      page.items.map((item) => item.id),
+      ['readable'],
+    );
+    assert.equal(page.rawCount, 6);
+    // A matching record without a recipient counts as skipped too
+    assert.equal(page.skipped, 4);
+    assert.deepEqual(page.lastTimestamp, end);
+    sinon.assert.calledWithMatch(
+      warn,
+      /Skipped 4 unreadable or unattributable Mailgun Logs record/,
+    );
     scope.done();
+  });
+
+  it('explains a rejected key without leaking credentials', async () => {
+    const scope = nock('https://api.eu.mailgun.net').post('/v1/analytics/logs').reply(401, {});
+    await assert.rejects(client().getPage(pageOptions), (error: Error & { status?: number }) => {
+      assert.equal(error.status, 401);
+      assert.match(error.message, /must be able to read account logs/);
+      assert.equal(JSON.stringify(error).includes('test-api-key'), false);
+      return true;
+    });
+    scope.done();
+  });
+
+  it.each([
+    ['https://api.eu.mailgun.net/v3', 'https://api.eu.mailgun.net/v1/analytics/logs'],
+    ['https://api.mailgun.net/v3/', 'https://api.mailgun.net/v1/analytics/logs'],
+    ['https://proxy.example.com/mailgun/v3', 'https://proxy.example.com/mailgun/v1/analytics/logs'],
+    ['https://api.mailgun.net', 'https://api.mailgun.net/v1/analytics/logs'],
+  ])('derives the Logs endpoint from the base URL %s', (baseUrl, expected) => {
+    assert.equal(resolveLogsUrl(baseUrl), expected);
+  });
+
+  it('rejects an invalid base URL when constructed', () => {
+    assert.throws(() => new MailgunLogsClient({ apiKey: 'k', baseUrl: 'not a url' }), /base URL/);
   });
 
   it('keeps domain, all-tag, event-type and exact timestamp boundaries on the response', async () => {
@@ -140,7 +196,9 @@ describe('Mailgun Logs API client', () => {
       ['event-1'],
     );
     assert.equal(page.next, 'next-page');
-    assert.equal(page.empty, false);
+    assert.equal(page.skipped, 0);
+    // A record past the exact end is not covered: the request end is rounded up
+    assert.deepEqual(page.lastTimestamp, new Date('2026-09-10T13:00:00.500Z'));
     scope.done();
   });
 
@@ -164,7 +222,9 @@ describe('Mailgun Logs API client', () => {
     assert.deepEqual(await client().getPage({ ...pageOptions, token }), {
       items: [],
       next: 'another-token',
-      empty: false,
+      rawCount: 1,
+      skipped: 0,
+      lastTimestamp: timestamp,
     });
     scope.done();
   });
@@ -243,7 +303,9 @@ describe('Mailgun Logs API client', () => {
         },
       ],
       next: 'opaque-next-token',
-      empty: false,
+      rawCount: 1,
+      skipped: 0,
+      lastTimestamp: timestamp,
     });
     scope.done();
   });

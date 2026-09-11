@@ -16,19 +16,35 @@ The Logs adapter uses `POST /v1/analytics/logs` with account-level credentials,
 an explicit domain filter, and a separate AND condition for every required tag.
 Subaccounts are excluded. Responses are checked again for the domain, tags,
 event type, and exact time window before reaching a processor. Malformed pages
-or unverifiable event provenance fail the fetch rather than advancing its cursor.
+fail the fetch rather than advancing its cursor.
 
-Logs timestamps are ISO strings. The adapter normalizes them into the existing
-event shape, accepts object or JSON-string user variables, and retains the
-message-ID fallback and delivery-error limits. Records without either email
-identity are skipped, as with Events. Nullable headers are supported.
+Logs timestamps are ISO strings. The adapter validates each page and record at
+the boundary, normalizes them into the existing event shape, accepts object or
+JSON-string user variables, and retains the message-ID fallback and
+delivery-error limits. A record the adapter cannot read, or a matching record
+without a recipient or either email identity, is skipped and counted in a
+warning rather than failing the page: one unreadable line must not stall every
+lane's cursor, and a provider change must not silence a lane without a trace. Nullable headers are supported. Records from other domains,
+tags or event types are dropped after the response is read, so the account-level
+query cannot misattribute events. Subaccounts are excluded from the query; a
+sending domain hosted in a subaccount returns no events.
 
-Logs pages contain at most 100 events. Opaque pagination tokens stay in request
-bodies with the original filters and window; they are never followed as URLs.
-A filtered-only page can still have more matching events behind it. Repeated
-tokens fail the fetch. Requests disable automatic retries and redirects, time
-out after 60 seconds, and expose sanitized failures with an optional HTTP
-`status`. Request latency and HTTP status use `mailgun-get-events` with
+The Logs endpoint is derived from the configured base URL by replacing its
+trailing `/v3` with `/v1/analytics/logs`, so a proxy prefix is preserved. The
+adapter requests 100 records per page; the provider's maximum is undocumented.
+Opaque pagination tokens stay in request bodies with the original filters and
+window; they are never followed as URLs. A page with no records but a token is
+followed. Records the provider returns count toward the per-domain budget even
+when they are filtered out, and a domain stops after 1,000 pages, so a domain
+cannot page through an account window without bound; when either bound is hit,
+the cursor rests on the latest record covered so far, which was either processed
+or irrelevant, and the service does not advance a capped cursor past what was
+read. A repeated token ends the domain after delivering its page and rests the
+cursor the same way. Requests disable automatic retries and
+redirects, time out after 60 seconds, and expose sanitized failures with an
+optional HTTP `status`; a 401 or 403 says the key must be able to read account
+logs. Each domain logs a processed/records/skipped summary with its status and
+cursor. Request latency and HTTP status use `mailgun-get-events` with
 `source: logs`.
 
 ## Progress and retry boundaries

@@ -1,11 +1,13 @@
-import { InternalServerError } from '@tryghost/errors';
+import { IncorrectUsageError, InternalServerError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import metrics from '@tryghost/metrics';
+import { z } from 'zod';
 
 // @tryghost/request has no type declarations. Keep its untrusted response at the boundary.
 const request: (
   url: string,
   options: Record<string, unknown>,
-) => Promise<{ body: unknown }> = require('@tryghost/request');
+) => Promise<{ body: unknown; statusCode?: number }> = require('@tryghost/request');
 
 type LogPageOptions = {
   domain: string;
@@ -27,8 +29,55 @@ export type MailgunAnalyticsEvent = {
   error: { code?: number | string; message: string; enhancedCode: string | null } | null;
 };
 
+export type MailgunLogsPage = {
+  /** Normalized events for the requested domain, tags, types and window. */
+  items: MailgunAnalyticsEvent[];
+  next?: string;
+  /** Records the provider returned before filtering, including unreadable ones. */
+  rawCount: number;
+  /** Provider records that could not be read and were skipped. */
+  skipped: number;
+  /** Latest timestamp among readable provider records, filtered or not. */
+  lastTimestamp?: Date;
+};
+
+// Boundary data: the provider owns these shapes, so read only what ingestion
+// needs and tolerate extra fields. Records that do not fit are skipped, never
+// fatal: one unreadable line must not stall every lane's cursor.
+const LogsPage = z.object({
+  items: z.array(z.unknown()),
+  pagination: z.object({ next: z.string().nullish() }).passthrough(),
+});
+const codeValue = z.union([z.string(), z.number()]);
+const LogsItem = z.object({
+  id: z.string(),
+  event: z.string(),
+  '@timestamp': z.string(),
+  recipient: z.string().optional(),
+  severity: z.string().optional(),
+  domain: z.object({ name: z.string() }).passthrough(),
+  tags: z.array(z.string()).nullish(),
+  'user-variables': z.unknown().optional(),
+  message: z
+    .object({ headers: z.object({ 'message-id': z.string().optional() }).passthrough().nullish() })
+    .passthrough()
+    .nullish(),
+  'delivery-status': z
+    .object({
+      code: codeValue.optional(),
+      message: z.string().optional(),
+      description: z.string().optional(),
+      'enhanced-code': codeValue.optional(),
+    })
+    .passthrough()
+    .nullish(),
+});
+type LogsItem = z.output<typeof LogsItem>;
+
+// Plain property access rather than a Zod record: transport errors are class
+// instances, which Zod rejects, and only their own fields are read here.
 function record(value: unknown): Record<string, unknown> | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;
 }
@@ -41,19 +90,35 @@ function equality(attribute: string, value: string) {
   return { attribute, comparator: '=', values: [{ label: value, value }] };
 }
 
+/**
+ * The Events base URL points at `/v3` on the regional host, possibly behind a
+ * proxy prefix. Logs live under `/v1/analytics/logs` on the same host and prefix.
+ */
+export function resolveLogsUrl(baseUrl: string): string {
+  let url: URL;
+  try {
+    url = new URL(baseUrl);
+  } catch {
+    throw new IncorrectUsageError({ message: 'Mailgun base URL is not a valid absolute URL' });
+  }
+  const prefix = url.pathname.replace(/\/+$/, '').replace(/\/v3$/, '');
+  url.pathname = `${prefix}/v1/analytics/logs`;
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
 /** Logs pages use opaque tokens and the same normalized event shape as Events. */
 export class MailgunLogsClient {
   readonly #url: string;
   readonly #apiKey: string;
 
   constructor({ baseUrl, apiKey }: { baseUrl: string; apiKey: string }) {
-    this.#url = new URL('/v1/analytics/logs', new URL(baseUrl).origin).href;
+    this.#url = resolveLogsUrl(baseUrl);
     this.#apiKey = apiKey;
   }
 
-  async getPage(
-    options: LogPageOptions,
-  ): Promise<{ items: MailgunAnalyticsEvent[]; next?: string; empty: boolean }> {
+  async getPage(options: LogPageOptions): Promise<MailgunLogsPage> {
     if (
       !options.domain.trim() ||
       options.tags.length === 0 ||
@@ -101,7 +166,7 @@ export class MailgunLogsClient {
       body = response.body;
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
-        statusCode: 200,
+        statusCode: response.statusCode ?? 200,
         source: 'logs',
       });
     } catch (error) {
@@ -120,67 +185,77 @@ export class MailgunLogsClient {
         statusCode: status,
         source: 'logs',
       });
+      const rejected = status === 401 || status === 403;
       throw Object.assign(
         new InternalServerError({
-          message: 'Mailgun Logs request failed',
-          code: 'MAILGUN_LOGS_REQUEST_FAILED',
+          message: rejected
+            ? `Mailgun Logs request was rejected (status ${status}): the configured API key must be able to read account logs, which a domain sending key cannot`
+            : `Mailgun Logs request failed${status ? ` (status ${status})` : ''}`,
+          context: `Sending domain ${options.domain}`,
+          code: rejected ? 'MAILGUN_LOGS_REQUEST_REJECTED' : 'MAILGUN_LOGS_REQUEST_FAILED',
         }),
         { status },
       );
     }
-    const page = record(body);
-    const pagination = record(page?.pagination);
-    if (
-      !page ||
-      !Array.isArray(page.items) ||
-      !pagination ||
-      (pagination.next !== undefined &&
-        pagination.next !== null &&
-        typeof pagination.next !== 'string')
-    ) {
-      throw new InternalServerError({ message: 'Invalid Mailgun Logs page' });
+    const page = LogsPage.safeParse(body);
+    if (!page.success) {
+      throw new InternalServerError({
+        message: 'Invalid Mailgun Logs page',
+        context: `Sending domain ${options.domain}`,
+      });
     }
-    const items = page.items
-      .filter((value) => {
-        const item = record(value);
-        const domain = record(item?.domain)?.name;
-        const tags = item?.tags;
-        if (
-          !item ||
-          typeof domain !== 'string' ||
-          !Array.isArray(tags) ||
-          !tags.every((tag) => typeof tag === 'string') ||
-          typeof item.event !== 'string'
-        ) {
-          throw new InternalServerError({ message: 'Invalid Mailgun Logs event provenance' });
-        }
-        return (
-          domain === options.domain &&
-          options.tags.every((tag) => tags.includes(tag)) &&
-          options.events.includes(item.event)
-        );
-      })
-      .map((item) => this.#normalize(item))
-      .filter(
-        (item): item is MailgunAnalyticsEvent =>
-          item !== undefined && item.timestamp >= options.begin && item.timestamp <= options.end,
+    const items: MailgunAnalyticsEvent[] = [];
+    let skipped = 0;
+    let lastTimestamp: Date | undefined;
+    for (const value of page.data.items) {
+      const item = LogsItem.safeParse(value);
+      const timestamp = item.success ? new Date(item.data['@timestamp']) : new Date(NaN);
+      if (!item.success || !Number.isFinite(timestamp.getTime())) {
+        skipped += 1;
+        continue;
+      }
+      // The request end is rounded up to a whole second, so a record can sit
+      // just past the window; it must not count as covered.
+      if (timestamp > options.end) {
+        continue;
+      }
+      if (!lastTimestamp || timestamp > lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+      const tags = item.data.tags ?? [];
+      if (
+        item.data.domain.name !== options.domain ||
+        !options.tags.every((tag) => tags.includes(tag)) ||
+        !options.events.includes(item.data.event) ||
+        timestamp < options.begin
+      ) {
+        continue;
+      }
+      const normalized = this.#normalize(item.data, timestamp);
+      if (normalized) {
+        items.push(normalized);
+      } else {
+        // A matching record without a recipient or any email identity cannot be
+        // attributed; count it so a provider change does not fail silently.
+        skipped += 1;
+      }
+    }
+    if (skipped) {
+      logging.warn(
+        `[MailgunLogsClient] Skipped ${skipped} unreadable or unattributable Mailgun Logs record(s) for domain ${options.domain}`,
       );
-    const next = pagination.next;
+    }
     return {
       items,
-      next: typeof next === 'string' ? next : undefined,
-      empty: page.items.length === 0,
+      next: page.data.pagination.next ?? undefined,
+      rawCount: page.data.items.length,
+      skipped,
+      lastTimestamp,
     };
   }
 
-  #normalize(value: unknown): MailgunAnalyticsEvent | undefined {
-    const item = record(value);
-    if (!item) {
-      throw new InternalServerError({ message: 'Invalid Mailgun Logs event' });
-    }
-    const headers = record(record(item.message)?.headers);
-    const providerId =
-      typeof headers?.['message-id'] === 'string' ? headers['message-id'] : undefined;
+  #normalize(item: LogsItem, timestamp: Date): MailgunAnalyticsEvent | undefined {
+    const providerId = item.message?.headers?.['message-id'];
     const rawVariables = item['user-variables'];
     let variables: Record<string, unknown> | undefined;
     try {
@@ -194,17 +269,7 @@ export class MailgunLogsClient {
     if ((!providerId && !emailId) || typeof item.recipient !== 'string') {
       return undefined;
     }
-    const timestamp = new Date(typeof item['@timestamp'] === 'string' ? item['@timestamp'] : NaN);
-    if (
-      !Number.isFinite(timestamp.getTime()) ||
-      typeof item.id !== 'string' ||
-      typeof item.event !== 'string'
-    ) {
-      throw new InternalServerError({
-        message: 'Invalid Mailgun Logs event identity or timestamp',
-      });
-    }
-    const delivery = record(item['delivery-status']);
+    const delivery = item['delivery-status'];
     const message = delivery?.message || delivery?.description;
     const enhanced = delivery?.['enhanced-code'];
     return {
@@ -214,19 +279,13 @@ export class MailgunLogsClient {
       emailId,
       providerId,
       timestamp,
-      severity: typeof item.severity === 'string' ? item.severity : undefined,
+      severity: item.severity,
       error:
         typeof message === 'string'
           ? {
-              code:
-                typeof delivery?.code === 'string' || typeof delivery?.code === 'number'
-                  ? delivery.code
-                  : undefined,
+              code: delivery?.code,
               message: message.substring(0, 2000),
-              enhancedCode:
-                typeof enhanced === 'string' || typeof enhanced === 'number'
-                  ? String(enhanced).substring(0, 50)
-                  : null,
+              enhancedCode: enhanced !== undefined ? String(enhanced).substring(0, 50) : null,
             }
           : null,
     };

@@ -471,6 +471,9 @@ export class EmailAnalyticsService {
     // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
     const cumulativeResult = new EventProcessingResult();
     let error: unknown = null;
+    // A fetcher that stops early returns the cursor it covered; the window past
+    // it was never read, so the cursor must not skip ahead afterwards.
+    let capped = false;
 
     const aggregate = async (isFinal: boolean): Promise<void> => {
       if (!eventProcessor.aggregate) {
@@ -553,6 +556,7 @@ export class EmailAnalyticsService {
         events: eventTypes,
       });
 
+      capped = Boolean(fetchResult?.safeCursor);
       if (
         fetchResult?.safeCursor &&
         (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
@@ -600,7 +604,7 @@ export class EmailAnalyticsService {
         'finished',
         new Date(fetchData.lastEventTimestamp.getTime()),
       );
-      if (eventCount < maxEvents) {
+      if (eventCount < maxEvents && !capped) {
         // Consumed everything in the window — advance to avoid re-fetching same batch
         fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
       }
