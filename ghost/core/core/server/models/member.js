@@ -431,6 +431,10 @@ const Member = ghostBookshelf.Model.extend(
     serialize(options) {
       const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
 
+      // Counter readiness and denominators are internal, including when a
+      // member is serialized as a relation on a comment reaction or report.
+      delete defaultSerializedObject.email_tracked_count;
+
       if (defaultSerializedObject.stripeSubscriptions) {
         defaultSerializedObject.subscriptions = defaultSerializedObject.stripeSubscriptions;
         delete defaultSerializedObject.stripeSubscriptions;
