@@ -205,6 +205,7 @@
     "knex-migrator": "catalog:",
     "leaky-bucket": "2.2.0",
     "lodash": "catalog:",
+    "lru-cache": "catalog:",
     "luxon": "3.7.2",
     "mailgun.js": "10.4.0",
     "metascraper": "5.55.2",
