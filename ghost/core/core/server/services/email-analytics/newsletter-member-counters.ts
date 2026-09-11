@@ -3,7 +3,9 @@ import { IncorrectUsageError } from '@tryghost/errors';
 import DatabaseInfo from '@tryghost/database-info';
 import ObjectID from 'bson-objectid';
 import { z } from 'zod';
+import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbCount } from '../../lib/db-types/count';
+import { DbDate } from '../../lib/db-types/date';
 import { deriveOpenRate } from './lib/open-rate';
 import { transactionWithRetry } from './lib/transaction-with-retry';
 import logging from '@tryghost/logging';
@@ -37,6 +39,15 @@ const DbMemberCounters = z.object({
   email_open_rate: DbCount.nullable(),
 });
 type DbMemberCounters = z.output<typeof DbMemberCounters>;
+// Preparation state read before member increments; the models own the rows.
+const DbEmailPreparation = z.object({
+  preflight_email_count: DbCount.nullable(),
+  prepared_at: DbDate.nullable(),
+});
+const DbBatchPreparation = z.object({
+  member_counters_enabled: DbBoolean,
+  member_counters_applied_at: DbDate.nullable(),
+});
 const MEMBER_COMPARISONS_METRIC = 'email_analytics_member_counter_comparisons';
 const MEMBER_DRIFT_METRIC = 'email_analytics_member_counter_drift';
 const MEMBER_COUNTER_COLUMNS = [
@@ -183,11 +194,17 @@ export class NewsletterMemberCounters {
     }
     // These locking reads must also precede the first baseline snapshot. The
     // email lock already serializes preparation and events for this email.
-    const email = await trx('emails').where('id', emailId).forShare().first();
-    const batches = await trx('email_batches')
+    const emailRow = await trx('emails')
+      .where('id', emailId)
+      .forShare()
+      .first('preflight_email_count', 'prepared_at');
+    const email = emailRow ? DbEmailPreparation.parse(emailRow) : null;
+    const batchRows: unknown[] = await trx('email_batches')
       .whereIn('id', [...new Set(recipients.map((row) => row.batch_id))])
       .orderBy('id')
-      .forShare();
+      .forShare()
+      .select('member_counters_enabled', 'member_counters_applied_at');
+    const batches = batchRows.map((row) => DbBatchPreparation.parse(row));
     if (
       !email ||
       (email.preflight_email_count !== null && email.prepared_at === null) ||
