@@ -443,6 +443,9 @@ catalogs:
     better-sqlite3:
       specifier: 12.11.1
       version: 12.11.1
+    bookshelf-relations:
+      specifier: 3.0.0
+      version: 3.0.0
     bson-objectid:
       specifier: 2.0.4
       version: 2.0.4
@@ -2629,8 +2632,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))
       bookshelf-relations:
-        specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2)
+        specifier: 'catalog:'
+        version: 3.0.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -9660,9 +9663,6 @@ packages:
   '@tryghost/database-info@2.3.14':
     resolution: {integrity: sha512-lKsrv4LtOhY+9jYGnO2+oAkKT7zLtVCKbQ35lSWBQYakZ7EvSkItxRdnnejVtFG3k81QvD3f8wtvD+boTNVhYw==}
 
-  '@tryghost/debug@0.1.40':
-    resolution: {integrity: sha512-r8ecoTeoickPsn/59tkrouCNHhUEy79MNhJdPNkhx/Q3Oevw+SQBjnVYa5mHaxTaXryM4nNguKM5fbxPGPBo3Q==}
-
   '@tryghost/debug@2.3.14':
     resolution: {integrity: sha512-CuxfDTsuS8uPnAeJVCaokd7izIDhUzIi/mZo8ytKgKupx/K5UY03Pu0KwWJCuRRV2ZrDYeq00p8bBCM/H8uScg==}
 
@@ -9779,9 +9779,6 @@ packages:
   '@tryghost/request@4.0.7':
     resolution: {integrity: sha512-OHOMsa4JIAVAwb1O8xQnaMwEhiJYIA604DdzkMFetxcDniv6sulaR8a6b+6xGtUdk6sxvnKv7PPgEMfn0D+E3Q==}
     engines: {node: ^22.12.0 || >=24.0.0}
-
-  '@tryghost/root-utils@0.3.38':
-    resolution: {integrity: sha512-ARn8wC6qv867lCr7BZ+IS8S/88K5go0j6HgQFhP27rKje4b40PsxH/P3rO4Ez2NzF/Do8ywFrTWHoLCSsCazXQ==}
 
   '@tryghost/root-utils@2.3.14':
     resolution: {integrity: sha512-VmHSaPdjTCQNOTNvpLTmphi+TdorWbGbjgqTeCYFPgsWw3XUlByWaERYe3PV2JOmd2XeAhpG2KCegrmnPWMlKA==}
@@ -11726,9 +11723,9 @@ packages:
   bole@5.0.29:
     resolution: {integrity: sha512-eYR9i2ubLv5/4TFGyZsQ1cVH4jF9+qLJA72Aow+E7ZZQfqHqQNUZeX3w+pVWF76PQyjl5eDKf2xylyOOX76ozA==}
 
-  bookshelf-relations@2.8.0:
-    resolution: {integrity: sha512-cOywFvCSD5j45X5n8gJ7VHR1e36HXVnG88ppF03imCCkWkaWW0WJUD28FSdIzYs3DBYLv3eyGjqeYRnk0a4JHg==}
-    engines: {node: ^18.12.1 || ^20.11.1 || ^22.13.1}
+  bookshelf-relations@3.0.0:
+    resolution: {integrity: sha512-IzY2WDSuh7nu+BbuBVaNOaxdteu6MGwBi9QWmEl2uXSfNgObYYfCgJWZmDNT4BmCFmzSeXwQ+34NLDqU6cq2pA==}
+    engines: {node: ^20.19.0 || ^22.13.1 || >=24.0.0}
     peerDependencies:
       bookshelf: '>=1.1.0'
 
@@ -29324,13 +29321,6 @@ snapshots:
 
   '@tryghost/database-info@2.3.14': {}
 
-  '@tryghost/debug@0.1.40(supports-color@10.2.2)':
-    dependencies:
-      '@tryghost/root-utils': 0.3.38
-      debug: 4.4.3(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
-
   '@tryghost/debug@2.3.14(supports-color@10.2.2)':
     dependencies:
       '@tryghost/root-utils': 2.3.14
@@ -29596,11 +29586,6 @@ snapshots:
       cacheable-lookup: 7.0.0
       got: 16.0.0
       lodash: 4.18.1
-
-  '@tryghost/root-utils@0.3.38':
-    dependencies:
-      caller: 1.1.0
-      find-root: 1.1.0
 
   '@tryghost/root-utils@2.3.14':
     dependencies:
@@ -32412,9 +32397,9 @@ snapshots:
       fast-safe-stringify: 2.1.1
       individual: 3.0.0
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2):
+  bookshelf-relations@3.0.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2)))(supports-color@10.2.2):
     dependencies:
-      '@tryghost/debug': 0.1.40(supports-color@10.2.2)
+      '@tryghost/debug': 2.3.14(supports-color@10.2.2)
       '@tryghost/errors': 3.3.14
       bluebird: 3.7.2
       bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.1))(supports-color@10.2.2))

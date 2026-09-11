@@ -123,6 +123,7 @@ catalog:
   ajv: 8.20.0
   ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
+  bookshelf-relations: 3.0.0
   bson-objectid: 2.0.4
   chai: 4.5.0
   chalk: 4.1.2
