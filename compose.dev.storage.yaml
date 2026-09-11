@@ -29,9 +29,9 @@ services:
     image: ghcr.io/versity/versitygw:v1.7.0@sha256:c4cbd9d9cb8dedbb055ac788dbd02635651b9b1cebac95b095b3217231aa87ad
     container_name: ghost-dev-versitygw
     ports:
-      - '9000:9000' # S3 API
-      - '9001:9001' # WebUI
-      - '9002:9002' # Admin API used by the WebUI
+      - '127.0.0.1:9000:9000' # S3 API
+      - '127.0.0.1:9001:9001' # WebUI
+      - '127.0.0.1:9002:9002' # Admin API used by the WebUI
     environment:
       - ROOT_ACCESS_KEY=s3-user
       - ROOT_SECRET_KEY=s3-pass

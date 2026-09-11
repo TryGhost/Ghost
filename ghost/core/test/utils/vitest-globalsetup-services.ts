@@ -43,7 +43,7 @@ function getS3Target(): { host: string; port: number } {
   }
   return {
     host: url.hostname,
-    port: parseInt(url.port || '9000'),
+    port: parseInt(url.port || (url.protocol === 'https:' ? '443' : '80')),
   };
 }
 
