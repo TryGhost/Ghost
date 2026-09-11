@@ -69,7 +69,7 @@ export const useKoenigLinkSuggestions = ({
       title: post.title,
       url: post.url,
       visibility: post.visibility,
-      publishedAt: post.published_at,
+      publishedAt: post.published_at ?? undefined,
     }));
 
     return [

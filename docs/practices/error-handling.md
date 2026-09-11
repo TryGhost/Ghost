@@ -84,7 +84,7 @@ Ghost's JSON API renderer returns an `errors` array:
         "type": "EmailError",
         "details": null,
         "property": null,
-        "help": "https://ghost.org/docs/newsletters/#bulk-email-configuration",
+        "help": "https://docs.ghost.org/newsletters/#bulk-email-configuration",
         "code": "BULK_EMAIL_SEND_FAILED",
         "id": "...",
         "ghostErrorCode": null
@@ -117,7 +117,7 @@ throw new errors.EmailError({
     err,
     message: tpl(messages.sendFailed),
     context: tpl(messages.providerRejectedRequest),
-    help: 'https://ghost.org/docs/newsletters/#bulk-email-configuration',
+    help: 'https://docs.ghost.org/newsletters/#bulk-email-configuration',
     code: 'BULK_EMAIL_SEND_FAILED'
 });
 ```

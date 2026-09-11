@@ -3,31 +3,30 @@ import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
 import logging from '@tryghost/logging';
 
-// require, not import: these must resolve to the same CommonJS module
-// instances that core/server/services/members/jobs/index.js loads, so the
-// init() here is the instance scheduleTokenCleanupJob() reads.
-const jobsService = require('../../../../../../core/server/services/jobs-service');
-const adapterManager = require('../../../../../../core/server/services/adapter-manager').default;
+// require, not import: this must resolve to the same CommonJS module instance
+// the boot layer loads, so the module-level "already scheduled" state is shared.
 const memberJobs = require('../../../../../../core/server/services/members/jobs');
+const CleanTokensJob =
+  require('../../../../../../core/server/services/members/jobs/clean-tokens-job').default;
 
 describe('member jobs: token cleanup scheduling', function () {
-  let scheduleStub: sinon.SinonStub;
+  let jobsService: { scheduleRecurring: sinon.SinonStub };
 
   beforeEach(function () {
-    jobsService.init();
-    const backend = adapterManager.getAdapter('jobs');
-    scheduleStub = sinon.stub(backend, 'scheduleRecurring');
+    jobsService = { scheduleRecurring: sinon.stub().resolves() };
   });
 
-  afterEach(async function () {
-    await jobsService.shutdown({ timeoutMs: 100 });
+  afterEach(function () {
     sinon.restore();
   });
 
   it('does not schedule token cleanup under the test environment', async function () {
-    await memberJobs.scheduleTokenCleanupJob();
+    await memberJobs.scheduleTokenCleanupJob(jobsService);
 
-    assert.ok(scheduleStub.notCalled, 'token cleanup must not be scheduled under NODE_ENV=test*');
+    assert.ok(
+      jobsService.scheduleRecurring.notCalled,
+      'token cleanup must not be scheduled under NODE_ENV=test*',
+    );
   });
 
   it('schedules a daily clean-tokens job outside the test environment', async function () {
@@ -35,14 +34,17 @@ describe('member jobs: token cleanup scheduling', function () {
     sinon.stub(logging, 'info');
     process.env.NODE_ENV = 'production';
     try {
-      await memberJobs.scheduleTokenCleanupJob();
+      await memberJobs.scheduleTokenCleanupJob(jobsService);
     } finally {
       process.env.NODE_ENV = originalEnv;
     }
 
-    assert.ok(scheduleStub.calledOnce, 'clean-tokens is scheduled outside the test environment');
-    const [envelope, schedule] = scheduleStub.firstCall.args;
-    assert.equal(envelope.type, 'clean-tokens');
+    assert.ok(
+      jobsService.scheduleRecurring.calledOnce,
+      'clean-tokens is scheduled outside the test environment',
+    );
+    const [job, schedule] = jobsService.scheduleRecurring.firstCall.args;
+    assert.ok(job instanceof CleanTokensJob);
     assert.match(schedule.cron, /^\d+ \d+ \d+ \* \* \*$/, 'a random daily 6-field cron');
   });
 });

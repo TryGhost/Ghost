@@ -88,9 +88,6 @@ describe('MagicLinkPage', () => {
         lastPage: 'gift',
         site: {
           title: 'The Blueprint',
-          labs: {
-            giftSubCustomization: true,
-          },
         },
         pageData: giftPageData,
       });
@@ -103,21 +100,6 @@ describe('MagicLinkPage', () => {
       // redemption page they arrived from.
       expect(queryByText('Gift value')).not.toBeInTheDocument();
       expect(queryByText('$50')).not.toBeInTheDocument();
-    });
-
-    test('keeps the gift value on the card without the customization flag', () => {
-      const { getByText, queryByText } = setupTest({
-        lastPage: 'gift',
-        site: {
-          title: 'The Blueprint',
-        },
-        pageData: giftPageData,
-      });
-
-      expect(getByText('Name')).toBeInTheDocument();
-      expect(getByText('Gift value')).toBeInTheDocument();
-      expect(getByText('$50')).toBeInTheDocument();
-      expect(queryByText('From')).not.toBeInTheDocument();
     });
   });
 

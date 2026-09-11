@@ -160,6 +160,82 @@ describe('Comments API', function () {
       assert.equal(member.get('expertise'), 'Head of Testing');
     });
 
+    describe('and subscribed to a newsletter the publisher has archived', function () {
+      let archived;
+      let active;
+      let name;
+
+      beforeEach(async function () {
+        name = member.get('name');
+        archived = await models.Newsletter.add(
+          {
+            name: 'Archived for resubscribe test',
+            status: 'archived',
+            visibility: 'members',
+            subscribe_on_signup: false,
+            sort_order: 100,
+          },
+          { context: { internal: true } },
+        );
+
+        const before = await models.Member.findOne(
+          { id: member.id },
+          { require: true, withRelated: ['newsletters'] },
+        );
+        active = before.related('newsletters').models.map((n) => ({ id: n.id }));
+        assert.ok(active.length > 0, 'the member starts with an active newsletter');
+
+        await models.Member.edit(
+          {
+            newsletters: [...active, { id: archived.id }],
+          },
+          { id: member.id, context: { internal: true } },
+        );
+      });
+
+      afterEach(async function () {
+        await models.Member.edit(
+          { name, newsletters: active },
+          { id: member.id, context: { internal: true } },
+        );
+        await models.Newsletter.destroy({ id: archived.id, context: { internal: true } });
+        member = await models.Member.findOne({ id: member.id }, { require: true });
+      });
+
+      it('can still resubscribe', async function () {
+        await membersAgent.put(`/api/member/`).body({ subscribed: true }).expectStatus(200);
+
+        const after = await models.Member.findOne(
+          { id: member.id },
+          { require: true, withRelated: ['newsletters'] },
+        );
+        const ids = after.related('newsletters').models.map((n) => n.id);
+
+        assert.ok(ids.includes(archived.id), 'the archived newsletter is kept');
+        for (const { id } of active) {
+          assert.ok(ids.includes(id), 'the active newsletters are kept');
+        }
+      });
+
+      it('keeps the archived newsletter when changing something unrelated', async function () {
+        await membersAgent
+          .put(`/api/member/`)
+          .body({ name: 'Renamed with an archived newsletter' })
+          .expectStatus(200);
+
+        const after = await models.Member.findOne(
+          { id: member.id },
+          { require: true, withRelated: ['newsletters'] },
+        );
+        const ids = after.related('newsletters').models.map((n) => n.id);
+
+        assert.ok(ids.includes(archived.id), 'the archived newsletter is kept');
+        for (const { id } of active) {
+          assert.ok(ids.includes(id), 'the active newsletters are kept');
+        }
+      });
+    });
+
     it('trims whitespace from expertise', async function () {
       await membersAgent
         .put(`/api/member/`)

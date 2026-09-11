@@ -1,6 +1,8 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
+/** @typedef {import('./sending-status-service').SendingStatusService} SendingStatusService */
+
 const messages = {
   postNotFound: 'Post not found.',
   noEmailsProvided: 'No emails provided.',
@@ -23,16 +25,18 @@ class EmailController {
   service;
   models;
   getRequiredUrlRelations;
+  sendingStatusService;
 
   /**
    *
    * @param {EmailService} service
-   * @param {{models: {Post: any, Newsletter: any, Email: any}, getRequiredUrlRelations?: () => string[]}} dependencies
+   * @param {{models: {Post: any, Newsletter: any, Email: any}, getRequiredUrlRelations?: () => string[], sendingStatusService: SendingStatusService}} dependencies
    */
-  constructor(service, { models, getRequiredUrlRelations = () => [] }) {
+  constructor(service, { models, getRequiredUrlRelations = () => [], sendingStatusService }) {
     this.service = service;
     this.models = models;
     this.getRequiredUrlRelations = getRequiredUrlRelations;
+    this.sendingStatusService = sendingStatusService;
   }
 
   async _getFrameData(frame) {
@@ -142,6 +146,18 @@ class EmailController {
     }
 
     return await this.service.retryEmail(email);
+  }
+
+  async getSendingStatus(frame) {
+    const status = await this.sendingStatusService.statusFor(frame.data.id);
+
+    if (!status) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.emailNotFound),
+      });
+    }
+
+    return status;
   }
 }
 

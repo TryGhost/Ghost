@@ -13,8 +13,8 @@ export interface Tier {
 
 /**
  * The *write/create* shape POSTed to /ghost/api/admin/members/ (`labels` are
- * plain names, `newsletters` are ids). The canonical *response* shape lives in
- * `@tryghost/test-data`; `build()` derives this payload from it.
+ * plain names, `newsletters` are `{id}` references). The canonical *response*
+ * shape lives in `@tryghost/test-data`; `build()` derives this payload from it.
  */
 export interface Member {
   id: string;
@@ -30,7 +30,9 @@ export interface Member {
   status: 'free' | 'paid' | 'comped' | 'gift';
   last_seen_at: Date | null;
   last_commented_at: Date | null;
-  newsletters: string[];
+  // The members API reads `newsletter.id` off each entry, so bare ids attach
+  // nothing and silently leave the member unsubscribed.
+  newsletters: { id: string }[];
   tiers?: Partial<Tier>[];
   created_at?: string; // ISO 8601 format for backdating
   complimentary_plan?: boolean;
@@ -40,7 +42,7 @@ export interface Member {
 
 /**
  * Derive the create payload from the canonical API response shape:
- * - labels flatten to names, newsletters flatten to ids
+ * - labels flatten to names, newsletters narrow to `{id}` references
  * - response-only fields are dropped (transient_id, subscribed, tiers,
  *   subscriptions, created_at, updated_at) — the Admin API sets those itself
  * - subscribed_to_emails is a write-lane extra (shared with CSV import) that
@@ -61,7 +63,7 @@ function toCreatePayload(canonical: CanonicalMember): Member {
     status: canonical.status,
     last_seen_at: canonical.last_seen_at ? new Date(canonical.last_seen_at) : null,
     last_commented_at: canonical.last_commented_at ? new Date(canonical.last_commented_at) : null,
-    newsletters: canonical.newsletters.map((newsletter) => newsletter.id),
+    newsletters: canonical.newsletters.map((newsletter) => ({ id: newsletter.id })),
     subscribed_to_emails: 'false',
   };
 }

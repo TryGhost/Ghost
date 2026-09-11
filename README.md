@@ -45,7 +45,7 @@
 
 The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
-For most people this ends up being the best value option because of [how much time it saves](https://ghost.org/docs/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software _and_ getting a great service!
+For most people this ends up being the best value option because of [how much time it saves](https://docs.ghost.org/hosting/) — and 100% of revenue goes to the Ghost Foundation; funding the maintenance and further development of the project itself. So you’ll be supporting open source software _and_ getting a great service!
 
 &nbsp;
 
@@ -59,7 +59,7 @@ npm install ghost-cli -g
 
 &nbsp;
 
-Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://ghost.org/docs/install/local/)
+Then, if installing locally add the `local` flag to get up and running in under a minute - [Local install docs](https://docs.ghost.org/install/local/)
 
 ```
 ghost install local
@@ -67,7 +67,7 @@ ghost install local
 
 &nbsp;
 
-or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://ghost.org/docs/install/ubuntu/)
+or on a server run the full install, including automatic SSL setup using LetsEncrypt - [Production install docs](https://docs.ghost.org/install/ubuntu/)
 
 ```
 ghost install
@@ -75,7 +75,7 @@ ghost install
 
 &nbsp;
 
-Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
+Check out our [official documentation](https://docs.ghost.org/) for more information about our [recommended hosting stack](https://docs.ghost.org/hosting/) & properly [upgrading Ghost](https://docs.ghost.org/update/), plus everything you need to develop your own Ghost [themes](https://docs.ghost.org/themes/) or work with [our API](https://docs.ghost.org/content-api/).
 
 ### Contributors & advanced developers
 

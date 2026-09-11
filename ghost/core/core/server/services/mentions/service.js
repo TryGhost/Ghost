@@ -14,8 +14,6 @@ const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/ser
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
-const logging = require('@tryghost/logging');
-const jobsService = require('../mentions-jobs');
 
 // Serializes a post model to the data the URL service needs, loading the
 // relations it reads for filtered collections (event-emitted models don't
@@ -38,33 +36,6 @@ function getPostUrl(id, postData) {
   return jsonModel.url;
 }
 
-// Reports the same queued/started/finished/failed lifecycle for every mentions
-// background job. The wrapped callback's result and errors pass through unchanged,
-// so job manager outcomes and retries are unaffected.
-function makeLoggingJobService() {
-  return {
-    async addJob(name, fn) {
-      logging.info(`[Background Job] ${name} queued`);
-      jobsService.addJob({
-        name,
-        job: async () => {
-          const startedAt = Date.now();
-          logging.info(`[Background Job] ${name} started`);
-          try {
-            const result = await fn();
-            logging.info(`[Background Job] ${name} completed in ${Date.now() - startedAt}ms`);
-            return result;
-          } catch (err) {
-            logging.error(err, `[Background Job] ${name} failed after ${Date.now() - startedAt}ms`);
-            throw err;
-          }
-        },
-        offloaded: false,
-      });
-    },
-  };
-}
-
 module.exports = {
   /** @type {import('./mentions-api')} */
   api: null,
@@ -75,7 +46,11 @@ module.exports = {
   /** @type {import('./mention-sending-service')} */
   sendingService: null,
   didInit: false,
-  async init() {
+  /**
+   * @param {object} deps
+   * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
+   */
+  async init({ jobsService }) {
     if (this.didInit) {
       return;
     }
@@ -110,7 +85,7 @@ module.exports = {
 
     this.controller.init({
       api,
-      jobService: makeLoggingJobService(),
+      jobsService,
       mentionResourceService: {
         async getByID(id) {
           if (!id) {
@@ -137,7 +112,7 @@ module.exports = {
       getPostData: (post) => getPostData(post),
       getPostUrl: (id, data) => getPostUrl(id, data),
       isEnabled: () => !settingsCache.get('is_private'),
-      jobService: makeLoggingJobService(),
+      jobsService,
     });
     sendingService.listen(events);
 
@@ -148,4 +123,3 @@ module.exports = {
 // exposed for testing
 module.exports.getPostData = getPostData;
 module.exports.getPostUrl = getPostUrl;
-module.exports.makeLoggingJobService = makeLoggingJobService;

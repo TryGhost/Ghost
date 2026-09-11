@@ -177,6 +177,96 @@ class ExternalMediaInliner {
     }
   }
 
+  /**
+   * Download and store one external media URL without deciding where it came from
+   * or where its replacement belongs. Callers own discovery and replacement.
+   *
+   * @param {string} sourceUrl
+   * @returns {Promise<import('./types').ExternalMediaImportResult>}
+   */
+  async importUrl(sourceUrl) {
+    let response;
+    try {
+      response = await this.getRemoteMedia(sourceUrl);
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+        error,
+      };
+    }
+
+    if (!response) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+      };
+    }
+
+    let media;
+    try {
+      media = await this.extractFileDataFromResponse(sourceUrl, response);
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'extract',
+        reason: 'The downloaded media file could not be read.',
+        error,
+      };
+    }
+
+    try {
+      const storedUrl = await this.storeMediaLocally(media);
+      if (!storedUrl) {
+        return {
+          status: 'failed',
+          sourceUrl,
+          stage: 'unsupported',
+          reason: 'No configured storage accepts this media file.',
+        };
+      }
+
+      return {
+        status: 'stored',
+        sourceUrl,
+        storedUrl,
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        sourceUrl,
+        stage: 'storage',
+        reason: 'The media file could not be stored in Ghost.',
+        error,
+      };
+    }
+  }
+
+  /**
+   * Convert an import result into the replacement URL expected by the existing
+   * content and field processing. Expected download and unsupported-file failures
+   * return null so the original URL remains unchanged. Results containing an
+   * underlying processing error are rethrown so the established per-resource
+   * catch boundary continues to log and isolate them.
+   *
+   * @param {import('./types').ExternalMediaImportResult} result
+   * @returns {string|null}
+   */
+  #replacementUrlFromImportResult(result) {
+    if (result.status === 'stored') {
+      return result.storedUrl;
+    }
+    if ('error' in result) {
+      throw result.error;
+    }
+    return null;
+  }
+
   static findMatches(content, domain) {
     // NOTE: the src could end with a quote, bracket, apostrophe, double-backslash, or encoded quote.
     //     Backlashes are added to content as an escape character
@@ -208,22 +298,14 @@ class ExternalMediaInliner {
       const matches = this.constructor.findMatches(content, domain);
 
       for (const src of matches) {
-        const response = await this.getRemoteMedia(src);
+        const result = await this.importUrl(src);
+        const replacementUrl = this.#replacementUrlFromImportResult(result);
 
-        let media;
-        if (response) {
-          media = await this.extractFileDataFromResponse(src, response);
-        }
-
-        if (media) {
-          const inlinedSrc = await this.storeMediaLocally(media);
-
-          if (inlinedSrc) {
-            // NOTE: does not account for duplicate images in content
-            //       in those cases would be processed twice
-            content = content.replace(src, inlinedSrc);
-            logging.info(`Inlined media: ${src} -> ${inlinedSrc}`);
-          }
+        if (replacementUrl) {
+          // NOTE: does not account for duplicate images in content
+          //       in those cases would be processed twice
+          content = content.replace(src, replacementUrl);
+          logging.info(`Inlined media: ${src} -> ${replacementUrl}`);
         }
       }
     }
@@ -246,20 +328,12 @@ class ExternalMediaInliner {
         const src = resourceModel.get(field);
 
         if (src && src.startsWith(domain)) {
-          const response = await this.getRemoteMedia(src);
+          const result = await this.importUrl(src);
+          const replacementUrl = this.#replacementUrlFromImportResult(result);
 
-          let media;
-          if (response) {
-            media = await this.extractFileDataFromResponse(src, response);
-          }
-
-          if (media) {
-            const inlinedSrc = await this.storeMediaLocally(media);
-
-            if (inlinedSrc) {
-              updatedFields[field] = inlinedSrc;
-              logging.info(`Added media to inline: ${src} -> ${inlinedSrc}`);
-            }
+          if (replacementUrl) {
+            updatedFields[field] = replacementUrl;
+            logging.info(`Added media to inline: ${src} -> ${replacementUrl}`);
           }
         }
       }

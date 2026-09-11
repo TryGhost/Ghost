@@ -16,13 +16,14 @@ describe('ImportRunStore', function () {
   it('tracks a run from created to complete, in order', function () {
     const store = new ImportRunStore();
 
-    store.create('run_1', 2);
+    store.create('run_1', 2, ['Headline', 'Body']);
     store.record('run_1', outcome(1));
     store.record('run_1', outcome(2));
 
     const running = store.get('run_1');
     assert.equal(running?.status, 'running');
     assert.equal(running?.total, 2);
+    assert.deepEqual(running?.sourceColumns, ['Headline', 'Body']);
     assert.deepEqual(
       running?.rows.map((r) => r.line),
       [1, 2],
@@ -36,6 +37,28 @@ describe('ImportRunStore', function () {
     assert.ok(finished?.finishedAt instanceof Date);
   });
 
+  it('records updated rows as successful outcomes', function () {
+    const store = new ImportRunStore();
+    store.create('run_updated', 1);
+
+    store.record('run_updated', {
+      line: 2,
+      title: 'Updated post',
+      status: 'updated',
+      postId: 'post_updated',
+    });
+
+    assert.equal(store.get('run_updated')?.rows[0].status, 'updated');
+  });
+
+  it('defaults source columns for internal callers without source data', function () {
+    const store = new ImportRunStore();
+
+    store.create('run_no_source', 0);
+
+    assert.deepEqual(store.get('run_no_source')?.sourceColumns, []);
+  });
+
   it('ignores writes against an unknown run rather than throwing', function () {
     const store = new ImportRunStore();
 
@@ -44,6 +67,17 @@ describe('ImportRunStore', function () {
     store.fail('nope', 'failed');
 
     assert.equal(store.get('nope'), undefined);
+  });
+
+  it('releases a finished run idempotently', function () {
+    const store = new ImportRunStore();
+    store.create('run_release', 1);
+    store.finish('run_release');
+
+    store.release('run_release');
+    store.release('run_release');
+
+    assert.equal(store.get('run_release'), undefined);
   });
 
   it('tracks a run-level failure as a finished terminal state', function () {
@@ -57,6 +91,35 @@ describe('ImportRunStore', function () {
     assert.equal(failed?.status, 'failed');
     assert.equal(failed?.failureReason, 'converter unavailable');
     assert.equal(failed?.finishedAt, finishedAt);
+  });
+
+  it('settles immediately when no imports are running', async function () {
+    const store = new ImportRunStore();
+
+    await store.allSettled();
+  });
+
+  it('settles waiters only after every import has finished its reporting and is released', async function () {
+    const store = new ImportRunStore();
+    store.create('run_1', 1);
+    store.create('run_2', 1);
+    let settled = false;
+    const waiting = store.allSettled().then(() => {
+      settled = true;
+    });
+
+    store.finish('run_1');
+    store.release('run_1');
+    await Promise.resolve();
+    assert.equal(settled, false);
+
+    store.fail('run_2', 'failed');
+    await Promise.resolve();
+    assert.equal(settled, false);
+
+    store.release('run_2');
+    await waiting;
+    assert.equal(settled, true);
   });
 
   it('keeps only the most recent finished runs', function () {

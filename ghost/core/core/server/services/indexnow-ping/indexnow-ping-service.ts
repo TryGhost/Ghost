@@ -265,7 +265,7 @@ export class IndexNowPingService {
           err,
           message: err.message,
           context: tpl(messages.requestFailedError, { service: 'IndexNow' }),
-          help: tpl(messages.requestFailedHelp, { url: 'https://ghost.org/docs/' }),
+          help: tpl(messages.requestFailedHelp, { url: 'https://docs.ghost.org/' }),
         }),
       };
     }
@@ -288,7 +288,7 @@ export class IndexNowPingService {
         err,
         message: err.message,
         context: tpl(messages.requestFailedError, { service: 'IndexNow' }),
-        help: tpl(messages.requestFailedHelp, { url: 'https://ghost.org/docs/' }),
+        help: tpl(messages.requestFailedHelp, { url: 'https://docs.ghost.org/' }),
       }),
     };
   }

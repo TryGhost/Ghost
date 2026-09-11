@@ -161,6 +161,9 @@
                 <a href="http://www.linkedin.com/shareArticle?mini=true&title={{this.encodedTitle}}&url={{this.encodedUrl}}" class="gh-btn linkedin" target="_blank" rel="noopener noreferrer" title="Share on LinkedIn">
                     <span>{{svg-jar "social-linkedin"}}</span>
                 </a>
+                <a href="https://bsky.app/intent/compose?text={{this.encodedTitleAndUrl}}" class="gh-btn bluesky" target="_blank" rel="noopener noreferrer" title="Share on Bluesky">
+                    <span>{{svg-jar "social-bluesky"}}</span>
+                </a>
             </div>
                 <GhTaskButton
                     @showIcon={{true}}

@@ -1,0 +1,257 @@
+import { z } from 'zod';
+import { FIELD_PARTS, FIELD_TYPE_IDS, type FieldType, type PartType } from './structure.js';
+
+// Re-exported so a caller that needs both halves still has one import. The split is
+// about what a bundle pays for, not about where the catalog lives.
+export {
+  FIELD_KINDS,
+  FIELD_PARTS,
+  FIELD_TYPE_IDS,
+  PART_TYPE_IDS,
+  partTypesOf,
+  subFieldsOf,
+  type FieldKind,
+  type FieldType,
+  type PartsOf,
+  type PartType,
+} from './structure.js';
+
+/**
+ * The shared catalog of member metafield types.
+ *
+ * ## What a field type is
+ *
+ * A publisher defines fields; a field has a type; a type says what a valid value is. That
+ * last statement lives here and nowhere else, so that Ghost core, which enforces it, and
+ * admin, which gives instant feedback against it, cannot disagree about what is valid.
+ *
+ * A type is one of two things. Most are a value in their own right, declared as the
+ * schema that value must satisfy. An address is a *record*: a set of named parts, each a
+ * value in the same sense, from which the whole type's schema is derived. Nothing stops a
+ * part being a record itself.
+ *
+ * ## What a write may say
+ *
+ * A value is text, and so is every part of one. A write names what it means to change: a
+ * name it does not mention is left as it was, and a name given an empty string is being
+ * cleared. That is why every part accepts empty regardless of its own rule — emptying is
+ * a statement about the write, not about the part.
+ *
+ * A name nobody recognizes is an error rather than a silent drop, at both depths. A
+ * misspelled field key is refused by the values service, which alone knows which fields a
+ * site has defined; a misspelled part is refused here, because a type's parts are declared
+ * in this file and nowhere else. Each is enforced where the names are known.
+ *
+ * ## What a failure says
+ *
+ * A rule carries the sentence shown when it is broken, so the two cannot drift. Each
+ * states what is expected rather than what went wrong, so one sentence covers every way
+ * of breaking that rule.
+ *
+ * The sentences are plain literals with no interpolation, so each is usable as a
+ * translation key. Nothing here translates: Ghost's parser reads `t()` calls out of the
+ * app that renders a string, so that app owns the step. Admin, the only one today, is not
+ * translated at all.
+ *
+ * Two failures keep zod's own wording, both reachable only by a client sending the wrong
+ * JSON shape: a composite handed something that is not an object, and a part nobody
+ * declared. Naming the offending key serves whoever has to fix that client.
+ *
+ * ## What this package will not do
+ *
+ * No presentation beyond that sentence: labels, icons and input controls belong to the
+ * frontend, and so does any wording that depends on where it appears rather than on which
+ * rule was broken. No storage: columns and codecs belong to the backend. One exception
+ * lives in `./csv` — how a value maps onto CSV columns — because both tiers need the same
+ * answer and a disagreement between them is a file that silently stops round-tripping.
+ *
+ * The line is whether more than one renderer must agree on a string, not presentation
+ * against validity — the sentences above are presentation. Admin is the only renderer
+ * today, so a part's label lives there, held against this file by a type. A Portal
+ * collection form, which cannot reach admin's packages, moves the labels here.
+ */
+
+export const FieldTypeSchema = z.enum(FIELD_TYPE_IDS);
+
+/**
+ * What the member whose record it is may do with a field.
+ *
+ * A property of a definition rather than of the publisher's namespace, so it has an
+ * answer for any regime that ever stores definitions, not only the publisher's.
+ *
+ * Ordered: `write` includes being able to read. Naming the levels for a publisher is
+ * presentation and stays with whoever renders them.
+ */
+export const MEMBER_ACCESS_LEVELS = ['none', 'read', 'write'] as const;
+export type MemberAccess = (typeof MEMBER_ACCESS_LEVELS)[number];
+export const MemberAccessSchema = z.enum(MEMBER_ACCESS_LEVELS);
+export const MEMBER_ACCESS = {
+  none: 'none',
+  read: 'read',
+  write: 'write',
+} as const satisfies Record<MemberAccess, MemberAccess>;
+
+/**
+ * Bytes, not characters, because MySQL TEXT holds 65,535 of them: a character bound would
+ * accept a multibyte value the column cannot hold, and 65,535 emoji is four times over.
+ */
+export const MAX_LONG_TEXT_BYTES = 65535;
+
+// TextEncoder rather than Buffer: this package runs in the browser too.
+const byteLength = (value: string): number => new TextEncoder().encode(value).length;
+
+/**
+ * Every value and every part is built from this, so no two types can disagree about
+ * whitespace: a value of nothing but spaces is nothing, whichever field it was typed
+ * into. Trimming first also makes each bound measure the value rather than its padding.
+ *
+ * Builders are named after what a value is rather than taking a size, so that a bound
+ * lives with everything else true of that thing instead of as a number at the call site.
+ */
+const text = () => z.string({ error: 'Enter text.' }).trim();
+
+const longText = () =>
+  text().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
+    error: 'This text is too long to save. Shorten it a little.',
+  });
+
+/**
+ * Both ends are pinned to a string because storage keeps one string per leaf: a type
+ * parsing to anything else could be written and never read back, which is better learned
+ * from the compiler than from a 500 on the first save.
+ */
+type PartSchema = z.ZodType<string, string>;
+
+/**
+ * The types a composite's parts can declare, each defined once with its rule. A country
+ * code and a postal code both store short text, but they are different things — the
+ * part's type is what a control or a filter dispatches on, the way a field's own type
+ * is for a scalar.
+ */
+export const PART_TYPES = {
+  short_text: text().max(255, { error: 'Use 255 characters or fewer.' }),
+
+  // A postal code, bounded well under a street address because no country's is long. The
+  // bound is a sanity limit rather than a format: postal codes vary too much between
+  // countries to check the shape of one without knowing which country it is for, and the
+  // country is a sibling part rather than something this can see.
+  postal_code: text().max(32, { error: 'Use 32 characters or fewer.' }),
+
+  // The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of
+  // them. Membership of that list is contested, and a closed list here would make Ghost
+  // the arbiter of it for every member of every site. The collection form can offer
+  // countries to pick from without this deciding which ones exist.
+  //
+  // Case is normalized so that `gb` and `GB` are not two values for one place, which a
+  // filter for either would silently half-miss.
+  //
+  // Checked as two ASCII letters on the way in rather than by length on the way out,
+  // because uppercasing does not preserve length: `ß` becomes `SS` and `aß` becomes `ASS`.
+  country_code: text()
+    .regex(/^[A-Za-z]{2}$/, { error: 'Enter a 2-letter country code, like US.' })
+    .toUpperCase(),
+  // Every part type declared next door needs a rule here, and nothing here may
+  // invent one that is not declared there.
+} satisfies Record<PartType, PartSchema>;
+
+const partSchemas: Record<PartType, PartSchema> = PART_TYPES;
+
+/**
+ * A part as a write may name it: absent, empty, or a value of its own kind.
+ *
+ * A rule that is a bound would admit empty on its own; one that is a format would not,
+ * and would leave its part the only one that could be set but never removed.
+ */
+const clearable = <T extends PartSchema>(schema: T) =>
+  text()
+    .pipe(z.union([z.literal(''), schema]))
+    .optional();
+
+/** The types whose value is made of parts, rather than being a single thing. */
+type RecordFieldType = {
+  [T in FieldType]: (typeof FIELD_PARTS)[T] extends null ? never : T;
+}[FieldType];
+
+/**
+ * The shape a record type's schema is built from: its declared parts, each carrying the
+ * rule for what that part holds. Keyed off `./structure`, so the schema a value is parsed
+ * against admits exactly the parts a renderer would draw.
+ */
+type PartShape<T extends RecordFieldType> = {
+  [K in keyof (typeof FIELD_PARTS)[T]]: ReturnType<
+    typeof clearable<(typeof PART_TYPES)[(typeof FIELD_PARTS)[T][K] & PartType]>
+  >;
+};
+
+export interface FieldTypeDefinition {
+  /** What kind of value this is, for anything that has to compare one. */
+  kind: import('./structure.js').FieldKind;
+  value: z.ZodType;
+}
+
+/**
+ * Every type states its kind alongside its schema, so no type can exist that nothing knows
+ * how to compare. The `Record<FieldType, …>` is what makes that exhaustive: an id added to
+ * `FIELD_TYPE_IDS` fails to compile until it is declared here.
+ */
+function defineFieldTypes<D extends Record<FieldType, FieldTypeDefinition>>(declarations: D): D {
+  return declarations;
+}
+
+/**
+ * Every part is optional, because none of an address's exists everywhere: there is no
+ * postal code in Ireland or Hong Kong, and no city in an Irish townland address. Which
+ * parts a value needs is a per-country question, and only the collection form knows the
+ * country. What holds instead is that a value must name at least one part.
+ *
+ * The type check below is load-bearing rather than defensive. An optional part that is
+ * explicitly undefined survives parsing as a key holding undefined, and a bare presence
+ * check would let `{line1: undefined}` through as if it named something.
+ */
+function record<T extends RecordFieldType>(type: T, { error }: { error: string }) {
+  // The parts, and what each holds, are declared in `./structure`; this turns each
+  // into the rule a write must satisfy. Reading them from there is what stops the
+  // structure a renderer draws and the rules a server enforces from drifting apart.
+  const declared = FIELD_PARTS[type] as Readonly<Record<string, PartType>>;
+
+  // Restated for the type system, which loses the key-to-part mapping through
+  // `Object.fromEntries`. Without it the parsed value widens to a string-keyed record,
+  // and a caller could name a part that compiles and is then refused at runtime.
+  const shape = Object.fromEntries(
+    Object.entries(declared).map(([key, partType]) => [key, clearable(partSchemas[partType])]),
+  ) as PartShape<T>;
+
+  // Strict, so a part nobody declared is refused rather than dropped. That refusal keeps
+  // zod's wording, which names the offending key.
+  const value = z
+    .strictObject(shape)
+    .refine((parts) => Object.values(parts).some((entry) => typeof entry === 'string'), { error });
+
+  return { kind: 'record' as const, value };
+}
+
+export const FIELD_TYPES = defineFieldTypes({
+  short_text: { kind: 'text', value: PART_TYPES.short_text },
+  long_text: { kind: 'text', value: longText() },
+  // An address is a delivery address, so its bounds are what a courier will accept
+  // rather than what the column could hold. Modeled on Stripe's Address object.
+  //
+  // Who the parcel is addressed to is not here. A parcel needs a name as well as an
+  // address, but that is a fact about posting parcels rather than about either type,
+  // and the name is often not the account name — gift subscriptions, workplace
+  // deliveries, c/o. A site that needs one keeps it in a field of its own, which is
+  // also how Stripe hands it back: beside the address rather than inside it.
+  address: record('address', { error: 'Enter at least one part of the address.' }),
+});
+
+/** Named for the admin types built on it, which speak of an address rather than a record. */
+export const AddressValue = FIELD_TYPES.address.value;
+export type Address = z.infer<typeof AddressValue>;
+
+/**
+ * A value of any field type, as a caller holding a field of unknown type must accept it.
+ *
+ * Derived from the schemas rather than listed, so a type added here widens it without
+ * anyone remembering to.
+ */
+export type FieldValue = { [T in FieldType]: z.infer<(typeof FIELD_TYPES)[T]['value']> }[FieldType];

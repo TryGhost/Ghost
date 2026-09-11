@@ -1,5 +1,4 @@
 import GiftSuccessPage from '../../../../src/components/pages/gift-success-page';
-import BetaGiftSuccessPage from '../../../../src/components/pages/beta-gift-success-page';
 import {
   getPriceData,
   getProductData,
@@ -52,10 +51,7 @@ function setup({
   });
 }
 
-describe.each([
-  { name: 'GiftSuccessPage', Page: GiftSuccessPage },
-  { name: 'BetaGiftSuccessPage', Page: BetaGiftSuccessPage },
-])('$name', ({ Page }) => {
+describe.each([{ name: 'GiftSuccessPage', Page: GiftSuccessPage }])('$name', ({ Page }) => {
   test('shows the multiplied monthly price as the gift value', () => {
     const { getByTestId } = setup({
       Page,
@@ -86,10 +82,10 @@ describe.each([
   });
 });
 
-describe('BetaGiftSuccessPage', () => {
+describe('GiftSuccessPage delivery', () => {
   test('uses email delivery wording and keeps the redemption link', () => {
     const { getByText, getByTestId } = setup({
-      Page: BetaGiftSuccessPage,
+      Page: GiftSuccessPage,
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
     });
@@ -113,7 +109,7 @@ describe('BetaGiftSuccessPage', () => {
     });
 
     const { getByText, getByTestId } = setup({
-      Page: BetaGiftSuccessPage,
+      Page: GiftSuccessPage,
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
       deliveryDate,
@@ -137,7 +133,7 @@ describe('BetaGiftSuccessPage', () => {
     futureDate.setDate(futureDate.getDate() + 30);
 
     const { getByText } = setup({
-      Page: BetaGiftSuccessPage,
+      Page: GiftSuccessPage,
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
       deliveryDate: toDateValue(futureDate),
@@ -152,7 +148,7 @@ describe('BetaGiftSuccessPage', () => {
 
   test('uses immediate delivery wording when no send instant accompanies the date', () => {
     const { getByText } = setup({
-      Page: BetaGiftSuccessPage,
+      Page: GiftSuccessPage,
       monthlyPrice: getPriceData({ amount: 500, interval: 'month' }),
       deliveryMethod: 'email',
       deliveryDate: '2020-01-01',

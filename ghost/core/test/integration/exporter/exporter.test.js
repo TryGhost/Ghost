@@ -60,8 +60,9 @@ describe('Exporter', function () {
       'members_click_events',
       'members_created_events',
       'members_current_subscription',
-      'members_custom_field_values',
-      'members_custom_fields',
+      'members_metafield_bindings',
+      'members_metafield_values',
+      'members_metafields',
       'members_email_change_events',
       'members_feedback',
       'members_labels',
@@ -97,6 +98,8 @@ describe('Exporter', function () {
       'posts_tags',
       'products',
       'products_benefits',
+      'products_checkout_config',
+      'products_checkout_fields',
       'recommendation_click_events',
       'recommendation_subscribe_events',
       'recommendations',
@@ -111,6 +114,7 @@ describe('Exporter', function () {
       'subscriptions',
       'suppressions',
       'tags',
+      'tinybird_syncs',
       'tokens',
       'users',
       'webhooks',
@@ -171,15 +175,19 @@ describe('Exporter', function () {
       'members_stripe_webhook_secret',
       'machine_payments_secret',
       'machine_payments_deposit_address',
+      'admin_session_secret',
+      'theme_session_secret',
+      'members_email_auth_secret',
+      'members_private_key',
+      'ghost_private_key',
     ];
+
+    assert.equal(_.filter(exportData.data.settings, { group: 'core' }).length, 0);
 
     excludedSettings.forEach((settingKey) => {
       assert.equal(_.find(exportData.data.settings, { key: settingKey }), undefined);
     });
 
     assert.equal(_.find(exportData.data.settings, { key: 'permalinks' }), undefined);
-
-    // should not export sqlite data
-    assert.equal(exportData.data.sqlite_sequence, undefined);
   });
 });

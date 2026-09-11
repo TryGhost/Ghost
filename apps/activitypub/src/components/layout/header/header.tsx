@@ -69,7 +69,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, showBorder = tru
           {!backActive && <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />}
         </div>
       ) : (
-        <div className="sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-background">
+        <div
+          className="sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-background"
+          data-network-header="header"
+        >
           <div
             className={`relative flex h-[72px] items-center justify-between gap-5 px-[min(4vw,24px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,24px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}
           >

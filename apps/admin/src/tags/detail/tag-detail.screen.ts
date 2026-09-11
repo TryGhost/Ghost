@@ -46,6 +46,8 @@ export const tagDetailScreen = {
   footerEditor: () =>
     page.getByRole('textbox', { name: new RegExp(`^${sel.tagFooterEditorLabel}`) }),
 
+  notFound: () => page.getByText('Page not found', { exact: true }),
+
   actionsButton: () => page.getByRole('button', { name: sel.tagActionsButton }),
   viewPostsMenuItem: () => page.getByRole('menuitem', { name: sel.viewPostsMenuItem }),
   deleteTagMenuItem: () => page.getByRole('menuitem', { name: sel.deleteTagMenuItem, exact: true }),

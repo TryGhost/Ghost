@@ -23,7 +23,7 @@ const ADDRESS_SUB_FIELDS = ['line1', 'line2', 'city', 'state', 'postal_code', 'c
 
 /** Custom field columns are namespaced so a minted key can never take a core column. */
 function columnFor(key: string, subField?: string) {
-  return subField ? `custom_fields.${key}.${subField}` : `custom_fields.${key}`;
+  return subField ? `metafields.custom.${key}.${subField}` : `metafields.custom.${key}`;
 }
 
 function addressColumnsFor(key: string) {
@@ -59,16 +59,16 @@ describe('Members API — exportCSV with custom fields', function () {
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string) {
     const { body } = await agent
-      .post('members/custom_fields/')
-      .body({ members_custom_fields: [{ name, type }] })
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name, type }] })
       .expectStatus(201);
-    return body.members_custom_fields[0];
+    return body.members_metafields[0];
   }
 
   async function archiveField(key: string) {
     await agent
-      .put(`members/custom_fields/${key}/`)
-      .body({ members_custom_fields: [{ status: 'archived' }] })
+      .put(`members/metafields/custom/${key}/`)
+      .body({ members_metafields: [{ status: 'archived' }] })
       .expectStatus(200);
   }
 
@@ -85,7 +85,7 @@ describe('Members API — exportCSV with custom fields', function () {
     if (customFields) {
       await agent
         .put(`members/${id}/`)
-        .body({ members: [{ custom_fields: customFields }] })
+        .body({ members: [{ metafields: { custom: customFields } }] })
         .expectStatus(200);
     }
 
@@ -113,8 +113,8 @@ describe('Members API — exportCSV with custom fields', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
@@ -235,9 +235,9 @@ describe('Members API — exportCSV with custom fields', function () {
     const bio = await createField('Bio', 'long_text');
 
     await agent
-      .put('members/custom_fields/')
+      .put('members/metafields/custom/')
       .body({
-        members_custom_fields: [{ key: address.key }, { key: bio.key }, { key: nickname.key }],
+        members_metafields: [{ key: address.key }, { key: bio.key }, { key: nickname.key }],
       })
       .expectStatus(200);
 
@@ -289,7 +289,7 @@ describe('Members API — exportCSV with custom fields', function () {
 
   // Whether a name like this is reservable is the definitions layer's business,
   // not the export's — the namespace holds either way. The property itself is
-  // pinned in the custom-field-types unit tests, where the colliding key is
+  // pinned in the metafield-types unit tests, where the colliding key is
   // constructed directly rather than minted.
   it('keeps a field named after a core column out of that column', async function () {
     const field = await createField('Email', 'short_text');
@@ -321,18 +321,12 @@ describe('Members API — exportCSV with custom fields', function () {
     assert.equal(rowFor(member.id)[columnFor(kept.key)], 'Bex');
   });
 
-  // Fields can only be created while the flag is on, so this is the site that
-  // defined fields and then had the flag turned back off.
-  it('omits custom field columns when the flag is disabled', async function () {
-    const nickname = await createField('Nickname', 'short_text');
-
-    const member = await createMember({ [nickname.key]: 'Bex' });
-
-    mockManager.mockLabsDisabled('membersCustomFields');
+  it('omits custom field columns on a site that defines none', async function () {
+    const member = await createMember({});
 
     const { columns, rowFor } = await exportCSV();
 
     assert.deepEqual(columns, CORE_COLUMNS);
-    assert.equal(rowFor(member.id)[columnFor(nickname.key)], undefined);
+    assert.equal(rowFor(member.id)['custom_fields.nickname'], undefined);
   });
 });

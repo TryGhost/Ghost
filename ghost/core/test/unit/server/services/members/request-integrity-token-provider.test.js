@@ -68,5 +68,14 @@ describe('RequestIntegrityTokenProvider', function () {
 
       assert.equal(result, false);
     });
+
+    it('should fail to verify a token with a truncated signature', function () {
+      const token = tokenProvider.create();
+      const truncatedToken = token.slice(0, -1);
+
+      const result = tokenProvider.validate(truncatedToken);
+
+      assert.equal(result, false);
+    });
   });
 });

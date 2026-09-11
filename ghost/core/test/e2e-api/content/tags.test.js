@@ -5,7 +5,6 @@ const _ = require('lodash');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
-const dbUtils = require('../../utils/db-utils');
 const localUtils = require('./utils');
 
 describe('Tags Content API', function () {
@@ -40,15 +39,8 @@ describe('Tags Content API', function () {
     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
     // Default order 'name asc' check
-    // the ordering difference is described in https://github.com/TryGhost/Ghost/issues/6104
-    // this condition should be removed once issue mentioned above ^ is resolved
-    if (dbUtils.isMySQL()) {
-      assert.equal(jsonResponse.tags[0].name, 'bacon');
-      assert.equal(jsonResponse.tags[3].name, 'kitchen sink');
-    } else {
-      assert.equal(jsonResponse.tags[0].name, 'Getting Started');
-      assert.equal(jsonResponse.tags[4].name, 'kitchen sink');
-    }
+    assert.equal(jsonResponse.tags[0].name, 'bacon');
+    assert.equal(jsonResponse.tags[3].name, 'kitchen sink');
 
     assert(new URL(res.body.tags[0].url).protocol);
     assert(new URL(res.body.tags[0].url).host);

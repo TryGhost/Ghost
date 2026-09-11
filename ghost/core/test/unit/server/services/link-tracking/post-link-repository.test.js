@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const PostLinkRepository = require('../../../../../core/server/services/link-tracking/post-link-repository');
 
-describe('UNIT: PostLinkRepository class', function () {
+describe('PostLinkRepository class', function () {
   let postLinkRepository;
 
   beforeAll(function () {

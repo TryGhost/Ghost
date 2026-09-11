@@ -2,7 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 
-// ref https://ghost.org/docs/themes/members#signup-forms
+// ref https://docs.ghost.org/themes/members#signup-forms
 
 interface SignupNodeData {
     alignment: string;

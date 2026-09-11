@@ -1,4 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const sinon = require('sinon');
 
 const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
@@ -28,6 +31,28 @@ describe('I18n Class behavior', function () {
       assert.equal(i18n.locale(), 'fr');
       sinon.assert.calledTwice(fileSpy);
       assert.equal(fileSpy.secondCall.args[0], 'en');
+    });
+
+    it('only reads locale files from inside the translations directory', function () {
+      sinon.stub(logging, 'warn');
+
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'i18n-traversal-'));
+      const translations = path.join(root, 'locales');
+      fs.mkdirSync(translations, { recursive: true });
+      fs.writeFileSync(path.join(translations, 'en.json'), JSON.stringify({ Hello: 'Hello EN' }));
+      fs.writeFileSync(path.join(root, 'secret.json'), JSON.stringify({ Hello: 'LEAKED' }));
+
+      const i18n = new I18n({
+        basePath: translations,
+        locale: '../secret',
+        stringMode: 'fulltext',
+      });
+      i18n.init();
+
+      assert.equal(i18n.t('Hello'), 'Hello EN');
+
+      fs.rmSync(root, { recursive: true, force: true });
+      sinon.restore();
     });
   });
 

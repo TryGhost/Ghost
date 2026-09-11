@@ -1,0 +1,9 @@
+{
+  /* Vitest's globals live here only, so they can't mask a missing import in core source. */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["**/*.ts", "../bin/**/*.d.ts", "../core/**/*.d.ts", "../types/**/*.d.ts"]
+}

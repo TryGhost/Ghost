@@ -9,7 +9,7 @@ import {
 
 const errorFor = (schema: z.ZodType, value: unknown) => schema.safeParse(value).error as z.ZodError;
 
-describe('UNIT: services/route-settings/validation-errors', function () {
+describe('services/route-settings/validation-errors', function () {
   describe('formatLocation', function () {
     it('names the file when there is no path', function () {
       assert.equal(formatLocation([]), 'routes.yaml');
@@ -62,7 +62,7 @@ describe('UNIT: services/route-settings/validation-errors', function () {
         err.message,
         /^The following definition "routes\['\/x\/'\]\.mystery" is invalid: /,
       );
-      assert.equal(err.help, 'https://ghost.org/docs/themes/routing/');
+      assert.equal(err.help, 'https://docs.ghost.org/themes/routing/');
     });
 
     it('does not mistake inherited object properties for known keys', function () {

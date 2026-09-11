@@ -6,8 +6,8 @@ transactions, or Stripe objects.
 
 ## Interface
 
-- `startCheckout(input)` owns the `giftSubCustomization` flag, duration
-  catalogue, Portal plan gate, tier/cadence validation, authoritative price,
+- `startCheckout(input)` owns the duration catalogue, Portal plan gate,
+  tier/cadence validation, authoritative price,
   token, success parameters, metadata, customer, and one-time payment.
 - `preparePaidContinuation(input)` validates an active gift and returns the
   stable tier/cadence/trial decision consumed by the normal subscription

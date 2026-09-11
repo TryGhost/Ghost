@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { asSessionCreateParams, provision, stripeClient } from './provision-stripe-environment.ts';
 import { fileURLToPath } from 'node:url';
-import { provision, stripeClient } from './provision-stripe-environment.ts';
+import type Stripe from 'stripe';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
@@ -51,22 +52,24 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    line_items: [{ price: monthly.id, quantity: 1 }],
-    success_url: 'https://example.com/success',
-    cancel_url: 'https://example.com/cancel',
-    shipping_address_collection: { allowed_countries: ['GB', 'US'] },
-    tax_id_collection: { enabled: true },
-    custom_fields: [
-      {
-        key: 'delivery_notes',
-        label: { type: 'custom', custom: 'Delivery notes' },
-        type: 'text',
-        optional: true,
-      },
-    ],
-  });
+  const session = await stripe.checkout.sessions.create(
+    asSessionCreateParams({
+      mode: 'subscription',
+      line_items: [{ price: monthly.id, quantity: 1 }],
+      success_url: 'https://example.com/success',
+      cancel_url: 'https://example.com/cancel',
+      shipping_address_collection: { allowed_countries: ['GB', 'US'] },
+      tax_id_collection: { enabled: true },
+      custom_fields: [
+        {
+          key: 'delivery_notes',
+          label: { type: 'custom', custom: 'Delivery notes' },
+          type: 'text',
+          optional: true,
+        },
+      ],
+    }),
+  );
 
   log('');
   log('  Open this and pay:');
@@ -157,7 +160,10 @@ async function main(): Promise<void> {
   log('');
 }
 
-main().catch((error: Error) => {
-  log(`Capture failed: ${error.message}`);
+main().catch((error: unknown) => {
+  // A rejection need not be an Error, and the stack is what says which of a dozen
+  // sequential Stripe calls failed.
+  const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  process.stderr.write(`Capture failed: ${detail}\n`);
   process.exit(1);
 });

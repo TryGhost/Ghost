@@ -46,7 +46,7 @@ Related data is separated by responsibility:
 | Responsibility                    | Tables                                                                                                                                   |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Labels                            | `labels`, `members_labels`                                                                                                               |
-| Custom fields                     | `members_custom_fields`, `members_custom_field_values`                                                                                   |
+| Metafields                        | `members_metafields`, `members_metafield_values`                                                                                         |
 | Newsletter subscriptions          | `newsletters`, `members_newsletters`                                                                                                     |
 | Tiers and access                  | `products`, `members_products`, `subscriptions`                                                                                          |
 | Stripe state                      | `members_stripe_customers`, `members_stripe_customers_subscriptions`, `members_current_subscription`, `stripe_products`, `stripe_prices` |
@@ -55,9 +55,10 @@ Related data is separated by responsibility:
 
 `labels` has a many-to-many relationship with `members` through
 `members_labels`. Newsletter subscriptions use the same pattern through
-`members_newsletters`. Custom-field definitions are stored once in
-`members_custom_fields`; `members_custom_field_values` stores the values a
-member has supplied.
+`members_newsletters`. Metafield definitions are stored once in `members_metafields`;
+`members_metafield_values` stores the values a member has supplied, one row per
+leaf. `custom` is the one namespace a publisher defines fields in, and the admin
+UI calls those custom fields.
 
 Ghost keeps a provider-independent subscription in `subscriptions`. The Stripe
 tables cache the provider records needed to synchronize paid membership state.

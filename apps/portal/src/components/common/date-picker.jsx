@@ -479,6 +479,7 @@ const DatePicker = ({
             <DayPicker
               classNames={classNames}
               dir={dir}
+              defaultMonth={selected || minDate}
               disabled={[
                 ...(minDate ? [{ before: minDate }] : []),
                 ...(maxDate ? [{ after: maxDate }] : []),

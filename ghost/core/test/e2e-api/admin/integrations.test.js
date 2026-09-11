@@ -29,7 +29,7 @@ describe('Integrations API', function () {
 
     assert.equal(res.body.integrations.length, 5);
 
-    // there is no enforced order for integrations which makes order different on SQLite and MySQL
+    // There is no enforced order for integrations.
     const zapierIntegration = _.find(res.body.integrations, { name: 'Zapier' }); // from migrations
     assertExists(zapierIntegration);
 

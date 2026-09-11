@@ -14,7 +14,7 @@ type MemberData = ReturnType<typeof getMemberData> & {
 };
 
 const paidSite = (overrides: Partial<SiteData> = {}): SiteData => ({
-  ...getSiteData({ labs: { giftSubCustomization: true } }),
+  ...getSiteData(),
   portal_account_gift_promotion: true,
   ...overrides,
 });
@@ -88,15 +88,11 @@ describe('GiveGiftCard', () => {
   test.each([
     {
       label: 'the setting is missing',
-      site: getSiteData({ labs: { giftSubCustomization: true } }),
+      site: getSiteData(),
     },
     {
       label: 'the setting is disabled',
       site: paidSite({ portal_account_gift_promotion: false }),
-    },
-    {
-      label: 'the feature flag is disabled',
-      site: paidSite({ labs: {} }),
     },
     {
       label: 'there is no giftable offering',

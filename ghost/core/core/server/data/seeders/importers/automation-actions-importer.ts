@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
-import { toDatabaseDate } from '../../../lib/db-date';
+import { toDatabaseDate } from '../../../lib/db-types/date';
 import { randomDateBetween } from '../utils/random';
 
 type Automation = {

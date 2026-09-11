@@ -44,6 +44,8 @@ export interface FrameworkProviderProps {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
+  // Called after URL overrides are synced to sessionStorage. May return cleanup work.
+  onFeatureFlagOverridesChange?: () => void | (() => void);
 
   // Optional QueryClient override. Defaults to the shared window-level
   // singleton; test harnesses pass a fresh client per render for isolation.

@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const { ADMIN } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -7,17 +8,14 @@ const messages = {
   stripeNotConnected: 'Missing Stripe connection.',
   memberAlreadyExists: 'Member already exists.',
   memberNotFound: 'Member not found.',
-  customFieldsOnAdd:
+  metafieldsOnAdd:
     'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.',
+  metafieldsWithoutWriter:
+    'Custom field values cannot be set by a request with no authenticated user or integration.',
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
 const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
-
-/**
- * @typedef {object} ILabsService
- * @prop {(key: string) => boolean} isSet
- */
 
 /**
  * @typedef {object} IEmailService
@@ -43,7 +41,6 @@ module.exports = class MemberBREADService {
    * @param {object} deps
    * @param {import('../repositories/member-repository')} deps.memberRepository
    * @param {import('../../../offers/application/offers-api')} deps.offersAPI
-   * @param {ILabsService} deps.labsService
    * @param {IEmailService} deps.emailService
    * @param {IStripeService} deps.stripeService
    * @param {import('../../../member-attribution/member-attribution-service')} deps.memberAttributionService
@@ -51,11 +48,11 @@ module.exports = class MemberBREADService {
    * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
-   * @param {import('../../../members-custom-fields/values-service').CustomFieldValuesService} deps.customFieldValues Required: boot builds it before the members service
+   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {import('../../../members-metafields/definitions-service').MetafieldDefinitionsService} deps.metafieldDefinitions Required: boot builds it before the members service
    */
   constructor({
     memberRepository,
-    labsService,
     emailService,
     stripeService,
     offersAPI,
@@ -65,13 +62,12 @@ module.exports = class MemberBREADService {
     nextPaymentCalculator,
     commentsService,
     giftService,
-    customFieldValues,
+    metafieldValues,
+    metafieldDefinitions,
   }) {
     this.offersAPI = offersAPI;
     /** @private */
     this.memberRepository = memberRepository;
-    /** @private */
-    this.labsService = labsService;
     /** @private */
     this.emailService = emailService;
     /** @private */
@@ -89,36 +85,31 @@ module.exports = class MemberBREADService {
     /** @private */
     this.giftService = giftService;
     /** @private */
-    this.customFieldValues = customFieldValues;
+    this.metafieldValues = metafieldValues;
+    /** @private */
+    this.metafieldDefinitions = metafieldDefinitions;
   }
 
   /**
-   * @private
-   * Custom field values keyed by member id, or `null` when the feature is off —
-   * the flag lives here, so callers just check the result: `null` means omit the
-   * `custom_fields` key entirely, keeping a pre-feature member payload identical.
+   * Metafields are extra fields a publisher can define on member records, such as a shoe
+   * size or a delivery address. Their values live in their own table, so they are fetched
+   * here rather than loaded alongside the member.
    *
-   * A read gets values on the flag alone, with no opt-in include: a member's
-   * custom fields are their own data, like labels and tiers, which a read
-   * already returns unasked. `include` is for things that are expensive or
-   * aggregate (email_recipients, counts), and one flat lookup on a read that
-   * already issues a dozen queries is neither. The flag, not an include, is what
-   * protects consumers that predate the feature — an include would outlive it
-   * and become permanent API surface.
-   *
-   * Browse is the opposite — opt-in via `include=custom_fields`, exactly how
-   * `products`/`tiers` already behave: a read always carries them, a list only
-   * when asked. Read and browse must stay format-identical, so a browse that
-   * asks gets the same key a read gives unasked.
+   * Returns null when this audience has no field to be told about, which tells the caller to
+   * leave the `metafields` key off the member payload rather than send an empty object: a key
+   * added to an API response cannot be withdrawn without breaking whoever started reading it,
+   * and most sites have never defined a field, so those sites keep the payload they had
+   * before this feature existed.
    * @param {string[]} memberIds
+   * @param {import('../../../members-metafields').Audience} audience
    * @returns {Promise<Map<string, Record<string, unknown>> | null>}
    */
-  async fetchCustomFieldValues(memberIds) {
-    if (!this.labsService.isSet('membersCustomFields')) {
+  async fetchMetafieldValues(memberIds, audience) {
+    if (!(await this.metafieldDefinitions.hasAnyReadable(audience))) {
       return null;
     }
 
-    return this.customFieldValues.getValuesForMembers(memberIds);
+    return this.metafieldValues.getValuesForMembers(memberIds, audience);
   }
 
   /**
@@ -392,7 +383,20 @@ module.exports = class MemberBREADService {
     }
   }
 
-  async read(data, options = {}) {
+  /**
+   * @param {object} data
+   * @param {object} [options]
+   * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
+   *   Who the extra fields a publisher defined are being read for, or null to leave them
+   *   off entirely. Null is not the same as "nobody may see them": it means this caller
+   *   never shows them, so fetching them is two database queries whose results are thrown
+   *   away. Ghost identifies a signed-in reader on every page view of a themed site
+   *   through this method, and that caller renders a member through a fixed list of
+   *   fields which has never included these.
+   *
+   *   Defaults to null, so a caller that does not ask gets none of them.
+   */
+  async read(data, { metafieldsFor = null, ...options } = {}) {
     const defaultWithRelated = [
       'labels',
       'stripeSubscriptions',
@@ -453,43 +457,25 @@ module.exports = class MemberBREADService {
     const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
     member.unsubscribe_url = unsubscribeUrl;
 
-    const customFields = await this.fetchCustomFieldValues([member.id]);
-    if (customFields) {
-      member.custom_fields = customFields.get(member.id) ?? {};
+    if (metafieldsFor) {
+      const metafields = await this.fetchMetafieldValues([member.id], metafieldsFor);
+      if (metafields) {
+        member.metafields = metafields.get(member.id) ?? {};
+      }
     }
 
     return member;
   }
 
-  /**
-   * @private
-   * The write-side flag gate, paired with `fetchCustomFieldValues` on the read
-   * side. The schema declares `custom_fields` for every site, so the key arrives
-   * whether or not the feature is on and this is what decides it goes no further.
-   * @param {object} data
-   */
-  dropCustomFieldsWhenDisabled(data) {
-    if (!this.labsService.isSet('membersCustomFields')) {
-      delete data.custom_fields;
-    }
-  }
-
   async add(data, options) {
-    this.dropCustomFieldsWhenDisabled(data);
-
-    // Values cannot be set on create, only on a subsequent edit. `namesValues`
-    // both judges the body and rejects a malformed one, so a body refused here is
-    // refused on edit for the same reason.
-    if (this.customFieldValues.namesValues(data.custom_fields)) {
+    if (this.metafieldValues.namesValues(this.metafieldValues.unwrapWire(data.metafields))) {
       throw new errors.ValidationError({
-        message: tpl(messages.customFieldsOnAdd),
-        property: 'custom_fields',
+        message: tpl(messages.metafieldsOnAdd),
+        property: 'metafields',
       });
     }
 
-    // Not a member column, so it comes off before the repository sees it. Only
-    // an absent key or one naming no values gets this far.
-    delete data.custom_fields;
+    delete data.metafields;
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
       const property = data.comped ? 'comped' : 'stripe_customer_id';
@@ -579,28 +565,22 @@ module.exports = class MemberBREADService {
       await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
     }
 
-    return this.read({ id: model.id }, options);
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
   }
 
   async edit(data, options) {
     delete data.last_seen_at;
 
-    this.dropCustomFieldsWhenDisabled(data);
-
-    // Values live in their own table, so they come off the member data before
-    // the repository sees it — `custom_fields` is not a member column. The gate
-    // above has already dropped it when the feature is off, so by this point its
-    // presence is the signal to write.
-    const customFields = data.custom_fields;
-    const writeCustomFields = customFields !== undefined;
-    delete data.custom_fields;
+    const metafields = this.metafieldValues.unwrapWire(data.metafields);
+    const writeMetafields = metafields !== undefined;
+    delete data.metafields;
 
     // Plan (which validates) before the member is touched, so a bad value 422s
     // here rather than after the member edit has been applied — and keep the
     // plan to apply once below, so the values aren't resolved and validated
     // twice.
-    const plannedCustomFields = writeCustomFields
-      ? await this.customFieldValues.planWrite(customFields)
+    const plannedMetafields = writeMetafields
+      ? await this.metafieldValues.planWrite(metafields, ADMIN)
       : null;
 
     let model;
@@ -653,10 +633,26 @@ module.exports = class MemberBREADService {
       }
     }
 
-    if (plannedCustomFields) {
-      await this.customFieldValues.applyWrite(model.id, plannedCustomFields);
+    if (plannedMetafields) {
+      // Every value reaching here was typed into the Admin API, so the writer is
+      // whoever made the request — the same pair the action log records, so the two
+      // agree about who did it rather than one saying only that it was "admin".
+      //
+      // The only route to this branch is the authenticated Admin API, so an anonymous
+      // request is a mistake somewhere upstream rather than a writer to invent a name
+      // for. Refusing keeps every stored writer resolvable.
+      const context = options.context || {};
+      if (!context.integration && !context.user) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.metafieldsWithoutWriter),
+        });
+      }
+      const writtenBy = context.integration
+        ? { type: 'integration', id: context.integration.id }
+        : { type: 'user', id: context.user };
+      await this.metafieldValues.applyWrite(model.id, plannedMetafields, { writtenBy });
 
-      // Custom fields aren't a member column or relation, so an edit touching
+      // Metafields aren't a member column or relation, so an edit touching
       // only them leaves `model._changed` empty and the save fires nothing.
       // Declare the change into `_changed` — as bookshelf-relations does for a
       // labels change — so the member's edited lifecycle fires its usual signals
@@ -666,13 +662,13 @@ module.exports = class MemberBREADService {
       // populated `_changed` and fired the edited event during update(), so
       // re-firing would duplicate it (this also covers a full PUT that resends
       // unchanged member fields — `_changed` stays empty there too). That
-      // combined event omits `custom_fields` from `_changed`, which nothing
-      // reads: custom fields aren't in the webhook payload (they're injected
+      // combined event omits `metafields` from `_changed`, which nothing
+      // reads: metafields aren't in the webhook payload (they're injected
       // into read/browse responses, not the model), and `_changed` only gates
       // whether the event fires.
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
-      if (memberUnchanged && plannedCustomFields.length > 0) {
-        model._changed = { custom_fields: true };
+      if (memberUnchanged && plannedMetafields.length > 0) {
+        model._changed = { metafields: true };
         // A mixed edit keeps the generic label on purpose: relabelling the
         // one action a member change already fired would bury that change
         // behind this one.
@@ -685,7 +681,7 @@ module.exports = class MemberBREADService {
       }
     }
 
-    return this.read({ id: model.id }, options);
+    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
   }
 
   /**
@@ -717,7 +713,7 @@ module.exports = class MemberBREADService {
       );
     }
 
-    return this.read({ id: memberId });
+    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
   }
 
   /**
@@ -739,7 +735,7 @@ module.exports = class MemberBREADService {
 
     await this.memberRepository.saveCommenting(memberId, updated, 'commenting_enabled', context);
 
-    return this.read({ id: memberId });
+    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
   }
 
   async logout(options) {
@@ -801,8 +797,11 @@ module.exports = class MemberBREADService {
 
     // One query for the whole page, not one per member. `null` when the flag
     // is off or the caller didn't ask — the same truthiness guard read uses.
-    const customFieldsByMember = options.includeCustomFields
-      ? await this.fetchCustomFieldValues(page.data.map((model) => model.id))
+    const metafieldsByMember = options.includeMetafields
+      ? await this.fetchMetafieldValues(
+          page.data.map((model) => model.id),
+          ADMIN,
+        )
       : null;
 
     const data = page.data.map((model, index) => {
@@ -814,8 +813,8 @@ module.exports = class MemberBREADService {
       if (!originalWithRelated.includes('products')) {
         delete member.products;
       }
-      if (customFieldsByMember) {
-        member.custom_fields = customFieldsByMember.get(model.id) ?? {};
+      if (metafieldsByMember) {
+        member.metafields = metafieldsByMember.get(model.id) ?? {};
       }
       member.email_suppression = {
         suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

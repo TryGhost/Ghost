@@ -15,7 +15,7 @@ function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
 
   return (
-    <ShadeApp className="shade-admin" darkMode={resolvedTheme === 'dark'}>
+    <ShadeApp className="shade-admin" darkMode={resolvedTheme === 'dark'} data-react-admin-mounted>
       <App />
     </ShadeApp>
   );

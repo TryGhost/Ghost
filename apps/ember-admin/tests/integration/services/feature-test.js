@@ -87,6 +87,7 @@ describe('Integration: Service: feature', function () {
     beforeEach(function () {
         server = new Pretender();
         originalMatchMedia = window.matchMedia;
+        sessionStorage.clear();
     });
 
     afterEach(function () {
@@ -96,6 +97,7 @@ describe('Integration: Service: feature', function () {
             configurable: true,
             value: originalMatchMedia
         });
+        sessionStorage.clear();
         server.shutdown();
     });
 
@@ -105,6 +107,26 @@ describe('Integration: Service: feature', function () {
             value: sinon.stub().returns(mediaQuery)
         });
     }
+
+    it('re-reads session overrides when requested by the state bridge', async function () {
+        stubSettings(server, {testFlag: false});
+        stubUser(server, {});
+
+        addTestFlag();
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+        await service.fetch();
+        expect(service.get('labs.testFlag')).to.be.false;
+        expect(service.get('testFlag')).to.be.false;
+
+        sessionStorage.setItem('ghost-admin:labs-overrides', JSON.stringify(['testFlag']));
+        service.refreshFeatureFlagOverrides();
+
+        expect(service.get('testFlag')).to.be.true;
+    });
 
     it('loads labs and user settings correctly', async function () {
         stubSettings(server, {testFlag: true});

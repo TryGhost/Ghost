@@ -22,6 +22,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { ValidationError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import {
+  MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS,
   memberCustomFieldUserTypes,
   useCreateMemberCustomField,
   useDeleteMemberCustomField,
@@ -31,7 +32,10 @@ import {
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type {
+  MemberCustomField,
+  MemberCustomFieldAccess,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const userTypeById = (id: string) =>
   memberCustomFieldUserTypes.find((userType) => userType.id === id) ||
@@ -46,7 +50,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   const { mutateAsync: editField } = useEditMemberCustomField();
   const { mutateAsync: deleteField } = useDeleteMemberCustomField();
   const handleError = useHandleError();
-  const isEdit = Boolean(field);
+  const isEdit = field !== undefined;
 
   const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps } = useForm({
     initialState: {
@@ -54,6 +58,7 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       // Form state tracks the user-type id; it maps to the API storage
       // type on save
       userTypeId: field ? userTypeForField(field).id : memberCustomFieldUserTypes[0].id,
+      access: field ? field.access.member : 'none',
     },
     savingDelay: 500,
     onValidate: (state) => {
@@ -68,10 +73,22 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     },
     onSave: async (state) => {
       if (field) {
-        await editField({ key: field.key, name: state.name.trim() });
+        // Only the properties this form actually changed. Sending the whole field back
+        // would carry whatever the list held when it was loaded, so saving a rename
+        // would silently restore the access a colleague had changed in the meantime.
+        const name = state.name.trim();
+        await editField({
+          key: field.key,
+          ...(name === field.name ? {} : { name }),
+          ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+        });
       } else {
-        // Just name and type: the backend mints the immutable key.
-        await createField({ name: state.name.trim(), type: userTypeById(state.userTypeId).id });
+        // No key: the backend mints it from the name.
+        await createField({
+          name: state.name.trim(),
+          type: userTypeById(state.userTypeId).id,
+          access: { member: state.access },
+        });
       }
     },
     onSaveError: (error) => {
@@ -151,6 +168,12 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
                 on your members, for collecting, and in filters.
               </div>
               <div>Values already collected for this field will remain unchanged.</div>
+              {field!.access.member !== 'none' && (
+                <div className="mt-6">
+                  This field is open to members, so what you have already collected becomes visible
+                  to each of them on their own record.
+                </div>
+              )}
             </>
           ),
           okLabel: 'Reactivate',
@@ -285,6 +308,37 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             </SelectContent>
           </Select>
           {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
+        </Field>
+        <Field>
+          <FieldLabel>Who it’s for</FieldLabel>
+          <Select
+            disabled={isArchived}
+            value={formState.access}
+            onValueChange={(value) =>
+              updateForm((state) => ({ ...state, access: value as MemberCustomFieldAccess }))
+            }
+          >
+            <SelectTrigger aria-label="Who it’s for" data-testid="custom-field-access">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldDescription>
+            {isArchived
+              ? 'Members never see an archived field. Reactivate it to choose who it’s for.'
+              : MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS.find(
+                  (option) => option.value === formState.access,
+                )?.description}
+            {isEdit && formState.access !== 'none' && field.access.member === 'none' && (
+              <> Anything already recorded in this field becomes visible to them.</>
+            )}
+          </FieldDescription>
         </Field>
       </FieldGroup>
     </SettingsModal>

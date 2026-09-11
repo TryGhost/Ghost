@@ -1,6 +1,6 @@
 import { EmberFallback } from './ember-bridge';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
-import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
+import { Suspense, type ComponentType, type LazyExoticComponent, type ReactNode } from 'react';
 
 /**
  * Chooses which implementation serves a route while a screen migrates from
@@ -23,13 +23,20 @@ import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
  * Errors are deliberately not reported here: `useBrowseConfig` already routes
  * them through the framework's default error handler, and the shell calls the
  * same query, so anything logged here would be a duplicate.
+ *
+ * `fallback` overrides what the Ember side renders, for routes that need more
+ * than a bare EmberFallback while the flag is off — the posts and pages lists
+ * also mount the React gift-link modal host, which the Ember context menu
+ * opens over the state bridge.
  */
 export function FlagGatedRoute({
   flag,
   component: Component,
+  fallback = <EmberFallback />,
 }: {
   flag: string;
   component: LazyExoticComponent<ComponentType>;
+  fallback?: ReactNode;
 }) {
   const owner = useFlagGatedRouteOwner(flag);
 
@@ -37,7 +44,7 @@ export function FlagGatedRoute({
     return null;
   }
   if (owner === 'ember') {
-    return <EmberFallback />;
+    return fallback;
   }
   return (
     <Suspense fallback={null}>

@@ -25,7 +25,7 @@ describe('Gift reminder processing', function () {
     await agent.loginAsOwner();
 
     giftService = require('../../../../core/server/services/gifts');
-    await giftService.init();
+    giftService.init();
 
     paidTier = await models.Product.findOne({ type: 'paid' }, { require: true });
   });

@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const SendWebmentionsJob = require('./send-webmentions-job').default;
 
 module.exports = class MentionSendingService {
   #discoveryService;
@@ -8,8 +9,12 @@ module.exports = class MentionSendingService {
   #getPostData;
   #getPostUrl;
   #isEnabled;
-  #jobService;
+  #jobsService;
 
+  /**
+   * @param {object} deps
+   * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
+   */
   constructor({
     discoveryService,
     externalRequest,
@@ -17,7 +22,7 @@ module.exports = class MentionSendingService {
     getPostData,
     getPostUrl,
     isEnabled,
-    jobService,
+    jobsService,
   }) {
     this.#discoveryService = discoveryService;
     this.#externalRequest = externalRequest;
@@ -25,7 +30,7 @@ module.exports = class MentionSendingService {
     this.#getPostData = getPostData;
     this.#getPostUrl = getPostUrl;
     this.#isEnabled = isEnabled;
-    this.#jobService = jobService;
+    this.#jobsService = jobsService;
   }
 
   get siteUrl() {
@@ -82,13 +87,13 @@ module.exports = class MentionSendingService {
         // Capture the source URL now, from the event's data, rather than
         // deferring the model into the job.
         const url = new URL(await this.#resolvePostUrl(post));
-        await this.#jobService.addJob('sendWebmentions', async () => {
-          await this.sendForHTMLResource({
-            url,
+        await this.#jobsService.dispatch(
+          new SendWebmentionsJob({
+            sourceUrl: url.href,
             html: html,
             previousHtml: previousHtml,
-          });
-        });
+          }),
+        );
       }
     } catch (e) {
       logging.error('Error in webmention sending service post update event handler:');
@@ -158,10 +163,22 @@ module.exports = class MentionSendingService {
   }
 
   /**
+   * Send the webmentions for a delivered job.
+   * @param {import('./send-webmentions-job').default} job
+   */
+  async sendWebmentions(job) {
+    await this.sendForHTMLResource({
+      url: new URL(job.sourceUrl),
+      html: job.html,
+      previousHtml: job.previousHtml,
+    });
+  }
+
+  /**
    * Send a webmention call for the links in a resource.
    * @param {object} resource
    * @param {URL} resource.url
-   * @param {string} resource.html
+   * @param {string|null} resource.html
    * @param {string|null} [resource.previousHtml]
    */
   async sendForHTMLResource(resource) {

@@ -88,6 +88,17 @@ describe('buildPostData', function () {
     assert.equal(data.lexical, JSON.stringify({ converted: '<h1>Hello</h1>' }));
   });
 
+  it('skips markdown when no renderer is available', function () {
+    assert.throws(
+      () => buildPostData(row({ title: 'T', markdown: '# Hello' }), htmlToLexical, TAGS),
+      (error: unknown) => {
+        assert.ok(error instanceof RowSkipped);
+        assert.equal(error.message, 'markdown could not be converted');
+        return true;
+      },
+    );
+  });
+
   it('cleans markdown-rendered HTML before converting it to lexical', function () {
     const styledMarkdownRenderer = () => '<p style="text-align: right; color: red">Hello</p>';
     const data = buildPostData(
@@ -160,6 +171,7 @@ describe('buildPostData', function () {
       data.tags,
       TAGS.map((name) => ({ name })),
     );
+    assert.equal('comment_id' in data, false);
     assert.equal('authors' in data, false);
   });
 
@@ -178,6 +190,7 @@ describe('buildPostData', function () {
         custom_template: 'wide',
         codeinjection_head: '<style>body{color:red}</style>',
         codeinjection_foot: '<script>window.test=true</script>',
+        comment_id: 'legacy-source-123',
       }),
       htmlToLexical,
       TAGS,
@@ -194,9 +207,10 @@ describe('buildPostData', function () {
     assert.equal(data.custom_template, 'wide');
     assert.equal(data.codeinjection_head, '<style>body{color:red}</style>');
     assert.equal(data.codeinjection_foot, '<script>window.test=true</script>');
+    assert.equal(data.comment_id, 'legacy-source-123');
   });
 
-  it('puts feature metadata, SEO, social fields, and frontmatter in posts_meta', function () {
+  it('puts feature metadata, SEO, and social fields in posts_meta', function () {
     const data = buildPostData(
       row({
         title: 'Metadata post',
@@ -210,7 +224,6 @@ describe('buildPostData', function () {
         twitter_image: 'https://example.com/twitter.jpg',
         twitter_title: 'Twitter title',
         twitter_description: 'Twitter description',
-        frontmatter: 'key: value',
       }),
       htmlToLexical,
       TAGS,
@@ -227,8 +240,18 @@ describe('buildPostData', function () {
       twitter_image: 'https://example.com/twitter.jpg',
       twitter_title: 'Twitter title',
       twitter_description: 'Twitter description',
-      frontmatter: 'key: value',
     });
+  });
+
+  it('ignores an unmapped frontmatter source column', function () {
+    const data = buildPostData(
+      row({ title: 'Unsupported metadata', frontmatter: 'key: value' }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.posts_meta, undefined);
+    assert.equal('frontmatter' in data, false);
   });
 
   it('omits every date when the cell is absent, leaving the model to stamp now', function () {
@@ -289,10 +312,34 @@ describe('buildPostData', function () {
     assert.equal(data.title.length, 255);
   });
 
+  it('accepts a source ID of exactly 50 characters', function () {
+    const data = buildPostData(
+      row({ title: 'T', comment_id: 'x'.repeat(50) }),
+      htmlToLexical,
+      TAGS,
+    );
+
+    assert.equal(data.comment_id, 'x'.repeat(50));
+  });
+
+  it('skips a row whose source ID is longer than 50 characters', function () {
+    skipsWith(
+      { title: 'T', comment_id: 'x'.repeat(51) },
+      'comment_id must be 50 characters or fewer',
+    );
+  });
+
   it('skips a row whose published_at is not a date, quoting the cell', function () {
     skipsWith(
       { title: 'T', published_at: 'not-a-date' },
       'published_at is not a valid date: "not-a-date"',
+    );
+  });
+
+  it('skips a row whose explicit updated_at is not a date', function () {
+    skipsWith(
+      { title: 'T', updated_at: 'not-an-update-date' },
+      'updated_at is not a valid date: "not-an-update-date"',
     );
   });
 

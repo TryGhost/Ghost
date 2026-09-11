@@ -44,7 +44,7 @@ others — for URL resolution and image handling.
 
 This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
 and resolves through the pnpm workspace — there is no linking or per-package
-install step. Run `pnpm setup` in the monorepo root, then work in
+install step. Run `pnpm bootstrap` in the monorepo root, then work in
 `koenig/kg-lexical-html-renderer`.
 
 `ghost/core` resolves this package via a `source` export condition pointing at

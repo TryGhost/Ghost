@@ -1,3 +1,8 @@
+import type { AstNode } from './filter-ast';
+import type { FilterFieldConfig } from '@tryghost/shade/patterns';
+
+export type FilterControl = NonNullable<FilterFieldConfig['type']>;
+
 export interface FilterPredicate {
   id: string;
   field: string;
@@ -9,14 +14,16 @@ export type ParsedPredicate = Omit<FilterPredicate, 'id'>;
 
 export interface CodecContext {
   key: string;
+  /** The catalog entry that matched, which for a parameterised field is its pattern. */
   pattern: string;
   params: Record<string, string>;
   timezone: string;
 }
 
 export interface FilterCodec {
-  parse: (node: unknown, ctx: CodecContext) => ParsedPredicate | null;
+  parse: (node: AstNode, ctx: CodecContext) => ParsedPredicate | null;
   serialize: (predicate: FilterPredicate, ctx: CodecContext) => string[] | null;
+  parseCompound?: (node: AstNode, ctx: CodecContext) => ParsedPredicate | null;
 }
 
 /** A column the list appends while a filter on this field is active. */
@@ -36,11 +43,12 @@ export interface ActiveColumnContext extends CodecContext {
 
 export interface FilterField {
   operators: readonly string[];
+  operatorLabels?: Partial<Record<string, string>>;
   parseKeys?: readonly string[];
-  ui: {
+  ui: Partial<Omit<FilterFieldConfig, 'key' | 'label' | 'type' | 'icon' | 'operators'>> & {
     label: string;
-    type: 'text' | 'select' | 'multiselect' | 'date' | 'number' | 'custom';
-    [key: string]: unknown;
+    type: FilterControl;
+    icon?: string;
   };
   options?: Array<{ value: string; label: string }>;
   metadata?: {
@@ -61,10 +69,4 @@ export interface FilterField {
     columnInclude?: string;
   };
   codec: FilterCodec;
-}
-
-export function defineFields<TFields extends Record<string, FilterField>>(
-  fields: TFields,
-): TFields {
-  return fields;
 }

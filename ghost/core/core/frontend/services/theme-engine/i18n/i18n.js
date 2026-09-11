@@ -198,7 +198,17 @@ class I18n {
    * @param  {string} locale
    */
   _readTranslationsFile(locale) {
-    const filePath = path.join(...this._translationFileDirs(), this._translationFileName(locale));
+    const directory = path.resolve(path.join(...this._translationFileDirs()));
+    const filePath = path.resolve(directory, this._translationFileName(locale));
+
+    // A locale names one file directly inside the translations directory.
+    if (path.dirname(filePath) !== directory) {
+      throw new errors.NotFoundError({
+        message: `i18n was unable to find ${locale}.json.`,
+        code: 'ENOENT',
+      });
+    }
+
     const content = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(content);
   }

@@ -19,6 +19,7 @@
     "dev:public": "pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:analytics:local": "ANALYTICS_PROXY_TARGET=traffic-analytics-local:3000 DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
@@ -26,7 +27,7 @@
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
+    "bootstrap": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
     "migrate:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator migrate",
     "rollback:db": "docker exec --workdir /home/ghost/ghost/core ghost-dev pnpm knex-migrator rollback",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
@@ -54,6 +55,7 @@
     "format:check": "oxfmt --check",
     "check": "pnpm format:check && pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
+    "test:types": "pnpm nx run-many -t test:types",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
@@ -65,6 +67,7 @@
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "preinstall": "node ./scripts/enforce-package-manager.js",
     "prepare": "husky .github/hooks",
+    "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
@@ -81,7 +84,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.1.1",
+    "nx": "23.2.0",
     "oxfmt": "catalog:",
     "remark-cli": "catalog:",
     "remark-validate-links": "catalog:",
@@ -102,9 +105,9 @@
     }
   },
   "engines": {
-    "node": "^22.23.1"
+    "node": "^22.23.1 || ^24.20.0"
   },
-  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
+  "packageManager": "pnpm@12.4.0+sha512.37536c26ed40ab4134b6511e09f6b27f3ebb45687468f2406ca3805279a4e5ca158c1931350ad9774d6ab2108d71b3dbaeb39943159294375e4d053e8e05685c",
   "monorepo": {
     "public": false,
     "internalPackages": true,

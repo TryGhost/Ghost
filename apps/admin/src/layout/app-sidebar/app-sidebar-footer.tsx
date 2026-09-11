@@ -6,7 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@tryghost/shade/components';
-import WhatsNewDialog from '@/whats-new/components/whats-new-dialog';
+import { WhatsNewDialog } from '@/whats-new/api';
 import { UserMenu } from './user-menu';
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
 

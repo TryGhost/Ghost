@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { fromDatabaseDate, type DatabaseDate } from '../../../lib/db-date';
+import { fromDatabaseDate, type DatabaseDate } from '../../../lib/db-types/date';
 
 /**
  * Adds another degree of randomness into some decisions

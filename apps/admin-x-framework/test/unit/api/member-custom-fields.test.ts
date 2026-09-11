@@ -1,4 +1,5 @@
 import {
+  type CompositePartRuns,
   type FieldTypePresentation,
   type MemberCustomField,
   formatMemberCustomFieldValue,
@@ -7,8 +8,8 @@ import {
 } from '../../../src/api/member-custom-fields';
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
-// build if the case it names stops being an error. Declared on one line each, because the
-// directive only covers the line below it and a spread literal reports on its inner line.
+// build if the case it names stops being an error. Directives sit immediately above the
+// property where TypeScript reports the error.
 const composite = { line1: 'a', line2: 'b', city: 'c', state: 'd', postal_code: 'e', country: 'f' };
 
 const labelled: FieldTypePresentation<'address'> = {
@@ -17,37 +18,61 @@ const labelled: FieldTypePresentation<'address'> = {
   subFields: composite,
 };
 
-// @ts-expect-error a composite missing one of the parts its value schema declares
 const missingPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
+  // @ts-expect-error a composite missing one of the parts its value schema declares
   subFields: { line1: 'a', line2: 'b', city: 'c', state: 'd', country: 'f' },
 };
 
-// @ts-expect-error a composite naming a part its value schema does not declare
 const unknownPart: FieldTypePresentation<'address'> = {
   label: 'Address',
   input: 'address',
+  // @ts-expect-error a composite naming a part its value schema does not declare
   subFields: { ...composite, county: 'g' },
 };
 
 // @ts-expect-error a composite with no part labels at all
 const unlabelled: FieldTypePresentation<'address'> = { label: 'Address', input: 'address' };
 
-// @ts-expect-error a type whose value is one thing has no parts to name
 const scalarWithParts: FieldTypePresentation<'short_text'> = {
   label: 'Short text',
   input: 'text',
+  // @ts-expect-error a type whose value is one thing has no parts to name
   subFields: { line1: 'a' },
 };
 
-export { labelled, missingPart, unknownPart, unlabelled, scalarWithParts };
+// A run is how the one-line form is told which parts read together. It names parts rather
+// than listing them all, so a part *added* upstream needs no entry — but a part renamed or
+// removed upstream has to be caught, or the run would silently stop fusing anything.
+const fusedRun: CompositePartRuns = { address: [['state', 'postal_code']] };
+
+// @ts-expect-error a run naming a part its value schema does not declare
+const unknownFusedPart: CompositePartRuns = { address: [['state', 'postcode']] };
+
+// @ts-expect-error a scalar type has no parts to run together
+const scalarWithRun: CompositePartRuns = { short_text: [['line1']] };
+
+export {
+  labelled,
+  missingPart,
+  unknownPart,
+  unlabelled,
+  scalarWithParts,
+  fusedRun,
+  unknownFusedPart,
+  scalarWithRun,
+};
 
 const field = (overrides: Partial<MemberCustomField>): MemberCustomField => ({
+  namespace: 'custom',
   key: 'nickname',
   name: 'Nickname',
   type: 'short_text',
   status: 'active',
+  // The server reads a field with no access set as closed to members, so a case that says
+  // nothing about access gets the field the API would return for one.
+  access: { member: 'none' },
   created_at: '2026-07-01T00:00:00.000Z',
   updated_at: null,
   ...overrides,
@@ -60,7 +85,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Nickname',
           fieldName: 'Nickname',
-          value: 'custom_fields.nickname',
+          value: 'metafields.custom.nickname',
           type: 'short_text',
         },
       ]);
@@ -76,42 +101,42 @@ describe('member custom fields api helpers', () => {
           label: 'Shipping Address (Address line 1)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 1',
-          value: 'custom_fields.shipping_address.line1',
+          value: 'metafields.custom.shipping_address.line1',
           type: 'address',
         },
         {
           label: 'Shipping Address (Address line 2)',
           fieldName: 'Shipping Address',
           partLabel: 'Address line 2',
-          value: 'custom_fields.shipping_address.line2',
+          value: 'metafields.custom.shipping_address.line2',
           type: 'address',
         },
         {
           label: 'Shipping Address (City)',
           fieldName: 'Shipping Address',
           partLabel: 'City',
-          value: 'custom_fields.shipping_address.city',
+          value: 'metafields.custom.shipping_address.city',
           type: 'address',
         },
         {
           label: 'Shipping Address (State)',
           fieldName: 'Shipping Address',
           partLabel: 'State',
-          value: 'custom_fields.shipping_address.state',
+          value: 'metafields.custom.shipping_address.state',
           type: 'address',
         },
         {
           label: 'Shipping Address (Postal code)',
           fieldName: 'Shipping Address',
           partLabel: 'Postal code',
-          value: 'custom_fields.shipping_address.postal_code',
+          value: 'metafields.custom.shipping_address.postal_code',
           type: 'address',
         },
         {
           label: 'Shipping Address (Country)',
           fieldName: 'Shipping Address',
           partLabel: 'Country',
-          value: 'custom_fields.shipping_address.country',
+          value: 'metafields.custom.shipping_address.country',
           type: 'address',
         },
       ]);
@@ -122,11 +147,13 @@ describe('member custom fields api helpers', () => {
         field({ key: 'address_home', name: 'Address (Home)', type: 'address' }),
       ]);
 
-      expect(columns[2]).toEqual({
+      // Found rather than indexed: what this is about is the label, not the position
+      // of a part in the address.
+      expect(columns.find((column) => column.partLabel === 'City')).toEqual({
         label: 'Address (Home) (City)',
         fieldName: 'Address (Home)',
         partLabel: 'City',
-        value: 'custom_fields.address_home.city',
+        value: 'metafields.custom.address_home.city',
         type: 'address',
       });
     });
@@ -148,7 +175,7 @@ describe('member custom fields api helpers', () => {
         {
           label: 'Mystery',
           fieldName: 'Mystery',
-          value: 'custom_fields.mystery',
+          value: 'metafields.custom.mystery',
           type: 'a_type_from_the_future',
         },
       ]);
@@ -163,14 +190,14 @@ describe('member custom fields api helpers', () => {
       expect(memberCustomFieldParts('long_text')).toBeNull();
     });
 
-    it("names a composite type's parts in the order its value schema declares them", () => {
+    it("carries each part's key, label and declared type, in schema order", () => {
       expect(memberCustomFieldParts('address')).toEqual([
-        { key: 'line1', label: 'Address line 1' },
-        { key: 'line2', label: 'Address line 2' },
-        { key: 'city', label: 'City' },
-        { key: 'state', label: 'State' },
-        { key: 'postal_code', label: 'Postal code' },
-        { key: 'country', label: 'Country' },
+        { key: 'line1', label: 'Address line 1', type: 'short_text' },
+        { key: 'line2', label: 'Address line 2', type: 'short_text' },
+        { key: 'city', label: 'City', type: 'short_text' },
+        { key: 'state', label: 'State', type: 'short_text' },
+        { key: 'postal_code', label: 'Postal code', type: 'postal_code' },
+        { key: 'country', label: 'Country', type: 'country_code' },
       ]);
     });
   });
@@ -192,6 +219,24 @@ describe('member custom fields api helpers', () => {
           country: 'US',
         }),
       ).toBe('1 Main St, 12 apt B, New York, NY 00001, US');
+    });
+
+    // The property this is built for. A part added to a type upstream has to appear in
+    // the line on its own, because the alternative is a value that is collected, stored,
+    // exported and filtered on while being invisible in every summary. Asserted through
+    // the catalog rather than against a hardcoded list, so it keeps holding as the
+    // catalog grows.
+    it('includes every part a type declares, in the order it declares them', () => {
+      const parts = memberCustomFieldParts('address')!;
+      const value = Object.fromEntries(parts.map(({ key }) => [key, key]));
+
+      const line = formatMemberCustomFieldValue('address', value);
+
+      for (const { key } of parts) {
+        expect(line, `${key} is missing from the line`).toContain(key);
+      }
+      // Separators aside, the parts read in the order the value schema declares them.
+      expect(line.split(/,\s|\s/)).toEqual(parts.map(({ key }) => key));
     });
 
     it('pairs state and postal code, and drops missing parts cleanly', () => {

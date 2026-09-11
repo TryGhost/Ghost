@@ -1,7 +1,7 @@
 const { faker } = require('@faker-js/faker');
 const { slugify } = require('@tryghost/string');
 const { TableImporter } = require('./table-importer');
-const { toDatabaseDate } = require('../../../lib/db-date');
+const { toDatabaseDate } = require('../../../lib/db-types/date');
 
 class TagsImporter extends TableImporter {
   static table = 'tags';

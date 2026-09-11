@@ -1,23 +1,43 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { Meta, createInfiniteQuery, createQuery } from '../utils/api/hooks';
+import {
+  Meta,
+  createInfiniteQuery,
+  createMutation,
+  createQuery,
+  createQueryWithId,
+} from '../utils/api/hooks';
+import {
+  PageWriteOptions,
+  PostCreateOptions,
+  buildPostEditorReadParams,
+  buildPageWriteParams,
+  buildPostReadParams,
+  serializePostPayload,
+} from './post-contract';
+import type {
+  CreateContentData,
+  EditContentData,
+  Page,
+  PageEditableData,
+  PageEditorRecord,
+  PostBulkAction,
+} from './content-types';
 
-export type Page = {
-  id: string;
-  title: string;
-  slug: string;
-  url: string;
-  status?: string;
-  published_at?: string;
-  visibility?: string;
-  uuid?: string;
-};
+export type { Page, PageEditableData, PageEditorRecord, PageStatus } from './content-types';
 
 export interface PagesResponseType {
   meta?: Meta;
   pages: Page[];
 }
 
+export interface PageResponseType {
+  meta?: Meta;
+  pages: PageEditorRecord[];
+}
+
 const dataType = 'PagesResponseType';
+
+export const pagesDataType = dataType;
 
 export const useBrowsePages = createQuery<PagesResponseType>({
   dataType,
@@ -48,4 +68,107 @@ export const useBrowsePagesInfinite = createInfiniteQuery<PagesResponseType & { 
       isEnd: meta ? meta.pagination.pages === meta.pagination.page : true,
     };
   },
+});
+
+const usePageQuery = createQueryWithId<PageResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+});
+
+export const usePage = (id: string, options: Parameters<typeof usePageQuery>[1] = {}) => {
+  const { searchParams, ...queryOptions } = options;
+  return usePageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...buildPostReadParams(), ...searchParams },
+  });
+};
+
+const useEditorPageQuery = createQueryWithId<PageResponseType>({
+  dataType,
+  path: (id) => `/pages/${id}/`,
+});
+
+export const useEditorPage = (
+  id: string,
+  options: Parameters<typeof useEditorPageQuery>[1] = {},
+) => {
+  const { searchParams, ...queryOptions } = options;
+  return useEditorPageQuery(id, {
+    ...queryOptions,
+    searchParams: { ...searchParams, ...buildPostEditorReadParams() },
+  });
+};
+
+// The create endpoint only accepts include/formats/source - revision and
+// email delivery options are update-only
+export interface AddPagePayload {
+  page: CreateContentData<PageEditableData>;
+  options?: PostCreateOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export interface EditPagePayload {
+  page: EditContentData<PageEditableData>;
+  options?: PageWriteOptions;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
+  method: 'POST',
+  path: () => '/pages/',
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
+  invalidateQueries: { dataType },
+});
+
+export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
+  method: 'PUT',
+  path: ({ page }) => `/pages/${page.id}/`,
+  searchParams: ({ options }) => buildPageWriteParams(options),
+  body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
+  invalidateQueries: { dataType },
+});
+
+export interface DeletePagePayload {
+  id: string;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useDeletePage = createMutation<unknown, DeletePagePayload>({
+  method: 'DELETE',
+  path: ({ id }) => `/pages/${id}/`,
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
+});
+
+/** Duplicate a page. As with posts, the copy is always a draft. */
+export const useCopyPage = createMutation<PagesResponseType, string>({
+  method: 'POST',
+  path: (id) => `/pages/${id}/copy/`,
+});
+
+/** Bulk-edit pages matching an NQL filter. See `useBulkEditPosts`. */
+export const useBulkEditPages = createMutation<unknown, { filter: string; action: PostBulkAction }>(
+  {
+    method: 'PUT',
+    path: () => '/pages/bulk/',
+    searchParams: ({ filter }) => ({ filter }),
+    body: ({ action }) => ({
+      bulk: {
+        action: action.type,
+        meta: 'meta' in action ? action.meta : {},
+      },
+    }),
+  },
+);
+
+/** Bulk-delete pages matching an NQL filter. */
+export const useBulkDeletePages = createMutation<unknown, { filter: string }>({
+  method: 'DELETE',
+  path: () => '/pages/',
+  searchParams: ({ filter }) => ({ filter }),
 });

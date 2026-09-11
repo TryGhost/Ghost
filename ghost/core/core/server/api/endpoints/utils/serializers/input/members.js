@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
+const { chainTransformers } = require('@tryghost/mongo-utils');
+const { validateAdminApiBulkFilterTransformer } = require('../../api-filter-utils');
 
 function defaultRelations(frame) {
   if (frame.options.withRelated) {
@@ -16,7 +18,7 @@ function defaultRelations(frame) {
 
 // @TODO: move this into the member repository in members-api
 function mapSubscribedFlagToNewsletterRelation(frame) {
-  frame.options.mongoTransformer = mapNQLKeyValues({
+  const transformer = mapNQLKeyValues({
     key: {
       from: 'subscribed',
       to: 'newsletters.status',
@@ -32,20 +34,27 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
       },
     ],
   });
+
+  frame.options.mongoTransformer = frame.options.mongoTransformer
+    ? chainTransformers(frame.options.mongoTransformer, transformer)
+    : transformer;
 }
 
-// Values are not a member relation — they're stored per field type and read by
-// the custom fields service — so `include=custom_fields` must not reach the model
-// layer as something to eager-load. Lift it out and leave a flag browse can act on.
-function liftCustomFieldsInclude(frame) {
-  if (!frame.options.withRelated.includes('custom_fields')) {
+function validateBulkFilter(frame) {
+  frame.options.mongoTransformer = frame.options.mongoTransformer
+    ? chainTransformers(validateAdminApiBulkFilterTransformer, frame.options.mongoTransformer)
+    : validateAdminApiBulkFilterTransformer;
+}
+
+function liftMetafieldsInclude(frame) {
+  if (!frame.options.withRelated.includes('metafields')) {
     return;
   }
 
   frame.options.withRelated = frame.options.withRelated.filter(
-    (relation) => relation !== 'custom_fields',
+    (relation) => relation !== 'metafields',
   );
-  frame.options.includeCustomFields = true;
+  frame.options.includeMetafields = true;
 }
 
 module.exports = {
@@ -54,7 +63,7 @@ module.exports = {
       return;
     }
 
-    liftCustomFieldsInclude(frame);
+    liftMetafieldsInclude(frame);
 
     frame.options.withRelated = frame.options.withRelated.map((relation) => {
       if (relation === 'tiers') {
@@ -128,11 +137,13 @@ module.exports = {
 
   bulkEdit(apiConfig, frame) {
     debug('bulkEdit');
+    validateBulkFilter(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
   },
 
   bulkDestroy(apiConfig, frame) {
     debug('bulkDestroy');
+    validateBulkFilter(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
   },
 };

@@ -100,7 +100,7 @@ describe('Importer', function () {
         );
         assert.equal(moment(importResult.data.tags[0].updated_at).format(), '2016-07-17T12:02:54Z');
 
-        // Ensure sqlite3 & mysql import of dates works as expected
+        // Ensure imported dates are normalized as expected.
         assert.equal(moment(importResult.data.posts[1].created_at).valueOf(), 1388318310000);
         assert.equal(moment(importResult.data.posts[1].updated_at).valueOf(), 1388318310000);
         assert.equal(moment(importResult.data.posts[1].published_at).valueOf(), 1388404710000);

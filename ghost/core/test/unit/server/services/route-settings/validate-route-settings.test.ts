@@ -18,7 +18,7 @@ function throwsValidation(fn: () => void, expectedMessage?: string) {
   });
 }
 
-describe('UNIT: services/route-settings/validation (via parseRouteSettings)', function () {
+describe('services/route-settings/validation (via parseRouteSettings)', function () {
   it('accepts valid empty input', function () {
     assert.doesNotThrow(() => parse({}));
   });
@@ -712,7 +712,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
     it('points at the docs for schema failures and at an example for data failures', function () {
       assert.equal(
         helpFor({ routes: { '/x/': { controller: 'channel', filter: 42 } } }),
-        'https://ghost.org/docs/themes/routing/',
+        'https://docs.ghost.org/themes/routing/',
       );
       assert.equal(
         helpFor({ routes: { '/x/': { template: 'x', data: 'nonsense' } } }),

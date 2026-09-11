@@ -12,10 +12,28 @@ in-memory one with no call-site change.
 
 A backend extends `JobsBackendBase` and implements four methods:
 
-- `start({processor})` - wire the single delivery callback and begin accepting work.
-- `enqueue(envelope)` - accept an envelope for delivery. Resolves on **acceptance**, not completion.
-- `scheduleRecurring(envelope, {cron})` - register the recurring schedule for the envelope's type. The first registration per type wins; a later call for an already-scheduled type is ignored.
+- `start({processor, queues})` - wire the single delivery callback and begin accepting work. `queues` is the desired state declared by registered handlers (`{name: {concurrency}}`).
+- `enqueue(envelope, {queue})` - accept an envelope for delivery. Resolves on **acceptance**, not completion.
+- `scheduleRecurring(envelope, {cron}, {queue})` - register the recurring schedule for the envelope's type. The first registration per type wins; a later call for an already-scheduled type is ignored.
 - `shutdown({timeoutMs})` - stop accepting work and drain in-flight work within a bounded time.
+
+### Queues
+
+A queue is a routing/QoS lane, and routing metadata only - **delivery always
+routes by the envelope's `type`, never by queue**, so a job is processable
+whichever queue it arrives on and a deploy can move a type between queues while
+older work is still in flight. Renaming or removing a queue is therefore a
+parallel change: keep consuming the old name until it has drained, then drop it.
+
+The declared queues are desired state, not a command. A backend enforces a
+queue's `concurrency` as strictly as it can - per process for the in-memory
+backend, globally where a durable backend supports it. Weaker enforcement is
+acceptable; silently ignoring a declaration is not: a backend that cannot
+satisfy a declared queue's constraints - whatever that means for its
+implementation - must fail loudly at `start()`. An envelope routed to a queue
+no handler declared must still be delivered, never dropped. The queue name
+`default` names the shared lane for envelopes with no routing and cannot be
+declared.
 
 ### Delivery outcome
 

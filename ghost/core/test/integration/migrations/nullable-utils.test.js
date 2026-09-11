@@ -1,15 +1,13 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const dbUtils = require('../../utils/db-utils');
 const logging = require('@tryghost/logging');
 
 const utils = require('../../../core/server/data/migrations/utils');
 const db = require('../../../core/server/data/db');
 
-// Run a migration step the way knex-migrator would: inside a transaction when the
-// migration declares config.transaction (MySQL), otherwise on a plain connection
-// (SQLite, where the table rebuild must toggle foreign_keys outside a transaction).
+// Run a migration step the way knex-migrator does: inside a transaction when the
+// migration declares config.transaction, otherwise on a plain connection.
 async function runMigrationStep(migration, method) {
   if (migration.config && migration.config.transaction) {
     const transacting = await db.knex.transaction();
@@ -81,27 +79,25 @@ describe('Migrations - schema utils', function () {
 
     // Drop tables in correct order due to foreign key constraints
     if (await knex.schema.hasTable(tableName)) {
-      if (dbUtils.isMySQL()) {
-        try {
-          // Get all foreign keys for the table
-          const fks = await knex.raw(
-            `
+      try {
+        // Get all foreign keys for the table
+        const fks = await knex.raw(
+          `
                         SELECT CONSTRAINT_NAME 
                         FROM information_schema.TABLE_CONSTRAINTS 
                         WHERE TABLE_SCHEMA = DATABASE() 
                         AND TABLE_NAME = ? 
                         AND CONSTRAINT_TYPE = 'FOREIGN KEY'
                     `,
-            [tableName],
-          );
+          [tableName],
+        );
 
-          // Drop each foreign key
-          for (const fk of fks[0]) {
-            await knex.raw(`ALTER TABLE ?? DROP FOREIGN KEY ??`, [tableName, fk.CONSTRAINT_NAME]);
-          }
-        } catch (err) {
-          // Foreign keys might not exist, continue
+        // Drop each foreign key
+        for (const fk of fks[0]) {
+          await knex.raw(`ALTER TABLE ?? DROP FOREIGN KEY ??`, [tableName, fk.CONSTRAINT_NAME]);
         }
+      } catch (err) {
+        // Foreign keys might not exist, continue
       }
       await knex.schema.dropTable(tableName);
     }
@@ -114,31 +110,15 @@ describe('Migrations - schema utils', function () {
   });
 
   async function isColumnNullable(table, column) {
-    const knex = db.knex;
-
-    if (dbUtils.isSQLite()) {
-      const response = await knex.raw('PRAGMA table_info(??)', [table]);
-      const columnInfo = response.find((col) => col.name === column);
-      return columnInfo && columnInfo.notnull === 0;
-    } else {
-      const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
-      const columnInfo = response[0].find((col) => col.Field === column);
-      return columnInfo && columnInfo.Null === 'YES';
-    }
+    const response = await db.knex.raw('SHOW COLUMNS FROM ??', [table]);
+    const columnInfo = response[0].find((col) => col.Field === column);
+    return columnInfo && columnInfo.Null === 'YES';
   }
 
   async function isColumnNotNullable(table, column) {
-    const knex = db.knex;
-
-    if (dbUtils.isSQLite()) {
-      const response = await knex.raw('PRAGMA table_info(??)', [table]);
-      const columnInfo = response.find((col) => col.name === column);
-      return columnInfo && columnInfo.notnull === 1;
-    } else {
-      const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
-      const columnInfo = response[0].find((col) => col.Field === column);
-      return columnInfo && columnInfo.Null === 'NO';
-    }
+    const response = await db.knex.raw('SHOW COLUMNS FROM ??', [table]);
+    const columnInfo = response[0].find((col) => col.Field === column);
+    return columnInfo && columnInfo.Null === 'NO';
   }
 
   describe('createSetNullableMigration', function () {
@@ -295,12 +275,10 @@ describe('Migrations - schema utils', function () {
       const isNotNullable = await isColumnNotNullable(tableName, 'with_default');
       assert.equal(isNotNullable, true, 'Column should be not nullable');
 
-      // Verify default value is preserved (MySQL-specific check)
-      if (dbUtils.isMySQL()) {
-        const response = await db.knex.raw('SHOW COLUMNS FROM ??', [tableName]);
-        const columnInfo = response[0].find((col) => col.Field === 'with_default');
-        assert.equal(columnInfo.Default, 'default', 'Column should still have its default value');
-      }
+      // Verify default value is preserved
+      const response = await db.knex.raw('SHOW COLUMNS FROM ??', [tableName]);
+      const columnInfo = response[0].find((col) => col.Field === 'with_default');
+      assert.equal(columnInfo.Default, 'default', 'Column should still have its default value');
     });
 
     it('Handles non-existent table errors', async function () {
@@ -317,25 +295,15 @@ describe('Migrations - schema utils', function () {
         // Expected to fail when actually trying to alter the non-existent table
       }
 
-      // The behavior differs between databases:
-      // - MySQL: SHOW COLUMNS will throw an error for non-existent table, logging a warning
-      // - SQLite: PRAGMA table_info returns empty result, no error until ALTER TABLE
+      sinon.assert.calledWith(logWarnSpy, sinon.match('Could not check nullable status'));
 
-      if (dbUtils.isMySQL()) {
-        // MySQL should log a warning when checking nullable status fails
-        sinon.assert.calledWith(logWarnSpy, sinon.match('Could not check nullable status'));
-      }
-
-      // Both databases should eventually fail when trying to ALTER the non-existent table
+      // The migration should fail when trying to alter the non-existent table.
       assert(errorThrown, 'Should throw an error when trying to alter non-existent table');
 
-      // The error message varies between databases and Knex versions
-      // SQLite might give a Knex internal error or a 'no such table' error
-      // MySQL should give a 'table does not exist' error
+      // The error message varies between MySQL and Knex versions.
       const isExpectedError =
-        errorMessage.match(/no such table|does not exist|doesn't exist|Table .* not found/i) ||
-        errorMessage.includes('Cannot read properties of undefined') ||
-        errorMessage.includes('SQLITE_ERROR');
+        errorMessage.match(/does not exist|doesn't exist|Table .* not found/i) ||
+        errorMessage.includes('Cannot read properties of undefined');
 
       assert(isExpectedError, `Error should be related to missing table, but was: ${errorMessage}`);
     });

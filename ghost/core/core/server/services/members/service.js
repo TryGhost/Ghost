@@ -7,7 +7,6 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
@@ -29,7 +28,7 @@ const messages = {
   sslRequiredForStripe:
     'Cannot run Ghost without SSL when Stripe is connected. Please update your url config to use "https://".',
   remoteWebhooksInDevelopment:
-    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 const ghostMailer = new GhostMailer();
@@ -50,9 +49,9 @@ let membersApi;
 let verificationTrigger;
 
 const buildImporterDeps = ({ stripeAPIService }) => {
-  // Required here, not statically: boot builds the custom fields services before this
+  // Required here, not statically: boot builds the metafields services before this
   // one (the exporter below relies on the same).
-  const customFields = require('../members-custom-fields');
+  const metafields = require('../members-metafields');
   return {
     getTimezone: () => settingsCache.get('timezone'),
     // A getter rather than a value because the threshold is an operator
@@ -89,9 +88,9 @@ const buildImporterDeps = ({ stripeAPIService }) => {
     urlFor: urlUtils.urlFor.bind(urlUtils),
     stripeAPIService,
     productRepository: membersApi.productRepository,
-    customFields: {
-      definitions: customFields.definitions,
-      values: customFields.values,
+    metafields: {
+      definitions: metafields.definitions,
+      values: metafields.values,
     },
   };
 };
@@ -115,6 +114,66 @@ const initVerificationTrigger = () => {
     eventRepository: membersApi.events,
   });
 };
+
+const membersMigrationJobName = 'members-migrations';
+
+/**
+ * Runs the historical Stripe backfills once per site, retried only after a
+ * failed run.
+ *
+ * The `jobs` row named `members-migrations` is the only guard: any status other
+ * than `failed` means the run was already attempted and is skipped forever. The
+ * row is written after the run, so a boot that dies mid-way retries next time.
+ * The row is written even when Stripe is not configured, matching the job-based
+ * version: a site that connects Stripe later never runs these 2021-era backfills.
+ * Two processes booting a site with no row will both run the backfills, where the
+ * job-based version claimed the row first. Accepted: every site that has booted
+ * since Ghost 5.6 has the row, and the backfills do nothing without Stripe.
+ *
+ * @TODO: Delete the backfills, this runner and the `jobs` rows in the next major
+ *
+ * @param {import('../stripe')} stripeService
+ */
+async function runStripeMigrations(stripeService) {
+  const existingJob = await models.Job.findOne({ name: membersMigrationJobName });
+
+  if (existingJob && existingJob.get('status') !== 'failed') {
+    logging.info(`Stripe ${membersMigrationJobName} skipped because it has already run`);
+    return;
+  }
+
+  const startedAt = Date.now();
+  logging.info(`Stripe ${membersMigrationJobName} started`);
+
+  let status = 'finished';
+  try {
+    await stripeService.migrations.execute();
+    logging.info(`Stripe ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`);
+  } catch (err) {
+    status = 'failed';
+    logging.error(
+      err,
+      `Stripe ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
+    );
+  }
+
+  const attrs = { status, started_at: new Date(startedAt), finished_at: new Date() };
+  if (existingJob) {
+    await models.Job.edit(attrs, { id: existingJob.id });
+    return;
+  }
+
+  try {
+    await models.Job.add({ name: membersMigrationJobName, ...attrs });
+  } catch (err) {
+    // Two processes booting a site with no row yet both get here, and the unique
+    // index on jobs.name rejects the second insert. The row exists, so move on.
+    if (!(await models.Job.findOne({ name: membersMigrationJobName }))) {
+      throw err;
+    }
+    logging.warn(`Stripe ${membersMigrationJobName} row was already written by another process`);
+  }
+}
 
 module.exports = {
   async init() {
@@ -176,49 +235,14 @@ module.exports = {
       membersCSVImporter.importInline(request, verificationTrigger);
 
     // Constructed here rather than required statically: the exporter needs the
-    // custom fields services, which boot builds before this one.
-    const customFields = require('../members-custom-fields');
+    // metafields services, which boot builds before this one.
+    const metafields = require('../members-metafields');
     module.exports.export = makeExporter({
-      definitions: customFields.definitions,
-      values: customFields.values,
+      definitions: metafields.definitions,
+      values: metafields.values,
     });
 
-    if (!env?.startsWith('testing')) {
-      const membersMigrationJobName = 'members-migrations';
-      if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-        logging.info(`[Background Job] ${membersMigrationJobName} queued`);
-        jobsService.addOneOffJob({
-          name: membersMigrationJobName,
-          offloaded: false,
-          job: async () => {
-            const startedAt = Date.now();
-            logging.info(`[Background Job] ${membersMigrationJobName} started`);
-            try {
-              const result = await stripeService.migrations.execute();
-              logging.info(
-                `[Background Job] ${membersMigrationJobName} completed in ${Date.now() - startedAt}ms`,
-              );
-              return result;
-            } catch (err) {
-              logging.error(
-                err,
-                `[Background Job] ${membersMigrationJobName} failed after ${Date.now() - startedAt}ms`,
-              );
-              throw err;
-            }
-          },
-        });
-
-        await jobsService.awaitOneOffCompletion(membersMigrationJobName);
-      } else {
-        logging.info(
-          `[Background Job] ${membersMigrationJobName} skipped because it has already run`,
-        );
-      }
-    }
-
-    // Schedule daily cron job to clean expired comp subs
-    memberJobs.scheduleExpiredCompCleanupJob();
+    await runStripeMigrations(stripeService);
   },
   contentGating: require('./content-gating'),
 

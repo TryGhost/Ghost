@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -9,14 +10,8 @@ const repoRoot = path.resolve(__dirname, '../..');
 const stateDir = path.resolve(repoRoot, 'e2e/data/state');
 const configPath = path.resolve(stateDir, 'tinybird.json');
 
-const composeArgs = [
-  'compose',
-  '-f',
-  path.resolve(repoRoot, 'compose.dev.yaml'),
-  '-f',
-  path.resolve(repoRoot, 'compose.dev.analytics.yaml'),
-];
 const composeProject = process.env.COMPOSE_PROJECT_NAME || 'ghost-dev';
+const tinybirdConfigPath = '/mnt/shared-config/.env.tinybird';
 
 function log(message) {
   process.stdout.write(`${message}\n`);
@@ -49,25 +44,16 @@ function clearConfigIfPresent() {
   }
 }
 
-function runCompose(args) {
-  return execFileSync('docker', [...composeArgs, ...args], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-}
-
-function isTinybirdRunning() {
+function findContainer(service, extraFilters = []) {
   const output = execFileSync(
     'docker',
     [
       'ps',
+      ...extraFilters,
       '--filter',
       `label=com.docker.compose.project=${composeProject}`,
       '--filter',
-      'label=com.docker.compose.service=tinybird-local',
-      '--filter',
-      'status=running',
+      `label=com.docker.compose.service=${service}`,
       '--format',
       '{{.Names}}',
     ],
@@ -78,11 +64,40 @@ function isTinybirdRunning() {
     },
   );
 
-  return Boolean(output.trim());
+  return output.trim().split('\n')[0] || null;
 }
 
+function isTinybirdRunning() {
+  return Boolean(findContainer('tinybird-local', ['--filter', 'status=running']));
+}
+
+// Copied out of the tb-cli container rather than read through `docker compose
+// run`. That would re-run the tb-cli entrypoint (a full datafile deploy), and,
+// worse, compose would recreate any dependency whose config differs from the
+// compose files listed here — silently replacing a tinybird-local started from
+// an override (see e2e/compose.e2e.tinybird-slim.yaml). `docker cp` reads the
+// same file straight from the exited container and cannot diverge.
 function fetchConfigFromTbCli() {
-  return runCompose(['run', '--rm', '-T', 'tb-cli', 'cat', '/mnt/shared-config/.env.tinybird']);
+  const container = findContainer('tb-cli', ['-a']);
+
+  if (!container) {
+    throw new Error(`No tb-cli container found for compose project ${composeProject}`);
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-e2e-tinybird-'));
+  const tmpFile = path.join(tmpDir, '.env.tinybird');
+
+  try {
+    execFileSync('docker', ['cp', `${container}:${tinybirdConfigPath}`, tmpFile], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    return fs.readFileSync(tmpFile, 'utf8');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 }
 
 function writeConfig(env) {
@@ -116,7 +131,7 @@ try {
   if (!env.TINYBIRD_WORKSPACE_ID || !env.TINYBIRD_ADMIN_TOKEN) {
     clearConfigIfPresent();
     throw new Error(
-      'Tinybird is running but required config values are missing in /mnt/shared-config/.env.tinybird',
+      `Tinybird is running but required config values are missing in ${tinybirdConfigPath}`,
     );
   }
 

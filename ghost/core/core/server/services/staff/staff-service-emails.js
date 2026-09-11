@@ -2,7 +2,7 @@ const { promises: fs, readFileSync } = require('fs');
 const path = require('path');
 const moment = require('moment');
 const { globSync } = require('glob');
-const EmailAddressParser = require('../email-address/email-address-parser');
+const emailAddressParser = require('../email-address/email-address-parser');
 
 class StaffServiceEmails {
   constructor({
@@ -593,7 +593,7 @@ class StaffServiceEmails {
   }
 
   get fromEmailAddress() {
-    return EmailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
+    return emailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
   }
 
   extractInitials(name = '') {

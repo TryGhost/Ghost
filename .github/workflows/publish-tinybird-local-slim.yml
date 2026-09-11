@@ -1,0 +1,100 @@
+name: Publish tinybird-local-slim Image
+
+# Builds a distilled tinybird-local image for use as the Tinybird service in
+# CI/E2E: ~0.7GB pulled and ~2.4GB on disk, against ~2.1GB and ~6.9GB for
+# upstream, which is what keeps the analytics E2E jobs inside the runner disk
+# budget. See docker/tinybird-local-slim/README.md.
+#
+# The upstream image is proprietary (Tinybird License, Self-Managed). It permits
+# derivative works but only allows distributing them within our own organization,
+# so the GHCR package must stay internal — never public.
+
+on:
+  workflow_dispatch: # Manual trigger from GitHub UI or CLI (e.g. after a digest bump)
+  push:
+    branches: [main]
+    paths:
+      - 'docker/tinybird-local-slim/**'
+      - '.github/workflows/publish-tinybird-local-slim.yml'
+      # The upstream digest this image is distilled from lives here.
+      - 'compose.dev.analytics.yaml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push tinybird-local-slim to GHCR
+    runs-on: ubuntu-latest
+    # Publish from main, or from any branch via a manual dispatch (for PR testing).
+    if: github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    concurrency:
+      group: publish-tinybird-local-slim-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Free up runner disk space
+        # The upstream base image on its own is larger than the free space a stock
+        # runner has left after its preinstalled toolchains.
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h /
+
+      - name: Resolve upstream image
+        id: upstream
+        # compose.dev.analytics.yaml is the single source of truth for the digest,
+        # so the published image can never drift from what local dev runs.
+        run: |
+          ref=$(grep -oE 'tinybirdco/tinybird-local:[^ ]+' compose.dev.analytics.yaml)
+          echo "Upstream image: $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: docker/tinybird-local-slim/Dockerfile
+          build-args: TINYBIRD_LOCAL_REF=${{ steps.upstream.outputs.ref }}
+          platforms: linux/amd64 # E2E CI runners are amd64; upstream also publishes arm64
+          provenance: false # keep a clean single-platform manifest (no attestation entries)
+          load: true
+          tags: tinybird-local-slim:verify
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify runtime config matches upstream
+        # The flatten discards upstream's image config, so the Dockerfile restates
+        # it by hand. Catch an upstream release that changes it before publishing.
+        run: |
+          docker pull --platform linux/amd64 "${{ steps.upstream.outputs.ref }}"
+          bash docker/tinybird-local-slim/verify-config.sh \
+            "${{ steps.upstream.outputs.ref }}" tinybird-local-slim:verify
+
+      - name: Push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: docker/tinybird-local-slim/Dockerfile
+          build-args: TINYBIRD_LOCAL_REF=${{ steps.upstream.outputs.ref }}
+          platforms: linux/amd64
+          provenance: false
+          push: true
+          # Always tag with the immutable commit SHA (PR-test runs reference this);
+          # only move :latest on main. Empty lines are ignored by the action.
+          tags: |
+            ghcr.io/tryghost/tinybird-local-slim:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/tryghost/tinybird-local-slim:latest' || '' }}
+          cache-from: type=gha

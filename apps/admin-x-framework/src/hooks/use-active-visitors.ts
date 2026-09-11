@@ -8,38 +8,26 @@ interface UseActiveVisitorsOptions {
   enabled?: boolean;
 }
 
+export const ACTIVE_VISITORS_REFETCH_INTERVAL = 60 * 1000;
+
 export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
   const { postUuid, statsConfig, enabled = true } = options;
-  const [refreshKey, setRefreshKey] = useState(0);
   const [lastKnownCount, setLastKnownCount] = useState<number | null>(null);
-
-  // Set up 60-second interval only if enabled
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 60000); // 60 seconds
-
-    return () => clearInterval(interval);
-  }, [enabled]);
 
   const params = {
     site_uuid: statsConfig?.id || '',
-    // Add postUuid if provided
     ...(postUuid && { post_uuid: postUuid }),
-    // Add refreshKey to force refetch
-    _refresh: refreshKey.toString(),
   };
 
-  // Use useTinybirdQuery for consistent token handling
   const { data, loading, error } = useTinybirdQuery({
     statsConfig,
     endpoint: 'api_active_visitors',
     params,
     enabled,
+    refetchInterval: ACTIVE_VISITORS_REFETCH_INTERVAL,
+    // Keep counting while the tab is hidden (matches the old interval tick,
+    // which the browser throttled to roughly this cadence anyway).
+    refetchIntervalInBackground: true,
   });
 
   const currentCount = data?.[0]?.active_visitors;

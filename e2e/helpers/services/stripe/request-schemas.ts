@@ -205,8 +205,22 @@ export const CreateCheckoutSessionSchema = z.object({
     .optional()
     .catch(undefined),
   customer_update: z.unknown().optional(),
-  shipping_address_collection: z.unknown().optional(),
-  tax_id_collection: z.unknown().optional(),
+  // Read rather than passed through, so a test can assert which countries a publisher's
+  // checkout offers. The list is what makes this parameter exist at all: an empty
+  // collection object form-encodes to nothing, so a request built that way carries no
+  // parameter and Stripe accepts it having been asked to collect nothing.
+  shipping_address_collection: z
+    .object({ allowed_countries: list(z.string()) })
+    .optional()
+    .catch(undefined),
+  tax_id_collection: z
+    .object({ enabled: bool(false) })
+    .optional()
+    .catch(undefined),
+  phone_number_collection: z
+    .object({ enabled: bool(false) })
+    .optional()
+    .catch(undefined),
 });
 
 export const UpdateSubscriptionSchema = z.object({

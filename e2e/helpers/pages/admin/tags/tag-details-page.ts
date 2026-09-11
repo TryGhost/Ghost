@@ -1,7 +1,6 @@
 import { AdminPage } from '@/admin-pages';
 import { Locator, Page } from '@playwright/test';
 import {
-  deleteTagMenuItem,
   descriptionFieldLabel,
   nameFieldLabel,
   slugFieldLabel,
@@ -14,7 +13,6 @@ export class TagDetailsPage extends AdminPage {
   readonly descriptionInput: Locator;
   readonly saveButton: Locator;
   readonly saveButtonSuccess: Locator;
-  readonly deleteButton: Locator;
   readonly backLink: Locator;
 
   constructor(page: Page) {
@@ -25,7 +23,6 @@ export class TagDetailsPage extends AdminPage {
     this.descriptionInput = page.getByRole('textbox', { name: descriptionFieldLabel });
     this.saveButton = page.getByRole('button', { name: 'Save' });
     this.saveButtonSuccess = page.getByRole('button', { name: 'Saved' });
-    this.deleteButton = page.getByRole('button', { name: deleteTagMenuItem });
 
     this.backLink = page.locator(`[data-test-link="${tagsBackLink}"]`);
   }

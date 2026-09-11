@@ -16,10 +16,10 @@ describe('email analytics service', function () {
     trackEmailDeliveredAndOpened: sinon.stub(),
   };
   const config = { get: sinon.stub() };
-  config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
   const domainEvents = { subscribe: sinon.stub() };
   const metrics = { metric: sinon.stub() };
   const settingsCache = { get: sinon.stub() };
+  const giftDeliveryService = { recordOutcome: sinon.stub() };
 
   let newslettersInit: sinon.SinonStub;
   let automationsInit: sinon.SinonStub;
@@ -28,6 +28,8 @@ describe('email analytics service', function () {
   let dependencies: Parameters<typeof init>[0];
 
   beforeEach(function () {
+    config.get.reset();
+    config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
     newslettersInit = sinon.stub(newsletters, 'init');
     automationsInit = sinon.stub(automations, 'init');
     giftsInit = sinon.stub(gifts, 'init');
@@ -49,6 +51,7 @@ describe('email analytics service', function () {
         removeComplaint: sinon.stub(),
         removeUnsubscribe: sinon.stub(),
       },
+      giftDeliveryService,
       membersRepository: {
         get: sinon.stub(),
         update: sinon.stub(),
@@ -68,7 +71,7 @@ describe('email analytics service', function () {
     sinon.restore();
   });
 
-  it('initializes newsletter, automation, and gift analytics', function () {
+  it('initializes newsletter, automation, and gift analytics with configured Mailgun tags', function () {
     init(dependencies);
 
     sinon.assert.calledOnceWithExactly(
@@ -108,7 +111,7 @@ describe('email analytics service', function () {
         event: {
           name: 'StartAutomationEmailAnalyticsJobEvent',
         },
-        mailgunTags: [AUTOMATION_EMAIL_TAG],
+        mailgunTags: [AUTOMATION_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-automation-latest-others',
           missing: 'email-analytics-automation-missing',
@@ -136,7 +139,7 @@ describe('email analytics service', function () {
         event: {
           name: 'StartGiftEmailAnalyticsJobEvent',
         },
-        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG],
+        mailgunTags: [GIFT_DELIVERY_EMAIL_TAG, 'custom-mailgun-tag'],
         jobNames: {
           latestNonOpened: 'email-analytics-gifts-latest-others',
           missing: 'email-analytics-gifts-missing',
@@ -156,6 +159,33 @@ describe('email analytics service', function () {
       }),
     );
   });
+
+  it('does not add a site tag to automation analytics when none is configured', function () {
+    config.get.withArgs('bulkEmail:mailgun:tag').returns(undefined);
+
+    init(dependencies);
+
+    sinon.assert.calledOnceWithExactly(
+      automationsInit,
+      sinon.match({
+        mailgunTags: [AUTOMATION_EMAIL_TAG],
+      }),
+    );
+  });
+
+  it.each([undefined, ''])(
+    'does not add a gift analytics site tag when configured as %s',
+    function (siteTag) {
+      config.get.withArgs('bulkEmail:mailgun:tag').returns(siteTag);
+
+      init(dependencies);
+
+      sinon.assert.calledOnceWithExactly(
+        giftsInit,
+        sinon.match({ mailgunTags: [GIFT_DELIVERY_EMAIL_TAG] }),
+      );
+    },
+  );
 
   it('registers Prometheus metrics for member stat aggregation', function () {
     const registerCounter = sinon.stub();

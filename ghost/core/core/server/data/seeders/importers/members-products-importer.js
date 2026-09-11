@@ -1,7 +1,7 @@
 const { faker } = require('@faker-js/faker');
 const { TableImporter } = require('./table-importer');
 const { luck } = require('../utils/random');
-const { toDatabaseDate } = require('../../../lib/db-date');
+const { toDatabaseDate } = require('../../../lib/db-types/date');
 
 class MembersProductsImporter extends TableImporter {
   static table = 'members_products';

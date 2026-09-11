@@ -3,7 +3,9 @@ import cronValidate from 'cron-validate';
 import type {
   JobsBackendBase,
   JobEnvelope,
+  JobRouting,
   JobsShutdownOptions,
+  QueueDeclaration,
   RecurringSchedule,
 } from '@tryghost/adapter-base-jobs';
 import { Job, JobConstructor, JobHandler } from './job';
@@ -25,11 +27,28 @@ export interface JobsServiceOptions {
 
 type Deliverer = (payload: string) => Promise<void> | void;
 
+// Execution policy for a job type, declared where its handler is registered:
+// either no options (the type runs on the backend's shared default lane) or a
+// queue name and concurrency together. The queue is routing metadata only -
+// delivery always routes by job type - and concurrency is a queue-level
+// declaration the backend enforces as strictly as it can (per process
+// in-memory, globally where a durable backend supports it). A tunable value
+// can be resolved from config at the registration site before declaring it
+// here.
+export interface JobHandlingOptions {
+  /** Named lane; types declaring the same name and concurrency share it. */
+  queue: string;
+  /** Max concurrent deliveries for the queue. */
+  concurrency: number;
+}
+
 export class JobsService {
   readonly #backend: JobsBackendBase;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
   readonly #registry = new Map<string, Deliverer>();
+  readonly #queueByType = new Map<string, string>();
+  readonly #queues = new Map<string, QueueDeclaration>();
 
   constructor({ backend, logging, sentry }: JobsServiceOptions) {
     this.#backend = backend;
@@ -37,7 +56,11 @@ export class JobsService {
     this.#sentry = sentry;
   }
 
-  handle<T extends Job, D>(JobClass: JobConstructor<T, D>, handler: JobHandler<T>): void {
+  handle<T extends Job, D>(
+    JobClass: JobConstructor<T, D>,
+    handler: JobHandler<T>,
+    options?: JobHandlingOptions,
+  ): void {
     const type = JobClass.type;
     if (typeof type !== 'string' || type.length === 0) {
       throw new errors.IncorrectUsageError({
@@ -49,16 +72,57 @@ export class JobsService {
         message: `A handler for job type "${type}" is already registered.`,
       });
     }
+    this.#declareQueue(type, options);
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
+  #declareQueue(type: string, options?: JobHandlingOptions): void {
+    if (!options) {
+      return;
+    }
+    const { queue, concurrency } = options;
+    if (typeof queue !== 'string' || queue.length === 0) {
+      throw new errors.IncorrectUsageError({
+        message: `Invalid queue for job type "${type}": ${JSON.stringify(queue)}. Expected a non-empty string.`,
+      });
+    }
+    // "default" is the backend's shared lane for types that declare no queue;
+    // declaring it would silently re-size that lane for every unrouted type.
+    if (queue === 'default') {
+      throw new errors.IncorrectUsageError({
+        message: `Queue name "default" is reserved for the shared lane; job type "${type}" must omit options to use it.`,
+      });
+    }
+    if (!Number.isInteger(concurrency) || concurrency < 1) {
+      throw new errors.IncorrectUsageError({
+        message: `Invalid concurrency for job type "${type}": ${JSON.stringify(concurrency)}. Expected a positive integer.`,
+      });
+    }
+
+    const existing = this.#queues.get(queue);
+    if (existing && existing.concurrency !== concurrency) {
+      throw new errors.IncorrectUsageError({
+        message: `Conflicting concurrency for queue "${queue}": ${existing.concurrency} is already declared, job type "${type}" declares ${concurrency}.`,
+      });
+    }
+    this.#queues.set(queue, { concurrency });
+    this.#queueByType.set(type, queue);
+  }
+
+  #routingFor(type: string): JobRouting | undefined {
+    const queue = this.#queueByType.get(type);
+    return queue === undefined ? undefined : { queue };
+  }
+
   async dispatch(job: Job): Promise<void> {
-    await this.#backend.enqueue(this.#buildEnvelope(job));
+    const envelope = this.#buildEnvelope(job);
+    await this.#backend.enqueue(envelope, this.#routingFor(envelope.type));
   }
 
   async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {
     this.#assertValidCron(schedule.cron);
-    await this.#backend.scheduleRecurring(this.#buildEnvelope(job), schedule);
+    const envelope = this.#buildEnvelope(job);
+    await this.#backend.scheduleRecurring(envelope, schedule, this.#routingFor(envelope.type));
   }
 
   // later.parse.cron does not strictly validate: it silently coerces a
@@ -80,11 +144,21 @@ export class JobsService {
   async start(): Promise<void> {
     await this.#backend.start({
       processor: (envelope) => this.#process(envelope),
+      queues: Object.fromEntries(this.#queues),
     });
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
     await this.#backend.shutdown(options);
+  }
+
+  // An in-process restart (test harness) re-runs handler registration on the
+  // same instance, so all registration state resets - handlers and queue
+  // declarations alike. The duplicate-type guard still holds within a boot.
+  clearHandlers(): void {
+    this.#registry.clear();
+    this.#queueByType.clear();
+    this.#queues.clear();
   }
 
   #buildEnvelope(job: Job): JobEnvelope {

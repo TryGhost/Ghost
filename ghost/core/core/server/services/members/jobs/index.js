@@ -1,12 +1,16 @@
-const path = require('path');
 const logging = require('@tryghost/logging');
-const jobsService = require('../../jobs');
+const errors = require('@tryghost/errors');
 const CleanTokensJob = require('./clean-tokens-job').default;
+const CleanExpiredCompedJob = require('./clean-expired-comped-job').default;
+const cleanTokensTask = require('./clean-tokens-task').default;
+const cleanExpiredCompedTask = require('./clean-expired-comped-task').default;
 
 let hasScheduled = {
   expiredComped: false,
   tokens: false,
 };
+
+let tasks;
 
 function alreadyScheduledOrTest(key) {
   return hasScheduled[key] || process.env.NODE_ENV.startsWith('test');
@@ -19,43 +23,63 @@ function randomDailyCron(maxHour = 24) {
   return `${s} ${m} ${h} * * *`;
 }
 
-function scheduleJob(key, name, jobFile, maxHour = 6) {
-  if (alreadyScheduledOrTest(key)) {
-    return hasScheduled[key];
+function getTasks() {
+  if (!tasks) {
+    throw new errors.IncorrectUsageError({
+      message: 'Member jobs used before init(). Call init() from boot first.',
+    });
   }
-
-  const s = Math.floor(Math.random() * 60);
-  const m = Math.floor(Math.random() * 60);
-  const h = Math.floor(Math.random() * maxHour);
-
-  const at = `${s} ${m} ${h} * * *`;
-
-  logging.info(`[Background Job] ${name} scheduled at ${at}`);
-  jobsService.addJob({
-    at,
-    job: path.resolve(__dirname, jobFile),
-    name,
-  });
-
-  hasScheduled[key] = true;
-
-  return true;
+  return tasks;
 }
 
 module.exports = {
-  async scheduleExpiredCompCleanupJob() {
-    return scheduleJob('expiredComped', 'clean-expired-comped', 'clean-expired-comped.js');
+  // Composition root for the member cleanup tasks. Idempotent because tests
+  // may boot more than once per process.
+  init() {
+    if (tasks) {
+      return;
+    }
+
+    const db = require('../../../data/db');
+    const models = require('../../../models');
+    const events = require('../../../lib/common/events');
+    const sentry = require('../../../../shared/sentry');
+
+    tasks = {
+      cleanTokens: () => cleanTokensTask({ db, logging }),
+      cleanExpiredComped: () => cleanExpiredCompedTask({ db, models, events, logging, sentry }),
+    };
   },
 
-  async scheduleTokenCleanupJob() {
+  cleanTokens() {
+    return getTasks().cleanTokens();
+  },
+
+  cleanExpiredComped() {
+    return getTasks().cleanExpiredComped();
+  },
+
+  async scheduleExpiredCompCleanupJob(jobsService) {
+    if (alreadyScheduledOrTest('expiredComped')) {
+      return;
+    }
+
+    // Keep the legacy off-peak window: a random time between 00:00 and 05:59
+    const cron = randomDailyCron(6);
+    logging.info(`[Background Job] clean-expired-comped scheduled at ${cron}`);
+    await jobsService.scheduleRecurring(new CleanExpiredCompedJob(), { cron });
+
+    hasScheduled.expiredComped = true;
+  },
+
+  async scheduleTokenCleanupJob(jobsService) {
     if (alreadyScheduledOrTest('tokens')) {
       return;
     }
 
-    const classBasedJobs = require('../../jobs-service').getInstance();
     const cron = randomDailyCron();
     logging.info(`[Background Job] clean-tokens scheduled at ${cron}`);
-    await classBasedJobs.scheduleRecurring(new CleanTokensJob(), { cron });
+    await jobsService.scheduleRecurring(new CleanTokensJob(), { cron });
 
     hasScheduled.tokens = true;
   },

@@ -77,7 +77,7 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({
 }) => (
   <div
     className={cn(
-      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-[#2E3338]',
+      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-[#2E3338]',
       className,
     )}
   >
@@ -93,7 +93,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className }) => (
   <div
     className={cn(
-      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none',
+      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
       className,
     )}
   >

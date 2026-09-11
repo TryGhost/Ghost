@@ -4,7 +4,7 @@ const labs = require('../../../shared/labs');
 
 const messages = {
   remoteWebhooksInDevelopment:
-    'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.',
+    'Cannot use remote webhooks in development. See https://docs.ghost.org/webhooks/#stripe-webhooks for developing with Stripe.',
 };
 
 // @TODO Refactor to a class w/ constructor
@@ -62,16 +62,19 @@ module.exports = {
     }
 
     const env = config.get('env');
-    let webhookSecret = process.env.WEBHOOK_SECRET;
+    const remoteWebhooks = env !== 'production' && config.get('stripeRemoteWebhooks') === true;
+    let webhookSecret = remoteWebhooks ? undefined : process.env.WEBHOOK_SECRET;
 
-    if (env !== 'production') {
-      if (!webhookSecret) {
-        webhookSecret = 'DEFAULT_WEBHOOK_SECRET';
-        logging.warn(tpl(messages.remoteWebhooksInDevelopment));
-      }
+    if (env !== 'production' && !remoteWebhooks && !webhookSecret) {
+      webhookSecret = 'DEFAULT_WEBHOOK_SECRET';
+      logging.warn(tpl(messages.remoteWebhooksInDevelopment));
     }
 
-    const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
+    // Development can tunnel the webhook URL alone while the site stays on localhost.
+    const webhookHandlerUrl = new URL(
+      config.get('stripeWebhookUrl') || 'members/webhooks/stripe/',
+      urlUtils.getSiteUrl(),
+    );
     const webhookCustomerIgnoreList = parseIgnoreCustomerList(
       config.get('stripeWebhookCustomerIgnoreList'),
     );
@@ -88,6 +91,9 @@ module.exports = {
       },
       webhookSecret: webhookSecret,
       webhookHandlerUrl: webhookHandlerUrl.href,
+      // A development registration points at a tunnel that closes with the process,
+      // so it is removed on shutdown rather than kept for the next boot.
+      ephemeralWebhook: remoteWebhooks,
       webhookCustomerIgnoreList,
       siteUrl,
     };

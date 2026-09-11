@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import React, { useState } from 'react';
 import UniversalImportModal from './universal-import-modal';
 import { Button } from '@tryghost/shade/components';

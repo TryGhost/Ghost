@@ -4,13 +4,21 @@ import Onboarding, { useOnboardingStatus } from './onboarding';
 import React, { useRef, useState } from 'react';
 import Sidebar from './sidebar';
 import { Navigate, ScrollRestoration } from '@tryghost/admin-x-framework';
+import { cn } from '@tryghost/shade/utils';
+import { useActivityPubHostLayout } from './host-context';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 import { useCurrentPage } from '@src/hooks/use-current-page';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useKeyboardShortcuts } from '@hooks/use-keyboard-shortcuts';
 import { useTopicsForUser } from '@src/hooks/use-activity-pub-queries';
 
-const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => {
+const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  className,
+  style,
+  ...props
+}) => {
+  const hostLayout = useActivityPubHostLayout();
   const { isOnboarded } = useOnboardingStatus();
   const basePath = useAppBasePath();
   const { data: currentUser, isLoading } = useCurrentUser();
@@ -46,7 +54,15 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...p
       data-scrollable-container
     >
       <ScrollRestoration containerRef={containerRef} />
-      <div className="relative mx-auto flex max-w-page flex-col" {...props}>
+      <div
+        className={cn(
+          'relative mx-auto flex max-w-page flex-col',
+          className,
+          hostLayout?.contentClassName,
+        )}
+        style={{ ...style, '--network-gutter': hostLayout?.contentGutter } as React.CSSProperties}
+        {...props}
+      >
         {isOnboarded ? (
           <>
             <div className="block grid-cols-[auto_320px] items-start lg:grid">
@@ -57,7 +73,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...p
                   }
                   onToggleMobileSidebar={toggleMobileSidebar}
                 />
-                <div className="px-[min(4vw,24px)]">{children}</div>
+                <div className="px-[var(--network-gutter,min(4vw,24px))]">{children}</div>
               </div>
               <Sidebar
                 isMobileSidebarOpen={isMobileSidebarOpen}

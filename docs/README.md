@@ -2,7 +2,7 @@
 
 Welcome to the Ghost codebase documentation! These docs are for anyone wanting
 to work on the Ghost codebase. For self-hosting, themes, or using Ghost APIs,
-see the [official Ghost documentation](https://ghost.org/docs/).
+see the [official Ghost documentation](https://docs.ghost.org/).
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ installed:
 git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-pnpm setup
+pnpm bootstrap
 pnpm dev
 ```
 
@@ -76,6 +76,7 @@ adding translatable product copy, see the
 
 Codebase guides explain how the main systems fit together:
 
+- [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
@@ -97,7 +98,10 @@ Practice and contributor guides explain how to make and verify changes:
 - [Error handling](practices/error-handling.md)
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
+- [Internal package migrations](contributing/internal-package-migrations.md)
 - [Performance testing](contributing/performance-testing.md)
+- [Stripe testing](contributing/testing-stripe.md)
+- [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 
 Reference guides provide tables and other information to look up while working
@@ -144,10 +148,10 @@ Docker Official Image.
 
 ## Additional Resources
 
-- **[Official Documentation](https://ghost.org/docs/)** - User and developer docs
+- **[Official Documentation](https://docs.ghost.org/)** - User and developer docs
 - **[Ghost Forum](https://forum.ghost.org)** - Community support and discussions
-- **[API Documentation](https://ghost.org/docs/content-api/)** - Content and Admin API reference
-- **[Theme Documentation](https://ghost.org/docs/themes/)** - Theme development
+- **[API Documentation](https://docs.ghost.org/content-api/)** - Content and Admin API reference
+- **[Theme Documentation](https://docs.ghost.org/themes/)** - Theme development
 
 ## Getting Help
 

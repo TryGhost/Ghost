@@ -4,7 +4,7 @@ const { faker: americanFaker } = require('@faker-js/faker/locale/en_US');
 const { blogStartDate: startTime } = require('../utils/blog-info');
 const generateEvents = require('../utils/event-generator');
 const { luck } = require('../utils/random');
-const { toDatabaseDate } = require('../../../lib/db-date');
+const { toDatabaseDate } = require('../../../lib/db-types/date');
 const debug = require('@tryghost/debug')('MembersImporter');
 
 class MembersImporter extends TableImporter {

@@ -51,7 +51,7 @@ function getThemeLabel(theme: Theme): React.ReactNode {
   } else if (theme.package?.name !== theme.name) {
     label = (
       <span className="md:text-base">
-        {label} <span className="text-grey-600">({theme.name})</span>
+        {label} <span className="text-gray-600">({theme.name})</span>
       </span>
     );
   }

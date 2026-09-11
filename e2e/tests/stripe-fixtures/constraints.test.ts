@@ -97,4 +97,46 @@ test.describe('Fake Stripe - rejects what Stripe rejects', () => {
 
     expect(status).toBe(200);
   });
+
+  // Every signed-in checkout carries a customer, so a tier collecting a tax number could
+  // not be bought by an existing member until Ghost sent the pair. Shipping and phone
+  // collection were probed alongside it and need nothing, so this is a rule about tax
+  // rather than about collecting from a customer.
+  test('tax_id_collection for an existing customer needs customer_update[name]', async () => {
+    const { status, body } = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: true },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error.message).toContain('please set `customer_update[name]`');
+  });
+
+  test('tax_id_collection for an existing customer is accepted with it', async () => {
+    const { status } = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: true },
+      customer_update: { name: 'auto' },
+    });
+
+    expect(status).toBe(200);
+  });
+
+  test('tax_id_collection without a customer needs nothing', async () => {
+    const { status } = await createSession({ tax_id_collection: { enabled: true } });
+
+    expect(status).toBe(200);
+  });
+
+  // Form encoding delivers the flag as a string, and `"false"` is truthy. Reading it for
+  // truthiness would refuse a checkout that asks for no tax number at all, which is the
+  // fake being stricter than Stripe rather than matching it.
+  test('tax_id_collection switched off needs nothing', async () => {
+    const { status } = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: 'false' },
+    });
+
+    expect(status).toBe(200);
+  });
 });

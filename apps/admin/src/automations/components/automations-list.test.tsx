@@ -74,13 +74,26 @@ describe('AutomationsList', () => {
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
-    expect(screen.getByText('14 days ago')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
+    expect(screen.getByText('Jul 21')).toHaveAttribute('datetime', '2026-07-21T07:12:00.000Z');
   });
 
   it('renders Never when an automation has no last entry', () => {
     renderWithRouter(<AutomationsList automations={[automations[1]]} />);
 
     expect(screen.getByText('Never')).toBeInTheDocument();
+  });
+
+  it('hides run analytics when stats are unavailable', () => {
+    const automationsWithoutStats = automations.map(
+      ({ stats: _stats, ...automation }) => automation,
+    );
+
+    renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
+
+    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
+    expect(screen.queryByText('1,432')).not.toBeInTheDocument();
   });
 
   it('links each row to the automation sequence by id', () => {

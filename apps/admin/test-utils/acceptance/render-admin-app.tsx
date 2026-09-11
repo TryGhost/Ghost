@@ -1,20 +1,23 @@
 import { QueryClient } from '@tanstack/react-query';
 import { render } from 'vitest-browser-react';
-import { configResponse, settingsResponse } from '@tryghost/test-data';
 import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
 
-import { installBootOverrides, type BootOverrides } from './boot';
+import { composeLabsBootOverrides, installBootOverrides, type BootOverrides } from './boot';
 
 export interface RenderAdminAppOptions {
   /**
    * Labs flags for this test; compiles to lockstep settings + config boot
-   * overrides (the admin client reads labs from both).
+   * overrides (the admin client reads labs from both). Merges into any
+   * `boot` override for those entries; flags named here win.
    */
   labs?: Record<string, boolean>;
-  /** Boot-table overrides keyed by entry name (see boot.ts); wins over `labs`. */
+  /**
+   * Boot-table overrides keyed by entry name (see boot.ts); `labs` flags
+   * merge into `browseConfig`/`browseSettings` override responses.
+   */
   boot?: BootOverrides;
 }
 
@@ -36,13 +39,7 @@ export async function renderAdminApp(
   route: string = '/',
   { labs, boot }: RenderAdminAppOptions = {},
 ): Promise<Awaited<ReturnType<typeof render>>> {
-  const overrides: BootOverrides = {
-    ...(labs && {
-      browseSettings: { response: settingsResponse({ labs }) },
-      browseConfig: { response: configResponse({ labs }) },
-    }),
-    ...boot,
-  };
+  const overrides: BootOverrides = labs ? composeLabsBootOverrides(labs, boot) : { ...boot };
 
   if (Object.keys(overrides).length > 0) {
     installBootOverrides(overrides);

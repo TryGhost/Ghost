@@ -322,6 +322,65 @@ const sentEmail = (matchers) => {
   return spyCall.args[0];
 };
 
+/**
+ * Asserts that an email matching every matcher was sent, waiting for it to arrive if
+ * it has not been sent yet.
+ *
+ * sentEmail() reads the emails in send order, one per call. That only works when the
+ * request under test has finished sending them by the time it returns. Where an email
+ * is sent by work that outlives the request — a subscriber to a domain event, or a
+ * promise the request never awaited — it may not have been sent yet, and nothing fixes
+ * its position relative to the other emails. This searches every email sent so far,
+ * and keeps looking until the timeout, so neither timing nor order matters.
+ */
+const sentEmailEventually = async (matchers, { timeout = 5000, interval = 50 } = {}) => {
+  if (!mocks.mail) {
+    throw new errors.IncorrectUsageError({
+      message: 'Cannot assert on mail when mail has not been mocked',
+    });
+  }
+
+  const isMatch = (email) =>
+    Object.keys(matchers).every((key) => {
+      const value = matchers[key];
+      const actual = email[key];
+
+      if (value instanceof RegExp) {
+        // A fresh copy per test: a global or sticky expression carries lastIndex
+        // between calls, so reusing one would skip matches on later emails.
+        return typeof actual === 'string' && new RegExp(value.source, value.flags).test(actual);
+      }
+
+      return actual === value;
+    });
+
+  const deadline = Date.now() + timeout;
+  let sent = [];
+
+  for (;;) {
+    sent = mocks.mail.getCalls().map((spyCall) => spyCall.args[0]);
+
+    const match = sent.find(isMatch);
+    if (match) {
+      return match;
+    }
+
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      break;
+    }
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, Math.min(interval, remaining));
+    });
+  }
+
+  assert.fail(
+    `Expected an email matching ${JSON.stringify(matchers)} to be sent within ${timeout}ms, ` +
+      `got ${JSON.stringify(sent.map((email) => ({ subject: email.subject, to: email.to })))}`,
+  );
+};
+
 const sentEmailCount = (expectedCount) => {
   if (!mocks.mail) {
     throw new errors.IncorrectUsageError({
@@ -544,6 +603,7 @@ module.exports = {
   stripeMocker,
   assert: {
     sentEmail,
+    sentEmailEventually,
     sentEmailCount,
     emittedEvent,
   },

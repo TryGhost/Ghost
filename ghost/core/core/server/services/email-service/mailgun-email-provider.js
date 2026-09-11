@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
+const { escapeExpression } = require('handlebars');
 
 /**
  * @typedef {object} Config
@@ -35,35 +36,41 @@ const debug = require('@tryghost/debug')('email-service:mailgun-provider-service
 class MailgunEmailProvider {
   #mailgunClient;
   #config;
-  #errorHandler;
 
   /**
    * @param {object} dependencies
    * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
    * @param {Config} dependencies.config
-   * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
    */
-  constructor({ mailgunClient, config, errorHandler }) {
+  constructor({ mailgunClient, config }) {
     this.#mailgunClient = mailgunClient;
     this.#config = config;
-    this.#errorHandler = errorHandler;
   }
 
-  #createRecipientData(replacements) {
+  #createRecipientData(replacements, htmlEscapedIds) {
     let recipientData = {};
 
     recipientData = replacements.reduce((acc, replacement) => {
       const { id, value } = replacement;
       acc[id] = value;
+      // Mailgun's recipient-variables substitution is a simple string replace with
+      // no HTML awareness, and the same value is used for both the html and plaintext
+      // bodies. Member-controlled values get an extra, escaped variant that only the
+      // html body points at. Trusted server-generated values (urls, uuids, hmacs) are
+      // skipped so their URLs don't end up entity-encoded inside hrefs.
+      if (htmlEscapedIds.has(id)) {
+        acc[`${id}_html`] = typeof value === 'string' ? escapeExpression(value) : value;
+      }
       return acc;
     }, {});
 
     return recipientData;
   }
 
-  #updateRecipientVariables(data, replacementDefinitions) {
+  #updateRecipientVariables(data, replacementDefinitions, isHtml) {
     for (const def of replacementDefinitions) {
-      data = data.replace(def.token, `%recipient.${def.id}%`);
+      const useHtmlVariant = isHtml && !def.trusted;
+      data = data.replace(def.token, `%recipient.${def.id}${useHtmlVariant ? '_html' : ''}%`);
     }
     return data;
   }
@@ -128,8 +135,11 @@ class MailgunEmailProvider {
       }
 
       // create recipient data for Mailgun using replacement definitions
+      const htmlEscapedIds = new Set(
+        replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id),
+      );
       const recipientData = recipients.reduce((acc, recipient) => {
-        acc[recipient.email] = this.#createRecipientData(recipient.replacements);
+        acc[recipient.email] = this.#createRecipientData(recipient.replacements, htmlEscapedIds);
         return acc;
       }, {});
 
@@ -139,6 +149,7 @@ class MailgunEmailProvider {
           messageData[key] = this.#updateRecipientVariables(
             messageData[key],
             replacementDefinitions,
+            key === 'html',
           );
         }
       });
@@ -165,7 +176,7 @@ class MailgunEmailProvider {
           message: this.#createMailgunErrorMessage(error),
           errorDetails: JSON.stringify({ error, messageData }),
           context: `Mailgun Error ${error.status}: ${error.details}`,
-          help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
+          help: `https://docs.ghost.org/newsletters/#bulk-email-configuration`,
           code: 'BULK_EMAIL_SEND_FAILED',
         });
       } else {

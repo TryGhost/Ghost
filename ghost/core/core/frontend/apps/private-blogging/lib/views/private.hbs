@@ -41,6 +41,19 @@
         </script>
     </head>
     <body{{#if @site.accent_color}} style="--gh-private-accent-color: {{@site.accent_color}}; --gh-private-accent-color-rgba: {{color_to_rgba @site.accent_color 0.25}}; --gh-private-accent-contrast-color: {{contrast_text_color @site.accent_color}};"{{/if}}>
+        {{#*inline "private-access-form"}}
+            <form class="gh-signin gh-private-signin gh-private-access-form" method="post" novalidate="novalidate">
+                <div class="gh-private-signup-fields">
+                    <div class="form-group gh-private-access-input-wrap{{#if error}} error{{/if}}">
+                        {{input_password class="gh-input gh-private-signup-input" placeholder=(t "Access code") data-1p-ignore="true"}}
+                        {{#if error}}
+                            <p class="main-error">{{error.message}}</p>
+                        {{/if}}
+                    </div>
+                    <button class="gh-btn gh-private-signup-btn" type="submit"><span>{{t "Enter"}} &rarr;</span></button>
+                </div>
+            </form>
+        {{/inline}}
         <div class="gh-app">
             <div class="gh-viewport">
                 <main class="gh-main" role="main">
@@ -56,42 +69,37 @@
                                         <p class="gh-private-description">{{@site.description}}</p>
                                     {{/if}}
                                     {{#if @site.allow_self_signup}}
-                                        <form class="gh-private-signup-form gh-signin" data-ghost-private-subscribe-form data-members-form="subscribe" data-site-url="{{@site.url}}" data-state="idle" novalidate="novalidate">
-                                            <div class="gh-private-signup-fields">
-                                                <input class="gh-input gh-private-signup-input" type="email" placeholder="{{t "Your email address"}}" aria-label="{{t "Your email address"}}" autocomplete="email" required data-members-email>
-                                                <button class="gh-btn gh-private-signup-btn" type="submit">
-                                                    <span class="gh-private-signup-btn-content">
-                                                        <b class="gh-private-signup-btn-label">{{t "Subscribe"}}</b>
-                                                        <svg class="gh-private-signup-btn-loading" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                                            <circle cx="4" cy="12" r="3"></circle>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                            <circle cx="20" cy="12" r="3"></circle>
-                                                        </svg>
-                                                        <svg class="gh-private-signup-btn-success" viewBox="0 0 15 14" aria-hidden="true" focusable="false">
-                                                            <path d="M1 6.89286L6.10714 12L13.9643 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                        </svg>
-                                                    </span>
-                                                </button>
-                                            </div>
-                                            <p class="gh-private-signup-feedback" data-ghost-private-subscribe-feedback data-state="idle" aria-live="polite"></p>
-                                        </form>
+                                        {{#if @member}}
+                                            {{> private-access-form}}
+                                        {{else}}
+                                            <form class="gh-private-signup-form gh-signin" data-ghost-private-subscribe-form data-members-form="subscribe" data-site-url="{{@site.url}}" data-state="idle" novalidate="novalidate">
+                                                <div class="gh-private-signup-fields">
+                                                    <input class="gh-input gh-private-signup-input" type="email" placeholder="{{t "Your email address"}}" aria-label="{{t "Your email address"}}" autocomplete="email" required data-members-email>
+                                                    <button class="gh-btn gh-private-signup-btn" type="submit">
+                                                        <span class="gh-private-signup-btn-content">
+                                                            <b class="gh-private-signup-btn-label">{{t "Subscribe"}}</b>
+                                                            <svg class="gh-private-signup-btn-loading" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                                <circle cx="4" cy="12" r="3"></circle>
+                                                                <circle cx="12" cy="12" r="3"></circle>
+                                                                <circle cx="20" cy="12" r="3"></circle>
+                                                            </svg>
+                                                            <svg class="gh-private-signup-btn-success" viewBox="0 0 15 14" aria-hidden="true" focusable="false">
+                                                                <path d="M1 6.89286L6.10714 12L13.9643 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                <p class="gh-private-signup-feedback" data-ghost-private-subscribe-feedback data-state="idle" aria-live="polite"></p>
+                                            </form>
+                                        {{/if}}
                                     {{/if}}
                                 </header>
                                 {{#unless @site.allow_self_signup}}
-                                    <form class="gh-signin gh-private-signin gh-private-access-form" method="post" novalidate="novalidate">
-                                        <div class="gh-private-signup-fields">
-                                            <div class="form-group gh-private-access-input-wrap{{#if error}} error{{/if}}">
-                                                    {{input_password class="gh-input gh-private-signup-input" placeholder=(t "Access code") data-1p-ignore="true"}}
-                                                    {{#if error}}
-                                                        <p class="main-error">{{error.message}}</p>
-                                                    {{/if}}
-                                            </div>
-                                            <button class="gh-btn gh-private-signup-btn" type="submit"><span>{{t "Enter"}} &rarr;</span></button>
-                                        </div>
-                                    </form>
+                                    {{> private-access-form}}
                                 {{/unless}}
                             </section>
                             {{#if @site.allow_self_signup}}
+                                {{#unless @member}}
                                 <dialog class="gh-private-dialog" id="access" aria-labelledby="private-access-title" {{#if @site.accent_color}} style="--gh-private-accent-color: {{@site.accent_color}}; --gh-private-accent-color-rgba: {{color_to_rgba @site.accent_color 0.25}}; --gh-private-accent-contrast-color: {{contrast_text_color @site.accent_color}};"{{/if}} {{#if error}}data-auto-open="true"{{/if}}>
                                     <div class="gh-private-dialog-panel">
                                         <button class="gh-private-dialog-close" type="button" data-ghost-private-close aria-label="{{t "Close"}}">
@@ -103,19 +111,10 @@
                                         <header class="gh-private-dialog-header">
                                             <h2 id="private-access-title">{{t "Enter access code"}}</h2>
                                         </header>
-                                        <form class="gh-signin gh-private-signin gh-private-access-form" method="post" novalidate="novalidate">
-                                            <div class="gh-private-signup-fields">
-                                                <div class="form-group gh-private-access-input-wrap{{#if error}} error{{/if}}">
-                                                        {{input_password class="gh-input gh-private-signup-input" placeholder=(t "Access code") data-1p-ignore="true"}}
-                                                        {{#if error}}
-                                                            <p class="main-error">{{error.message}}</p>
-                                                        {{/if}}
-                                                </div>
-                                                <button class="gh-btn gh-private-signup-btn" type="submit"><span>{{t "Enter"}} &rarr;</span></button>
-                                            </div>
-                                        </form>
+                                        {{> private-access-form}}
                                     </div>
                                 </dialog>
+                                {{/unless}}
                             {{/if}}
                             <div class="gh-private-trigger-wrap">
                                 <div class="gh-private-footer-links">
@@ -127,8 +126,10 @@
                                     </a>
                                     <span class="gh-private-footer-separator" aria-hidden="true">|</span>
                                     {{#if @site.allow_self_signup}}
-                                        <a class="gh-private-trigger" href="#access" data-ghost-private-trigger>{{t "Enter access code"}}</a>
-                                        <span class="gh-private-footer-separator" aria-hidden="true">|</span>
+                                        {{#unless @member}}
+                                            <a class="gh-private-trigger" href="#access" data-ghost-private-trigger>{{t "Enter access code"}}</a>
+                                            <span class="gh-private-footer-separator" aria-hidden="true">|</span>
+                                        {{/unless}}
                                     {{/if}}
                                     <a href="{{@site.admin_url}}">{{t "Site owner login"}}</a>
                                 </div>

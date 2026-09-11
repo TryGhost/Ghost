@@ -1,5 +1,5 @@
 {
-  "id": "cs_test_a1JFU1pkfvMURRP8L50qzu83Xp0qpKB2QZid0dEoVANrxtQaorTTmNcHG3",
+  "id": "cs_test_a1l3zDI0UWbKmRw4oGRm0NuyhQzkGwv6gvOT20lZTdKFUHNxpOEgGzg5Yf",
   "object": "checkout.session",
   "adaptive_pricing": {
     "enabled": true
@@ -30,7 +30,7 @@
   "collected_information": null,
   "consent": null,
   "consent_collection": null,
-  "created": 1787146483,
+  "created": 1787267116,
   "currency": "usd",
   "currency_conversion": null,
   "custom_fields": [
@@ -62,7 +62,7 @@
   "customer_details": null,
   "customer_email": null,
   "discounts": [],
-  "expires_at": 1787232882,
+  "expires_at": 1787353516,
   "integration_identifier": null,
   "invoice": null,
   "invoice_creation": {
@@ -85,7 +85,7 @@
   "metadata": {},
   "mode": "payment",
   "origin_context": null,
-  "payment_intent": "pi_3U69dfCvhsRvBqJ01yIXNFSb",
+  "payment_intent": "pi_3U6f1MCvhsRvBqJ01a44znVT",
   "payment_link": null,
   "payment_method_collection": "always",
   "payment_method_configuration_details": {

@@ -6,7 +6,7 @@ const yaml = require('js-yaml');
 const path = require('path');
 const yamlParser = require('../../../../../core/server/services/route-settings/yaml-parser');
 
-describe('UNIT > Settings Service yaml parser:', function () {
+describe('Settings Service yaml parser', function () {
   let yamlSpy;
 
   beforeEach(function () {

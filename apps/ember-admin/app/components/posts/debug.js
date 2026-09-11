@@ -60,8 +60,8 @@ export default class Debug extends Component {
             statusClass: this.email?.status,
             status: this.getStatusLabel(this.email?.status),
             recipientFilter: this.email?.recipientFilter,
-            createdAt: this.email?.createdAtUTC ? moment(this.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
-            submittedAt: this.email?.submittedAtUTC ? moment(this.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss') : '',
+            createdAt: this.email?.createdAtUTC ? moment.utc(this.email.createdAtUTC).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
+            submittedAt: this.email?.submittedAtUTC ? moment.utc(this.email.submittedAtUTC).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
             emailsSent: this.email?.emailCount,
             emailsDelivered: this.email?.deliveredCount,
             emailsOpened: this.email?.openedCount,
@@ -88,7 +88,7 @@ export default class Debug extends Component {
                 id: batch.id,
                 status: this.getStatusLabel(batch.status),
                 statusClass: batch.status,
-                createdAt: batch.created_at ? moment(batch.created_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                createdAt: batch.created_at ? moment.utc(batch.created_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
                 segment: batch.member_segment || '',
                 mailgunMessageId: batch.mailgun_message_id || null,
                 errorMessage: batch.error_message || '',
@@ -105,8 +105,8 @@ export default class Debug extends Component {
             return {
                 id: failure.id,
                 code: failure.code,
-                failedAt: failure.failed_at ? moment(failure.failed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
-                processedAt: failure.email_recipient.processed_at ? moment(failure.email_recipient.processed_at).format('DD MMM, YYYY, HH:mm:ss') : '',
+                failedAt: failure.failed_at ? moment.utc(failure.failed_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
+                processedAt: failure.email_recipient.processed_at ? moment.utc(failure.email_recipient.processed_at).format('DD MMM, YYYY, HH:mm:ss [UTC]') : '',
                 batchId: failure.email_recipient.batch_id,
                 enhancedCode: failure.enhanced_code,
                 message: failure.message,
@@ -277,7 +277,7 @@ export default class Debug extends Component {
             let object = result[type];
             for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp']) {
                 if (object[key]) {
-                    object[key] = moment(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS');
+                    object[key] = moment.utc(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS [UTC]');
                 } else {
                     object[key] = 'N/A';
                 }
@@ -287,7 +287,7 @@ export default class Debug extends Component {
                 object = object.schedule;
                 for (const key of ['begin', 'end']) {
                     if (object[key]) {
-                        object[key] = moment(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS');
+                        object[key] = moment.utc(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS [UTC]');
                     } else {
                         object[key] = 'N/A';
                     }
@@ -300,9 +300,9 @@ export default class Debug extends Component {
     toggleCustomSchedule() {
         this.showCustomSchedule = !this.showCustomSchedule;
         if (this.showCustomSchedule) {
-            this.customBeginDate = moment(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
-            const createdAt = moment(this.email?.createdAtUTC);
-            const maxEnd = moment.min(moment().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
+            this.customBeginDate = moment.utc(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
+            const createdAt = moment.utc(this.email?.createdAtUTC);
+            const maxEnd = moment.min(moment.utc().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
             this.customEndDate = maxEnd.format('YYYY-MM-DDTHH:mm');
         } else {
             this.customBeginDate = null;
@@ -339,10 +339,10 @@ export default class Debug extends Component {
     *_scheduleAnalytics() {
         const url = new URL(this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`), window.location.origin);
         if (this.customBeginDate) {
-            url.searchParams.set('begin', new Date(this.customBeginDate).toISOString());
+            url.searchParams.set('begin', moment.utc(this.customBeginDate).toISOString());
         }
         if (this.customEndDate) {
-            url.searchParams.set('end', new Date(this.customEndDate).toISOString());
+            url.searchParams.set('end', moment.utc(this.customEndDate).toISOString());
         }
         yield this.ajax.put(url.pathname + url.search, {});
         yield this.fetchAnalyticsStatus();
