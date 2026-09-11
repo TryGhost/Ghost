@@ -1,12 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-const should = require('should');
-const sinon = require('sinon');
-const assert = require('node:assert').strict;
+import { strict as assert } from 'node:assert';
 
-const errors = require('./fixtures/errors');
-const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
+
+import errors from './fixtures/errors.ts';
+import { assertAlwaysCalledWith, assertAlwaysCalledWithLeading, assertThrownCountedError, assertThrownError, assertThrownNamedError } from './utils/assertions.ts';
+
+import type { Count, CurrentCountQuery, GhostErrorOptions, Knex, LimitConfig } from '../src/types.ts';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import { AllowlistLimit, FlagLimit, MaxLimit, MaxPeriodicLimit } from '../src/limits.ts';
 
 describe('Limit', function () {
     describe('Flag Limit', function () {
@@ -19,7 +21,7 @@ describe('Limit', function () {
             const limit = new FlagLimit({name: 'flaggy', config, errors});
 
             const result = await limit.errorIfIsOverLimit();
-            should(result).be.undefined();
+            assert.equal(result, undefined);
         });
 
         it('throws if would go over limit', async function () {
@@ -30,18 +32,19 @@ describe('Limit', function () {
 
             try {
                 await limit.errorIfWouldGoOverLimit();
-                should.fail(limit, 'Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
-                should.exist(err);
+                assertThrownNamedError(err);
+                assert.ok(err);
 
-                should.exist(err.errorType);
-                should.equal(err.errorType, 'HostLimitError');
+                assert.ok(err.errorType);
+                assert.equal(err.errorType, 'HostLimitError');
 
-                should.exist(err.errorDetails);
-                should.equal(err.errorDetails.name, 'limitFlaggy');
+                assert.ok(err.errorDetails);
+                assert.equal(err.errorDetails.name, 'limitFlaggy');
 
-                should.exist(err.message);
-                should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
+                assert.ok(err.message);
+                assert.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
             }
         });
 
@@ -83,8 +86,9 @@ describe('Limit', function () {
 
             try {
                 await limit.errorIfWouldGoOverLimit();
-                should.fail('Should have errored');
+                assert.fail('Should have errored');
             } catch (err) {
+                assertThrownError(err);
                 assert.equal(err.errorType, 'HostLimitError');
                 assert.equal(err.message, 'Custom flag limit error message');
             }
@@ -106,7 +110,8 @@ describe('Limit', function () {
                     const limit = new MaxLimit({name: '', config, errors});
                     await limit.errorIfIsOverLimit({currentCount: 4});
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
             });
 
@@ -114,13 +119,14 @@ describe('Limit', function () {
                 const config = {};
 
                 try {
-                    const limit = new MaxLimit({name: 'no limits!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxLimit({name: 'no limits!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/max limit without a limit/);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /max limit without a limit/);
                 }
             });
 
@@ -130,13 +136,14 @@ describe('Limit', function () {
                 };
 
                 try {
-                    const limit = new MaxLimit({name: 'no accountability!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxLimit({name: 'no accountability!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/max limit without a current count query/);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /max limit without a current count query/);
                 }
             });
 
@@ -144,7 +151,7 @@ describe('Limit', function () {
                 const _5MB = 5000000;
                 const config = {
                     max: _5MB,
-                    formatter: count => `${count / 1000000}MB`,
+                    formatter: (count: Count) => `${Number(count) / 1000000}MB`,
                     error: 'You have exceeded the maximum file size {{ max }}',
                     currentCountQuery: function () {
                         throw new Error('Should not be called');
@@ -161,11 +168,12 @@ describe('Limit', function () {
 
                     await limit.errorIfIsOverLimit({currentCount: _10MB});
                 } catch (error) {
-                    error.errorType.should.equal('HostLimitError');
-                    error.errorDetails.name.should.equal('fileSize');
-                    error.errorDetails.limit.should.equal(5000000);
-                    error.errorDetails.total.should.equal(10000000);
-                    error.message.should.equal('You have exceeded the maximum file size 5MB');
+                    assertThrownCountedError(error);
+                    assert.equal(error.errorType, 'HostLimitError');
+                    assert.equal(error.errorDetails.name, 'fileSize');
+                    assert.equal(error.errorDetails.limit, 5000000);
+                    assert.equal(error.errorDetails.total, 10000000);
+                    assert.equal(error.message, 'You have exceeded the maximum file size 5MB');
                 }
             });
         });
@@ -180,18 +188,19 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfIsOverLimit();
-                    should.fail(limit, 'Should have errored');
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
+                    assertThrownNamedError(err);
+                    assert.ok(err);
 
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'HostLimitError');
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'HostLimitError');
 
-                    should.exist(err.errorDetails);
-                    should.equal(err.errorDetails.name, 'maxy');
+                    assert.ok(err.errorDetails);
+                    assert.equal(err.errorDetails.name, 'maxy');
 
-                    should.exist(err.message);
-                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                    assert.ok(err.message);
+                    assert.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
 
@@ -220,18 +229,19 @@ describe('Limit', function () {
                 try {
                     // should fail because limit is overridden to 10 < 9
                     await limit.errorIfIsOverLimit({max: 9});
-                    should.fail(limit, 'Should have errored');
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
+                    assertThrownNamedError(err);
+                    assert.ok(err);
 
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'HostLimitError');
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'HostLimitError');
 
-                    should.exist(err.errorDetails);
-                    should.equal(err.errorDetails.name, 'maxy');
+                    assert.ok(err.errorDetails);
+                    assert.equal(err.errorDetails.name, 'maxy');
 
-                    should.exist(err.message);
-                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                    assert.ok(err.message);
+                    assert.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
         });
@@ -246,18 +256,19 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfWouldGoOverLimit();
-                    should.fail(limit, 'Should have errored');
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
+                    assertThrownNamedError(err);
+                    assert.ok(err);
 
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'HostLimitError');
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'HostLimitError');
 
-                    should.exist(err.errorDetails);
-                    should.equal(err.errorDetails.name, 'maxy');
+                    assert.ok(err.errorDetails);
+                    assert.equal(err.errorDetails.name, 'maxy');
 
-                    should.exist(err.message);
-                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                    assert.ok(err.message);
+                    assert.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
 
@@ -270,18 +281,19 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfWouldGoOverLimit({addedCount: 11});
-                    should.fail(limit, 'Should have errored');
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
+                    assertThrownNamedError(err);
+                    assert.ok(err);
 
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'HostLimitError');
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'HostLimitError');
 
-                    should.exist(err.errorDetails);
-                    should.equal(err.errorDetails.name, 'maxy');
+                    assert.ok(err.errorDetails);
+                    assert.equal(err.errorDetails.name, 'maxy');
 
-                    should.exist(err.message);
-                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                    assert.ok(err.message);
+                    assert.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
 
@@ -310,18 +322,19 @@ describe('Limit', function () {
                 try {
                     // should fail because limit is overridden to 10 + 1 < 1
                     await limit.errorIfWouldGoOverLimit({max: 1});
-                    should.fail(limit, 'Should have errored');
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
+                    assertThrownNamedError(err);
+                    assert.ok(err);
 
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'HostLimitError');
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'HostLimitError');
 
-                    should.exist(err.errorDetails);
-                    should.equal(err.errorDetails.name, 'maxy');
+                    assert.ok(err.errorDetails);
+                    assert.equal(err.errorDetails.name, 'maxy');
 
-                    should.exist(err.message);
-                    should.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
+                    assert.ok(err.message);
+                    assert.equal(err.message, 'This action would exceed the maxy limit on your current plan.');
                 }
             });
         });
@@ -331,70 +344,69 @@ describe('Limit', function () {
                 const config = {
                     max: 5,
                     error: 'You have gone over the limit',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                config.currentCountQuery.resolves(0);
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxLimit({name: '', config, errors});
                     await limit.errorIfIsOverLimit();
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, undefined);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWith(config.currentCountQuery, undefined);
             });
 
             it('passes default db if no transacting option passed', async function () {
                 const config = {
                     max: 5,
                     error: 'You have gone over the limit',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                const db = {
-                    knex: 'This is our connection'
-                };
-                config.currentCountQuery.resolves(0);
+                const db = { knex: 'This is our connection' as unknown as Knex };
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxLimit({name: '', config, db, errors});
                     await limit.errorIfIsOverLimit();
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, db.knex);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWith(config.currentCountQuery, db.knex);
             });
 
             it('passes transacting option', async function () {
                 const config = {
                     max: 5,
                     error: 'You have gone over the limit',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                const db = {
-                    knex: 'This is our connection'
-                };
+                const db = { knex: 'This is our connection' as unknown as Knex };
                 const transaction = 'Our transaction';
-                config.currentCountQuery.resolves(0);
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxLimit({name: '', config, db, errors});
-                    await limit.errorIfIsOverLimit({transacting: transaction});
-                    await limit.errorIfWouldGoOverLimit({transacting: transaction});
+                    await limit.errorIfIsOverLimit({transacting: transaction as unknown as Knex});
+                    await limit.errorIfWouldGoOverLimit({transacting: transaction as unknown as Knex});
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, transaction);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWith(config.currentCountQuery, transaction);
             });
         });
 
@@ -403,7 +415,9 @@ describe('Limit', function () {
                 const helpPreservingErrors = {
                     IncorrectUsageError: errors.IncorrectUsageError,
                     HostLimitError: class extends errors.HostLimitError {
-                        constructor(options) {
+                        help?: string;
+
+                        constructor(options: GhostErrorOptions) {
                             super(options);
                             this.help = options.help;
                         }
@@ -411,11 +425,12 @@ describe('Limit', function () {
                 };
                 const config = {
                     max: 5,
-                    currentCountQuery: () => {},
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
                     error: 'Over the limit of {{max}}'
                 };
                 const limit = new MaxLimit({name: 'maxy', config, helpLink: 'https://example.com/help', errors: helpPreservingErrors});
                 const error = limit.generateError(10);
+                assertThrownNamedError(error);
 
                 assert.equal(error.errorDetails.name, 'maxy');
                 assert.equal(error.help, 'https://example.com/help');
@@ -424,7 +439,7 @@ describe('Limit', function () {
             it('falls back to default message when error template throws', function () {
                 const config = {
                     max: 5,
-                    currentCountQuery: () => {},
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
                     error: 'Limit reached',
                     formatter: () => {
                         throw new Error('formatter failed');
@@ -444,13 +459,14 @@ describe('Limit', function () {
                 const config = {};
 
                 try {
-                    const limit = new MaxPeriodicLimit({name: 'no limits!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxPeriodicLimit({name: 'no limits!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/periodic max limit without a limit/gi);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /periodic max limit without a limit/gi);
                 }
             });
 
@@ -460,78 +476,83 @@ describe('Limit', function () {
                 };
 
                 try {
-                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/periodic max limit without a current count query/gi);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /periodic max limit without a current count query/gi);
                 }
             });
 
             it('throws if initialized without interval', function () {
                 const config = {
                     maxPeriodic: 100,
-                    currentCountQuery: () => {}
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery
                 };
 
                 try {
-                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/periodic max limit without an interval/gi);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /periodic max limit without an interval/gi);
                 }
             });
 
             it('throws if initialized with unsupported interval', function () {
                 const config = {
                     maxPeriodic: 100,
-                    currentCountQuery: () => {},
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
+                    // Deliberately unsupported: this test is checking it is refused
                     interval: 'week'
-                };
+                } as unknown as LimitConfig;
 
                 try {
-                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/periodic max limit without unsupported interval. Please specify one of: month/gi);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /periodic max limit without unsupported interval. Please specify one of: month/gi);
                 }
             });
 
             it('throws if initialized without start date', function () {
                 const config = {
                     maxPeriodic: 100,
-                    currentCountQuery: () => {},
-                    interval: 'month'
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
+                    interval: 'month' as const
                 };
 
                 try {
-                    const limit = new MaxPeriodicLimit({name: 'no accountability!', config, errors});
-                    should.fail(limit, 'Should have errored');
+                    new MaxPeriodicLimit({name: 'no accountability!', config, errors});
+                    assert.fail('Should have errored');
                 } catch (err) {
-                    should.exist(err);
-                    should.exist(err.errorType);
-                    should.equal(err.errorType, 'IncorrectUsageError');
-                    err.message.should.match(/periodic max limit without a start date/gi);
+                    assertThrownError(err);
+                    assert.ok(err);
+                    assert.ok(err.errorType);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /periodic max limit without a start date/gi);
                 }
             });
         });
 
         describe('Is over limit', function () {
             it('throws if is over the limit', async function () {
-                const currentCountyQueryMock = sinon.mock().returns(11);
+                const currentCountyQueryMock = vi.fn().mockReturnValue(11);
 
                 const config = {
                     maxPeriodic: 3,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
                     currentCountQuery: currentCountyQueryMock
                 };
@@ -540,14 +561,15 @@ describe('Limit', function () {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
                     await limit.errorIfIsOverLimit();
                 } catch (error) {
-                    error.errorType.should.equal('HostLimitError');
-                    error.errorDetails.name.should.equal('mailguard');
-                    error.errorDetails.limit.should.equal(3);
-                    error.errorDetails.total.should.equal(11);
+                    assertThrownCountedError(error);
+                    assert.equal(error.errorType, 'HostLimitError');
+                    assert.equal(error.errorDetails.name, 'mailguard');
+                    assert.equal(error.errorDetails.limit, 3);
+                    assert.equal(error.errorDetails.total, 11);
 
-                    currentCountyQueryMock.callCount.should.equal(1);
-                    should(currentCountyQueryMock.args).not.be.undefined();
-                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+                    assert.equal(currentCountyQueryMock.mock.calls.length, 1);
+                    assert.notEqual(currentCountyQueryMock.mock.calls, undefined);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[0], undefined); //knex db connection
 
                     const nowDate = new Date();
                     const startOfTheMonthDate = new Date(Date.UTC(
@@ -555,19 +577,19 @@ describe('Limit', function () {
                         nowDate.getUTCMonth()
                     )).toISOString();
 
-                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[1], startOfTheMonthDate);
                 }
             });
         });
 
         describe('Would go over limit', function () {
             it('passes if within the limit', async function () {
-                const currentCountyQueryMock = sinon.mock().returns(4);
+                const currentCountyQueryMock = vi.fn().mockReturnValue(4);
 
                 const config = {
                     maxPeriodic: 5,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
                     currentCountQuery: currentCountyQueryMock
                 };
@@ -576,17 +598,18 @@ describe('Limit', function () {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    should.fail('MaxPeriodicLimit errorIfWouldGoOverLimit check should not have errored');
+                    assertThrownError(error);
+                    assert.fail('MaxPeriodicLimit errorIfWouldGoOverLimit check should not have errored');
                 }
             });
 
             it('throws if would go over limit', async function () {
-                const currentCountyQueryMock = sinon.mock().returns(5);
+                const currentCountyQueryMock = vi.fn().mockReturnValue(5);
 
                 const config = {
                     maxPeriodic: 5,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
                     currentCountQuery: currentCountyQueryMock
                 };
@@ -595,14 +618,15 @@ describe('Limit', function () {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    error.errorType.should.equal('HostLimitError');
-                    error.errorDetails.name.should.equal('mailguard');
-                    error.errorDetails.limit.should.equal(5);
-                    error.errorDetails.total.should.equal(5);
+                    assertThrownCountedError(error);
+                    assert.equal(error.errorType, 'HostLimitError');
+                    assert.equal(error.errorDetails.name, 'mailguard');
+                    assert.equal(error.errorDetails.limit, 5);
+                    assert.equal(error.errorDetails.total, 5);
 
-                    currentCountyQueryMock.callCount.should.equal(1);
-                    should(currentCountyQueryMock.args).not.be.undefined();
-                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+                    assert.equal(currentCountyQueryMock.mock.calls.length, 1);
+                    assert.notEqual(currentCountyQueryMock.mock.calls, undefined);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[0], undefined); //knex db connection
 
                     const nowDate = new Date();
                     const startOfTheMonthDate = new Date(Date.UTC(
@@ -610,17 +634,17 @@ describe('Limit', function () {
                         nowDate.getUTCMonth()
                     )).toISOString();
 
-                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[1], startOfTheMonthDate);
                 }
             });
 
             it('throws if would go over limit with custom added count', async function () {
-                const currentCountyQueryMock = sinon.mock().returns(5);
+                const currentCountyQueryMock = vi.fn().mockReturnValue(5);
 
                 const config = {
                     maxPeriodic: 13,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
                     currentCountQuery: currentCountyQueryMock
                 };
@@ -629,14 +653,15 @@ describe('Limit', function () {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
                     await limit.errorIfWouldGoOverLimit({addedCount: 9});
                 } catch (error) {
-                    error.errorType.should.equal('HostLimitError');
-                    error.errorDetails.name.should.equal('mailguard');
-                    error.errorDetails.limit.should.equal(13);
-                    error.errorDetails.total.should.equal(5);
+                    assertThrownCountedError(error);
+                    assert.equal(error.errorType, 'HostLimitError');
+                    assert.equal(error.errorDetails.name, 'mailguard');
+                    assert.equal(error.errorDetails.limit, 13);
+                    assert.equal(error.errorDetails.total, 5);
 
-                    currentCountyQueryMock.callCount.should.equal(1);
-                    should(currentCountyQueryMock.args).not.be.undefined();
-                    should(currentCountyQueryMock.args[0][0]).be.undefined(); //knex db connection
+                    assert.equal(currentCountyQueryMock.mock.calls.length, 1);
+                    assert.notEqual(currentCountyQueryMock.mock.calls, undefined);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[0], undefined); //knex db connection
 
                     const nowDate = new Date();
                     const startOfTheMonthDate = new Date(Date.UTC(
@@ -644,7 +669,7 @@ describe('Limit', function () {
                         nowDate.getUTCMonth()
                     )).toISOString();
 
-                    currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
+                    assert.equal((currentCountyQueryMock.mock.calls[0] ?? [])[1], startOfTheMonthDate);
                 }
             });
         });
@@ -654,76 +679,75 @@ describe('Limit', function () {
                 const config = {
                     maxPeriodic: 5,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                config.currentCountQuery.resolves(0);
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
                     await limit.errorIfIsOverLimit();
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWith(config.currentCountQuery, undefined);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWithLeading(config.currentCountQuery, undefined);
             });
 
             it('passes default db if no transacting option passed', async function () {
                 const config = {
                     maxPeriodic: 5,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                const db = {
-                    knex: 'This is our connection'
-                };
-                config.currentCountQuery.resolves(0);
+                const db = { knex: 'This is our connection' as unknown as Knex };
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, db, errors});
                     await limit.errorIfIsOverLimit();
                     await limit.errorIfWouldGoOverLimit();
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWith(config.currentCountQuery, db.knex);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWithLeading(config.currentCountQuery, db.knex);
             });
 
             it('passes transacting option', async function () {
                 const config = {
                     maxPeriodic: 5,
                     error: 'You have exceeded the number of emails you can send within your billing period.',
-                    interval: 'month',
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
-                    currentCountQuery: sinon.stub()
+                    currentCountQuery: vi.fn()
                 };
 
-                const db = {
-                    knex: 'This is our connection'
-                };
+                const db = { knex: 'This is our connection' as unknown as Knex };
                 const transaction = 'Our transaction';
-                config.currentCountQuery.resolves(0);
+                config.currentCountQuery.mockResolvedValue(0);
 
                 try {
                     const limit = new MaxPeriodicLimit({name: 'mailguard', config, db, errors});
-                    await limit.errorIfIsOverLimit({transacting: transaction});
-                    await limit.errorIfWouldGoOverLimit({transacting: transaction});
+                    await limit.errorIfIsOverLimit({transacting: transaction as unknown as Knex});
+                    await limit.errorIfWouldGoOverLimit({transacting: transaction as unknown as Knex});
                 } catch (error) {
-                    should.fail('Should have not errored', error);
+                    assertThrownError(error);
+                    assert.fail('Should have not errored');
                 }
 
-                sinon.assert.calledTwice(config.currentCountQuery);
-                sinon.assert.alwaysCalledWith(config.currentCountQuery, transaction);
+                expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
+                assertAlwaysCalledWithLeading(config.currentCountQuery, transaction);
             });
         });
 
@@ -731,8 +755,8 @@ describe('Limit', function () {
             it('falls back to default message when error template throws', function () {
                 const config = {
                     maxPeriodic: 100,
-                    currentCountQuery: () => {},
-                    interval: 'month',
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
+                    interval: 'month' as const,
                     startDate: '2021-01-01T00:00:00Z',
                     error: '{{max.foo.bar}}'
                 };
@@ -750,8 +774,9 @@ describe('Limit', function () {
                 new AllowlistLimit({name: 'test', config: {}, errors});
                 throw new Error('Should have failed earlier...');
             } catch (error) {
-                error.errorType.should.equal('IncorrectUsageError');
-                error.message.should.match(/allowlist limit without an allowlist/);
+                assertThrownError(error);
+                assert.equal(error.errorType, 'IncorrectUsageError');
+                assert.match(error.message, /allowlist limit without an allowlist/);
             }
         });
 
@@ -772,7 +797,8 @@ describe('Limit', function () {
                 await limit.errorIfIsOverLimit({value: 'unknown value'});
                 throw new Error('Should have failed earlier...');
             } catch (error) {
-                error.errorType.should.equal('HostLimitError');
+                assertThrownError(error);
+                assert.equal(error.errorType, 'HostLimitError');
             }
         });
 
@@ -784,8 +810,9 @@ describe('Limit', function () {
 
             try {
                 await limit.errorIfIsOverLimit({value: 'unknown value'});
-                should.fail('Should have failed');
+                assert.fail('Should have failed');
             } catch (error) {
+                assertThrownError(error);
                 assert.equal(error.errorType, 'HostLimitError');
                 assert.equal(error.message, 'Custom allowlist error');
             }
@@ -807,8 +834,9 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfWouldGoOverLimit({value: 'unknown'});
-                    should.fail('Should have failed');
+                    assert.fail('Should have failed');
                 } catch (error) {
+                    assertThrownError(error);
                     assert.equal(error.errorType, 'HostLimitError');
                 }
             });
@@ -820,8 +848,9 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfWouldGoOverLimit();
-                    should.fail('Should have failed');
+                    assert.fail('Should have failed');
                 } catch (error) {
+                    assertThrownError(error);
                     assert.equal(error.errorType, 'IncorrectUsageError');
                     assert.match(error.message, /allowlist limit without a value/);
                 }
@@ -834,8 +863,9 @@ describe('Limit', function () {
 
                 try {
                     await limit.errorIfWouldGoOverLimit({});
-                    should.fail('Should have failed');
+                    assert.fail('Should have failed');
                 } catch (error) {
+                    assertThrownError(error);
                     assert.equal(error.errorType, 'IncorrectUsageError');
                     assert.match(error.message, /allowlist limit without a value/);
                 }

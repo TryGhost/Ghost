@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const LimitService = require('@tryghost/limit-service');
+const { LimitService } = require('@tryghost/limit-service');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/webhook-trigger');
 const configUtils = require('../../../../utils/config-utils');

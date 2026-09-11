@@ -244,14 +244,14 @@ describe('errors utils', () => {
     });
 
     // The shape @tryghost/limit-service passes when it constructs the registered class
-    it('creates error from a limit-service options object', () => {
+    it.each([6, '6', null, undefined])('preserves a limit-service count of %s', (total) => {
       const error = new HostLimitError({
         message: 'Your plan supports up to 5 staff users.',
-        errorDetails: { name: 'staff', limit: 5, total: 6 },
+        errorDetails: { name: 'staff', limit: 5, total },
         help: 'https://ghost.org/help/',
       });
       expect(error.message).toBe('Your plan supports up to 5 staff users.');
-      expect(error.errorDetails).toEqual({ name: 'staff', limit: 5, total: 6 });
+      expect(error.errorDetails).toEqual({ name: 'staff', limit: 5, total });
       expect(error.response).toBeUndefined();
       expect(error.data).toBeUndefined();
     });
