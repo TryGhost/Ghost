@@ -1,6 +1,8 @@
+/* global vi */
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
+const models = require('../../../core/server/models');
 
 describe('Admin API', function () {
   let agent;
@@ -130,6 +132,43 @@ describe('Admin API', function () {
       it('Request to list members should succeed', async function () {
         await agent.get('members').expectStatus(200);
       });
+    });
+  });
+
+  describe('Audit log attribution', function () {
+    async function createPostAndGetActions() {
+      const { body } = await agent
+        .post('posts/')
+        .body({ posts: [{ title: 'Audit log attribution post' }] })
+        .expectStatus(201);
+      const postId = body.posts[0].id;
+
+      await agent.useStaffTokenForOwner();
+      // Actions are inserted after the transaction commits, so poll for the row
+      return vi.waitFor(async () => {
+        const { body: actionsBody } = await agent
+          .get(`actions/?filter=${encodeURIComponent(`resource_id:'${postId}'`)}&include=actor`)
+          .expectStatus(200);
+        assert.equal(actionsBody.actions.length, 1);
+        return actionsBody.actions;
+      });
+    }
+
+    it('attributes staff token changes to the user', async function () {
+      await agent.useStaffTokenForAdmin();
+      const actions = await createPostAndGetActions();
+      assert.equal(actions.length, 1);
+      assert.equal(actions[0].actor_type, 'user');
+      assert.equal(actions[0].actor.id, fixtureManager.get('users', 1).id);
+    });
+
+    it('attributes integration token changes to the integration', async function () {
+      await agent.useZapierAdminAPIKey();
+      const actions = await createPostAndGetActions();
+      const zapier = await models.Integration.findOne({ slug: 'zapier' });
+      assert.equal(actions.length, 1);
+      assert.equal(actions[0].actor_type, 'integration');
+      assert.equal(actions[0].actor.id, zapier.id);
     });
   });
 
