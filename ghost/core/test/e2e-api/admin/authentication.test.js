@@ -108,6 +108,29 @@ describe('Authentication API', function () {
 
       await waitUntil(() => assert.equal(sendMailStub.calledOnce, true));
     });
+
+    it('does not hang the request while the mail transport is still sending', async function () {
+      const user = await fixtureManager.get('users', 0);
+      const mailService = require('../../../core/server/services/mail');
+      let sendMailStarted = false;
+      mailService.GhostMailer.prototype.sendMail = () => {
+        sendMailStarted = true;
+        return new Promise(() => {});
+      };
+
+      const start = Date.now();
+      await agent
+        .post('authentication/password_reset')
+        .body({ password_reset: [{ email: user.email }] })
+        .expectStatus(200);
+      const elapsed = Date.now() - start;
+
+      assert.ok(
+        elapsed < 2000,
+        `expected the response before the mail transport settles, took ${elapsed}ms`,
+      );
+      await waitUntil(() => assert.equal(sendMailStarted, true));
+    });
   });
 
   describe('resetPassword', function () {
