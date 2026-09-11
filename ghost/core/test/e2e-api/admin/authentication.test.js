@@ -10,7 +10,25 @@ const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
 const moment = require('moment');
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const { anyErrorId } = matchers;
+
+async function waitUntil(assertion, { timeoutMs = 5000, intervalMs = 20 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      assertion();
+      return;
+    } catch (err) {
+      if (Date.now() > deadline) {
+        throw err;
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, intervalMs);
+      });
+    }
+  }
+}
 
 describe('Authentication API', function () {
   let agent;
@@ -22,6 +40,14 @@ describe('Authentication API', function () {
   });
 
   describe('generateResetToken', function () {
+    beforeEach(function () {
+      mockMail();
+    });
+
+    afterEach(function () {
+      restore();
+    });
+
     it('Cannot generate reset token without required info', async function () {
       await agent
         .post('authentication/password_reset')
@@ -67,6 +93,20 @@ describe('Authentication API', function () {
           { id: suspendedUser.id, context: { internal: true } },
         );
       }
+    });
+
+    it('does not fail the request when the notification email fails to send', async function () {
+      const user = await fixtureManager.get('users', 0);
+      const mailService = require('../../../core/server/services/mail');
+      const sendMailStub = sinon.stub().rejects(new Error('mail transport unavailable'));
+      mailService.GhostMailer.prototype.sendMail = sendMailStub;
+
+      await agent
+        .post('authentication/password_reset')
+        .body({ password_reset: [{ email: user.email }] })
+        .expectStatus(200);
+
+      await waitUntil(() => assert.equal(sendMailStub.calledOnce, true));
     });
   });
 
@@ -144,7 +184,7 @@ describe('Authentication API', function () {
           .body({ password_reset: [{ email: user.get('email') }] })
           .expectStatus(200);
 
-        mail.assertSentEmailCount(1);
+        await waitUntil(() => mail.assertSentEmailCount(1));
         const email = mail.getSentEmail();
         const resetLink = email.text.match(/\/reset\/([^/]+)\//);
         assert.ok(resetLink, 'the email should contain a password reset link');
