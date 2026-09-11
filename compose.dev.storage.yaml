@@ -1,46 +1,59 @@
 # Object Storage configuration for Ghost development environment
 # Use with: docker compose -f compose.dev.yaml -f compose.dev.storage.yaml up
 #
-# This file adds MinIO (S3-compatible storage) and configures ghost-dev to use it.
+# This file adds VersityGW (S3-compatible storage) and configures ghost-dev to use it.
 # Without this file, Ghost uses local filesystem storage (the default).
 
 services:
-  minio:
-    image: minio/minio:RELEASE.2024-12-13T22-19-12Z@sha256:149fdd73108553247ceee85fc65466f51034bd6e145d6e0c0e415167f5f1274f
-    container_name: ghost-dev-minio
-    command: server /data --console-address ':9001'
-    ports:
-      - '9000:9000' # S3 API
-      - '9001:9001' # Web console
+  versitygw-setup:
+    image: public.ecr.aws/aws-cli/aws-cli:2.36.40@sha256:b6aeb95d19d7f5a8cae4eb814cb16739b6b2a4f2f46f427ada6a8c9a20d9881d
+    container_name: ghost-dev-versitygw-setup
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -eu
+        aws --endpoint-url http://versitygw:9000 s3api head-bucket --bucket ghost-dev >/dev/null 2>&1 || aws --endpoint-url http://versitygw:9000 s3api create-bucket --bucket ghost-dev
+        aws --endpoint-url http://versitygw:9000 s3api put-bucket-ownership-controls --bucket ghost-dev --ownership-controls 'Rules=[{ObjectOwnership=ObjectWriter}]'
+        aws --endpoint-url http://versitygw:9000 s3api put-bucket-acl --bucket ghost-dev --acl public-read
+        aws --endpoint-url http://versitygw:9000 s3api head-bucket --bucket ghost-dev-redirects >/dev/null 2>&1 || aws --endpoint-url http://versitygw:9000 s3api create-bucket --bucket ghost-dev-redirects
     environment:
-      - MINIO_ROOT_USER=minio-user
-      - MINIO_ROOT_PASSWORD=minio-pass
-    volumes:
-      - minio-data:/data
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/ready']
-      interval: 1s
-      retries: 120
-
-  minio-setup:
-    image: minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
-    container_name: ghost-dev-minio-setup
-    entrypoint: ['/bin/sh', '/setup.sh']
-    environment:
-      - MINIO_ROOT_USER=minio-user
-      - MINIO_ROOT_PASSWORD=minio-pass
-      - MINIO_BUCKET=ghost-dev
-      - MINIO_REDIRECTS_BUCKET=ghost-dev-redirects
-    volumes:
-      - ./docker/minio/setup.sh:/setup.sh:ro
+      - AWS_ACCESS_KEY_ID=s3-user
+      - AWS_SECRET_ACCESS_KEY=s3-pass
+      - AWS_DEFAULT_REGION=us-east-1
     depends_on:
-      minio:
+      versitygw:
         condition: service_healthy
     restart: 'no'
 
+  versitygw:
+    image: ghcr.io/versity/versitygw:v1.7.0@sha256:c4cbd9d9cb8dedbb055ac788dbd02635651b9b1cebac95b095b3217231aa87ad
+    container_name: ghost-dev-versitygw
+    ports:
+      - '127.0.0.1:9000:9000' # S3 API
+      - '127.0.0.1:9001:9001' # WebUI
+      - '127.0.0.1:9002:9002' # Admin API used by the WebUI
+    environment:
+      - ROOT_ACCESS_KEY=s3-user
+      - ROOT_SECRET_KEY=s3-pass
+      - VGW_PORT=:9000
+      - VGW_WEBUI_PORT=:9001
+      - VGW_WEBUI_GATEWAYS=http://localhost:9000
+      - VGW_ADMIN_PORT=:9002
+      - VGW_WEBUI_ADMIN_GATEWAYS=http://localhost:9002
+      - VGW_IAM_DIR=/iam
+      - VGW_BACKEND=posix
+      - VGW_BACKEND_ARGS=/data
+    volumes:
+      - versitygw-data:/data
+      - versitygw-iam:/iam
+    healthcheck:
+      test: ['CMD', 'nc', '-z', '127.0.0.1', '9000']
+      interval: 1s
+      retries: 120
+
   ghost-dev:
     environment:
-      # Object Storage - S3Storage adapter with MinIO backend
+      # Object Storage - S3Storage adapter with VersityGW backend
       storage__media__adapter: S3Storage
       storage__media__staticFileURLPrefix: content/media
       storage__files__adapter: S3Storage
@@ -51,16 +64,17 @@ services:
       storage__S3Storage__forcePathStyle: 'true'
       storage__S3Storage__cdnUrl: http://127.0.0.1:9000/ghost-dev
       storage__S3Storage__staticFileURLPrefix: content/images
-      storage__S3Storage__endpoint: http://minio:9000
-      storage__S3Storage__accessKeyId: minio-user
-      storage__S3Storage__secretAccessKey: minio-pass
+      storage__S3Storage__endpoint: http://versitygw:9000
+      storage__S3Storage__accessKeyId: s3-user
+      storage__S3Storage__secretAccessKey: s3-pass
       urls__media: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
       urls__files: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
     depends_on:
-      minio:
+      versitygw:
         condition: service_healthy
-      minio-setup:
+      versitygw-setup:
         condition: service_completed_successfully
 
 volumes:
-  minio-data:
+  versitygw-data:
+  versitygw-iam:

@@ -71,7 +71,7 @@ const configSchema = z
 export type S3RouteSettingsStoreOptions = z.infer<typeof configSchema>;
 
 /**
- * Remote store for route settings backed by an S3-compatible bucket (MinIO in
+ * Remote store for route settings backed by an S3-compatible bucket (VersityGW in
  * tests, GCS in production). Reads and writes the operator's original
  * `routes.yaml` verbatim.
  */
