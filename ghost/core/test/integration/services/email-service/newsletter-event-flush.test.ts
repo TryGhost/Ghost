@@ -1,6 +1,8 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import type { Knex } from 'knex';
+
 const { agentProvider, fixtureManager } = require('../../../utils/e2e-framework');
-const db = require('../../../../core/server/data/db');
+const db: { knex: Knex } = require('../../../../core/server/data/db');
 const models = require('../../../../core/server/models');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
@@ -21,10 +23,33 @@ const {
   EmailOpenedEvent,
 } = require('../../../../core/server/services/email-service/events/email-opened-event');
 
+// The legacy Bookshelf models and fixtures are untyped; describe only what this test reads.
+type RecipientRow = {
+  id: string;
+  email_id: string;
+  member_id: string;
+  member_email: string;
+};
+type Transition = { recipientId: string; memberId: string };
+type FlushedPage = {
+  emailId: string;
+  delivered: Transition[];
+  opened: Transition[];
+  failed: Transition[];
+};
+type EventStorage = {
+  handleDelivered: (event: unknown) => Promise<void>;
+  handleOpened: (event: unknown) => Promise<void>;
+  handlePermanentFailed: (event: unknown) => Promise<void>;
+  flushBatchedUpdates: () => Promise<FlushedPage[]>;
+};
+type TransactionCallback = (trx: Knex.Transaction) => Promise<unknown>;
+type ObservedQuery = { sql: string; bindings: unknown[] };
+
 describe('Newsletter event flush', function () {
-  let recipient;
-  let otherRecipient;
-  let storage;
+  let recipient: RecipientRow;
+  let otherRecipient: RecipientRow;
+  let storage: EventStorage;
 
   beforeAll(async function () {
     await agentProvider.getAdminAPIAgent();
@@ -67,7 +92,7 @@ describe('Newsletter event flush', function () {
     assert.equal(first.opened, 2);
     assert.deepEqual(first.memberIds, [recipient.member_id]);
     const replay = new EventProcessingResult();
-    const cursor = {};
+    const cursor: { lastEventTimestamp?: Date } = {};
     await processor.processBatch([event], replay, cursor);
     assert.equal(replay.opened, 1);
     assert.deepEqual(replay.memberIds, [recipient.member_id]);
@@ -84,7 +109,9 @@ describe('Newsletter event flush', function () {
       batch_id: batch.id,
       opened_at: null,
     });
-    const rows = [recipient, second.toJSON()].sort((a, b) => a.email_id.localeCompare(b.email_id));
+    const rows: RecipientRow[] = [recipient, second.toJSON()].sort(
+      (a: RecipientRow, b: RecipientRow) => a.email_id.localeCompare(b.email_id),
+    );
     const processor = new NewsletterEmailAnalyticsBatchProcessor({
       config: { get: () => true },
       emailEventProcessor: new EmailEventProcessor({
@@ -93,7 +120,7 @@ describe('Newsletter event flush', function () {
         domainEvents: { dispatch() {} },
       }),
     });
-    const events = rows.toReversed().map((row) => ({
+    const events = [...rows].reverse().map((row) => ({
       type: 'opened',
       emailId: row.email_id,
       recipientEmail: row.member_email,
@@ -116,7 +143,7 @@ describe('Newsletter event flush', function () {
         await assert.rejects(processor.processBatch(events, result, cursor), /later email failed/);
         assert.deepEqual(
           result.memberIds,
-          rows.toReversed().map((row) => row.member_id),
+          [...rows].reverse().map((row) => row.member_id),
         );
         assert.equal(cursor.lastEventTimestamp, previous);
         const committed = await models.EmailRecipient.findOne(
@@ -132,7 +159,7 @@ describe('Newsletter event flush', function () {
       assert.equal(replay.opened, 2);
       assert.deepEqual(
         replay.memberIds,
-        rows.toReversed().map((row) => row.member_id),
+        [...rows].reverse().map((row) => row.member_id),
       );
       assert.equal(cursor.lastEventTimestamp, events[0].timestamp);
     } finally {
@@ -147,7 +174,7 @@ describe('Newsletter event flush', function () {
       models,
       db: {
         knex: {
-          transaction: async (callback) => {
+          transaction: async (callback: TransactionCallback) => {
             await db.knex.transaction(callback);
             throw Object.assign(new Error('commit acknowledgement lost'), { code: 'ECONNRESET' });
           },
@@ -169,7 +196,7 @@ describe('Newsletter event flush', function () {
       timestamp: new Date('2026-09-01T12:00:00.000Z'),
     };
     const result = new EventProcessingResult();
-    const cursor = {};
+    const cursor: { lastEventTimestamp?: Date } = {};
     await assert.rejects(processor.processBatch([event], result, cursor), /acknowledgement lost/);
     assert.deepEqual(result.memberIds, [recipient.member_id]);
     assert.deepEqual(cursor, {});
@@ -227,7 +254,7 @@ describe('Newsletter event flush', function () {
 
   it('returns only the first open transition when events are duplicated and replayed', async function () {
     const firstOpen = new Date('2026-09-01T12:00:00.000Z');
-    const event = (timestamp) =>
+    const event = (timestamp: Date) =>
       EmailOpenedEvent.create({
         email: recipient.member_email,
         emailRecipientId: recipient.id,
@@ -311,7 +338,7 @@ describe('Newsletter event flush', function () {
         models,
         db: {
           knex: {
-            transaction: (callback) =>
+            transaction: (callback: TransactionCallback) =>
               db.knex.transaction(async (trx) => {
                 const result = await callback(trx);
                 attempts += 1;
@@ -359,8 +386,8 @@ describe('Newsletter event flush', function () {
       await storage.handleDelivered(EmailDeliveredEvent.create(data));
       await storage.handlePermanentFailed(EmailBouncedEvent.create({ ...data, error: null }));
     }
-    const lockingQueries = [];
-    const observe = (query) => {
+    const lockingQueries: ObservedQuery[] = [];
+    const observe = (query: ObservedQuery) => {
       if (/select.*email_recipients.*for update/i.test(query.sql)) {
         lockingQueries.push(query);
       }
@@ -373,7 +400,7 @@ describe('Newsletter event flush', function () {
     }
     assert.equal(lockingQueries.length, 1);
     // One OR branch per event type in the locking predicate
-    assert.equal(lockingQueries[0].sql.match(/is null/g).length, 3);
+    assert.equal(lockingQueries[0].sql.match(/is null/g)?.length, 3);
     const [plan] = await db.knex.raw(
       `EXPLAIN ${lockingQueries[0].sql}`,
       lockingQueries[0].bindings,
@@ -410,9 +437,16 @@ describe('Newsletter event flush', function () {
 
     const blocker = await db.knex.transaction();
     await blocker('email_recipients').where({ id: recipient.id }).forUpdate();
-    const waiting = Promise.withResolvers();
-    const lockingQueries = [];
-    const observe = (query) => {
+    // Promise.withResolvers() is ES2024; this test compiles against the es2022 lib.
+    let resolveWaiting!: () => void;
+    const waiting = {
+      promise: new Promise<void>((resolve) => {
+        resolveWaiting = resolve;
+      }),
+      resolve: () => resolveWaiting(),
+    };
+    const lockingQueries: ObservedQuery[] = [];
+    const observe = (query: ObservedQuery) => {
       if (/select.*email_recipients.*for update/i.test(query.sql)) {
         lockingQueries.push(query);
         if (lockingQueries.length === 2) {
