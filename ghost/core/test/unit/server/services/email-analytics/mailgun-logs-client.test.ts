@@ -102,6 +102,27 @@ describe('Mailgun Logs API client', () => {
     scope.done();
   });
 
+  it('settles an aborted read as a cancellation without recording a provider failure', async () => {
+    const metric = sinon.stub(metrics, 'metric');
+    const controller = new AbortController();
+    const scope = nock('https://api.eu.mailgun.net')
+      .post('/v1/analytics/logs')
+      .delay(500)
+      .reply(200, { items: [], pagination: {} });
+    const requested = new Promise<void>((resolve) => {
+      scope.on('request', () => resolve());
+    });
+    const read = client().getPage({ ...pageOptions, signal: controller.signal });
+    const rejected = assert.rejects(read, (error: Error & { code?: string }) => {
+      assert.equal(error.code, 'MAILGUN_POLLING_CANCELED');
+      return true;
+    });
+    await requested;
+    controller.abort();
+    await rejected;
+    sinon.assert.notCalled(metric);
+  });
+
   it.each([200, 429])(
     'records request timing and safe HTTP status for a %i response',
     async (statusCode) => {

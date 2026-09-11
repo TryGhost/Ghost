@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { MailgunRateLimit } from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
+import {
+  MailgunRateLimit,
+  parseMailgunRateLimit,
+} from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
 
 describe('Mailgun polling rate limits', () => {
   afterEach(() => sinon.restore());
@@ -31,6 +34,7 @@ describe('Mailgun polling rate limits', () => {
 
   it('rechecks a shared reset extended by another in-flight response while waiting', async () => {
     const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
     const limiter = new MailgunRateLimit();
     let finish!: (value: {
       value: string;
@@ -152,6 +156,7 @@ describe('Mailgun polling rate limits', () => {
 
   it('applies exhausted-quota headers from a successful response to the next page', async () => {
     const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
     const limiter = new MailgunRateLimit();
     await limiter.run(async () => ({ value: 'first', rateLimit: { remaining: 0, resetAt: 5000 } }));
     const requestedAt: number[] = [];
@@ -180,6 +185,56 @@ describe('Mailgun polling rate limits', () => {
     await clock.tickAsync(7000);
     assert.deepEqual(requestedAt, [0, 1000, 3000, 7000]);
     await rejected;
+  });
+
+  it('spreads readers waking from a shared cooldown with up to one second of jitter', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(1);
+    const limiter = new MailgunRateLimit();
+    await limiter.run(async () => ({ value: 'first', rateLimit: { remaining: 0, resetAt: 5000 } }));
+    const requestedAt: number[] = [];
+    const next = limiter.run(async () => {
+      requestedAt.push(Date.now());
+      return { value: 'next' };
+    });
+    await clock.tickAsync(5999);
+    assert.deepEqual(requestedAt, []);
+    await clock.tickAsync(1);
+    assert.equal(await next, 'next');
+    assert.deepEqual(requestedAt, [6000]);
+  });
+
+  it('bounds a provider hint far in the future to one hour of cooldown', async () => {
+    const clock = sinon.useFakeTimers({ now: 0 });
+    sinon.stub(Math, 'random').returns(0);
+    const limiter = new MailgunRateLimit();
+    const failed = assert.rejects(
+      limiter.run(async () => {
+        throw Object.assign(new Error('Rate limited'), {
+          status: 429,
+          rateLimit: { retryAt: 7 * 24 * 60 * 60 * 1000 },
+        });
+      }),
+      /polling budget/,
+    );
+    await clock.tickAsync(0);
+    await failed;
+    const nextRead = sinon.stub().resolves({ value: 'next' });
+    // A minute before the bounded cooldown ends the wait still exceeds the budget
+    await clock.tickAsync(59 * 60 * 1000);
+    await assert.rejects(limiter.run(nextRead), /polling budget/);
+    sinon.assert.notCalled(nextRead);
+    await clock.tickAsync(60 * 1000);
+    assert.equal(await limiter.run(nextRead), 'next');
+  });
+
+  it('reads a quota reset expressed in seconds as well as milliseconds', () => {
+    assert.deepEqual(parseMailgunRateLimit({ 'x-ratelimit-reset': '1700000000' }), {
+      resetAt: 1700000000000,
+    });
+    assert.deepEqual(parseMailgunRateLimit({ 'x-ratelimit-reset': '1700000000000' }), {
+      resetAt: 1700000000000,
+    });
   });
 
   it('waits until the provider reset before retrying a rate-limited page', async () => {

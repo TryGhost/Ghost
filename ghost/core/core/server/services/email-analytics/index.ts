@@ -33,6 +33,9 @@ import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
 import { MailgunRateLimit } from './mailgun-rate-limit';
 import type { GhostServer } from '../../ghost-server';
 
+// Boot can initialize analytics again in-process; register each server once.
+const lifecycleRegistered = new WeakSet<object>();
+
 export const newsletters = new EmailAnalyticsServiceWrapper({
   logName: 'newsletters',
 });
@@ -201,7 +204,8 @@ export const init = ({
     createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
 
-  if (ghostServer) {
+  if (ghostServer && !lifecycleRegistered.has(ghostServer)) {
+    lifecycleRegistered.add(ghostServer);
     const readers = [newsletters, automations, gifts];
     ghostServer.registerPreStopTask(() => {
       for (const reader of readers) {

@@ -28,12 +28,12 @@ describe('email analytics service', function () {
   let giftsInit: sinon.SinonStub;
 
   let dependencies: Parameters<typeof init>[0];
-  const ghostServer = { registerPreStopTask: sinon.stub(), registerCleanupTask: sinon.stub() };
+  let ghostServer: { registerPreStopTask: sinon.SinonStub; registerCleanupTask: sinon.SinonStub };
 
   beforeEach(function () {
     config.get.reset();
-    ghostServer.registerPreStopTask.reset();
-    ghostServer.registerCleanupTask.reset();
+    // Lifecycle tasks are registered once per server instance
+    ghostServer = { registerPreStopTask: sinon.stub(), registerCleanupTask: sinon.stub() };
     config.get.withArgs('bulkEmail:mailgun:tag').returns('custom-mailgun-tag');
     newslettersInit = sinon.stub(newsletters, 'init');
     automationsInit = sinon.stub(automations, 'init');
@@ -92,6 +92,13 @@ describe('email analytics service', function () {
     sinon.assert.calledOnce(giftsInit);
     sinon.assert.notCalled(ghostServer.registerPreStopTask);
     sinon.assert.notCalled(ghostServer.registerCleanupTask);
+  });
+
+  it('registers lifecycle tasks once when the same server initializes analytics again', function () {
+    init(dependencies);
+    init(dependencies);
+    sinon.assert.calledOnce(ghostServer.registerPreStopTask);
+    sinon.assert.calledOnce(ghostServer.registerCleanupTask);
   });
 
   it('registers stop and drain hooks for all three analytics readers', async function () {

@@ -2,6 +2,15 @@ import { InternalServerError } from '@tryghost/errors';
 
 export type MailgunRateLimitState = { remaining?: number; resetAt?: number; retryAt?: number };
 
+export const POLLING_CANCELED = 'MAILGUN_POLLING_CANCELED';
+export const RATE_LIMIT_WAIT_EXCEEDED = 'MAILGUN_RATE_LIMIT_WAIT_EXCEEDED';
+// Every reader shares one cooldown; a hint far in the future must not park all
+// of them until the process restarts.
+const MAX_COOLDOWN_MS = 60 * 60 * 1000;
+const WAIT_BUDGET_MS = 30 * 1000;
+// Readers waking from a shared cooldown must not fire in the same tick.
+const RESUME_JITTER_MS = 1000;
+
 /** Keep numeric scheduling hints, never response headers or bodies, on errors. */
 export function parseMailgunRateLimit(headers: unknown): MailgunRateLimitState | undefined {
   if (!headers || typeof headers !== 'object' || Array.isArray(headers)) {
@@ -16,8 +25,13 @@ export function parseMailgunRateLimit(headers: unknown): MailgunRateLimitState |
     return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : undefined;
   };
   const remaining = integer(values['x-ratelimit-remaining']);
-  // Mailgun specifies an absolute Unix timestamp in milliseconds, not seconds.
-  const resetAt = integer(values['x-ratelimit-reset']);
+  // Mailgun specifies an absolute Unix timestamp in milliseconds. A value this
+  // small can only be seconds; read it rather than silently ignoring the reset.
+  // A relative value (seconds until reset) would land in 1970 and contribute no
+  // cooldown, which fails safe: Retry-After and the backoff still apply.
+  const rawReset = integer(values['x-ratelimit-reset']);
+  const resetAt =
+    rawReset === undefined ? undefined : rawReset < 100_000_000_000 ? rawReset * 1000 : rawReset;
   const rawRetry = values['retry-after'];
   const seconds = integer(rawRetry);
   const retryTime =
@@ -35,11 +49,30 @@ export function parseMailgunRateLimit(headers: unknown): MailgunRateLimitState |
   return Object.keys(state).length ? state : undefined;
 }
 
-function canceled(): Error {
+export function canceled(): Error {
   return new InternalServerError({
     message: 'Fetching canceled',
-    code: 'MAILGUN_POLLING_CANCELED',
+    code: POLLING_CANCELED,
   });
+}
+
+export function isCanceled(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (('code' in error && error.code === POLLING_CANCELED) || error.message === 'Fetching canceled')
+  );
+}
+
+/**
+ * Whether the provider is throttling beyond what one run may wait for: the
+ * cooldown exceeds the wait budget, or a rate-limited read has exhausted its
+ * retries (the limiter only rethrows a 429 after retrying it).
+ */
+export function isThrottled(error: unknown): boolean {
+  return (
+    (error instanceof Error && 'code' in error && error.code === RATE_LIMIT_WAIT_EXCEEDED) ||
+    rateLimited(error)
+  );
 }
 
 function wait(ms: number, signal?: AbortSignal): Promise<void> {
@@ -68,11 +101,11 @@ export class MailgunRateLimit {
   #resumeAt = 0;
 
   #observe(state: MailgunRateLimitState | undefined, limited: boolean): void {
-    this.#resumeAt = Math.max(
-      this.#resumeAt,
+    const hinted = Math.max(
       state?.retryAt ?? 0,
       limited || state?.remaining === 0 ? (state?.resetAt ?? 0) : 0,
     );
+    this.#resumeAt = Math.max(this.#resumeAt, Math.min(hinted, Date.now() + MAX_COOLDOWN_MS));
   }
 
   async run<T>(
@@ -87,17 +120,18 @@ export class MailgunRateLimit {
       }
       const waitMs = this.#resumeAt - Date.now();
       if (waitMs > 0) {
-        if (waitedMs + waitMs > 30000) {
+        if (waitedMs + waitMs > WAIT_BUDGET_MS) {
           throw Object.assign(
             new InternalServerError({
               message: 'Mailgun rate-limit wait exceeds polling budget',
-              code: 'MAILGUN_RATE_LIMIT_WAIT_EXCEEDED',
+              code: RATE_LIMIT_WAIT_EXCEEDED,
             }),
             { status: 429, retryAt: this.#resumeAt },
           );
         }
-        waitedMs += waitMs;
-        await wait(waitMs, signal);
+        const jitterMs = Math.round(Math.random() * RESUME_JITTER_MS);
+        waitedMs += waitMs + jitterMs;
+        await wait(waitMs + jitterMs, signal);
         // Another in-flight response can extend the shared cooldown while we wait.
         continue;
       }

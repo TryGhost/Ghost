@@ -51,15 +51,23 @@ The fetch driver retries HTTP 429 reads up to three times with exponential
 backoff and jitter. It honors the later of `Retry-After` and the quota reset,
 and a successful response with no remaining quota delays the next read too.
 Mailgun's `X-RateLimit-Reset` is an absolute Unix timestamp in milliseconds;
+a value too small to be milliseconds is read as seconds rather than ignored.
 `Retry-After` accepts seconds or an HTTP date. Only numeric scheduling hints
-are retained from headers. See the provider's
+are retained from headers, and a hint is bounded to one hour of cooldown so a
+bad header cannot park every reader until restart. Readers waking from a shared
+cooldown add up to one second of jitter so they do not fire in the same tick.
+See the provider's
 [rate-limit headers](https://documentation.mailgun.com/docs/mailgun/api-reference/api-overview).
 
-Each page read has a total backoff budget of 30 seconds. If the required wait
-would exceed it, the fetch fails without retrying before the provider reset.
-Other errors fail immediately. Cancellation removes any pending wait timer.
-The retry boundary contains only the provider read; processor callbacks are
-never retried by this policy.
+Each page read has a total wait budget of 30 seconds, jitter included. If the
+required wait would exceed it, or a rate-limited read has exhausted its
+retries, the Logs adapter stops the run as throttled instead of failing it:
+pages already processed are kept, the cursor rests on the latest record the
+domain covered, later domains keep the whole window, and the next polling cycle
+resumes once the cooldown has passed. A run that had covered nothing keeps its
+window. Other errors fail immediately. Cancellation removes any pending wait
+timer. The retry boundary contains only the provider read; processor callbacks
+are never retried by this policy.
 
 Boot shares one in-memory cooldown across newsletter, automation and gift readers.
 Later polling cycles retain quota hints after a wait-budget or retry-limit exit;
@@ -71,13 +79,20 @@ lasts until the service restarts. Configuration changes retain the current coold
 Shutdown stops new polling cycles and immediate restarts, aborts active Logs reads
 and quota waits, and drains current processing and final aggregation. An interrupted
 window keeps its original cursor for replay, and a scheduled backfill keeps its
-persisted schedule. The serial Events fallback lets its current SDK request settle;
-the service stops before processing another page. Boot registers analytics cleanup
-explicitly because the offloaded job only emits the polling event on the main thread.
+persisted schedule. A run interrupted this way is logged as stopped for shutdown,
+not as a job failure, and an aborted read is not recorded as a provider failure.
+The serial Events fallback lets its current SDK request settle; the service stops
+before processing another page. Boot registers analytics cleanup explicitly
+because the offloaded job only emits the polling event on the main thread, and
+registers it once per server even when analytics initializes again in-process.
+A run interrupted before such a reinitialization cannot continue into the new
+service: each initialization starts a new generation and stale runs stop at
+their next check.
 
 Domains and page callbacks run serially because they share one lane's processor
-state. `emailAnalytics.fetchPrefetch` defaults to `false`; when enabled with the
-Logs source, one next page can load while the current callback runs. At most one
+state. `emailAnalytics.fetchPrefetch` defaults to `false` and must be a boolean;
+when enabled with the Logs source, one next page can load while the current
+callback runs. At most one
 unprocessed page is buffered, and the next callback waits for the current one to
 finish. No speculative request starts beyond a known event cap. A processing
 failure aborts and settles the prefetched request, and a prefetched failure stays

@@ -6,6 +6,7 @@ import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/service
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 import { MailgunLogsClient } from '../../../../../core/server/services/email-analytics/mailgun-logs-client';
+import { canceled } from '../../../../../core/server/services/email-analytics/mailgun-rate-limit';
 
 class FakeEvent {
   timestamp = new Date();
@@ -319,6 +320,125 @@ describe('EmailAnalyticsServiceWrapper', function () {
       begin,
     );
     assert.equal(drained, true);
+  });
+
+  it('reports a fetch interrupted by shutdown as a stop, not a job failure', async function () {
+    const errorLog = sinon.stub(logging, 'error');
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = logLatestOpenedJob('newsletters');
+    infoLog.resetHistory();
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    let cancelRead!: () => void;
+    let reading!: () => void;
+    const readStarted = new Promise<void>((resolve) => {
+      reading = resolve;
+    });
+    sinon.stub(wrapper, 'fetchLatestOpenedEvents').callsFake(() => {
+      reading();
+      return new Promise<number>((_resolve, reject) => {
+        cancelRead = () => reject(canceled());
+      });
+    });
+    const run = wrapper.startFetch();
+    await readStarted;
+    wrapper.onPreStop();
+    cancelRead();
+    await Promise.all([run, wrapper.onShutdown()]);
+
+    sinon.assert.notCalled(errorLog);
+    sinon.assert.calledWith(
+      infoLog,
+      sinon.match(
+        /\[Background Job\] email-analytics-fetch-latest stopped for shutdown after \d+ms/,
+      ),
+    );
+  });
+
+  it('clears the running flag when a stop interrupts between lanes', async function () {
+    const initialize = sinon.spy(EmailAnalyticsServiceWrapper.prototype, 'init');
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = logLatestOpenedJob('newsletters');
+    const options = initialize.firstCall.args[0];
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    let finishOpened!: () => void;
+    let openedRunning!: () => void;
+    const openedStarted = new Promise<void>((resolve) => {
+      openedRunning = resolve;
+    });
+    const opened = sinon.stub(wrapper, 'fetchLatestOpenedEvents');
+    opened.onFirstCall().callsFake(() => {
+      openedRunning();
+      return new Promise<number>((resolve) => {
+        finishOpened = () => resolve(0);
+      });
+    });
+    opened.onSecondCall().resolves(0);
+    const others = sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+    sinon.stub(wrapper, 'fetchMissing').resolves(0);
+    sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+    const interrupted = wrapper.startFetch();
+    await openedStarted;
+    wrapper.onPreStop();
+    finishOpened();
+    await interrupted;
+    sinon.assert.notCalled(others);
+    await wrapper.onShutdown();
+
+    // init() also clears the flag, so the flag itself is not observable from the
+    // outside; what the reset protects is that the fetch after a restart still
+    // runs its lanes instead of being turned away as already running.
+    wrapper.init(options);
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    await wrapper.startFetch();
+
+    sinon.assert.calledTwice(opened);
+    sinon.assert.calledOnce(others);
+    const skipped = infoLog.args.filter(
+      ([message]) =>
+        typeof message === 'string' &&
+        message.includes('skipped because a fetch is already running'),
+    );
+    assert.deepEqual(skipped, []);
+  });
+
+  it('initializes again while interrupted fetches are still draining', async function () {
+    const initialize = sinon.spy(EmailAnalyticsServiceWrapper.prototype, 'init');
+    const warnLog = sinon.stub(logging, 'warn');
+    const wrapper = logLatestOpenedJob('newsletters');
+    const options = initialize.firstCall.args[0];
+    sinon.stub(wrapper.service, 'restoreScheduled').resolves();
+    let releaseOpened!: () => void;
+    let openedRunning!: () => void;
+    const openedStarted = new Promise<void>((resolve) => {
+      openedRunning = resolve;
+    });
+    sinon.stub(wrapper, 'fetchLatestOpenedEvents').callsFake(() => {
+      openedRunning();
+      return new Promise<number>((resolve) => {
+        releaseOpened = () => resolve(0);
+      });
+    });
+    sinon.stub(wrapper, 'fetchLatestNonOpenedEvents').resolves(0);
+    sinon.stub(wrapper, 'fetchMissing').resolves(0);
+    sinon.stub(wrapper, 'fetchScheduled').resolves(0);
+
+    const draining = wrapper.startFetch();
+    await openedStarted;
+    wrapper.onPreStop();
+
+    assert.doesNotThrow(() => wrapper.init(options));
+    sinon.assert.calledWith(
+      warnLog,
+      sinon.match(/reinitializing while 1 interrupted fetch\(es\) drain/),
+    );
+
+    releaseOpened();
+    await draining;
+    // The interrupted run belongs to the previous generation: it must not
+    // continue into the reinitialized service once stopping is cleared
+    sinon.assert.notCalled(wrapper.fetchLatestNonOpenedEvents as sinon.SinonStub);
+    await wrapper.onShutdown();
   });
 
   it('logs exactly one terminal event with a run duration', async function () {
