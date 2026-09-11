@@ -1,9 +1,6 @@
-type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge'>>;
+type EventProcessingResultInput = Partial<Omit<EventProcessingResult, 'merge' | 'reset'>>;
 
 export class EventProcessingResult {
-  #emailIdSet = new Set<string>();
-  #memberIdSet = new Set<string>();
-
   // counts
   delivered: number = 0;
   opened: number = 0;
@@ -22,12 +19,26 @@ export class EventProcessingResult {
   // processing failures are counted separately in addition to event type counts
   processingFailures: number = 0;
 
-  // ids seen whilst processing ready for passing to stats aggregator
-  emailIds: string[] = [];
-  memberIds: string[] = [];
+  // ids seen whilst processing ready for passing to stats aggregator.
+  // The arrays are append-only in first-seen order; merge() is the only write path,
+  // so the membership sets can never drift from them. The getters return the
+  // backing arrays (not copies) so hot-path `.length` reads stay O(1); `readonly`
+  // is the only guard, so never mutate them from untyped callers.
+  #emailIds: string[] = [];
+  #memberIds: string[] = [];
+  #emailIdSet = new Set<string>();
+  #memberIdSet = new Set<string>();
 
   constructor(result: EventProcessingResultInput = {}) {
     this.merge(result);
+  }
+
+  get emailIds(): readonly string[] {
+    return this.#emailIds;
+  }
+
+  get memberIds(): readonly string[] {
+    return this.#memberIds;
   }
 
   reset(): void {
@@ -43,8 +54,10 @@ export class EventProcessingResult {
     this.storedOpened = 0;
     this.storedPermanentFailed = 0;
     this.processingFailures = 0;
-    this.emailIds = [];
-    this.memberIds = [];
+    // Reassign rather than clear in place: an aggregation may still be iterating
+    // the previous arrays across awaits when the result is reset.
+    this.#emailIds = [];
+    this.#memberIds = [];
     this.#emailIdSet.clear();
     this.#memberIdSet.clear();
   }
@@ -65,17 +78,16 @@ export class EventProcessingResult {
 
     this.processingFailures += other.processingFailures || 0;
 
-    // Only visit incoming IDs; rebuilding the accumulated arrays per event is quadratic.
-    for (const emailId of other.emailIds || []) {
-      if (emailId && !this.#emailIdSet.has(emailId)) {
-        this.#emailIdSet.add(emailId);
-        this.emailIds.push(emailId);
-      }
-    }
-    for (const memberId of other.memberIds || []) {
-      if (memberId && !this.#memberIdSet.has(memberId)) {
-        this.#memberIdSet.add(memberId);
-        this.memberIds.push(memberId);
+    EventProcessingResult.#collect(this.#emailIdSet, this.#emailIds, other.emailIds);
+    EventProcessingResult.#collect(this.#memberIdSet, this.#memberIds, other.memberIds);
+  }
+
+  // Only visit incoming IDs; rebuilding the accumulated arrays per event is quadratic.
+  static #collect(seen: Set<string>, ordered: string[], ids?: readonly string[] | null): void {
+    for (const id of ids ?? []) {
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        ordered.push(id);
       }
     }
   }
