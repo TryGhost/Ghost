@@ -1,8 +1,8 @@
 import logging from '@tryghost/logging';
-import { InternalServerError } from '@tryghost/errors';
+import { IncorrectUsageError, InternalServerError } from '@tryghost/errors';
 import { getMailgunConfig, getMailgunDomains, type ConfigReader } from '../lib/mailgun-config';
 import { MailgunLogsClient, type MailgunAnalyticsEvent } from './mailgun-logs-client';
-import { MailgunRateLimit } from './mailgun-rate-limit';
+import { MailgunRateLimit, isThrottled } from './mailgun-rate-limit';
 
 // A domain whose pages keep paging without matching events still bounds its
 // work: raw records count toward the budget, and pages are capped outright.
@@ -45,7 +45,13 @@ export async function fetchMailgunLogs({
       const page = await client.getPage(options);
       return { value: page, rateLimit: page.rateLimit };
     }, options.signal);
-  const prefetch = config.get('emailAnalytics:fetchPrefetch') === true;
+  const prefetch = config.get('emailAnalytics:fetchPrefetch') ?? false;
+  if (typeof prefetch !== 'boolean') {
+    // A string from an environment override would silently disable prefetch.
+    throw new IncorrectUsageError({
+      message: 'Invalid emailAnalytics.fetchPrefetch; expected a boolean',
+    });
+  }
   // Fix the provider window at fetch start so long runs retain the sliding retry overlap.
   const windowEnd = new Date(Math.min(end?.getTime() ?? Infinity, Date.now()));
   const windowBegin = begin ?? new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000);
@@ -56,8 +62,10 @@ export async function fetchMailgunLogs({
     }
   };
   // Keep callbacks serial: all domains share the active lane's processor state.
-  for (const domain of getMailgunDomains(config, mailgun.domain)) {
+  const domains = getMailgunDomains(config, mailgun.domain);
+  for (const [index, domain] of domains.entries()) {
     const prefix = `[MailgunLogs fetch ${domain}]`;
+    let throttled = false;
     let token: string | undefined;
     const seenTokens = new Set<string>();
     let eventCount = 0;
@@ -83,15 +91,31 @@ export async function fetchMailgunLogs({
           signal: readSignal,
         };
         let page: Page;
-        if (pending) {
-          const result = await pending;
-          pending = undefined;
-          if (!result.ok) {
-            throw result.error;
+        try {
+          if (pending) {
+            const result = await pending;
+            pending = undefined;
+            if (!result.ok) {
+              throw result.error;
+            }
+            page = result.page;
+          } else {
+            page = await readPage(options);
           }
-          page = result.page;
-        } else {
-          page = await readPage(options);
+        } catch (error) {
+          if (!isThrottled(error)) {
+            throw error;
+          }
+          // The provider is throttling beyond what this run may wait for. Keep
+          // what the run covered instead of failing it and rewinding the whole
+          // window: the next cycle resumes from here once the cooldown passes.
+          logging.warn(
+            `${prefix}: provider throttling exceeds the polling budget; stopping after ${pages} pages`,
+          );
+          cap(covered && covered > windowBegin ? covered : windowBegin);
+          status = 'throttled';
+          throttled = true;
+          break;
         }
         if (readSignal.aborted) {
           throw new InternalServerError({
@@ -167,7 +191,13 @@ export async function fetchMailgunLogs({
         token = page.next;
       } while (token);
     } catch (error) {
-      logging.error(`${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`);
+      if (readSignal.aborted) {
+        logging.info(`${prefix}: Canceled after ${eventCount} events in ${pages} pages`);
+      } else {
+        logging.error(
+          `${prefix}: Error fetching logs after ${eventCount} events in ${pages} pages`,
+        );
+      }
       throw error;
     } finally {
       if (pending) {
@@ -180,6 +210,13 @@ export async function fetchMailgunLogs({
     logging.info(
       `${prefix}: Processed ${eventCount} events in ${pages} pages (${rawCount} records, ${skipped} skipped). Status: ${status}. Cursor: ${safeCursor?.toISOString() ?? 'none'}`,
     );
+    if (throttled) {
+      // Later domains would hit the same cooldown; they keep the whole window.
+      if (index < domains.length - 1) {
+        cap(windowBegin);
+      }
+      break;
+    }
   }
   return { safeCursor };
 }

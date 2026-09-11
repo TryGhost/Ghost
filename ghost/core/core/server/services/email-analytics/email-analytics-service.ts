@@ -606,11 +606,12 @@ export class EmailAnalyticsService {
         logging.error('[EmailAnalytics] Error while fetching');
         logging.error(err);
         error = err;
+      } else if (this.#signal?.aborted) {
+        // A planned stop: the caller reports it without a failure.
+        logging.info('[EmailAnalytics] Canceled fetching for shutdown');
+        error = err;
       } else {
         logging.error('[EmailAnalytics] Canceled fetching');
-        if (this.#signal?.aborted) {
-          error = err;
-        }
       }
     }
 

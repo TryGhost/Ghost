@@ -2,7 +2,7 @@ import { IncorrectUsageError, InternalServerError } from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import metrics from '@tryghost/metrics';
 import { z } from 'zod';
-import { parseMailgunRateLimit, type MailgunRateLimitState } from './mailgun-rate-limit';
+import { canceled, parseMailgunRateLimit, type MailgunRateLimitState } from './mailgun-rate-limit';
 
 // @tryghost/request has no type declarations. Keep its untrusted response at the boundary.
 const request: (
@@ -188,6 +188,10 @@ export class MailgunLogsClient {
         source: 'logs',
       });
     } catch (error) {
+      if (options.signal?.aborted) {
+        // A canceled read is not a provider failure; keep it out of the metric.
+        throw canceled();
+      }
       // The request wrapper copies credentials/options onto transport errors.
       // Never attach or rethrow that error into analytics logging.
       const status = httpStatus(

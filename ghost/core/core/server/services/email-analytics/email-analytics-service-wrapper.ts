@@ -13,7 +13,7 @@ import {
 import type { BatchEventProcessor } from './batch-event-processor';
 import type { Queries } from './lib/queries';
 import { fetchMailgunEvents } from './fetch-mailgun-events';
-import type { MailgunRateLimit } from './mailgun-rate-limit';
+import { isCanceled, type MailgunRateLimit } from './mailgun-rate-limit';
 
 export class EmailAnalyticsServiceWrapper {
   #logName: string;
@@ -24,6 +24,9 @@ export class EmailAnalyticsServiceWrapper {
   #restoredSchedule = false;
   #fetchOpenedEvents = true;
   #stopping = false;
+  // Bumped by init() so a run interrupted before a reinitialization cannot
+  // continue into the new service once #stopping is cleared.
+  #generation = 0;
   #activeFetches = new Set<Promise<void>>();
   #abortController = new AbortController();
 
@@ -78,11 +81,14 @@ export class EmailAnalyticsServiceWrapper {
       return;
     }
     if (this.#activeFetches.size) {
-      throw new errors.InternalServerError({
-        message: 'Email analytics must drain before reinitializing',
-      });
+      // A stop that failed before its cleanup ran leaves aborted fetches
+      // winding down; they exit at their next check and must not block boot.
+      logging.warn(
+        `${this.#logPrefix} reinitializing while ${this.#activeFetches.size} interrupted fetch(es) drain`,
+      );
     }
     this.#stopping = false;
+    this.#generation += 1;
     this.#abortController = new AbortController();
     this.#fetching = false;
     this.#restoredSchedule = false;
@@ -306,8 +312,13 @@ export class EmailAnalyticsServiceWrapper {
     return run;
   }
 
+  #stopped(generation: number): boolean {
+    return this.#stopping || generation !== this.#generation;
+  }
+
   async #startFetch(): Promise<void> {
     const startedAt = Date.now();
+    const generation = this.#generation;
     if (!this.#restoredSchedule) {
       this.#restoredSchedule = true;
       try {
@@ -321,7 +332,7 @@ export class EmailAnalyticsServiceWrapper {
       }
     }
 
-    if (this.#stopping) {
+    if (this.#stopped(generation)) {
       return;
     }
     if (this.#fetching) {
@@ -339,7 +350,8 @@ export class EmailAnalyticsServiceWrapper {
       const c1 = this.#fetchOpenedEvents
         ? await this.fetchLatestOpenedEvents({ maxEvents: 10000 })
         : 0;
-      if (this.#stopping) {
+      if (this.#stopped(generation)) {
+        this.#clearFetching(generation);
         return;
       }
       if (c1 >= 10000) {
@@ -350,11 +362,13 @@ export class EmailAnalyticsServiceWrapper {
       // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
       //  we want to make sure we don't spend too much time collecting delivery data.
       const c2 = await this.fetchLatestNonOpenedEvents({ maxEvents: 10000 - c1 });
-      if (this.#stopping) {
+      if (this.#stopped(generation)) {
+        this.#clearFetching(generation);
         return;
       }
       const c3 = await this.fetchMissing({ maxEvents: 10000 - c1 - c2 });
-      if (this.#stopping) {
+      if (this.#stopped(generation)) {
+        this.#clearFetching(generation);
         return;
       }
 
@@ -366,7 +380,8 @@ export class EmailAnalyticsServiceWrapper {
 
       // Only backfill if we're not currently fetching a lot of events
       const c4 = await this.fetchScheduled({ maxEvents: 10000 });
-      if (this.#stopping) {
+      if (this.#stopped(generation)) {
+        this.#clearFetching(generation);
         return;
       }
       if (c4 > 0) {
@@ -380,15 +395,29 @@ export class EmailAnalyticsServiceWrapper {
 
       this.#fetching = false;
     } catch (e) {
-      logging.error(
-        e,
-        `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`,
-      );
+      if (this.#stopped(generation) && isCanceled(e)) {
+        // A planned stop is not a job failure; the window is kept for replay.
+        logging.info(
+          `[Background Job] ${this.#backgroundJobName} stopped for shutdown after ${Date.now() - startedAt}ms`,
+        );
+      } else {
+        logging.error(
+          e,
+          `[Background Job] ${this.#backgroundJobName} failed after ${Date.now() - startedAt}ms`,
+        );
 
-      // Log again only the error, otherwise we lose the stack trace
-      logging.error(e);
+        // Log again only the error, otherwise we lose the stack trace
+        logging.error(e);
+      }
     }
-    this.#fetching = false;
+    this.#clearFetching(generation);
+  }
+
+  #clearFetching(generation: number): void {
+    // A run from before a reinitialization must not clear the new run's flag.
+    if (generation === this.#generation) {
+      this.#fetching = false;
+    }
   }
 
   _restartFetch(reason: string): void {
