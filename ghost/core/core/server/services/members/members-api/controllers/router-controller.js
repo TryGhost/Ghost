@@ -1149,7 +1149,7 @@ module.exports = class RouterController {
    * @returns {Promise<object[] | undefined>} The validated newsletters
    */
   async _validateNewsletters(requestedNewsletters) {
-    if (!requestedNewsletters) {
+    if (!requestedNewsletters || !Array.isArray(requestedNewsletters)) {
       return undefined;
     }
 

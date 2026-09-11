@@ -2452,6 +2452,14 @@ describe('RouterController', function () {
       assert.equal(result, undefined);
     });
 
+    it('returns undefined if newsletters is not an array', async function () {
+      // A truthy, non-array object with a `length` of 0 must not be treated
+      // as an explicit empty list — only a real empty array means that.
+      const requestedNewsletters = { length: 0 };
+      const result = await routerController._validateNewsletters(requestedNewsletters);
+      assert.equal(result, undefined);
+    });
+
     it('returns undefined if any newsletter is missing a name', async function () {
       const requestedNewsletters = [{ name: 'Newsletter 1' }, { id: 'def456' }];
       const result = await routerController._validateNewsletters(requestedNewsletters);
