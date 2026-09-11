@@ -12,6 +12,13 @@ const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
 const id = (n: number) => n.toString(16).padStart(24, '0');
+const nonRetryable = (pattern: RegExp) => (error: unknown) => {
+  const failure = error as { message?: string; retryable?: boolean };
+  // A deterministic failure: a caller with a retry budget must not spend it here.
+  assert.equal(failure.retryable, false);
+  assert.match(String(failure.message), pattern);
+  return true;
+};
 function sqlOf(query: unknown): string {
   if (typeof query === 'string') {
     return query;
@@ -216,14 +223,16 @@ describe('Newsletter member counter baselines through MySQL', () => {
     }
   });
 
-  it('keeps frozen legacy preparation and rejects counter-applied unfrozen legacy state', async () => {
+  it('keeps frozen legacy preparation and counter-applied unfrozen legacy state as truth', async () => {
     await recipient({ accounted: false, prepared: true });
     await recipient({ accounted: false, prepared: false });
     await counters.sweepPage({ throughId: id(3) });
     assert.equal((await stats()).email_count, 1);
+    // An applied batch can only exist through a rollback that never saved
+    // prepared_at; its recipients are frozen facts, not discardable preparation
     await recipient({ accounted: false, prepared: false, enrolled: true, applied: true });
-    await assert.rejects(counters.sweepPage({ throughId: id(3) }), /without frozen preparation/);
-    assert.equal((await stats()).email_count, 1);
+    await counters.sweepPage({ throughId: id(3) });
+    assert.equal((await stats()).email_count, 2);
   });
 
   it('commits its checkpoint with the page and resumes it after recreation', async () => {
@@ -301,6 +310,61 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal(restarted.processed, 1);
     assert.equal(restarted.complete, true);
     assert.equal((await stats()).email_tracked_count, 0);
+  });
+
+  it('restart abandons an incomplete sweep and starts over from the current member range', async () => {
+    const first = await counters.runSweepPage({ limit: 2 });
+    assert.equal(first.afterId, id(2));
+    assert.equal(first.complete, false);
+    const job = () =>
+      db.knex('jobs').where('name', 'email-analytics-member-reconciliation').first();
+    const stale = new Date('2020-01-01T00:00:00Z');
+    await db
+      .knex('jobs')
+      .where('name', 'email-analytics-member-reconciliation')
+      .update({ started_at: stale });
+    // A restart is a new sweep, not a resume: it re-reads the member range from
+    // the beginning, so its first page covers members the abandoned one already had.
+    const restarted = await counters.runSweepPage({ limit: 2, restart: true });
+    assert.deepEqual(restarted, {
+      version: 1,
+      afterId: id(2),
+      throughId: id(3),
+      processed: 2,
+      complete: false,
+    });
+    const started = await job();
+    assert.equal(started.status, 'started');
+    assert.ok(started.started_at > stale);
+    await db
+      .knex('jobs')
+      .where('name', 'email-analytics-member-reconciliation')
+      .update({ started_at: stale });
+    const resumed = await counters.runSweepPage({ limit: 2 });
+    assert.equal(resumed.afterId, id(3));
+    assert.equal(resumed.processed, 3);
+    assert.deepEqual((await job()).started_at, stale);
+  });
+
+  it('stops with a non-retryable error when the checkpoint row is unreadable', async () => {
+    await recipient();
+    await counters.runSweepPage({ limit: 2 });
+    // Another writer, a restored database or a newer checkpoint format owns the
+    // row: never overwrite it silently, and never burn a retry budget on it.
+    for (const metadata of [
+      null,
+      JSON.stringify({ version: 2, afterId: null, throughId: null, processed: 0, complete: false }),
+    ]) {
+      await db
+        .knex('jobs')
+        .where('name', 'email-analytics-member-reconciliation')
+        .update({ metadata });
+      await assert.rejects(counters.runSweepPage({ limit: 2 }), nonRetryable(/--restart/));
+    }
+    const restarted = await counters.runSweepPage({ limit: 2, restart: true });
+    assert.equal(restarted.afterId, id(2));
+    assert.equal(restarted.processed, 2);
+    assert.equal((await stats()).email_count, 1);
   });
 
   it('uses a primary-key ordered locking access path on MySQL', async () => {
@@ -424,17 +488,13 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal(resumed.complete, true);
   });
 
-  it('rejects rollback states that may have submitted without freezing preparation', async () => {
+  it('keeps rollback states that submitted without freezing preparation as truth', async () => {
     const { batchId } = await recipient({ prepared: false, opened: true });
     await db.knex('email_batches').where('id', batchId).update({ status: 'submitted' });
-    await assert.rejects(counters.runSweepPage({ limit: 2 }), /without frozen preparation/);
-    assert.equal((await stats()).email_tracked_count, null);
-    assert.equal((await stats()).email_opened_count, 99);
-    const job = await db
-      .knex('jobs')
-      .where('name', 'email-analytics-member-reconciliation')
-      .first();
-    assert.equal(JSON.parse(job.metadata).afterId, null);
+    const state = await counters.runSweepPage({ limit: 3 });
+    assert.equal(state.complete, true);
+    assert.equal((await stats()).email_tracked_count, 1);
+    assert.equal((await stats()).email_opened_count, 1);
   });
 
   it('resumes the source-checkout command across separate processes', async () => {
@@ -504,8 +564,27 @@ describe('Newsletter member counter baselines through MySQL', () => {
     const legacy = await recipient();
     assert.equal(await counters.applyPreparedBatch(legacy.batchId), false);
     const pending = await recipient({ enrolled: true, prepared: false });
-    await assert.rejects(counters.applyPreparedBatch(pending.batchId), /frozen preparation/);
+    await assert.rejects(
+      counters.applyPreparedBatch(pending.batchId),
+      nonRetryable(/frozen preparation/),
+    );
     assert.equal((await stats()).email_tracked_count, null);
+  });
+
+  it('reports a recipient count beyond the cap as a membership mismatch', async () => {
+    const { batchId } = await recipient({ enrolled: true });
+    await db.knex('email_batches').where('id', batchId).update({ recipient_count: 5001 });
+    // The cap guards the rows actually read, not the batch's own claim about
+    // them, so a claimed count beyond it is still only a membership mismatch.
+    await assert.rejects(
+      counters.applyPreparedBatch(batchId),
+      nonRetryable(/Prepared recipient membership does not match the batch/),
+    );
+    assert.equal(
+      (await db.knex('email_batches').where('id', batchId).first()).member_counters_applied_at,
+      null,
+    );
+    assert.equal((await stats()).email_count, 99);
   });
 
   it('rolls member initialization and increments back when the batch marker fails', async () => {

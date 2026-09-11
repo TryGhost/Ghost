@@ -253,7 +253,7 @@ export class NewsletterMemberCounters {
       // Another writer, a restored database or a newer checkpoint format owns
       // this row. Never overwrite it silently; an operator can pass restart.
       throw this.#nonRetryable(
-        'Member counter sweep checkpoint is missing or unreadable; rerun with restart to begin a new sweep',
+        'Member counter sweep checkpoint is missing or unreadable; rerun with --restart to begin a new sweep',
         `Jobs row ${SWEEP_JOB_NAME}`,
       );
     }
@@ -326,6 +326,13 @@ export class NewsletterMemberCounters {
     // lists would grow each statement with the site's history; joining every
     // historical recipient to its email would be far more expensive.
     const untrackedEmails = trx('emails').select('id').where('track_opens', false);
+    // Legacy preparation with only pending batches is also rebuilt on resume.
+    // Preserve the entire recipient set once any batch has started submission
+    // or been applied, including an accounted email whose prepared_at was never
+    // saved (a rollback to older send code can submit that way): the send path
+    // refuses to discard such a set, so its recipients are frozen facts.
+    // Treating them as truth keeps live ingestion and comparison running rather
+    // than stopping every newsletter's counters on one anomalous email.
     const discardableEmails = trx('emails')
       .select('id')
       .whereNull('prepared_at')
@@ -338,23 +345,15 @@ export class NewsletterMemberCounters {
               .whereRaw('?? = ??', ['email_batches.email_id', 'emails.id'])
               .whereNot('status', 'pending'),
           ),
-      );
-    // Legacy preparation with only pending batches is also rebuilt on resume.
-    // Preserve the entire legacy set once any batch has started submission.
-    const ambiguous = await trx('email_batches')
-      .whereIn('email_id', discardableEmails.clone())
-      .where((builder) =>
-        builder.whereNot('status', 'pending').orWhereNotNull('member_counters_applied_at'),
       )
-      .first('email_id');
-    if (ambiguous) {
-      // Rollback to older send code can submit without saving prepared_at.
-      // Those recipients cannot be discarded or silently removed from truth.
-      throw this.#nonRetryable(
-        'Cannot reconcile member counters for batches submitted or applied without frozen preparation.',
-        `Email ${ambiguous.email_id} requires preparation reconciliation.`,
+      .whereNotExists(
+        trx('email_batches')
+          .select('id')
+          .whereRaw('?? = ??', ['email_batches.email_id', 'emails.id'])
+          .where((builder) =>
+            builder.whereNot('status', 'pending').orWhereNotNull('member_counters_applied_at'),
+          ),
       );
-    }
     const pendingBatches = trx('email_batches')
       .select('id')
       .where('member_counters_enabled', true)

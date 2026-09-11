@@ -347,8 +347,11 @@ preparation replaces their recipient set. Once any legacy batch has started
 submission, the entire set remains part of derived truth, including its pending
 batches. A frozen legacy set also remains part of derived truth.
 An accounted email without frozen preparation but with non-pending or already
-counter-applied batches stops the sweep for explicit preparation reconciliation;
-its recipient facts must not be silently removed during rollback re-baselining.
+counter-applied batches, which only a rollback to older send code can produce,
+is treated as frozen: its recipient facts stay in derived truth, because the
+send path refuses to discard such a set. This keeps live ingestion and
+comparison running on one anomalous email rather than stopping every
+newsletter's counters; the send itself still needs preparation reconciliation.
 Opted-in batches contribute only after `member_counters_applied_at` is persisted.
 Preparation increments and that marker must commit together under the same member
 locks, after the preparation boundary freezes the recipient membership. This keeps
@@ -402,9 +405,4 @@ unfrozen, already-submitting or inconsistent batches before changing counters.
 All batch applications finish before the first provider submission. An uncertain
 commit is retried through the persisted marker, so it cannot increment twice.
 A transaction handles at most 5,000 recipient rows; a larger `bulkEmail.batchSize`
-fails application with an explicit message before enabling this mode. An email
-whose batches were submitted or applied without frozen preparation, which only a
-rollback to older send code can produce, stops both the sweep and every enrolled
-application with a non-retryable error until its preparation is reconciled; the
-send path reports it as a verification failure instead of spending its retry
-budget on it.
+fails application with an explicit message before enabling this mode.
