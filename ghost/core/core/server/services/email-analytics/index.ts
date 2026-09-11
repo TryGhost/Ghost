@@ -30,6 +30,11 @@ import { GiftEmailAnalyticsBatchProcessor } from './gift-email-analytics-batch-p
 import { StartGiftEmailAnalyticsJobEvent } from './events/start-gift-email-analytics-job-event';
 import type { GiftDeliveryService } from '../gifts/gift-delivery-service';
 import { GIFT_DELIVERY_EMAIL_TAG } from '../gifts/constants';
+import { MailgunRateLimit } from './mailgun-rate-limit';
+import type { GhostServer } from '../../ghost-server';
+
+// Boot can initialize analytics again in-process; register each server once.
+const lifecycleRegistered = new WeakSet<object>();
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
   logName: 'newsletters',
@@ -50,6 +55,7 @@ export const init = ({
   domainEvents,
   emailSuppressionList,
   giftDeliveryService,
+  ghostServer,
   membersRepository,
   models: { Email, EmailRecipientFailure, EmailSpamComplaintEvent },
   metrics,
@@ -65,6 +71,7 @@ export const init = ({
   domainEvents: Pick<DomainEvents, 'subscribe'>;
   emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
   giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
+  ghostServer?: Pick<GhostServer, 'registerPreStopTask' | 'registerCleanupTask'>;
   membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;
   models: {
     Email: Email;
@@ -76,6 +83,8 @@ export const init = ({
   settingsCache: Pick<typeof SettingsCache, 'get'>;
 }) => {
   const queries = new Queries(db.knex);
+  // These readers share one Mailgun account. Retain quota hints across polling cycles.
+  const rateLimiter = new MailgunRateLimit();
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,
@@ -111,6 +120,7 @@ export const init = ({
   });
 
   newsletters.init({
+    rateLimiter,
     config,
     domainEvents,
     event: StartEmailAnalyticsJobEvent,
@@ -142,6 +152,7 @@ export const init = ({
   });
 
   automations.init({
+    rateLimiter,
     config,
     domainEvents,
     event: StartAutomationEmailAnalyticsJobEvent,
@@ -169,6 +180,7 @@ export const init = ({
   });
 
   gifts.init({
+    rateLimiter,
     config,
     domainEvents,
     event: StartGiftEmailAnalyticsJobEvent,
@@ -191,4 +203,17 @@ export const init = ({
     settingsCache,
     createEventProcessor: () => new GiftEmailAnalyticsBatchProcessor({ giftDeliveryService }),
   });
+
+  if (ghostServer && !lifecycleRegistered.has(ghostServer)) {
+    lifecycleRegistered.add(ghostServer);
+    const readers = [newsletters, automations, gifts];
+    ghostServer.registerPreStopTask(() => {
+      for (const reader of readers) {
+        reader.onPreStop();
+      }
+    }, 'Email analytics');
+    ghostServer.registerCleanupTask(async () => {
+      await Promise.all(readers.map((reader) => reader.onShutdown()));
+    }, 'Email analytics');
+  }
 };

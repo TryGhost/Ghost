@@ -2,6 +2,7 @@
 import MailgunClient from '../lib/mailgun-client';
 import { fetchMailgunLogs } from './fetch-mailgun-logs';
 import { IncorrectUsageError } from '@tryghost/errors';
+import type { MailgunRateLimit } from './mailgun-rate-limit';
 
 const DEFAULT_EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
@@ -16,6 +17,8 @@ type FetchMailgunEventsOptions = {
   begin?: Date;
   end?: Date;
   events?: string[];
+  rateLimiter?: MailgunRateLimit;
+  signal?: AbortSignal;
 };
 
 /**
@@ -30,6 +33,8 @@ export async function fetchMailgunEvents({
   begin,
   end,
   events,
+  rateLimiter,
+  signal,
 }: FetchMailgunEventsOptions) {
   const source = config.get('emailAnalytics:fetchSource') ?? 'events';
   if (source !== 'events' && source !== 'logs') {
@@ -46,6 +51,8 @@ export async function fetchMailgunEvents({
       begin,
       end,
       maxEvents,
+      rateLimiter,
+      signal,
       batchHandler: (page) => batchHandler(page),
     });
   }

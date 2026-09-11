@@ -411,6 +411,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     audienceFeedback.init(),
     emailService.init({ ghostServer }),
     emailAnalytics.init({
+      ghostServer,
       automationsApi,
       config,
       db,
