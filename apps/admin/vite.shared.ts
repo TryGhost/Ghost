@@ -1,6 +1,8 @@
 import { createRequire } from 'node:module';
 import { resolve } from 'path';
 
+import { defaultClientConditions } from 'vite';
+
 const require = createRequire(import.meta.url);
 
 /**
@@ -17,6 +19,8 @@ export const sharedDefine = {
 
 export const sharedResolve = {
   tsconfigPaths: true,
+  // Resolve internal workspace packages to their TypeScript source.
+  conditions: ['source', ...defaultClientConditions],
   alias: {
     '@ghost-cards': GHOST_CARDS_PATH,
     // TODO: Remove this when @tryghost/nql is updated

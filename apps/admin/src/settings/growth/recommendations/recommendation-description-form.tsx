@@ -60,7 +60,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({
         >
           Preview
         </Text>
-        <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
+        <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-gray-100 bg-gray-50 px-7 py-4 dark:border-gray-950 dark:bg-black">
           <div className="w-full rounded bg-white py-3 shadow">
             <div className="">
               <a
@@ -72,12 +72,12 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({
                 <div className="flex flex-col gap-[2px]">
                   <div className="flex items-start gap-2">
                     <RecommendationIcon {...formState} />
-                    <span className="text-[1.6rem] font-semibold text-grey-900">
+                    <span className="text-[1.6rem] font-semibold text-gray-900">
                       {formState.title}
                     </span>
                   </div>
                   {formState.description && (
-                    <span className="pl-[31px] text-[1.35rem] leading-snug text-grey-700">
+                    <span className="pl-[31px] text-[1.35rem] leading-snug text-gray-700">
                       {formState.description}
                     </span>
                   )}

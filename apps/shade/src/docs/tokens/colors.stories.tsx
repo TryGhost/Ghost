@@ -21,19 +21,6 @@ const rawPalettes = {
     '--color-gray-900',
     '--color-gray-950',
   ]),
-  grey: rawPalette([
-    '--color-grey-50',
-    '--color-grey-100',
-    '--color-grey-200',
-    '--color-grey-300',
-    '--color-grey-400',
-    '--color-grey-500',
-    '--color-grey-600',
-    '--color-grey-700',
-    '--color-grey-800',
-    '--color-grey-900',
-    '--color-grey-950',
-  ]),
   green: rawPalette([
     '--color-green-50',
     '--color-green-100',
@@ -162,7 +149,6 @@ export const RawPalette: Story = {
     <div className="flex flex-col gap-10">
       <section className="flex flex-col gap-8">
         <ColorRow swatches={rawPalettes.gray} title="Gray (raw)" />
-        <ColorRow swatches={rawPalettes.grey} title="Grey (raw duplicate)" />
       </section>
       <section className="flex flex-col gap-8">
         <ColorRow swatches={rawPalettes.green} title="Green" />
@@ -191,7 +177,7 @@ export const RawPalette: Story = {
     docs: {
       description: {
         story:
-          'Raw palette. Gray and grey are kept as duplicate 11-step scales for this sweep; naming consolidation is handled separately. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
+          'Raw palette. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
       },
     },
   },

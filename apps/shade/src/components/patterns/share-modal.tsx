@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-type ShareService = 'x' | 'threads' | 'facebook' | 'linkedin';
+type ShareService = 'x' | 'threads' | 'facebook' | 'linkedin' | 'bluesky';
 
 export type ShareModalSocialLink = {
   href: string;
@@ -198,6 +198,17 @@ function SocialIcon({ service }: { service: ShareService }) {
     );
   }
 
+  if (service === 'bluesky') {
+    return (
+      <svg fill="none" viewBox="0 -33.5 568 568">
+        <path
+          d="M123.121 33.664C188.241 82.553 258.281 181.681 284 234.873c25.719-53.192 95.759-152.32 160.879-201.209C491.866-1.612 568-28.906 568 57.946c0 17.346-9.945 145.713-15.778 166.555-20.275 72.453-94.155 90.933-159.875 79.748 114.875 19.551 144.097 84.311 80.986 149.071-119.86 122.992-172.272-30.859-185.702-70.281-2.462-7.227-3.614-10.608-3.631-7.733-.017-2.875-1.169.506-3.631 7.733-13.43 39.422-65.842 193.273-185.702 70.281-63.111-64.76-33.889-129.52 80.986-149.071-65.72 11.185-139.6-7.295-159.875-79.748C9.945 203.659 0 75.292 0 57.946 0-28.906 76.135-1.612 123.121 33.664z"
+          fill="#0085ff"
+        ></path>
+      </svg>
+    );
+  }
+
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24">
       <path
@@ -247,7 +258,7 @@ function SocialLinks({ className, layout = 'footer', links, ...props }: SocialLi
         <a
           key={link.id ?? link.href}
           aria-label={link.label}
-          className="flex h-(--control-height) w-14 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 [&_svg]:h-4"
+          className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
           href={link.href}
           rel="noopener noreferrer"
           target="_blank"

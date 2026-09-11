@@ -1,12 +1,13 @@
 // @ts-check
-const assert = require('node:assert/strict');
-const fs = require('fs/promises');
-const path = require('path');
-const { ESLint } = require('eslint');
-const { glob } = require('glob');
-const { readFileSync, writeFileSync } = require('fs');
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-const LOCALES_ROOT = path.join(__dirname, '..', 'locales');
+import { ESLint } from 'eslint';
+import { glob } from 'glob';
+
+const LOCALES_ROOT = path.join(import.meta.dirname, '..', 'locales');
 
 /**
  * @typedef {{
@@ -482,7 +483,7 @@ function analyzeSingleTranslation(key, translated, context) {
 }
 
 async function analyze() {
-  const context = new LinterContext(path.join(__dirname, './i18n-ignores.json'));
+  const context = new LinterContext(path.join(import.meta.dirname, './i18n-ignores.json'));
   for await (const translationFile of await getTranslationFiles()) {
     const file = new File(translationFile, await fs.readFile(translationFile, 'utf8'));
     context.setFile(file);
@@ -496,16 +497,11 @@ async function analyze() {
   return context.summary;
 }
 
-if (require.main === module) {
-  analyze()
-    .then((results) => exitWithSummary(results))
-    .catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      process.exit(1);
-    });
-}
-
-module.exports = {
-  analyze,
-};
+// Run directly via `pnpm lint:translations`; nothing imports this module.
+analyze()
+  .then((results) => exitWithSummary(results))
+  .catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exit(1);
+  });

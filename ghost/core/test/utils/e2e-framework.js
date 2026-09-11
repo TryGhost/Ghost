@@ -588,6 +588,7 @@ module.exports = {
 
   // utilities
   configUtils: require('./config-utils'),
+  hostLimits: require('./host-limits-utils'),
   dbUtils: require('./db-utils'),
   urlUtils: require('./url-utils'),
   resetRateLimits,

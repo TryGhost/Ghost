@@ -1,5 +1,6 @@
 import assert from 'assert/strict';
 import path from 'path';
+import os from 'os';
 import http from 'http';
 import express from 'express';
 import sinon from 'sinon';
@@ -121,6 +122,47 @@ describe('Local Storage Base', function () {
   });
 
   describe('path validation', function () {
+    it('save allows an explicit storage-root target while keeping the file inside it', async function () {
+      const storagePath = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-local-storage-'));
+      const sourcePath = path.join(storagePath, '..', `ghost-local-storage-source-${Date.now()}`);
+      await fs.writeFile(sourcePath, 'stored at root');
+
+      try {
+        const localStorageBase = new LocalStorageBase({
+          storagePath,
+          staticFileURLPrefix: 'content/files',
+          siteUrl: 'http://example.com/',
+        });
+
+        const url = await localStorageBase.save(
+          { name: 'root-file.txt', path: sourcePath },
+          storagePath,
+        );
+
+        assert.equal(url, '/content/files/root-file.txt');
+        assert.equal(
+          await fs.readFile(path.join(storagePath, 'root-file.txt'), 'utf8'),
+          'stored at root',
+        );
+      } finally {
+        await fs.remove(storagePath);
+        await fs.remove(sourcePath);
+      }
+    });
+
+    it('save still rejects target directories outside the storage root', async function () {
+      const localStorageBase = new LocalStorageBase({
+        storagePath: '/media-storage/path/',
+        staticFileURLPrefix: 'content/media',
+        siteUrl: 'http://example.com/blog/',
+      });
+
+      await assert.rejects(
+        localStorageBase.save({ name: 'file.txt', path: '/tmp/file.txt' }, '../../outside-root'),
+        { message: 'The path "../../outside-root" is not valid for this storage.' },
+      );
+    });
+
     it('read rejects if the path resolves outside the storage root', async function () {
       const localStorageBase = new LocalStorageBase({
         storagePath: '/media-storage/path/',

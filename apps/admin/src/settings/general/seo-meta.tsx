@@ -51,22 +51,22 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
   return (
     <div>
-      <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950">
-        <div className="-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800">Preview</div>
-        <div className="rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-950">
+      <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-gray-950">
+        <div className="-mt-4 mb-2 text-sm text-gray-500 uppercase dark:text-gray-800">Preview</div>
+        <div className="rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-gray-950">
           <div className="mt-3 flex items-center">
             <div>
               <GoogleLogo className="mr-7 h-7" />
             </div>
             <div className="grow">
-              <div className="flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900">
+              <div className="flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-gray-900">
                 <LucideIcon.Search className="size-4 stroke-2 text-blue-600" />
               </div>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900">
+          <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-4 dark:border-gray-900">
             <div
-              className="flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700"
+              className="flex size-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700"
               style={{
                 backgroundImage: icon ? `url(${icon})` : 'none',
                 backgroundSize: 'contain',
@@ -74,12 +74,12 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
             ></div>
             <div className="flex flex-col">
               <span>{siteDomain}</span>
-              <span className="-mt-0.5 inline-block text-sm text-grey-600">{siteUrl}</span>
+              <span className="-mt-0.5 inline-block text-sm text-gray-600">{siteUrl}</span>
             </div>
           </div>
           <div className="mt-1 flex flex-col">
             <span className="text-lg text-[#1a0dab] dark:text-blue">{title}</span>
-            <span className="text-grey-900 dark:text-grey-700">{description}</span>
+            <span className="text-gray-900 dark:text-gray-700">{description}</span>
           </div>
         </div>
       </div>
@@ -241,16 +241,16 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <FacebookLogo className="size-10" />
         </div>
         <div>
-          <div className="mb-1 leading-none font-semibold text-grey-900 dark:text-grey-300">
+          <div className="mb-1 leading-none font-semibold text-gray-900 dark:text-gray-300">
             {siteTitle}
           </div>
-          <div className="leading-none text-grey-700">2h</div>
+          <div className="leading-none text-gray-700">2h</div>
         </div>
       </div>
       <div>
-        <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
-        <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
-        <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
+        <div className="mb-2 h-3 w-full rounded bg-gray-200 dark:bg-gray-900"></div>
+        <div className="mb-4 h-3 w-3/5 rounded bg-gray-200 dark:bg-gray-900"></div>
+        <SettingGroupContent className="overflow-hidden rounded-md border border-gray-300 dark:border-gray-900">
           <ImageUpload className="h-75 rounded-b-none">
             {facebookImage ? (
               <ImageUploadPreview className="rounded-b-none">
@@ -326,12 +326,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       </div>
       <div className="w-full md:mr-[52px]">
         <div className="mb-2">
-          <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
-          <span className="text-grey-700">&#183; 2h</span>
+          <span className="mr-1 font-semibold text-gray-900 dark:text-gray-300">{siteTitle}</span>
+          <span className="text-gray-700">&#183; 2h</span>
         </div>
-        <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
-        <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
-        <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
+        <div className="mb-2 h-3 w-full rounded bg-gray-200 dark:bg-gray-900"></div>
+        <div className="mb-4 h-3 w-3/5 rounded bg-gray-200 dark:bg-gray-900"></div>
+        <SettingGroupContent className="overflow-hidden rounded-md border border-gray-300 dark:border-gray-900">
           <ImageUpload className="h-75 rounded-b-none">
             {twitterImage ? (
               <ImageUploadPreview className="rounded-b-none">

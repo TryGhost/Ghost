@@ -380,15 +380,30 @@ describe('Authentication API', function () {
         });
     });
 
-    it('try to accept with invite and existing email address', function () {
+    it('try to accept with invite and existing email address', async function () {
+      const existingUser = fixtureManager.get('users', 0);
+      const invite = fixtureManager.get('invites', 0);
+
+      const duplicateInvite = await models.Invite.add(
+        {
+          email: existingUser.email,
+          role_id: invite.role_id,
+          status: 'sent',
+        },
+        {
+          context: {
+            internal: true,
+          },
+        },
+      );
+
       return agent
         .post('authentication/invitation')
         .body({
           invitation: [
             {
-              token: fixtureManager.get('invites', 0).token,
+              token: duplicateInvite.get('token'),
               password: '12345678910',
-              email: fixtureManager.get('users', 0).email,
               name: 'invited',
             },
           ],

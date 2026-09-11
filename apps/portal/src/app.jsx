@@ -15,6 +15,7 @@ import { getActivePage, isAccountPage, isOfferPage } from './pages';
 import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
+import { clearGiftFormState } from './components/pages/gift/form-state';
 import './app.css';
 import {
   hasRecommendations,
@@ -211,7 +212,7 @@ export default class App extends React.Component {
       event.preventDefault();
       const target = event.currentTarget;
       const pagePath = target && target.dataset.portal;
-      const linkData = this.getPageFromLinkPath(pagePath);
+      const linkData = this.getPageFromLinkPath(pagePath, this.state.site);
       if (!linkData) {
         return;
       }
@@ -679,6 +680,7 @@ export default class App extends React.Component {
         'gift_scheduled_at',
       ]);
       if (token) {
+        clearGiftFormState();
         return {
           showPopup: true,
           page: 'giftSuccess',
@@ -1046,6 +1048,11 @@ export default class App extends React.Component {
     }
 
     const { site: linkSite, ...restLinkData } = linkData;
+    const isLeavingGiftPage = this.state.page === 'gift' && restLinkData.page !== 'gift';
+    if (isLeavingGiftPage) {
+      clearGiftFormState();
+    }
+    const shouldCloseGiftPopup = isLeavingGiftPage && !restLinkData.page;
 
     const updatedState = {
       site: {
@@ -1060,6 +1067,7 @@ export default class App extends React.Component {
       },
       ...restLinkData,
       ...restPreviewData,
+      ...(shouldCloseGiftPopup ? { showPopup: false, lastPage: null } : {}),
     };
     this.handleSignupQuery({ site: updatedState.site, pageQuery: updatedState.pageQuery });
     this.setState(updatedState);
@@ -1249,6 +1257,16 @@ export default class App extends React.Component {
     } else if (path === 'gift') {
       return {
         page: 'gift',
+        pageData: {
+          giftStep: 'plan',
+        },
+      };
+    } else if (path === 'gift/delivery') {
+      return {
+        page: 'gift',
+        pageData: {
+          giftStep: 'delivery',
+        },
       };
     } else if (path === 'share') {
       return {

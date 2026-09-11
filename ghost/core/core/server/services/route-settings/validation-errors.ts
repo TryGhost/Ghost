@@ -6,7 +6,7 @@ const messages = {
   validationError: 'The following definition "{at}" is invalid: {reason}',
 };
 
-const DOCS_URL = 'https://ghost.org/docs/themes/routing/';
+const DOCS_URL = 'https://docs.ghost.org/themes/routing/';
 const MAX_SHOWN_LENGTH = 40;
 
 export type PathSegment = string | number;

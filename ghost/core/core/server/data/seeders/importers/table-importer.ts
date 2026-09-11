@@ -1,5 +1,5 @@
 import debugFactory from '@tryghost/debug';
-import { toDatabaseDate } from '../../../lib/db-date';
+import { toDatabaseDate } from '../../../lib/db-types/date';
 import path from 'node:path';
 import fs from 'node:fs';
 import papaparse from 'papaparse';

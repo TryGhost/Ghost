@@ -46,7 +46,6 @@ import {
 import { toast } from 'sonner';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { MemberEditableFields } from './member-detail-edit';
 
@@ -73,14 +72,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const backPath = deriveMemberDetailBackPath(location.search);
   const isCreating = memberId === CREATE_ID;
 
-  // Values ride the member payload (`include=custom_fields`) but the include
-  // only exists behind the flag, so it must not be sent on flag-off sites.
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-
   // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
   const { data, isLoading, error, refetch } = useMember(memberId, {
     enabled: !!memberId && !isCreating,
-    searchParams: { include: customFieldsEnabled ? 'tiers,custom_fields' : 'tiers' },
+    searchParams: { include: 'tiers' },
     defaultErrorHandler: false,
   });
   const member = data?.members?.[0];
@@ -469,11 +464,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                                     modal, never through this page's Save. Existing members
                                     only — the create contract doesn't take values yet, and a
                                     value can't exist before its member does. */}
-                  {customFieldsEnabled && member && (
+                  {member && (
                     <MemberCustomFieldsField
-                      customFields={member.custom_fields}
                       disabled={activeMutation.isPending}
                       memberId={member.id}
+                      metafields={member.metafields}
                     />
                   )}
 

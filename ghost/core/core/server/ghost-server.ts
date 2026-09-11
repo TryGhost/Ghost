@@ -15,6 +15,7 @@ import type { Promisable } from 'type-fest';
 import type * as express from 'express';
 import type * as http from 'node:http';
 import { promisify } from 'node:util';
+import assert from 'node:assert';
 
 type ServerConfig = {
   host: string;

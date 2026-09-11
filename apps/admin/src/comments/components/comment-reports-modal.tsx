@@ -10,7 +10,7 @@ import {
 } from '@tryghost/shade/components';
 import { type Comment, useBrowseCommentReports } from '@tryghost/admin-x-framework/api/comments';
 import { LucideIcon, formatTimestamp } from '@tryghost/shade/utils';
-import { formatMemberName, memberAvatarProps } from '@/members/member-format';
+import { formatMemberName, memberAvatarProps } from '@/members/api';
 
 interface CommentReportsModalProps {
   comment: Comment;

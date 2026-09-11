@@ -2,7 +2,7 @@ const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
 const { slugify } = require('@tryghost/string');
 const { blogStartDate } = require('../utils/blog-info');
-const { toDatabaseDate } = require('../../../lib/db-date');
+const { toDatabaseDate } = require('../../../lib/db-types/date');
 
 class LabelsImporter extends TableImporter {
   static table = 'labels';

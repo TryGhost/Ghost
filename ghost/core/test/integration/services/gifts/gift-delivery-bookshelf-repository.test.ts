@@ -117,6 +117,16 @@ describe('GiftDeliveryBookshelfRepository (integration)', function () {
     return { gift, delivery };
   }
 
+  it('finds an email delivery by gift token', async function () {
+    const { gift, delivery } = await createPendingEmailGift({ deliveryStatus: 'failed' });
+
+    assert.equal(
+      (await deliveryRepository.getByGiftToken(gift.get('token')))?.recipientEmail,
+      delivery.get('recipient_email'),
+    );
+    assert.equal(await deliveryRepository.getByGiftToken('missing-token'), null);
+  });
+
   it('allows exactly one concurrent caller to start a pending delivery', async function () {
     const startedAt = new Date();
     startedAt.setMilliseconds(0);

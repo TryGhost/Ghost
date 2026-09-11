@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const messages = {
   redirectsWrongFormat: 'Incorrect redirects file format.',
   invalidRedirectsFromRegex: 'Incorrect RegEx in redirects file.',
-  redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
+  redirectsHelp: 'https://docs.ghost.org/themes/routing/#redirects',
 };
 
 /**

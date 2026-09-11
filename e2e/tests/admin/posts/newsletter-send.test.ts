@@ -21,7 +21,7 @@ test.describe('Ghost Admin - Newsletter Send', () => {
     const member = await memberFactory.create({
       name: 'Newsletter Recipient',
       email: 'newsletter-test@example.com',
-      newsletters: newsletters as never,
+      newsletters,
     });
 
     const postsPage = new PostsPage(page);

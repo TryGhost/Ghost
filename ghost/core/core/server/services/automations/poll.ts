@@ -223,6 +223,7 @@ const processStep = async ({
             subject: step.email_subject,
           },
           member: {
+            // Note that we don't use `automation_run.member_email` here. That's only for the historical record, not for functionality.
             email: member.get('email'),
             name: member.get('name'),
             uuid: member.get('uuid'),

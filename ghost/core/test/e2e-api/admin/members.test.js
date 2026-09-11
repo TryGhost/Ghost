@@ -2402,7 +2402,7 @@ describe('Members API', function () {
     // Note that we explicitly need to ask to include tiers and custom fields
     // while browsing — a read carries both without being asked
     const { body: browseBody } = await agent.get(
-      `/members/?search=${memberWithPaidSubscription.email}&include=tiers,custom_fields`,
+      `/members/?search=${memberWithPaidSubscription.email}&include=tiers,metafields`,
     );
     assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
     const browseMember = browseBody.members[0];
@@ -4306,6 +4306,17 @@ describe('Members API Bulk operations', function () {
 
   afterEach(function () {
     mockManager.restore();
+  });
+
+  it('Rejects restricted filters for destructive bulk operations', async function () {
+    const memberId = fixtureManager.get('members', 0).id;
+
+    await agent.delete(`/members?filter=${encodeURIComponent('password:guess')}`).expectStatus(400);
+
+    assert(
+      await models.Member.findOne({ id: memberId }),
+      'A restricted filter must not broaden into deleting every member',
+    );
   });
 
   it('Can bulk unsubscribe members with filter', async function () {

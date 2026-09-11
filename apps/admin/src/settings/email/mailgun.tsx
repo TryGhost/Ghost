@@ -135,7 +135,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       The Mailgun API is used for bulk email newsletter delivery.{' '}
       <a
         className="text-green hover:text-green-400"
-        href="https://ghost.org/docs/faq/mailgun-newsletters/"
+        href="https://docs.ghost.org/faq/mailgun-newsletters/"
         rel="noopener noreferrer"
         target="_blank"
       >

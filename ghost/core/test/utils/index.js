@@ -18,9 +18,6 @@ const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
 const filterData = require('./fixtures/filter-param');
 
-// Require additional assertions which help us keep our tests small and clear
-require('./assertions');
-
 // ## Test Setup and Teardown
 
 const initFixtures = async function initFixtures() {
@@ -45,18 +42,17 @@ const initFixtures = async function initFixtures() {
  * ## Setup Integration Tests
  * Setup takes a list of arguments like: 'default', 'tag', 'perms:tag', 'perms:init'
  * Setup does 'init' (DB) by default
+ *
+ * @param {Parameters<typeof initFixtures>} args
  */
-const setup = function setup() {
-  /*eslint no-invalid-this: "off"*/
-  const self = this;
-
-  const args = arguments;
-
-  return function innerSetup() {
+const setup = function setup(...args) {
+  return async function innerSetup() {
     debug('Setup start');
-    return initFixtures.apply(self, args).finally(() => {
+    try {
+      return await initFixtures(...args);
+    } finally {
       debug('Setup end');
-    });
+    }
   };
 };
 

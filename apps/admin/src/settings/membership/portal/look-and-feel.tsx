@@ -1,4 +1,4 @@
-import BrandIcon, { type BrandIconName } from '@/settings/components/icons/brand-icon';
+import BrandIcon, { type BrandIconName } from '@/shared/brand-icon/brand-icon';
 import React, { useState } from 'react';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {

@@ -28,7 +28,7 @@ export let deliveryService: GiftDeliveryService | undefined;
 // of boot-time rebuilds (same contract post scheduling honours in boot.js).
 let rescheduleDeliveriesOnBoot = true;
 
-export async function init(options: GiftServiceInitOptions): Promise<void> {
+export function init(options: GiftServiceInitOptions): void {
   if (service) {
     return;
   }
@@ -55,10 +55,9 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   const MailgunClient = require('../lib/mailgun-client');
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
-  const labsService = require('../../../shared/labs');
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsHelpers = require('../settings-helpers');
-  const EmailAddressParser = require('../email-address/email-address-parser');
+  const emailAddressParser = require('../email-address/email-address-parser');
   const { blogIcon } = require('../../../server/lib/image');
   const { t } = require('../i18n');
 
@@ -76,11 +75,12 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
   });
 
   const giftEmailService = new GiftEmailService({
+    config,
     transactionalMailer: new GhostMailer(),
     bulkMailer: new MailgunClient({ config, settings: settingsCache }),
     settingsCache,
     urlUtils,
-    getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+    getFromAddress: () => emailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
     getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
     t,
@@ -134,7 +134,6 @@ export async function init(options: GiftServiceInitOptions): Promise<void> {
     },
     giftReminderScheduler,
     checkoutAdapter,
-    labsService,
     settingsCache,
   });
 

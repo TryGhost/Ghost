@@ -23,7 +23,8 @@ test.describe('Ghost Admin - Staff Invites', () => {
     await withIsolatedPage(browser, { baseURL }, async ({ page: signupPage }) => {
       const inviteSignup = new InviteSignupPage(signupPage);
       await signupPage.goto(inviteUrl);
-      await inviteSignup.acceptInvite('Test Invite User', testEmail, 'test123456');
+      await expect(inviteSignup.emailField).toHaveValue(testEmail);
+      await inviteSignup.acceptInvite('Test Invite User', 'test123456');
 
       await expect(signupPage).toHaveURL(/\/ghost\/#\//, { timeout: 30000 });
 

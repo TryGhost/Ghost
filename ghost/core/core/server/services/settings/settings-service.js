@@ -200,14 +200,7 @@ module.exports = {
         type: 'boolean',
         group: 'members',
         fn: settingsHelpers.allowSelfSignup.bind(settingsHelpers),
-        dependents: [
-          'members_signup_access',
-          'portal_plans',
-          'stripe_secret_key',
-          'stripe_publishable_key',
-          'stripe_connect_secret_key',
-          'stripe_connect_publishable_key',
-        ],
+        dependents: ['members_signup_access'],
       }),
     );
     fields.push(

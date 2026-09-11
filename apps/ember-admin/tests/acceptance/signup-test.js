@@ -21,7 +21,7 @@ describe('Acceptance: Signup', function () {
         server.post('/authentication/invitation/', function ({users}, {requestBody}) {
             let params = JSON.parse(requestBody);
             expect(params.invitation[0].name).to.equal('Test User');
-            expect(params.invitation[0].email).to.equal('kevin+test2@ghost.org');
+            expect(params.invitation[0].email, 'token email is sent for older Core versions').to.equal('kevin+test2@ghost.org');
             expect(params.invitation[0].password).to.equal('thisissupersafe');
             expect(params.invitation[0].token).to.equal('MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
@@ -44,7 +44,6 @@ describe('Acceptance: Signup', function () {
 
         if (fillForm) {
             await fillIn('[data-test-input="name"]', 'Test User');
-            await fillIn('[data-test-input="email"]', 'kevin+test2@ghost.org');
             await fillIn('[data-test-input="password"]', 'thisissupersafe');
         }
     }
@@ -52,6 +51,17 @@ describe('Acceptance: Signup', function () {
     it('can signup successfully', async function () {
         // Setup the signup flow but don't fill the form yet (we'll test validation)
         await setupSignupFlow(this.server, {fillForm: false});
+
+        // email field is pre-filled from the invite token and cannot be edited
+        expect(
+            find('[data-test-input="email"]'),
+            'email field is disabled',
+        ).to.have.attribute('disabled');
+
+        expect(
+            find('[data-test-input="email"]').value,
+            'email field is pre-filled from the invite token'
+        ).to.equal('kevin+test2@ghost.org');
 
         // focus out in Name field triggers inline error
         await focus('[data-test-input="name"]');
@@ -79,34 +89,6 @@ describe('Acceptance: Signup', function () {
         expect(
             find('[data-test-input="name"]').closest('.form-group').querySelector('.response').textContent.trim(),
             'name field error is removed after text input'
-        ).to.be.empty;
-
-        // focus out in Email field triggers inline error
-        await click('[data-test-input="email"]');
-        await blur('[data-test-input="email"]');
-
-        expect(
-            find('[data-test-input="email"]').closest('.form-group'),
-            'email field group has error class when empty'
-        ).to.have.class('error');
-
-        expect(
-            find('[data-test-input="email"]').closest('.form-group').querySelector('.response').textContent,
-            'email inline-error text'
-        ).to.have.string('Please enter an email');
-
-        // entering text in email field clears error
-        await fillIn('[data-test-input="email"]', 'kevin+test2@ghost.org');
-        await blur('[data-test-input="email"]');
-
-        expect(
-            find('[data-test-input="email"]').closest('.form-group'),
-            'email field loses error class after text input'
-        ).to.not.have.class('error');
-
-        expect(
-            find('[data-test-input="email"]').closest('.form-group').querySelector('.response').textContent.trim(),
-            'email field error is removed after text input'
         ).to.be.empty;
 
         // check password validation

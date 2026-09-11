@@ -1,6 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll, triggerEvent, waitFor} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -784,7 +784,61 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('handles server error when confirming');
-        it('handles email sending error');
+
+        it('uses the analytics sending flow when improved sending UI is enabled', async function () {
+            enableLabsFlag(this.server, 'improveSendingUI');
+
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({
+                    status: 'published',
+                    email
+                });
+            });
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
+            expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
+            expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
+        });
+
+        it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            const email = this.server.create('email', {status: 'pending'});
+
+            this.server.put('/posts/:id/', function ({posts}, {params}) {
+                return posts.find(params.id).update({
+                    status: 'published',
+                    email
+                });
+            });
+            this.server.get('/posts/:id/', function ({posts}, {params}) {
+                const savedPost = posts.find(params.id);
+                if (savedPost.status === 'published') {
+                    email.update({
+                        status: 'failed',
+                        error: 'Mailgun rejected the batch.'
+                    });
+                }
+                return savedPost;
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+            await click('[data-test-button="confirm-publish"]');
+
+            await waitFor('.gh-publish-title .red');
+            expect(find('.gh-publish-confirmation'), 'email error')
+                .to.contain.trimmed.text('Mailgun rejected the batch.');
+        });
 
         it('defaults to publish-only when default recipients is "Usually nobody"', async function () {
             // Set default recipients to "Usually nobody" (filter with null filter)

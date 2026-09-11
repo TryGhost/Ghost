@@ -49,6 +49,18 @@ The webhook mock receiver follows the same pattern for outgoing webhooks.
 Real network access is disabled when the framework boots. Use a focused mock or
 an existing `mockManager` helper for external services.
 
+When a test uses Nock directly, match the expected method and path and inspect
+the request body when it is part of the contract. When a path contains a dynamic
+value, constrain the matcher to the expected path and value format rather than
+using a catch-all expression. Use `.times()` when the number of requests matters.
+Avoid `.persist()` unless the behaviour genuinely makes an open-ended number of
+calls; persistent interceptors can hide unexpected requests. Use
+`nock.cleanAll()` to remove direct Nock interceptors after the test, or
+`mockManager.restore()` when resetting framework-managed state. Do not use
+`nock.restore()` for cleanup: it disables interception and requires
+`nock.activate()` before Nock can intercept another request. Use Nock's pending
+mocks to diagnose an expectation that was never met.
+
 ## Snapshots
 
 Request agents provide `matchBodySnapshot()` and `matchHeaderSnapshot()`. Use

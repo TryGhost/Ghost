@@ -4,12 +4,21 @@ const {
   matchers,
   mockManager,
 } = require('../../utils/e2e-framework');
-const { nullable, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString } =
-  matchers;
+const {
+  nullable,
+  anyContentVersion,
+  anyEtag,
+  anyErrorId,
+  anyObjectId,
+  anyUuid,
+  anyISODateTime,
+  anyString,
+} = matchers;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const jobManager = require('../../../core/server/services/jobs/job-service');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 const matchEmail = {
@@ -77,6 +86,100 @@ describe('Emails API', function () {
       .expectStatus(200)
       .matchBodySnapshot({
         emails: [matchEmail],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read the sending status of a submitted email', async function () {
+    const email = fixtureManager.get('emails', 0);
+    // The fixture stores email_count 0 against its recipient rows; batch creation
+    // reconciles the column to those rows before an email can be submitted.
+    try {
+      await db.knex('emails').where('id', email.id).update({ email_count: 6 });
+
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          email_statuses: [{ id: anyObjectId }],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].id, email.id);
+        });
+    } finally {
+      await db.knex('emails').where('id', email.id).update({ email_count: email.email_count });
+    }
+  });
+
+  it('Can read the sending status of an email that is still submitting', async function () {
+    const email = fixtureManager.get('emails', 0);
+    const member = fixtureManager.get('members', 0);
+    let pendingBatch;
+    try {
+      pendingBatch = await models.EmailBatch.add({ email_id: email.id });
+      for (let index = 0; index < 2; index += 1) {
+        await models.EmailRecipient.add({
+          email_id: email.id,
+          batch_id: pendingBatch.id,
+          member_id: member.id,
+          member_uuid: member.uuid,
+          member_email: member.email,
+        });
+      }
+      await db.knex('emails').where('id', email.id).update({ status: 'submitting' });
+
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          email_statuses: [{ id: anyObjectId }],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].id, email.id);
+        });
+    } finally {
+      if (pendingBatch) {
+        await db.knex('email_recipients').where('batch_id', pendingBatch.id).del();
+        await db.knex('email_batches').where('id', pendingBatch.id).del();
+      }
+      await db.knex('emails').where('id', email.id).update({ status: 'submitted' });
+    }
+  });
+
+  it('Can read the sending status of a failed email', async function () {
+    const email = fixtureManager.get('emails', 1);
+    await agent
+      .get(`emails/${email.id}/status/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        email_statuses: [{ id: anyObjectId }],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.equal(body.email_statuses[0].id, email.id);
+      });
+  });
+
+  it('Cannot read the sending status of a missing email', async function () {
+    await agent
+      .get('emails/123456789012345678901234/status/')
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [{ id: anyErrorId }],
       })
       .matchHeaderSnapshot({
         'content-version': anyContentVersion,

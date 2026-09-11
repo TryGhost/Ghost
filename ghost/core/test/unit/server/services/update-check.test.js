@@ -647,7 +647,7 @@ describe('Update Check', function () {
       );
       assert.equal(
         logging.error.args[0][0].err.help,
-        'If you get this error repeatedly, please seek help from https://ghost.org/docs/',
+        'If you get this error repeatedly, please seek help from https://docs.ghost.org/',
       );
     });
 
@@ -675,7 +675,7 @@ describe('Update Check', function () {
         );
         assert.equal(
           logging.error.args[0][0].err.help,
-          'If you get this error repeatedly, please seek help from https://ghost.org/docs/',
+          'If you get this error repeatedly, please seek help from https://docs.ghost.org/',
         );
 
         assert.equal(

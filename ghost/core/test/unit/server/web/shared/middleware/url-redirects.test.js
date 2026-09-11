@@ -4,7 +4,7 @@ const urlRedirects = require('../../../../../../core/server/web/shared/middlewar
 const { frontendSSLRedirect, adminSSLAndHostRedirect } = urlRedirects;
 const { getAdminRedirectUrl, getFrontendRedirectUrl, redirect } = urlRedirects;
 
-describe('UNIT: url redirects', function () {
+describe('url redirects', function () {
   let res;
   let req;
   let next;

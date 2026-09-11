@@ -1,0 +1,123 @@
+{
+  "before": {
+    "root": {
+      "children": [
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web object only</p>",
+          "visibility": {
+            "web": {
+              "nonMember": true
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web without email</p>",
+          "visibility": {
+            "web": {
+              "nonMember": false,
+              "memberSegment": ""
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email object only</p>",
+          "visibility": {
+            "email": {
+              "memberSegment": "status:free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email without segment</p>",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {}
+          }
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "after": {
+    "root": {
+      "children": [
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web object only</p>",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>web without email</p>",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email object only</p>",
+          "visibility": {
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            },
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "version": 1,
+          "html": "<p>email without segment</p>",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
+        }
+      ],
+      "direction": null,
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  }
+}

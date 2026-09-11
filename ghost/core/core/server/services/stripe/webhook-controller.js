@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const StripeAPI = require('./stripe-api');
 
 module.exports = class WebhookController {
   /**
@@ -87,6 +88,15 @@ module.exports = class WebhookController {
       logging.error(err);
       res.writeHead(401);
       return res.end();
+    }
+
+    // Stripe shapes each event for the API version of the URL it was sent to. A different
+    // version means this event did not come through the URL Ghost registered, and fields
+    // may not be where Ghost reads them.
+    if (event.api_version !== StripeAPI.API_VERSION) {
+      logging.error(
+        `Webhook ${event.type} was rendered at Stripe API version ${event.api_version}, Ghost expects ${StripeAPI.API_VERSION}`,
+      );
     }
 
     const customerId = this.getEventCustomerId(event);

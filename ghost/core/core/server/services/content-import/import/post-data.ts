@@ -26,7 +26,6 @@ export interface PostsMetaData {
   twitter_image?: string;
   twitter_title?: string;
   twitter_description?: string;
-  frontmatter?: string;
 }
 
 // The values handed to models.Post.add. Content is lexical only: under
@@ -36,6 +35,7 @@ export interface PostsMetaData {
 export interface PostData {
   title: string;
   slug: string;
+  comment_id?: string;
   lexical?: string;
   custom_excerpt?: string;
   feature_image?: string;
@@ -51,11 +51,13 @@ export interface PostData {
   status: 'draft' | 'published';
   type: 'post' | 'page';
   visibility: 'public' | 'members' | 'paid';
-  tags: Array<{ name: string }>;
+  authors?: Array<{ id: string }>;
+  tags: Array<{ id: string } | { name: string }>;
   posts_meta?: PostsMetaData;
 }
 
 const DIRECT_OPTIONAL_FIELDS = [
+  'comment_id',
   'custom_excerpt',
   'feature_image',
   'canonical_url',
@@ -75,7 +77,6 @@ const META_FIELDS = [
   'twitter_image',
   'twitter_title',
   'twitter_description',
-  'frontmatter',
 ] as const;
 
 export default function buildPostData(

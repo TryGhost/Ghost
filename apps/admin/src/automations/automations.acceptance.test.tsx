@@ -52,4 +52,21 @@ describe('Automations list', () => {
     // Stripe is disconnected in the default boot, which hides the paid welcome flow.
     await expect(automationsScreen.rows()).toHaveCount(1);
   });
+
+  it('hides run analytics when the backend does not return stats', async () => {
+    fakeAutomations([
+      automation({
+        name: 'Free member welcome flow',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+        stats: undefined,
+      }),
+    ]);
+    await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
+
+    await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Last entry')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('Total entries')).not.toBeInTheDocument();
+    await expect.element(automationsScreen.columnHeader('In progress')).not.toBeInTheDocument();
+  });
 });

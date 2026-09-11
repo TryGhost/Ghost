@@ -20,44 +20,44 @@ describe('custom fields mapping helpers', () => {
     {
       label: 'Nickname',
       fieldName: 'Nickname',
-      value: 'custom_fields.nickname',
+      value: 'metafields.custom.nickname',
       type: 'short_text',
     },
     {
       label: 'Shipping Address (Line 1)',
       fieldName: 'Shipping Address',
       partLabel: 'Line 1',
-      value: 'custom_fields.shipping_address.line1',
+      value: 'metafields.custom.shipping_address.line1',
       type: 'address',
     },
     {
       label: 'Shipping Address (First name)',
       fieldName: 'Shipping Address',
       partLabel: 'First name',
-      value: 'custom_fields.shipping_address.first_name',
+      value: 'metafields.custom.shipping_address.first_name',
       type: 'address',
     },
   ];
 
   it('auto-detects a custom field column by its namespaced header', () => {
     const mapping = detectFieldTypes(
-      [{ email: 'user@example.com', 'custom_fields.nickname': 'Bex' }],
+      [{ email: 'user@example.com', 'metafields.custom.nickname': 'Bex' }],
       { customFieldColumns },
     );
 
-    expect(mapping['custom_fields.nickname']).toBe('custom_fields.nickname');
+    expect(mapping['metafields.custom.nickname']).toBe('metafields.custom.nickname');
   });
 
   // The /name/i heuristic must not claim a custom field column containing "name".
   it('does not map a name-like custom field column to the member name', () => {
     const mapping = detectFieldTypes(
-      [{ email: 'user@example.com', 'custom_fields.shipping_address.first_name': 'Bex' }],
+      [{ email: 'user@example.com', 'metafields.custom.shipping_address.first_name': 'Bex' }],
       { customFieldColumns },
     );
 
     expect(mapping.name).toBeUndefined();
-    expect(mapping['custom_fields.shipping_address.first_name']).toBe(
-      'custom_fields.shipping_address.first_name',
+    expect(mapping['metafields.custom.shipping_address.first_name']).toBe(
+      'metafields.custom.shipping_address.first_name',
     );
   });
 
@@ -65,7 +65,7 @@ describe('custom fields mapping helpers', () => {
   // or a hand-built file) must not be claimed as the member name.
   it('does not map a name-like namespaced column that has no offered target', () => {
     const mapping = detectFieldTypes([
-      { email: 'user@example.com', 'custom_fields.former_field.last_name': 'Bex' },
+      { email: 'user@example.com', 'metafields.custom.former_field.last_name': 'Bex' },
     ]);
 
     expect(mapping.name).toBeUndefined();
@@ -75,13 +75,13 @@ describe('custom fields mapping helpers', () => {
   // dropped) just because its values look like email addresses.
   it('does not bind an email-valued custom field column to the member email', () => {
     const mapping = detectFieldTypes(
-      [{ 'custom_fields.contact_email': 'contact@example.com', email: 'member@example.com' }],
+      [{ 'metafields.custom.contact_email': 'contact@example.com', email: 'member@example.com' }],
       {
         customFieldColumns: [
           {
             label: 'Contact email',
             fieldName: 'Contact email',
-            value: 'custom_fields.contact_email',
+            value: 'metafields.custom.contact_email',
             type: 'short_text',
           },
         ],
@@ -89,19 +89,19 @@ describe('custom fields mapping helpers', () => {
     );
 
     expect(mapping.email).toBe('email');
-    expect(mapping['custom_fields.contact_email']).toBe('custom_fields.contact_email');
+    expect(mapping['metafields.custom.contact_email']).toBe('metafields.custom.contact_email');
   });
 
   describe('suggestedFieldName', () => {
     it('strips the namespace and un-slugs a column from a Ghost export', () => {
-      expect(suggestedFieldName('custom_fields.nickname')).toBe('Nickname');
-      expect(suggestedFieldName('custom_fields.favorite-animal')).toBe('Favorite animal');
+      expect(suggestedFieldName('metafields.custom.nickname')).toBe('Nickname');
+      expect(suggestedFieldName('metafields.custom.favorite-animal')).toBe('Favorite animal');
     });
 
     // The part is a separate question the form asks, so it must not end up in the name.
     it('names the field, not the part, for a composite column', () => {
-      expect(suggestedFieldName('custom_fields.home-address.city')).toBe('Home address');
-      expect(suggestedFieldName('custom_fields.home-address.postal_code')).toBe('Home address');
+      expect(suggestedFieldName('metafields.custom.home-address.city')).toBe('Home address');
+      expect(suggestedFieldName('metafields.custom.home-address.postal_code')).toBe('Home address');
     });
 
     it('keeps a column from anywhere else as the publisher wrote it', () => {

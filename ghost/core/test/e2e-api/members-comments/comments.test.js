@@ -2695,7 +2695,13 @@ describe('Comments API', function () {
     });
 
     const readEndpoints = [
-      { desc: 'GET /api/comments/', method: 'get', url: () => '/api/comments/' },
+      {
+        desc: 'GET /api/comments/ with a post filter',
+        method: 'get',
+        // `post_id` is not on the public query parameter allowlist, so a legacy
+        // browse has to scope itself with a filter.
+        url: () => `/api/comments/?filter=post_id:${postId}`,
+      },
       {
         desc: 'GET /api/comments/post/:id/',
         method: 'get',
@@ -2945,7 +2951,7 @@ describe('Comments API', function () {
     function commentReadPaths() {
       return [
         '/members/api/comments/counts',
-        '/members/api/comments',
+        `/members/api/comments?filter=post_id:${postId}`,
         `/members/api/comments/post/${postId}`,
         `/members/api/comments/${comment.id}`,
         `/members/api/comments/${comment.id}/replies`,

@@ -1,7 +1,7 @@
 const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
 const { luck, randomDateBetween } = require('../utils/random');
-const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-date');
+const { fromDatabaseDate, toDatabaseDate } = require('../../../lib/db-types/date');
 
 class MembersClickEventsImporter extends TableImporter {
   static table = 'members_click_events';

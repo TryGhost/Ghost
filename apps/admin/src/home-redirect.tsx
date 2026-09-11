@@ -6,7 +6,7 @@ import {
   isContributorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import { useOnboarding } from '@/onboarding/hooks/use-onboarding';
+import { useOnboarding } from '@/onboarding/api';
 
 // Hosted signup lands on `/?firstStart=true`; the checklist only starts for
 // owners but every firstStart visit continues to the onboarding route.

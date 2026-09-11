@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
 import { parseEmailAddress } from '@tryghost/parse-email-address';
-import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-date';
+import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-types/date';
 import { randomDateBetween } from '../utils/random';
 
 type Automation = {

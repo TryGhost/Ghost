@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { DbDate } from '../../lib/db-date';
+import { DbDate } from '../../lib/db-types/date';
 
 export const DbGiftLink = z.object({
   token: z.string(),

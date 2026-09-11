@@ -25,16 +25,6 @@ export function fieldHasRelativeOperator(field: FilterField): boolean {
   return field.operators.some(isRelativeDateOperator);
 }
 
-/** Returns the field with the past-leaning relative operator appended. */
-export function withPastRelativeOperator<T extends FilterField>(field: T): T {
-  return { ...field, operators: [...field.operators, RELATIVE_PAST_OPERATOR] };
-}
-
-/** Returns the field with the future-leaning relative operator appended. */
-export function withFutureRelativeOperator<T extends FilterField>(field: T): T {
-  return { ...field, operators: [...field.operators, RELATIVE_FUTURE_OPERATOR] };
-}
-
 // `yyyymmdd` is a calendar date in the site's timezone. We construct a Date in the
 // browser's local zone purely to do calendar arithmetic — only the y/m/d fields are
 // read back via Intl, so the local-timezone Date is fine for display.

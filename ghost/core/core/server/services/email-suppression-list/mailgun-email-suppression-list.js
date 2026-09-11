@@ -1,13 +1,10 @@
-const {
-  AbstractEmailSuppressionList,
-  EmailSuppressionData,
-  EmailSuppressedEvent,
-} = require('./email-suppression-list');
+const { EmailSuppressionData, EmailSuppressedEvent } = require('./email-suppression-list');
 const { SpamComplaintEvent } = require('../email-service/events/spam-complaint-event');
 const { EmailBouncedEvent } = require('../email-service/events/email-bounced-event');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
+/** @import {IEmailSuppressionList} from './email-suppression-list' */
 
 /**
  * @typedef {object} IMailgunAPIClient
@@ -16,14 +13,16 @@ const models = require('../../models');
  * @prop {(email: string) => Promise<any>} removeUnsubscribe
  */
 
-class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
+/**
+ * @implements {IEmailSuppressionList}
+ */
+class MailgunEmailSuppressionList {
   /**
    * @param {object} deps
    * @param {import('bookshelf').Model} deps.Suppression
    * @param {IMailgunAPIClient} deps.apiClient
    */
   constructor(deps) {
-    super();
     this.Suppression = deps.Suppression;
     this.apiClient = deps.apiClient;
   }

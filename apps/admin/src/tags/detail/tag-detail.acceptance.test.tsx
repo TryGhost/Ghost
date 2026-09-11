@@ -11,6 +11,7 @@ import {
   renderAdminApp,
   tag,
   type Tag,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagsScreen } from '@/tags/tags.screen';
@@ -311,6 +312,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await expect.element(tagDetailScreen.savedButton()).toBeVisible();
 
     await tagDetailScreen.descriptionInput().fill('A later edit');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
@@ -619,6 +621,38 @@ describe('Tag detail (tagDetailsReact on)', () => {
       .toBeVisible();
   });
 
+  it('shows the not-found page when the tag does not exist', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp('^/tags/slug/unknown/'),
+      { errors: [{ type: 'NotFoundError', message: 'Tag not found.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp('/tags/unknown', FLAGS);
+
+    await expect.element(tagDetailScreen.notFound()).toBeVisible();
+  });
+
+  it('keeps the Tags nav item active on the new tag route', async () => {
+    fakeTags([]);
+    await renderAdminApp('/tags/new', FLAGS);
+
+    await expect.element(tagDetailScreen.title()).toHaveTextContent('New tag');
+    await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('keeps the Tags nav item active while editing a tag from the list', async () => {
+    const t = tag({ name: 'News', slug: 'news' });
+    fakeTags([t]);
+    fakeTagWorld(t);
+    await renderAdminApp('/tags', FLAGS);
+
+    await tagsScreen.tagRows().getByRole('link', { name: 'News' }).click();
+
+    await expect.poll(currentRoute).toBe('/tags/news');
+    await expect.element(sidebarScreen.navLink('Tags')).toHaveAttribute('aria-current', 'page');
+  });
+
   it('guards leaving with unsaved edits via the breadcrumb', async () => {
     const t = tag({ name: 'News', slug: 'news' });
     fakeTags([t]);
@@ -626,11 +660,15 @@ describe('Tag detail (tagDetailsReact on)', () => {
     await renderAdminApp(`/tags/${t.slug}`, FLAGS);
 
     await tagDetailScreen.nameInput().fill('Renamed');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
     // The dialog carries Ember's ConfirmUnsavedChangesModal copy.
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
+    // The dismissed dialog outlives the click, so re-triggering the guard
+    // without waiting it out clicks Leave on the instance already going away.
+    await expect(tagDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.element(tagDetailScreen.nameInput()).toHaveValue('Renamed');
 
     await tagDetailScreen.backLink().click();
@@ -651,14 +689,13 @@ describe('Tag detail history guard', () => {
     await tagsScreen.tagRows().getByRole('link', { name: 'News' }).click();
     await expect.poll(currentRoute).toBe('/tags/news');
     await tagDetailScreen.nameInput().fill('Renamed');
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
-    });
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
+    await expect(tagDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.poll(currentRoute).toBe('/tags/news');
     await expect.element(tagDetailScreen.nameInput()).toHaveValue('Renamed');
 

@@ -149,7 +149,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         // CASE: `posts.authors` was not requested, but fetched in specific cases (see top)
         if (
-          !this._originalOptions ||
           !this._originalOptions.withRelated ||
           this._originalOptions.withRelated.indexOf('authors') === -1
         ) {
@@ -157,10 +156,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         }
 
         // If the current column settings allow it...
-        if (
-          !options.columns ||
-          (options.columns && options.columns.indexOf('primary_author') > -1)
-        ) {
+        if (!options.columns || options.columns.indexOf('primary_author') > -1) {
           // ... attach a computed property of primary_author which is the first author
           if (attrs.authors && attrs.authors.length) {
             attrs.primary_author = attrs.authors[0];
@@ -398,20 +394,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         }
 
         function isOwner() {
-          let isCorrectOwner = true;
-
           if (!unsafeAttrs.authors) {
             return false;
           }
-
-          if (unsafeAttrs.authors) {
-            isCorrectOwner =
-              isCorrectOwner &&
-              unsafeAttrs.authors.length &&
-              unsafeAttrs.authors[0].id === context.user;
-          }
-
-          return isCorrectOwner;
+          return unsafeAttrs.authors.length && unsafeAttrs.authors[0].id === context.user;
         }
 
         function isPrimaryAuthor() {

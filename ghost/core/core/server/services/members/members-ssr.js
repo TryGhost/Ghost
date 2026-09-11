@@ -307,6 +307,24 @@ class MembersSSR {
    *
    * @returns {Promise<Member>}
    */
+  /**
+   * Who this session belongs to, without loading them.
+   *
+   * The counterpart to `getMemberDataFromSession`, for callers that need to know a
+   * member is there rather than what is on their record.
+   *
+   * @method getMemberIdentityFromSession
+   * @param {Request} req
+   * @param {Response} res
+   *
+   * @returns {Promise<{id: string, email: string} | null>}
+   */
+  async getMemberIdentityFromSession(req, res) {
+    const transientId = this._getSessionCookies(req, res);
+    const api = await this._getMembersApi();
+    return api.getMemberIdentity(transientId);
+  }
+
   async getMemberDataFromSession(req, res) {
     const transientId = this._getSessionCookies(req, res);
     const member = await this._getMemberIdentityDataFromTransientId(transientId);

@@ -67,6 +67,160 @@ describe('ExternalMediaInliner', function () {
     assert.ok(new ExternalMediaInliner({}));
   });
 
+  describe('importUrl', function () {
+    function harness() {
+      const response = { body: Buffer.from('media') };
+      const media = { fileBuffer: response.body, filename: 'media.jpg', extension: '.jpg' };
+      const inliner = new ExternalMediaInliner({});
+      const getRemoteMedia = sinon.stub(inliner, 'getRemoteMedia').resolves(response);
+      const extractFileDataFromResponse = sinon
+        .stub(inliner, 'extractFileDataFromResponse')
+        .resolves(media);
+      const storeMediaLocally = sinon
+        .stub(inliner, 'storeMediaLocally')
+        .resolves('__GHOST_URL__/content/images/media.jpg');
+
+      return {
+        inliner,
+        response,
+        media,
+        getRemoteMedia,
+        extractFileDataFromResponse,
+        storeMediaLocally,
+      };
+    }
+
+    it('downloads, extracts, and stores one source URL', async function () {
+      const h = harness();
+      const sourceUrl = 'https://example.com/media.jpg';
+
+      const result = await h.inliner.importUrl(sourceUrl);
+
+      assert.deepEqual(result, {
+        status: 'stored',
+        sourceUrl,
+        storedUrl: '__GHOST_URL__/content/images/media.jpg',
+      });
+      sinon.assert.calledWithExactly(h.getRemoteMedia, sourceUrl);
+      sinon.assert.calledWithExactly(h.extractFileDataFromResponse, sourceUrl, h.response);
+      sinon.assert.calledWithExactly(h.storeMediaLocally, h.media);
+    });
+
+    it('returns a typed download failure when fetching throws', async function () {
+      const h = harness();
+      const error = new Error('network unavailable');
+      h.getRemoteMedia.rejects(error);
+
+      const result = await h.inliner.importUrl('https://example.com/media.jpg');
+
+      assert.deepEqual(result, {
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+        error,
+      });
+      sinon.assert.notCalled(h.extractFileDataFromResponse);
+    });
+
+    it('returns a typed download failure when fetching produces no response', async function () {
+      const h = harness();
+      h.getRemoteMedia.resolves(null);
+
+      const result = await h.inliner.importUrl('https://example.com/media.jpg');
+
+      assert.deepEqual(result, {
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'download',
+        reason: 'The media file could not be downloaded.',
+      });
+      sinon.assert.notCalled(h.extractFileDataFromResponse);
+    });
+
+    it('returns a typed extraction failure', async function () {
+      const h = harness();
+      const error = new Error('invalid media');
+      h.extractFileDataFromResponse.rejects(error);
+
+      const result = await h.inliner.importUrl('https://example.com/media.jpg');
+
+      assert.deepEqual(result, {
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'extract',
+        reason: 'The downloaded media file could not be read.',
+        error,
+      });
+      sinon.assert.notCalled(h.storeMediaLocally);
+    });
+
+    it('returns a typed unsupported-media failure', async function () {
+      const h = harness();
+      h.storeMediaLocally.resolves(null);
+
+      const result = await h.inliner.importUrl('https://example.com/media.exe');
+
+      assert.deepEqual(result, {
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.exe',
+        stage: 'unsupported',
+        reason: 'No configured storage accepts this media file.',
+      });
+    });
+
+    it('returns a typed storage failure', async function () {
+      const h = harness();
+      const error = new Error('storage unavailable');
+      h.storeMediaLocally.rejects(error);
+
+      const result = await h.inliner.importUrl('https://example.com/media.jpg');
+
+      assert.deepEqual(result, {
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'storage',
+        reason: 'The media file could not be stored in Ghost.',
+        error,
+      });
+    });
+
+    it('preserves legacy processing errors at the existing catch boundary', async function () {
+      const inliner = new ExternalMediaInliner({});
+      const error = new Error('could not inspect media');
+      sinon.stub(inliner, 'importUrl').resolves({
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'extract',
+        reason: 'The downloaded media file could not be read.',
+        error,
+      });
+
+      await assert.rejects(
+        inliner.inlineContent('{"src":"https://example.com/media.jpg"}', ['https://example.com']),
+        (thrown) => thrown === error,
+      );
+    });
+
+    it('preserves legacy falsy thrown values at the existing catch boundary', async function () {
+      const inliner = new ExternalMediaInliner({});
+      sinon.stub(inliner, 'importUrl').resolves({
+        status: 'failed',
+        sourceUrl: 'https://example.com/media.jpg',
+        stage: 'extract',
+        reason: 'The downloaded media file could not be read.',
+        error: null,
+      });
+
+      await inliner
+        .inlineContent('{"src":"https://example.com/media.jpg"}', ['https://example.com'])
+        .then(
+          () => assert.fail('Expected inlineContent to reject'),
+          (error) => assert.equal(error, null),
+        );
+    });
+  });
+
   describe('inline', function () {
     it("inlines image in the post's mobiledoc content", async function () {
       const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';

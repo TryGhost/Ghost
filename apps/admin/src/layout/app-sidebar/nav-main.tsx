@@ -6,7 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuBadge,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -34,6 +34,11 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   );
   const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true });
   const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
+  const isAnalyticsRouteActive = useIsActiveLink({ path: 'analytics', activeOnSubpath: true });
+  const isPostAnalyticsRouteActive = useIsActiveLink({
+    path: 'posts/analytics',
+    activeOnSubpath: true,
+  });
   const showNetworkBadge =
     networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
 
@@ -46,7 +51,10 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
       <SidebarGroupContent>
         <SidebarMenu>
           <NavMenuItem>
-            <NavMenuItem.Link to="analytics" activeOnSubpath>
+            <NavMenuItem.Link
+              isActive={isAnalyticsRouteActive || isPostAnalyticsRouteActive}
+              to="analytics"
+            >
               <LucideIcon.TrendingUp />
               <NavMenuItem.Label>Analytics</NavMenuItem.Label>
             </NavMenuItem.Link>
@@ -62,7 +70,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               </NavMenuItem.Link>
               {showNetworkBadge && (
                 <SidebarMenuBadge data-testid="network-notification-badge">
-                  {networkNotificationCount}
+                  {formatNumber(networkNotificationCount)}
                 </SidebarMenuBadge>
               )}
             </NavMenuItem>

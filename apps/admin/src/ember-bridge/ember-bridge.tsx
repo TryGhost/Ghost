@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { EmberContext } from './ember-context';
 
 export interface EmberBridge {
   state: StateBridge;
@@ -22,6 +23,7 @@ export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
+  refreshFeatureFlagOverrides?: () => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
@@ -97,9 +99,14 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   tier: 'TiersResponseType',
   user: 'UsersResponseType',
   post: 'PostsResponseType',
+  // Without this, saving a page in the (Ember) editor never invalidates the
+  // React pages list, so a newly created page only appears after a manual
+  // refresh. Harmless while Ember owned /pages; visible as soon as React does.
+  page: 'PagesResponseType',
   member: 'MembersResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
+  snippet: 'SnippetsResponseType',
 };
 
 /**
@@ -176,11 +183,22 @@ export function useEmberDataSync() {
         return;
       }
 
-      // Invalidate all queries matching this data type
+      /**
+       * Saving a post or page can *create* tags: a tag typed into the
+       * editor is written as part of that post's own save, as an embedded
+       * relation. Ember therefore reports a `post` change and never a
+       * `tag` one — so without this the posts list's tag filter keeps
+       * serving a cached list, and a tag the user just made is missing
+       * from it until a full browser reload.
+       */
+      const alsoInvalidate =
+        modelName === 'post' || modelName === 'page' ? ['TagsResponseType'] : [];
+      const dataTypes = new Set([reactDataType, ...alsoInvalidate]);
+
       void queryClient.invalidateQueries({
         predicate: (query) => {
           // Query keys are structured as [dataType, url]
-          return query.queryKey[0] === reactDataType;
+          return dataTypes.has(query.queryKey[0] as string);
         },
       });
     };
@@ -298,11 +316,15 @@ export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
 }
 
 /**
- * React -> Ember mutation sync handlers for the FrameworkProvider. Each
- * forwards a successful React mutation to Ember's store sync and no-ops when
- * the bridge is absent (standalone React).
+ * React -> Ember handlers for the FrameworkProvider. Feature flag overrides
+ * wait for Ember to load; mutation handlers no-op when the bridge is absent.
  */
 export const emberMutationHandlers = {
+  onFeatureFlagOverridesChange: (): (() => void) => {
+    return waitForStateBridge((stateBridge) => {
+      stateBridge.refreshFeatureFlagOverrides?.();
+    });
+  },
   onUpdate: (dataType: string, response: unknown): void => {
     window.EmberBridge?.state.onUpdate(dataType, response);
   },
@@ -360,6 +382,7 @@ const defaultRouting: EmberRouting = {
  * ```
  */
 export function useEmberRouting(): EmberRouting {
+  const emberContext = useContext(EmberContext);
   const [bridge, setBridge] = useState<StateBridge | null>(() => window.EmberBridge?.state ?? null);
   const [, forceUpdate] = useState(0);
 
@@ -385,7 +408,12 @@ export function useEmberRouting(): EmberRouting {
 
   return {
     getRouteUrl: bridge.getRouteUrl,
-    isRouteActive: bridge.isRouteActive,
+    // React-owned navigations use pushState, which Ember does not observe.
+    // Only trust Ember's route state while the current route is actually
+    // rendering an Ember fallback. Outside EmberProvider (mainly unit tests
+    // and standalone consumers), preserve the bridge's original behaviour.
+    isRouteActive: (...args) =>
+      (emberContext?.isFallbackPresent ?? true) && bridge.isRouteActive(...args),
   };
 }
 

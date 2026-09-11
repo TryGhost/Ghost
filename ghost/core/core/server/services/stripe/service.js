@@ -14,6 +14,12 @@ const giftService = require('../gifts');
 const staffService = require('../staff');
 const labs = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+  remoteWebhooksWithoutStripe:
+    'stripeRemoteWebhooks is set but Stripe is not connected, so no webhook endpoint was registered. Connect Stripe in Ghost Admin under Settings, then restart.',
+};
 
 async function configureApi() {
   const cfg = getConfig({ settingsHelpers, config, urlUtils });
@@ -84,7 +90,10 @@ function stripeSettingsChanged(model) {
 
 module.exports.init = async function init() {
   try {
-    await configureApi();
+    const configured = await configureApi();
+    if (!configured && config.get('stripeRemoteWebhooks') === true) {
+      logging.warn(tpl(messages.remoteWebhooksWithoutStripe));
+    }
   } catch (err) {
     logging.error(err);
   }

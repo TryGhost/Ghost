@@ -8,7 +8,7 @@ const TaxonomyRouter = require('../../../../../core/frontend/services/routing/ta
 const { QUERY, TAXONOMIES } = require('../../../../../core/frontend/services/routing/config');
 const RESOURCE_CONFIG = { QUERY, TAXONOMIES };
 
-describe('UNIT - services/routing/TaxonomyRouter', function () {
+describe('services/routing/TaxonomyRouter', function () {
   let req;
   let res;
   let next;

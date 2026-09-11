@@ -11,13 +11,16 @@
     "connection": {
       "host": "127.0.0.1",
       "user": "root",
-      "password": "",
+      "password": "root",
       "database": "ghost_testing"
     }
   },
   "logging": {
     "level": "error",
     "logClientErrorsAsError": false
+  },
+  "queryParameterFiltering": {
+    "enabled": true
   },
   "adapters": {
     "Redis": {

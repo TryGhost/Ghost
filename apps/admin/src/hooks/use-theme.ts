@@ -38,9 +38,9 @@ function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
   });
 }
 
-// The class-toggling and media-query effects below are only a fallback for
-// running this hook standalone (no EmberBridge), so they must not fight Ember
-// when it manages the DOM theme — see isEmberThemeManaged.
+// Applying the DOM theme is only a fallback for running without EmberBridge.
+// React still tracks system preference changes so resolvedTheme stays current
+// for consumers even when Ember owns the DOM — see isEmberThemeManaged.
 function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
   if (!applyEmberAdminThemePreference(mode)) {
     applyThemeClass(resolvedTheme);
@@ -63,11 +63,7 @@ export function useTheme() {
   const resolvedTheme: ResolvedThemeMode = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
-    if (
-      isEmberThemeManaged() ||
-      typeof window === 'undefined' ||
-      typeof window.matchMedia !== 'function'
-    ) {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return;
     }
 
@@ -144,6 +140,7 @@ export function useTheme() {
   return {
     theme,
     resolvedTheme,
+    isThemeReady: preferences !== undefined,
     setTheme,
     isSettingTheme: isEditingPreferences || isPendingTheme,
   } as const;

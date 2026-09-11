@@ -36,7 +36,7 @@ describe('{{pagination}} helper', function () {
     };
 
     const expectedMessage =
-      'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/themes/helpers/pagination/.';
+      'The {{pagination}} helper was used outside of a paginated context. See https://docs.ghost.org/themes/helpers/pagination/.';
 
     assert.throws(runHelper('not an object'), { message: expectedMessage });
     assert.throws(

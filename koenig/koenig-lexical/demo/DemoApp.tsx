@@ -86,7 +86,7 @@ const defaultCardConfig = {
                 ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
 
                 const pages = [
-                    {id: '3', groupName: 'Pages', title: 'How to update Ghost', url: 'https://ghost.org/docs/update/'}
+                    {id: '3', groupName: 'Pages', title: 'How to update Ghost', url: 'https://docs.ghost.org/update/'}
                 ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
 
                 const tags = [

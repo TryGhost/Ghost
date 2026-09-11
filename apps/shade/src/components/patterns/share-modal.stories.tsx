@@ -45,6 +45,11 @@ const postSocialLinks: ShareModalSocialLink[] = [
     label: 'Share on LinkedIn',
     service: 'linkedin',
   },
+  {
+    href: `https://bsky.app/intent/compose?text=${encodedPostTitleAndUrl}`,
+    label: 'Share on Bluesky',
+    service: 'bluesky',
+  },
 ];
 
 const publicationSocialLinks: ShareModalSocialLink[] = [

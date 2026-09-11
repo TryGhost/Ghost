@@ -524,11 +524,16 @@ function FilterInput<T = unknown>({
   onKeyDown,
   onInputChange,
   className,
+  inputRef,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   className?: string;
   field?: FilterFieldConfig<T>;
   onInputChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // Taken as a plain prop rather than through forwardRef: this is an internal
+  // helper, not an exported Shade component, and forwardRef composes badly with
+  // its generic parameter.
+  inputRef?: React.Ref<HTMLInputElement>;
 }) {
   const context = useFilterContext();
   const [isValid, setIsValid] = useState(true);
@@ -649,6 +654,7 @@ function FilterInput<T = unknown>({
 
       <div className="flex w-full items-stretch">
         <input
+          ref={inputRef}
           aria-describedby={
             !isValid && validationMessage ? `${field?.key || 'input'}-error` : undefined
           }
@@ -1471,6 +1477,13 @@ export function FilterSegmentInput({
   );
 }
 
+// Types whose filter is created empty and answered by typing, so focus belongs
+// in the input as soon as it appears. Deliberately excludes the date-like types
+// and `numberrange`, which are created already carrying a usable value and so
+// aren't waiting on input; and the pickers, which open a menu that takes focus
+// on its own.
+const TYPED_VALUE_FIELD_TYPES = ['text', 'number', 'email', 'url', 'tel'];
+
 interface FilterValueSelectorProps<T = unknown> {
   field: FilterFieldConfig<T>;
   values: T[];
@@ -1478,6 +1491,8 @@ interface FilterValueSelectorProps<T = unknown> {
   operator: string;
   onOperatorChange?: (operator: string) => void;
   readOnly?: boolean;
+  /** Focus the value input on mount — set for a filter the user just added. */
+  autoFocus?: boolean;
 }
 
 interface SelectOptionsPopoverProps<T = unknown> {
@@ -1569,6 +1584,15 @@ interface SelectOptionsListProps<T = unknown> {
   onSelectUnselected: (option: FilterOption<T>) => void;
 }
 
+/**
+ * What a row's tooltip says. The detail is not rendered beside the label, so
+ * this is the only place it surfaces — enough to tell two same-named options
+ * apart when you need to, without spending row width on it always.
+ */
+function optionTitle<T>(option: FilterOption<T>): string {
+  return option.detail ? `${option.label} — ${option.detail}` : option.label;
+}
+
 function SelectOptionsList<T = unknown>({
   contextLabel,
   selectedOptions,
@@ -1602,17 +1626,13 @@ function SelectOptionsList<T = unknown>({
               onSelect={() => onSelectSelected(option)}
             >
               {option.icon && option.icon}
-              <div className="flex flex-col overflow-hidden">
-                <span className="truncate text-accent-foreground" title={option.label}>
-                  {option.label}
-                </span>
-                {option.detail && (
-                  <span className="truncate text-muted-foreground" title={option.detail}>
-                    {option.detail}
-                  </span>
-                )}
-              </div>
-              <Check className="ms-auto text-primary" />
+              <span
+                className="min-w-0 flex-1 truncate text-accent-foreground"
+                title={optionTitle(option)}
+              >
+                {option.label}
+              </span>
+              <Check className="shrink-0 text-primary" />
             </CommandItem>
           ))}
         </CommandGroup>
@@ -1626,21 +1646,30 @@ function SelectOptionsList<T = unknown>({
               <CommandItem
                 key={String(option.value)}
                 className="group flex items-center gap-2"
-                value={option.label + (option.detail ? ` - ${option.detail}` : '')}
+                // Identity comes from the value, never the
+                // label. Two options sharing a label were a
+                // single row to `cmdk`, so both highlighted
+                // together. `keywords` keeps client-side search
+                // matching what the row actually shows.
+                keywords={[option.label, ...(option.detail ? [option.detail] : [])]}
+                value={String(option.value)}
                 onSelect={() => onSelectUnselected(option)}
               >
                 {option.icon && option.icon}
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate text-accent-foreground" title={option.label}>
-                    {option.label}
-                  </span>
-                  {option.detail && (
-                    <span className="truncate text-muted-foreground" title={option.detail}>
-                      {option.detail}
-                    </span>
-                  )}
-                </div>
-                <Check className="ms-auto text-primary opacity-0" />
+                {/* The detail is not drawn — it lives in the
+                                    title. Beside the label it crowded out the
+                                    name, which is the thing being chosen; a
+                                    duplicate name is rare enough not to spend
+                                    half the row on. No invisible checkmark
+                                    either: the selected rows sit in their own
+                                    group above, so an empty column here only
+                                    narrowed the names. */}
+                <span
+                  className="min-w-0 flex-1 truncate text-accent-foreground"
+                  title={optionTitle(option)}
+                >
+                  {option.label}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -2039,10 +2068,12 @@ function FilterValueSelector<T = unknown>({
   operator,
   onOperatorChange,
   readOnly,
+  autoFocus,
 }: FilterValueSelectorProps<T>) {
   const [open, setOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const context = useFilterContext();
+  const valueInputRef = useRef<HTMLInputElement>(null);
 
   // Focus the search input when the popover opens
   useEffect(() => {
@@ -2056,6 +2087,14 @@ function FilterValueSelector<T = unknown>({
       }, 0);
     }
   }, [open, field.searchable]);
+
+  // A filter the user just added lands with an empty value, so put the caret
+  // where the answer goes instead of leaving them to click into it.
+  useEffect(() => {
+    if (autoFocus) {
+      valueInputRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   // Hide value input for empty/not empty operators
   if (operator === 'empty' || operator === 'not_empty') {
@@ -2265,6 +2304,7 @@ function FilterValueSelector<T = unknown>({
       <FilterInput
         className={field.className}
         field={field}
+        inputRef={valueInputRef}
         pattern={field.pattern || getPattern()}
         placeholder={
           field.placeholder || context.i18n.placeholders.enterField(field.type || 'text')
@@ -2322,6 +2362,7 @@ function FilterValueSelector<T = unknown>({
           <FilterInput
             className={cn('w-16 max-w-full', field.className)}
             field={field}
+            inputRef={valueInputRef}
             max={field.max}
             min={field.min}
             pattern={field.pattern}
@@ -2360,6 +2401,7 @@ function FilterValueSelector<T = unknown>({
         <FilterInput
           className={cn('w-36', field.className)}
           field={field}
+          inputRef={valueInputRef}
           max={field.type === 'number' ? field.max : undefined}
           min={field.type === 'number' ? field.min : undefined}
           pattern={field.pattern}
@@ -2703,6 +2745,10 @@ export function Filters<T = unknown>({
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
+  // The filter added most recently, so its input can take focus once it renders.
+  // Holding the id rather than a boolean keeps it pinned to that one row, which
+  // a positional guess would lose as soon as filters are added or removed.
+  const [autoFocusFilterId, setAutoFocusFilterId] = useState<string | null>(null);
   // The field-picker search, controlled so a `previewLimit` group can uncap while
   // the user is searching. `expandedGroups` holds the groups whose "Show more" was
   // clicked. Both reset when the picker closes.
@@ -2860,6 +2906,13 @@ export function Filters<T = unknown>({
 
       const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues as T[]);
       onChange([...filters, newFilter]);
+
+      // Picker types are excluded here because adding one opens its options
+      // popover, which already takes focus.
+      if (TYPED_VALUE_FIELD_TYPES.includes(field.type || '')) {
+        setAutoFocusFilterId(newFilter.id);
+      }
+
       closeFilterPopover();
     },
     [allowMultiple, closeFilterPopover, fieldsMap, filters, onChange],
@@ -3038,6 +3091,7 @@ export function Filters<T = unknown>({
                                 static segments, so the filter stays legible while only
                                 the remove control acts. */}
               <FilterValueSelector<T>
+                autoFocus={filter.id === autoFocusFilterId}
                 field={field}
                 operator={filter.operator}
                 readOnly={field.readOnly}

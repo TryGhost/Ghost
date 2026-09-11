@@ -22,9 +22,6 @@ const optionalCell = z
 const isSubscribed = (cell: string): boolean => cell.toLowerCase() !== 'false';
 const isComplimentary = (cell: string): boolean => cell.toLowerCase() === 'true';
 
-// The member import vocabulary as a schema: the single source of truth that coerces the
-// raw string Row into typed member fields. Unknown columns (custom_fields.*, and anything
-// else a source carries) pass through via .loose() so nothing is lost before the kernel.
 export const memberImportRowSchema = z
   .object({
     id: optionalCell,

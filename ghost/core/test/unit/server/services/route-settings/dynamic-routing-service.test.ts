@@ -25,7 +25,7 @@ taxonomies:
   tag: /tag/{slug}/
 `;
 
-describe('UNIT: DynamicRoutingService (store-backed)', function () {
+describe('DynamicRoutingService (store-backed)', function () {
   let service: InstanceType<typeof DynamicRoutingService>;
   let store: InMemoryStore;
 

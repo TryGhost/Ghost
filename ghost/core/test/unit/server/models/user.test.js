@@ -116,6 +116,22 @@ describe('Unit: models/user', function () {
           });
       });
     });
+
+    it('retries until the generated default password is secure', function () {
+      const insecurePassword = 'password';
+      const securePassword = 'reOakhgmofLBGy5H';
+      sinon
+        .stub(security.identifier, 'uid')
+        .withArgs(50)
+        .onFirstCall()
+        .returns(insecurePassword)
+        .onSecondCall()
+        .returns(securePassword);
+
+      const defaults = models.User.prototype.defaults();
+
+      assert.equal(defaults.password, securePassword);
+    });
   });
 
   describe('add', function () {

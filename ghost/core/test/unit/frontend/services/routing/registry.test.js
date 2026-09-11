@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
-describe('UNIT: services/routing/registry', function () {
+describe('services/routing/registry', function () {
   beforeEach(function () {
     registry.clearAllRouters();
     registry.resetAllRoutes();

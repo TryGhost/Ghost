@@ -82,7 +82,7 @@ const getMembersValidationKey = () => {
 // we should probably just load the i18n module
 
 // load the i18n module
-const i18nLib = require('@tryghost/i18n');
+const i18nLib = require('@tryghost/i18n').default;
 const i18n = i18nLib('en', 'ghost');
 const t = (key, options) => {
   return i18n.t(key, options);

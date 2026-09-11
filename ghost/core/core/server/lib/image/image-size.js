@@ -31,6 +31,12 @@ class ImageSize {
       },
       response_timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
     };
+
+    // Coalesces concurrent getImageSizeFromUrl() calls for the same URL so we only
+    // ever issue one underlying request/read per URL at a time. A single post's
+    // coverImage/ogImage/twitterImage often resolve to the same feature_image URL
+    // and are looked up concurrently, which otherwise fans out into duplicate requests.
+    this.inFlightImageSizeLookups = new Map();
   }
 
   // processes the Buffer result of an image file using image-size
@@ -153,6 +159,24 @@ class ImageSize {
    * @returns {Promise<Object>} imageObject or error
    */
   getImageSizeFromUrl(imagePath) {
+    if (this.inFlightImageSizeLookups.has(imagePath)) {
+      return this.inFlightImageSizeLookups.get(imagePath);
+    }
+
+    const promise = this._getImageSizeFromUrl(imagePath).finally(() => {
+      this.inFlightImageSizeLookups.delete(imagePath);
+    });
+    this.inFlightImageSizeLookups.set(imagePath, promise);
+
+    return promise;
+  }
+
+  /**
+   * @description read image dimensions from URL, without in-flight deduplication
+   * @param {string} imagePath as URL
+   * @returns {Promise<Object>} imageObject or error
+   */
+  _getImageSizeFromUrl(imagePath) {
     if (this.storageUtils.isLocalImage(imagePath)) {
       // don't make a request for a locally stored image
       return this.getImageSizeFromStoragePath(imagePath);

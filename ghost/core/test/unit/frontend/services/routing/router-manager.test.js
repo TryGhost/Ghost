@@ -9,7 +9,7 @@ const routingEvents = require('../../../../../core/frontend/services/routing/eve
 // static pages, apps); only the settings-driven ones are asserted on here.
 const emptySettings = { routes: [], collections: [], taxonomies: {} };
 
-describe('UNIT: services/routing/RouterManager', function () {
+describe('services/routing/RouterManager', function () {
   let routerManager;
   let urlService;
 

@@ -1,0 +1,7 @@
+NODE extract_pending_automation_runs
+SQL >
+    SELECT site_uuid, id, automation_run_id, status = 'pending' AS is_pending, updated_at
+    FROM _mv_automation_run_steps
+
+TYPE MATERIALIZED
+DATASOURCE _mv_pending_automation_runs

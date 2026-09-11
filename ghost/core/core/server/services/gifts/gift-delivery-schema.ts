@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DbDate } from '../../lib/db-date';
+import { DbDate } from '../../lib/db-types/date';
 import type { CamelKeys } from '../../lib/case-keys';
 
 export const GiftDeliveryStatusSchema = z.enum([

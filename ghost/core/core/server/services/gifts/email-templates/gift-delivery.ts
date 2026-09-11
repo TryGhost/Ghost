@@ -2,7 +2,6 @@ import type { Translate } from '../gift-email-renderer';
 
 export interface GiftDeliveryEmailData {
   siteTitle: string;
-  siteUrl: string;
   siteIconUrl: string | null;
   siteDomain: string;
   accentColor: string;

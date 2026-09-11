@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
@@ -45,6 +46,15 @@ const sharedSsrConfig = {
   resolve: { conditions: ['source', 'node'] },
 };
 
+/*
+ * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
+ * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
+ * 4-core runner measured 2.08x (e2e) and 1.79x (integration) against a 2-core
+ * one purely on worker count. `legacy` runs on the threads pool, so the
+ * "forks 2 hangs" wedge below is not in play here.
+ */
+const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
 const sharedDbConfig = {
@@ -57,16 +67,16 @@ const sharedDbConfig = {
   // here except `legacy`, which sets pool: 'threads' (see its note below).
   pool: 'forks' as const,
   isolate: false,
+  maxWorkers: getWorkerCount(),
   sequence: { shuffle: { files: !!process.env.CI } },
   setupFiles: ['./test/utils/vitest-setup-db.ts'],
   resolveSnapshotPath,
-  // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
-  // sqlite `testing` locally). Must reject vitest's own `NODE_ENV='test'`
-  // default — Ghost has no config.test.json, so `test` yields no DB config and
-  // bookshelf throws "Invalid knex instance". Resolved here in the main
-  // process, where CI sets the leg's NODE_ENV.
+  // DB-backed suites run against MySQL in CI and locally. Set the environment
+  // explicitly to reject vitest's own `NODE_ENV='test'` default — Ghost has no
+  // config.test.json, so `test` yields no DB config and bookshelf throws
+  // "Invalid knex instance".
   env: {
-    NODE_ENV: process.env.NODE_ENV?.startsWith('testing') ? process.env.NODE_ENV : 'testing',
+    NODE_ENV: 'testing-mysql',
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
     // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
     // them require() Ghost's .ts sources (job files pull in e.g.
@@ -84,6 +94,43 @@ const sharedDbConfig = {
   hookTimeout: 60000,
 };
 
+// Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
+// test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + MinIO,
+// minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
+// report without failing.
+type CoverageLane = {
+  reportsDirectory: string;
+  thresholds: {
+    statements: number;
+    branches: number;
+    functions: number;
+    lines: number;
+  };
+};
+
+const COVERAGE_LANES: Record<string, CoverageLane> = {
+  e2e: {
+    reportsDirectory: 'coverage-e2e',
+    thresholds: { statements: 70, branches: 56, functions: 74, lines: 70 },
+  },
+  integration: {
+    reportsDirectory: 'coverage-integration',
+    thresholds: { statements: 47, branches: 32, functions: 47, lines: 47 },
+  },
+};
+
+// Object.hasOwn, not a truthy lookup: 'constructor' and the rest of
+// Object.prototype would otherwise resolve to inherited members and silently
+// skip the gate. An empty string is a bad value too, not "unset".
+const laneName = process.env.COVERAGE_LANE;
+if (laneName !== undefined && !Object.hasOwn(COVERAGE_LANES, laneName)) {
+  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  throw new Error(
+    `Unknown COVERAGE_LANE '${laneName}' — expected one of: ${Object.keys(COVERAGE_LANES).join(', ')}`,
+  );
+}
+const coverageLane = laneName === undefined ? undefined : COVERAGE_LANES[laneName];
+
 export default defineConfig({
   test: {
     resolveSnapshotPath,
@@ -99,6 +146,27 @@ export default defineConfig({
     // Local runs use the compact `dot` reporter. CI uses `default` plus
     // `github-actions` for inline annotations (mirrors vitest.config.ts).
     reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
+    // Coverage for the CI acceptance lanes (test:ci:e2e / test:ci:integration),
+    // which pass --coverage and pick their lane via COVERAGE_LANE. `include`
+    // is what reports never-loaded files under vitest 4 (there is no `all`).
+    coverage: {
+      provider: 'v8',
+      include: ['core/*.js', 'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}'],
+      exclude: [
+        'core/frontend/src/**',
+        'core/frontend/public/**',
+        'core/frontend/helpers/**',
+        'core/server/data/migrations/**',
+        'core/server/data/schema/schema.js',
+        'core/server/web/api/testmode/**',
+        'core/server/services/koenig/**',
+        // Type-only declarations: no runtime code, and the remapper's parser
+        // rejects them ('Expected `from` but found `{`' on `import type`).
+        '**/*.d.ts',
+      ],
+      reporter: ['text-summary', 'cobertura'],
+      ...coverageLane,
+    },
     projects: [
       {
         ssr: sharedSsrConfig,
@@ -132,8 +200,7 @@ export default defineConfig({
           // exposes — e.g. migration.test.js can leave a rolled-back
           // schema that a co-located file then inherits. Per-file
           // isolation removes it by construction. The e2e project keeps
-          // isolate:false (it has no such pollution and is fastest that
-          // way); sqlite per-file init is cheap so the cost here is small.
+          // isolate:false (it has no such pollution and is fastest that way).
           isolate: true,
           include: ['test/integration/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],

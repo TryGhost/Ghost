@@ -3,7 +3,7 @@ const {
   toExpressNotation,
 } = require('../../../../../core/frontend/services/routing/permalink-adapter');
 
-describe('UNIT - services/routing/permalink-adapter', function () {
+describe('services/routing/permalink-adapter', function () {
   describe('toExpressNotation', function () {
     it('converts a single {slug} placeholder to :slug', function () {
       assert.equal(toExpressNotation('/{slug}/'), '/:slug/');

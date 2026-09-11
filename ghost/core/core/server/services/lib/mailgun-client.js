@@ -165,8 +165,8 @@ module.exports = class MailgunClient {
    * @param {Object} mailgunOptions
    * @param {Function} batchHandler
    * @param {Object} options
-   * @param {number} [options.maxEvents] Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
-   * @returns {Promise<void>}
+   * @param {number} [options.maxEvents] Per-domain soft maximum. We stop fetching a domain after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
+   * @returns {Promise<{safeCursor?: Date} | void>}
    */
   async fetchEvents(mailgunOptions, batchHandler, { maxEvents = Infinity } = {}) {
     const mailgunInstance = this.getInstance();
@@ -184,12 +184,33 @@ module.exports = class MailgunClient {
     // Determine which domains to fetch from
     const domains = this.#getDomainsToFetch(mailgunConfig);
 
+    const cappedDomainCursors = [];
+
     // Fetch events from each domain
     for (const domain of domains) {
-      await this.#fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {
-        maxEvents,
-      });
+      const result = await this.#fetchEventsFromDomain(
+        domain,
+        mailgunInstance,
+        mailgunOptions,
+        batchHandler,
+        { maxEvents },
+      );
+
+      if (
+        result.capped &&
+        result.lastEventTimestamp &&
+        Number.isFinite(result.lastEventTimestamp.getTime())
+      ) {
+        cappedDomainCursors.push(result.lastEventTimestamp);
+      }
     }
+
+    const safeCursor = cappedDomainCursors.reduce(
+      (earliest, cursor) => (!earliest || cursor < earliest ? cursor : earliest),
+      undefined,
+    );
+
+    return { safeCursor };
   }
 
   /**
@@ -220,7 +241,7 @@ module.exports = class MailgunClient {
    * @param {Function} batchHandler
    * @param {Object} options
    * @param {number} options.maxEvents
-   * @returns {Promise<void>}
+   * @returns {Promise<{capped: boolean, eventCount: number, lastEventTimestamp?: Date}>}
    */
   async #fetchEventsFromDomain(
     domain,
@@ -235,6 +256,9 @@ module.exports = class MailgunClient {
 
     let batchCount = 0;
     let totalBatchTime = 0;
+    let eventCount = 0;
+    let lastEventTimestamp;
+    let capped = false;
 
     try {
       let page = await this.getEventsFromMailgun(mailgunInstance, domain, mailgunOptions);
@@ -248,7 +272,6 @@ module.exports = class MailgunClient {
         `[MailgunClient fetchEventsFromDomain ${domain}]: finished fetching first page with ${events.length} events`,
       );
 
-      let eventCount = 0;
       const beginTimestamp = mailgunOptions.begin
         ? Math.ceil(mailgunOptions.begin * 1000)
         : undefined; // ceil here if we have rounding errors
@@ -263,6 +286,13 @@ module.exports = class MailgunClient {
         totalBatchTime += batchDuration;
 
         eventCount += events.length;
+        const batchLastEventTimestamp = events[events.length - 1].timestamp;
+        if (
+          batchLastEventTimestamp &&
+          (!lastEventTimestamp || batchLastEventTimestamp > lastEventTimestamp)
+        ) {
+          lastEventTimestamp = batchLastEventTimestamp;
+        }
 
         if (
           eventCount >= maxEvents &&
@@ -270,6 +300,7 @@ module.exports = class MailgunClient {
             !events[events.length - 1].timestamp ||
             events[events.length - 1].timestamp.getTime() > beginTimestamp)
         ) {
+          capped = true;
           break;
         }
 
@@ -294,10 +325,15 @@ module.exports = class MailgunClient {
       const overallEndTime = Date.now();
       const totalDuration = overallEndTime - overallStartTime;
       const averageBatchTime = batchCount > 0 ? totalBatchTime / batchCount : 0;
+      const cursor = Number.isFinite(lastEventTimestamp?.getTime())
+        ? lastEventTimestamp.toISOString()
+        : 'none';
 
       logging.info(
-        `[MailgunClient fetchEventsFromDomain ${domain}]: Processed ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s`,
+        `[MailgunClient fetchEventsFromDomain ${domain}]: Processed ${eventCount} events in ${batchCount} batches in ${(totalDuration / 1000).toFixed(2)}s. Average batch time: ${(averageBatchTime / 1000).toFixed(2)}s. Status: ${capped ? 'capped' : 'exhausted'}. Cursor: ${cursor}`,
       );
+
+      return { capped, eventCount, lastEventTimestamp };
     } catch (error) {
       logging.error(`[MailgunClient fetchEventsFromDomain ${domain}]: Error fetching events`);
       logging.error(error);

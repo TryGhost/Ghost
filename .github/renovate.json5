@@ -283,7 +283,7 @@
     //    Node.js runtime declared in `engines`, not a dependency — so a hard
     //    version cap is the only lever. Raise it when we bump the Node engine.
     {
-      description: 'Cap @types/node at the installed Node major (engines: ^22.23.1)',
+      description: 'Cap @types/node at the default Node major (devEngines: 22.23.1)',
       matchPackageNames: ['@types/node'],
       allowedVersions: '<23',
     },
@@ -356,7 +356,6 @@
     {
       groupName: 'TryGhost runtime packages',
       matchPackageNames: [
-        '@tryghost/api-framework',
         '@tryghost/bookshelf-plugins',
         '@tryghost/database-info',
         '@tryghost/debug',
@@ -370,7 +369,6 @@
         '@tryghost/mw-vhost',
         '@tryghost/pretty-cli',
         '@tryghost/prometheus-metrics',
-        '@tryghost/promise',
         '@tryghost/referrer-parser',
         '@tryghost/root-utils',
         '@tryghost/security',
@@ -390,14 +388,6 @@
       ],
     },
 
-    // Bump @tryghost/limit-service on its own. Limit changes are feature-tied
-    // (each new flag is consumed by specific BREAD/limit-helper code) and we
-    // want the version bump landing as an isolated, reviewable PR rather than
-    // riding in with unrelated admin-support package updates.
-    {
-      groupName: '@tryghost/limit-service',
-      matchPackageNames: ['@tryghost/limit-service'],
-    },
     {
       groupName: 'TryGhost content and email packages',
       matchPackageNames: [

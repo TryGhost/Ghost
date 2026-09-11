@@ -5,6 +5,7 @@ const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const limits = require('../../../../services/limits');
 
 const shared = require('../../../shared');
 
@@ -146,6 +147,25 @@ module.exports = function apiRoutes() {
   // Tiers
   router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
   router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+  // What a tier's checkout asks for, read when a Stripe checkout session is built.
+  // Registered before /tiers/:id so the literal path isn't captured by :id.
+  //
+  // A sub-resource rather than a key on the tier, because the tier payload is a public
+  // projection: `tiers-public` shares this docName's serializer, so anything on a tier is
+  // rendered by themes. This is admin-only configuration that no client renders, since
+  // the questions are drawn by Stripe's own checkout page rather than by Portal.
+  //
+  // Named for the configuration rather than the checkout, so it cannot be mistaken for
+  // the session that `create-stripe-checkout-session` creates from it.
+  router.get('/tiers/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.browse));
+  router.get('/tiers/:id/checkout_config', mw.authAdminApi, http(api.tiersCheckoutConfig.read));
+  router.put(
+    '/tiers/:id/checkout_config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutCollection'),
+    http(api.tiersCheckoutConfig.edit),
+  );
+
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
@@ -176,45 +196,38 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Member custom field definitions — gated by the members_custom_fields flag.
-  // Registered before /members/:id so the literal path isn't captured by :id.
-  router.get(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.browse),
-  );
-  router.post(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.add),
-  );
-  // A PUT on the collection sets the publisher's order for the whole list.
-  router.put(
-    '/members/custom_fields',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.reorder),
-  );
-  router.get(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.read),
-  );
-  router.put(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.edit),
-  );
-  router.delete(
-    '/members/custom_fields/:key',
-    mw.authAdminApi,
-    labs.enabledMiddleware('membersCustomFields'),
-    http(api.membersCustomFields.destroy),
-  );
+  // Custom field definitions. Mounted rather than listed so every route under it is
+  // reached the same way, and so the guards are stated once each instead of on every
+  // route that needs them.
+  //
+  // Order carries the rule here, the way Express reads it: a request walks this stack
+  // from the top, so the reads below are answered before the guards are reached, and
+  // everything registered after them passes through both. A route added at the end is
+  // guarded by being there, which is the safer way round to forget.
+  //
+  // Mounted before /members/:id so the literal path is not captured as an id.
+  const metafieldsRouter = express.Router('admin api members metafields');
+  router.use('/members/metafields', metafieldsRouter);
+
+  metafieldsRouter.use(mw.authAdminApi);
+
+  // Reading is deliberately open: Admin asks every site for its definitions to draw
+  // screens it renders either way, and a site that has none simply answers with an empty
+  // list rather than a 404.
+  metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
+  metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+
+  // Changing one needs the feature to exist in this build and the site's plan to include
+  // it. Two separate questions, asked once each: a 404 says the feature is not here, a 403
+  // says the plan does not cover it, and only the second is something a publisher can act
+  // on.
+  metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
+  metafieldsRouter.use(limits.requireFeature('limitCustomFields'));
+
+  metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
+  metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
+  metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
+  metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));
   router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
@@ -507,6 +520,7 @@ module.exports = function apiRoutes() {
   // ## Emails
   router.get('/emails', mw.authAdminApi, http(api.emails.browse));
   router.get('/emails/:id', mw.authAdminApi, http(api.emails.read));
+  router.get('/emails/:id/status', mw.authAdminApi, http(api.emails.sendingStatus));
   router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
   router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
   router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));

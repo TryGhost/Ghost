@@ -14,6 +14,8 @@ import {
   getRefDomain,
 } from './utils/helpers';
 import { t } from './utils/i18n';
+import { clearGiftFormState } from './components/pages/gift/form-state';
+import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
 
 const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
 
@@ -43,6 +45,10 @@ function openPopup({ data }) {
 }
 
 function back({ state }) {
+  if (state.page === 'gift') {
+    clearGiftFormState();
+  }
+
   if (state.lastPage) {
     return {
       page: state.lastPage,
@@ -53,7 +59,15 @@ function back({ state }) {
 }
 
 function closePopup({ state }) {
-  removePortalLinkFromUrl();
+  let restoredGiftEntryRoute = false;
+  if (state.page === 'gift') {
+    clearGiftFormState();
+    restoredGiftEntryRoute = restoreGiftEntryRoute();
+  }
+
+  if (!restoredGiftEntryRoute) {
+    removePortalLinkFromUrl();
+  }
   // Drop any one-shot post-sign-in redirect (e.g. set when sign-in is opened
   // from a comment "Reply") so a dismissed sign-in can't leak its redirect into
   // a later, unrelated sign-in on the same page. Other pageData is preserved.

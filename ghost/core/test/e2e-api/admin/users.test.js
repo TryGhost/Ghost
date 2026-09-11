@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
+const dbBackup = require('../../../core/server/data/db/backup');
 const {
   agentProvider,
   fixtureManager,
@@ -488,7 +490,7 @@ describe('User API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
-  it('Can destroy an active user and transfer posts to the owner', async function () {
+  it('Can destroy an active user without a backup and transfer posts to the owner', async function () {
     // Use slimer-mcectoplasm user (index 3) who has a post in the fixtures
     const { id: userId, slug: userSlug } = fixtureManager.get('users', 3);
     const ownerId = fixtureManager.get('users', 0).id;
@@ -532,16 +534,14 @@ describe('User API', function () {
       .select();
     const initialUserPostCount = userPostsAuthorsModels.length;
 
-    // Delete the user
-    const deleteRes = await agent
-      .delete(`users/${userId}/`)
-      .expectStatus(200)
-      .expect(({ body }) => {
-        assert.ok(body.meta.filename);
-      });
-
-    // Check the backup file was created
-    await agent.get(`db/?filename=${deleteRes.body.meta.filename}`).expectStatus(200);
+    // Delete the user without creating a database backup
+    const backupStub = sinon.stub(dbBackup, 'backup');
+    try {
+      await agent.delete(`users/${userId}/`).expectStatus(204).expectEmptyBody();
+      sinon.assert.notCalled(backupStub);
+    } finally {
+      backupStub.restore();
+    }
 
     // Verify user was deleted
     await agent.get(`users/${userId}/`).expectStatus(404);

@@ -7,6 +7,8 @@ const PaymentsService = require('./services/payments-service');
 const TokenService = require('./services/token-service');
 const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
+const metafields = require('../../members-metafields');
+const { MemberAccountService } = require('../account-service');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
 
@@ -41,7 +43,6 @@ module.exports = function MembersAPI({
     MemberProductEvent,
     MemberEmailChangeEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     EmailSpamComplaintEvent,
     Offer,
@@ -71,7 +72,8 @@ module.exports = function MembersAPI({
   commentsService,
   emailAddressService,
   giftService,
-  customFieldValues,
+  metafieldValues,
+  metafieldDefinitions,
 }) {
   const tokenService = new TokenService({
     privateKey,
@@ -119,7 +121,6 @@ module.exports = function MembersAPI({
     MemberStatusEvent,
     MemberLoginEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberLinkClickEvent,
     MemberFeedback,
     EmailSpamComplaintEvent,
@@ -147,7 +148,6 @@ module.exports = function MembersAPI({
         });
       },
     },
-    labsService,
     stripeService: stripeAPIService,
     memberAttributionService,
     emailSuppressionList,
@@ -155,7 +155,8 @@ module.exports = function MembersAPI({
     nextPaymentCalculator,
     commentsService,
     giftService,
-    customFieldValues,
+    metafieldValues,
+    metafieldDefinitions,
   });
 
   const geolocationService = new GeolocationService();
@@ -179,6 +180,11 @@ module.exports = function MembersAPI({
     offersAPI,
     stripeAPIService,
     settingsCache,
+    // The service wrapper, not the checkout config it builds: tiers and members are
+    // initialised in the same Promise.all, so reading the property here would capture
+    // whatever it was before tiers finished — usually undefined.
+    tiersService,
+    labsService,
   });
 
   const memberController = new MemberController({
@@ -197,7 +203,6 @@ module.exports = function MembersAPI({
     paymentsService,
     tiersService,
     memberRepository,
-    StripePrice,
     allowSelfSignup,
     magicLinkService,
     stripeAPIService,
@@ -353,11 +358,27 @@ module.exports = function MembersAPI({
   }
 
   async function getMemberIdentityData(email) {
-    return memberBREADService.read({ email });
+    return memberBREADService.read({ email }, { metafieldsFor: null });
+  }
+
+  const account = new MemberAccountService({
+    memberBREADService,
+    members: users,
+    emailSuppressionList,
+    metafieldValues: metafields.values,
+  });
+
+  async function getMemberIdentity(transientId) {
+    if (!transientId) {
+      return null;
+    }
+
+    const member = await users.get({ transient_id: transientId });
+    return member ? { id: member.id, email: member.get('email') } : null;
   }
 
   async function getMemberIdentityDataFromTransientId(transientId) {
-    return memberBREADService.read({ transient_id: transientId });
+    return memberBREADService.read({ transient_id: transientId }, { metafieldsFor: null });
   }
 
   async function cycleTransientId(memberId) {
@@ -497,6 +518,7 @@ module.exports = function MembersAPI({
     getMemberIdentityToken,
     getMemberEntitlementToken,
     getMemberIdentityDataFromTransientId,
+    getMemberIdentity,
     getMemberIdentityData,
     cycleTransientId,
     setMemberGeolocationFromIp,
@@ -505,6 +527,7 @@ module.exports = function MembersAPI({
     sendEmailWithMagicLink,
     getMagicLink,
     members: users,
+    account,
     memberBREADService,
     events: eventRepository,
     productRepository,

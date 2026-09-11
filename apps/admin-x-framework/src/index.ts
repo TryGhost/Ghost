@@ -53,6 +53,19 @@ export {
 } from './utils/post-helpers';
 export { focusKoenigEditorOnBottomClick } from './utils/focus-koenig-editor-on-bottom-click';
 
+// Recipient filter utilities
+export {
+  EVERYONE_RECIPIENT_FILTER,
+  FREE_SEGMENT,
+  PAID_SEGMENT,
+  buildRecipientFilter,
+  getFullRecipientFilter,
+  getNewsletterRecipientFilter,
+  getRecipientType,
+  parseRecipientFilter,
+} from './utils/recipient-filter';
+export type { RecipientFilterSegments, RecipientType } from './utils/recipient-filter';
+
 // Source utilities
 export {
   getFaviconDomain,

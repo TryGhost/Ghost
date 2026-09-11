@@ -52,10 +52,7 @@ export default class SignupRoute extends UnauthenticatedRoute {
             tokenText = atob(params.token);
             email = tokenText.split('|')[1];
 
-            // leave e-mail blank even though we get it from the token because
-            // we need the user to type it in for Chrome to remember the
-            // email/password combo properly
-            signupDetails.email = '';
+            signupDetails.email = email;
             signupDetails.token = params.token;
 
             let authUrl = this.ghostPaths.url.api('authentication', 'invitation');

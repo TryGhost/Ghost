@@ -9,8 +9,6 @@ const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
 const { mockSystemTime } = require('../../../utils/clock-utils');
 
-const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
-
 describe('Domain Warming Integration Tests', function () {
   let agent;
   let clock;
@@ -346,9 +344,8 @@ describe('Domain Warming Integration Tests', function () {
       );
     });
 
-    // mysql-only: SQLite's small bound-parameter limit can't take the 800-member
-    // bulk insert. 60s timeout: 800 members across 5 days of batch sends.
-    it.runIf(isMySQL)('handles maximum limit scenarios', { timeout: 60000 }, async function () {
+    // 60s timeout: 800 members across 5 days of batch sends.
+    it('handles maximum limit scenarios', { timeout: 60000 }, async function () {
       await createMembers(800, 'maxlimit');
 
       let previousCsdCount = 0;

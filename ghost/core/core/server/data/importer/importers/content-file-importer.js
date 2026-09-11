@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const path = require('node:path');
 let replaceImage;
 let preProcessPosts;
 let preProcessTags;
@@ -9,8 +10,19 @@ replaceImage = function (markdown, image) {
     return;
   }
 
-  // Normalizes to include a trailing slash if there was one
-  const regex = new RegExp('(/)?' + image.originalPath, 'gm');
+  const originalPaths = [image.originalPath];
+  if (image.originalPath.startsWith('content/')) {
+    originalPaths.push(image.originalPath.slice('content/'.length));
+  } else {
+    originalPaths.unshift(`content/${image.originalPath}`);
+  }
+
+  // Match canonical /content/{type} paths before their shorter archive path so
+  // replacing images/image.jpg cannot leave an extra /content prefix behind.
+  // Consume __GHOST_URL__ too: newPath already contains the configured subdir
+  // and the model will normalize it back to transform-ready form on write.
+  const escapedPaths = originalPaths.map((originalPath) => _.escapeRegExp(originalPath));
+  const regex = new RegExp(`(?:__GHOST_URL__)?/?(?:${escapedPaths.join('|')})`, 'gm');
 
   return markdown.replace(regex, image.newPath);
 };
@@ -30,6 +42,12 @@ preProcessPosts = function (data, contentFile) {
     }
     if (post.feature_image) {
       post.feature_image = replaceImage(post.feature_image, contentFile);
+    }
+    if (post.og_image) {
+      post.og_image = replaceImage(post.og_image, contentFile);
+    }
+    if (post.twitter_image) {
+      post.twitter_image = replaceImage(post.twitter_image, contentFile);
     }
   });
 };
@@ -114,10 +132,10 @@ class ContentFileImporter {
    * @param {Object[]} contentFilesData
    * @returns
    */
-  doImport(contentFilesData) {
+  async doImport(contentFilesData) {
     const store = this.#store;
 
-    return Promise.all(
+    const results = await Promise.allSettled(
       contentFilesData.map(function (contentFile) {
         return store.save(contentFile, contentFile.targetDir).then(function (result) {
           return {
@@ -128,6 +146,50 @@ class ContentFileImporter {
         });
       }),
     );
+
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      const storedFiles = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
+      try {
+        await this.rollback(storedFiles);
+      } catch (rollbackFailure) {
+        // AggregateError is the native error for preserving both storage failures;
+        // it is not a GhostError and therefore does not accept an options object.
+        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        throw new AggregateError(
+          [failure.reason, rollbackFailure],
+          'Asset storage failed and rollback was incomplete.',
+          { cause: failure.reason },
+        );
+      }
+      throw failure.reason;
+    }
+
+    return results.map((result) => result.value);
+  }
+
+  /**
+   * @param {{stored: string}[]} storedFiles
+   * @returns {Promise<void>}
+   */
+  async rollback(storedFiles) {
+    const store = this.#store;
+    const results = await Promise.allSettled(
+      storedFiles.map(function (storedFile) {
+        const storedPath = store.urlToPath(storedFile.stored);
+        const targetDir = path.posix.dirname(storedPath);
+        return store.delete(
+          path.posix.basename(storedPath),
+          targetDir === '.' ? undefined : targetDir,
+        );
+      }),
+    );
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      throw failure.reason;
+    }
   }
 }
 

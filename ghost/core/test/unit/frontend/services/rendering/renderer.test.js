@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const renderer = require('../../../../../core/frontend/services/rendering/renderer');
 
@@ -14,6 +15,9 @@ describe('Renderer', function () {
     res = {
       locals: {},
       routerOptions: {},
+      // an open response: both are always booleans on a real ServerResponse
+      destroyed: false,
+      writableEnded: false,
       // pre-set so templates.setTemplate returns early
       _template: 'index',
       render: sinon.stub().callsArgWith(2, null, '<html></html>'),
@@ -85,6 +89,54 @@ describe('Renderer', function () {
 
     renderer(req, res, {});
 
+    sinon.assert.calledOnce(req.next);
+    sinon.assert.notCalled(res.send);
+  });
+
+  it('skips the render when the client hung up before it started', function () {
+    res.destroyed = true;
+    res.writableEnded = false;
+
+    renderer(req, res, {});
+
+    sinon.assert.notCalled(res.render);
+    sinon.assert.notCalled(res.send);
+    assert.equal(res.statusCode, 499);
+  });
+
+  it('discards the html when the client hung up during the render', function () {
+    res.render = sinon.stub().callsFake(function (template, data, callback) {
+      res.destroyed = true;
+      res.writableEnded = false;
+      callback(null, '<html></html>');
+    });
+
+    renderer(req, res, {});
+
+    sinon.assert.calledOnce(res.render);
+    sinon.assert.notCalled(res.send);
+    assert.equal(res.statusCode, 499);
+  });
+
+  it('does not treat an already-sent response as a disconnect', function () {
+    res.destroyed = true;
+    res.writableEnded = true;
+
+    renderer(req, res, {});
+
+    sinon.assert.calledOnceWithExactly(res.send, '<html></html>');
+  });
+
+  it('forwards render errors even when the client has hung up', function () {
+    req.next = sinon.spy();
+    res.render = sinon.stub().callsFake(function (template, data, callback) {
+      res.destroyed = true;
+      callback(new Error('render failed'));
+    });
+
+    renderer(req, res, {});
+
+    // a broken template is worth logging whether or not anyone is still listening
     sinon.assert.calledOnce(req.next);
     sinon.assert.notCalled(res.send);
   });

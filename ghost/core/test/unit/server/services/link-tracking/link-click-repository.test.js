@@ -30,7 +30,7 @@ const linkClicks = [
   }),
 ];
 
-describe('UNIT: LinkClickRepository class', function () {
+describe('LinkClickRepository class', function () {
   let linkClickRepository;
   let memberStub;
   let memberLinkClickEventModelStub;

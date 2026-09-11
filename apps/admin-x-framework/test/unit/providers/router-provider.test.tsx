@@ -1,7 +1,34 @@
 import { StrictMode } from 'react';
 import { render, waitFor } from '@testing-library/react';
-import { Navigate } from '../../../src/providers/router-provider';
+import { Navigate, RouterProvider } from '../../../src/providers/router-provider';
 import { TestWrapper } from '../../../src/test/test-utils';
+
+describe('feature flag overrides', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    window.location.hash = '';
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
+    window.location.hash = '';
+  });
+
+  it('notifies the host after storing URL overrides', async () => {
+    window.location.hash = '#/?labs=testFlag';
+    const onFeatureFlagOverridesChange = vi.fn(() => {
+      expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["testFlag"]');
+    });
+
+    render(
+      <TestWrapper frameworkProps={{ onFeatureFlagOverridesChange }}>
+        <RouterProvider prefix="/" routes={[{ path: '/', element: <div>Home</div> }]} />
+      </TestWrapper>,
+    );
+
+    await waitFor(() => expect(onFeatureFlagOverridesChange).toHaveBeenCalled());
+  });
+});
 
 describe('Navigate', () => {
   it('performs cross-app navigation once after mounting in Strict Mode', async () => {

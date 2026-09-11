@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-date';
+import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-types/date';
 import { decodeGiftRow } from './gift-codec';
 import { decodeGiftDeliveryRow, encodeGiftDelivery } from './gift-delivery-codec';
 import type { Gift } from './gift';
@@ -22,6 +22,10 @@ export interface GiftDeliveryRepository {
   getById(id: string, options?: RepositoryTransactionOptions): Promise<GiftDeliveryData | null>;
   getByGiftId(
     giftId: string,
+    options?: RepositoryTransactionOptions,
+  ): Promise<GiftDeliveryData | null>;
+  getByGiftToken(
+    giftToken: string,
     options?: RepositoryTransactionOptions,
   ): Promise<GiftDeliveryData | null>;
   getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null>;
@@ -122,6 +126,20 @@ export class GiftDeliveryBookshelfRepository implements GiftDeliveryRepository {
     const model = await this.model.findOne({ gift_id: giftId }, { require: false, ...options });
 
     return model ? decodeGiftDeliveryRow(model.toJSON()) : null;
+  }
+
+  async getByGiftToken(
+    giftToken: string,
+    options: RepositoryTransactionOptions = {},
+  ): Promise<GiftDeliveryData | null> {
+    const db = options.transacting ?? this.knex;
+    const row = await db('gift_deliveries')
+      .select('gift_deliveries.*')
+      .join('gifts', 'gifts.id', 'gift_deliveries.gift_id')
+      .where('gifts.token', giftToken)
+      .first();
+
+    return row ? decodeGiftDeliveryRow(row) : null;
   }
 
   async getByProviderMessageId(providerMessageId: string): Promise<GiftDeliveryData | null> {

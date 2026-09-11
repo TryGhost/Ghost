@@ -34,13 +34,11 @@ module.exports = class EventRepository {
     MemberStatusEvent,
     MemberLoginEvent,
     MemberCreatedEvent,
-    SubscriptionCreatedEvent,
     MemberPaidSubscriptionEvent,
     MemberLinkClickEvent,
     MemberFeedback,
     EmailSpamComplaintEvent,
     Comment,
-    labsService,
     memberAttributionService,
     urlService,
     MemberEmailChangeEvent,
@@ -55,10 +53,8 @@ module.exports = class EventRepository {
     this._MemberLoginEvent = MemberLoginEvent;
     this._EmailRecipient = EmailRecipient;
     this._Comment = Comment;
-    this._labsService = labsService;
     this._urlService = urlService;
     this._MemberCreatedEvent = MemberCreatedEvent;
-    this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
     this._MemberLinkClickEvent = MemberLinkClickEvent;
     this._MemberFeedback = MemberFeedback;
     this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;

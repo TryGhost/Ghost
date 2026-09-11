@@ -3,12 +3,6 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 
-// These two tests inspect raw sqlite query traffic (db.knex.client as an sqlite3
-// Database), so they only apply on the sqlite leg. Decide at registration from
-// NODE_ENV (the mysql leg sets testing-mysql) — db.knex isn't connected yet when
-// the file loads, and Vitest has no Mocha-style runtime this.skip().
-const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
-
 describe('Collection Model', function () {
   beforeAll(testUtils.teardownDb);
   beforeAll(testUtils.stopGhost);
@@ -19,24 +13,22 @@ describe('Collection Model', function () {
   beforeAll(testUtils.setup('users:roles', 'posts'));
 
   describe('add', function () {
-    it.skipIf(isMySQL)(
-      'does not update the sort_order of the collections_posts table if the type is "automatic"',
-      async function () {
-        /** @type {import('knex').Knex.Client} */
-        const database = db.knex.client;
+    it('does not update the sort_order of the collections_posts table if the type is "automatic"', async function () {
+      /** @type {import('knex').Knex.Client} */
+      const database = db.knex.client;
 
-        let didUpdateCollectionPosts = false;
+      let didUpdateCollectionPosts = false;
 
-        function handler(/** @type {{sql: string}} */ query) {
-          if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
-            didUpdateCollectionPosts = true;
-          }
+      function handler(/** @type {{sql: string}} */ query) {
+        if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
+          didUpdateCollectionPosts = true;
         }
+      }
 
-        const posts = await models.Post.findAll();
+      const posts = await models.Post.findAll();
 
-        database.on('query', handler);
-
+      database.on('query', handler);
+      try {
         await models.Collection.add({
           title: 'Test Collection',
           slug: 'test-collection-automatic',
@@ -46,34 +38,33 @@ describe('Collection Model', function () {
           posts: posts.toJSON().map((post) => ({ id: post.id })),
           feature_image: null,
         });
-
+      } finally {
         database.off('query', handler);
+      }
 
-        const actual = didUpdateCollectionPosts;
-        const expected = false;
+      assert.equal(
+        didUpdateCollectionPosts,
+        false,
+        'collections_posts should not have been updated',
+      );
+    });
 
-        assert.equal(actual, expected, 'collections_posts should not have been updated');
-      },
-    );
+    it('does update the sort_order of the collections_posts table if the type is "manual"', async function () {
+      /** @type {import('knex').Knex.Client} */
+      const database = db.knex.client;
 
-    it.skipIf(isMySQL)(
-      'does update the sort_order of the collections_posts table if the type is "manual"',
-      async function () {
-        /** @type {import('knex').Knex.Client} */
-        const database = db.knex.client;
+      let didUpdateCollectionPosts = false;
 
-        let didUpdateCollectionPosts = false;
-
-        function handler(/** @type {{sql: string}} */ query) {
-          if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
-            didUpdateCollectionPosts = true;
-          }
+      function handler(/** @type {{sql: string}} */ query) {
+        if (query.sql.toLowerCase().includes('update `collections_posts` set `sort_order`')) {
+          didUpdateCollectionPosts = true;
         }
+      }
 
-        const posts = await models.Post.findAll();
+      const posts = await models.Post.findAll();
 
-        database.on('query', handler);
-
+      database.on('query', handler);
+      try {
         await models.Collection.add({
           title: 'Test Collection',
           slug: 'test-collection-manual',
@@ -83,14 +74,11 @@ describe('Collection Model', function () {
           posts: posts.toJSON().map((post) => ({ id: post.id })),
           feature_image: null,
         });
-
+      } finally {
         database.off('query', handler);
+      }
 
-        const actual = didUpdateCollectionPosts;
-        const expected = true;
-
-        assert.equal(actual, expected, 'collections_posts should not have been updated');
-      },
-    );
+      assert.equal(didUpdateCollectionPosts, true, 'collections_posts should have been updated');
+    });
   });
 });

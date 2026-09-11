@@ -38,13 +38,20 @@ describe('post import row schema', function () {
       slug: '',
       feature_image: 'undefined',
       meta_title: '',
-      frontmatter: '',
+      comment_id: '',
+      authors: '',
+      author_emails: 'undefined',
+      tags: '',
     });
 
     assert.equal(parsed.slug, undefined);
     assert.equal(parsed.feature_image, undefined);
     assert.equal(parsed.meta_title, undefined);
-    assert.equal(parsed.frontmatter, undefined);
+    assert.equal(parsed.comment_id, undefined);
+    assert.equal(parsed.authors, undefined);
+    assert.equal(parsed.author_emails, undefined);
+    assert.equal(parsed.tags, undefined);
+    assert.equal(postImportRowSchema.parse({ comment_id: 'undefined' }).comment_id, undefined);
   });
 
   it('passes unknown columns through for later milestones to consume', function () {

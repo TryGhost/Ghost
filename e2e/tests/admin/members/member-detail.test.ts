@@ -129,6 +129,10 @@ const compSubscription = (overrides: Record<string, unknown> = {}) => ({
 
 type MemberStatus = 'paid' | 'comped' | 'gift';
 
+// Playwright's wording once the page, context or a fetched response is gone.
+const isTeardownError = (err: unknown) =>
+  err instanceof Error && /has been (disposed|closed)/.test(err.message);
+
 /**
  * Rewrites this member on every read, letting a test serve a shape the fixture
  * database can't produce (Stripe subscriptions, engagement counters).
@@ -153,11 +157,12 @@ const interceptMemberRead = async (
       }
       return route.fulfill({ response, body: JSON.stringify(body) });
     } catch (err) {
-      // A post-mutation refetch can land after the test has finished, once
-      // the context is gone; there's nothing left to serve. Anything else
-      // is a real failure, and swallowing it would leave the request
-      // hanging until the test times out with no clue why.
-      if (!page.isClosed()) {
+      // A post-mutation refetch can still be in flight when the test ends;
+      // teardown then disposes the response before `page.isClosed()` flips,
+      // so the error itself is the only reliable signal. Anything else is a
+      // real failure, and swallowing it would leave the request hanging
+      // until the test times out with no clue why.
+      if (!page.isClosed() && !isTeardownError(err)) {
         throw err;
       }
     }
@@ -497,6 +502,63 @@ test.describe('Ghost Admin - Member Detail', () => {
       await expect(page.getByText('10.50').first()).toBeVisible();
       await expect(page.getByText(/month/i).first()).toBeVisible();
       await expect(page.getByText(/Renews 15 Feb 2026/).first()).toBeVisible();
+    });
+
+    test('subscription attribution with an unsafe url - shows the page as text, not a link', async ({
+      page,
+    }) => {
+      // Subscription attribution URLs come from public signup/checkout URL
+      // history, which the server does not scheme-validate, so a member can get
+      // a `javascript:` URL stored as their own subscription attribution. It
+      // should still be shown, but never as a clickable link a staff user could
+      // trigger — the same rule the sidebar and activity feed already apply.
+      const member = await memberFactory.create({
+        name: 'Unsafe Attribution',
+        email: 'unsafe-attribution@ghost.org',
+      });
+      await seedSubscriptions(page, member.id, 'paid', [
+        paidSubscription({
+          attribution: {
+            title: 'Signup page',
+            url: "javascript:localStorage.setItem('attribution_xss', 'executed')",
+            referrer_source: 'Twitter',
+          },
+        }),
+      ]);
+
+      await page.goto(memberPath(member.id));
+      await page.getByTestId('member-subscription-details-toggle').first().click();
+
+      await expect(page.getByText('Signup page')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Signup page' })).toHaveCount(0);
+    });
+
+    test('subscription attribution with a safe url - shows the page as a working link', async ({
+      page,
+    }) => {
+      // The guard must not swallow legitimate attribution: a site-relative or
+      // http(s) URL still renders as a link the staff user can follow.
+      const member = await memberFactory.create({
+        name: 'Safe Attribution',
+        email: 'safe-attribution@ghost.org',
+      });
+      await seedSubscriptions(page, member.id, 'paid', [
+        paidSubscription({
+          attribution: { title: 'Welcome post', url: '/welcome/', referrer_source: 'Twitter' },
+        }),
+      ]);
+
+      await page.goto(memberPath(member.id));
+      await page.getByTestId('member-subscription-details-toggle').first().click();
+
+      const link = page.getByRole('link', { name: 'Welcome post' });
+      await expect(link).toBeVisible();
+
+      // Following it opens the page in a new tab — proof the affordance is real.
+      const popupPromise = page.context().waitForEvent('page');
+      await link.click();
+      const popup = await popupPromise;
+      await expect(popup).toHaveURL(/\/welcome/);
     });
 
     test('subscription set to cancel - shows remaining access rather than a renewal', async ({

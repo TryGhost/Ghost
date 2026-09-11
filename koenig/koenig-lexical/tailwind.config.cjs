@@ -1,3 +1,23 @@
+const greyScale = {
+    DEFAULT: '#ABB4BE',
+    50: '#FAFAFB',
+    75: '#F9FAFB',
+    100: '#F4F5F6',
+    150: '#F1F3F4',
+    200: '#EBEEF0',
+    250: '#E5E9ED',
+    300: '#DDE1E5',
+    400: '#CED4D9',
+    500: '#AEB7C1',
+    600: '#95A1AD',
+    700: '#7C8B9A',
+    800: '#626D79',
+    900: '#394047',
+    925: '#2E3338',
+    950: '#23292F',
+    975: '#191B1E'
+};
+
 module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
@@ -5,35 +25,23 @@ module.exports = {
     important: '.koenig-lexical',
     content: [
         './src/**/*.{js,jsx,ts,tsx}',
-        './demo/**/*.{js,jsx,ts,tsx}'
+        './demo/**/*.{js,jsx,ts,tsx}',
+        '../kg-unsplash-selector/src/**/*.{js,jsx,ts,tsx}'
     ],
     darkMode: 'class',
     theme: {
         colors: {
             accent: 'var(--kg-accent-color, #ff0095)',
+            'surface-panel': 'var(--surface-panel, #FFF)',
+            foreground: 'var(--foreground, #15171A)',
+            'muted-foreground': 'var(--muted-foreground, #7C8B9A)',
+            border: 'var(--border, #DDE1E5)',
             transparent: 'transparent',
             current: 'currentColor',
             white: '#FFF',
             black: '#15171A',
-            grey: {
-                DEFAULT: '#ABB4BE',
-                50: '#FAFAFB',
-                75: '#F9FAFB',
-                100: '#F4F5F6',
-                150: '#F1F3F4',
-                200: '#EBEEF0',
-                250: '#E5E9ED',
-                300: '#DDE1E5',
-                400: '#CED4D9',
-                500: '#AEB7C1',
-                600: '#95A1AD',
-                700: '#7C8B9A',
-                800: '#626D79',
-                900: '#394047',
-                925: '#2E3338',
-                950: '#23292F',
-                975: '#191B1E'
-            },
+            grey: greyScale,
+            gray: greyScale,
             green: {
                 DEFAULT: '#30CF43',
                 100: '#E1F9E4',

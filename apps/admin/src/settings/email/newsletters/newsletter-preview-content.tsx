@@ -120,13 +120,13 @@ const NewsletterPreviewContent: React.FC<{
     emailHeader = (
       <>
         <p className="leading-normal">
-          <span className="font-semibold text-grey-900">From: </span>
+          <span className="font-semibold text-gray-900">From: </span>
           <span>
             {senderName} ({senderEmail})
           </span>
         </p>
         <p className="leading-normal">
-          <span className="font-semibold text-grey-900">Reply-to: </span>
+          <span className="font-semibold text-gray-900">Reply-to: </span>
           {senderReplyTo ? senderReplyTo : senderEmail}
         </p>
       </>
@@ -135,11 +135,11 @@ const NewsletterPreviewContent: React.FC<{
     emailHeader = (
       <>
         <p className="leading-normal">
-          <span className="font-semibold text-grey-900">{senderName}</span>
+          <span className="font-semibold text-gray-900">{senderName}</span>
           <span> {senderEmail}</span>
         </p>
         <p className="leading-normal">
-          <span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com
+          <span className="font-semibold text-gray-900">To:</span> Jamie Larson jamie@example.com
         </p>
       </>
     );
@@ -166,7 +166,7 @@ const NewsletterPreviewContent: React.FC<{
       <div className="absolute inset-0 m-5 flex items-center justify-center">
         <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
           {/* Email header */}
-          <div className="flex-column flex min-h-[77px] justify-center gap-1 rounded-t-sm border-b border-grey-200 bg-white px-6 text-grey-700">
+          <div className="flex-column flex min-h-[77px] justify-center gap-1 rounded-t-sm border-b border-gray-200 bg-white px-6 text-gray-700">
             {emailHeader}
           </div>
 
@@ -190,7 +190,7 @@ const NewsletterPreviewContent: React.FC<{
                   )}
                   {headerTitle && (
                     <h4
-                      className="mb-1 text-center text-[1.6rem] leading-tight font-bold tracking-tight text-grey-900 uppercase"
+                      className="mb-1 text-center text-[1.6rem] leading-tight font-bold tracking-tight text-gray-900 uppercase"
                       style={{ color: headerTextColor }}
                     >
                       {headerTitle}
@@ -198,7 +198,7 @@ const NewsletterPreviewContent: React.FC<{
                   )}
                   {headerSubtitle && (
                     <h5
-                      className="mb-1 text-center text-[1.3rem] font-normal text-grey-700"
+                      className="mb-1 text-center text-[1.3rem] font-normal text-gray-700"
                       style={{ color: secondaryHeaderTextColor }}
                     >
                       {headerSubtitle}
@@ -235,7 +235,7 @@ const NewsletterPreviewContent: React.FC<{
                   )}
                   <div
                     className={clsx(
-                      'flex w-full justify-between text-center text-md leading-none text-grey-700',
+                      'flex w-full justify-between text-center text-md leading-none text-gray-700',
                       titleAlignment === 'center' ? 'flex-col gap-1' : 'flex-row',
                     )}
                   >
@@ -275,7 +275,7 @@ const NewsletterPreviewContent: React.FC<{
                     />
                   </div>
                   <div
-                    className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-grey-700"
+                    className="mt-1 w-full max-w-[600px] pb-8 text-center text-[1.3rem] text-gray-700"
                     style={{ color: secondaryHeaderTextColor }}
                   >
                     Feature image caption
@@ -287,7 +287,7 @@ const NewsletterPreviewContent: React.FC<{
             <div className={clsx('px-[7rem]', headerBackgroundColor !== 'transparent' && 'pt-10')}>
               <div
                 className={clsx(
-                  'max-w-[600px] border-b border-grey-200 pb-[52px] leading-[27.2px] text-black',
+                  'max-w-[600px] border-b border-gray-200 pb-[52px] leading-[27.2px] text-black',
                   dividerStyle === 'dashed' && 'border-dashed',
                   dividerStyle === 'dotted' && 'border-b-2 border-dotted',
                   bodyFontCategory === 'serif'
@@ -383,7 +383,7 @@ const NewsletterPreviewContent: React.FC<{
               {(showFeedback || showCommentCta || showShareButton) && (
                 <div
                   className={clsx(
-                    'grid gap-5 border-b border-grey-200 px-6 py-5',
+                    'grid gap-5 border-b border-gray-200 px-6 py-5',
                     dividerStyle === 'dashed' && 'border-dashed',
                     dividerStyle === 'dotted' && 'border-b-2 border-dotted',
                   )}
@@ -462,7 +462,7 @@ const NewsletterPreviewContent: React.FC<{
               {showLatestPosts && (
                 <div
                   className={clsx(
-                    'border-b border-grey-200 py-6',
+                    'border-b border-gray-200 py-6',
                     dividerStyle === 'dashed' && 'border-dashed',
                     dividerStyle === 'dotted' && 'border-b-2 border-dotted',
                   )}
@@ -490,7 +490,7 @@ const NewsletterPreviewContent: React.FC<{
                         The three latest posts published on your site
                       </h4>
                       <p
-                        className="m-0 text-base text-grey-700"
+                        className="m-0 text-base text-gray-700"
                         style={{ color: secondaryTextColor }}
                       >
                         Posts sent as an email only will never be shown here.
@@ -523,7 +523,7 @@ const NewsletterPreviewContent: React.FC<{
                         Displayed at the bottom of each newsletter
                       </h4>
                       <p
-                        className="m-0 text-base text-grey-700"
+                        className="m-0 text-base text-gray-700"
                         style={{ color: secondaryTextColor }}
                       >
                         Giving your readers one more place to discover your stories.
@@ -556,7 +556,7 @@ const NewsletterPreviewContent: React.FC<{
                         To keep your work front and center
                       </h4>
                       <p
-                        className="m-0 text-base text-grey-700"
+                        className="m-0 text-base text-gray-700"
                         style={{ color: secondaryTextColor }}
                       >
                         Making sure that your audience stays engaged.
@@ -580,7 +580,7 @@ const NewsletterPreviewContent: React.FC<{
               {showSubscriptionDetails && (
                 <div
                   className={clsx(
-                    'border-b border-grey-200 py-8',
+                    'border-b border-gray-200 py-8',
                     dividerStyle === 'dashed' && 'border-dashed',
                     dividerStyle === 'dotted' && 'border-b-2 border-dotted',
                   )}
@@ -620,11 +620,11 @@ const NewsletterPreviewContent: React.FC<{
               <div className="flex flex-col items-center pt-10">
                 <div
                   dangerouslySetInnerHTML={{ __html: processedFooterContent || '' }}
-                  className="text px-8 py-3 text-center text-[1.3rem] leading-base break-words text-grey-700 [&_a]:underline"
+                  className="text px-8 py-3 text-center text-[1.3rem] leading-base break-words text-gray-700 [&_a]:underline"
                   style={{ color: secondaryTextColor }}
                 />
 
-                <div className="px-8 pt-3 pb-14 text-center text-[1.3rem] text-grey-700">
+                <div className="px-8 pt-3 pb-14 text-center text-[1.3rem] text-gray-700">
                   <span style={{ color: secondaryTextColor }}>
                     {siteTitle} © {currentYear} &mdash;{' '}
                   </span>
@@ -639,7 +639,7 @@ const NewsletterPreviewContent: React.FC<{
                 {showBadge && (
                   <div className="flex flex-col items-center pt-[10px] pb-[40px]">
                     <a
-                      className="pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight text-grey-900"
+                      className="pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight text-gray-900"
                       href="https://ghost.org"
                       style={{ color: textColor }}
                     >

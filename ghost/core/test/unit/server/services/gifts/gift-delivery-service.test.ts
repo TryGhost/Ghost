@@ -50,6 +50,7 @@ describe('GiftDeliveryService', function () {
     giftDeliveryRepository = {
       getById: sinon.stub().resolves(null),
       getByGiftId: sinon.stub().resolves(null),
+      getByGiftToken: sinon.stub().resolves(null),
       getByProviderMessageId: sinon.stub().resolves(null),
       findRecoverableForPurchasedGifts: sinon.stub().resolves([]),
       findScheduledTimesForPurchasedGifts: sinon.stub().resolves([]),
@@ -109,6 +110,31 @@ describe('GiftDeliveryService', function () {
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  it('returns the recipient email for a gift regardless of delivery state', async function () {
+    giftDeliveryRepository.getByGiftToken.resolves(
+      buildGiftDelivery({
+        recipientEmail: 'recipient@example.com',
+        status: 'failed',
+        outcome: 'permanent_failed',
+      }),
+    );
+    const service = createService();
+
+    assert.equal(
+      await service.getRecipientEmailForGift('gift-token', { transacting }),
+      'recipient@example.com',
+    );
+    sinon.assert.calledOnceWithExactly(giftDeliveryRepository.getByGiftToken, 'gift-token', {
+      transacting,
+    });
+  });
+
+  it('returns null when a gift has no email delivery', async function () {
+    const service = createService();
+
+    assert.equal(await service.getRecipientEmailForGift('gift-token'), null);
   });
 
   it('dispatches an immediate send for a pending delivery after purchase', async function () {

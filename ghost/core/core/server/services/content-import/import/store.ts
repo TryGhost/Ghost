@@ -2,11 +2,16 @@
 // outcome per row. Nothing is persisted; the durable job system milestone
 // replaces this.
 
-// skipped = the row was never attempted (the publisher can fix the file);
-// failed = the write was attempted and lost.
+// skipped = an otherwise valid row required no write (for example a duplicate);
+// failed = the row could not produce a post, including source validation errors.
 export type Clock = () => Date;
 
-export type RowStatus = 'created' | 'skipped' | 'failed';
+export type RowStatus = 'created' | 'updated' | 'skipped' | 'failed';
+
+export interface DuplicateMetadata {
+  origin: 'this_import' | 'pre_existing';
+  matchedBy: 'source_id' | 'slug';
+}
 
 export interface RowOutcome {
   // Source line number as a publisher sees it in a spreadsheet: the header is
@@ -15,8 +20,13 @@ export interface RowOutcome {
   title: string | null;
   status: RowStatus;
   reason?: string;
+  duplicate?: DuplicateMetadata;
+  mediaFailures?: Array<{ sourceUrl: string; reason: string }>;
+  warnings?: string[];
   postId?: string;
+  postType?: 'post' | 'page';
   url?: string;
+  source?: Record<string, string>;
 }
 
 export interface ImportRun {
@@ -26,6 +36,7 @@ export interface ImportRun {
   finishedAt?: Date;
   failureReason?: string;
   total: number;
+  sourceColumns: string[];
   rows: RowOutcome[];
 }
 
@@ -36,13 +47,14 @@ const MAX_RUN_AGE_MS = 60 * 60 * 1000;
 export class ImportRunStore {
   // Insertion-ordered, so count-eviction drops the oldest run first.
   private _runs = new Map<string, ImportRun>();
+  private _settledWaiters = new Set<() => void>();
   private _now: Clock;
 
   constructor({ now = () => new Date() }: { now?: Clock } = {}) {
     this._now = now;
   }
 
-  create(id: string, total: number): ImportRun {
+  create(id: string, total: number, sourceColumns: string[] = []): ImportRun {
     this.evict();
 
     const run: ImportRun = {
@@ -50,6 +62,7 @@ export class ImportRunStore {
       status: 'running',
       startedAt: this._now(),
       total,
+      sourceColumns,
       rows: [],
     };
     this._runs.set(id, run);
@@ -81,10 +94,36 @@ export class ImportRunStore {
     return this._runs.get(id);
   }
 
+  release(id: string): void {
+    this._runs.delete(id);
+    this.resolveSettledWaiters();
+  }
+
+  allSettled(): Promise<void> {
+    if (this._runs.size === 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      this._settledWaiters.add(resolve);
+    });
+  }
+
+  private resolveSettledWaiters(): void {
+    if (this._runs.size > 0) {
+      return;
+    }
+
+    for (const resolve of this._settledWaiters) {
+      resolve();
+    }
+    this._settledWaiters.clear();
+  }
+
   // A running run is never evicted, whatever its age: the job holds only the runId,
   // so evicting mid-import would silently turn its record()/finish() calls into
   // no-ops and lose the report. The count cap can briefly overshoot while several
-  // imports run at once; the inline job queue bounds how many that can be.
+  // imports run at once; the jobs backend bounds how many that can be.
   private evict(): void {
     const cutoff = this._now().getTime() - MAX_RUN_AGE_MS;
     for (const [id, run] of this._runs) {

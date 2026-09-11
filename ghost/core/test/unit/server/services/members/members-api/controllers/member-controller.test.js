@@ -32,6 +32,7 @@ describe('MemberController', function () {
 
       const tier = {
         id: 'whatever',
+        status: 'active',
       };
 
       const price = {
@@ -83,6 +84,97 @@ describe('MemberController', function () {
       await controller.updateSubscription(req, res);
 
       memberRepository.updateSubscription.verify();
+    });
+
+    it('Does not update a subscription plan via tierId/cadence branch if the Tier is not active', async function () {
+      const tokenService = {
+        decodeToken: sinon.fake.resolves({ sub: 'fake@email.com' }),
+      };
+
+      const memberRepository = {
+        updateSubscription: sinon.mock('updateSubscription').never(),
+      };
+
+      const tier = {
+        id: 'whatever',
+        status: 'archived',
+      };
+
+      const tiersService = {
+        api: {
+          read: sinon.fake.resolves(tier),
+        },
+      };
+
+      const controller = new MemberController({
+        memberRepository,
+        tiersService,
+        tokenService,
+      });
+
+      const req = {
+        body: {
+          identity: 'token',
+          tierId: 'tier_id',
+          cadence: 'yearly',
+        },
+        params: {
+          id: 'subscription_id',
+        },
+      };
+      const res = {
+        writeHead: sinon.fake(),
+        end: sinon.fake(),
+      };
+
+      await controller.updateSubscription(req, res);
+
+      memberRepository.updateSubscription.verify();
+      sinon.assert.calledOnceWithExactly(res.writeHead, 403);
+      sinon.assert.calledOnceWithExactly(res.end, 'Tier is archived.');
+    });
+
+    it('Does not update a subscription plan via tierId/cadence branch if the Tier is not found', async function () {
+      const tokenService = {
+        decodeToken: sinon.fake.resolves({ sub: 'fake@email.com' }),
+      };
+
+      const memberRepository = {
+        updateSubscription: sinon.mock('updateSubscription').never(),
+      };
+
+      const tiersService = {
+        api: {
+          read: sinon.fake.resolves(undefined),
+        },
+      };
+
+      const controller = new MemberController({
+        memberRepository,
+        tiersService,
+        tokenService,
+      });
+
+      const req = {
+        body: {
+          identity: 'token',
+          tierId: 'tier_id',
+          cadence: 'yearly',
+        },
+        params: {
+          id: 'subscription_id',
+        },
+      };
+      const res = {
+        writeHead: sinon.fake(),
+        end: sinon.fake(),
+      };
+
+      await controller.updateSubscription(req, res);
+
+      memberRepository.updateSubscription.verify();
+      sinon.assert.calledOnceWithExactly(res.writeHead, 404);
+      sinon.assert.calledOnceWithExactly(res.end, 'Not Found.');
     });
 
     it('Does not a subscriptions plan via the member repository if the Tier is not active', async function () {
