@@ -85,6 +85,26 @@ describe('createTinybirdSyncService', () => {
     assert.equal(dependencies.logging.error.mock.calls[0][0], failure);
   });
 
+  it('uses a five-minute request timeout', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    const failure = new Error('stop loop');
+    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
+    const database = await createEmptyDatabase();
+    await database('automation_runs').insert({
+      id: 'run-id',
+      automation_id: 'automation-id',
+      created_at: '2026-03-01 11:50:00',
+      updated_at: '2026-03-01 11:50:00',
+    });
+    const fetch = vi.fn().mockResolvedValue({ ok: true });
+    const { service } = createService({ knex: database, sleep, fetch, random: () => 0 });
+
+    service.start();
+    await vi.waitFor(() =>
+      assert.ok(timeout.mock.calls.some(([duration]) => duration === 5 * 60 * 1000)),
+    );
+  });
+
   it('logs completed runs even when no rows are sent', async () => {
     const failure = new Error('stop loop');
     const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
