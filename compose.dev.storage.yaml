@@ -17,14 +17,22 @@ services:
     container_name: ghost-dev-versitygw
     ports:
       - '9000:9000' # S3 API
+      - '9001:9001' # WebUI
+      - '9002:9002' # Admin API used by the WebUI
     environment:
       - ROOT_ACCESS_KEY=s3-user
       - ROOT_SECRET_KEY=s3-pass
       - VGW_PORT=:9000
+      - VGW_WEBUI_PORT=:9001
+      - VGW_WEBUI_GATEWAYS=http://localhost:9000
+      - VGW_ADMIN_PORT=:9002
+      - VGW_WEBUI_ADMIN_GATEWAYS=http://localhost:9002
+      - VGW_IAM_DIR=/iam
       - VGW_BACKEND=posix
       - VGW_BACKEND_ARGS=/data
     volumes:
       - versitygw-data:/data
+      - versitygw-iam:/iam
     depends_on:
       versitygw-setup:
         condition: service_completed_successfully
@@ -57,3 +65,4 @@ services:
 
 volumes:
   versitygw-data:
+  versitygw-iam:
