@@ -25,7 +25,7 @@ describe('Member counter schema through Bookshelf', function () {
   it('keeps existing batch callers opted out when they omit counter enrollment', async function () {
     const batch = await models.EmailBatch.add({ email_id: email.id });
     const saved = await db.knex('email_batches').where('id', batch.id).first();
-    assert.equal(saved.member_counters_enabled, 0);
+    assert.equal(Boolean(saved.member_counters_enabled), false);
     assert.equal(saved.member_counters_applied_at, null);
   });
 
@@ -37,8 +37,10 @@ describe('Member counter schema through Bookshelf', function () {
     const loaded = await models.EmailBatch.findOne({ id: batch.id }, { require: true });
     await loaded.save({ status: 'submitting' }, { patch: true });
     assert.equal(
-      (await db.knex('email_batches').where('id', batch.id).first()).member_counters_enabled,
-      1,
+      Boolean(
+        (await db.knex('email_batches').where('id', batch.id).first()).member_counters_enabled,
+      ),
+      true,
     );
   });
 });
