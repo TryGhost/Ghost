@@ -41,7 +41,7 @@
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
     "@tryghost/kg-utils": "workspace:~",
     "@tryghost/string": "catalog:",
-    "@tryghost/url-utils": "5.2.7",
+    "@tryghost/url-utils": "catalog:",
     "handlebars": "4.7.9",
     "juice": "12.1.1",
     "luxon": "3.7.2"
