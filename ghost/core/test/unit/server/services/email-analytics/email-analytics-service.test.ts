@@ -697,8 +697,7 @@ describe('EmailAnalyticsService', function () {
       it('preserves new email and member IDs in the cumulative result', async function () {
         const eventProcessor = createStubEventProcessor();
         eventProcessor.processBatch.callsFake(async (_events, result) => {
-          result.emailIds.push('email-id');
-          result.memberIds.push('member-id');
+          result.merge({ emailIds: ['email-id'], memberIds: ['member-id'] });
         });
         const service = createServiceWithEventProcessor(eventProcessor);
 
@@ -706,6 +705,49 @@ describe('EmailAnalyticsService', function () {
 
         assert.deepEqual(result.result.emailIds, ['email-id']);
         assert.deepEqual(result.result.memberIds, ['member-id']);
+      });
+
+      it('accumulates only the IDs first seen in each batch across intermediate resets', async function () {
+        const eventProcessor = createStubEventProcessor();
+        const batches = [
+          { emailIds: ['email-1'], memberIds: ['member-1', 'member-2'] },
+          { emailIds: ['email-1', 'email-2'], memberIds: ['member-2', 'member-3'] },
+          { emailIds: ['email-2'], memberIds: ['member-3'] },
+        ];
+        eventProcessor.processBatch.callsFake(async (_events, result) => {
+          result.merge(batches.shift());
+        });
+        // A processor resets the shared result after some intermediate aggregations,
+        // so batch deltas start from both zero and non-zero offsets
+        let intermediateAggregations = 0;
+        eventProcessor.aggregate.callsFake(async ({ processingResult, isFinal }) => {
+          if (!isFinal) {
+            intermediateAggregations += 1;
+            if (intermediateAggregations === 2) {
+              processingResult.reset();
+            }
+          }
+          return { emailAggregationTimeMs: 0, memberAggregationTimeMs: 0 };
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+          },
+          fetchEvents: async ({ batchHandler }: { batchHandler: BatchHandler }) => {
+            for (let i = 0; i < 3; i++) {
+              await batchHandler([{ type: 'delivered', timestamp: new Date(i + 1) }]);
+            }
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+
+        const result = await service.fetchLatestOpenedEvents();
+
+        assert.equal(result.eventCount, 3);
+        assert.deepEqual(result.result.emailIds, ['email-1', 'email-2']);
+        assert.deepEqual(result.result.memberIds, ['member-1', 'member-2', 'member-3']);
       });
 
       it('rejects when fetching events fails', async function () {

@@ -69,6 +69,8 @@ describe('EventProcessingResult', function () {
     result.reset();
 
     assert.deepEqual(result, new EventProcessingResult());
+    assert.deepEqual(result.emailIds, []);
+    assert.deepEqual(result.memberIds, []);
   });
 
   describe('merge()', function () {
@@ -89,6 +91,17 @@ describe('EventProcessingResult', function () {
       assert.equal(result.opened, 3);
       assert.deepEqual(result.emailIds, ['email-2', 'email-1', 'email-3']);
       assert.deepEqual(result.memberIds, ['member-2', 'member-1', 'member-3']);
+    });
+
+    it('exposes accumulated IDs as read-only views that reflect later merges', function () {
+      const result = new EventProcessingResult({ emailIds: ['email-1'], memberIds: ['member-1'] });
+      const emailIds = result.emailIds;
+      const memberIds = result.memberIds;
+
+      result.merge({ emailIds: ['email-1', 'email-2'], memberIds: ['member-2', 'member-1'] });
+
+      assert.deepEqual(emailIds, ['email-1', 'email-2']);
+      assert.deepEqual(memberIds, ['member-1', 'member-2']);
     });
 
     it('can collect the same IDs again after reset', function () {
