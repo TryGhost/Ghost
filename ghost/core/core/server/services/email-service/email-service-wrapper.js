@@ -144,7 +144,13 @@ class EmailServiceWrapper {
       getRequiredUrlRelations,
       batchCreationConcurrency,
       memberCounterPreparation,
-      memberCounters: new NewsletterMemberCounters(db.knex),
+      memberCounters: new NewsletterMemberCounters(db.knex, {
+        // Sending never reads the mode today; keep it consistent with analytics.
+        mode:
+          configService.get('emailAnalytics:memberCounterMode') === 'incremental'
+            ? 'incremental'
+            : 'compare',
+      }),
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 

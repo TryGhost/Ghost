@@ -13,6 +13,7 @@ import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
 import SendWebmentionsJob from '../mentions/send-webmentions-job';
+import { memberReconciliation } from '../email-analytics';
 
 const updateCheck = require('../update-check');
 
@@ -47,6 +48,9 @@ export default function registerJobHandlers({
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
   });
+
+  // Periodic member counter repair; inert unless email analytics enabled it.
+  memberReconciliation.register(jobsService);
 
   jobsService.handle(CleanExpiredCompedJob, async () => {
     await memberJobs.cleanExpiredComped();
