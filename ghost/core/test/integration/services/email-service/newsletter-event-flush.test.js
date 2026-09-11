@@ -23,19 +23,23 @@ const {
 
 describe('Newsletter event flush', function () {
   let recipient;
+  let otherRecipient;
   let storage;
 
   beforeAll(async function () {
     await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
     recipient = fixtureManager.get('email_recipients', 0);
+    otherRecipient = fixtureManager.get('email_recipients', 1);
   });
 
   beforeEach(async function () {
-    await models.EmailRecipient.edit(
-      { opened_at: null, delivered_at: null, failed_at: null },
-      { id: recipient.id },
-    );
+    for (const row of [recipient, otherRecipient]) {
+      await models.EmailRecipient.edit(
+        { opened_at: null, delivered_at: null, failed_at: null },
+        { id: row.id },
+      );
+    }
     storage = new NewsletterEmailEventStorage({
       config: { get: () => true },
       db,
@@ -185,6 +189,42 @@ describe('Newsletter event flush', function () {
     assert.deepEqual(replay.memberIds, [recipient.member_id]);
   });
 
+  it('discards a page queued before a failure so a later flush cannot write it', async function () {
+    const failingProcessor = new EmailEventProcessor({
+      db,
+      eventStorage: storage,
+      domainEvents: { dispatch() {} },
+    });
+    failingProcessor.handleDelivered = async () => {
+      throw new Error('event handling failed');
+    };
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config: { get: () => true },
+      emailEventProcessor: failingProcessor,
+    });
+    const opened = {
+      type: 'opened',
+      emailId: recipient.email_id,
+      recipientEmail: recipient.member_email,
+      timestamp: new Date('2026-09-01T12:00:00.000Z'),
+    };
+    // A later event in the same page fails before the flush runs
+    const cursor = { lastEventTimestamp: new Date('2026-09-01T11:00:00.000Z') };
+    await assert.rejects(
+      processor.processBatch(
+        [opened, { ...opened, type: 'delivered' }],
+        new EventProcessingResult(),
+        cursor,
+      ),
+      /event handling failed/,
+    );
+    assert.equal(cursor.lastEventTimestamp.toISOString(), '2026-09-01T11:00:00.000Z');
+    // A later page from another job must not carry the stranded open
+    assert.deepEqual(await storage.flushBatchedUpdates(), []);
+    const saved = await models.EmailRecipient.findOne({ id: recipient.id }, { require: true });
+    assert.equal(saved.get('opened_at'), null);
+  });
+
   it('returns only the first open transition when events are duplicated and replayed', async function () {
     const firstOpen = new Date('2026-09-01T12:00:00.000Z');
     const event = (timestamp) =>
@@ -215,7 +255,7 @@ describe('Newsletter event flush', function () {
     assert.deepEqual(await storage.flushBatchedUpdates(), []);
   });
 
-  it('rolls back every transition for an email and can retry the failed flush', async function () {
+  it('rolls back every transition for an email and applies them when the page is replayed', async function () {
     const data = {
       email: recipient.member_email,
       emailRecipientId: recipient.id,
@@ -223,9 +263,12 @@ describe('Newsletter event flush', function () {
       memberId: recipient.member_id,
       timestamp: new Date('2026-09-01T12:00:00.000Z'),
     };
-    await storage.handleDelivered(EmailDeliveredEvent.create(data));
-    await storage.handleOpened(EmailOpenedEvent.create(data));
-    await storage.handlePermanentFailed(EmailBouncedEvent.create({ ...data, error: null }));
+    const queueAll = async () => {
+      await storage.handleDelivered(EmailDeliveredEvent.create(data));
+      await storage.handleOpened(EmailOpenedEvent.create(data));
+      await storage.handlePermanentFailed(EmailBouncedEvent.create({ ...data, error: null }));
+    };
+    await queueAll();
 
     // A real database error on the final write must roll back earlier writes.
     await db.knex.raw(`CREATE TRIGGER reject_recipient_failure BEFORE UPDATE ON email_recipients
@@ -244,6 +287,11 @@ describe('Newsletter event flush', function () {
       await db.knex.raw('DROP TRIGGER reject_recipient_failure');
     }
 
+    // The failed page's entries are dropped so another fetch job cannot flush
+    // them as its own; the caller replays the page instead.
+    assert.deepEqual(await storage.flushBatchedUpdates(), []);
+
+    await queueAll();
     const transitioned = [{ recipientId: recipient.id, memberId: recipient.member_id }];
     assert.deepEqual(await storage.flushBatchedUpdates(), [
       {
@@ -255,50 +303,87 @@ describe('Newsletter event flush', function () {
     ]);
   });
 
-  it('retries a rolled-back deadlock without losing or duplicating transitions', async function () {
-    let attempts = 0;
-    storage = new NewsletterEmailEventStorage({
-      config: { get: () => true },
-      models,
-      db: {
-        knex: {
-          transaction: (callback) =>
-            db.knex.transaction(async (trx) => {
-              const result = await callback(trx);
-              attempts += 1;
-              if (attempts === 1) {
-                // Inject the database failure after real writes; Knex rolls them back.
-                throw Object.assign(new Error('simulated deadlock'), { code: 'ER_LOCK_DEADLOCK' });
-              }
-              return result;
-            }),
+  for (const code of ['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT']) {
+    it(`retries a rolled-back ${code} without losing or duplicating transitions`, async function () {
+      let attempts = 0;
+      storage = new NewsletterEmailEventStorage({
+        config: { get: () => true },
+        models,
+        db: {
+          knex: {
+            transaction: (callback) =>
+              db.knex.transaction(async (trx) => {
+                const result = await callback(trx);
+                attempts += 1;
+                if (attempts === 1) {
+                  // Inject the database failure after real writes; Knex rolls them back.
+                  throw Object.assign(new Error(`simulated ${code}`), { code });
+                }
+                return result;
+              }),
+          },
         },
-      },
+      });
+      await storage.handleOpened(
+        EmailOpenedEvent.create({
+          email: recipient.member_email,
+          emailRecipientId: recipient.id,
+          emailId: recipient.email_id,
+          memberId: recipient.member_id,
+          timestamp: new Date('2026-09-01T12:00:00.000Z'),
+        }),
+      );
+      assert.deepEqual(await storage.flushBatchedUpdates(), [
+        {
+          emailId: recipient.email_id,
+          delivered: [],
+          opened: [{ recipientId: recipient.id, memberId: recipient.member_id }],
+          failed: [],
+        },
+      ]);
+      assert.equal(attempts, 2);
+      assert.deepEqual(await storage.flushBatchedUpdates(), []);
     });
-    await storage.handleOpened(
-      EmailOpenedEvent.create({
-        email: recipient.member_email,
-        emailRecipientId: recipient.id,
-        emailId: recipient.email_id,
-        memberId: recipient.member_id,
+  }
+
+  it('locks a multi-type page through a primary-key range without a filesort', async function () {
+    for (const row of [recipient, otherRecipient]) {
+      const data = {
+        email: row.member_email,
+        emailRecipientId: row.id,
+        emailId: row.email_id,
+        memberId: row.member_id,
         timestamp: new Date('2026-09-01T12:00:00.000Z'),
-      }),
+      };
+      await storage.handleOpened(EmailOpenedEvent.create(data));
+      await storage.handleDelivered(EmailDeliveredEvent.create(data));
+      await storage.handlePermanentFailed(EmailBouncedEvent.create({ ...data, error: null }));
+    }
+    const lockingQueries = [];
+    const observe = (query) => {
+      if (/select.*email_recipients.*for update/i.test(query.sql)) {
+        lockingQueries.push(query);
+      }
+    };
+    db.knex.on('query', observe);
+    try {
+      await storage.flushBatchedUpdates();
+    } finally {
+      db.knex.off('query', observe);
+    }
+    assert.equal(lockingQueries.length, 1);
+    // One OR branch per event type in the locking predicate
+    assert.equal(lockingQueries[0].sql.match(/is null/g).length, 3);
+    const [plan] = await db.knex.raw(
+      `EXPLAIN ${lockingQueries[0].sql}`,
+      lockingQueries[0].bindings,
     );
-    assert.deepEqual(await storage.flushBatchedUpdates(), [
-      {
-        emailId: recipient.email_id,
-        delivered: [],
-        opened: [{ recipientId: recipient.id, memberId: recipient.member_id }],
-        failed: [],
-      },
-    ]);
-    assert.equal(attempts, 2);
-    assert.deepEqual(await storage.flushBatchedUpdates(), []);
+    assert.equal(plan[0].key, 'PRIMARY');
+    assert.equal(plan[0].type, 'range');
+    assert(!plan[0].Extra?.includes('filesort'));
   });
 
   it('counts contended opens once while batch creation inserts recipients', async function () {
-    const otherRecipient = fixtureManager.get('email_recipients', 1);
-    await models.EmailRecipient.edit({ opened_at: null }, { id: otherRecipient.id });
     const otherStorage = new NewsletterEmailEventStorage({
       config: { get: () => true },
       db,
@@ -367,6 +452,7 @@ describe('Newsletter event flush', function () {
         lockingQueries[0].bindings,
       );
       assert.equal(plan[0].key, 'PRIMARY');
+      assert.equal(plan[0].type, 'range');
       assert(!plan[0].Extra?.includes('filesort'));
     } finally {
       await models.EmailRecipient.destroy({ destroyBy: { batch_id: batch.id } });

@@ -1,7 +1,12 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const DatabaseInfo = require('@tryghost/database-info');
 const { setTimeout: delay } = require('node:timers/promises');
+
+// Lock waits are expected while batch creation inserts recipients for the same
+// email; both errors leave the transaction rolled back and safe to retry.
+const RETRYABLE_LOCK_ERRORS = new Set(['ER_LOCK_DEADLOCK', 'ER_LOCK_WAIT_TIMEOUT']);
 
 class NewsletterEmailEventStorage {
   #config;
@@ -40,18 +45,7 @@ class NewsletterEmailEventStorage {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
-      // Accumulate update for batch processing
-      const timestamp = moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss');
-      const existing = this.#pendingUpdates.delivered.get(event.emailRecipientId);
-
-      // Keep the earliest timestamp (out-of-order protection)
-      if (!existing || timestamp < existing.timestamp) {
-        this.#pendingUpdates.delivered.set(event.emailRecipientId, {
-          timestamp,
-          emailId: event.emailId,
-          memberId: event.memberId,
-        });
-      }
+      this.#queueUpdate('delivered', event);
     } else {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
@@ -71,18 +65,7 @@ class NewsletterEmailEventStorage {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
-      // Accumulate update for batch processing
-      const timestamp = moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss');
-      const existing = this.#pendingUpdates.opened.get(event.emailRecipientId);
-
-      // Keep the earliest timestamp (out-of-order protection)
-      if (!existing || timestamp < existing.timestamp) {
-        this.#pendingUpdates.opened.set(event.emailRecipientId, {
-          timestamp,
-          emailId: event.emailId,
-          memberId: event.memberId,
-        });
-      }
+      this.#queueUpdate('opened', event);
     } else {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
@@ -102,18 +85,7 @@ class NewsletterEmailEventStorage {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     if (useBatchProcessing) {
-      // Accumulate update for batch processing
-      const timestamp = moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss');
-      const existing = this.#pendingUpdates.failed.get(event.emailRecipientId);
-
-      // Keep the earliest timestamp (out-of-order protection)
-      if (!existing || timestamp < existing.timestamp) {
-        this.#pendingUpdates.failed.set(event.emailRecipientId, {
-          timestamp,
-          emailId: event.emailId,
-          memberId: event.memberId,
-        });
-      }
+      this.#queueUpdate('failed', event);
     } else {
       // Sequential mode: immediate update
       // To properly handle events that are received out of order (this happens because of polling)
@@ -307,10 +279,54 @@ class NewsletterEmailEventStorage {
   }
 
   /**
-   * Flush all batched updates to the database
+   * Accumulate an update for batch processing, keeping the earliest timestamp
+   * per recipient (out-of-order protection).
+   * @param {'delivered' | 'opened' | 'failed'} type
+   * @param {{emailRecipientId: string, emailId: string, memberId: string, timestamp: Date}} event
+   */
+  #queueUpdate(type, event) {
+    const timestamp = moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss');
+    const existing = this.#pendingUpdates[type].get(event.emailRecipientId);
+
+    if (!existing || timestamp < existing.timestamp) {
+      this.#pendingUpdates[type].set(event.emailRecipientId, {
+        timestamp,
+        emailId: event.emailId,
+        memberId: event.memberId,
+      });
+    }
+  }
+
+  /**
+   * Flush all batched updates to the database, one transaction per email.
+   *
+   * Pending updates are always cleared, even when a later email fails after
+   * earlier ones committed: the caller keeps its cursor behind the page and
+   * replays it, and the guarded updates make that replay a no-op for
+   * committed rows. Retaining failed entries instead would let the next
+   * fetch job flush and report transitions that belong to another page.
    * @returns {Promise<Array<{emailId: string, delivered: Array<{recipientId: string, memberId: string}>, opened: Array<{recipientId: string, memberId: string}>, failed: Array<{recipientId: string, memberId: string}>}>>}
    */
   async flushBatchedUpdates() {
+    try {
+      return await this.#flushPendingUpdates();
+    } finally {
+      this.discardBatchedUpdates();
+    }
+  }
+
+  /**
+   * Drop queued updates without writing them. The batch processor calls this
+   * when a page fails before its flush, so entries never leak into the next
+   * page or fetch job that shares this storage.
+   */
+  discardBatchedUpdates() {
+    for (const pending of Object.values(this.#pendingUpdates)) {
+      pending.clear();
+    }
+  }
+
+  async #flushPendingUpdates() {
     const groups = new Map();
     for (const [type, pending] of Object.entries(this.#pendingUpdates)) {
       for (const [recipientId, update] of pending) {
@@ -330,7 +346,7 @@ class NewsletterEmailEventStorage {
       const updates = groups.get(emailId);
       const transitioned = await this.#transactionWithRetry(async (trx) => {
         const query = trx('email_recipients');
-        if (['mysql', 'mysql2'].includes(trx.client.config.client)) {
+        if (DatabaseInfo.isMySQL(trx)) {
           // Lock in primary-key order, rather than whichever secondary index
           // the optimizer chooses. Sorting the IN list alone is insufficient.
           query.fromRaw('?? FORCE INDEX (PRIMARY)', ['email_recipients']);
@@ -361,7 +377,7 @@ class NewsletterEmailEventStorage {
             continue;
           }
           const bindings = eligible.flatMap(({ id }) => [id, pending.get(id).timestamp]);
-          await trx('email_recipients')
+          const affected = await trx('email_recipients')
             .whereIn(
               'id',
               eligible.map(({ id }) => id),
@@ -373,6 +389,15 @@ class NewsletterEmailEventStorage {
                 bindings,
               ),
             });
+          if (affected !== eligible.length) {
+            // Only possible without row locks (e.g. SQLite): another writer
+            // changed a locked-set row between the read and the guarded update.
+            // Fail loudly rather than report a transition that did not happen.
+            throw new errors.InternalServerError({
+              message: `Email recipient ${type} transitions changed during flush`,
+              context: `email ${emailId}: expected ${eligible.length}, updated ${affected}`,
+            });
+          }
           result[type] = eligible.map(({ id, member_id: memberId }) => ({
             recipientId: id,
             memberId,
@@ -385,14 +410,13 @@ class NewsletterEmailEventStorage {
         transitioned.opened.length ||
         transitioned.failed.length
       ) {
-        this.recordEventStored('delivered', transitioned.delivered.length);
-        this.recordEventStored('opened', transitioned.opened.length);
+        for (const type of ['delivered', 'opened']) {
+          if (transitioned[type].length) {
+            this.recordEventStored(type, transitioned[type].length);
+          }
+        }
         transitions.push(transitioned);
       }
-    }
-
-    for (const pending of Object.values(this.#pendingUpdates)) {
-      pending.clear();
     }
     return transitions;
   }
@@ -404,10 +428,10 @@ class NewsletterEmailEventStorage {
       } catch (error) {
         // Retry the whole rolled-back transaction, never an individual write.
         // Connection/commit errors can have an unknown outcome and must escape.
-        if (error.code !== 'ER_LOCK_DEADLOCK' || attempt >= 2) {
+        if (!RETRYABLE_LOCK_ERRORS.has(error.code) || attempt >= 2) {
           throw error;
         }
-        await delay(10 * 2 ** attempt);
+        await delay(10 * 2 ** attempt + Math.random() * 10);
       }
     }
   }
