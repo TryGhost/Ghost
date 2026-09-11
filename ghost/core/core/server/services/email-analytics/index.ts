@@ -46,7 +46,7 @@ export const gifts = new EmailAnalyticsServiceWrapper({
   logName: 'gifts',
 });
 
-const EmailCounterMode = z.enum(['off', 'compare']);
+const EmailCounterMode = z.enum(['off', 'compare', 'incremental']);
 type EmailCounterMode = z.infer<typeof EmailCounterMode>;
 
 /**
@@ -113,8 +113,9 @@ export const init = ({
   const queries = new Queries(db.knex);
   // Mode changes take effect at boot. Drain old analytics workers before changing
   // modes: sequential and legacy recount writers do not use the counter lock.
-  const emailCounters = resolveEmailCounterMode(config)
-    ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient })
+  const emailCounterMode = resolveEmailCounterMode(config);
+  const emailCounters = emailCounterMode
+    ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient, mode: emailCounterMode })
     : null;
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({

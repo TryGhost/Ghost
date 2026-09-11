@@ -185,10 +185,14 @@ describe('Newsletter email counters', function () {
     sinon.assert.calledWithExactly(corrections, { event: 'opened' }, 99);
     sinon.assert.calledWithExactly(corrections, { event: 'failed' }, 99);
     for (const event of ['delivered', 'opened', 'failed']) {
-      sinon.assert.calledWithExactly(metrics.email_analytics_email_counter_drift.inc, { event }, 0);
+      sinon.assert.calledWithExactly(
+        metrics.email_analytics_email_counter_drift.inc,
+        { event, phase: 'comparison' },
+        0,
+      );
       sinon.assert.calledWithExactly(
         metrics.email_analytics_email_counter_comparisons.inc,
-        { event },
+        { event, phase: 'comparison' },
         1,
       );
     }
@@ -259,6 +263,126 @@ describe('Newsletter email counters', function () {
     } finally {
       await db.knex('emails').where('id', email.id).del();
     }
+  });
+
+  it('repairs all email counters from opens-inclusive truth at final reconciliation', async function () {
+    await resetFacts();
+    const inc = sinon.stub();
+    const counters = new NewsletterEmailCounters({
+      knex: db.knex,
+      mode: 'incremental',
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: () => ({ inc }),
+      } as unknown as Pick<PrometheusClient, 'registerCounter' | 'getMetric'>,
+    });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    await db
+      .knex('emails')
+      .where('id', recipient.email_id)
+      .update({ delivered_count: 7, opened_count: 0, failed_count: 9 });
+    assert.deepEqual(await counters.reconcile(recipient.email_id), {
+      delivered: 7,
+      opened: -1,
+      failed: 9,
+    });
+    // Repaired drift is labelled separately from observe-only comparison
+    sinon.assert.calledWithExactly(inc, { event: 'delivered', phase: 'repair' }, 7);
+    sinon.assert.calledWithExactly(inc, { event: 'opened', phase: 'repair' }, 1);
+    sinon.assert.calledWithExactly(inc, { event: 'failed', phase: 'repair' }, 9);
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
+    sinon.assert.calledWithExactly(inc, { event: 'delivered', phase: 'comparison' }, 0);
+    const row = await db.knex('emails').where('id', recipient.email_id).first();
+    assert.equal(row.opened_count, 1);
+  });
+
+  it('retries failed final repair after recreating the processor, even without new events', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 0 });
+    const reconcile = counters.reconcile.bind(counters);
+    const repair = sinon.stub(counters, 'reconcile').callsFake(reconcile);
+    repair.onFirstCall().rejects(new Error('repair unavailable'));
+    const createProcessor = () =>
+      new NewsletterEmailAnalyticsBatchProcessor({
+        config: { get: () => true },
+        emailCounters: counters,
+        queries: { aggregateMemberStatsBatch: sinon.stub() },
+      });
+    // A failed repair is logged and retried later; it must not fail the fetch
+    await createProcessor().aggregate({
+      includeOpenedEvents: false,
+      isFinal: true,
+      processingResult: new EventProcessingResult({ emailIds: [recipient.email_id] }),
+    });
+    assert.equal(counters.hasPendingReconciliation, true);
+    assert.equal((await db.knex('emails').where('id', recipient.email_id).first()).opened_count, 0);
+    await createProcessor().aggregate({
+      includeOpenedEvents: false,
+      isFinal: true,
+      processingResult: new EventProcessingResult(),
+    });
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
+    sinon.assert.calledTwice(repair);
+  });
+
+  it('serializes repair drains and retains an email requeued while an earlier repair finishes', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const storage = createStorage(counters);
+    await storage.handleOpened(makeEvent());
+    await storage.flushBatchedUpdates();
+    let finishRepair!: () => void;
+    let firstRepairCompleted!: () => void;
+    const hold = new Promise<void>((resolve) => {
+      finishRepair = resolve;
+    });
+    const ready = new Promise<void>((resolve) => {
+      firstRepairCompleted = resolve;
+    });
+    const reconcile = counters.reconcile.bind(counters);
+    const repair = sinon.stub(counters, 'reconcile').callsFake(reconcile);
+    repair.onFirstCall().callsFake(async (emailId) => {
+      const drift = await reconcile(emailId);
+      firstRepairCompleted();
+      await hold;
+      return drift;
+    });
+    counters.deferReconciliation([recipient.email_id]);
+    const first = counters.reconcilePending();
+    await ready;
+    let second;
+    let callsBeforeRelease;
+    try {
+      await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
+      counters.deferReconciliation([recipient.email_id]);
+      second = counters.reconcilePending();
+      callsBeforeRelease = repair.callCount;
+    } finally {
+      finishRepair();
+    }
+    await Promise.all([first, second]);
+    assert.equal(callsBeforeRelease, 1);
+    sinon.assert.calledTwice(repair);
+    assert.equal(counters.hasPendingReconciliation, false);
+    assert.deepEqual(await counters.compare(recipient.email_id), {
+      delivered: 0,
+      opened: 0,
+      failed: 0,
+    });
   });
 
   it('detects deliberately incorrect counters without overwriting them', async function () {
@@ -376,53 +500,81 @@ describe('Newsletter email counters', function () {
     assert.equal(row.failed_count, 1);
   });
 
-  it('compares against the committed view when an event transaction is still in flight', async function () {
+  it('refuses to repair counters outside the incremental mode', async function () {
     await resetFacts();
-    const counters = new NewsletterEmailCounters({ knex: db.knex });
-    const initial = createStorage(counters);
-    await initial.handleDelivered(makeEvent());
-    await initial.flushBatchedUpdates();
-
-    let allowCommit!: () => void;
-    let writesCompleted!: () => void;
-    const hold = new Promise<void>((resolve) => {
-      allowCommit = resolve;
-    });
-    const ready = new Promise<void>((resolve) => {
-      writesCompleted = resolve;
-    });
-    const writer = createStorage(counters, {
-      knex: {
-        transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
-          db.knex.transaction(async (trx) => {
-            const result = await callback(trx);
-            writesCompleted();
-            await hold;
-            return result;
-          }),
-      },
-    });
-    await writer.handleOpened(makeEvent());
-    const flush = writer.flushBatchedUpdates();
-    await ready;
-    let comparisonIssued!: () => void;
-    const issued = new Promise<void>((resolve) => {
-      comparisonIssued = resolve;
-    });
-    const onQuery = (query: { sql: string }) => {
-      if (query.sql.includes('emails') && query.sql.includes('for update')) {
-        comparisonIssued();
-      }
-    };
-    db.knex.on('query', onQuery);
-    const comparison = counters.compare(recipient.email_id);
-    try {
-      await issued;
-    } finally {
-      db.knex.removeListener('query', onQuery);
-      allowCommit();
-    }
-    await flush;
-    assert.deepEqual(await comparison, { delivered: 0, opened: 0, failed: 0 });
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'compare' });
+    await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
+    await assert.rejects(counters.reconcile(recipient.email_id), /incremental email counter mode/);
+    await assert.rejects(counters.reconcilePending(), /incremental email counter mode/);
+    assert.equal((await db.knex('emails').where('id', recipient.email_id).first()).opened_count, 7);
   });
+
+  it.each(['compare', 'reconcile'] as const)(
+    '%s uses the committed view when an event transaction is still in flight',
+    async function (operation) {
+      await resetFacts();
+      const counters = new NewsletterEmailCounters({
+        knex: db.knex,
+        mode: operation === 'reconcile' ? 'incremental' : 'compare',
+      });
+      const initial = createStorage(counters);
+      await initial.handleDelivered(makeEvent());
+      await initial.flushBatchedUpdates();
+
+      if (operation === 'reconcile') {
+        await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
+      }
+
+      let allowCommit!: () => void;
+      let writesCompleted!: () => void;
+      const hold = new Promise<void>((resolve) => {
+        allowCommit = resolve;
+      });
+      const ready = new Promise<void>((resolve) => {
+        writesCompleted = resolve;
+      });
+      const writer = createStorage(counters, {
+        knex: {
+          transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
+            db.knex.transaction(async (trx) => {
+              const result = await callback(trx);
+              writesCompleted();
+              await hold;
+              return result;
+            }),
+        },
+      });
+      await writer.handleOpened(makeEvent());
+      const flush = writer.flushBatchedUpdates();
+      await ready;
+      let comparisonIssued!: () => void;
+      const issued = new Promise<void>((resolve) => {
+        comparisonIssued = resolve;
+      });
+      const onQuery = (query: { sql: string }) => {
+        if (query.sql.includes('emails') && query.sql.includes('for update')) {
+          comparisonIssued();
+        }
+      };
+      db.knex.on('query', onQuery);
+      const comparison = counters[operation](recipient.email_id);
+      try {
+        await issued;
+      } finally {
+        db.knex.removeListener('query', onQuery);
+        allowCommit();
+      }
+      await flush;
+      assert.deepEqual(await comparison, {
+        delivered: 0,
+        opened: operation === 'reconcile' ? 7 : 0,
+        failed: 0,
+      });
+      assert.deepEqual(await counters.compare(recipient.email_id), {
+        delivered: 0,
+        opened: 0,
+        failed: 0,
+      });
+    },
+  );
 });
