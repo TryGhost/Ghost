@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import { IncorrectUsageError } from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import { z } from 'zod';
@@ -10,6 +11,7 @@ type Event = (typeof events)[number];
 type Drift = Record<Event, number>;
 type Transitions = Record<Event, readonly unknown[]>;
 type Phase = 'baseline' | 'comparison' | 'repair';
+type ReconciliationSummary = { repaired: number; failed: number };
 
 // Projection of the `emails` counter columns; the Bookshelf model owns the row.
 const DbEmailCounters = z.object({
@@ -23,6 +25,7 @@ const DbCountRow = z.object({ count: DbCount });
 const COMPARISONS_METRIC = 'email_analytics_email_counter_comparisons';
 const DRIFT_METRIC = 'email_analytics_email_counter_drift';
 const BASELINE_METRIC = 'email_analytics_email_counter_baseline_corrections';
+const REPAIR_FAILURES_METRIC = 'email_analytics_email_counter_repair_failures';
 
 /** Newsletter-only counter maintenance. Constructed once at analytics boot. */
 export class NewsletterEmailCounters {
@@ -33,8 +36,10 @@ export class NewsletterEmailCounters {
   // Corrections written by a baseline in a transaction that has not yet been
   // acknowledged as committed; reported once the commit is acknowledged.
   #prepared = new Map<string, Drift>();
-  #pendingReconciliation = new Map<string, symbol>();
-  #draining: Promise<void> | null = null;
+  // Emails touched since their last successful final repair. Boot-lifetime and
+  // shared by every fetch lane, so a failed repair is retried by a later drain.
+  #pendingReconciliation = new Set<string>();
+  #draining: Promise<ReconciliationSummary> | null = null;
   #knex: Pick<Knex, 'transaction'>;
   #prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
 
@@ -50,20 +55,27 @@ export class NewsletterEmailCounters {
     this.#knex = knex;
     this.mode = mode;
     this.#prometheusClient = prometheusClient;
+    // `phase` separates observe-only comparison from final repair, so a drift
+    // alert calibrated during a comparison soak is not fired by corrected drift.
     prometheusClient?.registerCounter({
       name: COMPARISONS_METRIC,
-      help: 'Number of newsletter email counter comparisons',
-      labelNames: ['event'],
+      help: 'Number of newsletter email counter comparisons and repairs',
+      labelNames: ['event', 'phase'],
     });
     prometheusClient?.registerCounter({
       name: DRIFT_METRIC,
-      help: 'Sum of absolute newsletter email counter differences observed at comparison',
-      labelNames: ['event'],
+      help: 'Sum of absolute newsletter email counter differences observed at comparison or repair',
+      labelNames: ['event', 'phase'],
     });
     prometheusClient?.registerCounter({
       name: BASELINE_METRIC,
       help: 'Sum of absolute newsletter email counter differences corrected when a baseline was established',
       labelNames: ['event'],
+    });
+    prometheusClient?.registerCounter({
+      name: REPAIR_FAILURES_METRIC,
+      help: 'Number of newsletter email counter repairs that failed and were left queued',
+      labelNames: [],
     });
   }
 
@@ -154,39 +166,65 @@ export class NewsletterEmailCounters {
     }
   }
 
+  /** Whether email recounts are deferred to a final repair instead of compared mid-fetch. */
+  get incremental(): boolean {
+    return this.mode === 'incremental';
+  }
+
   get hasPendingReconciliation(): boolean {
     return this.#pendingReconciliation.size > 0;
   }
 
   deferReconciliation(emailIds: readonly string[]): void {
     for (const emailId of emailIds) {
-      this.#pendingReconciliation.set(emailId, Symbol());
+      this.#pendingReconciliation.add(emailId);
     }
   }
 
-  async reconcilePending(): Promise<void> {
-    // Different fetch processors share this boot-lifetime queue. Serialize
-    // drains, but let each drain finish a bounded snapshot of pending work.
-    while (this.#draining) {
-      // A failed drain is reported to its own caller; waiters only need it over.
-      await this.#draining.catch(() => {});
-    }
-    this.#draining = this.#drain();
+  /**
+   * Repair every queued email. Different fetch processors share this
+   * boot-lifetime queue, so drains run one at a time, each over a snapshot.
+   * A failed repair is logged and left queued for the next drain rather than
+   * failing the fetch: its recipient facts and increments are already
+   * committed, and failing here would discard the fetch cursor and the member
+   * statistics that follow.
+   */
+  async reconcilePending(): Promise<ReconciliationSummary> {
+    this.#requireIncremental('Newsletter email counter repair');
+    const drain = (this.#draining ?? Promise.resolve()).then(
+      () => this.#drain(),
+      () => this.#drain(),
+    );
+    this.#draining = drain;
     try {
-      await this.#draining;
+      return await drain;
     } finally {
-      this.#draining = null;
-    }
-  }
-
-  async #drain(): Promise<void> {
-    for (const [emailId, generation] of [...this.#pendingReconciliation]) {
-      await this.reconcile(emailId);
-      // An event arriving during repair must retain its newly queued work.
-      if (this.#pendingReconciliation.get(emailId) === generation) {
-        this.#pendingReconciliation.delete(emailId);
+      if (this.#draining === drain) {
+        this.#draining = null;
       }
     }
+  }
+
+  async #drain(): Promise<ReconciliationSummary> {
+    const summary: ReconciliationSummary = { repaired: 0, failed: 0 };
+    for (const emailId of [...this.#pendingReconciliation]) {
+      // Remove before repairing: an event arriving during the repair queues the
+      // email again, and that newer work must survive this drain.
+      this.#pendingReconciliation.delete(emailId);
+      try {
+        await this.reconcile(emailId);
+        summary.repaired += 1;
+      } catch (error) {
+        this.#pendingReconciliation.add(emailId);
+        summary.failed += 1;
+        logging.error(
+          `[EmailAnalytics] Newsletter email counter repair failed for ${emailId}; retrying at the next final aggregation`,
+          error,
+        );
+        this.#inc(REPAIR_FAILURES_METRIC, {}, 1);
+      }
+    }
+    return summary;
   }
 
   async compare(emailId: string): Promise<Drift | null> {
@@ -194,7 +232,17 @@ export class NewsletterEmailCounters {
   }
 
   async reconcile(emailId: string): Promise<Drift | null> {
+    this.#requireIncremental(`Newsletter email counter repair for ${emailId}`);
     return this.#observe(emailId, true);
+  }
+
+  #requireIncremental(action: string): void {
+    if (!this.incremental) {
+      // Comparison must never hide a bad counter by repairing it.
+      throw new IncorrectUsageError({
+        message: `${action} requires the incremental email counter mode`,
+      });
+    }
   }
 
   async #observe(emailId: string, repair: boolean): Promise<Drift | null> {
@@ -239,24 +287,24 @@ export class NewsletterEmailCounters {
         `[EmailAnalytics] Newsletter email counter drift: ${JSON.stringify({ emailId, drift, phase })}`,
       );
     }
-    try {
-      for (const event of events) {
-        if (phase === 'baseline') {
-          this.#inc(BASELINE_METRIC, event, Math.abs(drift[event]));
-        } else {
-          this.#inc(COMPARISONS_METRIC, event, 1);
-          this.#inc(DRIFT_METRIC, event, Math.abs(drift[event]));
-        }
+    for (const event of events) {
+      if (phase === 'baseline') {
+        this.#inc(BASELINE_METRIC, { event }, Math.abs(drift[event]));
+      } else {
+        this.#inc(COMPARISONS_METRIC, { event, phase }, 1);
+        this.#inc(DRIFT_METRIC, { event, phase }, Math.abs(drift[event]));
       }
-    } catch (error) {
-      logging.error('[EmailAnalytics] Error recording newsletter email counter drift', error);
     }
   }
 
-  #inc(name: string, event: Event, value: number): void {
-    const metric = this.#prometheusClient?.getMetric(name);
-    if (metric && 'inc' in metric) {
-      metric.inc({ event }, value);
+  #inc(name: string, labels: Record<string, string>, value: number): void {
+    try {
+      const metric = this.#prometheusClient?.getMetric(name);
+      if (metric && 'inc' in metric) {
+        metric.inc(labels, value);
+      }
+    } catch (error) {
+      logging.error(`[EmailAnalytics] Error recording ${name}`, error);
     }
   }
 }

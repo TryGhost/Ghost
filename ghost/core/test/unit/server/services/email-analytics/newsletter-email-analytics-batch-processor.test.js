@@ -706,7 +706,7 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
       );
     });
 
-    it('retains every deferred email when final repair fails, including those from earlier pages', async function () {
+    it('retains a failed repair for the next drain without failing the fetch or blocking later emails', async function () {
       configUtils.set('emailAnalytics:batchProcessing', true);
       const emailCounters = createIncrementalCounters();
       const processor = new NewsletterEmailAnalyticsBatchProcessor({
@@ -718,14 +718,18 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
       clock.tick(5 * 60 * 1000 + 1);
       await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: false });
       processingResult.merge({ emailIds: ['e-2'], memberIds: ['m-2'] });
-      emailCounters.reconcile.withArgs('e-2').onFirstCall().rejects(new Error('repair failed'));
-      await assert.rejects(
-        processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
-        /repair failed/,
-      );
+      emailCounters.reconcile.withArgs('e-1').onFirstCall().rejects(new Error('repair failed'));
+      // The failed email stays queued without failing the fetch or blocking
+      // the emails queued behind it
       await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
       sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-1'));
-      sinon.assert.calledTwice(emailCounters.reconcile.withArgs('e-2'));
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-2'));
+      sinon.assert.calledOnce(queries.aggregateMemberStatsBatch.withArgs(['m-2']));
+      assert.equal(emailCounters.hasPendingReconciliation, true);
+      await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true });
+      sinon.assert.calledTwice(emailCounters.reconcile.withArgs('e-1'));
+      sinon.assert.calledOnce(emailCounters.reconcile.withArgs('e-2'));
+      assert.equal(emailCounters.hasPendingReconciliation, false);
       assert.equal(
         await processor.aggregate({ includeOpenedEvents: false, processingResult, isFinal: true }),
         null,

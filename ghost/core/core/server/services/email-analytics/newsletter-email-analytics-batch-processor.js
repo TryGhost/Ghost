@@ -123,8 +123,7 @@ class NewsletterEmailAnalyticsBatchProcessor {
       return null;
     }
 
-    const incrementalEmails = this.#emailCounters?.mode === 'incremental';
-    if (incrementalEmails) {
+    if (this.#emailCounters?.incremental) {
       // Member aggregation resets the result mid-fetch. Retain every touched
       // email in the boot-lifetime queue until repair succeeds, even if the
       // next fetch creates a new processor after a failed final aggregation.
@@ -269,8 +268,9 @@ class NewsletterEmailAnalyticsBatchProcessor {
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
     const emailAggregationStart = Date.now();
-    if (this.#emailCounters?.mode === 'incremental') {
+    if (this.#emailCounters?.incremental) {
       if (isFinal) {
+        // Failed repairs stay queued and are logged; they must not fail the fetch.
         await this.#emailCounters.reconcilePending();
       }
     } else {

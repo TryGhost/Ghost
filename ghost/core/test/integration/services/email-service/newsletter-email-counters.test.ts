@@ -185,10 +185,14 @@ describe('Newsletter email counters', function () {
     sinon.assert.calledWithExactly(corrections, { event: 'opened' }, 99);
     sinon.assert.calledWithExactly(corrections, { event: 'failed' }, 99);
     for (const event of ['delivered', 'opened', 'failed']) {
-      sinon.assert.calledWithExactly(metrics.email_analytics_email_counter_drift.inc, { event }, 0);
+      sinon.assert.calledWithExactly(
+        metrics.email_analytics_email_counter_drift.inc,
+        { event, phase: 'comparison' },
+        0,
+      );
       sinon.assert.calledWithExactly(
         metrics.email_analytics_email_counter_comparisons.inc,
-        { event },
+        { event, phase: 'comparison' },
         1,
       );
     }
@@ -263,7 +267,15 @@ describe('Newsletter email counters', function () {
 
   it('repairs all email counters from opens-inclusive truth at final reconciliation', async function () {
     await resetFacts();
-    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'incremental' });
+    const inc = sinon.stub();
+    const counters = new NewsletterEmailCounters({
+      knex: db.knex,
+      mode: 'incremental',
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: () => ({ inc }),
+      } as unknown as Pick<PrometheusClient, 'registerCounter' | 'getMetric'>,
+    });
     const storage = createStorage(counters);
     await storage.handleOpened(makeEvent());
     await storage.flushBatchedUpdates();
@@ -276,11 +288,16 @@ describe('Newsletter email counters', function () {
       opened: -1,
       failed: 9,
     });
+    // Repaired drift is labelled separately from observe-only comparison
+    sinon.assert.calledWithExactly(inc, { event: 'delivered', phase: 'repair' }, 7);
+    sinon.assert.calledWithExactly(inc, { event: 'opened', phase: 'repair' }, 1);
+    sinon.assert.calledWithExactly(inc, { event: 'failed', phase: 'repair' }, 9);
     assert.deepEqual(await counters.compare(recipient.email_id), {
       delivered: 0,
       opened: 0,
       failed: 0,
     });
+    sinon.assert.calledWithExactly(inc, { event: 'delivered', phase: 'comparison' }, 0);
     const row = await db.knex('emails').where('id', recipient.email_id).first();
     assert.equal(row.opened_count, 1);
   });
@@ -301,14 +318,14 @@ describe('Newsletter email counters', function () {
         emailCounters: counters,
         queries: { aggregateMemberStatsBatch: sinon.stub() },
       });
-    await assert.rejects(
-      createProcessor().aggregate({
-        includeOpenedEvents: false,
-        isFinal: true,
-        processingResult: new EventProcessingResult({ emailIds: [recipient.email_id] }),
-      }),
-      /repair unavailable/,
-    );
+    // A failed repair is logged and retried later; it must not fail the fetch
+    await createProcessor().aggregate({
+      includeOpenedEvents: false,
+      isFinal: true,
+      processingResult: new EventProcessingResult({ emailIds: [recipient.email_id] }),
+    });
+    assert.equal(counters.hasPendingReconciliation, true);
+    assert.equal((await db.knex('emails').where('id', recipient.email_id).first()).opened_count, 0);
     await createProcessor().aggregate({
       includeOpenedEvents: false,
       isFinal: true,
@@ -328,12 +345,12 @@ describe('Newsletter email counters', function () {
     const storage = createStorage(counters);
     await storage.handleOpened(makeEvent());
     await storage.flushBatchedUpdates();
-    let finishRepair;
-    let firstRepairCompleted;
-    const hold = new Promise((resolve) => {
+    let finishRepair!: () => void;
+    let firstRepairCompleted!: () => void;
+    const hold = new Promise<void>((resolve) => {
       finishRepair = resolve;
     });
-    const ready = new Promise((resolve) => {
+    const ready = new Promise<void>((resolve) => {
       firstRepairCompleted = resolve;
     });
     const reconcile = counters.reconcile.bind(counters);
@@ -483,11 +500,23 @@ describe('Newsletter email counters', function () {
     assert.equal(row.failed_count, 1);
   });
 
+  it('refuses to repair counters outside the incremental mode', async function () {
+    await resetFacts();
+    const counters = new NewsletterEmailCounters({ knex: db.knex, mode: 'compare' });
+    await db.knex('emails').where('id', recipient.email_id).update({ opened_count: 7 });
+    await assert.rejects(counters.reconcile(recipient.email_id), /incremental email counter mode/);
+    await assert.rejects(counters.reconcilePending(), /incremental email counter mode/);
+    assert.equal((await db.knex('emails').where('id', recipient.email_id).first()).opened_count, 7);
+  });
+
   it.each(['compare', 'reconcile'] as const)(
     '%s uses the committed view when an event transaction is still in flight',
     async function (operation) {
       await resetFacts();
-      const counters = new NewsletterEmailCounters({ knex: db.knex });
+      const counters = new NewsletterEmailCounters({
+        knex: db.knex,
+        mode: operation === 'reconcile' ? 'incremental' : 'compare',
+      });
       const initial = createStorage(counters);
       await initial.handleDelivered(makeEvent());
       await initial.flushBatchedUpdates();

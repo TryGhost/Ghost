@@ -15,8 +15,9 @@ email counters atomically with recipient transitions:
 | `incremental` | Defer recounts                          | Recount all outcomes and repair drift   |
 
 Enable `incremental` only after a comparison soak has established correctness.
-This removes email recounts from intermediate aggregation. Member statistics still use recomputation, including
-replayed members needed to recover an interrupted recount.
+This removes email recounts from intermediate aggregation. Member statistics
+still use recomputation, including replayed members needed to recover an
+interrupted recount.
 
 The mode is selected at analytics boot. Stop and drain existing analytics
 workers before changing modes, then restart them with the same configuration.
@@ -59,12 +60,26 @@ differences by event type. Repeated observations of the same drift contribute
 again; a worker restart rebaselines, so monitor drift before restarting.
 
 In incremental mode, the counter service retains pending email IDs across fetch
-processors. A failed final repair is retried by the next final aggregation,
-even when it fetched no new events. Drains are serialized and process a snapshot
-of queued emails. Only successful repairs clear entries; an email requeued
-during repair remains pending. Each repair uses the same email lock as event
-increments. Repair logs carry `phase: "repair"` with the differences observed
-before correction; comparison mode continues to report drift without repair.
+processors. A failed repair is logged, left queued and retried by the next final
+aggregation, even one that fetched no new events; it never fails the fetch,
+because the fetch's recipient facts and increments are already committed and a
+failure would discard its cursor and member statistics. Every queued email is
+attempted in each drain, so one contended email cannot block the others. Drains
+are serialized and process a snapshot of queued emails; an email requeued during
+its repair remains pending. Each repair uses the same email lock as event
+increments. Repair logs and the comparison metrics carry `phase: "repair"` with
+the differences observed before correction, separate from `phase: "comparison"`,
+so a drift alert calibrated during the comparison soak is not fired by drift that
+was corrected. Each failed repair increments
+`email_analytics_email_counter_repair_failures`, so an email stuck behind
+persistent contention is visible without reading logs. Comparison mode never
+repairs; `reconcile` refuses to run in it.
+
+The pending queue is in memory. A process that stops between the last flush and
+the final aggregation loses it, and an email that is never touched again keeps
+the counters its atomic increments produced. Those increments are exact by
+construction; final repair is a safety net for drift introduced outside the
+counter lock, not the source of correctness.
 
 This email-only mode does not remove member history queries. Removing those
 requires initialized member counters and scheduled member reconciliation.
