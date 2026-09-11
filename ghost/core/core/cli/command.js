@@ -2,8 +2,18 @@
 // repl, timetravel) can require TypeScript modules directly. These commands run
 // via bare `node index.js <command>`, which — unlike `pnpm dev` (nodemon
 // --import=tsx) or the production build (tsc) — has no TS resolution otherwise.
-// They are restricted to development/local environments, where tsx is available.
-require('tsx/cjs');
+//
+// tsx is a devDependency. In a built tree (the production image, or CI after a
+// build) it is absent but also unnecessary, because tsc has already emitted a
+// .js beside every .ts - the same situation MigratorConfig.js handles the same
+// way. Any other failure to load it is still an error.
+try {
+  require('tsx/cjs');
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
 
 const cli = require('@tryghost/pretty-cli');
 const logging = cli.ui.log;
