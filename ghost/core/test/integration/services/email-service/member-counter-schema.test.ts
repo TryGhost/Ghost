@@ -1,11 +1,16 @@
-const assert = require('node:assert/strict');
-const ObjectID = require('bson-objectid');
+import assert from 'node:assert/strict';
+import ObjectID from 'bson-objectid';
+import type { Knex } from 'knex';
+
 const models = require('../../../../core/server/models');
-const db = require('../../../../core/server/data/db');
+const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
 
+// The legacy Bookshelf models are untyped; keep that boundary separate from the test fixtures.
+type Email = InstanceType<typeof models.Email>;
+
 describe('Member counter schema through Bookshelf', function () {
-  let email;
+  let email: Email;
   beforeAll(async function () {
     await dbUtils.reset();
   });

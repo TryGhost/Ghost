@@ -1,9 +1,10 @@
-const assert = require('node:assert/strict');
-const Knex = require('knex');
+import assert from 'node:assert/strict';
+import { knex as Knex, type Knex as KnexConnection } from 'knex';
+
 const migration = require('../../../../../core/server/data/migrations/versions/6.64/2026-09-10-13-18-22-add-member-email-counter-state');
 
 describe('Member email counter state migration (SQLite compatibility)', function () {
-  let connection;
+  let connection: KnexConnection;
 
   beforeEach(async function () {
     connection = Knex({
