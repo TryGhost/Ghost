@@ -499,6 +499,44 @@ describe('EmailAnalyticsService', function () {
         assert.equal(result.eventCount, 0);
       });
 
+      it('keeps the schedule when a capped fetch delivered no events', async function () {
+        const scheduledBegin = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const setJobMetadata = sinon.stub().resolves();
+        const fetchBegins: Date[] = [];
+        service = createService({
+          queries: {
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+            setJobMetadata,
+          },
+          // A Logs fetch can spend its record budget on filtered records and
+          // stop before the end of the window without delivering anything
+          fetchEvents: async ({ begin }: { begin: Date }) => {
+            fetchBegins.push(begin);
+            return { safeCursor: new Date(begin.getTime() + 30 * 60 * 1000) };
+          },
+          createEventProcessor: createStubEventProcessor,
+        });
+        await service.schedule({ begin: scheduledBegin, end: new Date() });
+        setJobMetadata.resetHistory();
+
+        const result = await service.fetchScheduled({ maxEvents: 100 });
+        // A resumed schedule must move past the covered records as well
+        await service.fetchScheduled({ maxEvents: 100 });
+
+        assert.equal(result.eventCount, 0);
+        assert.equal(result.capped, true);
+        sinon.assert.neverCalledWith(setJobMetadata, JOB_NAMES.scheduled, null);
+        assert.deepEqual(fetchBegins, [
+          scheduledBegin,
+          new Date(scheduledBegin.getTime() + 30 * 60 * 1000),
+        ]);
+        assert.deepEqual(
+          service.getStatus().scheduled.lastEventTimestamp,
+          new Date(scheduledBegin.getTime() + 60 * 60 * 1000),
+        );
+      });
+
       it('resets fetchScheduledData when no events are fetched', async function () {
         service = createService({
           queries: {

@@ -7,7 +7,7 @@ import { z } from 'zod';
 const request: (
   url: string,
   options: Record<string, unknown>,
-) => Promise<{ body: unknown; statusCode?: number }> = require('@tryghost/request');
+) => Promise<{ body: unknown; statusCode?: unknown }> = require('@tryghost/request');
 
 type LogPageOptions = {
   domain: string;
@@ -79,6 +79,13 @@ type LogsItem = z.output<typeof LogsItem>;
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+/** Only a plausible HTTP status reaches metrics; anything else is unknown. */
+function httpStatus(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 100 && value <= 599
+    ? value
     : undefined;
 }
 
@@ -166,20 +173,15 @@ export class MailgunLogsClient {
       body = response.body;
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
-        statusCode: response.statusCode ?? 200,
+        statusCode: httpStatus(response.statusCode) ?? 200,
         source: 'logs',
       });
     } catch (error) {
       // The request wrapper copies credentials/options onto transport errors.
       // Never attach or rethrow that error into analytics logging.
-      const statusCode = record(record(error)?.response)?.statusCode ?? record(error)?.statusCode;
-      const status =
-        typeof statusCode === 'number' &&
-        Number.isInteger(statusCode) &&
-        statusCode >= 100 &&
-        statusCode <= 599
-          ? statusCode
-          : undefined;
+      const status = httpStatus(
+        record(record(error)?.response)?.statusCode ?? record(error)?.statusCode,
+      );
       metrics.metric('mailgun-get-events', {
         value: Date.now() - startedAt,
         statusCode: status,
