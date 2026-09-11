@@ -2232,16 +2232,30 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.ok(batches.every((batch) => !abandoned.some((old) => old.id === batch.id)));
     // Enrollment is durable: disabling new opt-in must still finish these batches.
     service = createService({ memberCounters, memberCounterPreparation: false });
+    // Record state during the provider call and assert afterwards: sendBatch
+    // catches provider errors, so an assertion inside the fake would be swallowed.
+    const duringSend: { members: unknown[]; batches: unknown[] }[] = [];
     sender.send.callsFake(async () => {
-      const saved = await db.knex('members').whereIn('id', memberIds);
-      assert.ok(
-        saved.every((member) => member.email_count === 1 && member.email_tracked_count === 1),
-      );
-      const prepared = await db.knex('email_batches').where('email_id', email.id);
-      assert.ok(prepared.every((batch) => batch.member_counters_applied_at !== null));
+      duringSend.push({
+        members: await db.knex('members').whereIn('id', memberIds),
+        batches: await db.knex('email_batches').where('email_id', email.id),
+      });
       return { id: 'accepted' };
     });
     await service.sendBatches({ ...data, batches });
+    assert.equal(duringSend.length, batches.length);
+    for (const snapshot of duringSend) {
+      assert.ok(
+        (snapshot.members as { email_count: number; email_tracked_count: number }[]).every(
+          (member) => member.email_count === 1 && member.email_tracked_count === 1,
+        ),
+      );
+      assert.ok(
+        (snapshot.batches as { member_counters_applied_at: unknown }[]).every(
+          (batch) => batch.member_counters_applied_at !== null,
+        ),
+      );
+    }
     const first = await db
       .knex('members')
       .whereIn('id', memberIds)
