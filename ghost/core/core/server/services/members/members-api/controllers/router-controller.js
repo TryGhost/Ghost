@@ -1097,7 +1097,7 @@ module.exports = class RouterController {
       labels: req.body.labels,
       name: req.body.name,
       reqIp: req.ip ?? undefined,
-      newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
+      newsletters: await this._validateNewsletters(req.body?.newsletters),
       attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
       ...(giftToken ? { giftToken } : {}),
     };
@@ -1149,8 +1149,13 @@ module.exports = class RouterController {
    * @returns {Promise<object[] | undefined>} The validated newsletters
    */
   async _validateNewsletters(requestedNewsletters) {
-    if (!requestedNewsletters || requestedNewsletters.length === 0) {
+    if (!requestedNewsletters) {
       return undefined;
+    }
+
+    // An explicit empty list means "no newsletters", not "the defaults"
+    if (requestedNewsletters.length === 0) {
+      return [];
     }
 
     if (requestedNewsletters.some((newsletter) => !newsletter.name)) {

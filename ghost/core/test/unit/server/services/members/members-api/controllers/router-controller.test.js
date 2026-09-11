@@ -191,6 +191,45 @@ describe('RouterController', function () {
       );
     });
 
+    it('keeps an explicit empty newsletter list in the checkout metadata', async function () {
+      const routerController = new RouterController({
+        tiersService,
+        paymentsService,
+        offersAPI,
+        stripeAPIService,
+        labsService,
+        settingsCache,
+        settingsHelpers,
+        urlUtils,
+        newslettersService: { getAll: sinon.stub() },
+        emailAddressService,
+      });
+      const req = {
+        body: {
+          tierId: 'tier_123',
+          cadence: 'month',
+          metadata: {
+            newsletters: JSON.stringify([]),
+          },
+        },
+      };
+
+      await routerController.createCheckoutSession(req, {
+        writeHead: () => {},
+        end: () => {},
+      });
+
+      sinon.assert.calledOnce(getPaymentLinkSpy);
+      sinon.assert.calledWith(
+        getPaymentLinkSpy,
+        sinon.match({
+          metadata: {
+            newsletters: '[]',
+          },
+        }),
+      );
+    });
+
     it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
       const magicLinkService = {
         getMagicLink: sinon
@@ -2098,6 +2137,26 @@ describe('RouterController', function () {
           message: `Cannot subscribe to archived newsletters Newsletter 2`,
         });
       });
+
+      it('keeps an explicit empty newsletter list', async function () {
+        req.body.newsletters = [];
+
+        const controller = createRouterController();
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, []);
+      });
+
+      it('leaves newsletters unset when none are requested', async function () {
+        const controller = createRouterController();
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.equal(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, undefined);
+      });
     });
 
     describe('gift token forwarding', function () {
@@ -2381,10 +2440,10 @@ describe('RouterController', function () {
       assert.deepEqual(result, [{ id: 'abc123' }, { id: 'def456' }, { id: 'ghi789' }]);
     });
 
-    it('returns undefined if newsletters is an empty array', async function () {
+    it('returns an empty array if newsletters is an empty array', async function () {
       const requestedNewsletters = [];
       const result = await routerController._validateNewsletters(requestedNewsletters);
-      assert.equal(result, undefined);
+      assert.deepEqual(result, []);
     });
 
     it('returns undefined if newsletters is undefined', async function () {
