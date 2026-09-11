@@ -1,12 +1,14 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import type { Knex } from 'knex';
+import type { PrometheusClient } from '@tryghost/prometheus-metrics';
+import { NewsletterEmailCounters } from '../../../../core/server/services/email-analytics/newsletter-email-counters';
+
 const { agentProvider, fixtureManager } = require('../../../utils/e2e-framework');
-const db = require('../../../../core/server/data/db');
+const logging = require('@tryghost/logging');
+const db: { knex: Knex } = require('../../../../core/server/data/db');
 const models = require('../../../../core/server/models');
-const sinon = require('sinon');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
-const {
-  NewsletterEmailCounters,
-} = require('../../../../core/server/services/email-analytics/newsletter-email-counters');
 const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
 const {
   NewsletterEmailAnalyticsBatchProcessor,
@@ -15,8 +17,16 @@ const {
   EventProcessingResult,
 } = require('../../../../core/server/services/email-analytics/event-processing-result');
 
+// The legacy Bookshelf models and fixtures are untyped; describe only what this test reads.
+type RecipientRow = {
+  id: string;
+  email_id: string;
+  member_id: string;
+  member_email: string;
+};
+
 describe('Newsletter email counters', function () {
-  let recipient;
+  let recipient: RecipientRow;
 
   beforeAll(async function () {
     await agentProvider.getAdminAPIAgent();
@@ -108,7 +118,7 @@ describe('Newsletter email counters', function () {
     assert.equal(email.opened_count, 1);
   });
 
-  function createStorage(emailCounters, database = db) {
+  function createStorage(emailCounters: NewsletterEmailCounters, database: { knex: unknown } = db) {
     return new NewsletterEmailEventStorage({
       config: { get: () => true },
       db: database,
@@ -151,9 +161,12 @@ describe('Newsletter email counters', function () {
     };
     const counters = new NewsletterEmailCounters({
       knex: db.knex,
-      prometheusClient: { registerCounter: sinon.stub(), getMetric: (name) => metrics[name] },
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: (name: string) => metrics[name as keyof typeof metrics],
+      } as unknown as Pick<PrometheusClient, 'registerCounter' | 'getMetric'>,
     });
-    const warn = sinon.stub(require('@tryghost/logging'), 'warn');
+    const warn = sinon.stub(logging, 'warn');
     try {
       assert.deepEqual(await counters.compare(recipient.email_id), {
         delivered: 0,
@@ -184,11 +197,11 @@ describe('Newsletter email counters', function () {
   it('retries a comparison that loses a lock wait and reports its baseline correction once', async function () {
     await resetFacts();
     let attempts = 0;
-    const warn = sinon.stub(require('@tryghost/logging'), 'warn');
+    const warn = sinon.stub(logging, 'warn');
     try {
       const counters = new NewsletterEmailCounters({
         knex: {
-          transaction: (callback) =>
+          transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
             db.knex.transaction(async (trx) => {
               const result = await callback(trx);
               attempts += 1;
@@ -197,7 +210,7 @@ describe('Newsletter email counters', function () {
               }
               return result;
             }),
-        },
+        } as unknown as Pick<Knex, 'transaction'>,
       });
       assert.deepEqual(await counters.compare(recipient.email_id), {
         delivered: 0,
@@ -312,7 +325,7 @@ describe('Newsletter email counters', function () {
     await resetFacts();
     const storage = createStorage(new NewsletterEmailCounters({ knex: db.knex }), {
       knex: {
-        transaction: async (callback) => {
+        transaction: async (callback: (trx: Knex.Transaction) => Promise<unknown>) => {
           await db.knex.transaction(callback);
           throw Object.assign(new Error('Lost commit acknowledgement'), { code: 'ECONNRESET' });
         },
@@ -370,17 +383,17 @@ describe('Newsletter email counters', function () {
     await initial.handleDelivered(makeEvent());
     await initial.flushBatchedUpdates();
 
-    let allowCommit;
-    let writesCompleted;
-    const hold = new Promise((resolve) => {
+    let allowCommit!: () => void;
+    let writesCompleted!: () => void;
+    const hold = new Promise<void>((resolve) => {
       allowCommit = resolve;
     });
-    const ready = new Promise((resolve) => {
+    const ready = new Promise<void>((resolve) => {
       writesCompleted = resolve;
     });
     const writer = createStorage(counters, {
       knex: {
-        transaction: (callback) =>
+        transaction: (callback: (trx: Knex.Transaction) => Promise<unknown>) =>
           db.knex.transaction(async (trx) => {
             const result = await callback(trx);
             writesCompleted();
@@ -392,11 +405,11 @@ describe('Newsletter email counters', function () {
     await writer.handleOpened(makeEvent());
     const flush = writer.flushBatchedUpdates();
     await ready;
-    let comparisonIssued;
-    const issued = new Promise((resolve) => {
+    let comparisonIssued!: () => void;
+    const issued = new Promise<void>((resolve) => {
       comparisonIssued = resolve;
     });
-    const onQuery = (query) => {
+    const onQuery = (query: { sql: string }) => {
       if (query.sql.includes('emails') && query.sql.includes('for update')) {
         comparisonIssued();
       }
