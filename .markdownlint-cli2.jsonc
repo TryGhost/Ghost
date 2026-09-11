@@ -1,8 +1,4 @@
 {
-  // The imported limit-service documentation is kept exactly as it arrived from
-  // TryGhost/SDK so it can be diffed against the source. It is linted once it is
-  // rewritten alongside the package.
-  "ignores": ["packages/limit-service/**"],
   "config": {
     "default": false,
     "MD011": true,

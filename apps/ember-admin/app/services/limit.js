@@ -69,7 +69,8 @@ export default class LimitsService extends Service {
         }
 
         this.limiter.loadLimits({
-            limits: this.decorateWithCountQueries(this.usableLimits(limits, subscription)),
+            limits,
+            counters: this.counters(),
             subscription,
             helpLink,
             errors: {
@@ -77,47 +78,26 @@ export default class LimitsService extends Service {
                 IncorrectUsageError
             }
         });
-    }
 
-    // Periodic limits need a subscription to build. Registration stops at the first
-    // limit that throws, so passing one through would drop every limit after it
-    usableLimits(limits, subscription) {
-        if (subscription) {
-            return limits;
+        // A limit its host configured that cannot be applied here is worth saying out loud
+        for (const problem of this.limiter.problems) {
+            console.warn(`Skipping ${problem.limit} limit: ${problem.reason}`); // eslint-disable-line no-console
         }
-
-        return Object.fromEntries(Object.entries(limits).filter(([name, limit]) => {
-            if (limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
-                console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
-                return false;
-            }
-
-            return true;
-        }));
     }
 
     reload() {
         this.loadLimits();
     }
 
-    decorateWithCountQueries(limits) {
-        if (limits.staff) {
-            limits.staff.currentCountQuery = bind(this, this.getStaffUsersCount);
-        }
-
-        if (limits.members) {
-            limits.members.currentCountQuery = bind(this, this.getMembersCount);
-        }
-
-        if (limits.newsletters) {
-            limits.newsletters.currentCountQuery = bind(this, this.getNewslettersCount);
-        }
-
-        if (limits.emails) {
-            limits.emails.currentCountQuery = bind(this, this.getEmailsCount);
-        }
-
-        return limits;
+    // How Admin counts, as opposed to how the server does. The limit service asks for a
+    // number and neither side has to know how the other arrives at one.
+    counters() {
+        return {
+            staff: bind(this, this.getStaffUsersCount),
+            members: bind(this, this.getMembersCount),
+            newsletters: bind(this, this.getNewslettersCount),
+            emails: bind(this, this.getEmailsCount)
+        };
     }
 
     async getStaffUsersCount() {
@@ -144,9 +124,19 @@ export default class LimitsService extends Service {
 
     // Periodic limits pass the period start as the second argument. The default
     // emails query counts recipients via knex, which doesn't exist in the browser
-    async getEmailsCount(_db, startDate) {
-        const since = new Date(startDate).toISOString();
-        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, fields: 'id,email_count', limit: 'all'});
+    async getEmailsCount({periodStart} = {}) {
+        // Only a limit that resets has a period to count within. A host capping emails
+        // outright configures a plain maximum instead, and the whole history is what that
+        // caps. Formatting the missing date anyway throws, and the publish flow reports
+        // whatever it catches, so the publisher would be told their sending is disabled
+        // because of an invalid time value.
+        const query = {fields: 'id,email_count', limit: 'all'};
+
+        if (periodStart) {
+            query.filter = `created_at:>='${new Date(periodStart).toISOString()}'`;
+        }
+
+        const emails = await this.store.query('email', query);
 
         return emails.reduce((total, email) => total + (email.emailCount ?? 0), 0);
     }
