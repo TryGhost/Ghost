@@ -65,6 +65,8 @@ export type EmailAnalyticsFetchResult = {
   memberAggregationTimeMs: number;
   /** The processing result with event breakdown */
   result: EventProcessingResult;
+  /** Whether the fetcher stopped before reading the whole window */
+  capped: boolean;
 };
 
 type FetchEvents = (options: {
@@ -91,6 +93,7 @@ function createEmptyResult(): EmailAnalyticsFetchResult {
     emailAggregationTimeMs: 0,
     memberAggregationTimeMs: 0,
     result: new EventProcessingResult(),
+    capped: false,
   };
 }
 
@@ -417,7 +420,11 @@ export class EmailAnalyticsService {
       end,
       maxEvents,
     });
-    if (fetchResult.eventCount === 0 || this.#fetchScheduledData.canceled) {
+    // A capped fetch can deliver nothing while the rest of the window is unread.
+    if (
+      (fetchResult.eventCount === 0 && !fetchResult.capped) ||
+      this.#fetchScheduledData.canceled
+    ) {
       this.#clearScheduledData();
     }
 
@@ -471,6 +478,9 @@ export class EmailAnalyticsService {
     // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
     const cumulativeResult = new EventProcessingResult();
     let error: unknown = null;
+    // A fetcher that stops early returns the cursor it covered; the window past
+    // it was never read, so the cursor must not skip ahead afterwards.
+    let capped = false;
 
     const aggregate = async (isFinal: boolean): Promise<void> => {
       if (!eventProcessor.aggregate) {
@@ -553,9 +563,16 @@ export class EmailAnalyticsService {
         events: eventTypes,
       });
 
+      capped = Boolean(fetchResult?.safeCursor);
+      // Everything before a capped cursor was processed or irrelevant. Keep the
+      // earlier of it and the last processed event, except when nothing was
+      // processed: then the cursor must still move past the covered records or
+      // a window of filtered records would be re-read on every fetch.
       if (
         fetchResult?.safeCursor &&
-        (!fetchData.lastEventTimestamp || fetchResult.safeCursor < fetchData.lastEventTimestamp)
+        (eventCount === 0 ||
+          !fetchData.lastEventTimestamp ||
+          fetchResult.safeCursor < fetchData.lastEventTimestamp)
       ) {
         fetchData.lastEventTimestamp = fetchResult.safeCursor;
       }
@@ -600,7 +617,7 @@ export class EmailAnalyticsService {
         'finished',
         new Date(fetchData.lastEventTimestamp.getTime()),
       );
-      if (eventCount < maxEvents) {
+      if (eventCount < maxEvents && !capped) {
         // Consumed everything in the window — advance to avoid re-fetching same batch
         fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
       }
@@ -627,6 +644,7 @@ export class EmailAnalyticsService {
       emailAggregationTimeMs,
       memberAggregationTimeMs,
       result: cumulativeResult,
+      capped,
     };
   }
 }

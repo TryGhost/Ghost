@@ -499,6 +499,44 @@ describe('EmailAnalyticsService', function () {
         assert.equal(result.eventCount, 0);
       });
 
+      it('keeps the schedule when a capped fetch delivered no events', async function () {
+        const scheduledBegin = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const setJobMetadata = sinon.stub().resolves();
+        const fetchBegins: Date[] = [];
+        service = createService({
+          queries: {
+            setJobTimestamp: sinon.stub().resolves(),
+            setJobStatus: sinon.stub().resolves(),
+            setJobMetadata,
+          },
+          // A Logs fetch can spend its record budget on filtered records and
+          // stop before the end of the window without delivering anything
+          fetchEvents: async ({ begin }: { begin: Date }) => {
+            fetchBegins.push(begin);
+            return { safeCursor: new Date(begin.getTime() + 30 * 60 * 1000) };
+          },
+          createEventProcessor: createStubEventProcessor,
+        });
+        await service.schedule({ begin: scheduledBegin, end: new Date() });
+        setJobMetadata.resetHistory();
+
+        const result = await service.fetchScheduled({ maxEvents: 100 });
+        // A resumed schedule must move past the covered records as well
+        await service.fetchScheduled({ maxEvents: 100 });
+
+        assert.equal(result.eventCount, 0);
+        assert.equal(result.capped, true);
+        sinon.assert.neverCalledWith(setJobMetadata, JOB_NAMES.scheduled, null);
+        assert.deepEqual(fetchBegins, [
+          scheduledBegin,
+          new Date(scheduledBegin.getTime() + 30 * 60 * 1000),
+        ]);
+        assert.deepEqual(
+          service.getStatus().scheduled.lastEventTimestamp,
+          new Date(scheduledBegin.getTime() + 60 * 60 * 1000),
+        );
+      });
+
       it('resets fetchScheduledData when no events are fetched', async function () {
         service = createService({
           queries: {
@@ -842,6 +880,39 @@ describe('EmailAnalyticsService', function () {
           service.getStatus().latestOpened.lastEventTimestamp,
           new Date(lastEventTimestamp.getTime() + 1000),
         );
+      });
+
+      it('does not advance the cursor past a capped fetch that read fewer events than its budget', async function () {
+        const lastEventTimestamp = new Date(Date.now() - 10_000);
+        const setJobTimestamp = sinon.stub().resolves();
+        const eventProcessor = createStubEventProcessor();
+        eventProcessor.processBatch.callsFake(async (_events, _result, fetchData) => {
+          fetchData.lastEventTimestamp = lastEventTimestamp;
+        });
+        const service = createService({
+          queries: {
+            getLastEventTimestamp: sinon.stub().resolves(),
+            setJobTimestamp,
+            setJobStatus: sinon.stub().resolves(),
+          },
+          // A Logs fetch can stop on its record or page budget before the event
+          // budget is spent; the window after its cursor was never read.
+          fetchEvents: async ({ batchHandler }: { batchHandler: BatchHandler }) => {
+            await batchHandler([1]);
+            return { safeCursor: new Date(lastEventTimestamp.getTime() + 500) };
+          },
+          createEventProcessor: () => eventProcessor,
+        });
+
+        await service.fetchLatestOpenedEvents({ maxEvents: 10 });
+
+        sinon.assert.calledWithExactly(
+          setJobTimestamp,
+          JOB_NAMES.latestOpened,
+          'finished',
+          lastEventTimestamp,
+        );
+        assert.deepEqual(service.getStatus().latestOpened.lastEventTimestamp, lastEventTimestamp);
       });
 
       it('resumes from a capped sending domain until all of its events are processed', async function () {

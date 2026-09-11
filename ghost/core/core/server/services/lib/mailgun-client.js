@@ -3,6 +3,7 @@ const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
+const { getMailgunConfig, getMailgunDomains } = require('./mailgun-config');
 
 const DEFAULT_BATCH_SIZE = 1000;
 
@@ -220,13 +221,10 @@ module.exports = class MailgunClient {
    * @returns {string[]}
    */
   #getDomainsToFetch(mailgunConfig) {
-    const domains = [mailgunConfig.domain];
-
-    const fallbackDomain = this.#config.get('hostSettings:managedEmail:fallbackDomain');
-    if (fallbackDomain && fallbackDomain !== mailgunConfig.domain) {
-      domains.push(fallbackDomain);
+    const domains = getMailgunDomains(this.#config, mailgunConfig.domain);
+    if (domains.length > 1) {
       logging.info(
-        `[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${fallbackDomain}) domains`,
+        `[MailgunClient] Domain warming enabled, fetching from both primary (${mailgunConfig.domain}) and fallback (${domains[1]}) domains`,
       );
     }
 
@@ -404,27 +402,7 @@ module.exports = class MailgunClient {
   }
 
   #getConfig() {
-    const bulkEmailConfig = this.#config.get('bulkEmail');
-    const bulkEmailSetting = {
-      apiKey: this.#settings.get('mailgun_api_key'),
-      domain: this.#settings.get('mailgun_domain'),
-      baseUrl: this.#settings.get('mailgun_base_url'),
-    };
-
-    const hasMailgunConfig = !!bulkEmailConfig?.mailgun;
-    const hasMailgunSetting = !!(
-      bulkEmailSetting &&
-      bulkEmailSetting.apiKey &&
-      bulkEmailSetting.baseUrl &&
-      bulkEmailSetting.domain
-    );
-
-    if (!hasMailgunConfig && !hasMailgunSetting) {
-      return null;
-    }
-
-    const mailgunConfig = hasMailgunConfig ? bulkEmailConfig.mailgun : bulkEmailSetting;
-    return mailgunConfig;
+    return getMailgunConfig(this.#config, this.#settings);
   }
 
   /**
