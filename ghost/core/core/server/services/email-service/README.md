@@ -378,9 +378,9 @@ explicit error rather than being overwritten; pass `--restart` to replace it.
 Drain legacy analytics and preparation writers before manually initializing or
 re-baselining. The sweep's live concurrency guarantee requires every counter
 writer to acquire member locks before establishing its recipient snapshot.
-Legacy recounts and recipient creation do not follow this protocol. The later
-incremental-ingestion integration must establish that boundary before allowing
-periodic repair alongside live ingestion. MySQL pages explicitly use repeatable
+Legacy recounts and recipient creation do not follow this protocol. The member
+counter comparison mode establishes that boundary for live ingestion; ongoing
+sweep cadence remains separate. MySQL pages explicitly use repeatable
 read; multiple metadata and recipient reads share the same snapshot.
 
 `emailAnalytics.memberCounterPreparation` defaults to false and requires batched
@@ -394,8 +394,8 @@ new enrollment has been disabled. Historical batches remain opted out.
 Keep this flag off with legacy analytics workers. For isolated preparation testing,
 stop analytics jobs first: legacy recounts include pending recipient rows and do
 not coordinate with these increments. Enabling preparation with live analytics
-requires the subsequent member-event counter integration and a drained-worker
-cutover. The flag does not itself enable that integration.
+requires [member counter comparison mode](../email-analytics/README.md#newsletter-member-counters)
+and a drained-worker cutover. The flag does not itself enable that integration.
 
 Application locks the email, batch, persisted recipient rows and then members in
 primary-key order, before its first consistent read. Uninitialized members use the

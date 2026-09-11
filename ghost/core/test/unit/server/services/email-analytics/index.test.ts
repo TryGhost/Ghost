@@ -228,4 +228,38 @@ describe('email analytics service', function () {
       }),
     );
   });
+
+  it('enables member comparison only with batched email counters and preparation accounting', function () {
+    config.get.withArgs('emailAnalytics:batchProcessing').returns(true);
+    config.get.withArgs('emailAnalytics:emailCounterMode').returns('compare');
+    config.get.withArgs('emailAnalytics:memberCounterMode').returns('compare');
+    config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(true);
+    const registerCounter = sinon.stub();
+    dependencies.prometheusClient = { registerCounter, getMetric: sinon.stub() };
+    init(dependencies);
+    const names = registerCounter.args.map(([definition]) => definition.name);
+    expect(names).toContain('email_analytics_member_counter_comparisons');
+    expect(names).toContain('email_analytics_member_counter_drift');
+  });
+
+  it.each([
+    [false, 'compare', true, 'compare'],
+    [true, 'off', true, 'compare'],
+    [true, 'compare', false, 'compare'],
+    [true, 'compare', true, 'unknown'],
+  ])(
+    'keeps member counters off for incompatible configuration (%s, %s, %s, %s)',
+    function (batch, email, preparation, member) {
+      config.get.withArgs('emailAnalytics:batchProcessing').returns(batch);
+      config.get.withArgs('emailAnalytics:emailCounterMode').returns(email);
+      config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(preparation);
+      config.get.withArgs('emailAnalytics:memberCounterMode').returns(member);
+      const registerCounter = sinon.stub();
+      dependencies.prometheusClient = { registerCounter, getMetric: sinon.stub() };
+      // A counter flag mismatch must not stop Ghost from booting
+      init(dependencies);
+      const names = registerCounter.args.map(([definition]) => definition.name);
+      expect(names).not.toContain('email_analytics_member_counter_comparisons');
+    },
+  );
 });

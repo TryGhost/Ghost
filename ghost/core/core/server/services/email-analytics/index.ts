@@ -24,6 +24,7 @@ import type { EmailRecipientFailure, EmailSpamComplaintEvent, Email } from '../.
 import type DomainEvents from '@tryghost/domain-events';
 import { Queries } from './lib/queries';
 import { NewsletterEmailCounters } from './newsletter-email-counters';
+import { NewsletterMemberCounters } from './newsletter-member-counters';
 import { StartEmailAnalyticsJobEvent } from './events/start-email-analytics-job-event';
 import { StartAutomationEmailAnalyticsJobEvent } from './events/start-automation-email-analytics-job-event';
 import { AUTOMATION_EMAIL_TAG } from '../member-welcome-emails/constants';
@@ -78,6 +79,40 @@ export function resolveEmailCounterMode(
   return mode;
 }
 
+const MemberCounterMode = z.enum(['off', 'compare']);
+type MemberCounterMode = z.infer<typeof MemberCounterMode>;
+
+/**
+ * Member counters build on batched email counters and preparation accounting.
+ * Like the email mode, a mismatch is logged and leaves the mode off rather
+ * than stopping the site from booting.
+ */
+export function resolveMemberCounterMode(
+  config: Pick<ConfigInstance, 'get'>,
+  emailCounterMode: Exclude<EmailCounterMode, 'off'> | null,
+): Exclude<MemberCounterMode, 'off'> | null {
+  const configured: unknown = config.get('emailAnalytics:memberCounterMode') ?? 'off';
+  const parsed = MemberCounterMode.safeParse(configured);
+  if (!parsed.success) {
+    logging.warn(
+      `[EmailAnalytics] Ignoring unknown emailAnalytics.memberCounterMode ${JSON.stringify(configured)}; member counters are off`,
+    );
+    return null;
+  }
+  const mode = parsed.data;
+  if (mode === 'off') {
+    return null;
+  }
+  if (!emailCounterMode || config.get('emailAnalytics:memberCounterPreparation') !== true) {
+    logging.warn(
+      `[EmailAnalytics] emailAnalytics.memberCounterMode ${mode} requires batched email counters and emailAnalytics.memberCounterPreparation; member counters are off`,
+    );
+    return null;
+  }
+  logging.info(`[EmailAnalytics] Newsletter member counter mode: ${mode}`);
+  return mode;
+}
+
 export const init = ({
   automationsApi,
   config,
@@ -117,12 +152,16 @@ export const init = ({
   const emailCounters = emailCounterMode
     ? new NewsletterEmailCounters({ knex: db.knex, prometheusClient, mode: emailCounterMode })
     : null;
+  const memberCounters = resolveMemberCounterMode(config, emailCounterMode)
+    ? new NewsletterMemberCounters(db.knex, { prometheusClient })
+    : null;
 
   const newsletterEmailEventProcessor = new EmailEventProcessor({
     domainEvents,
     db,
     eventStorage: new NewsletterEmailEventStorage({
       emailCounters,
+      memberCounters,
       config,
       db,
       membersRepository,
@@ -177,6 +216,7 @@ export const init = ({
     createEventProcessor: () =>
       new NewsletterEmailAnalyticsBatchProcessor({
         emailCounters,
+        memberCounters,
         config,
         emailEventProcessor: newsletterEmailEventProcessor,
         prometheusClient,

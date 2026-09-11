@@ -7,6 +7,17 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
 import { NewsletterMemberCounters } from '../../../../core/server/services/email-analytics/newsletter-member-counters';
+import { NewsletterEmailCounters } from '../../../../core/server/services/email-analytics/newsletter-email-counters';
+
+const logging = require('@tryghost/logging');
+const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
+const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
+const {
+  NewsletterEmailAnalyticsBatchProcessor,
+} = require('../../../../core/server/services/email-analytics/newsletter-email-analytics-batch-processor');
+const {
+  EventProcessingResult,
+} = require('../../../../core/server/services/email-analytics/event-processing-result');
 
 const models = require('../../../../core/server/models');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
@@ -110,6 +121,318 @@ describe('Newsletter member counter baselines through MySQL', () => {
       .knex('members')
       .where('id', id(member))
       .first('email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate');
+
+  it('initializes member history and commits a new open exactly once with its recipient', async () => {
+    for (let n = 0; n < 5; n++) {
+      await recipient();
+    }
+    const target = await recipient();
+    const storage = new NewsletterEmailEventStorage({
+      config: { get: () => true },
+      db,
+      models,
+      emailCounters: new NewsletterEmailCounters({ knex: db.knex }),
+      memberCounters: counters,
+    });
+    const event = {
+      emailId: target.emailId,
+      emailRecipientId: target.recipientId,
+      memberId: id(1),
+      timestamp: new Date('2026-09-10T12:00:00Z'),
+    };
+    await storage.handleOpened(event);
+    await storage.flushBatchedUpdates();
+    assert.deepEqual(await stats(), {
+      email_count: 6,
+      email_tracked_count: 6,
+      email_opened_count: 1,
+      email_open_rate: 17,
+    });
+    await storage.handleOpened(event);
+    assert.deepEqual(await storage.flushBatchedUpdates(), []);
+    assert.equal((await stats()).email_opened_count, 1);
+    assert.equal((await db.knex('emails').where('id', target.emailId).first()).opened_count, 1);
+  });
+
+  it('stores an event that precedes enrolled preparation without member increments', async () => {
+    const target = await recipient({ enrolled: true });
+    await counters.sweepPage({ throughId: id(3) });
+    const storage = new NewsletterEmailEventStorage({
+      config: { get: () => true },
+      db,
+      models,
+      emailCounters: new NewsletterEmailCounters({ knex: db.knex }),
+      memberCounters: counters,
+    });
+    await storage.handleOpened({
+      emailId: target.emailId,
+      emailRecipientId: target.recipientId,
+      memberId: id(1),
+      timestamp: new Date(),
+    });
+    const error = sinon.stub(logging, 'error');
+    try {
+      // Only an abandoned preparation or an older send binary can produce this;
+      // failing the flush would stall every newsletter's ingestion on it
+      assert.equal((await storage.flushBatchedUpdates()).length, 1);
+    } finally {
+      error.restore();
+    }
+    sinon.assert.calledWithMatch(error, /before member counter preparation completed/);
+    assert.notEqual(
+      (await db.knex('email_recipients').where('id', target.recipientId).first()).opened_at,
+      null,
+    );
+    // The pending enrolled batch stays outside derived truth, so nothing drifts
+    assert.equal((await stats()).email_opened_count, 0);
+    assert.deepEqual((await counters.compareMembers([id(1)])).get(id(1)), {});
+    // Applying the batch afterwards is refused, as before, because events preceded it
+    await assert.rejects(
+      counters.applyPreparedBatch(target.batchId),
+      (caught: Error & { retryable?: boolean }) =>
+        /preceded member counter application/.test(caught.message) && caught.retryable === false,
+    );
+  });
+
+  function eventStorage(database = db) {
+    return new NewsletterEmailEventStorage({
+      config: { get: () => true },
+      db: database,
+      models,
+      emailCounters: new NewsletterEmailCounters({ knex: database.knex }),
+      memberCounters: counters,
+    });
+  }
+  const openEvent = (target: { emailId: string; recipientId: string }) => ({
+    emailId: target.emailId,
+    emailRecipientId: target.recipientId,
+    memberId: id(1),
+    timestamp: new Date('2026-09-10T12:00:00Z'),
+  });
+
+  it('compares opens-inclusive member truth without repairing deliberately incorrect counters', async () => {
+    const observations = { inc: sinon.stub() };
+    const differences = { inc: sinon.stub() };
+    counters = new NewsletterMemberCounters(db.knex, {
+      prometheusClient: {
+        registerCounter: sinon.stub(),
+        getMetric: sinon
+          .stub()
+          .callsFake((name) =>
+            name === 'email_analytics_member_counter_comparisons' ? observations : differences,
+          ),
+      },
+    });
+    for (let n = 0; n < 5; n++) {
+      await recipient({ opened: n === 0 });
+    }
+    await counters.sweepPage({ throughId: id(1) });
+    assert.deepEqual(await counters.compareMembers([id(1), id(2)]), new Map([[id(1), {}]]));
+    await db
+      .knex('members')
+      .where('id', id(1))
+      .update({ email_opened_count: 4, email_open_rate: 80 });
+    assert.deepEqual(
+      await counters.compareMembers([id(1)]),
+      new Map([
+        [
+          id(1),
+          {
+            email_opened_count: { actual: 4, expected: 1 },
+            email_open_rate: { actual: 80, expected: 20 },
+          },
+        ],
+      ]),
+    );
+    assert.equal((await stats()).email_opened_count, 4);
+    sinon.assert.callCount(observations.inc, 8);
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_opened_count', phase: 'comparison' },
+      3,
+    );
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_open_rate', phase: 'comparison' },
+      60,
+    );
+    await db.knex('members').where('id', id(1)).update({ email_open_rate: null });
+    await counters.compareMembers([id(1)]);
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_open_rate', phase: 'comparison' },
+      1,
+    );
+  });
+
+  it('uses member comparison for a missing-lane open and skips duplicate member recount work', async () => {
+    const target = await recipient();
+    const emailCounters = new NewsletterEmailCounters({ knex: db.knex });
+    const config = { get: () => true };
+    const storage = new NewsletterEmailEventStorage({
+      config,
+      db,
+      models,
+      emailCounters,
+      memberCounters: counters,
+    });
+    const queries = { aggregateEmailStats: sinon.stub(), aggregateMemberStatsBatch: sinon.stub() };
+    const compare = sinon.spy(counters, 'compareMembers');
+    const processor = new NewsletterEmailAnalyticsBatchProcessor({
+      config,
+      queries,
+      emailCounters,
+      memberCounters: counters,
+      emailEventProcessor: new EmailEventProcessor({
+        db,
+        eventStorage: storage,
+        domainEvents: { dispatch() {} },
+      }),
+    });
+    const result = new EventProcessingResult();
+    const events = [
+      {
+        type: 'opened',
+        emailId: target.emailId,
+        recipientEmail: 'member-counter-1@example.com',
+        timestamp: new Date(),
+      },
+    ];
+    await processor.processBatch(events, result, {});
+    assert.deepEqual(result.memberIds, [id(1)]);
+    await processor.aggregate({
+      processingResult: result,
+      includeOpenedEvents: false,
+      isFinal: true,
+    });
+    sinon.assert.notCalled(queries.aggregateMemberStatsBatch);
+    sinon.assert.calledOnceWithExactly(compare, [id(1)]);
+    assert.deepEqual(await compare.firstCall.returnValue, new Map([[id(1), {}]]));
+    await processor.processBatch(events, result, {});
+    assert.deepEqual(result.memberIds, []);
+    await processor.aggregate({
+      processingResult: result,
+      includeOpenedEvents: false,
+      isFinal: true,
+    });
+    sinon.assert.calledOnce(compare);
+    assert.equal((await stats()).email_opened_count, 1);
+  });
+
+  it('counts multiple opened recipient rows for one member, including untracked emails', async () => {
+    for (let n = 0; n < 5; n++) {
+      await recipient({ opened: n === 0 });
+    }
+    const target = await recipient({ tracked: false });
+    const copyId = ObjectID().toHexString();
+    const copy = await db.knex('email_recipients').where('id', target.recipientId).first();
+    await db.knex('email_recipients').insert({ ...copy, id: copyId });
+    const storage = eventStorage();
+    await storage.handleOpened({ ...openEvent(target), memberId: id(2) });
+    await storage.handleOpened(openEvent({ ...target, recipientId: copyId }));
+    await storage.flushBatchedUpdates();
+    assert.deepEqual(await stats(), {
+      email_count: 7,
+      email_tracked_count: 5,
+      email_opened_count: 3,
+      email_open_rate: 60,
+    });
+    assert.equal((await stats(2)).email_tracked_count, null);
+  });
+
+  it('rolls back recipient, email and member updates together and applies them on replay', async () => {
+    const target = await recipient();
+    const storage = eventStorage();
+    await storage.handleOpened(openEvent(target));
+    await db.knex.raw(
+      "CREATE TRIGGER member_event_failure BEFORE UPDATE ON members FOR EACH ROW BEGIN IF NEW.email_opened_count = 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'injected member event failure'; END IF; END",
+    );
+    try {
+      await assert.rejects(storage.flushBatchedUpdates(), /injected member event failure/);
+      assert.equal((await stats()).email_tracked_count, null);
+      assert.equal(
+        (await db.knex('email_recipients').where('id', target.recipientId).first()).opened_at,
+        null,
+      );
+      assert.equal((await db.knex('emails').where('id', target.emailId).first()).opened_count, 0);
+    } finally {
+      await db.knex.raw('DROP TRIGGER member_event_failure');
+    }
+    // The failed page is discarded; the caller replays it
+    await storage.handleOpened(openEvent(target));
+    await storage.flushBatchedUpdates();
+    assert.equal((await stats()).email_opened_count, 1);
+  });
+
+  it('replays safely after an actual member event commit loses its acknowledgement', async () => {
+    const target = await recipient();
+    let loseAcknowledgement = true;
+    const uncertainKnex = new Proxy(db.knex, {
+      get(targetKnex, property) {
+        if (property === 'transaction') {
+          return async (
+            callback: (trx: Knex.Transaction) => Promise<unknown>,
+            config?: Knex.TransactionConfig,
+          ) => {
+            const result = await db.knex.transaction(callback, config);
+            if (loseAcknowledgement) {
+              loseAcknowledgement = false;
+              throw Object.assign(new Error('lost member event acknowledgement'), {
+                code: 'ECONNRESET',
+              });
+            }
+            return result;
+          };
+        }
+        return Reflect.get(targetKnex, property);
+      },
+    });
+    const storage = eventStorage({ knex: uncertainKnex });
+    await storage.handleOpened(openEvent(target));
+    await assert.rejects(storage.flushBatchedUpdates(), /lost member event acknowledgement/);
+    assert.equal((await stats()).email_opened_count, 1);
+    assert.deepEqual(await storage.flushBatchedUpdates(), []);
+    const restarted = eventStorage();
+    await restarted.handleOpened(openEvent(target));
+    await restarted.flushBatchedUpdates();
+    assert.equal((await stats()).email_opened_count, 1);
+    assert.equal((await db.knex('emails').where('id', target.emailId).first()).opened_count, 1);
+  });
+
+  it('establishes both baselines after waiting for the member lock', async () => {
+    const history = await recipient();
+    const target = await recipient();
+    const blocker = await db.knex.transaction();
+    await blocker('members').where('id', id(1)).forUpdate().first();
+    let reached!: () => void;
+    const waiting = new Promise<void>((resolve) => {
+      reached = resolve;
+    });
+    const listener = (query: Knex.Sql) => {
+      if (query.sql.includes('members') && query.sql.includes('for update')) {
+        reached();
+      }
+    };
+    db.knex.on('query', listener);
+    const storage = eventStorage();
+    await storage.handleOpened(openEvent(target));
+    const flushing = storage.flushBatchedUpdates();
+    try {
+      await waiting;
+      await blocker('email_recipients')
+        .where('id', history.recipientId)
+        .update({ opened_at: new Date() });
+      await blocker.commit();
+      await flushing;
+      assert.equal((await stats()).email_opened_count, 2);
+    } finally {
+      db.knex.removeListener('query', listener);
+      if (!blocker.isCompleted()) {
+        await blocker.rollback();
+      }
+      await flushing;
+    }
+  });
 
   it('derives legacy and applied facts, excluding pending enrollment and discardable preparation', async () => {
     for (let n = 0; n < 4; n++) {

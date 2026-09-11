@@ -15,9 +15,9 @@ email counters atomically with recipient transitions:
 | `incremental` | Defer recounts                          | Recount all outcomes and repair drift   |
 
 Enable `incremental` only after a comparison soak has established correctness.
-This removes email recounts from intermediate aggregation. Member statistics
-still use recomputation, including replayed members needed to recover an
-interrupted recount.
+This removes email recounts from intermediate aggregation. With member counter
+mode off, member statistics still use recomputation, including replayed members
+needed to recover an interrupted recount.
 
 The mode is selected at analytics boot. Stop and drain existing analytics
 workers before changing modes, then restart them with the same configuration.
@@ -84,3 +84,55 @@ counter lock, not the source of correctness.
 This email-only mode does not remove member history queries. Removing those
 requires initialized member counters and scheduled member reconciliation.
 Comparison retains email recount load until the incremental mode is enabled.
+
+## Newsletter member counters
+
+`emailAnalytics.memberCounterMode` defaults to `off`. Its `compare` mode requires
+`batchProcessing: true`, an enabled email counter mode, and
+`memberCounterPreparation: true`; an unknown value or a missing prerequisite is
+logged at boot and leaves member counters off. The mode is selected at boot.
+Automation and gift processing keep their existing outcome APIs.
+
+Preparation maintains member recipient totals and the tracked-email denominator.
+Event ingestion locks the email, eligible recipient rows, and then members before
+either baseline establishes a snapshot. NULL member baselines use the shared
+derived truth before recipient writes. Exact first-open transitions then update
+member open counts and rates in the recipient transaction. Multiple recipient rows
+for the same member each contribute once. Opens from untracked emails still count
+in the numerator, matching existing semantics; rates remain null below five
+tracked emails. An event that arrives before its batch's denominator was applied,
+which only an abandoned preparation or a rollback to older send code can produce,
+is stored without member increments and logged: comparison then reports the
+member drift and the shared sweep repairs it, rather than one email stalling
+every newsletter's ingestion.
+
+Comparison replaces legacy member recount writes with observe-only derived truth
+under the same member locks. It always includes opens, regardless of the fetch
+lane. NULL baselines are skipped rather than reported as drift. Only members with
+committed recipient transitions are queued for comparison; duplicate replay no
+longer needs to recover a separate member write. With member mode off, replay
+candidates and legacy recount recovery remain intact.
+
+Drift logs contain member IDs and actual/expected values for differing statistics.
+`email_analytics_member_counter_comparisons` counts initialized observations by
+`statistic` and `phase`; `email_analytics_member_counter_drift` adds absolute
+differences with the same labels. A null-versus-numeric rate mismatch adds one. Comparison does not repair counters;
+the shared sweep owns repair. Comparison retains historical read cost during the
+soak; removing those reads and scheduling periodic repair follow separately.
+
+For cutover, stop and drain analytics and sending workers. Complete a fresh full
+member baseline while legacy writers remain stopped; if an older partial sweep
+exists, finish it and then use `--restart` for a fresh pass under this boundary.
+Enable member preparation and comparison together when restarting workers. Email
+baseline correction remains limited to touched emails and always includes opens.
+After cutover, member event updates, preparation and the manual sweep share the
+locking protocol and can run together.
+
+For the configuration fallback, drain both kinds of worker and resolve any
+enrolled batches still awaiting application before disabling member preparation
+and member counter mode together. Legacy member recomputation then resumes.
+Stop counter sweeps while legacy writers run; re-enable only after another
+drained baseline. The current sending code honors persisted enrollment, but an
+older send binary may not, so unresolved enrolled preparation must be reconciled
+before a binary rollback. Keep this fallback until the fleet rollout and retained
+aggregation paths have been decided.

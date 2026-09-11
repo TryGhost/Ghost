@@ -13,6 +13,7 @@ class NewsletterEmailEventStorage {
   #prometheusClient;
   #pendingUpdates;
   #emailCounters;
+  #memberCounters;
 
   constructor({
     config,
@@ -22,6 +23,7 @@ class NewsletterEmailEventStorage {
     emailSuppressionList,
     prometheusClient,
     emailCounters = null,
+    memberCounters = null,
   }) {
     this.#config = config;
     this.#db = db;
@@ -30,6 +32,10 @@ class NewsletterEmailEventStorage {
     this.#emailSuppressionList = emailSuppressionList;
     this.#prometheusClient = prometheusClient;
     this.#emailCounters = emailCounters;
+    this.#memberCounters = memberCounters;
+    if (memberCounters && !emailCounters) {
+      throw new errors.IncorrectUsageError({ message: 'Member counters require email counters' });
+    }
 
     // Initialize pending updates for batched processing
     this.#pendingUpdates = {
@@ -350,69 +356,80 @@ class NewsletterEmailEventStorage {
     const transitions = [];
     for (const emailId of Array.from(groups.keys()).sort()) {
       const updates = groups.get(emailId);
-      const transitioned = await transactionWithRetry(this.#db.knex, async (trx) => {
-        await this.#emailCounters?.prepare(trx, emailId);
-        const query = trx('email_recipients');
-        if (DatabaseInfo.isMySQL(trx)) {
-          // Lock in primary-key order, rather than whichever secondary index
-          // the optimizer chooses. Sorting the IN list alone is insufficient.
-          query.fromRaw('?? FORCE INDEX (PRIMARY)', ['email_recipients']);
-        }
-        const recipients = await query
-          .select('id', 'member_id', 'delivered_at', 'opened_at', 'failed_at')
-          .where('email_id', emailId)
-          .where(function () {
-            for (const [type, pending] of Object.entries(updates)) {
-              if (pending.size) {
-                this.orWhere(function () {
-                  this.whereIn('id', Array.from(pending.keys()).sort()).whereNull(`${type}_at`);
-                });
+      const transitioned = await transactionWithRetry(
+        this.#db.knex,
+        async (trx) => {
+          // Email lock first; the email baseline is taken after every lock below.
+          await this.#emailCounters?.lock(trx, emailId);
+          const query = trx('email_recipients');
+          if (DatabaseInfo.isMySQL(trx)) {
+            // Lock in primary-key order, rather than whichever secondary index
+            // the optimizer chooses. Sorting the IN list alone is insufficient.
+            query.fromRaw('?? FORCE INDEX (PRIMARY)', ['email_recipients']);
+          }
+          const recipients = await query
+            .select('id', 'member_id', 'batch_id', 'delivered_at', 'opened_at', 'failed_at')
+            .where('email_id', emailId)
+            .where(function () {
+              for (const [type, pending] of Object.entries(updates)) {
+                if (pending.size) {
+                  this.orWhere(function () {
+                    this.whereIn('id', Array.from(pending.keys()).sort()).whereNull(`${type}_at`);
+                  });
+                }
               }
-            }
-          })
-          .orderBy('id')
-          .forUpdate();
+            })
+            .orderBy('id')
+            .forUpdate();
 
-        const result = { emailId, delivered: [], opened: [], failed: [] };
-        // The locked set, not an affected-row count, determines which members
-        // transitioned. Dependent counter writes must use this same transaction.
-        for (const [type, pending] of Object.entries(updates)) {
-          const eligible = recipients.filter(
-            (row) => pending.has(row.id) && row[`${type}_at`] === null,
-          );
-          if (!eligible.length) {
-            continue;
+          const memberBaseline = this.#memberCounters
+            ? await this.#memberCounters.prepareEventMembers(trx, emailId, recipients)
+            : null;
+          // Both baselines share a snapshot established after every lock.
+          await this.#emailCounters?.prepare(trx, emailId);
+          const result = { emailId, delivered: [], opened: [], failed: [] };
+          // The locked set, not an affected-row count, determines which members
+          // transitioned. Dependent counter writes must use this same transaction.
+          for (const [type, pending] of Object.entries(updates)) {
+            const eligible = recipients.filter(
+              (row) => pending.has(row.id) && row[`${type}_at`] === null,
+            );
+            if (!eligible.length) {
+              continue;
+            }
+            const bindings = eligible.flatMap(({ id }) => [id, pending.get(id).timestamp]);
+            const affected = await trx('email_recipients')
+              .whereIn(
+                'id',
+                eligible.map(({ id }) => id),
+              )
+              .whereNull(`${type}_at`)
+              .update({
+                [`${type}_at`]: trx.raw(
+                  `CASE id ${eligible.map(() => 'WHEN ? THEN ?').join(' ')} END`,
+                  bindings,
+                ),
+              });
+            if (affected !== eligible.length) {
+              // Only possible without row locks (e.g. SQLite): another writer
+              // changed a locked-set row between the read and the guarded update.
+              // Fail loudly rather than report a transition that did not happen.
+              throw new errors.InternalServerError({
+                message: `Email recipient ${type} transitions changed during flush`,
+                context: `email ${emailId}: expected ${eligible.length}, updated ${affected}`,
+              });
+            }
+            result[type] = eligible.map(({ id, member_id: memberId }) => ({
+              recipientId: id,
+              memberId,
+            }));
           }
-          const bindings = eligible.flatMap(({ id }) => [id, pending.get(id).timestamp]);
-          const affected = await trx('email_recipients')
-            .whereIn(
-              'id',
-              eligible.map(({ id }) => id),
-            )
-            .whereNull(`${type}_at`)
-            .update({
-              [`${type}_at`]: trx.raw(
-                `CASE id ${eligible.map(() => 'WHEN ? THEN ?').join(' ')} END`,
-                bindings,
-              ),
-            });
-          if (affected !== eligible.length) {
-            // Only possible without row locks (e.g. SQLite): another writer
-            // changed a locked-set row between the read and the guarded update.
-            // Fail loudly rather than report a transition that did not happen.
-            throw new errors.InternalServerError({
-              message: `Email recipient ${type} transitions changed during flush`,
-              context: `email ${emailId}: expected ${eligible.length}, updated ${affected}`,
-            });
-          }
-          result[type] = eligible.map(({ id, member_id: memberId }) => ({
-            recipientId: id,
-            memberId,
-          }));
-        }
-        await this.#emailCounters?.increment(trx, emailId, result);
-        return result;
-      });
+          await this.#emailCounters?.increment(trx, emailId, result);
+          await this.#memberCounters?.incrementOpened(trx, result.opened, memberBaseline);
+          return result;
+        },
+        this.#transactionConfig(),
+      );
       this.#emailCounters?.committed(emailId);
       if (
         transitioned.delivered.length ||
@@ -428,6 +445,14 @@ class NewsletterEmailEventStorage {
       }
     }
     return transitions;
+  }
+
+  #transactionConfig() {
+    // Member baselines read several tables after taking member locks; keep
+    // those reads on one snapshot.
+    return this.#memberCounters && DatabaseInfo.isMySQL(this.#db.knex)
+      ? { isolationLevel: 'repeatable read' }
+      : undefined;
   }
 }
 
