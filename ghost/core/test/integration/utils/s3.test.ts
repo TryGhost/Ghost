@@ -7,14 +7,14 @@ import {
   putObject,
   getObject,
   deleteObject,
-} from '../../utils/minio';
+} from '../../utils/s3';
 import type { S3Client } from '@aws-sdk/client-s3';
 
-// Skip when MinIO is unreachable. The flag is set by the integration
-// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// Skip when VersityGW is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes VersityGW once before
 // the forks spawn.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
-  'Integration: MinIO test helper',
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
+  'Integration: VersityGW test helper',
   function () {
     let client: S3Client;
     let bucket: string;

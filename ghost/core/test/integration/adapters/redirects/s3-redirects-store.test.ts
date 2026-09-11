@@ -8,10 +8,10 @@ import {
   createTestBucket,
   emptyTestBucket,
   deleteTestBucket,
-  getMinioConfig,
+  getS3Config,
   getObject,
   putObject,
-} from '../../../utils/minio';
+} from '../../../utils/s3';
 import { runStoreContract } from '../../../unit/server/services/custom-redirects/helpers/store-contract';
 
 const STATIC_PREFIX = 'content/data';
@@ -35,15 +35,15 @@ const backupKeyPattern = (tenantPrefix = '') =>
     `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`,
   );
 
-// Skip when MinIO is unreachable. The flag is set by the integration
-// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// Skip when VersityGW is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes VersityGW once before
 // the forks spawn.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
   'Integration: S3RedirectsStore',
   function () {
     let adminClient: S3Client;
     let bucket: string;
-    const minioConfig = getMinioConfig();
+    const s3Config = getS3Config();
 
     beforeAll(async function () {
       adminClient = createTestS3Client();
@@ -60,7 +60,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
     runStoreContract({
       createStore: () =>
-        new S3RedirectsStore({ ...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX }),
+        new S3RedirectsStore({ ...s3Config, bucket, staticFileURLPrefix: STATIC_PREFIX }),
     });
 
     describe('getAll: error handling', function () {
@@ -68,7 +68,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
         await putObject(adminClient, bucket, canonicalKey(), '{not valid');
 
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
         });
@@ -80,7 +80,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
     describe('replaceAll: timestamped backups', function () {
       it('writes the canonical key without a backup when the bucket is empty', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
         });
@@ -92,7 +92,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
       it('backs up the prior contents before overwriting', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
         });
@@ -114,7 +114,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
         // real waits between writes are needed to guarantee distinct
         // backup keys.
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
         });
@@ -142,7 +142,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
     describe('tenantPrefix scoping', function () {
       it('writes the canonical key under the tenant prefix', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: 'tenant-abc',
@@ -155,7 +155,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
       it('reads back redirects from the prefixed key', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: 'tenant-abc',
@@ -169,7 +169,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
       it('writes backups under the tenant prefix on overwrite', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: 'tenant-abc',
@@ -189,13 +189,13 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
       it('isolates tenants sharing the same bucket', async function () {
         const storeA = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: 'tenant-a',
         });
         const storeB = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: 'tenant-b',
@@ -216,7 +216,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
       it('strips leading and trailing slashes from the tenant prefix', async function () {
         const store = new S3RedirectsStore({
-          ...minioConfig,
+          ...s3Config,
           bucket,
           staticFileURLPrefix: STATIC_PREFIX,
           tenantPrefix: '/tenant-abc/',

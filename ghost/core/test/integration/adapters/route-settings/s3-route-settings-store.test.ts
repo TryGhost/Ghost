@@ -19,10 +19,10 @@ import {
   createTestBucket,
   emptyTestBucket,
   deleteTestBucket,
-  getMinioConfig,
+  getS3Config,
   getObject,
   putObject,
-} from '../../../utils/minio';
+} from '../../../utils/s3';
 import { runStoreContract } from '../../../unit/server/adapters/route-settings/helpers/store-contract';
 
 const STATIC_PREFIX = 'content/settings';
@@ -63,19 +63,19 @@ const backupKeyPattern = (tenantPrefix = ''): RegExp =>
     `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/routes-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.yaml$`,
   );
 
-// Skip when MinIO is unreachable. The flag is set by the integration
-// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// Skip when VersityGW is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes VersityGW once before
 // the forks spawn.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
   'Integration: S3RouteSettingsStore',
   function () {
     let adminClient: S3Client;
     let bucket: string;
-    const minioConfig = getMinioConfig();
+    const s3Config = getS3Config();
 
     const createStore = (overrides: Record<string, unknown> = {}) =>
       new S3RouteSettingsStore({
-        ...minioConfig,
+        ...s3Config,
         bucket,
         staticFileURLPrefix: STATIC_PREFIX,
         defaultSettingsBasePath: REAL_DEFAULTS_PATH,
@@ -278,7 +278,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 // a real GetObject always returns a Body and Head/Get don't surface arbitrary
 // transport errors on demand, so the error paths are driven with an injected
 // failing client. This lives in the integration suite because only that
-// coverage report is uploaded, and it runs regardless of MinIO.
+// coverage report is uploaded, and it runs regardless of VersityGW.
 describe('Integration: S3RouteSettingsStore without a live bucket', function () {
   afterEach(function () {
     sinon.restore();
