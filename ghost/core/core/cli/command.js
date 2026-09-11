@@ -5,14 +5,19 @@
 //
 // tsx is a devDependency. In a built tree (the production image, or CI after a
 // build) it is absent but also unnecessary, because tsc has already emitted a
-// .js beside every .ts - the same situation MigratorConfig.js handles the same
-// way. Any other failure to load it is still an error.
+// .js beside every .ts - the same situation MigratorConfig.js handles. Only the
+// direct lookup is allowed to fail: resolving first and requiring outside the
+// guard means a tsx that is installed but broken still throws.
+let tsxLoader;
 try {
-  require('tsx/cjs');
+  tsxLoader = require.resolve('tsx/cjs');
 } catch (err) {
   if (err.code !== 'MODULE_NOT_FOUND') {
     throw err;
   }
+}
+if (tsxLoader) {
+  require(tsxLoader);
 }
 
 const cli = require('@tryghost/pretty-cli');
