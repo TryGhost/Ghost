@@ -1,7 +1,10 @@
 import type { Knex } from 'knex';
 import { IncorrectUsageError } from '@tryghost/errors';
+import DatabaseInfo from '@tryghost/database-info';
 import ObjectID from 'bson-objectid';
 import { z } from 'zod';
+import { DbCount } from '../../lib/db-types/count';
+import { deriveOpenRate } from './lib/open-rate';
 
 export type MemberSweepPage = { afterId?: string; throughId?: string; limit?: number };
 export type MemberSweepResult = { afterId: string | undefined; processed: number };
@@ -12,14 +15,15 @@ type MemberCounts = {
   email_opened_count: number;
   email_open_rate: number | null;
 };
-type DerivedRow = {
-  member_id: string;
-  email_count: number | string;
-  email_tracked_count: number | string;
-  email_opened_count: number | string;
-};
-const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
+// Aggregates over email_recipients; COUNT/SUM arrive as strings from MySQL.
+const DerivedRow = z.object({
+  member_id: z.string(),
+  email_count: DbCount,
+  email_tracked_count: DbCount,
+  email_opened_count: DbCount,
+});
 const MAX_SWEEP_PAGE_SIZE = 5000;
+const UPDATE_CHUNK_SIZE = 1000;
 const SWEEP_JOB_NAME = 'email-analytics-member-reconciliation';
 const checkpointSchema = z.object({
   version: z.literal(1),
@@ -78,8 +82,13 @@ export class NewsletterMemberCounters {
         .select('email_id', 'member_id', 'opened_at', 'delivered_at', 'failed_at')
         .limit(MAX_SWEEP_PAGE_SIZE + 1)
         .forShare();
+      if (recipients.length > MAX_SWEEP_PAGE_SIZE) {
+        throw this.#preparationError(
+          batchId,
+          `Member counters support at most ${MAX_SWEEP_PAGE_SIZE} recipients per batch; lower bulkEmail.batchSize`,
+        );
+      }
       if (
-        recipients.length > MAX_SWEEP_PAGE_SIZE ||
         recipients.length !== batch.recipient_count ||
         recipients.some((row) => row.email_id !== email.id)
       ) {
@@ -134,8 +143,7 @@ export class NewsletterMemberCounters {
           email_count: Number(current.email_count) + delta,
           email_tracked_count: tracked,
           email_opened_count: opened,
-          email_open_rate:
-            tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+          email_open_rate: deriveOpenRate(opened, tracked),
         });
       }
       if (members.length > 0) {
@@ -153,12 +161,18 @@ export class NewsletterMemberCounters {
   }
 
   #preparationError(batchId: string, message: string) {
-    return Object.assign(new IncorrectUsageError({ message, context: `Email batch ${batchId}` }), {
-      retryable: false,
-    });
+    return this.#nonRetryable(message, `Email batch ${batchId}`);
   }
 
-  /** Resume the persisted sweep, or explicitly start another completed sweep. */
+  /** A deterministic failure: callers with retry budgets must not spend them on it. */
+  #nonRetryable(message: string, context: string) {
+    return Object.assign(new IncorrectUsageError({ message, context }), { retryable: false });
+  }
+
+  /**
+   * Resume the persisted sweep. `restart` abandons whatever checkpoint exists,
+   * complete or not, and begins a fresh sweep over the current member range.
+   */
   async runSweepPage({
     limit = MAX_SWEEP_PAGE_SIZE,
     restart = false,
@@ -193,14 +207,17 @@ export class NewsletterMemberCounters {
       .ignore();
     return this.#knex.transaction(async (trx) => {
       const job = await trx('jobs').where('name', SWEEP_JOB_NAME).forUpdate().first();
-      let state = checkpointSchema.parse(JSON.parse(job.metadata));
+      if (!job) {
+        throw this.#nonRetryable(
+          'Member counter sweep checkpoint disappeared while starting a page',
+          `Jobs row ${SWEEP_JOB_NAME}`,
+        );
+      }
+      const state = restart ? initial : this.#parseCheckpoint(job.metadata);
       if (state.complete && !restart) {
         return state;
       }
-      const starting = state.complete && restart;
-      if (starting) {
-        state = initial;
-      }
+      const starting = restart;
       if (state.throughId !== null) {
         const page = await this.#sweepPage(trx, {
           afterId: state.afterId ?? undefined,
@@ -222,6 +239,25 @@ export class NewsletterMemberCounters {
         });
       return state;
     }, this.#transactionConfig());
+  }
+
+  #parseCheckpoint(metadata: unknown): MemberSweepCheckpoint {
+    let parsed: unknown;
+    try {
+      parsed = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+    } catch {
+      parsed = undefined;
+    }
+    const checkpoint = checkpointSchema.safeParse(parsed);
+    if (!checkpoint.success) {
+      // Another writer, a restored database or a newer checkpoint format owns
+      // this row. Never overwrite it silently; an operator can pass restart.
+      throw this.#nonRetryable(
+        'Member counter sweep checkpoint is missing or unreadable; rerun with restart to begin a new sweep',
+        `Jobs row ${SWEEP_JOB_NAME}`,
+      );
+    }
+    return checkpoint.data;
   }
 
   /**
@@ -250,9 +286,7 @@ export class NewsletterMemberCounters {
   }
 
   #transactionConfig(): Knex.TransactionConfig | undefined {
-    return this.#knex.client.config.client === 'mysql2'
-      ? { isolationLevel: 'repeatable read' }
-      : undefined;
+    return DatabaseInfo.isMySQL(this.#knex) ? { isolationLevel: 'repeatable read' } : undefined;
   }
 
   async #sweepPage(
@@ -280,17 +314,20 @@ export class NewsletterMemberCounters {
 
   #members(trx: Knex.Transaction) {
     const query = trx('members');
-    if (trx.client.config.client === 'mysql2') {
+    if (DatabaseInfo.isMySQL(trx)) {
       query.from(trx.raw('?? FORCE INDEX (PRIMARY)', ['members']));
     }
     return query;
   }
 
   async #derive(trx: Knex.Transaction, memberIds: string[]): Promise<Map<string, MemberCounts>> {
-    // Read these small metadata sets from the same transaction snapshot as the
-    // recipient facts. Avoid joining every historical recipient to its email.
-    const untrackedEmailIds: string[] = await trx('emails').where('track_opens', false).pluck('id');
-    const discardableEmailIds: string[] = await trx('emails')
+    // Express the small metadata sets as subqueries evaluated inside the same
+    // transaction snapshot as the recipient facts. Inlining them as bound ID
+    // lists would grow each statement with the site's history; joining every
+    // historical recipient to its email would be far more expensive.
+    const untrackedEmails = trx('emails').select('id').where('track_opens', false);
+    const discardableEmails = trx('emails')
+      .select('id')
       .whereNull('prepared_at')
       .where((builder) =>
         builder
@@ -301,59 +338,48 @@ export class NewsletterMemberCounters {
               .whereRaw('?? = ??', ['email_batches.email_id', 'emails.id'])
               .whereNot('status', 'pending'),
           ),
-      )
-      .pluck('id');
+      );
     // Legacy preparation with only pending batches is also rebuilt on resume.
     // Preserve the entire legacy set once any batch has started submission.
-    if (discardableEmailIds.length > 0) {
-      const ambiguous = await trx('email_batches')
-        .whereIn('email_id', discardableEmailIds)
-        .where((builder) =>
-          builder.whereNot('status', 'pending').orWhereNotNull('member_counters_applied_at'),
-        )
-        .first('email_id');
-      if (ambiguous) {
-        // Rollback to older send code can submit without saving prepared_at.
-        // Those recipients cannot be discarded or silently removed from truth.
-        throw new IncorrectUsageError({
-          message:
-            'Cannot reconcile member counters for batches submitted or applied without frozen preparation.',
-          context: `Email ${ambiguous.email_id} requires preparation reconciliation.`,
-        });
-      }
+    const ambiguous = await trx('email_batches')
+      .whereIn('email_id', discardableEmails.clone())
+      .where((builder) =>
+        builder.whereNot('status', 'pending').orWhereNotNull('member_counters_applied_at'),
+      )
+      .first('email_id');
+    if (ambiguous) {
+      // Rollback to older send code can submit without saving prepared_at.
+      // Those recipients cannot be discarded or silently removed from truth.
+      throw this.#nonRetryable(
+        'Cannot reconcile member counters for batches submitted or applied without frozen preparation.',
+        `Email ${ambiguous.email_id} requires preparation reconciliation.`,
+      );
     }
-    const pendingBatchIds: string[] = await trx('email_batches')
+    const pendingBatches = trx('email_batches')
+      .select('id')
       .where('member_counters_enabled', true)
-      .whereNull('member_counters_applied_at')
-      .pluck('id');
-    const trackedCount =
-      untrackedEmailIds.length === 0
-        ? trx.raw('COUNT(*) AS email_tracked_count')
-        : trx.raw(
-            `SUM(CASE WHEN email_id IN (${untrackedEmailIds.map(() => '?').join(',')}) THEN 0 ELSE 1 END) AS email_tracked_count`,
-            untrackedEmailIds,
-          );
-    const rows: DerivedRow[] = await trx('email_recipients')
+      .whereNull('member_counters_applied_at');
+    const rows = await trx('email_recipients')
       .select(
         'member_id',
         trx.raw('COUNT(*) AS email_count'),
-        trackedCount,
+        trx.raw('SUM(CASE WHEN email_id IN (?) THEN 0 ELSE 1 END) AS email_tracked_count', [
+          untrackedEmails,
+        ]),
         trx.raw('SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) AS email_opened_count'),
       )
       .whereIn('member_id', memberIds)
-      .whereNotIn('email_id', discardableEmailIds)
-      .whereNotIn('batch_id', pendingBatchIds)
+      .whereNotIn('email_id', discardableEmails)
+      .whereNotIn('batch_id', pendingBatches)
       .groupBy('member_id');
     const counts = new Map<string, MemberCounts>();
-    for (const row of rows) {
-      const tracked = Number(row.email_tracked_count);
-      const opened = Number(row.email_opened_count);
+    for (const raw of rows) {
+      const row = DerivedRow.parse(raw);
       counts.set(row.member_id, {
-        email_count: Number(row.email_count),
-        email_tracked_count: tracked,
-        email_opened_count: opened,
-        email_open_rate:
-          tracked >= MIN_EMAIL_COUNT_FOR_OPEN_RATE ? Math.round((opened / tracked) * 100) : null,
+        email_count: row.email_count,
+        email_tracked_count: row.email_tracked_count,
+        email_opened_count: row.email_opened_count,
+        email_open_rate: deriveOpenRate(row.email_opened_count, row.email_tracked_count),
       });
     }
     return counts;
@@ -370,18 +396,22 @@ export class NewsletterMemberCounters {
       'email_opened_count',
       'email_open_rate',
     ] as const;
-    const updates: Record<string, Knex.Raw> = {};
-    for (const column of columns) {
-      const bindings: (string | number | null)[] = [];
-      const cases = memberIds.map((memberId) => {
-        bindings.push(
-          memberId,
-          counts.get(memberId)?.[column] ?? (column === 'email_open_rate' ? null : 0),
-        );
-        return 'WHEN ? THEN ?';
-      });
-      updates[column] = trx.raw(`CASE id ${cases.join(' ')} END`, bindings);
+    // Bound the statement size: a full page carries four CASE ladders.
+    for (let start = 0; start < memberIds.length; start += UPDATE_CHUNK_SIZE) {
+      const chunk = memberIds.slice(start, start + UPDATE_CHUNK_SIZE);
+      const updates: Record<string, Knex.Raw> = {};
+      for (const column of columns) {
+        const bindings: (string | number | null)[] = [];
+        const cases = chunk.map((memberId) => {
+          bindings.push(
+            memberId,
+            counts.get(memberId)?.[column] ?? (column === 'email_open_rate' ? null : 0),
+          );
+          return 'WHEN ? THEN ?';
+        });
+        updates[column] = trx.raw(`CASE id ${cases.join(' ')} END`, bindings);
+      }
+      await trx('members').whereIn('id', chunk).update(updates);
     }
-    await trx('members').whereIn('id', memberIds).update(updates);
   }
 }

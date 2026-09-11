@@ -2,6 +2,8 @@ const debug = require('@tryghost/debug')('i18n');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
+const logging = require('@tryghost/logging');
+
 class EmailServiceWrapper {
   getPostUrl(post) {
     const jsonModel = post.toJSON();
@@ -36,13 +38,15 @@ class EmailServiceWrapper {
     const MailgunClient = require('../lib/mailgun-client');
     const configService = require('../../../shared/config');
     const batchCreationConcurrency = configService.get('bulkEmail:batchCreationConcurrency');
-    const memberCounterPreparation =
-      configService.get('emailAnalytics:memberCounterPreparation') ?? false;
+    let memberCounterPreparation =
+      configService.get('emailAnalytics:memberCounterPreparation') === true;
     if (memberCounterPreparation && configService.get('emailAnalytics:batchProcessing') !== true) {
-      const errors = require('@tryghost/errors');
-      throw new errors.IncorrectUsageError({
-        message: 'Member counter preparation requires emailAnalytics.batchProcessing',
-      });
+      // Config is boundary data: a mismatch must be visible, but a newsletter
+      // counter flag must not stop the whole site from booting.
+      logging.warn(
+        '[EmailService] emailAnalytics.memberCounterPreparation requires emailAnalytics.batchProcessing; member counter preparation is off',
+      );
+      memberCounterPreparation = false;
     }
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');

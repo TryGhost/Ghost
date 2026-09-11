@@ -1,4 +1,5 @@
 import { parseArgs } from 'node:util';
+import { setTimeout as delay } from 'node:timers/promises';
 import { IncorrectUsageError } from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { NewsletterMemberCounters } from '../core/server/services/email-analytics/newsletter-member-counters';
@@ -8,21 +9,25 @@ async function main(): Promise<void> {
     options: {
       limit: { type: 'string', default: '5000' },
       pages: { type: 'string', default: '1' },
+      'pause-ms': { type: 'string', default: '0' },
       restart: { type: 'boolean', default: false },
     },
   });
   const limit = Number(values.limit);
   const pages = Number(values.pages);
+  const pauseMs = Number(values['pause-ms']);
   if (
     !Number.isInteger(limit) ||
     limit < 1 ||
     limit > 5000 ||
     !Number.isSafeInteger(pages) ||
-    pages < 1
+    pages < 1 ||
+    !Number.isSafeInteger(pauseMs) ||
+    pauseMs < 0
   ) {
     throw new IncorrectUsageError({
       message:
-        'Use --limit 1..5000 and a positive integer --pages; --restart starts a new completed sweep.',
+        'Use --limit 1..5000, a positive integer --pages and a non-negative --pause-ms between pages; --restart abandons any existing checkpoint and starts a new sweep.',
     });
   }
   const db: { knex: Knex } = require('../core/server/data/db');
@@ -33,6 +38,10 @@ async function main(): Promise<void> {
       process.stdout.write(`${JSON.stringify(state)}\n`);
       if (state.complete) {
         break;
+      }
+      if (pauseMs > 0 && page + 1 < pages) {
+        // Let member-facing writes that waited behind the page's locks proceed.
+        await delay(pauseMs);
       }
     }
   } finally {

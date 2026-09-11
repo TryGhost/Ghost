@@ -363,10 +363,14 @@ NODE_ENV=production node --import tsx scripts/reconcile-member-email-counters.ts
 ```
 
 The script uses the configured database and prints the durable checkpoint after
-each page. Repeat to resume; `--restart` explicitly begins another completed
-sweep. A sweep fixes its upper member-ID boundary when it starts. New members are
-handled by preparation or a later sweep. The script neither schedules work nor
-enables incremental ingestion.
+each page. Repeat to resume; `--restart` abandons the existing checkpoint,
+complete or not, and begins a new sweep; `--pause-ms` waits between pages so
+member-facing writes that queued behind a page's locks can proceed. A sweep
+fixes its upper member-ID boundary when it starts. New members are handled by
+preparation or a later sweep. The script neither schedules work nor enables
+incremental ingestion. An unreadable checkpoint row (for example after a
+database restore, or written by a newer version) stops the sweep with an
+explicit error rather than being overwritten; pass `--restart` to replace it.
 
 Drain legacy analytics and preparation writers before manually initializing or
 re-baselining. The sweep's live concurrency guarantee requires every counter
@@ -377,7 +381,8 @@ periodic repair alongside live ingestion. MySQL pages explicitly use repeatable
 read; multiple metadata and recipient reads share the same snapshot.
 
 `emailAnalytics.memberCounterPreparation` defaults to false and requires batched
-analytics. When enabled, new preparation operations persist batch enrollment with
+analytics; without `emailAnalytics.batchProcessing` it logs a warning at boot and
+stays off. When enabled, new preparation operations persist batch enrollment with
 their recipient rows. Creation and discard/rebuild never increment member counters.
 After frozen preparation verifies, submission applies each enrolled batch's member
 totals and marker atomically. A resumed send honors existing enrollment even if
@@ -396,5 +401,10 @@ this batch is added exactly once. Deleted members are skipped. Application rejec
 unfrozen, already-submitting or inconsistent batches before changing counters.
 All batch applications finish before the first provider submission. An uncertain
 commit is retried through the persisted marker, so it cannot increment twice.
-A transaction handles at most 5,000 recipient rows; larger batches require an
-explicit implementation change before enabling this mode.
+A transaction handles at most 5,000 recipient rows; a larger `bulkEmail.batchSize`
+fails application with an explicit message before enabling this mode. An email
+whose batches were submitted or applied without frozen preparation, which only a
+rollback to older send code can produce, stops both the sweep and every enrolled
+application with a non-retryable error until its preparation is reconciled; the
+send path reports it as a verification failure instead of spending its retry
+budget on it.
