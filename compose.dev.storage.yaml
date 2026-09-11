@@ -6,11 +6,24 @@
 
 services:
   versitygw-setup:
-    image: ghcr.io/versity/versitygw:v1.7.0@sha256:c4cbd9d9cb8dedbb055ac788dbd02635651b9b1cebac95b095b3217231aa87ad
+    image: public.ecr.aws/aws-cli/aws-cli:2.36.40@sha256:b6aeb95d19d7f5a8cae4eb814cb16739b6b2a4f2f46f427ada6a8c9a20d9881d
     container_name: ghost-dev-versitygw-setup
-    entrypoint: ['/bin/sh', '-c', 'mkdir -p /data/ghost-dev /data/ghost-dev-redirects']
-    volumes:
-      - versitygw-data:/data
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -eu
+        aws --endpoint-url http://versitygw:9000 s3api head-bucket --bucket ghost-dev >/dev/null 2>&1 || aws --endpoint-url http://versitygw:9000 s3api create-bucket --bucket ghost-dev
+        aws --endpoint-url http://versitygw:9000 s3api put-bucket-ownership-controls --bucket ghost-dev --ownership-controls 'Rules=[{ObjectOwnership=ObjectWriter}]'
+        aws --endpoint-url http://versitygw:9000 s3api put-bucket-acl --bucket ghost-dev --acl public-read
+        aws --endpoint-url http://versitygw:9000 s3api head-bucket --bucket ghost-dev-redirects >/dev/null 2>&1 || aws --endpoint-url http://versitygw:9000 s3api create-bucket --bucket ghost-dev-redirects
+    environment:
+      - AWS_ACCESS_KEY_ID=s3-user
+      - AWS_SECRET_ACCESS_KEY=s3-pass
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      versitygw:
+        condition: service_healthy
+    restart: 'no'
 
   versitygw:
     image: ghcr.io/versity/versitygw:v1.7.0@sha256:c4cbd9d9cb8dedbb055ac788dbd02635651b9b1cebac95b095b3217231aa87ad
@@ -33,9 +46,6 @@ services:
     volumes:
       - versitygw-data:/data
       - versitygw-iam:/iam
-    depends_on:
-      versitygw-setup:
-        condition: service_completed_successfully
     healthcheck:
       test: ['CMD', 'nc', '-z', '127.0.0.1', '9000']
       interval: 1s
@@ -62,6 +72,8 @@ services:
     depends_on:
       versitygw:
         condition: service_healthy
+      versitygw-setup:
+        condition: service_completed_successfully
 
 volumes:
   versitygw-data:

@@ -37,9 +37,9 @@ function getS3Target(): { host: string; port: number } {
   try {
     url = new URL(process.env.S3_TEST_ENDPOINT || 'http://127.0.0.1:9000');
   } catch (e) {
-    // A malformed endpoint can't be probed; fall back to the default target so
-    // a bad env var skips the suite rather than crashing globalSetup.
-    url = new URL('http://127.0.0.1:9000');
+    // A malformed configured endpoint can't be probed. Mark it unavailable so
+    // an unrelated service on the default port can't falsely enable the suite.
+    return { host: '', port: 0 };
   }
   return {
     host: url.hostname,
@@ -76,7 +76,7 @@ export async function setup(): Promise<void> {
 
   const [redisUp, s3Up] = await Promise.all([
     isReachable(redis.host, redis.port),
-    isReachable(s3.host, s3.port),
+    s3.host ? isReachable(s3.host, s3.port) : Promise.resolve(false),
   ]);
 
   // Set both flags to reflect THIS run's probe unconditionally, so a stale value
