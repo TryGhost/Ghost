@@ -10,33 +10,59 @@
     "directory": "packages/api-framework"
   },
   "files": [
-    "index.js",
-    "lib"
+    "build"
   ],
-  "main": "index.js",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
   "scripts": {
-    "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing vitest run --coverage",
-    "lint": "eslint . --cache"
+    "build": "tsc",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/debug": "catalog:api-framework-migration",
-    "@tryghost/errors": "catalog:api-framework-migration",
-    "@tryghost/promise": "catalog:api-framework-migration",
-    "@tryghost/tpl": "catalog:api-framework-migration",
-    "@tryghost/validator": "catalog:api-framework-migration",
+    "@tryghost/debug": "catalog:",
+    "@tryghost/errors": "catalog:",
+    "@tryghost/promise": "catalog:",
+    "@tryghost/tpl": "catalog:",
+    "@tryghost/validator": "catalog:",
     "lodash": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
+    "@types/lodash": "catalog:",
+    "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "sinon": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "ghostPackage": {
-    "goldenPath": "migration",
-    "reason": "Imported from TryGhost/framework with its history. Still CommonJS and requires a separate TypeScript and ESM modernization."
+    "goldenPath": "compliant"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }
