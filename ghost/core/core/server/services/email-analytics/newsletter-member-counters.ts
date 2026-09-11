@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { DbCount } from '../../lib/db-types/count';
 import { deriveOpenRate } from './lib/open-rate';
 import logging from '@tryghost/logging';
-import type { PrometheusClient } from '@tryghost/prometheus-metrics';
+import { incrementCounter, type CounterMetricsClient } from './lib/counter-metrics';
 
 export type MemberSweepPage = { afterId?: string; throughId?: string; limit?: number };
 export type MemberSweepResult = { afterId: string | undefined; processed: number };
@@ -27,6 +27,17 @@ const DerivedRow = z.object({
 type MemberDrift = Partial<
   Record<keyof MemberCounts, { actual: number | null; expected: number | null }>
 >;
+// Projection of the members counter columns; the Bookshelf model owns the row.
+const DbMemberCounters = z.object({
+  id: z.string(),
+  email_count: DbCount,
+  email_tracked_count: DbCount.nullable(),
+  email_opened_count: DbCount,
+  email_open_rate: DbCount.nullable(),
+});
+type DbMemberCounters = z.output<typeof DbMemberCounters>;
+const MEMBER_COMPARISONS_METRIC = 'email_analytics_member_counter_comparisons';
+const MEMBER_DRIFT_METRIC = 'email_analytics_member_counter_drift';
 const MEMBER_COUNTER_COLUMNS = [
   'email_count',
   'email_tracked_count',
@@ -54,27 +65,25 @@ export type MemberSweepCheckpoint = z.infer<typeof checkpointSchema>;
 /** Shared derived truth for initialization, repair and rollback re-baselining. */
 export class NewsletterMemberCounters {
   readonly #knex: Knex;
-  readonly #prometheusClient: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
+  readonly #prometheusClient: CounterMetricsClient | null;
 
   constructor(
     knex: Knex,
-    {
-      prometheusClient = null,
-    }: {
-      prometheusClient?: Pick<PrometheusClient, 'registerCounter' | 'getMetric'> | null;
-    } = {},
+    { prometheusClient = null }: { prometheusClient?: CounterMetricsClient | null } = {},
   ) {
     this.#knex = knex;
     this.#prometheusClient = prometheusClient;
+    // `phase` matches the email counter metrics, so a later repair phase can
+    // be told apart from observe-only comparison without changing the series.
     prometheusClient?.registerCounter({
-      name: 'email_analytics_member_counter_comparisons',
+      name: MEMBER_COMPARISONS_METRIC,
       help: 'Number of initialized newsletter member counter comparisons',
-      labelNames: ['statistic'],
+      labelNames: ['statistic', 'phase'],
     });
     prometheusClient?.registerCounter({
-      name: 'email_analytics_member_counter_drift',
+      name: MEMBER_DRIFT_METRIC,
       help: 'Sum of absolute member counter differences; null rate mismatches count as one',
-      labelNames: ['statistic'],
+      labelNames: ['statistic', 'phase'],
     });
   }
 
@@ -86,12 +95,7 @@ export class NewsletterMemberCounters {
     }
     this.#validateLimit(ids.length);
     const comparisons = await this.#knex.transaction(async (trx) => {
-      const members: ({ id: string } & MemberCounts)[] = await this.#members(trx)
-        .whereIn('id', ids)
-        .whereNotNull('email_tracked_count')
-        .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
-        .orderBy('id')
-        .forUpdate();
+      const members = await this.#lockMembers(trx, ids, { initializedOnly: true });
       if (!members.length) {
         return new Map<string, MemberDrift>();
       }
@@ -123,33 +127,42 @@ export class NewsletterMemberCounters {
         `[EmailAnalytics] Newsletter member counter drift: ${JSON.stringify(drift.map(([memberId, differences]) => ({ memberId, differences })))}`,
       );
     }
-    try {
-      for (const differences of comparisons.values()) {
-        for (const statistic of MEMBER_COUNTER_COLUMNS) {
-          const observations = this.#prometheusClient?.getMetric(
-            'email_analytics_member_counter_comparisons',
+    for (const differences of comparisons.values()) {
+      for (const statistic of MEMBER_COUNTER_COLUMNS) {
+        const labels = { statistic, phase: 'comparison' };
+        incrementCounter(this.#prometheusClient, MEMBER_COMPARISONS_METRIC, labels, 1);
+        const difference = differences[statistic];
+        if (difference) {
+          incrementCounter(
+            this.#prometheusClient,
+            MEMBER_DRIFT_METRIC,
+            labels,
+            difference.actual === null || difference.expected === null
+              ? 1
+              : Math.abs(difference.actual - difference.expected),
           );
-          const driftMetric = this.#prometheusClient?.getMetric(
-            'email_analytics_member_counter_drift',
-          );
-          if (observations && 'inc' in observations) {
-            observations.inc({ statistic });
-          }
-          const difference = differences[statistic];
-          if (driftMetric && 'inc' in driftMetric && difference) {
-            driftMetric.inc(
-              { statistic },
-              difference.actual === null || difference.expected === null
-                ? 1
-                : Math.abs(difference.actual - difference.expected),
-            );
-          }
         }
       }
-    } catch (error) {
-      logging.error('Error recording newsletter member counter comparison', error);
     }
     return comparisons;
+  }
+
+  /** Lock member counter rows in primary-key order and validate them. */
+  async #lockMembers(
+    trx: Knex.Transaction,
+    memberIds: string[],
+    { initializedOnly = false } = {},
+  ): Promise<DbMemberCounters[]> {
+    const query = this.#members(trx)
+      .whereIn('id', memberIds)
+      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
+      .orderBy('id')
+      .forUpdate();
+    if (initializedOnly) {
+      query.whereNotNull('email_tracked_count');
+    }
+    const rows: unknown[] = await query;
+    return rows.map((row) => DbMemberCounters.parse(row));
   }
 
   /** Lock before either baseline reads history, and before recipient writes. */
@@ -175,19 +188,18 @@ export class NewsletterMemberCounters {
         (batch) => batch.member_counters_enabled && batch.member_counters_applied_at === null,
       )
     ) {
-      throw new IncorrectUsageError({
-        message: 'Recipient events require completed member counter preparation',
-        context: `Email ${emailId}`,
-      });
+      // Only a rollback to older send code, or an abandoned preparation, can
+      // produce events before a batch's denominator was applied. Failing here
+      // would stall every newsletter's ingestion on one email, so record the
+      // recipient facts without member increments and let comparison report
+      // the drift and the shared sweep repair it.
+      logging.error(
+        `[EmailAnalytics] Skipping member counters for email ${emailId}: recipient events arrived before member counter preparation completed`,
+      );
+      return new Map();
     }
     const memberIds = [...new Set(recipients.map((row) => row.member_id))];
-    const members: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
-        email_tracked_count: number | null;
-      })[] = await this.#members(trx)
-      .whereIn('id', memberIds)
-      .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
-      .orderBy('id')
-      .forUpdate();
+    const members = await this.#lockMembers(trx, memberIds);
     const uninitialized = members
       .filter((row) => row.email_tracked_count === null)
       .map((row) => row.id);
@@ -300,13 +312,7 @@ export class NewsletterMemberCounters {
       for (const row of recipients) {
         deltas.set(row.member_id, (deltas.get(row.member_id) ?? 0) + 1);
       }
-      const members: ({ id: string } & Omit<MemberCounts, 'email_tracked_count'> & {
-          email_tracked_count: number | null;
-        })[] = await this.#members(trx)
-        .whereIn('id', [...deltas.keys()])
-        .select('id', 'email_count', 'email_tracked_count', 'email_opened_count', 'email_open_rate')
-        .orderBy('id')
-        .forUpdate();
+      const members = await this.#lockMembers(trx, [...deltas.keys()]);
       const uninitialized = members
         .filter((row) => row.email_tracked_count === null)
         .map((row) => row.id);

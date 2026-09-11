@@ -359,11 +359,8 @@ class NewsletterEmailEventStorage {
       const transitioned = await transactionWithRetry(
         this.#db.knex,
         async (trx) => {
-          if (this.#memberCounters) {
-            await this.#emailCounters.lock(trx, emailId);
-          } else {
-            await this.#emailCounters?.prepare(trx, emailId);
-          }
+          // Email lock first; the email baseline is taken after every lock below.
+          await this.#emailCounters?.lock(trx, emailId);
           const query = trx('email_recipients');
           if (DatabaseInfo.isMySQL(trx)) {
             // Lock in primary-key order, rather than whichever secondary index
@@ -388,10 +385,8 @@ class NewsletterEmailEventStorage {
           const memberBaseline = this.#memberCounters
             ? await this.#memberCounters.prepareEventMembers(trx, emailId, recipients)
             : null;
-          if (this.#memberCounters) {
-            // Both baselines now share a snapshot established after member locks.
-            await this.#emailCounters.prepare(trx, emailId);
-          }
+          // Both baselines share a snapshot established after every lock.
+          await this.#emailCounters?.prepare(trx, emailId);
           const result = { emailId, delivered: [], opened: [], failed: [] };
           // The locked set, not an affected-row count, determines which members
           // transitioned. Dependent counter writes must use this same transaction.

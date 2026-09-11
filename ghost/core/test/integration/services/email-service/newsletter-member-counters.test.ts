@@ -9,6 +9,7 @@ import path from 'node:path';
 import { NewsletterMemberCounters } from '../../../../core/server/services/email-analytics/newsletter-member-counters';
 import { NewsletterEmailCounters } from '../../../../core/server/services/email-analytics/newsletter-email-counters';
 
+const logging = require('@tryghost/logging');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 const EmailEventProcessor = require('../../../../core/server/services/email-service/email-event-processor');
 const {
@@ -153,7 +154,7 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal((await db.knex('emails').where('id', target.emailId).first()).opened_count, 1);
   });
 
-  it('rejects an event before enrolled preparation has applied its member denominator', async () => {
+  it('stores an event that precedes enrolled preparation without member increments', async () => {
     const target = await recipient({ enrolled: true });
     await counters.sweepPage({ throughId: id(3) });
     const storage = new NewsletterEmailEventStorage({
@@ -169,16 +170,28 @@ describe('Newsletter member counter baselines through MySQL', () => {
       memberId: id(1),
       timestamp: new Date(),
     });
-    await assert.rejects(storage.flushBatchedUpdates(), /preparation/i);
-    assert.equal(
+    const error = sinon.stub(logging, 'error');
+    try {
+      // Only an abandoned preparation or an older send binary can produce this;
+      // failing the flush would stall every newsletter's ingestion on it
+      assert.equal((await storage.flushBatchedUpdates()).length, 1);
+    } finally {
+      error.restore();
+    }
+    sinon.assert.calledWithMatch(error, /before member counter preparation completed/);
+    assert.notEqual(
       (await db.knex('email_recipients').where('id', target.recipientId).first()).opened_at,
       null,
     );
+    // The pending enrolled batch stays outside derived truth, so nothing drifts
     assert.equal((await stats()).email_opened_count, 0);
-    await counters.applyPreparedBatch(target.batchId);
-    await storage.flushBatchedUpdates();
-    assert.equal((await stats()).email_tracked_count, 1);
-    assert.equal((await stats()).email_opened_count, 1);
+    assert.deepEqual((await counters.compareMembers([id(1)])).get(id(1)), {});
+    // Applying the batch afterwards is refused, as before, because events preceded it
+    await assert.rejects(
+      counters.applyPreparedBatch(target.batchId),
+      (caught: Error & { retryable?: boolean }) =>
+        /preceded member counter application/.test(caught.message) && caught.retryable === false,
+    );
   });
 
   function eventStorage(database = db) {
@@ -233,11 +246,23 @@ describe('Newsletter member counter baselines through MySQL', () => {
     );
     assert.equal((await stats()).email_opened_count, 4);
     sinon.assert.callCount(observations.inc, 8);
-    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_opened_count' }, 3);
-    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_open_rate' }, 60);
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_opened_count', phase: 'comparison' },
+      3,
+    );
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_open_rate', phase: 'comparison' },
+      60,
+    );
     await db.knex('members').where('id', id(1)).update({ email_open_rate: null });
     await counters.compareMembers([id(1)]);
-    sinon.assert.calledWithExactly(differences.inc, { statistic: 'email_open_rate' }, 1);
+    sinon.assert.calledWithExactly(
+      differences.inc,
+      { statistic: 'email_open_rate', phase: 'comparison' },
+      1,
+    );
   });
 
   it('uses member comparison for a missing-lane open and skips duplicate member recount work', async () => {
@@ -315,7 +340,7 @@ describe('Newsletter member counter baselines through MySQL', () => {
     assert.equal((await stats(2)).email_tracked_count, null);
   });
 
-  it('rolls back recipient, email and member updates together and retries the retained events', async () => {
+  it('rolls back recipient, email and member updates together and applies them on replay', async () => {
     const target = await recipient();
     const storage = eventStorage();
     await storage.handleOpened(openEvent(target));
@@ -333,6 +358,8 @@ describe('Newsletter member counter baselines through MySQL', () => {
     } finally {
       await db.knex.raw('DROP TRIGGER member_event_failure');
     }
+    // The failed page is discarded; the caller replays it
+    await storage.handleOpened(openEvent(target));
     await storage.flushBatchedUpdates();
     assert.equal((await stats()).email_opened_count, 1);
   });

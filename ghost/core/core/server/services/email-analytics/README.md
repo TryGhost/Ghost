@@ -89,8 +89,9 @@ Comparison retains email recount load until the incremental mode is enabled.
 
 `emailAnalytics.memberCounterMode` defaults to `off`. Its `compare` mode requires
 `batchProcessing: true`, an enabled email counter mode, and
-`memberCounterPreparation: true`. The mode is selected at boot. Automation and
-gift processing keep their existing outcome APIs.
+`memberCounterPreparation: true`; an unknown value or a missing prerequisite is
+logged at boot and leaves member counters off. The mode is selected at boot.
+Automation and gift processing keep their existing outcome APIs.
 
 Preparation maintains member recipient totals and the tracked-email denominator.
 Event ingestion locks the email, eligible recipient rows, and then members before
@@ -99,8 +100,11 @@ derived truth before recipient writes. Exact first-open transitions then update
 member open counts and rates in the recipient transaction. Multiple recipient rows
 for the same member each contribute once. Opens from untracked emails still count
 in the numerator, matching existing semantics; rates remain null below five
-tracked emails. An event for pending enrolled preparation is rejected until its
-denominator has been applied.
+tracked emails. An event that arrives before its batch's denominator was applied,
+which only an abandoned preparation or a rollback to older send code can produce,
+is stored without member increments and logged: comparison then reports the
+member drift and the shared sweep repairs it, rather than one email stalling
+every newsletter's ingestion.
 
 Comparison replaces legacy member recount writes with observe-only derived truth
 under the same member locks. It always includes opens, regardless of the fetch
@@ -111,8 +115,8 @@ candidates and legacy recount recovery remain intact.
 
 Drift logs contain member IDs and actual/expected values for differing statistics.
 `email_analytics_member_counter_comparisons` counts initialized observations by
-`statistic`; `email_analytics_member_counter_drift` adds absolute differences.
-A null-versus-numeric rate mismatch adds one. Comparison does not repair counters;
+`statistic` and `phase`; `email_analytics_member_counter_drift` adds absolute
+differences with the same labels. A null-versus-numeric rate mismatch adds one. Comparison does not repair counters;
 the shared sweep owns repair. Comparison retains historical read cost during the
 soak; removing those reads and scheduling periodic repair follow separately.
 

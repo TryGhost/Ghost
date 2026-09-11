@@ -610,6 +610,51 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
           });
         });
 
+        it(`keeps email IDs and queues only transitioned members with member counters in ${modeLabel} mode`, async function () {
+          if (!batchProcessing) {
+            return;
+          }
+          const emailEventProcessor = {
+            batchGetRecipients: sinon.stub().resolves(new Map()),
+            flushBatchedUpdates: sinon.stub().resolves([
+              {
+                emailId: 'email-1',
+                delivered: [{ recipientId: 'r-1', memberId: 'member-1' }],
+                opened: [],
+                failed: [],
+              },
+            ]),
+            discardBatchedUpdates: sinon.stub(),
+            handleDelivered: sinon
+              .stub()
+              .resolves({ emailId: 'email-1', emailRecipientId: 'r-1', memberId: 'member-1' })
+              .onSecondCall()
+              .resolves({ emailId: 'email-1', emailRecipientId: 'r-2', memberId: 'member-2' }),
+          };
+          const processor = new NewsletterEmailAnalyticsBatchProcessor({
+            config: createMockConfig(),
+            emailEventProcessor,
+            emailCounters: { incremental: false },
+            memberCounters: {},
+          });
+          const result = new EventProcessingResult();
+
+          await processor.processBatch(
+            [
+              { type: 'delivered', emailId: 'email-1', timestamp: new Date(1) },
+              { type: 'delivered', emailId: 'email-1', timestamp: new Date(2) },
+            ],
+            result,
+            {},
+          );
+
+          assert.equal(result.delivered, 2);
+          // Email counter comparison and repair depend on the touched email IDs
+          assert.deepEqual(result.emailIds, ['email-1']);
+          // Only the committed transition's member is queued; the replayed one is not
+          assert.deepEqual(result.memberIds, ['member-1']);
+        });
+
         it(`verifies batch methods called correctly in ${modeLabel} mode`, async function () {
           const emailEventProcessor = {
             batchGetRecipients: sinon.stub().resolves(new Map()),

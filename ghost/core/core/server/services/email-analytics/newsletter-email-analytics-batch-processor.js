@@ -72,7 +72,12 @@ class NewsletterEmailAnalyticsBatchProcessor {
           // recipient update but failed before refreshing member statistics.
           // Atomic member mode instead queues only the exact committed transition
           // sets below.
-          result.merge(this.#memberCounters ? { ...batchResult, memberIds: [] } : batchResult);
+          if (this.#memberCounters) {
+            // emailIds is a getter, so a spread of the result would drop it
+            result.merge({ ...batchResult, emailIds: batchResult.emailIds, memberIds: [] });
+          } else {
+            result.merge(batchResult);
+          }
         }
 
         // Flush all batched updates to the database

@@ -248,13 +248,18 @@ describe('email analytics service', function () {
     [true, 'compare', false, 'compare'],
     [true, 'compare', true, 'unknown'],
   ])(
-    'rejects incompatible member mode configuration (%s, %s, %s, %s)',
+    'keeps member counters off for incompatible configuration (%s, %s, %s, %s)',
     function (batch, email, preparation, member) {
       config.get.withArgs('emailAnalytics:batchProcessing').returns(batch);
       config.get.withArgs('emailAnalytics:emailCounterMode').returns(email);
       config.get.withArgs('emailAnalytics:memberCounterPreparation').returns(preparation);
       config.get.withArgs('emailAnalytics:memberCounterMode').returns(member);
-      expect(() => init(dependencies)).toThrow(/member counter/i);
+      const registerCounter = sinon.stub();
+      dependencies.prometheusClient = { registerCounter, getMetric: sinon.stub() };
+      // A counter flag mismatch must not stop Ghost from booting
+      init(dependencies);
+      const names = registerCounter.args.map(([definition]) => definition.name);
+      expect(names).not.toContain('email_analytics_member_counter_comparisons');
     },
   );
 });

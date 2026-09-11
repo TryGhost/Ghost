@@ -5,6 +5,7 @@ import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import { z } from 'zod';
 import { DbCount } from '../../lib/db-types/count';
 import { transactionWithRetry } from './lib/transaction-with-retry';
+import { incrementCounter } from './lib/counter-metrics';
 
 const events = ['delivered', 'opened', 'failed'] as const;
 type Event = (typeof events)[number];
@@ -303,13 +304,6 @@ export class NewsletterEmailCounters {
   }
 
   #inc(name: string, labels: Record<string, string>, value: number): void {
-    try {
-      const metric = this.#prometheusClient?.getMetric(name);
-      if (metric && 'inc' in metric) {
-        metric.inc(labels, value);
-      }
-    } catch (error) {
-      logging.error(`[EmailAnalytics] Error recording ${name}`, error);
-    }
+    incrementCounter(this.#prometheusClient, name, labels, value);
   }
 }
