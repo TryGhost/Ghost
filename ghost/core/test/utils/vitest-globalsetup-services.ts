@@ -41,6 +41,12 @@ function getS3Target(): { host: string; port: number } {
     // an unrelated service on the default port can't falsely enable the suite.
     return { host: '', port: 0 };
   }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    // Only http/https default ports are meaningful here. Anything else (e.g. a
+    // typo'd scheme) can't be probed as an S3 endpoint, so mark it unavailable
+    // rather than guessing a port that may belong to an unrelated service.
+    return { host: '', port: 0 };
+  }
   return {
     host: url.hostname,
     port: parseInt(url.port || (url.protocol === 'https:' ? '443' : '80')),
