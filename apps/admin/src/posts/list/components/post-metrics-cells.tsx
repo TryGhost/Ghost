@@ -28,6 +28,7 @@ interface PostMetricsCellsProps {
   memberCounts?: Record<string, { free: number; paid: number }>;
   paidMembersEnabled?: boolean;
   className?: string;
+  hideEmailMetrics?: boolean;
 }
 
 const EMAIL_KEYS: PostMetricKey[] = ['opens', 'clicks', 'sent'];
@@ -74,8 +75,11 @@ export function PostMetricsCells({
   memberCounts,
   paidMembersEnabled,
   className,
+  hideEmailMetrics,
 }: PostMetricsCellsProps) {
-  const columns = getPostMetricColumns(post, settings, resource);
+  const columns = getPostMetricColumns(post, settings, resource).filter(
+    (column) => !(hideEmailMetrics && EMAIL_KEYS.includes(column.key)),
+  );
   const shown = new Set(columns.map((column) => column.key));
   const members = memberCounts?.[post.id];
 

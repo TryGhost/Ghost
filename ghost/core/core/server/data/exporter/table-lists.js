@@ -76,6 +76,7 @@ const BACKUP_TABLES = [
   'automation_runs',
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
+  'tinybird_syncs',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
@@ -104,7 +105,8 @@ const TABLES_ALLOWLIST = [
   'snippets',
 ];
 
-// NOTE: these are settings keys which should never end up in the export file
+// NOTE: these are non-core settings keys which should never end up in the export file
+//       (the whole core group is always excluded)
 const SETTING_KEYS_BLOCKLIST = [
   'stripe_connect_publishable_key',
   'stripe_connect_secret_key',
@@ -112,12 +114,8 @@ const SETTING_KEYS_BLOCKLIST = [
   'stripe_secret_key',
   'stripe_publishable_key',
   'stripe_billing_portal_configuration_id',
-  'members_stripe_webhook_id',
-  'members_stripe_webhook_secret',
   'email_verification_required',
   'indexnow_api_key',
-  'machine_payments_secret',
-  'machine_payments_deposit_address',
 ];
 
 module.exports = {

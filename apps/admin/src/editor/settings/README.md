@@ -196,6 +196,18 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+## Escape
+
+Escape closes one layer, the innermost the writer is in. In a tag or author list
+it closes the list and keeps the term that was typed. In a code injection editor
+it frees the editor's Tab and closes nothing. In a dialog, a select or an
+uploader it closes that control. In the Unsplash search it closes the search and
+leaves the field it was opened from. With none of those open it closes the pane,
+and with no pane open the sidebar answers Escape with nothing.
+
+The Unsplash search traps focus and loops Tab navigation in both directions.
+Closing it returns focus to the picker button when that field is still present.
+
 ## Access
 
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,

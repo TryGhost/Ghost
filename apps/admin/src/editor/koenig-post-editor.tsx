@@ -1,6 +1,5 @@
-import { Suspense, useCallback, useMemo } from 'react';
+import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
-import { koenigFileUploadTypes, useKoenigFileUpload } from '@tryghost/admin-x-framework/hooks';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -9,11 +8,7 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { reportKoenigError } from './koenig-error';
-
-const fileUploader = {
-  useFileUpload: useKoenigFileUpload,
-  fileTypes: koenigFileUploadTypes,
-};
+import { editorFileUploader } from './koenig-file-uploader';
 
 const NOOP = () => {};
 
@@ -68,7 +63,7 @@ function KoenigInstanceMount({
       <KoenigComposer
         cardConfig={cardConfig}
         darkMode={darkMode}
-        fileUploader={fileUploader}
+        fileUploader={editorFileUploader}
         initialEditorState={initialLexical ?? undefined}
         isTKEnabled={true}
         onError={onError}
@@ -88,7 +83,7 @@ function KoenigInstanceMount({
 }
 
 export function KoenigPostEditor(props: KoenigPostEditorProps) {
-  const editor = useMemo(() => loadKoenig(), []);
+  const editor = loadKoenig();
   const { onSecondaryError } = props;
 
   const onSecondaryInstanceError = useCallback(

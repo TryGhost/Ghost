@@ -9,6 +9,11 @@ const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../shared/labs');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
+const defaultSettingsGroups = Object.fromEntries(
+  Object.entries(defaultSettings).flatMap(([group, settings]) =>
+    Object.keys(settings).map((key) => [key, group]),
+  ),
+);
 const ignoredSettings = [
   'slack_url',
   'members_from_address',
@@ -183,9 +188,10 @@ class SettingsImporter extends BaseImporter {
       return data;
     });
 
-    // Remove core and theme data types
+    // Remove core and theme data types, using the schema's group rather than the file's
     this.dataToImport = _.filter(this.dataToImport, (data) => {
-      return ['core', 'theme'].indexOf(data.group) === -1;
+      const group = defaultSettingsGroups[data.key] ?? data.group;
+      return ['core', 'theme'].indexOf(group) === -1;
     });
 
     const newIsPrivate = _.find(this.dataToImport, { key: 'is_private' });

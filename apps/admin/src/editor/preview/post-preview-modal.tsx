@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   EmptyIndicator,
   LoadingIndicator,
   Select,
@@ -41,6 +37,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
 import {
@@ -278,14 +275,11 @@ export function PostPreviewModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="top-0 left-0 grid h-dvh w-dvw max-w-none translate-x-0 grid-rows-[auto_1fr] gap-0 rounded-none p-0"
-        data-testid="post-preview-modal"
-      >
-        <DialogHeader className="flex-row items-center justify-between gap-4 border-b border-border-default p-4">
-          <DialogTitle className="text-lg">Preview</DialogTitle>
+    <FullscreenDialog
+      aria-describedby={undefined}
+      data-testid="post-preview-modal"
+      headerActions={
+        <>
           <Inline gap="md">
             {emailAvailable && (
               <Tabs
@@ -392,52 +386,57 @@ export function PostPreviewModal({
             </Button>
             {onReturnToPublish ? <Button onClick={onReturnToPublish}>Publish</Button> : null}
           </Inline>
-        </DialogHeader>
-        <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
-          {prepareState === 'preparing' ? (
-            <Inline align="center" className="grow" gap="none" justify="center">
-              <LoadingIndicator size="lg" />
-            </Inline>
-          ) : prepareState === 'failed' ? (
-            <EmptyIndicator
-              actions={
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    preparePromise.current = null;
-                    setPrepareState('preparing');
-                  }}
-                >
-                  Retry
-                </Button>
-              }
-              className="grow justify-center"
-              data-testid="post-preview-save-failed"
-              description="Saving the post failed, so there is nothing new to preview."
-              title="Couldn’t preview this post"
-            >
-              <LucideIcon.TriangleAlert />
-            </EmptyIndicator>
-          ) : showEmail ? (
-            <EmailPreview
-              audience={audience}
-              canSendTestEmail={testEmailAvailable}
-              device={device}
-              newsletterLookupError={newsletterLookupError}
-              newsletterLookupPending={newsletterLookupPending}
-              newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
-              newsletters={newsletters}
-              newsletterSlug={selectedNewsletterSlug}
-              postId={postId}
-              tierName={selectedTier?.name}
-              onNewsletterChange={setPickedNewsletterSlug}
-              onRetryNewsletterLookup={retryNewsletterLookup}
-            />
-          ) : (
-            <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
-          )}
-        </Inline>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+      layout="header"
+      open={open}
+      title="Preview"
+      onOpenChange={onOpenChange}
+    >
+      <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
+        {prepareState === 'preparing' ? (
+          <Inline align="center" className="grow" gap="none" justify="center">
+            <LoadingIndicator size="lg" />
+          </Inline>
+        ) : prepareState === 'failed' ? (
+          <EmptyIndicator
+            actions={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  preparePromise.current = null;
+                  setPrepareState('preparing');
+                }}
+              >
+                Retry
+              </Button>
+            }
+            className="grow justify-center"
+            data-testid="post-preview-save-failed"
+            description="Saving the post failed, so there is nothing new to preview."
+            title="Couldn’t preview this post"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : showEmail ? (
+          <EmailPreview
+            audience={audience}
+            canSendTestEmail={testEmailAvailable}
+            device={device}
+            newsletterLookupError={newsletterLookupError}
+            newsletterLookupPending={newsletterLookupPending}
+            newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
+            newsletters={newsletters}
+            newsletterSlug={selectedNewsletterSlug}
+            postId={postId}
+            tierName={selectedTier?.name}
+            onNewsletterChange={setPickedNewsletterSlug}
+            onRetryNewsletterLookup={retryNewsletterLookup}
+          />
+        ) : (
+          <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
+        )}
+      </Inline>
+    </FullscreenDialog>
   );
 }

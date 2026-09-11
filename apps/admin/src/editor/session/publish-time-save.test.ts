@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createEditorSession, type EditorWritePayload } from './editor-session';
+import { serializePostPayload } from '@tryghost/admin-x-framework/api/post-contract';
+import { createEditorSession, type EditorCreatePayload } from './editor-session';
 import type { EditorRecord } from './projection';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from './settings-fields';
 import { deferred } from '@/utils/deferred';
@@ -33,9 +34,12 @@ function publishTimeSession(status: EditorRecord['status'], publishedAt: string 
     tags: [],
   };
   let saves = 0;
-  const persist = (payload: EditorWritePayload) => {
+  const persist = (payload: EditorCreatePayload) => {
     saves += 1;
-    saved = { ...saved, ...payload, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
+    // The payload is not a record, so the post serializer stands in for the
+    // transport to resolve it into the fields a saved record carries.
+    const serialized = serializePostPayload(payload);
+    saved = { ...saved, ...serialized, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
     return Promise.resolve(saved);
   };
   const create = vi.fn(persist);

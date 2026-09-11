@@ -1,0 +1,15 @@
+NODE extract_automation_runs
+SQL >
+    WITH JSONExtract(payload, 'Tuple(automation_id String, created_at String)') AS payload_json
+    SELECT
+        site_uuid,
+        id,
+        updated_at,
+        getSubcolumn(payload_json, 'automation_id') AS automation_id,
+        parseDateTime64BestEffort(
+            getSubcolumn(payload_json, 'created_at'), 3, 'UTC'
+        ) AS created_at
+    FROM automation_run_events
+
+TYPE MATERIALIZED
+DATASOURCE _mv_automation_runs

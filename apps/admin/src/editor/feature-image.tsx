@@ -21,6 +21,7 @@ import {
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { UnsplashPicker } from './unsplash-picker';
 
 const ALT_MAX_LENGTH = 191;
@@ -67,7 +68,7 @@ export function FeatureImage({
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        onImageChange(getImageUrl(await uploadImage({ file })));
+        onImageChange(getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })));
       } catch (error) {
         toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }

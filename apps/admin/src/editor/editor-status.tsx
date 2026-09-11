@@ -66,7 +66,7 @@ function StatusBody({
 }) {
   switch (view.kind) {
     case 'problem':
-      return <Text className="text-state-danger">{view.message}</Text>;
+      return <Text className="text-destructive">{view.message}</Text>;
     case 'saving':
       return <Text tone="secondary">Saving…</Text>;
     case 'new':

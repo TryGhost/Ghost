@@ -246,10 +246,19 @@ class StatsService {
     const request = deps.request || require('../../lib/request-external');
     const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
 
-    if (settingsCache.get('web_analytics_enabled')) {
-      // TODO: move the tinybird client to the tinybird service
-      const TinybirdServiceWrapper = require('../tinybird');
+    const labs = deps.labs || require('../../../shared/labs');
+    const webAnalyticsEnabled = settingsCache.get('web_analytics_enabled');
+    const TinybirdServiceWrapper = require('../tinybird');
+
+    if (
+      webAnalyticsEnabled ||
+      (labs.isSet('automationsTinybirdSync') && config.get('tinybird:stats'))
+    ) {
       TinybirdServiceWrapper.init();
+    }
+
+    if (webAnalyticsEnabled) {
+      // TODO: move the tinybird client to the tinybird service
       tinybirdClient = require('./utils/tinybird').create({
         config,
         request,

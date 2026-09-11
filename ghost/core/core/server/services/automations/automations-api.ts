@@ -1,16 +1,22 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import type { AutomationsRepository, EditAutomationData } from './automations-repository';
+import { EMPTY_AUTOMATION_STATS, fetchAutomationStats } from './tinybird-automation-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
+const requestExternal = require('../../lib/request-external');
+const TinybirdServiceWrapper = require('../tinybird');
+const { create: createTinybirdClient } = require('../stats/utils/tinybird');
 const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 20;
@@ -72,8 +78,49 @@ const repository = createDatabaseAutomationsRepository({
   ),
 });
 
+function getTinybirdClient() {
+  if (!labs.isSet('automationsTinybirdSync') || !config.get('tinybird:stats')) {
+    return null;
+  }
+  try {
+    const tinybirdService = TinybirdServiceWrapper.instance;
+    if (!tinybirdService?.getToken()?.token) {
+      return null;
+    }
+    return createTinybirdClient({
+      config,
+      // Fall back to MySQL after the first failed attempt.
+      request: requestExternal.extend({ retry: { limit: 0 } }),
+      settingsCache,
+      tinybirdService,
+    });
+  } catch (error) {
+    logging.error('Error preparing Tinybird automation stats client:', error);
+    return null;
+  }
+}
+
 export async function browse() {
-  return await repository.browse({ includeStats: true });
+  const tinybirdClient = getTinybirdClient();
+  if (!tinybirdClient) {
+    return await repository.browse({ includeStats: true });
+  }
+
+  const [browseResult, stats] = await Promise.all([
+    repository.browse({ includeStats: false }),
+    fetchAutomationStats(tinybirdClient),
+  ]);
+  if (stats === null) {
+    return await repository.browse({ includeStats: true });
+  }
+
+  return {
+    ...browseResult,
+    data: browseResult.data.map((automation) => ({
+      ...automation,
+      stats: stats.get(automation.id) ?? { ...EMPTY_AUTOMATION_STATS },
+    })),
+  };
 }
 
 export async function read(automationId: string) {

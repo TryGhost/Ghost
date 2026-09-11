@@ -13,6 +13,12 @@ import {
 } from '@/posts/list/post-row-copy';
 import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
 import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
+import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
+import {
+  hasInProgressEmail,
+  SETTLED_POST_LIST_ROW_EMAIL_STATUS,
+  type PostListRowEmailStatusState,
+} from '@/posts/list/components/post-list-row-email-status-state';
 import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
@@ -51,6 +57,11 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
   metricsSettings: PostMetricsSettings;
   visitorCounts?: Record<string, number>;
   memberCounts?: Record<string, { free: number; paid: number }>;
+  improveSendingUI?: boolean;
+}
+
+interface PostListRowComponentProps extends PostListRowProps {
+  emailSendingState: PostListRowEmailStatusState;
 }
 
 /**
@@ -108,7 +119,7 @@ function FeatureImage({ post }: { post: PostListItem }) {
   return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
 }
 
-const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
+const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
   function PostListRowComponent(
     {
       post,
@@ -128,6 +139,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
       metricsSettings,
       visitorCounts,
       memberCounts,
+      improveSendingUI: _improveSendingUI,
+      emailSendingState,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
       ...rest
@@ -141,6 +154,15 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
     const statusLabel = getPostStatusLabel(post, resource);
     const statusDetail = getPostStatusDetail(post, { timezone, resource });
     const isFailed = didPostEmailFail(post, resource);
+    const displayedPost =
+      emailSendingState.status === 'failed'
+        ? ({ ...post, email: { ...post.email, status: 'failed' } } as PostListItem)
+        : post;
+    const displayedIsFailed = emailSendingState.status === 'failed' || isFailed;
+    const displayedStatusLabel =
+      emailSendingState.status === 'failed'
+        ? getPostStatusLabel(displayedPost, resource)
+        : statusLabel;
 
     // Strictly `published`, matching Ember's `isPublished`. An email-only
     // `sent` post still opens in the editor for a contributor.
@@ -243,18 +265,30 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
                 </Text>
               )}
 
-              <Text className={statusTone(post, isFailed)} size="sm">
-                {statusLabel}
-                {/* Mounted only while hovered, as Ember does. A CSS
-                                opacity fade would keep it in the DOM, so a screen
-                                reader would read every scheduled row's full
-                                dispatch details aloud, always. */}
-                {isHovered && statusDetail && <span> {statusDetail}</span>}
-              </Text>
+              {emailSendingState.status === 'sending' ? (
+                <Text className="text-muted-foreground tabular-nums" size="sm">
+                  {emailSendingState.copy.title}
+                  {emailSendingState.copy.detail && (
+                    <span>{` · ${emailSendingState.copy.detail}`}</span>
+                  )}
+                </Text>
+              ) : (
+                <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
+                  {displayedStatusLabel}
+                  {/* Mounted only while hovered, as Ember does. A CSS
+                                  opacity fade would keep it in the DOM, so a screen
+                                  reader would read every scheduled row's full
+                                  dispatch details aloud, always. */}
+                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
+                    <span> {statusDetail}</span>
+                  )}
+                </Text>
+              )}
             </Stack>
           </a>
           <PostMetricsCells
             className="py-4"
+            hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
             post={post}
@@ -312,6 +346,28 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
   },
 );
 
+const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
+  function PostListRowWithEmailStatus(props, ref) {
+    if (hasInProgressEmail(props.post, props.resource, props.improveSendingUI ?? false)) {
+      return (
+        <PostListRowEmailStatus post={props.post}>
+          {(emailSendingState) => (
+            <PostListRowComponent ref={ref} {...props} emailSendingState={emailSendingState} />
+          )}
+        </PostListRowEmailStatus>
+      );
+    }
+
+    return (
+      <PostListRowComponent
+        ref={ref}
+        {...props}
+        emailSendingState={SETTLED_POST_LIST_ROW_EMAIL_STATUS}
+      />
+    );
+  },
+);
+
 /**
  * Memoised. Selection state and modifier "select mode" both live above the
  * list, so without this every cmd-click and every press of the Cmd key
@@ -321,4 +377,4 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowProps>(
  * Every prop is either a primitive or memoised upstream; `metricsSettings` in
  * particular is built with `useMemo` for this reason.
  */
-export const PostListRow = memo(PostListRowComponent);
+export const PostListRow = memo(PostListRowWithEmailStatus);

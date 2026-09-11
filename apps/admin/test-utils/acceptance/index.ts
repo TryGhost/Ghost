@@ -1,6 +1,13 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { fakeAnalyticsOverview } from './analytics';
-export { fakeEditorChrome, fakeEditorPost, submittedPost } from './editor';
+export {
+  UNSPLASH_PICKED,
+  fakeEditorChrome,
+  fakeEditorPost,
+  fakeUnsplashPhotos,
+  submittedPost,
+  withoutUnsplash,
+} from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export {
