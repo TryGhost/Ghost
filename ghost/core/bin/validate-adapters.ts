@@ -5,15 +5,21 @@
 // missing method on a storage adapter otherwise surfaces at first upload; run this
 // at image build time to fail the build instead.
 //
-// Usage: bin/validate-adapters.js <type>:<AdapterClassName> ...
+// Usage: bin/validate-adapters.js [--check-duplicate-deps] <type>:<AdapterClassName> ...
 //   e.g. bin/validate-adapters.js cache:Redis sso:ProSSO storage:S3Storage
 //
 // Adapters are named explicitly rather than read from config, which may not be
 // present at build time
 
+import { checkDuplicateDependencies, formatDuplicateReport } from './lib/duplicate-deps';
 import { adapterPaths } from '../core/server/services/adapter-manager/adapter-paths';
-import { baseClasses } from '../core/server/services/adapter-manager/base-classes';
+import {
+  baseClasses,
+  baseClassPackages,
+} from '../core/server/services/adapter-manager/base-classes';
 import { loadAdapterClass } from '../core/server/services/adapter-manager/utils';
+
+const DUPLICATE_DEPS_FLAG = '--check-duplicate-deps';
 
 type AdapterType = keyof typeof baseClasses;
 
@@ -56,9 +62,43 @@ function validate(spec: string): void {
   }
 }
 
-function main(specs: string[]): void {
-  if (!specs.length) {
-    process.stderr.write('Usage: bin/validate-adapters.js <type>:<AdapterClassName> ...\n');
+/**
+ * Report the packages the loaded adapters brought a second copy of, and say
+ * whether any of them must be a single copy.
+ *
+ * Runs on `require.cache`, so it has to happen after the adapters have been
+ * loaded. `module.paths` is where Ghost's own dependencies resolve from - the
+ * `node_modules` directories Node searches from this script upwards, which in a
+ * Ghost Pro image reaches the `/home/ghost/node_modules` an adapter's
+ * unbundled dependencies fall back to as well.
+ */
+function reportDuplicateDeps(): boolean {
+  const report = checkDuplicateDependencies({
+    cachedFiles: Object.keys(require.cache),
+    // The blank entry means "Ghost's own node_modules", which is the other side
+    // of the comparison rather than an adapter tree.
+    adapterRoots: adapterPaths.filter((adapterPath) => adapterPath !== ''),
+    ghostNodeModulesRoots: module.paths,
+    mustBeSingleCopy: baseClassPackages,
+  });
+
+  process.stdout.write(formatDuplicateReport(report));
+
+  return report.blocking.length > 0;
+}
+
+function main(argv: string[]): void {
+  const flags = argv.filter((arg) => arg.startsWith('--'));
+  const specs = argv.filter((arg) => !arg.startsWith('--'));
+
+  const unknownFlags = flags.filter((flag) => flag !== DUPLICATE_DEPS_FLAG);
+  if (!specs.length || unknownFlags.length) {
+    if (unknownFlags.length) {
+      process.stderr.write(`Unknown option(s): ${unknownFlags.join(', ')}\n`);
+    }
+    process.stderr.write(
+      `Usage: bin/validate-adapters.js [${DUPLICATE_DEPS_FLAG}] <type>:<AdapterClassName> ...\n`,
+    );
     process.exit(1);
   }
 
@@ -74,11 +114,20 @@ function main(specs: string[]): void {
     }
   }
 
+  // Off unless asked for: adapters also resolve out of content/adapters, where
+  // a self-hosted adapter may legitimately bundle its own dependencies, and
+  // that must not fail anyone's build. Only the image build that installs
+  // adapters into a dedicated directory opts in.
+  const duplicatesBlocked = flags.includes(DUPLICATE_DEPS_FLAG) && reportDuplicateDeps();
+
   if (failures.length) {
     process.stderr.write(`\n${failures.length} of ${specs.length} adapter(s) failed validation:\n`);
     for (const { spec, message } of failures) {
       process.stderr.write(`- ${spec}: ${message}\n`);
     }
+  }
+
+  if (failures.length || duplicatesBlocked) {
     process.exit(1);
   }
 
