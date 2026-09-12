@@ -138,7 +138,7 @@
     "loader.js": "4.7.0",
     "microdiff": "1.5.0",
     "miragejs": "0.1.48",
-    "moment-timezone": "0.5.45",
+    "moment-timezone": "catalog:",
     "normalize.css": "3.0.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
