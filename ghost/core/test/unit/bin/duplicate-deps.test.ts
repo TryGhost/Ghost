@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   checkDuplicateDependencies,
+  collectLoadedFiles,
   formatDuplicateReport,
   parsePackageFromPath,
 } from '../../../bin/lib/duplicate-deps';
+
+// The fixture below lives outside the project, so the test runner leaves this
+// import to Node and the file is loaded the way an ESM adapter would be.
+const nativeImport = (specifier: string) => import(/* @vite-ignore */ specifier);
 
 /**
  * Write a package into a `node_modules` directory and return the path of the
@@ -81,6 +87,38 @@ describe('bin/lib/duplicate-deps', function () {
       assert.equal(parsePackageFromPath('/home/ghost/current/core/server/boot.js'), null);
       assert.equal(parsePackageFromPath('/home/ghost/adapters/storage/S3Storage/index.js'), null);
       assert.equal(parsePackageFromPath('/home/ghost/node_modules/.pnpm/lock.yaml'), null);
+    });
+  });
+
+  describe('collectLoadedFiles', function () {
+    it('keeps the CommonJS cache it is given, without duplicating entries', function () {
+      const files = collectLoadedFiles([
+        '/home/ghost/a.js',
+        '/home/ghost/a.js',
+        '/home/ghost/b.js',
+      ]);
+
+      assert.deepEqual(
+        files.filter((file) => file.startsWith('/home/ghost/')),
+        ['/home/ghost/a.js', '/home/ghost/b.js'],
+      );
+    });
+
+    it('sees an ESM module, which the CommonJS cache never contains', async function () {
+      const tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-esm-deps-')));
+      const modulePath = path.join(tmpDir, 'adapter.mjs');
+      fs.writeFileSync(modulePath, 'export const loaded = true;\n');
+
+      try {
+        await nativeImport(pathToFileURL(modulePath).href);
+
+        assert.ok(
+          collectLoadedFiles([]).includes(modulePath),
+          'expected the imported ESM file to be reported as loaded',
+        );
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
     });
   });
 

@@ -12,7 +12,11 @@
 // present at build time
 
 import { parseArgs } from 'node:util';
-import { checkDuplicateDependencies, formatDuplicateReport } from './lib/duplicate-deps';
+import {
+  checkDuplicateDependencies,
+  collectLoadedFiles,
+  formatDuplicateReport,
+} from './lib/duplicate-deps';
 import { adapterPaths } from '../core/server/services/adapter-manager/adapter-paths';
 import {
   baseClasses,
@@ -65,15 +69,15 @@ function validate(spec: string): void {
  * Report the packages the loaded adapters brought a second copy of, and say
  * whether any of them must be a single copy.
  *
- * Runs on `require.cache`, so it has to happen after the adapters have been
- * loaded. `module.paths` is where Ghost's own dependencies resolve from - the
+ * Runs on what the process has already loaded, so it has to happen after the
+ * adapters have. `module.paths` is where Ghost's own dependencies resolve from - the
  * `node_modules` directories Node searches from this script upwards, which in a
  * Ghost Pro image reaches the `/home/ghost/node_modules` an adapter's
  * unbundled dependencies fall back to as well.
  */
 function reportDuplicateDeps(): boolean {
   const report = checkDuplicateDependencies({
-    cachedFiles: Object.keys(require.cache),
+    cachedFiles: collectLoadedFiles(Object.keys(require.cache)),
     // The blank entry means "Ghost's own node_modules", which is the other side
     // of the comparison rather than an adapter tree.
     adapterRoots: adapterPaths.filter((adapterPath) => adapterPath !== ''),

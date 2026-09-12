@@ -16,16 +16,18 @@
 //   logger on `globalThis` under `Symbol.for('@tryghost/logging@<major>')`;
 //   `@tryghost/metrics` has no such guard and would build a second instance.
 //
-// @NOTE: this reads `require.cache`, so what it can see stops at the first ESM
-// boundary. Adapters may be ESM (`"type": "module"`), and while Node does cache
-// the entry point of a module `require()`d that way, nothing that module goes on
-// to `import` is cached - the ESM loader keeps its own registry. So an ESM
-// adapter's dependency subgraph is invisible here, and so is an ESM dependency's
-// (which is how Ghost reaches `ghost-storage-base`). The check is a useful
-// signal, not an exhaustive one.
+// @NOTE: `require.cache` alone would stop at the first ESM boundary. Adapters
+// may be ESM (`"type": "module"`), and while Node caches the entry point of a
+// module `require()`d that way, nothing that module goes on to `import` is
+// cached - the ESM loader keeps its own registry, which has no public equivalent
+// to `require.cache`. `collectLoadedFiles` covers that gap with the inspector,
+// which reports both formats; the CJS cache stays as the fallback for a Node
+// built without inspector support.
 
 import fs from 'node:fs';
+import inspector from 'node:inspector';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /** Where a loaded file's package lives, before its manifest has been read. */
 export interface PackageLocation {
@@ -57,7 +59,7 @@ export interface DuplicateDependencyReport {
 }
 
 export interface DuplicateDependencyOptions {
-  /** Loaded file paths, i.e. `Object.keys(require.cache)`. */
+  /** Loaded file paths, i.e. `collectLoadedFiles(Object.keys(require.cache))`. */
   cachedFiles: Iterable<string>;
   /** Directories custom adapters are installed under, i.e. `adapterPaths`. */
   adapterRoots: string[];
@@ -72,6 +74,57 @@ const NODE_MODULES = 'node_modules';
 // pnpm's virtual store is the one entry directly inside a `node_modules` that
 // isn't a package: `node_modules/.pnpm/<name>@<version>/node_modules/<name>`.
 const PNPM_STORE = '.pnpm';
+
+/**
+ * The files V8 has parsed in this process, whatever their module format.
+ *
+ * Enabling the inspector's `Debugger` domain replays a `scriptParsed` event for
+ * every script already parsed, so this can run after the adapters have loaded -
+ * the same after-the-fact question `require.cache` answers, minus its blind spot
+ * for ESM. The events are delivered synchronously while the domain is enabling,
+ * so there is nothing to await.
+ *
+ * Returns nothing when the inspector is unavailable, e.g. a Node built
+ * `--without-inspector`, leaving the caller with its CommonJS cache alone.
+ */
+function parsedScriptFiles(): string[] {
+  let session: inspector.Session;
+  try {
+    session = new inspector.Session();
+    session.connect();
+  } catch {
+    return [];
+  }
+
+  const files: string[] = [];
+  session.on('Debugger.scriptParsed', ({ params }) => {
+    // Anything with no file behind it - `node:` internals, `eval`, `data:`
+    // URLs - can't belong to a package, so it is of no interest here.
+    if (!params.url.startsWith('file://')) {
+      return;
+    }
+
+    try {
+      files.push(fileURLToPath(params.url));
+    } catch {
+      // A URL Node won't convert back to a path is not a package file either.
+    }
+  });
+
+  session.post('Debugger.enable');
+  session.post('Debugger.disable');
+  session.disconnect();
+
+  return files;
+}
+
+/**
+ * Every file this process has loaded: the given CommonJS cache keys, plus what
+ * the inspector can see of the ESM graph they stop at.
+ */
+export function collectLoadedFiles(cjsCachedFiles: Iterable<string>): string[] {
+  return [...new Set([...cjsCachedFiles, ...parsedScriptFiles()])];
+}
 
 function realpathOrNull(target: string): string | null {
   try {
