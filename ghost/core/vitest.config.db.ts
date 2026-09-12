@@ -95,7 +95,7 @@ const sharedDbConfig = {
 };
 
 // Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
-// test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + MinIO,
+// test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + VersityGW,
 // minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
 // report without failing.
 type CoverageLane = {
@@ -204,8 +204,8 @@ export default defineConfig({
           isolate: true,
           include: ['test/integration/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],
-          // Probes the optional Docker services (Redis, MinIO) once in
-          // the main process and exports GHOST_TEST_{REDIS,MINIO}_AVAILABLE
+          // Probes the optional Docker services (Redis, VersityGW) once in
+          // the main process and exports GHOST_TEST_{REDIS,S3}_AVAILABLE
           // so the adapter suites skip when their service is down and run
           // when it's up. Integration-only — no adapter tests live in the
           // other DB suites.

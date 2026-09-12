@@ -104,8 +104,11 @@ runs.
 | MySQL                      | `localhost:3306` using the `ghost_dev` database                          |
 | Redis                      | `localhost:6379`                                                         |
 | Tinybird                   | [http://localhost:7181](http://localhost:7181) with `pnpm dev:analytics` |
-| MinIO console              | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
-| MinIO S3 API               | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
+| VersityGW WebUI            | [http://localhost:9001](http://localhost:9001) with `pnpm dev:storage`   |
+| VersityGW S3 API           | [http://localhost:9000](http://localhost:9000) with `pnpm dev:storage`   |
+
+Sign in to the VersityGW WebUI with access key `s3-user` and secret key
+`s3-pass`.
 
 ## Development variants
 
@@ -119,7 +122,7 @@ environment and adds the listed tooling:
 | `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                    |
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
-| `pnpm dev:storage`         | S3-compatible storage through MinIO on ports `9000` and `9001`                                |
+| `pnpm dev:storage`         | S3-compatible storage through VersityGW, with its WebUI on port `9001`                        |
 | `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)  |
 | `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                   |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
