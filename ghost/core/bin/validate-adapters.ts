@@ -11,6 +11,7 @@
 // Adapters are named explicitly rather than read from config, which may not be
 // present at build time
 
+import { parseArgs } from 'node:util';
 import { checkDuplicateDependencies, formatDuplicateReport } from './lib/duplicate-deps';
 import { adapterPaths } from '../core/server/services/adapter-manager/adapter-paths';
 import {
@@ -18,8 +19,6 @@ import {
   baseClassPackages,
 } from '../core/server/services/adapter-manager/base-classes';
 import { loadAdapterClass } from '../core/server/services/adapter-manager/utils';
-
-const DUPLICATE_DEPS_FLAG = '--check-duplicate-deps';
 
 type AdapterType = keyof typeof baseClasses;
 
@@ -87,20 +86,35 @@ function reportDuplicateDeps(): boolean {
   return report.blocking.length > 0;
 }
 
-function main(argv: string[]): void {
-  const flags = argv.filter((arg) => arg.startsWith('--'));
-  const specs = argv.filter((arg) => !arg.startsWith('--'));
+/**
+ * `parseArgs` is strict, so an unknown or malformed option throws rather than
+ * being taken for an adapter name.
+ */
+function parseCliArgs(argv: string[]) {
+  try {
+    return parseArgs({
+      args: argv,
+      allowPositionals: true,
+      options: {
+        'check-duplicate-deps': { type: 'boolean', default: false },
+      },
+    });
+  } catch (err) {
+    process.stderr.write(`${(err as Error).message}\n`);
+    return null;
+  }
+}
 
-  const unknownFlags = flags.filter((flag) => flag !== DUPLICATE_DEPS_FLAG);
-  if (!specs.length || unknownFlags.length) {
-    if (unknownFlags.length) {
-      process.stderr.write(`Unknown option(s): ${unknownFlags.join(', ')}\n`);
-    }
+function main(argv: string[]): void {
+  const parsed = parseCliArgs(argv);
+  if (!parsed?.positionals.length) {
     process.stderr.write(
-      `Usage: bin/validate-adapters.js [${DUPLICATE_DEPS_FLAG}] <type>:<AdapterClassName> ...\n`,
+      'Usage: bin/validate-adapters.js [--check-duplicate-deps] <type>:<AdapterClassName> ...\n',
     );
     process.exit(1);
   }
+
+  const { values, positionals: specs } = parsed;
 
   const failures: { spec: string; message: string }[] = [];
 
@@ -118,7 +132,7 @@ function main(argv: string[]): void {
   // a self-hosted adapter may legitimately bundle its own dependencies, and
   // that must not fail anyone's build. Only the image build that installs
   // adapters into a dedicated directory opts in.
-  const duplicatesBlocked = flags.includes(DUPLICATE_DEPS_FLAG) && reportDuplicateDeps();
+  const duplicatesBlocked = values['check-duplicate-deps'] && reportDuplicateDeps();
 
   if (failures.length) {
     process.stderr.write(`\n${failures.length} of ${specs.length} adapter(s) failed validation:\n`);
