@@ -10,14 +10,11 @@ import {
   parsePackageFromPath,
 } from '../../../bin/lib/duplicate-deps';
 
-// The fixture below lives outside the project, so the test runner leaves this
-// import to Node and the file is loaded the way an ESM adapter would be.
+// The fixture lives outside the project, so the runner leaves this import to Node
+// and the file loads the way an ESM adapter would.
 const nativeImport = (specifier: string) => import(/* @vite-ignore */ specifier);
 
-/**
- * Write a package into a `node_modules` directory and return the path of the
- * file a `require()` of it would end up caching.
- */
+/** Write a package, returning the file path a `require()` of it would cache. */
 function writePackage(nodeModules: string, name: string, version: string): string {
   const packagePath = path.join(nodeModules, ...name.split('/'));
   fs.mkdirSync(packagePath, { recursive: true });
@@ -28,9 +25,8 @@ function writePackage(nodeModules: string, name: string, version: string): strin
 }
 
 /**
- * The same, but in pnpm's isolated layout - the real files live in the virtual
- * store and the name at the root of `node_modules` is only a symlink to them,
- * which is how Ghost's own dependencies are installed.
+ * The same in pnpm's isolated layout, how Ghost's own dependencies are installed:
+ * the files live in the virtual store and the root name is only a symlink to them.
  */
 function writePnpmPackage(nodeModules: string, name: string, version: string): string {
   const storeDirName = `${name.replace('/', '+')}@${version}`;
@@ -57,8 +53,7 @@ describe('bin/lib/duplicate-deps', function () {
     });
 
     it("reads a scoped package out of pnpm's store layout, peer suffix and all", function () {
-      // The store directory name is never parsed - the package is whatever the
-      // last `node_modules` segment names - so pnpm's encoding of the scope
+      // The store directory name is never parsed, so pnpm's encoding of the scope
       // (`+`) and of peer dependencies (`_`) doesn't have to be understood.
       assert.deepEqual(
         parsePackageFromPath(
@@ -89,8 +84,8 @@ describe('bin/lib/duplicate-deps', function () {
     });
 
     it("returns null for an installer's own directories, which are not packages", function () {
-      // npm forbids a package name starting with a dot, so the whole class of
-      // them can be skipped without enumerating each installer's layout.
+      // npm forbids a leading dot in a package name, so the whole class of them
+      // goes without enumerating each installer's layout.
       assert.equal(parsePackageFromPath('/home/ghost/node_modules/.pnpm/lock.yaml'), null);
       assert.equal(parsePackageFromPath('/home/ghost/node_modules/.bin/knex-migrator'), null);
     });
@@ -134,9 +129,8 @@ describe('bin/lib/duplicate-deps', function () {
     let adapterRoot: string;
     let adapterNodeModules: string;
 
-    // Two trees, the way Ghost Pro installs them: Ghost's own dependencies in
-    // pnpm's isolated layout, and a self-contained adapter directory carrying
-    // whatever it installed for itself.
+    // Two trees, the way Ghost Pro installs them: Ghost's dependencies in pnpm's
+    // isolated layout, and a self-contained adapter directory beside them.
     beforeEach(function () {
       tmpDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-duplicate-deps-')));
       ghostNodeModules = path.join(tmpDir, 'ghost', 'node_modules');
@@ -194,8 +188,8 @@ describe('bin/lib/duplicate-deps', function () {
 
       const report = check([ghostBase, adapterBase, ghostLodash, adapterLodash]);
 
-      // Reported in name order, and the identical version still counts: two
-      // copies of the base class are still two function objects.
+      // Name order, and the identical version still counts: two copies of the
+      // base class are still two function objects.
       assert.deepEqual(
         report.duplicates.map(({ name }) => name),
         ['ghost-storage-base', 'lodash'],
@@ -212,9 +206,8 @@ describe('bin/lib/duplicate-deps', function () {
     });
 
     it('resolves symlinks before deciding which tree a file came from', function () {
-      // Requiring `lodash` from Ghost caches pnpm's store path, but an adapter
-      // requiring it through the root symlink could surface the link path -
-      // both are the same copy and must not look like a duplicate.
+      // Ghost caches pnpm's store path, but an adapter requiring the same copy
+      // through the root symlink could surface the link path instead.
       const ghostLodash = writePnpmPackage(ghostNodeModules, 'lodash', '4.17.20');
       const throughSymlink = path.join(ghostNodeModules, 'lodash', 'index.js');
 
@@ -228,8 +221,8 @@ describe('bin/lib/duplicate-deps', function () {
     });
 
     it("treats an adapter installed inside the Ghost directory as the adapter's tree", function () {
-      // content/adapters lives inside the installation, so an adapter path and
-      // Ghost's root are not mutually exclusive - the adapter has to win.
+      // content/adapters lives inside the installation, so the two aren't
+      // mutually exclusive - the adapter has to win.
       const contentAdapters = path.join(tmpDir, 'ghost', 'content', 'adapters');
       const contentAdapterNodeModules = path.join(
         contentAdapters,

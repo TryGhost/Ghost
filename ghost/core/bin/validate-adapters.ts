@@ -2,8 +2,8 @@
 
 // Checks that custom adapters load and implement everything their base class
 // requires. Ghost only verifies an adapter fully on first use (`getAdapter`), so a
-// missing method on a storage adapter otherwise surfaces at first upload; run this
-// at image build time to fail the build instead.
+// missing method on a storage adapter otherwise surfaces at first upload - run
+// this at image build time to fail the build instead.
 //
 // Usage: bin/validate-adapters.js [--check-duplicate-deps] <type>:<AdapterClassName> ...
 //   e.g. bin/validate-adapters.js cache:Redis sso:ProSSO storage:S3Storage
@@ -66,14 +66,10 @@ function validate(spec: string): void {
 }
 
 /**
- * Report the packages the loaded adapters brought a second copy of, and say
- * whether any of them must be a single copy.
- *
- * Runs on what the process has already loaded, so it has to happen after the
- * adapters have. `module.paths` is where Ghost's own dependencies resolve from - the
- * `node_modules` directories Node searches from this script upwards, which in a
- * Ghost Pro image reaches the `/home/ghost/node_modules` an adapter's
- * unbundled dependencies fall back to as well.
+ * Report the packages the loaded adapters brought a second copy of. Reads what the
+ * process has already loaded, so it has to run after the adapters have. In a Ghost
+ * Pro image `module.paths` reaches the `/home/ghost/node_modules` that an adapter's
+ * unbundled dependencies fall back to, which is the other side of the comparison.
  */
 function reportDuplicateDeps(): boolean {
   const report = checkDuplicateDependencies({
@@ -90,10 +86,7 @@ function reportDuplicateDeps(): boolean {
   return report.blocking.length > 0;
 }
 
-/**
- * `parseArgs` is strict, so an unknown or malformed option throws rather than
- * being taken for an adapter name.
- */
+/** `parseArgs` is strict, so a bad option throws instead of passing for a name. */
 function parseCliArgs(argv: string[]) {
   try {
     return parseArgs({
@@ -132,10 +125,9 @@ function main(argv: string[]): void {
     }
   }
 
-  // Off unless asked for: adapters also resolve out of content/adapters, where
-  // a self-hosted adapter may legitimately bundle its own dependencies, and
-  // that must not fail anyone's build. Only the image build that installs
-  // adapters into a dedicated directory opts in.
+  // Off unless asked for: a self-hosted adapter in content/adapters may
+  // legitimately bundle its own dependencies, and that must not fail anyone's
+  // build. Only the image build installing adapters itself opts in.
   const duplicatesBlocked = values['check-duplicate-deps'] && reportDuplicateDeps();
 
   if (failures.length) {

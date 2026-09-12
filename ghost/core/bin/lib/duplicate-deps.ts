@@ -1,45 +1,26 @@
-// Finds packages that ended up loaded twice in one process: once from a custom
-// adapter's own `node_modules` and once from Ghost's.
+// Finds packages loaded twice in one process: once from a custom adapter's own
+// `node_modules` and once from Ghost's.
 //
-// Custom adapters are installed as self-contained directories with their own
-// dependency tree (Ghost Pro deploys them to `/home/ghost/adapters/<type>/<Name>`
-// and points `paths__installedAdaptersPath` at that directory). Anything the
-// adapter does not install itself resolves by walking up to Ghost's own
-// `node_modules`, so a package the adapter *does* install is loaded a second
-// time, from a second file, as a second module instance. That:
+// An adapter is installed as a self-contained directory with its own dependency
+// tree (Ghost Pro deploys them to `/home/ghost/adapters/<type>/<Name>`). Whatever
+// it doesn't install itself resolves by walking up to Ghost's `node_modules`, so
+// a package it *does* install becomes a second module instance - which breaks
+// `instanceof` against a base class (hence the name-based fallbacks in
+// `adapter-manager.ts` and `bin/validate-adapters.ts`) and splits module-level
+// state, as `@tryghost/metrics` would with no `globalThis` guard to save it.
 //
-// - breaks `instanceof`, because the adapter's base class is a different
-//   function object than the one Ghost compares against (both
-//   `adapter-manager.ts` and `bin/validate-adapters.ts` carry a name-based
-//   fallback for exactly this), and
-// - splits module-level state. `@tryghost/logging` survives it by caching its
-//   logger on `globalThis` under `Symbol.for('@tryghost/logging@<major>')`;
-//   `@tryghost/metrics` has no such guard and would build a second instance.
+// @NOTE: `collectLoadedFiles` unions two sources because neither contains the
+// other. `require.cache` holds no ESM file, neither an ESM adapter's entry point
+// nor anything it `import`s - though a CommonJS dependency of one does still go
+// through the cache, so the gap is ESM files specifically. The inspector reports
+// every script V8 parsed, ESM included, but `.json` and native `.node` modules
+// aren't scripts and only the cache lists them. The cache is also the fallback
+// when the inspector is unavailable.
 //
-// @NOTE: it takes two sources to see everything loaded, and `collectLoadedFiles`
-// unions them because neither contains the other:
-//
-// - `require.cache` holds no ESM file. Adapters may be ESM (`"type": "module"`),
-//   and an ESM file is absent from the cache whether it is the adapter's own
-//   entry point or something it goes on to `import` - the ESM loader keeps its
-//   own registry, with no public equivalent to read. (A CommonJS dependency
-//   `import`ed from ESM does still go through the cache, so the gap is the ESM
-//   files specifically.)
-// - The inspector reports every script V8 parsed, ESM included, but a module
-//   that is not a script is not one: `.json` and native `.node` addons never
-//   produce a `scriptParsed` event, and only `require.cache` lists them. A
-//   duplicated native addon is worth reporting precisely because it is two
-//   copies of a compiled binary.
-//
-// The CJS cache doubles as the fallback when the inspector is unavailable.
-//
-// @NOTE: in a monorepo checkout Ghost's own copy of a `workspace:*` dependency
-// resolves through a symlink to `packages/<name>`, outside any `node_modules`,
-// and `require.cache` only ever reports that resolved path - so Ghost has no
-// copy to compare against and nothing is reported. Every adapter base class is
-// such a dependency, which makes a local run of `--check-duplicate-deps` a poor
-// rehearsal: it is the installed tree built into the image, where those are
-// ordinary `node_modules` entries, that this is meant to check.
+// @NOTE: this is for the installed tree built into an image, not a local
+// checkout. Ghost's copy of a `workspace:*` dependency - every adapter base class
+// among them - resolves through a symlink to `packages/<name>`, outside any
+// `node_modules`, leaving an adapter's copy with nothing to be compared against.
 
 import fs from 'node:fs';
 import inspector from 'node:inspector';
@@ -56,7 +37,6 @@ export interface PackageLocation {
 /** One physical copy of a package, as loaded into the process. */
 export interface PackageCopy {
   version: string;
-  /** Absolute path of the package directory the copy was loaded from. */
   path: string;
 }
 
@@ -70,19 +50,16 @@ export interface DuplicateDependency {
 export interface DuplicateDependencyReport {
   /** Every duplicate found, in name order. Informational: a duplicate costs memory. */
   duplicates: DuplicateDependency[];
-  /**
-   * The subset that must not be duplicated - a second copy of these is a
-   * correctness problem rather than a size one, so the caller fails on them.
-   */
+  /** The subset that is a correctness problem rather than a size one, so the caller fails. */
   blocking: DuplicateDependency[];
 }
 
 export interface DuplicateDependencyOptions {
-  /** Loaded file paths, i.e. `collectLoadedFiles(Object.keys(require.cache))`. */
+  /** i.e. `collectLoadedFiles(Object.keys(require.cache))`. */
   cachedFiles: Iterable<string>;
   /** Directories custom adapters are installed under, i.e. `adapterPaths`. */
   adapterRoots: string[];
-  /** The `node_modules` directories Ghost itself resolves from, i.e. `module.paths`. */
+  /** Where Ghost's own dependencies resolve from, i.e. `module.paths`. */
   ghostNodeModulesRoots: string[];
   /** Package names a second copy of is a failure, not a note. */
   mustBeSingleCopy: readonly string[];
@@ -93,14 +70,10 @@ const NODE_MODULES = 'node_modules';
 /**
  * The files V8 has parsed in this process, whatever their module format.
  *
- * Enabling the inspector's `Debugger` domain replays a `scriptParsed` event for
- * every script already parsed, so this can run after the adapters have loaded -
- * the same after-the-fact question `require.cache` answers, minus its blind spot
- * for ESM. The events are delivered synchronously while the domain is enabling,
- * so there is nothing to await.
- *
- * Returns nothing when the inspector is unavailable, e.g. a Node built
- * `--without-inspector`, leaving the caller with its CommonJS cache alone.
+ * Enabling the `Debugger` domain replays a `scriptParsed` event for every script
+ * already parsed, synchronously, so this can run after the adapters have and
+ * there is nothing to await. Empty when the inspector is unavailable, e.g. a Node
+ * built `--without-inspector`.
  */
 function parsedScriptFiles(): string[] {
   let session: inspector.Session;
@@ -113,8 +86,8 @@ function parsedScriptFiles(): string[] {
 
   const files: string[] = [];
   session.on('Debugger.scriptParsed', ({ params }) => {
-    // Anything with no file behind it - `node:` internals, `eval`, `data:`
-    // URLs - can't belong to a package, so it is of no interest here.
+    // Nothing with no file behind it - `node:` internals, `eval`, `data:` URLs -
+    // can belong to a package.
     if (!params.url.startsWith('file://')) {
       return;
     }
@@ -122,7 +95,7 @@ function parsedScriptFiles(): string[] {
     try {
       files.push(fileURLToPath(params.url));
     } catch {
-      // A URL Node won't convert back to a path is not a package file either.
+      // Nor anything Node won't convert back to a path.
     }
   });
 
@@ -133,11 +106,7 @@ function parsedScriptFiles(): string[] {
   return files;
 }
 
-/**
- * Every file this process has loaded: the given CommonJS cache keys, which alone
- * carry the JSON and native modules, plus the scripts the inspector can see,
- * which alone carry the ESM graph the cache stops at.
- */
+/** Every file this process has loaded, from both of the sources above. */
 export function collectLoadedFiles(cjsCachedFiles: Iterable<string>): string[] {
   return [...new Set([...cjsCachedFiles, ...parsedScriptFiles()])];
 }
@@ -150,25 +119,18 @@ function realpathOrNull(target: string): string | null {
   }
 }
 
-/**
- * Whether `filePath` sits inside `directory`. Both are expected to be realpaths
- * already - the caller resolves them once rather than per comparison.
- */
+/** Whether `filePath` sits inside `directory`. Both are expected to be realpaths. */
 function isInside(filePath: string, directory: string): boolean {
   const relative = path.relative(directory, filePath);
 
-  // Compare the first segment exactly rather than using startsWith('..'), so an
-  // entry whose name merely begins with dots isn't mistaken for traversal.
+  // Match the first segment exactly, so a name that merely begins with dots
+  // isn't taken for traversal the way startsWith('..') would take it.
   const [firstSegment] = relative.split(path.sep);
 
   return relative !== '' && firstSegment !== '..' && !path.isAbsolute(relative);
 }
 
-/**
- * The version a package declares, or `unknown` when it declares none and when
- * the manifest is unreadable - a missing version is worth reporting alongside
- * the paths rather than dropping the duplicate.
- */
+/** The version a package declares, or `unknown` - better reported than dropped. */
 function readVersion(packagePath: string): string {
   try {
     const { version } = JSON.parse(fs.readFileSync(path.join(packagePath, 'package.json'), 'utf8'));
@@ -180,23 +142,18 @@ function readVersion(packagePath: string): string {
 
 /**
  * Attribute a loaded file to the package that physically contains it: whatever
- * the *last* `node_modules` segment of its path names.
- *
- * That holds whatever installer produced the tree - the flat
- * `node_modules/<name>` npm gives an adapter, and the
- * `.pnpm/<name>@<version>/node_modules/<name>` pnpm's isolated layout resolves
- * to - so nothing here has to understand a particular layout's naming. Returns
- * `null` for a file that isn't inside a package at all: Ghost's own source, or an
- * adapter's own `index.js`.
+ * the *last* `node_modules` segment of its path names. That holds for any
+ * installer's layout, npm's flat `node_modules/<name>` and pnpm's
+ * `.pnpm/<name>@<version>/node_modules/<name>` alike. `null` when the file is in
+ * no package: Ghost's own source, or an adapter's own `index.js`.
  */
 export function parsePackageFromPath(filePath: string): PackageLocation | null {
   const segments = filePath.split(path.sep);
   const start = segments.lastIndexOf(NODE_MODULES) + 1;
   const first = segments[start];
 
-  // A dot-prefixed entry is an installer's own bookkeeping directory sitting
-  // next to the packages - pnpm's virtual store, `.bin`, a cache - and npm
-  // forbids a package name from looking like one.
+  // A dot-prefixed entry is an installer's own directory - pnpm's store, `.bin`,
+  // a cache - and npm forbids a package name from looking like one.
   if (start === 0 || !first || first.startsWith('.')) {
     return null;
   }
@@ -216,10 +173,8 @@ export function parsePackageFromPath(filePath: string): PackageLocation | null {
 /**
  * Find packages loaded from both an adapter's dependency tree and Ghost's own.
  *
- * A file belongs to an adapter when it sits under one of the adapter search
- * paths, and to Ghost when it sits under one of the `node_modules` directories
- * Ghost resolves from. Adapters are checked first: `content/adapters` lives
- * inside the Ghost installation, so the two are not mutually exclusive.
+ * Adapters are checked first: `content/adapters` lives inside the Ghost
+ * installation, so the two sides are not mutually exclusive.
  */
 export function checkDuplicateDependencies({
   cachedFiles,
@@ -227,9 +182,8 @@ export function checkDuplicateDependencies({
   ghostNodeModulesRoots,
   mustBeSingleCopy,
 }: DuplicateDependencyOptions): DuplicateDependencyReport {
-  // Node reports realpaths in `require.cache`, and pnpm's layout means the
-  // roots are reached through symlinks, so compare resolved paths - never
-  // specifiers - on both sides.
+  // Compare resolved paths on both sides, never specifiers: `require.cache`
+  // reports realpaths, and pnpm reaches these roots through symlinks.
   const realAdapterRoots = adapterRoots.map(realpathOrNull).filter((root) => root !== null);
   const realGhostRoots = ghostNodeModulesRoots.map(realpathOrNull).filter((root) => root !== null);
 
@@ -250,7 +204,7 @@ export function checkDuplicateDependencies({
     }
 
     if (!inAdapter) {
-      // Ghost's own tree can hold more than one copy of a name; any of them is
+      // Ghost's tree can hold more than one copy of a name, and any of them is
       // the other half of the comparison, so the first one seen will do.
       if (!ghostPackages.has(location.name)) {
         ghostPackages.set(location.name, location.path);
@@ -258,14 +212,13 @@ export function checkDuplicateDependencies({
       continue;
     }
 
-    // Two adapters can each bundle their own copy of the same package, so keep
-    // every distinct location rather than only the first.
+    // Two adapters can each bundle their own copy, so keep every location.
     const packagePaths = adapterPackages.get(location.name) ?? new Set<string>();
     adapterPackages.set(location.name, packagePaths.add(location.path));
   }
 
-  // Versions are only read once both sides are known, so the manifest reads
-  // cost one per reported copy rather than one per cached file.
+  // Reading versions only once both sides are known costs one manifest read per
+  // reported copy, rather than one per cached file.
   const duplicates: DuplicateDependency[] = [];
   for (const [name, packagePaths] of [...adapterPackages].sort(([a], [b]) => a.localeCompare(b))) {
     const ghostPath = ghostPackages.get(name);
@@ -288,9 +241,7 @@ export function checkDuplicateDependencies({
   return { duplicates, blocking: duplicates.filter(({ name }) => singleCopy.has(name)) };
 }
 
-/**
- * Render a report for humans, in the same indented style as the adapter results.
- */
+/** Render a report in the same indented style as the adapter results. */
 export function formatDuplicateReport({ duplicates, blocking }: DuplicateDependencyReport): string {
   if (!duplicates.length) {
     return '  ok    no duplicate dependencies\n';
