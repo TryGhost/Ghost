@@ -24,7 +24,9 @@ export const baseClasses = {
 } satisfies BaseClassMap;
 
 /**
- * The packages the base classes above are imported from.
+ * The package each base class above is imported from, keyed by adapter type so
+ * that `satisfies` makes the compiler demand one entry per type in
+ * `baseClasses` - a new adapter type can't be added without naming its package.
  *
  * An adapter that installs one of these itself gets a second copy of the base
  * class, which is a different function object - so `instanceof` fails and
@@ -32,15 +34,15 @@ export const baseClasses = {
  * uses this list to fail a build on such a duplicate, where a duplicate of any
  * other package is only reported.
  *
- * Derived from the imports at the top of this file; a unit test keeps the two
- * in sync.
+ * The names have to match the imports at the top of this file; a unit test keeps
+ * the two in sync.
  */
-export const baseClassPackages = [
-  'ghost-storage-base',
-  '@tryghost/adapter-base-scheduling',
-  '@tryghost/adapter-base-sso',
-  '@tryghost/adapter-base-cache',
-  '@tryghost/adapter-base-redirects',
-  '@tryghost/adapter-base-route-settings',
-  '@tryghost/adapter-base-jobs',
-] as const;
+export const baseClassPackages = {
+  storage: 'ghost-storage-base',
+  scheduling: '@tryghost/adapter-base-scheduling',
+  sso: '@tryghost/adapter-base-sso',
+  cache: '@tryghost/adapter-base-cache',
+  redirects: '@tryghost/adapter-base-redirects',
+  'route-settings': '@tryghost/adapter-base-route-settings',
+  jobs: '@tryghost/adapter-base-jobs',
+} satisfies Record<keyof typeof baseClasses, string>;

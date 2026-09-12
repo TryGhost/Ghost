@@ -82,7 +82,7 @@ function reportDuplicateDeps(): boolean {
     // of the comparison rather than an adapter tree.
     adapterRoots: adapterPaths.filter((adapterPath) => adapterPath !== ''),
     ghostNodeModulesRoots: module.paths,
-    mustBeSingleCopy: baseClassPackages,
+    mustBeSingleCopy: Object.values(baseClassPackages),
   });
 
   process.stdout.write(formatDuplicateReport(report));

@@ -86,7 +86,13 @@ describe('bin/lib/duplicate-deps', function () {
     it('returns null for a file that is not inside a package', function () {
       assert.equal(parsePackageFromPath('/home/ghost/current/core/server/boot.js'), null);
       assert.equal(parsePackageFromPath('/home/ghost/adapters/storage/S3Storage/index.js'), null);
+    });
+
+    it("returns null for an installer's own directories, which are not packages", function () {
+      // npm forbids a package name starting with a dot, so the whole class of
+      // them can be skipped without enumerating each installer's layout.
       assert.equal(parsePackageFromPath('/home/ghost/node_modules/.pnpm/lock.yaml'), null);
+      assert.equal(parsePackageFromPath('/home/ghost/node_modules/.bin/knex-migrator'), null);
     });
   });
 
@@ -173,16 +179,8 @@ describe('bin/lib/duplicate-deps', function () {
       assert.deepEqual(report.duplicates, [
         {
           name: 'lodash',
-          adapter: {
-            name: 'lodash',
-            version: '4.17.21',
-            path: path.join(adapterNodeModules, 'lodash'),
-          },
-          ghost: {
-            name: 'lodash',
-            version: '4.17.20',
-            path: path.dirname(ghostLodash),
-          },
+          adapter: { version: '4.17.21', path: path.join(adapterNodeModules, 'lodash') },
+          ghost: { version: '4.17.20', path: path.dirname(ghostLodash) },
         },
       ]);
       assert.deepEqual(report.blocking, []);
@@ -287,15 +285,10 @@ describe('bin/lib/duplicate-deps', function () {
     const duplicate = {
       name: 'ghost-storage-base',
       adapter: {
-        name: 'ghost-storage-base',
         version: '1.1.0',
         path: '/home/ghost/adapters/storage/S3Storage/node_modules/ghost-storage-base',
       },
-      ghost: {
-        name: 'ghost-storage-base',
-        version: '1.1.1',
-        path: '/home/ghost/node_modules/ghost-storage-base',
-      },
+      ghost: { version: '1.1.1', path: '/home/ghost/node_modules/ghost-storage-base' },
     };
 
     it('says so when there is nothing to report', function () {
