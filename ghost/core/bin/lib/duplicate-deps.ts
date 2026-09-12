@@ -16,13 +16,20 @@
 //   logger on `globalThis` under `Symbol.for('@tryghost/logging@<major>')`;
 //   `@tryghost/metrics` has no such guard and would build a second instance.
 //
-// @NOTE: `require.cache` alone would stop at the first ESM boundary. Adapters
-// may be ESM (`"type": "module"`), and while Node caches the entry point of a
-// module `require()`d that way, nothing that module goes on to `import` is
-// cached - the ESM loader keeps its own registry, which has no public equivalent
-// to `require.cache`. `collectLoadedFiles` covers that gap with the inspector,
-// which reports both formats; the CJS cache stays as the fallback for a Node
-// built without inspector support.
+// @NOTE: it takes two sources to see everything loaded, and `collectLoadedFiles`
+// unions them because neither contains the other:
+//
+// - `require.cache` stops at the first ESM boundary. Adapters may be ESM
+//   (`"type": "module"`), and while Node caches the entry point of a module
+//   `require()`d that way, nothing that module goes on to `import` is cached -
+//   the ESM loader keeps its own registry, with no public equivalent to read.
+// - The inspector reports every script V8 parsed, ESM included, but a module
+//   that is not a script is not one: `.json` and native `.node` addons never
+//   produce a `scriptParsed` event, and only `require.cache` lists them. A
+//   duplicated native addon is worth reporting precisely because it is two
+//   copies of a compiled binary.
+//
+// The CJS cache doubles as the fallback when the inspector is unavailable.
 
 import fs from 'node:fs';
 import inspector from 'node:inspector';
@@ -119,8 +126,9 @@ function parsedScriptFiles(): string[] {
 }
 
 /**
- * Every file this process has loaded: the given CommonJS cache keys, plus what
- * the inspector can see of the ESM graph they stop at.
+ * Every file this process has loaded: the given CommonJS cache keys, which alone
+ * carry the JSON and native modules, plus the scripts the inspector can see,
+ * which alone carry the ESM graph the cache stops at.
  */
 export function collectLoadedFiles(cjsCachedFiles: Iterable<string>): string[] {
   return [...new Set([...cjsCachedFiles, ...parsedScriptFiles()])];
