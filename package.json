@@ -54,6 +54,7 @@
     "format": "node scripts/format.js",
     "format:check": "oxfmt --check",
     "check": "pnpm format:check && pnpm lint && pnpm test",
+    "typecheck:core": "NX_CACHE_DIRECTORY=\"$PWD/.nxcache\" NX_WORKSPACE_DATA_DIRECTORY=\"$PWD/.nx/workspace-data\" nx run ghost:typecheck",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:types": "pnpm nx run-many -t test:types",
     "test:unit": "pnpm nx run-many -t test:unit",

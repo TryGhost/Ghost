@@ -53,6 +53,7 @@
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
+    "typecheck": "tsc --noEmit",
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:watch": "vitest --reporter=default",
@@ -322,6 +323,12 @@
     ],
     "targets": {
       "build:tsc": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "typecheck": {
+        "cache": true,
         "dependsOn": [
           "^build"
         ]
