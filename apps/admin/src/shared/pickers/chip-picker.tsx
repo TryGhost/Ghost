@@ -1,4 +1,4 @@
-import { badgeVariants, inputSurface } from '@tryghost/shade/components';
+import { Badge, inputSurface } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
@@ -307,23 +307,21 @@ export function ChipPicker<TOption, TChip>({
       >
         {/* The whole chip removes, so it is the button rather than carrying one. */}
         {selected.map((chip) => (
-          <button
-            key={getKey(chip)}
-            aria-label={`Remove ${getLabel(chip)}`}
-            className={cn(
-              badgeVariants({ variant: chipVariant?.(chip) ?? 'default' }),
-              'cursor-pointer gap-1 pr-1',
-            )}
-            data-testid={testIds?.chip}
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onRemove(getKey(chip));
-            }}
-          >
-            {getLabel(chip)}
-            <LucideIcon.X className="size-3" />
-          </button>
+          <Badge key={getKey(chip)} variant={chipVariant?.(chip) ?? 'default'} asChild>
+            <button
+              aria-label={`Remove ${getLabel(chip)}`}
+              className="cursor-pointer gap-1 pr-1"
+              data-testid={testIds?.chip}
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemove(getKey(chip));
+              }}
+            >
+              {getLabel(chip)}
+              <LucideIcon.X className="size-3" />
+            </button>
+          </Badge>
         ))}
         <input
           ref={input}

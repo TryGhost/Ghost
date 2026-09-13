@@ -413,7 +413,7 @@ export function MultiSelectCombobox<T = unknown>({
               )}
               <div className="p-1.5">
                 <button
-                  className="flex w-full items-center justify-center rounded-xs px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                  className="flex w-full items-center justify-center rounded-menu-item px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                   disabled={source.isLoadingMore}
                   type="button"
                   onClick={source.loadMore}

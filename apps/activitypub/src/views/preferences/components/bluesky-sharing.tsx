@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
   LoadingIndicator,
-  buttonVariants,
 } from '@tryghost/shade/components';
 import { H2, H3 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -336,8 +335,8 @@ const BlueskySharing: React.FC = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: 'destructive' })}
               disabled={loading}
+              variant="destructive"
               onClick={(e) => {
                 e.preventDefault();
                 handleDisable();

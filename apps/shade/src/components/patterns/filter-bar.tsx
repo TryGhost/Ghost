@@ -1,6 +1,9 @@
 import React from 'react';
-import { Inline } from '@/components/primitives';
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { Inline, type InlineProps } from '@/components/primitives/inline';
+import { FilterBarContext, useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-provider';
 
 type FilterBarProps = React.PropsWithChildren & {
   className?: string;
@@ -14,25 +17,84 @@ type FilterBarProps = React.PropsWithChildren & {
  * Typical usage:
  *   <FilterBar>
  *     <Filters ... />
- *     <Button variant="ghost">Save view</Button>
+ *     <FilterBar.Actions>
+ *       <FilterBar.Action variant="ghost">Clear</FilterBar.Action>
+ *       <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+ *     </FilterBar.Actions>
  *   </FilterBar>
  */
-function FilterBar({ className, children }: FilterBarProps) {
+function FilterBarRoot({ className, children }: FilterBarProps) {
+  const { controlShape, isAdmin7 } = useShade();
+
   if (React.Children.count(children) === 0) {
     return null;
   }
 
   return (
-    <Inline
-      align="start"
-      className={cn('w-full', className)}
-      data-slot="filter-bar"
-      gap="sm"
-      justify="between"
-    >
-      {children}
-    </Inline>
+    <FilterBarContext.Provider value={true}>
+      <Inline
+        align="start"
+        className={cn(
+          'w-full',
+          isAdmin7 &&
+            'relative -mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
+          className,
+        )}
+        data-control-shape={controlShape}
+        data-slot="filter-bar"
+        gap="sm"
+        justify="between"
+      >
+        {children}
+      </Inline>
+    </FilterBarContext.Provider>
   );
 }
+
+const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
+  ({ className, gap = 'sm', ...props }, ref) => {
+    const isInFilterBar = useFilterBarContext();
+    const { isAdmin7 } = useShade();
+
+    return (
+      <Inline
+        ref={ref}
+        className={cn(
+          'shrink-0 sm:absolute',
+          isInFilterBar && isAdmin7 ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
+          className,
+        )}
+        data-slot="filter-bar-actions"
+        gap={gap}
+        {...props}
+      />
+    );
+  },
+);
+FilterBarActions.displayName = 'FilterBar.Actions';
+
+const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, size, variant, ...props }, ref) => {
+    const isInFilterBar = useFilterBarContext();
+    const { isAdmin7 } = useShade();
+    const usePillFilterBarStyle = isInFilterBar && isAdmin7;
+
+    return (
+      <Button
+        ref={ref}
+        className={cn(usePillFilterBarStyle && variant === 'outline' && 'bg-background', className)}
+        size={size ?? (usePillFilterBarStyle ? 'sm' : undefined)}
+        variant={variant}
+        {...props}
+      />
+    );
+  },
+);
+FilterBarAction.displayName = 'FilterBar.Action';
+
+const FilterBar = Object.assign(FilterBarRoot, {
+  Actions: FilterBarActions,
+  Action: FilterBarAction,
+});
 
 export { FilterBar };

@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
-import ShadeProvider from './providers/shade-provider';
+import ShadeProvider from '@/providers/shade-provider';
+import type { ControlShape } from '@/providers/shade-provider';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.
@@ -11,14 +12,26 @@ export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
+  controlShape?: ControlShape;
+  /** Admin supplies the effective flag; isolated Shade previews use the new design. */
+  isAdmin7?: boolean;
 }
 
-const ShadeApp: React.FC<ShadeAppProps> = ({ darkMode, className, children, ...props }) => {
+const ShadeApp: React.FC<ShadeAppProps> = ({
+  darkMode,
+  controlShape,
+  isAdmin7 = true,
+  className,
+  children,
+  ...props
+}) => {
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props}>
-      <ShadeProvider darkMode={darkMode}>{children}</ShadeProvider>
+    <div className={appClassName} {...props} data-admin7={isAdmin7}>
+      <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7={isAdmin7}>
+        {children}
+      </ShadeProvider>
     </div>
   );
 };
