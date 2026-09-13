@@ -6,6 +6,8 @@ const controllers = require('./controllers');
 const middleware = require('./middleware');
 const RSSRouter = require('./rss-router');
 const { toExpressNotation } = require('./permalink-adapter');
+const { resolveRouteData } = require('./api-adapter');
+const { getMarkdownPath } = require('../llms/markdown');
 
 /**
  * @description Collection Router for post resource.
@@ -70,6 +72,17 @@ class CollectionRouter extends ParentRouter {
 
     // REGISTER: collection route e.g. /, /podcast/
     this.mountRoute(this.route.value, controllers.collection);
+
+    const hasEntryData = Object.values(resolveRouteData(this.data)).some(
+      ({ type, resource }) => type === 'read' && (resource === 'pages' || resource === 'posts'),
+    );
+    if (hasEntryData) {
+      this.mountRoute(getMarkdownPath(this.route.value), (req, res, next) => {
+        res.routerOptions.isMarkdownRequest = true;
+        res.routerOptions.canonicalPath = urlUtils.createUrl(this.route.value, false, false, true);
+        return controllers.routeMarkdown(req, res, next);
+      });
+    }
 
     // REGISTER: enable pagination by default
     this.router().param('page', middleware.pageParam);

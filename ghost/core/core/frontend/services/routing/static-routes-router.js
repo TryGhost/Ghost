@@ -5,6 +5,8 @@ const RSSRouter = require('./rss-router');
 const controllers = require('./controllers');
 const middleware = require('./middleware');
 const ParentRouter = require('./parent-router');
+const { resolveRouteData } = require('./api-adapter');
+const { getMarkdownPath } = require('../llms/markdown');
 
 /**
  * @description Template routes allow you to map individual URLs to specific template files within a Ghost theme
@@ -100,6 +102,17 @@ class StaticRoutesRouter extends ParentRouter {
 
     // REGISTER: static route
     this.mountRoute(this.route.value, controllers.static);
+
+    const hasEntryData = Object.values(resolveRouteData(this.data)).some(
+      ({ type, resource }) => type === 'read' && (resource === 'pages' || resource === 'posts'),
+    );
+    if (hasEntryData) {
+      this.mountRoute(getMarkdownPath(this.route.value), (req, res, next) => {
+        res.routerOptions.isMarkdownRequest = true;
+        res.routerOptions.canonicalPath = urlUtils.createUrl(this.route.value, false, false, true);
+        return controllers.routeMarkdown(req, res, next);
+      });
+    }
 
     this.routerCreated(this);
   }
