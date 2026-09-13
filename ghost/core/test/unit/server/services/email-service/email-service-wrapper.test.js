@@ -2,6 +2,52 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const url = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 const EmailServiceWrapper = require('../../../../../core/server/services/email-service/email-service-wrapper');
+const EmailProviderBase = require('../../../../../core/server/adapters/email/email-provider-base');
+
+describe('UNIT: EmailServiceWrapper', function () {
+  it('requires the complete email provider contract', function () {
+    const provider = new EmailProviderBase();
+
+    assert.deepEqual(provider.requiredFns, [
+      'send',
+      'getMaximumRecipients',
+      'getTargetDeliveryWindow',
+    ]);
+  });
+
+  it('uses Mailgun when no email adapter is configured', function () {
+    const mailgunEmailProvider = { send: async () => {} };
+    const adapterManager = {
+      getAdapter: () => assert.fail('adapter manager should not be called'),
+    };
+
+    const provider = new EmailServiceWrapper().getEmailProvider({
+      config: { get: () => undefined },
+      adapterManager,
+      mailgunEmailProvider,
+    });
+
+    assert.equal(provider, mailgunEmailProvider);
+  });
+
+  it('resolves the configured email adapter', function () {
+    const provider = { send: async () => {} };
+    const adapterManager = {
+      getAdapter(name) {
+        assert.equal(name, 'email');
+        return provider;
+      },
+    };
+
+    const resolvedProvider = new EmailServiceWrapper().getEmailProvider({
+      config: { get: () => ({ active: 'ses' }) },
+      adapterManager,
+      mailgunEmailProvider: { send: async () => {} },
+    });
+
+    assert.equal(resolvedProvider, provider);
+  });
+});
 
 describe('EmailServiceWrapper getPostUrl', function () {
   afterEach(function () {
