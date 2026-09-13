@@ -33,6 +33,12 @@ WORKDIR /home/ghost
 # during install.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 
+# patchedDependencies in pnpm-workspace.yaml names every patch by path, and pnpm
+# hashes those files during install: a missing patch fails the install outright
+# with ENOENT rather than resolving unpatched. This COPY must therefore list the
+# whole dir, so adding a patch needs no change here.
+COPY patches patches
+
 # Copy the manifests of the top-level dirs that hold ghost/core's dependency
 # closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
 # packages), and configs/* (the shared eslint config, a dev dep in the graph).
