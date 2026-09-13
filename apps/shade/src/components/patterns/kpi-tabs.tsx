@@ -27,6 +27,7 @@ interface KpiTabValueProps {
   value: string | number;
   diffDirection?: 'up' | 'down' | 'same' | 'hidden';
   diffValue?: string | number;
+  diffTooltip?: React.ReactNode;
   className?: string;
   'data-testid'?: string;
 }
@@ -38,6 +39,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
   value,
   diffDirection,
   diffValue,
+  diffTooltip,
   className,
   'data-testid': testId,
 }) => {
@@ -65,6 +67,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
         className="mt-0.5"
         data-testid={testId ? `${testId}-diff` : undefined}
         direction={diffDirection}
+        tooltip={diffTooltip}
         value={diffValue ?? ''}
       />
     ) : null;

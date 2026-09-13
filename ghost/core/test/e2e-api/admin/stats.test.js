@@ -7,8 +7,23 @@ const {
 const { mockStripe, stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const { anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength } = matchers;
 const assert = require('node:assert/strict');
+const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 
 let agent;
+let contributorAgent;
+let analyticsCommentIds = [];
+
+async function addAnalyticsComment(createdAt, memberIndex = 0) {
+  const comment = await models.Comment.add({
+    post_id: fixtureManager.get('posts', 0).id,
+    member_id: fixtureManager.get('members', memberIndex).id,
+    html: '<p>Analytics bucket fixture</p>',
+    status: 'published',
+    created_at: new Date(createdAt),
+  });
+  analyticsCommentIds.push(comment.id);
+}
 
 const matchSubscriptionStats = {
   stats: [
@@ -34,8 +49,10 @@ const matchSubscriptionStats = {
 describe('Stats API', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
-    await fixtureManager.init('posts', 'members');
+    contributorAgent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts', 'members', 'users');
     await agent.loginAsOwner();
+    await contributorAgent.loginAsContributor();
   });
 
   beforeEach(async function () {
@@ -45,6 +62,10 @@ describe('Stats API', function () {
 
   afterEach(async function () {
     await mockManager.restore();
+    if (analyticsCommentIds.length > 0) {
+      await db.knex('comments').whereIn('id', analyticsCommentIds).del();
+      analyticsCommentIds = [];
+    }
   });
 
   it('Can fetch member count history', async function () {
@@ -399,6 +420,123 @@ describe('Stats API', function () {
         .matchBodySnapshot({
           stats: [{}],
         });
+    });
+  });
+
+  describe('Comments overview', function () {
+    it('rejects invalid dates, inverted ranges, unknown timezones, and missing bounds', async function () {
+      await agent.get('/stats/comments/').expectStatus(400);
+      await agent.get('/stats/comments/?date_from=garbage&date_to=2026-02-14').expectStatus(400);
+      await agent.get('/stats/comments/?date_from=2026-02-14&date_to=2026-02-08').expectStatus(400);
+      await agent
+        .get('/stats/comments/?date_from=2026-02-08&date_to=2026-02-14&timezone=Nowhere/Unknown')
+        .expectStatus(400);
+    });
+
+    it('returns the overview payload with expected shape', async function () {
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
+        .expectStatus(200)
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          'content-length': anyContentLength,
+          etag: anyEtag,
+        });
+
+      assert.ok(Array.isArray(body.stats), 'expected stats array in response');
+      assert.equal(body.stats.length, 1, 'expected a single overview object');
+
+      const overview = body.stats[0];
+      assert.ok(overview.totals, 'expected totals');
+      assert.equal(typeof overview.totals.comments, 'number');
+      assert.equal(typeof overview.totals.commenters, 'number');
+      assert.equal(typeof overview.totals.reported, 'number');
+      assert.ok('previous_totals' in overview, 'expected previous_totals key');
+      assert.ok(Array.isArray(overview.series));
+      assert.ok(['day', 'week', 'month'].includes(overview.series_aggregation));
+      assert.ok(Array.isArray(overview.top_posts));
+      assert.ok(Array.isArray(overview.top_members));
+    });
+
+    it('refuses roles without comment permissions', async function () {
+      await contributorAgent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-01-31')
+        .expectStatus(403);
+    });
+
+    it('refuses roles without comment permissions even after the payload has been served once', async function () {
+      // The api-framework consults an endpoint cache before it runs the
+      // permissions stage, so a warmed response must not become readable to
+      // callers who would otherwise be refused.
+      const query = '/stats/comments/?date_from=2026-01-01&date_to=2026-01-31&timezone=UTC';
+
+      await agent.get(query).expectStatus(200);
+      await contributorAgent.get(query).expectStatus(403);
+    });
+
+    it('does not expose member email in top_members', async function () {
+      await addAnalyticsComment('2026-01-05T12:00:00.000Z', 0);
+      await addAnalyticsComment('2026-01-06T12:00:00.000Z', 1);
+
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-01-31')
+        .expectStatus(200);
+
+      const { top_members: topMembers } = body.stats[0];
+      assert.ok(topMembers.length > 0, 'expected commenters in the fixture range');
+      for (const member of topMembers) {
+        assert.ok(!('email' in member), 'top_members rows must not carry member email');
+      }
+    });
+
+    it('accepts date_from and date_to range parameters and returns previous_totals', async function () {
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
+        .expectStatus(200);
+
+      const overview = body.stats[0];
+      assert.ok(overview.previous_totals);
+      assert.equal(typeof overview.previous_totals.comments, 'number');
+    });
+
+    it('executes day buckets with a non-UTC half-hour offset', async function () {
+      await addAnalyticsComment('2026-01-01T00:00:00.000Z', 0);
+      await addAnalyticsComment('2026-01-01T18:45:00.000Z', 0);
+      await addAnalyticsComment('2026-01-02T18:00:00.000Z', 1);
+
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-01-30&timezone=Asia/Kolkata')
+        .expectStatus(200);
+
+      const overview = body.stats[0];
+      assert.equal(overview.series_aggregation, 'day');
+      assert.deepEqual(
+        overview.series.filter((row) => row.count > 0),
+        [
+          { date: '2026-01-01', count: 1, commenters: 1, reported: 0 },
+          { date: '2026-01-02', count: 2, commenters: 2, reported: 0 },
+        ],
+      );
+    });
+
+    it('executes Monday-based week buckets with a non-UTC half-hour offset', async function () {
+      await addAnalyticsComment('2026-01-04T19:00:00.000Z', 0);
+      await addAnalyticsComment('2026-01-06T00:00:00.000Z', 0);
+      await addAnalyticsComment('2026-01-11T18:45:00.000Z', 1);
+
+      const { body } = await agent
+        .get('/stats/comments/?date_from=2026-01-01&date_to=2026-04-30&timezone=Asia/Kolkata')
+        .expectStatus(200);
+
+      const overview = body.stats[0];
+      assert.equal(overview.series_aggregation, 'week');
+      assert.deepEqual(
+        overview.series.filter((row) => row.count > 0),
+        [
+          { date: '2026-01-05', count: 2, commenters: 1, reported: 0 },
+          { date: '2026-01-12', count: 1, commenters: 1, reported: 0 },
+        ],
+      );
     });
   });
 });

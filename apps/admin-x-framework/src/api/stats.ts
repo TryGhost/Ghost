@@ -1,4 +1,4 @@
-import { createQuery, createQueryWithId } from '../utils/api/hooks';
+import { Meta, createQuery, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
@@ -270,6 +270,55 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
 export const useSubscriptionStats = createQuery<SubscriptionStatsResponseType>({
   dataType: subscriptionStatsDataType,
   path: '/stats/subscriptions/',
+});
+
+// Comments analytics overview
+
+export type CommentsOverviewTotals = {
+  comments: number;
+  commenters: number;
+  reported: number;
+};
+
+export type CommentsOverviewSeriesItem = {
+  date: string;
+  count: number;
+  commenters: number;
+  reported: number;
+};
+
+export type CommentsOverviewTopPost = {
+  id: string;
+  title: string;
+  slug: string;
+  count: number;
+};
+
+export type CommentsOverviewTopMember = {
+  id: string;
+  name: string | null;
+  count: number;
+};
+
+export type CommentsOverview = {
+  totals: CommentsOverviewTotals;
+  previous_totals: CommentsOverviewTotals | null;
+  series: CommentsOverviewSeriesItem[];
+  series_aggregation: 'day' | 'week' | 'month';
+  top_posts: CommentsOverviewTopPost[];
+  top_members: CommentsOverviewTopMember[];
+};
+
+export type CommentsOverviewResponseType = {
+  stats: CommentsOverview[];
+  meta?: Meta;
+};
+
+const commentsOverviewDataType = 'CommentsOverviewResponseType';
+
+export const useCommentsOverview = createQuery<CommentsOverviewResponseType>({
+  dataType: commentsOverviewDataType,
+  path: '/stats/comments/',
 });
 
 export const usePostStats = createQueryWithId<PostStatsResponseType>({

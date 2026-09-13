@@ -1,4 +1,5 @@
 const statsService = require('../../services/stats');
+const { validateDateRangeOptions } = require('../../services/stats/utils/date-utils');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -434,6 +435,27 @@ const controller = {
       return {
         data: [memberCounts],
       };
+    },
+  },
+  commentsOverview: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['date_from', 'date_to', 'timezone'],
+    validation(frame) {
+      validateDateRangeOptions(frame.options);
+    },
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    // Deliberately uncached: the api-framework pipeline serves a cache hit
+    // before it runs the permissions stage, so caching a response that only
+    // comment-permission holders may see would hand it to any authenticated
+    // Admin API caller.
+    async query(frame) {
+      const overview = await statsService.api.getCommentsOverview(frame.options);
+      return { data: [overview] };
     },
   },
   topSourcesGrowth: {
