@@ -27,6 +27,10 @@ module.exports = {
     return require('./static');
   },
 
+  get routeMarkdown() {
+    return require('./entry/markdown').serveRouteMdRequest;
+  },
+
   get unsubscribe() {
     return require('./unsubscribe');
   },
