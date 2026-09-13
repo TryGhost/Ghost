@@ -14,6 +14,21 @@ const NEWSLETTERS_DESTINATION = 'newsletters';
 const NEWSLETTERS_ROUTE_WITH_AUTOMATIONS = '/settings/emails';
 const NEWSLETTERS_ROUTE = '/settings/newsletters';
 
+// Not a route: asks Admin to go back to the page the user was on before the
+// billing screen. Sent by the payment page's return flow after a successful
+// payment, so a "Pay now" click from e.g. the editor lands back in the editor.
+const PREVIOUS_PAGE_DESTINATION = 'previousPage';
+
+// Written by the React admin's dunning "Pay now" CTAs (apps/admin/src/dunning)
+// with the route the CTA was clicked on; consumed once per payment return.
+const PAY_RETURN_ROUTE_STORAGE_KEY = 'ghost-dunning-pay-return-route';
+
+// Written when the billing app reports a completed payment (its previousPage
+// request only follows one); read by the React admin's dunning UI so the
+// warnings stand down immediately instead of lingering until the
+// webhook-settled subscription state arrives seconds later.
+const DUNNING_PAYMENT_SETTLED_STORAGE_KEY = 'ghost-dunning-payment-settled-at';
+
 // Approved destinations the Billing app may request Ghost Admin to navigate to,
 // mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
 // Billing app never sends raw URLs or routes. A null-prototype, frozen object is
@@ -132,6 +147,24 @@ export default class BillingService extends Service {
             return;
         }
 
+        if (destination === PREVIOUS_PAGE_DESTINATION) {
+            this._markDunningPaymentSettled();
+
+            // Still only semantic navigation: no route or URL crosses the
+            // iframe boundary — the Admin side records where "Pay now" was
+            // clicked. Without a recorded route (a direct deep link to the
+            // payment page) the billing overview is the fallback; never
+            // history.back(), whose previous entry can lie outside Admin.
+            const returnRoute = this._takePayNowReturnRoute();
+
+            if (returnRoute) {
+                this.router.transitionTo(returnRoute);
+            } else {
+                this.router.transitionTo('pro');
+            }
+            return;
+        }
+
         const route = this._resolveAdminDestinationRoute(destination);
 
         if (!route) {
@@ -139,6 +172,29 @@ export default class BillingService extends Service {
         }
 
         this.router.transitionTo(route);
+    }
+
+    _markDunningPaymentSettled() {
+        try {
+            window.sessionStorage.setItem(
+                DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
+                new Date().toISOString()
+            );
+        } catch (e) {
+            // Without storage the warnings stand down when the refreshed
+            // subscription state arrives instead
+        }
+    }
+
+    _takePayNowReturnRoute() {
+        try {
+            const route = window.sessionStorage.getItem(PAY_RETURN_ROUTE_STORAGE_KEY);
+            window.sessionStorage.removeItem(PAY_RETURN_ROUTE_STORAGE_KEY);
+            return route && route.startsWith('/') ? route : null;
+        } catch (e) {
+            // Storage can be unavailable; fall back to the billing overview
+            return null;
+        }
     }
 
     _resolveAdminDestinationRoute(destination) {
