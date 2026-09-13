@@ -798,7 +798,9 @@ describe('MailgunClient', function () {
 
       const mailgunClient = new MailgunClient({ config, settings });
 
-      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, { maxEvents });
+      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, {
+        maxEvents,
+      });
       assert.equal(counter.batches, 2);
       assert.equal(counter.events, 6);
       assert.equal(firstPageMock.isDone(), true);
@@ -844,7 +846,9 @@ describe('MailgunClient', function () {
 
       const mailgunClient = new MailgunClient({ config, settings });
 
-      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, { maxEvents });
+      await mailgunClient.fetchEvents(MAILGUN_OPTIONS, counter.batchHandler, {
+        maxEvents,
+      });
       assert.equal(counter.batches, 1);
       assert.equal(counter.events, 4);
       assert.equal(firstPageMock.isDone(), true);
@@ -972,6 +976,7 @@ describe('MailgunClient', function () {
         emailId: 'testEmailId',
         providerId: 'testProviderId',
         timestamp: new Date('2021-02-25T17:54:22.000Z'),
+        bot: null,
         error: null,
         id: 'pl271FzxTTmGRW8Uj3dUWw',
       });
@@ -1034,6 +1039,7 @@ describe('MailgunClient', function () {
         emailId: undefined,
         providerId: 'testProviderId',
         timestamp: new Date('2021-02-25T17:54:22.000Z'),
+        bot: null,
         error: {
           code: 605,
           enhancedCode: null,
@@ -1107,6 +1113,7 @@ describe('MailgunClient', function () {
         emailId: undefined,
         providerId: 'testProviderId',
         timestamp: new Date('2021-02-25T17:54:22.000Z'),
+        bot: null,
         error: {
           code: 451,
           enhancedCode: '4.7.652',
@@ -1115,6 +1122,51 @@ describe('MailgunClient', function () {
         },
         id: 'pl271FzxTTmGRW8Uj3dUWw',
       });
+    });
+
+    it('normalizes bot flag when present', function () {
+      const mailgunClient = new MailgunClient({ config, settings });
+
+      for (const botType of ['generic', 'apple', 'gmail']) {
+        const event = {
+          id: 'test-id',
+          event: 'opened',
+          recipient: 'test-recipient@example.com',
+          timestamp: 1614275662,
+          message: {
+            headers: {
+              'message-id': 'testProviderId',
+            },
+          },
+          'client-info': {
+            bot: botType,
+          },
+        };
+        const result = mailgunClient.normalizeEvent(event);
+        assert.equal(result.bot, botType);
+      }
+    });
+
+    it('sets bot to null when client-info.bot is missing or empty', function () {
+      const mailgunClient = new MailgunClient({ config, settings });
+
+      const eventWithoutBot = {
+        id: 'test-id',
+        event: 'opened',
+        recipient: 'test-recipient@example.com',
+        timestamp: 1614275662,
+        message: {
+          headers: {
+            'message-id': 'testProviderId',
+          },
+        },
+        'client-info': {
+          bot: '   ',
+        },
+      };
+      const result = mailgunClient.normalizeEvent(eventWithoutBot);
+
+      assert.equal(result.bot, null);
     });
   });
 
