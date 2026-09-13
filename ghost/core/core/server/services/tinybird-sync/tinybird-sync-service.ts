@@ -11,7 +11,7 @@ const BATCH_SIZE = 5000;
 // This should be a little less than the maximum, because rows are chunked by
 // JSON line, not bytes strictly.
 const MAX_PAYLOAD_BYTES = 9 * 1024 * 1024;
-const REQUEST_TIMEOUT_MS = 60 * 1000;
+const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 
 type Logger = {
   error(error: unknown, message?: string): void;
