@@ -270,18 +270,20 @@ export default class Debug extends Component {
         this.analyticsStatus = result;
 
         // Parse dates
-        for (const type of Object.keys(result)) {
+        for (const type of ['latest', 'latestOpened', 'missing', 'scheduled']) {
             if (!result[type]) {
                 result[type] = {};
             }
             let object = result[type];
-            for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp']) {
+            for (const key of ['lastStarted', 'lastBegin', 'lastEventTimestamp', 'fetchedThrough']) {
                 if (object[key]) {
                     object[key] = moment.utc(object[key]).format('DD MMM, YYYY, HH:mm:ss.SSS [UTC]');
                 } else {
                     object[key] = 'N/A';
                 }
             }
+
+            object.lag = this.formatIngestionLag(object.lagSeconds);
 
             if (object.schedule) {
                 object = object.schedule;
@@ -294,6 +296,20 @@ export default class Debug extends Component {
                 }
             }
         }
+    }
+
+    formatIngestionLag(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) {
+            return 'N/A';
+        }
+        const duration = moment.duration(seconds, 'seconds');
+        return [
+            [Math.floor(duration.asDays()), 'd'],
+            [duration.hours(), 'h'],
+            [duration.minutes(), 'm'],
+            [duration.seconds(), 's']
+        ].filter(([value]) => value > 0)
+            .map(([value, unit]) => `${value}${unit}`).join(' ') || '0s';
     }
 
     @action
