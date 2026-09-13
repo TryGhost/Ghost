@@ -37,13 +37,23 @@ export function FloatingFormatToolbar({
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
-    const showToolbarIfHidden = React.useCallback((e) => {
+    const showToolbarIfHidden = React.useCallback(() => {
         if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
             toolbarRef.current.style.opacity = '1';
         }
     }, [toolbarItemType]);
 
+    const showToolbarIfHiddenRef = React.useRef(showToolbarIfHidden);
+    React.useLayoutEffect(() => {
+        showToolbarIfHiddenRef.current = showToolbarIfHidden;
+    }, [showToolbarIfHidden]);
+
+    const isMouseDown = React.useRef(false);
+
     React.useEffect(() => {
+        const onMouseDown = () => { isMouseDown.current = true; };
+        const onMouseUp = () => { isMouseDown.current = false; };
+
         const toggle = (e) => {
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
@@ -54,20 +64,39 @@ export function FloatingFormatToolbar({
                     });
 
                     if (selectedNodeMatchesTarget) {
-                        showToolbarIfHidden(e);
+                        showToolbarIfHiddenRef.current();
                     }
                 }
             });
         };
 
+        const onSelectionChange = debounce(() => {
+            if (isMouseDown.current) {
+                return;
+            }
+            editor.getEditorState().read(() => {
+                const selection = $getSelection();
+                if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+                    showToolbarIfHiddenRef.current();
+                }
+            });
+        }, 10);
+
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('selectionchange', onSelectionChange);
         document.addEventListener('mouseup', toggle); // desktop
         document.addEventListener('touchend', toggle); // mobile
 
         return () => {
+            onSelectionChange.cancel();
+            document.removeEventListener('mousedown', onMouseDown);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('selectionchange', onSelectionChange);
             document.removeEventListener('mouseup', toggle); // desktop
             document.removeEventListener('touchend', toggle); // mobile
         };
-    }, [editor, showToolbarIfHidden]);
+    }, [editor]);
 
     // clear out toolbar when use removes selected content
     React.useEffect(() => {
@@ -154,6 +183,8 @@ export function FloatingFormatToolbar({
                 isVisible={!!toolbarItemType}
                 shouldReposition={toolbarItemType !== toolbarItemTypes.text} // format toolbar shouldn't reposition when applying formats
                 toolbarRef={toolbarRef}
+                targetElem={null}
+                onReposition={undefined}
             >
                 {isSnippetToolbar && (
                     <SnippetActionToolbar
