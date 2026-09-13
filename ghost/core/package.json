@@ -79,7 +79,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.1079.0",
     "@breejs/later": "catalog:",
-    "@extractus/oembed-extractor": "3.2.1",
+    "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",

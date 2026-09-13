@@ -221,6 +221,9 @@ catalogs:
     '@eslint/js':
       specifier: 9.39.5
       version: 9.39.5
+    '@extractus/oembed-extractor':
+      specifier: 6.0.0
+      version: 6.0.0
     '@faker-js/faker':
       specifier: 10.5.0
       version: 10.5.0
@@ -2422,8 +2425,8 @@ importers:
         specifier: 'catalog:'
         version: 4.2.0
       '@extractus/oembed-extractor':
-        specifier: 3.2.1
-        version: 3.2.1(encoding@0.1.13)
+        specifier: 'catalog:'
+        version: 6.0.0
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.5.0
@@ -6263,9 +6266,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@extractus/oembed-extractor@3.2.1':
-    resolution: {integrity: sha512-ZwOY/SFqDph/1J4KfTTOKgGcy5xIrOSkK8b5KDHyoIg8AZ6+uEQ5l7SSNQskc4RxlLZGk+CBNOuRUGfkdPhKLA==}
-    engines: {node: '>= 15'}
+  '@extractus/oembed-extractor@6.0.0':
+    resolution: {integrity: sha512-CQz0BwCZ6cv9KqSVLacOpPT5h0FgkWFO3krddAjv2FOgkDiVSNK2iHjESXzqdu9ttHZ0dmI6KtuY80ivtzXucA==}
 
   '@faker-js/faker@10.4.0':
     resolution: {integrity: sha512-sDBWI3yLy8EcDzgobvJTWq1MJYzAkQdpjXuPukga9wXonhpMRvd1Izuo2Qgwey2OiEoRIBr35RMU9HJRoOHzpw==}
@@ -12898,9 +12900,6 @@ packages:
 
   cron-validate@1.4.5:
     resolution: {integrity: sha512-nKlOJEnYKudMn/aNyNH8xxWczlfpaazfWV32Pcx/2St51r2bxWbGhZD7uwzMcRhunA/ZNL+Htm/i0792Z59UMQ==}
-
-  cross-fetch@4.1.0:
-    resolution: {integrity: sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==}
 
   cross-spawn@6.0.6:
     resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
@@ -25546,11 +25545,11 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@extractus/oembed-extractor@3.2.1(encoding@0.1.13)':
+  '@extractus/oembed-extractor@6.0.0':
     dependencies:
-      cross-fetch: 4.1.0(encoding@0.1.13)
+      linkedom: 0.18.13
     transitivePeerDependencies:
-      - encoding
+      - canvas
 
   '@faker-js/faker@10.4.0': {}
 
@@ -34071,12 +34070,6 @@ snapshots:
   cron-validate@1.4.5:
     dependencies:
       yup: 0.32.9
-
-  cross-fetch@4.1.0(encoding@0.1.13):
-    dependencies:
-      node-fetch: 2.7.0(encoding@0.1.13)
-    transitivePeerDependencies:
-      - encoding
 
   cross-spawn@6.0.6:
     dependencies:

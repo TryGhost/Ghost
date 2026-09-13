@@ -777,4 +777,90 @@ describe('External Request', function () {
       });
     });
   });
+
+  describe('fetch', function () {
+    afterEach(async function () {
+      await configUtils.restore();
+      sinon.restore();
+      nock.cleanAll();
+    });
+
+    it('returns a Response instead of throwing on HTTP errors', async function () {
+      nock('http://some-website.com')
+        .get('/endpoint/')
+        .matchHeader('user-agent', 'Test/1.0')
+        .reply(404, '{"error":"missing"}', { 'content-type': 'application/json' });
+
+      const res = await externalRequest.fetch('http://some-website.com/endpoint/', {
+        headers: { 'user-agent': 'Test/1.0' },
+      });
+
+      assert.ok(res instanceof Response);
+      assert.equal(res.status, 404);
+      assert.equal(res.ok, false);
+      assert.equal(res.url, 'http://some-website.com/endpoint/');
+      assert.equal(res.headers.get('content-type'), 'application/json');
+      assert.deepEqual(await res.json(), { error: 'missing' });
+    });
+
+    it('keeps repeated response headers separate', async function () {
+      nock('http://some-website.com')
+        .get('/endpoint/')
+        .reply(200, 'Response', {
+          'set-cookie': ['a=1; Expires=Wed, 21 Oct 2026 07:28:00 GMT', 'b=2'],
+        });
+
+      const res = await externalRequest.fetch('http://some-website.com/endpoint/');
+
+      assert.deepEqual(res.headers.getSetCookie(), [
+        'a=1; Expires=Wed, 21 Oct 2026 07:28:00 GMT',
+        'b=2',
+      ]);
+    });
+
+    it('blocks requests that resolve to a private IP', async function () {
+      dnsPromises.lookup.restore?.();
+      sinon.stub(dnsPromises, 'lookup').resolves({ address: '192.168.0.1', family: 4 });
+
+      const requestMock = nock('http://some-website.com').get('/endpoint/').reply(200, 'Response');
+
+      await assert.rejects(externalRequest.fetch('http://some-website.com/endpoint/'), {
+        message: 'URL resolves to a non-permitted private IP block',
+      });
+      assert.equal(requestMock.isDone(), false);
+    });
+
+    it('blocks redirects that resolve to a private IP', async function () {
+      dnsPromises.lookup.restore?.();
+      sinon.stub(dnsPromises, 'lookup').callsFake(async (hostname) => {
+        return {
+          address: hostname === 'someredirectedurl.com' ? '192.168.0.1' : '123.123.123.123',
+          family: 4,
+        };
+      });
+
+      const requestMock = nock('http://some-website.com')
+        .get('/endpoint/')
+        .reply(301, '', { location: 'http://someredirectedurl.com/files/' });
+      const redirectMock = nock('http://someredirectedurl.com')
+        .get('/files/')
+        .reply(200, 'Response');
+
+      await assert.rejects(externalRequest.fetch('http://some-website.com/endpoint/'), {
+        message: 'URL resolves to a non-permitted private IP block',
+      });
+      assert.equal(requestMock.isDone(), true);
+      assert.equal(redirectMock.isDone(), false);
+    });
+
+    it('aborts when the signal fires', async function () {
+      nock('http://some-website.com').get('/endpoint/').delay(1000).reply(200, 'Response');
+
+      await assert.rejects(
+        externalRequest.fetch('http://some-website.com/endpoint/', {
+          signal: AbortSignal.timeout(50),
+        }),
+      );
+    });
+  });
 });
