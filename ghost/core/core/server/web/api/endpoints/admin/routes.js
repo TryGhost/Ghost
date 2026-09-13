@@ -507,6 +507,14 @@ module.exports = function apiRoutes() {
   // ## Actions
   router.get('/actions', mw.authAdminApi, http(api.actions.browse));
 
+  // ## Mail
+  router.post(
+    '/mail/test',
+    shared.middleware.brute.previewEmailLimiter,
+    mw.authAdminApi,
+    http(api.mail.sendTestEmail),
+  );
+
   // ## Email Preview
   router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.read));
   // preview sending have an additional rate limiter to prevent abuse
