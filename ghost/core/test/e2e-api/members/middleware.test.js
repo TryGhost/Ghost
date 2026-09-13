@@ -118,6 +118,47 @@ describe('Comments API', function () {
       member = await models.Member.findOne({ id: member.id }, { require: true });
       assert.equal(member.get('enable_updates_and_announcements'), false);
     });
+
+    it('does not let a free member add a paid-only newsletter', async function () {
+      const member = await models.Member.findOne(
+        { id: fixtureManager.get('members', 0).id },
+        { require: true, withRelated: ['newsletters'] },
+      );
+      assert.equal(member.get('status'), 'free', 'This test requires a free member');
+      const current = member.related('newsletters').models.map((n) => ({ id: n.id }));
+
+      const paidOnly = await models.Newsletter.add(
+        {
+          name: 'Paid-only newsletter',
+          visibility: 'paid',
+          subscribe_on_signup: false,
+          sort_order: 100,
+        },
+        { context: { internal: true } },
+      );
+
+      try {
+        sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+        const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
+
+        await membersAgent
+          .put(`/api/member/newsletters/?uuid=${member.get('uuid')}&key=${hmac}`)
+          .body({ newsletters: [...current, { id: paidOnly.id }] })
+          .expectStatus(200);
+
+        const after = await models.Member.findOne(
+          { id: member.id },
+          { require: true, withRelated: ['newsletters'] },
+        );
+        const ids = after.related('newsletters').models.map((n) => n.id);
+        assert.ok(!ids.includes(paidOnly.id), 'the paid-only newsletter is not added');
+        for (const { id } of current) {
+          assert.ok(ids.includes(id), 'the existing newsletters are kept');
+        }
+      } finally {
+        await models.Newsletter.destroy({ id: paidOnly.id, context: { internal: true } });
+      }
+    });
   });
 
   describe('when authenticated', function () {

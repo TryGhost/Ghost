@@ -810,7 +810,9 @@ module.exports = class RouterController {
 
     if (metadata.newsletters) {
       metadata.newsletters = JSON.stringify(
-        await this._validateNewsletters(JSON.parse(metadata.newsletters)),
+        await this._validateNewsletters(JSON.parse(metadata.newsletters), {
+          allowPaid: type === 'subscription',
+        }),
       );
     }
 
@@ -1097,7 +1099,9 @@ module.exports = class RouterController {
       labels: req.body.labels,
       name: req.body.name,
       reqIp: req.ip ?? undefined,
-      newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
+      newsletters: await this._validateNewsletters(req.body?.newsletters ?? [], {
+        allowPaid: Boolean(giftToken),
+      }),
       attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
       ...(giftToken ? { giftToken } : {}),
     };
@@ -1146,9 +1150,11 @@ module.exports = class RouterController {
    * Validates the newsletters in the request body
    * @param {object[]} requestedNewsletters
    * @param {string} requestedNewsletters[].name
+   * @param {object} [options]
+   * @param {boolean} [options.allowPaid] Keep paid-only newsletters, for signups that won't be free members
    * @returns {Promise<object[] | undefined>} The validated newsletters
    */
-  async _validateNewsletters(requestedNewsletters) {
+  async _validateNewsletters(requestedNewsletters, { allowPaid = false } = {}) {
     if (!requestedNewsletters || requestedNewsletters.length === 0) {
       return undefined;
     }
@@ -1169,7 +1175,7 @@ module.exports = class RouterController {
     );
     const matchedNewsletters = await this._newslettersService.getAll({
       filter: `name:[${requestedNewsletterNamesFilter}]`,
-      columns: ['id', 'name', 'status'],
+      columns: ['id', 'name', 'status', 'visibility'],
     });
 
     // Check for invalid newsletters
@@ -1195,8 +1201,10 @@ module.exports = class RouterController {
       });
     }
 
+    // Free members only get members-visibility newsletters, matching the default signup path
     return matchedNewsletters
       .filter((newsletter) => newsletter.status === 'active')
+      .filter((newsletter) => allowPaid || newsletter.visibility === 'members')
       .map((newsletter) => ({ id: newsletter.id }));
   }
 

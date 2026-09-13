@@ -385,13 +385,9 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
       'enable_comment_notifications',
       'enable_updates_and_announcements',
     );
-    const options = {
-      id: memberData.id,
-      withRelated: ['newsletters'],
-    };
-
-    const updatedMember = await membersService.api.members.update(data, options);
-    const updatedMemberData = _.pick(updatedMember.toJSON(), [
+    // Via the account service, which decides what a member may change about themselves
+    const updatedMember = await membersService.api.account.edit(data, memberData.id);
+    const updatedMemberData = _.pick(updatedMember, [
       'uuid',
       'email',
       'name',
