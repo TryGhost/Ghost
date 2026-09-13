@@ -262,6 +262,13 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
   'ember-svg-jar>cheerio': 1.2.0
   'juice>cheerio': 0.22.0
+  # Three copies of undici ended up in the tree — and in the production image:
+  # jsdom pulls 8.x, cheerio 1.x pulls 7.x and @elastic/transport (via
+  # @tryghost/logging) pulls 6.x. Each of them only touches API that is stable
+  # across those majors (Pool/buildConnector, Client.compose + interceptors,
+  # errors), so collapse them onto a single copy. This also supersedes the
+  # `undici@<6.24.0` advisory override, since nothing resolves to 6.x anymore.
+  undici: 8.10.0
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
@@ -302,7 +309,6 @@ overrides:
   'tmp@<=0.2.3': ^0.2.4
   'tough-cookie@<4.1.3': ^4.1.3
   'trim@<0.0.3': ^0.0.3
-  'undici@<6.24.0': ^6.24.0
   'underscore@>=1.3.2 <1.12.1': ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.9.0
   # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
