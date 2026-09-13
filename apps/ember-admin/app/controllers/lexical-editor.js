@@ -889,6 +889,33 @@ export default class LexicalEditorController extends Controller {
         return post;
     }
 
+    _syncSecondaryLexicalBaseline(post) {
+        if (!post) {
+            return;
+        }
+
+        const lexical = post.get('lexical');
+        if (!lexical) {
+            return;
+        }
+
+        // Keep the dirty-check baseline in sync with the last successful save
+        post.set('secondaryLexicalState', lexical);
+
+        // Keep the secondary editor in sync
+        const editorInstance = this.secondaryEditorAPI?.editorInstance;
+        if (!editorInstance) {
+            return;
+        }
+
+        try {
+            const state = editorInstance.parseEditorState(lexical);
+            editorInstance.setEditorState(state);
+        } catch (e) {
+            // Save already succeeded; string baseline is updated even if secondary editor instance sync fails
+        }
+    }
+
     @action
     afterSave(post) {
         this.notifications.closeAlerts('post.save');
@@ -914,6 +941,8 @@ export default class LexicalEditorController extends Controller {
         if (titlesMatch && bodiesMatch) {
             this.set('hasDirtyAttributes', false);
         }
+
+        this._syncSecondaryLexicalBaseline(post);
     }
 
     @task
@@ -1495,7 +1524,7 @@ export default class LexicalEditorController extends Controller {
         secondaryLexicalChildNodes.forEach(child => child.direction = null);
 
         // Determine if main editor (scratch) has diverged from secondary editor
-        // (i.e. manual changes have been made since opening the editor)
+        // (i.e. manual changes have been made since opening the editor or last successful save) 
         const isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
 
         // Determine if main editor (scratch) has diverged from saved lexical
