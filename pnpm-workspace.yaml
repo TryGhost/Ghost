@@ -145,7 +145,7 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
-  got: 15.1.0
+  got: 16.0.0
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
