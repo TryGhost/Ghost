@@ -8,7 +8,7 @@ import {
   settingsPublishDateNote,
   settingsPublishTime,
 } from '@tryghost/test-data/selectors/editor';
-import { DateTimePicker } from '@/editor/publish/components/date-time-picker';
+import { DateTimePicker } from '@/editor/date-time-picker';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
