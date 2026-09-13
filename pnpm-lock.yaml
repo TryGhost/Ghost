@@ -318,11 +318,11 @@ catalogs:
       specifier: 3.2.2
       version: 3.2.2
     '@tryghost/color-utils':
-      specifier: 0.2.20
-      version: 0.2.20
+      specifier: 0.2.21
+      version: 0.2.21
     '@tryghost/custom-fonts':
-      specifier: 1.0.11
-      version: 1.0.11
+      specifier: 1.0.12
+      version: 1.0.12
     '@tryghost/debug':
       specifier: 2.3.14
       version: 2.3.14
@@ -330,8 +330,8 @@ catalogs:
       specifier: 3.3.15
       version: 3.3.15
     '@tryghost/helpers':
-      specifier: 1.1.106
-      version: 1.1.106
+      specifier: 1.1.107
+      version: 1.1.107
     '@tryghost/metrics':
       specifier: 3.6.0
       version: 3.6.0
@@ -348,17 +348,17 @@ catalogs:
       specifier: 4.0.7
       version: 4.0.7
     '@tryghost/string':
-      specifier: 0.3.5
-      version: 0.3.5
+      specifier: 0.3.6
+      version: 0.3.6
     '@tryghost/timezone-data':
-      specifier: 1.0.0
-      version: 1.0.0
+      specifier: 1.0.1
+      version: 1.0.1
     '@tryghost/tpl':
       specifier: 2.3.14
       version: 2.3.14
     '@tryghost/url-utils':
-      specifier: 5.2.9
-      version: 5.2.9
+      specifier: 5.3.0
+      version: 5.3.0
     '@tryghost/validator':
       specifier: 3.2.14
       version: 3.2.14
@@ -966,10 +966,10 @@ importers:
         version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.11
+        version: 1.0.12
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -999,10 +999,10 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 1.0.0
+        version: 1.0.1
       '@uiw/react-codemirror':
         specifier: 'catalog:'
         version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1214,7 +1214,7 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -1524,13 +1524,13 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/ember-promise-modals':
         specifier: 2.0.1
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(postcss@8.5.26)(supports-color@10.2.2)
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:*
         version: link:../../koenig/kg-clean-basic-html
@@ -1551,10 +1551,10 @@ importers:
         version: link:../../packages/nql-string
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 1.0.0
+        version: 1.0.1
       animejs:
         specifier: 3.2.2
         version: 3.2.2
@@ -2472,13 +2472,13 @@ importers:
         version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/config-url-helpers':
-        specifier: 1.0.27
-        version: 1.0.27
+        specifier: 1.0.28
+        version: 1.0.28
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.11
+        version: 1.0.12
       '@tryghost/database-info':
         specifier: 2.3.14
         version: 2.3.14
@@ -2496,16 +2496,16 @@ importers:
         version: 3.3.14
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/html-to-plaintext':
-        specifier: 1.0.11
-        version: 1.0.11
+        specifier: 1.0.12
+        version: 1.0.12
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/image-transform':
-        specifier: 1.4.17
-        version: 1.4.17(@types/node@22.20.1)
+        specifier: 1.4.18
+        version: 1.4.18(@types/node@22.20.1)
       '@tryghost/job-manager':
         specifier: 1.0.9
         version: 1.0.9(supports-color@10.2.2)
@@ -2579,8 +2579,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0(express@4.22.2(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/referrer-parser':
-        specifier: 0.1.21
-        version: 0.1.21
+        specifier: 0.1.22
+        version: 0.1.22
       '@tryghost/request':
         specifier: 'catalog:'
         version: 4.0.7
@@ -2591,17 +2591,17 @@ importers:
         specifier: 3.3.14
         version: 3.3.14
       '@tryghost/social-urls':
-        specifier: 0.1.63
-        version: 0.1.63
+        specifier: 0.1.64
+        version: 0.1.64
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/tpl':
         specifier: 'catalog:'
         version: 2.3.14
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.2.9
+        version: 5.3.0
       '@tryghost/validator':
         specifier: 'catalog:'
         version: 3.2.14
@@ -3200,10 +3200,10 @@ importers:
         version: link:../kg-utils
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.2.9
+        version: 5.3.0
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
@@ -3264,7 +3264,7 @@ importers:
         version: 0.13.1(lexical@0.13.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -3796,10 +3796,10 @@ importers:
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -9646,14 +9646,14 @@ packages:
   '@tryghost/bunyan-rotating-filestream@0.0.20':
     resolution: {integrity: sha512-CUovHdDq9qNIlOKeebVCcqgVfkQq/+khzNd8pO3gwjCSrXGhkM9NrYyHP2YTJVKGPMx1vJvDiP3Be/6sgfSn/Q==}
 
-  '@tryghost/color-utils@0.2.20':
-    resolution: {integrity: sha512-0KLCQDX7TbJGKNihs+OB1+3hEvhdP4YXOKpdbqJlUkvEFdY+Gl1FlI4WL8wnn0v6oc1aOjvrKmva5BUT0pWtIg==}
+  '@tryghost/color-utils@0.2.21':
+    resolution: {integrity: sha512-em9ELsVlQkndYMztMvfVavpOiDbiAm59HFePW5EGHwK8+6X+EKDLUfuTdn1d3XQX/IZAuSCXT06h9kGmUlfHsw==}
 
-  '@tryghost/config-url-helpers@1.0.27':
-    resolution: {integrity: sha512-l7Tfy8BwYWu9PEdDWRLbqH3BdBqQhfD9V+1L4YGG3PsBj6V9V7b6yUJj9glZngusceS2bWHllA1ffCFV+XFvtQ==}
+  '@tryghost/config-url-helpers@1.0.28':
+    resolution: {integrity: sha512-66kkD9MDyNana+2ThBoFxvsb3NLPSnrRk47Kjjl+1RlwFBX88r1TVxT7rVuT2OmGlAMtbX+7rtT6RGu3NQo+ng==}
 
-  '@tryghost/custom-fonts@1.0.11':
-    resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
+  '@tryghost/custom-fonts@1.0.12':
+    resolution: {integrity: sha512-omEMGJx4V+HkOfEJOjZ2M8SRiMwn4z8eK4bJbkPHv98NK1VUVRiu9UGOhmM2IN+4hAGw2DdOWYKtZsEDVQa0Jg==}
 
   '@tryghost/database-info@0.3.35':
     resolution: {integrity: sha512-S9OapApwzdh3GS0d3m+KgwH7IhZII6b9Aw5I89HA5VJRPeo6HdaDXiZzSDNcFaUzpx1FFBR0kDu7G+IRPD0eFA==}
@@ -9688,11 +9688,11 @@ packages:
     peerDependencies:
       express: ^4.0.0 || ^5.0.0
 
-  '@tryghost/helpers@1.1.106':
-    resolution: {integrity: sha512-Yjrb/VLvRqgtMsiKXvuSRoVvAm2HJ6SJakdo25va4sU9sA7yXBSWWHkukE8q27Ty9R2fE5jEEWziIhrZy+Tkog==}
+  '@tryghost/helpers@1.1.107':
+    resolution: {integrity: sha512-vKZ3ubocx9f7bSaSbPYh0Bo6/dMQYvS3ZdMepoBqf+M6ulwco20DMmTix6kXrLxtyURzWGkTWj5ZnWome3+JFw==}
 
-  '@tryghost/html-to-plaintext@1.0.11':
-    resolution: {integrity: sha512-pCmCQLrZN+IqTUli07I+1oZGkZN4a6PDU/lqJ2DTe6Up86OmPOKePWUH43zzOGM5RO3aaRP1I3zUzfOW1iCFxA==}
+  '@tryghost/html-to-plaintext@1.0.12':
+    resolution: {integrity: sha512-eesKdrz6F/FhIoW0rnep/EOYkoSakE4g9uuWlD/gXN/QaA4fzPq7VnRjT0Al2Ivfz7noF0v85qhMj5aPe0+Yxg==}
 
   '@tryghost/http-cache-utils@2.3.14':
     resolution: {integrity: sha512-V/AhKvumGPVLTl2osrkcPzOqje4FFUCYPaiDgJ9Lzy4D4E/tBafJR3M/M5EAbM2cv1u2UVVdoc/npNWu9zRnTg==}
@@ -9700,8 +9700,8 @@ packages:
   '@tryghost/http-stream@2.3.15':
     resolution: {integrity: sha512-mAbqtPO/ZSj3SC/accLR/XCaveR2FcBXC0AFqLl/ejxfA8d70Cnl72fRbPq+fck/Am5EW2R1WG9ZHXcmw5aWqQ==}
 
-  '@tryghost/image-transform@1.4.17':
-    resolution: {integrity: sha512-+WipAbQ6gTOB9hbhmTDHW7tzaB1lPIRszoN+z1qV+vlI+cR/4qO70Ux+HkSYT9gt4WpxRZJZCBCk3+x4Nm0LhQ==}
+  '@tryghost/image-transform@1.4.18':
+    resolution: {integrity: sha512-dyYs5Zdmqx9wPOI63WNAeAgGnDOL/4QdYs7ZDaSWc0Ybz4qKs+F2k7ciHBdDtwRNyrnSNf1HZAOyv31hTvGaOA==}
 
   '@tryghost/jest-snapshot@2.3.14':
     resolution: {integrity: sha512-AJR7y+jzFfTotL8TnwJ57MUARZHVFifQBwRaJbzukP/XZvMUwUODhYUF3WvU0cY8yVp33eUdcHjnt3rkYWu2Ow==}
@@ -9762,8 +9762,8 @@ packages:
   '@tryghost/promise@2.3.14':
     resolution: {integrity: sha512-6M9S2/OEB2E6W2DT5ZgdaK5V0ICT1XWHtzxgFC9LYuUg6jscIIlyXVYPJP+uSSDLLCwLXe8NuO1N3Rl5lJKOxg==}
 
-  '@tryghost/referrer-parser@0.1.21':
-    resolution: {integrity: sha512-Uz7bj8IadLah1j9GgieGQ0VGytdOG6mIlYdbpNu1r8/o9pjR2IS4bt88tvwpGSPNb47P9NrGntGn+Le1W/90jg==}
+  '@tryghost/referrer-parser@0.1.22':
+    resolution: {integrity: sha512-c0T7PQl3w3JSbYZStx8RNclmWftfdNGPlqdFXXAm6Z2ykE18nRminnCBAixmkrbcRZujyRjkAH2f480Vf6BU9Q==}
     engines: {node: '>=16.0.0'}
 
   '@tryghost/request@4.0.7':
@@ -9779,21 +9779,21 @@ packages:
   '@tryghost/security@3.3.14':
     resolution: {integrity: sha512-7LsI78iWiYKumKpjBocm6Gpaa4egPDMRyM4YAmn3G+kHpSwsvzvKfi3ONO9Yp+pqGlYkDeFAPZRmb8xfxmUOaQ==}
 
-  '@tryghost/social-urls@0.1.63':
-    resolution: {integrity: sha512-TBbs65r2V39y4nWWGgE+TNDTdX7HL1bfa7Q+UAqHxrMaoZYFjd3N9GbrkvPuSR9+wFqDNlMrJZlx9uawz0tqmg==}
+  '@tryghost/social-urls@0.1.64':
+    resolution: {integrity: sha512-GXBKIeV4nnrrrwaEwn/EYqRTSuLN2tCVaBPEidvAUKuBcsT0HlvPYfsg7Fs93Diq3uyYCfqNpYFxbNKVjRrG8A==}
 
-  '@tryghost/string@0.3.5':
-    resolution: {integrity: sha512-Ov2UYOuU5QutDo/UECtkhHR3jdT4R/aNxzKFk0iaH0yiwxLnlqEB4QBBVnYYIN8zECNAazRzkygtdFSlSkuaoA==}
+  '@tryghost/string@0.3.6':
+    resolution: {integrity: sha512-aYlvmvicb4nj3QtvkIr8JsQqKks1mphlCWJVirNMAyxzKIHY6rJC1g4FjCOlTHUCtNDhJyxxUaT6UznVndY0ZQ==}
 
-  '@tryghost/timezone-data@1.0.0':
-    resolution: {integrity: sha512-A9483jAxE13ivnHdLK1kQYRaQYW+BcrKz33Nkdb59erNXiJYoaWx0HBAQoXKlySvrVX+wvVd9g1LzF44LgqidQ==}
+  '@tryghost/timezone-data@1.0.1':
+    resolution: {integrity: sha512-ppqbSaNfziN63yIn4TyXqvpTKVJvtkG6Y4IT6BOUxpPA9pb6zSH6UNDGTFizfspEu/KJ1l8qYrTX+eCV4J4yrA==}
     engines: {node: '>=18.0.0'}
 
   '@tryghost/tpl@2.3.14':
     resolution: {integrity: sha512-qKo+X3dwf99tT5R2PBNBrlHYsi8ijfjF29+UgCWVVPmcNkjS1FklHyBxE/UOjkFLB/bP+ROeSwukX55JXKawVw==}
 
-  '@tryghost/url-utils@5.2.9':
-    resolution: {integrity: sha512-kBQ9jbmxW8TcCEeoBBqi+s08SZGbjBykwEbty8fNb9Bmd/m/KIr1ihHXP1lDiWYgRgs5yMgncCq8jAty9OxOOQ==}
+  '@tryghost/url-utils@5.3.0':
+    resolution: {integrity: sha512-RClSF6ISlCvMtCMDe+pbvr2R4fMGEOYf4obzGc7EXF6Ry+UBIO11iAWH7R+4AWBA2yIGnr3kZ0HkSY76Z7nCtw==}
 
   '@tryghost/validator@3.2.14':
     resolution: {integrity: sha512-lC+7tG90UO2gGnJZ/wbE7PYVTGAOWx+ir6FnSgVhGRBdkI0OVu7K76Ump2ICkD3e6zdxNAieBbMygT+h+aRMSw==}
@@ -29290,14 +29290,14 @@ snapshots:
     dependencies:
       long-timeout: 0.1.1
 
-  '@tryghost/color-utils@0.2.20':
+  '@tryghost/color-utils@0.2.21':
     dependencies:
       '@types/color': 4.2.1
       color: 3.2.1
 
-  '@tryghost/config-url-helpers@1.0.27': {}
+  '@tryghost/config-url-helpers@1.0.28': {}
 
-  '@tryghost/custom-fonts@1.0.11': {}
+  '@tryghost/custom-fonts@1.0.12': {}
 
   '@tryghost/database-info@0.3.35': {}
 
@@ -29368,11 +29368,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/helpers@1.1.106':
+  '@tryghost/helpers@1.1.107':
     dependencies:
       lodash-es: 4.18.1
 
-  '@tryghost/html-to-plaintext@1.0.11':
+  '@tryghost/html-to-plaintext@1.0.12':
     dependencies:
       html-to-text: 8.2.1
       lodash: 4.18.1
@@ -29384,10 +29384,10 @@ snapshots:
       '@tryghost/errors': 3.3.14
       '@tryghost/request': 4.0.7
 
-  '@tryghost/image-transform@1.4.17(@types/node@22.20.1)':
+  '@tryghost/image-transform@1.4.18(@types/node@22.20.1)':
     dependencies:
       '@tryghost/errors': 3.3.14
-      fs-extra: 11.3.6
+      fs-extra: 11.4.0
     optionalDependencies:
       sharp: 0.35.3(@types/node@22.20.1)
     transitivePeerDependencies:
@@ -29535,7 +29535,7 @@ snapshots:
 
   '@tryghost/promise@2.3.14': {}
 
-  '@tryghost/referrer-parser@0.1.21': {}
+  '@tryghost/referrer-parser@0.1.22': {}
 
   '@tryghost/request@4.0.7':
     dependencies:
@@ -29558,20 +29558,20 @@ snapshots:
 
   '@tryghost/security@3.3.14':
     dependencies:
-      '@tryghost/string': 0.3.5
+      '@tryghost/string': 0.3.6
       bcryptjs: 3.0.3
 
-  '@tryghost/social-urls@0.1.63': {}
+  '@tryghost/social-urls@0.1.64': {}
 
-  '@tryghost/string@0.3.5':
+  '@tryghost/string@0.3.6':
     dependencies:
       unidecode: 1.1.0
 
-  '@tryghost/timezone-data@1.0.0': {}
+  '@tryghost/timezone-data@1.0.1': {}
 
   '@tryghost/tpl@2.3.14': {}
 
-  '@tryghost/url-utils@5.2.9':
+  '@tryghost/url-utils@5.3.0':
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
