@@ -1,5 +1,7 @@
 import React from 'react';
+import TrashIcon from '../../assets/icons/kg-trash.svg?react';
 import VisibilityIndicator from '../../assets/icons/kg-indicator-visibility.svg?react';
+import {Tooltip} from './Tooltip';
 import type {CardWidth} from '@tryghost/kg-default-nodes';
 
 const CARD_WIDTH_CLASSES: Partial<Record<CardWidth, string>> = {
@@ -25,7 +27,9 @@ interface CardWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
     isEditing?: boolean;
     isSelected?: boolean;
     isVisibilityActive?: boolean;
+    onDeleteClick?: (event: React.MouseEvent) => void;
     onIndicatorClick?: (event: React.MouseEvent) => void;
+    showDeleteButton?: boolean;
     wrapperStyle?: string;
 }
 
@@ -39,7 +43,9 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
     isEditing,
     isSelected,
     isVisibilityActive,
+    onDeleteClick,
     onIndicatorClick,
+    showDeleteButton,
     wrapperStyle,
     children,
     ...props
@@ -113,6 +119,24 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
                 data-kg-card-selected={isSelected}
                 {...props}
             >
+                {showDeleteButton && (
+                    <div className="not-kg-prose absolute right-2 top-2 z-[1001]" data-kg-allow-clickthrough="false" data-kg-mobile-card-delete>
+                        <button
+                            aria-label="Delete card"
+                            className="group relative flex size-9 cursor-pointer items-center justify-center rounded-md bg-white/95 text-grey-900 shadow-md transition hover:bg-white hover:text-black dark:bg-grey-950 dark:text-white dark:hover:bg-grey-900"
+                            data-testid="delete-card"
+                            type="button"
+                            onClick={onDeleteClick}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }}
+                        >
+                            <TrashIcon className="size-4 stroke-[2.5]" />
+                            <Tooltip label="Delete card" />
+                        </button>
+                    </div>
+                )}
                 {children}
             </div>
         </>

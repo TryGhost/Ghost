@@ -155,6 +155,37 @@ test.describe('Gallery card', async () => {
         `);
     });
 
+    test('can remove selected gallery card on mobile', async function ({browser}) {
+        const context = await browser.newContext({
+            hasTouch: true,
+            isMobile: true,
+            viewport: {
+                width: 390,
+                height: 844
+            }
+        });
+        const mobilePage = await context.newPage();
+
+        try {
+            await initialize({page: mobilePage});
+            await mobilePage.setViewportSize({width: 390, height: 844});
+            await focusEditor(mobilePage);
+            await insertCard(mobilePage, {cardName: 'gallery'});
+
+            await expect(mobilePage.locator('[data-kg-card="gallery"][data-kg-card-selected="true"]')).toBeVisible();
+            await expect(mobilePage.getByTestId('delete-card')).toBeVisible();
+
+            await mobilePage.getByTestId('delete-card').tap();
+
+            await expect(mobilePage.locator('[data-kg-card="gallery"]')).toHaveCount(0);
+            await assertHTML(mobilePage, html`
+                <p><br /></p>
+            `);
+        } finally {
+            await context.close();
+        }
+    });
+
     test('can upload images', async function () {
         const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
