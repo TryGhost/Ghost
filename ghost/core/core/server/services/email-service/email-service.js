@@ -29,9 +29,9 @@ const messages = {
   retryEmailNotFailed: 'Only failed emails can be retried',
 };
 
-// Resume scanner won't pick up `submitting` rows older than this. Rows beyond the cutoff
-// are flipped to `failed` on first boot so they surface in admin UI for operator review
-// rather than being silently resumed (and sending stale newsletters to current members).
+// Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
+// the cutoff are flipped to `failed` on first boot so they surface in admin UI for operator
+// review rather than being silently resumed (and sending stale newsletters to current members).
 // Override via `bulkEmail:resumeMaxAgeMs` in config.
 const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
@@ -223,79 +223,101 @@ class EmailService {
   }
 
   /**
-   * Boot-time scanner: resumes newsletter emails left in `submitting` after a
-   * previous container's interrupted send. Iterates sequentially; one failure
-   * does not skip others. Rows older than the configured max-age are flipped
-   * to `failed` (not resumed) so stale content does not get sent to current members.
+   * Boot-time scanner: recovers newsletter emails a previous container left without work.
+   * Two shapes, both resumed through the normal emailJob path:
+   *   - `submitting` — the send was cut off mid-flight.
+   *   - `pending` — dispatch was dropped from the in-memory job queue before the job ever
+   *     started, so no batch work exists and nothing else will ever pick the row up.
+   * Iterates sequentially; one failure does not skip others. Rows older than the configured
+   * max-age are flipped to `failed` (not resumed) so stale content does not get sent to
+   * current members.
    */
   async resumeInterruptedSends() {
     const maxAgeMs = this.#config?.get?.('bulkEmail:resumeMaxAgeMs') ?? DEFAULT_RESUME_MAX_AGE_MS;
     const cutoffIso = new Date(Date.now() - maxAgeMs).toISOString();
 
     // Stale rows: too old to safely resume. Flip to `failed` so they surface in admin UI
-    // for operator review instead of being silently left in `submitting` forever.
-    const stale = await this.#models.Email.findAll({
+    // for operator review instead of being silently stuck in their current status forever.
+    const staleSubmitting = await this.#models.Email.findAll({
       filter: `status:submitting+created_at:<'${cutoffIso}'`,
     });
-    const staleList = stale.models || stale;
-    for (const email of staleList) {
-      try {
-        const locked = await this.#batchSendingService.updateStatusLock(
-          this.#models.Email,
-          email.id,
-          'failed',
-          ['submitting'],
-        );
-        if (locked) {
-          logging.warn(
-            `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) — flipped to failed for operator review`,
+    const stalePending = await this.#models.Email.findAll({
+      filter: `status:pending+created_at:<'${cutoffIso}'`,
+    });
+    const staleGroups = [
+      { emails: staleSubmitting.models || staleSubmitting, status: 'submitting' },
+      { emails: stalePending.models || stalePending, status: 'pending' },
+    ];
+    for (const { emails, status } of staleGroups) {
+      for (const email of emails) {
+        try {
+          const locked = await this.#batchSendingService.updateStatusLock(
+            this.#models.Email,
+            email.id,
+            'failed',
+            [status],
           );
+          if (locked) {
+            logging.warn(
+              `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) — flipped to failed for operator review`,
+            );
+          }
+        } catch (e) {
+          logging.error(e);
         }
-      } catch (e) {
-        logging.error(e);
       }
     }
 
     // Fresh rows: within the cutoff. Resume through the normal emailJob path.
-    const emails = await this.#models.Email.findAll({
+    const freshSubmitting = await this.#models.Email.findAll({
       filter: `status:submitting+created_at:>'${cutoffIso}'`,
     });
-    const list = emails.models || emails;
-    if (staleList.length === 0 && list.length === 0) {
+    const freshPending = await this.#models.Email.findAll({
+      filter: `status:pending+created_at:>'${cutoffIso}'`,
+    });
+    const freshGroups = [
+      { emails: freshSubmitting.models || freshSubmitting, status: 'submitting' },
+      { emails: freshPending.models || freshPending, status: 'pending' },
+    ];
+    const staleCount = staleGroups.reduce((total, group) => total + group.emails.length, 0);
+    const freshCount = freshGroups.reduce((total, group) => total + group.emails.length, 0);
+    if (staleCount === 0 && freshCount === 0) {
       return;
     }
-    if (list.length > 0) {
+    if (freshCount > 0) {
       logging.info(
-        `Email resume: found ${list.length} email(s) in submitting status within max age (${maxAgeMs}ms)`,
+        `Email resume: found ${freshCount} pending or submitting email(s) within max age (${maxAgeMs}ms)`,
       );
     }
 
-    for (const email of list) {
-      try {
-        await this.#resumeOneEmail(email);
-      } catch (e) {
-        logging.error(e);
+    for (const { emails, status } of freshGroups) {
+      for (const email of emails) {
+        try {
+          await this.#resumeOneEmail(email, status);
+        } catch (e) {
+          logging.error(e);
+        }
       }
     }
 
     logging.info(
-      `Email resume scan complete: ${staleList.length} stale email(s) flipped to failed, ${list.length} fresh email(s) rescheduled`,
+      `Email resume scan complete: ${staleCount} stale email(s) flipped to failed, ${freshCount} fresh email(s) rescheduled`,
     );
   }
 
-  async #resumeOneEmail(email) {
+  async #resumeOneEmail(email, status) {
     const post = await email.getLazyRelation('post');
     const postStatus = post ? post.get('status') : null;
     const sendable = postStatus === 'published' || postStatus === 'sent';
 
     if (!sendable) {
       // Parent post was unpublished or deleted while the email was in flight.
-      // Can't resume — mark the email as failed so it stops showing as "submitting".
+      // Can't resume — mark the email as failed so it stops showing as unsent.
       const locked = await this.#batchSendingService.updateStatusLock(
         this.#models.Email,
         email.id,
         'failed',
-        ['submitting'],
+        [status],
       );
       if (locked) {
         logging.warn(
@@ -305,19 +327,22 @@ class EmailService {
       return;
     }
 
-    // Flip submitting -> pending so emailJob's status lock (['pending', 'failed']) admits it.
-    // If updateStatusLock returns undefined, another path raced us — just continue.
-    const locked = await this.#batchSendingService.updateStatusLock(
-      this.#models.Email,
-      email.id,
-      'pending',
-      ['submitting'],
-    );
-    if (!locked) {
-      logging.info(
-        `Email resume: ${email.id} status changed before lock could be taken — skipping`,
+    // `pending` is already what emailJob's status lock (['pending', 'failed']) admits, so
+    // only `submitting` needs flipping. If updateStatusLock returns undefined, another path
+    // raced us — leave it to whoever won.
+    if (status === 'submitting') {
+      const locked = await this.#batchSendingService.updateStatusLock(
+        this.#models.Email,
+        email.id,
+        'pending',
+        ['submitting'],
       );
-      return;
+      if (!locked) {
+        logging.info(
+          `Email resume: ${email.id} status changed before lock could be taken — skipping`,
+        );
+        return;
+      }
     }
 
     // Structured breadcrumb so post-incident timing/batch state is recoverable from logs.
