@@ -43,7 +43,7 @@
     "@tryghost/string": "catalog:",
     "@tryghost/url-utils": "catalog:",
     "handlebars": "4.7.9",
-    "juice": "12.1.1",
+    "juice": "catalog:",
     "luxon": "3.7.2"
   },
   "devDependencies": {

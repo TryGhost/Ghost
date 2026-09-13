@@ -126,6 +126,7 @@ catalog:
   bson-objectid: 2.0.4
   chai: 4.5.0
   chalk: 4.1.2
+  cheerio: 1.2.0
   clsx: 2.1.1
   concurrently: 10.0.4
   country-flag-icons: 1.6.20
@@ -149,6 +150,7 @@ catalog:
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
+  juice: 11.1.1
   knex: 2.4.2
   knex-migrator: 5.4.1
   lodash: 4.18.1
@@ -258,13 +260,15 @@ overrides:
   moment-timezone: 'catalog:'
   nwsapi: 2.2.24
   broccoli-persistent-filter: ^2.3.1
-  juice: 9.1.0
   ember-basic-dropdown: 6.0.2
   ember-in-viewport: 4.1.0
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.67.0
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
-  'ember-svg-jar>cheerio': 1.2.0
-  'juice>cheerio': 0.22.0
+  'ember-svg-jar>cheerio': 'catalog:'
+  # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
+  # and ghost/core share one copy instead of keeping two parsers resident - both
+  # only ever call `load`. See patchedDependencies for the matching slim import.
+  'juice>cheerio': 'catalog:'
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost/core links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
@@ -355,3 +359,11 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+# juice's lib/cheerio.js imports cheerio's main entry, which eagerly loads
+# parse5, undici and the whatwg encoding stack that juice never uses (~20MB RSS
+# per process). The patch redirects that one import to cheerio/slim; juice
+# already parses via htmlparser2, so output is unchanged. Re-create the patch
+# with `pnpm patch juice@<version>` when juice is bumped - and note juice 12+ is
+# ESM, so a major bump also needs the `require('juice')` call sites updated.
+patchedDependencies:
+  juice@11.1.1: patches/juice@11.1.1.patch
