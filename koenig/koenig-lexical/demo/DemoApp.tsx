@@ -17,7 +17,7 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, EmailEditor,
     KoenigComposableEditor, KoenigComposer, KoenigEditor, MINIMAL_NODES,
-    MINIMAL_TRANSFORMERS, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
+    MINIMAL_TRANSFORMERS, RestrictContentPlugin, SelectionWordCountPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
@@ -131,7 +131,7 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setSelectionWordCount, setTKCount}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
@@ -140,6 +140,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 registerAPI={registerAPI}
             >
                 <WordCountPlugin onChange={setWordCount} />
+                <SelectionWordCountPlugin onChange={setSelectionWordCount} />
             </KoenigComposableEditor>
         );
     } else if (editorType === 'minimal') {
@@ -152,6 +153,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
             >
                 <RestrictContentPlugin paragraphs={1} />
                 <WordCountPlugin onChange={setWordCount} />
+                <SelectionWordCountPlugin onChange={setSelectionWordCount} />
             </KoenigComposableEditor>
         );
     }
@@ -163,12 +165,13 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
             registerAPI={registerAPI}
         >
             <WordCountPlugin onChange={setWordCount} />
+            <SelectionWordCountPlugin onChange={setSelectionWordCount} />
             <TKCountPlugin onChange={setTKCount} />
         </KoenigEditor>
     );
 }
 
-function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
+function DemoComposer({editorType, isMultiplayer, setWordCount, setSelectionWordCount, setTKCount}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
@@ -405,6 +408,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
                     darkMode={darkMode}
                     editorType={editorType}
                     registerAPI={setEditorAPI}
+                    setSelectionWordCount={setSelectionWordCount}
                     setTKCount={setTKCount}
                     setWordCount={setWordCount}
                 />
@@ -418,6 +422,7 @@ const MemoizedDemoComposer = React.memo(DemoComposer);
 
 function DemoApp({editorType, isMultiplayer}) {
     const [wordCount, setWordCount] = useState(0);
+    const [selectionWordCount, setSelectionWordCount] = useState(null);
     const [tkCount, setTKCount] = useState(0);
 
     // used to force a re-initialization of the editor when URL changes, otherwise
@@ -430,11 +435,12 @@ function DemoApp({editorType, isMultiplayer}) {
             className={`koenig-lexical top`}
         >
             {/* outside of DemoComposer to avoid re-renders and flaky tests when word count changes */}
-            <WordCount tkCount={tkCount} wordCount={wordCount} />
+            <WordCount selectionWordCount={selectionWordCount} tkCount={tkCount} wordCount={wordCount} />
 
             <MemoizedDemoComposer
                 editorType={editorType}
                 isMultiplayer={isMultiplayer}
+                setSelectionWordCount={setSelectionWordCount}
                 setTKCount={setTKCount}
                 setWordCount={setWordCount}
             />
