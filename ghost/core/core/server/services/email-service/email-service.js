@@ -20,6 +20,7 @@ const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
 const SendingService = require('./sending-service');
 const logging = require('@tryghost/logging');
+const { NEWSLETTER_ARCHIVED } = require('./error-codes');
 
 const messages = {
   archivedNewsletterError: 'Cannot send email to archived newsletters',
@@ -145,6 +146,7 @@ class EmailService {
       // Don't send it (people can't unsubscribe any longer).
       throw new errors.BadRequestError({
         message: tpl(messages.archivedNewsletterError),
+        code: NEWSLETTER_ARCHIVED,
       });
     }
 

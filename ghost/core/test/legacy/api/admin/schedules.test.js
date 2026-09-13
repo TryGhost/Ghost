@@ -10,6 +10,8 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
+const logging = require('@tryghost/logging');
+const events = require('../../../../core/server/lib/common/events');
 
 describe('Schedules API', function () {
   const resources = [];
@@ -147,6 +149,65 @@ describe('Schedules API', function () {
       assertExists(jsonResponse);
       assert.equal(jsonResponse.pages[0].id, resources[4].id);
       assert.equal(jsonResponse.pages[0].status, 'published');
+    });
+
+    it('demotes a post to draft when its newsletter was archived after scheduling', async function () {
+      const newsletter = await models.Newsletter.add(
+        testUtils.DataGenerator.forKnex.createNewsletter({
+          slug: 'newsletter-archived-after-scheduling',
+          status: 'active',
+        }),
+      );
+
+      const scheduledPost = testUtils.DataGenerator.forKnex.createPost({
+        published_at: moment().add(30, 'seconds').toDate(),
+        status: 'scheduled',
+        newsletter_id: newsletter.get('id'),
+        email_recipient_filter: 'status:free',
+        posts_meta: {
+          email_only: true,
+        },
+        authors: [
+          {
+            id: testUtils.getExistingData().users[0].id,
+          },
+        ],
+      });
+      await models.Post.add(scheduledPost, { context: { internal: true } });
+      await models.Newsletter.edit({ status: 'archived' }, { id: newsletter.id });
+
+      const unscheduled = new Promise((resolve) => {
+        events.once('post.unscheduled', resolve);
+      });
+      const loggingStub = sinon.stub(logging, 'warn');
+
+      const res = await request
+        .put(localUtils.API.getApiQuery(`schedules/posts/${scheduledPost.id}/?token=${token}`))
+        .expect('Content-Type', /json/)
+        .expect('Cache-Control', testUtils.cacheRules.private)
+        .expect(400);
+
+      assert.equal(res.body.errors[0].code, 'NEWSLETTER_ARCHIVED');
+      await unscheduled;
+
+      const post = await models.Post.findOne(
+        { id: scheduledPost.id, status: 'all' },
+        { context: { internal: true }, withRelated: ['posts_meta'] },
+      );
+      assert.equal(post.get('status'), 'draft');
+      assert.equal(post.get('published_at'), null);
+      assert.equal(post.get('newsletter_id'), null);
+      assert.equal(post.get('email_recipient_filter'), 'all');
+      assert.equal(post.related('posts_meta').get('email_only'), false);
+      sinon.assert.calledWith(
+        loggingStub,
+        sinon.match({
+          postId: scheduledPost.id,
+          newsletterId: newsletter.get('id'),
+          code: 'NEWSLETTER_ARCHIVED',
+        }),
+        'Scheduled post moved to draft because its newsletter is archived',
+      );
     });
 
     it('no access', function () {
