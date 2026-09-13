@@ -1,4 +1,6 @@
 import ActionHandler from '../src/actions';
+import { HumanReadableError } from '../src/utils/errors';
+import { getSiteData, getMemberData } from '../src/utils/fixtures-generator';
 import { vi, type MockInstance } from 'vitest';
 import { GIFT_FORM_STATE_KEY, createGiftFormState } from '../src/components/pages/gift/form-state';
 import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/gift/navigation';
@@ -86,6 +88,95 @@ describe('updateProfile action', () => {
     });
 
     expect(mockApi.member.update).toHaveBeenCalledWith({ name: 'John Doe' });
+  });
+
+  test('names the custom field the site refused', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.popupNotification.message).toBe('Nickname: Keep it under 255 characters.');
+  });
+
+  test('keeps the usual message when a failure names no field', async () => {
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(new Error('offline'))) } };
+    const state = { member: { name: 'Jamie', email: 'jamie@example.com' }, customFields: [] };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: { name: 'Renamed', email: 'jamie@example.com' },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.popupNotification.message).toBe('Failed to update account details');
+  });
+});
+
+describe('loadCustomFields action', () => {
+  const site = getSiteData({ labs: { membersCustomFields: true } });
+  const member = getMemberData();
+  const nickname = {
+    key: 'nickname',
+    name: 'Nickname',
+    type: 'short_text',
+    access: { member: 'write' },
+  };
+
+  test('loads the fields open to members', async () => {
+    const api = { member: { customFields: vi.fn(() => Promise.resolve([nickname])) } };
+    const result = await ActionHandler({
+      action: 'loadCustomFields',
+      data: {},
+      state: { site, member },
+      api,
+    });
+
+    expect(result).toEqual({ customFields: [nickname], action: 'loadCustomFields:success' });
+  });
+
+  test('does nothing without the flag or a member', async () => {
+    const api = { member: { customFields: vi.fn() } };
+
+    const flagOff = { site: getSiteData(), member };
+    expect(
+      await ActionHandler({ action: 'loadCustomFields', data: {}, state: flagOff, api }),
+    ).toEqual({});
+    const signedOut = { site, member: null };
+    expect(
+      await ActionHandler({ action: 'loadCustomFields', data: {}, state: signedOut, api }),
+    ).toEqual({});
+    expect(api.member.customFields).not.toHaveBeenCalled();
+  });
+
+  test('shows no fields when the site cannot answer', async () => {
+    const api = { member: { customFields: vi.fn(() => Promise.reject(new Error('offline'))) } };
+    const result = await ActionHandler({
+      action: 'loadCustomFields',
+      data: {},
+      state: { site, member },
+      api,
+    });
+
+    expect(result.customFields).toEqual([]);
   });
 });
 

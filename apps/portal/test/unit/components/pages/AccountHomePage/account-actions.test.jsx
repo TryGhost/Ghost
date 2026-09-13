@@ -128,6 +128,26 @@ describe('AccountActions', () => {
     });
   });
 
+  describe('Profile row heading', () => {
+    const member = getMemberData({ name: 'Test User', email: 'test@example.com' });
+
+    test('is the member name on a site without custom fields', () => {
+      const { getByText } = render(<AccountActions />, {
+        overrideContext: { site: getSiteData(), member },
+      });
+      expect(getByText('Test User').tagName).toBe('H3');
+    });
+
+    test('is Account on a site with custom fields, whatever the member is called', () => {
+      const site = getSiteData({ labs: { membersCustomFields: true } });
+      const { getByText, queryByText } = render(<AccountActions />, {
+        overrideContext: { site, member },
+      });
+      expect(getByText('Account').tagName).toBe('H3');
+      expect(queryByText('Test User')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Profile row keyboard activation', () => {
     // Use the default site (transistor_portal_enabled is false) so these
     // row-interaction tests don't render the Transistor fetch path and can
@@ -145,7 +165,7 @@ describe('AccountActions', () => {
         overrideContext: { site, member },
       });
 
-      const profileRow = getByText('Test User').closest('section');
+      const profileRow = getByText('test@example.com').closest('section');
       expect(profileRow).toHaveAttribute('role', 'button');
       expect(profileRow).toHaveAttribute('tabindex', '0');
 

@@ -308,6 +308,30 @@ export function getRefDomain() {
   return referrerSource;
 }
 
+export function hasCustomFieldsEnabled({ site }) {
+  return !!site?.labs?.membersCustomFields;
+}
+
+/** The words a member reads over each part of an address custom field. */
+export function customFieldPartLabel(part) {
+  switch (part) {
+    case 'line1':
+      return t('Address line 1');
+    case 'line2':
+      return t('Address line 2');
+    case 'city':
+      return t('City');
+    case 'state':
+      return t('State');
+    case 'postal_code':
+      return t('Postal code');
+    case 'country':
+      return t('Country');
+    default:
+      return part;
+  }
+}
+
 export function hasCommentsEnabled({ site }) {
   return site?.comments_enabled && site?.comments_enabled !== 'off';
 }

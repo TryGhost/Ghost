@@ -5,6 +5,7 @@ import {
   hasMultipleNewsletters,
   isEmailSuppressed,
   hasNewsletterSendingEnabled,
+  hasCustomFieldsEnabled,
 } from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
@@ -65,7 +66,9 @@ const AccountActions = () => {
           }}
         >
           <div className="gh-portal-list-detail">
-            <h3>{name ? name : t('Account')}</h3>
+            {/* With custom fields, the row is about more than the name, so it is named
+                for what it opens rather than for the member. */}
+            <h3>{name && !hasCustomFieldsEnabled({ site }) ? name : t('Account')}</h3>
             <p>{email}</p>
           </div>
           <span
