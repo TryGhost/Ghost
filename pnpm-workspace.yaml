@@ -268,7 +268,7 @@ overrides:
   # across those majors (Pool/buildConnector, Client.compose + interceptors,
   # errors), so collapse them onto a single copy. This also supersedes the
   # `undici@<6.24.0` advisory override, since nothing resolves to 6.x anymore.
-  undici: 8.10.0
+  undici: 8.10.2
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
