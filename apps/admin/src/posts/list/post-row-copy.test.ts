@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { newsletter } from '@tryghost/test-data';
 import {
   getPostAuthorNames,
   getPostDateField,
@@ -284,7 +285,7 @@ describe('getPostStatusDetail', () => {
         post({
           status: 'scheduled',
           published_at: publishedAt,
-          newsletter: { id: 'n1' },
+          newsletter: newsletter({ id: 'n1' }),
           email_segment: 'status:free',
         }),
         { timezone, now: new Date('2026-08-04T09:00:00.000Z') },

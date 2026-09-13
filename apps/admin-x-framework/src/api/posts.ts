@@ -33,6 +33,7 @@ export type {
   PostEditorFields,
   PostEditorRecord,
   PostListFields,
+  PostNewsletter,
   PostRevision,
   PostStatus,
   PostTag,
