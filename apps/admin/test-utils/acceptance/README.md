@@ -94,6 +94,14 @@ Adding a new screen:
 
 > **Follow-up:** the registry is the interim single source. The end-state is app-owned selector modules — testids only; accessible names stay product copy, asserted as users see it — consumed by the components AND both test tiers, pending an import surface and an e2e dependency-cost check. Until then, component source remains the source of truth and the registry mirrors it.
 
+## Component tier
+
+`*.component.test.tsx` specs run in the same browser config, against the same fake API and the same provider stack minus the router — they just mount one component instead of the whole app. There is no route, so `useNavigate` and `useLocation` throw and `currentRoute()` has no meaning here. `renderInApp(subject)` mounts a subject under the app's providers; `InAppProviders` is that same stack as a `renderHook` wrapper. The boot table serves the shell lookups here exactly as it does for `renderAdminApp`.
+
+Reach for it when the behaviour under test is a component's own — a modal's steps, a hook's loading boundary — and going through the app would only add route setup. A component spec **must not boot the app or depend on a route**: no `renderAdminApp`, no URL assertions, no navigation between screens. Behaviour that needs the shell, a route, or a second screen is an acceptance spec.
+
+Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Boot overrides and labs flags have no seam in this tier; a component that needs one belongs in an acceptance spec.
+
 ## Running
 
 ```bash

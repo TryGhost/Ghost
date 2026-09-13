@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderHook } from 'vitest-browser-react';
 
-import { fakeAdminEndpoint, newsletter } from '@test-utils/acceptance';
-import { TestWrapper } from '@test-utils/fixtures/query-client';
+import { InAppProviders, fakeAdminEndpoint, newsletter } from '@test-utils/acceptance';
 
 import { usePublishInputs } from '@/editor/publish/use-publish-inputs';
 
@@ -67,7 +66,7 @@ describe('usePublishInputs', () => {
     const inputs = fakeBoundaryInputs();
     fakeNewsletters();
     const failedMembers = fakeMemberCount(0, 500);
-    const hook = await renderHook(() => usePublishInputs(), { wrapper: TestWrapper });
+    const hook = await renderHook(() => usePublishInputs(), { wrapper: InAppProviders });
 
     await expect.poll(() => inputs.settings.requests.length).toBe(1);
     await expect.poll(() => inputs.config.requests.length).toBe(1);
@@ -117,7 +116,7 @@ describe('usePublishInputs', () => {
         meta: { pagination: pagination(pageNumber, 2) },
       };
     });
-    const hook = await renderHook(() => usePublishInputs(), { wrapper: TestWrapper });
+    const hook = await renderHook(() => usePublishInputs(), { wrapper: InAppProviders });
 
     await expect.poll(() => newslettersApi.requests.length).toBe(2);
     expect(hook.result.current.isReady).toBe(false);
@@ -139,7 +138,7 @@ describe('usePublishInputs', () => {
       { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
       { status: 401 },
     );
-    const hook = await renderHook(() => usePublishInputs(), { wrapper: TestWrapper });
+    const hook = await renderHook(() => usePublishInputs(), { wrapper: InAppProviders });
 
     await expect.poll(() => newslettersApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => hook.result.current.error !== null).toBe(true);
