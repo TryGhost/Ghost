@@ -239,6 +239,7 @@
                 "productImageSrc": "https://main.ghost.org/content/images/2023/12/ghost-logo.png",
                 "productImageWidth": 800,
                 "productImageHeight": 257,
+                "productImageAlt": "Ghost logo",
                 "productTitle": "<span style=\"white-space: pre-wrap;\">Make a blog!</span>",
                 "productDescription": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">with Ghost</span></p>",
                 "productRatingEnabled": true,

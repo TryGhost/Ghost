@@ -35,7 +35,7 @@ describe('renderers/product-renderer', function () {
             assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-product-card">
                     <div class="kg-product-card-container">
-                        <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" class="kg-product-card-image" loading="lazy">
+                        <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="" class="kg-product-card-image" loading="lazy">
                         <div class="kg-product-card-title-container">
                             <h4 class="kg-product-card-title">This is a <b>title</b></h4>
                         </div>
@@ -71,6 +71,14 @@ describe('renderers/product-renderer', function () {
                             rel="noopener noreferrer"><span>Button text</span></a>
                     </div>
                 </div>
+            `);
+        });
+
+        it('renders escaped image alt text', function () {
+            const result = renderForWeb(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}));
+
+            assertPrettifiedIncludes(result.html, html`
+                <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" class="kg-product-card-image" loading="lazy">
             `);
         });
 
@@ -176,6 +184,7 @@ describe('renderers/product-renderer', function () {
                                                     src="/content/images/2022/11/koenig-lexical.jpg"
                                                     width="200"
                                                     height="100"
+                                                    alt=""
                                                     border="0" />
                                             </td>
                                         </tr>
@@ -219,6 +228,14 @@ describe('renderers/product-renderer', function () {
                         </tr>
                     </tbody>
                 </table>
+            `);
+        });
+
+        it('renders escaped image alt text', function () {
+            const result = renderForEmail(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}), {feature: {}});
+
+            assertPrettifiedIncludes(result.html, html`
+                <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" border="0" />
             `);
         });
 
@@ -266,7 +283,7 @@ describe('renderers/product-renderer', function () {
                                     <tbody>
                                         <tr>
                                             <td class="kg-product-image" align="center">
-                                                <img src="https://example.com/images/ok.jpg" border="0" />
+                                                <img src="https://example.com/images/ok.jpg" alt="" border="0" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -322,7 +339,7 @@ describe('renderers/product-renderer', function () {
                                     <tbody>
                                         <tr>
                                             <td class="kg-product-image" align="center">
-                                                <img src="https://example.com/images/ok.jpg" border="0" />
+                                                <img src="https://example.com/images/ok.jpg" alt="" border="0" />
                                             </td>
                                         </tr>
                                         <tr>

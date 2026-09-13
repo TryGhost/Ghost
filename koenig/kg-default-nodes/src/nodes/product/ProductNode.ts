@@ -6,6 +6,7 @@ const productProperties = {
     productImageSrc: {default: '', urlType: 'url'},
     productImageWidth: {default: null as number | null},
     productImageHeight: {default: null as number | null},
+    productImageAlt: {default: ''},
     productTitle: {default: '', urlType: 'html', wordCount: true},
     productDescription: {default: '', urlType: 'html', wordCount: true},
     productRatingEnabled: {default: false},
@@ -25,7 +26,7 @@ export class ProductNode extends generateDecoratorNode({
     /* override */
     exportJSON() {
         // checks if src is a data string
-        const {productImageSrc, productImageWidth, productImageHeight, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = this;
+        const {productImageSrc, productImageWidth, productImageHeight, productImageAlt, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = this;
         const isBlob = productImageSrc && productImageSrc.startsWith('data:');
 
         const dataset = {
@@ -34,6 +35,7 @@ export class ProductNode extends generateDecoratorNode({
             productImageSrc: isBlob ? '<base64String>' : productImageSrc,
             productImageWidth,
             productImageHeight,
+            productImageAlt,
             productTitle,
             productDescription,
             productRatingEnabled,
