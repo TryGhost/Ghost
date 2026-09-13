@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         }}
       />
       <FieldSet>
-        <FieldLegend variant="label">Visibility</FieldLegend>
+        <FieldLegend variant="label">Who can see this announcement?</FieldLegend>
         <FieldGroup data-slot="checkbox-group">
           {visibilityCheckboxes.map((checkbox) => (
             <Field key={checkbox.value} orientation="horizontal">
