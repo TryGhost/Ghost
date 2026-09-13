@@ -100,29 +100,29 @@ export default class PostScheduling {
 
   /**
    * Re-issue every queued schedule under the current internal-keys cache.
-   * On boot the previous key is the same as the current key. For key
-   * rotation, the caller passes `previousKey` so unschedule URLs match
-   * the entries the adapter already holds (signed under the previous
-   * secret); schedule URLs are reissued under the current secret.
+   *
+   * On boot (no `previousKey`) each job is registered again as-is. Its
+   * idempotency key is derived from the fire time and the callback URL, so
+   * an adapter with a persistent queue recognises the job it already holds
+   * and creates nothing; an in-process adapter starts empty and simply
+   * fills up. Nothing is unscheduled: a delete-by-URL sent alongside the
+   * create is not ordered against it on the wire, and when the delete
+   * lands second it removes the job that was just registered.
+   *
+   * For key rotation the caller passes `previousKey`. The queued entries
+   * were signed under the previous secret, so their URLs differ from the
+   * reissued ones; those are unscheduled explicitly and cannot collide with
+   * the jobs scheduled under the current secret.
    */
   async rescheduleAll({ previousKey }: { previousKey?: InternalApiKey } = {}): Promise<void> {
     const scheduledResources = await this.#loadScheduledResources();
     const currentKey = await this.#internalKeys.get('ghost-scheduler');
-    const unscheduleKey = previousKey ?? currentKey;
-
-    // Same-key rebuild (no previousKey, boot path) → URL signature is
-    // identical to the about-to-be-scheduled job. The default adapter
-    // implements unschedule via tombstones keyed by URL+time, so a same-URL
-    // unschedule poisons the scheduled job. Bootstrap mode skips the
-    // tombstone write. Rotation (previousKey provided) → URLs differ, so
-    // the tombstone correctly targets the old queued entry.
-    const bootstrap = !previousKey;
 
     for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
       for (const model of scheduledResources[resourceType]) {
-        this.#adapter.unschedule(this.#normalize({ model, key: unscheduleKey, resourceType }), {
-          bootstrap,
-        });
+        if (previousKey) {
+          this.#adapter.unschedule(this.#normalize({ model, key: previousKey, resourceType }));
+        }
         this.#adapter.schedule(this.#normalize({ model, key: currentKey, resourceType }));
       }
     }
