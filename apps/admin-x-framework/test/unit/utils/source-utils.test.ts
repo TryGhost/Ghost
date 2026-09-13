@@ -196,6 +196,14 @@ describe('source-utils', () => {
         domain: 'google.com',
         isDirectTraffic: false,
       });
+      expect(getFaviconDomain('GitHub')).toEqual({
+        domain: 'github.com',
+        isDirectTraffic: false,
+      });
+      expect(getFaviconDomain('github')).toEqual({
+        domain: 'github.com',
+        isDirectTraffic: false,
+      });
     });
 
     it('identifies direct traffic for site domains', () => {
@@ -246,9 +254,9 @@ describe('source-utils', () => {
       });
     });
 
-    it('treats non-domain strings as domains', () => {
+    it('rejects non-domain strings', () => {
       expect(getFaviconDomain('not-a-domain')).toEqual({
-        domain: 'not-a-domain',
+        domain: null,
         isDirectTraffic: false,
       });
       expect(getFaviconDomain('invalid url string')).toEqual({

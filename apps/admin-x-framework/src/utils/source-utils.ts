@@ -1,5 +1,7 @@
 // Source domain mapping for favicons
 export const SOURCE_DOMAIN_MAP: Record<string, string> = {
+  GitHub: 'github.com',
+  github: 'github.com',
   Reddit: 'reddit.com',
   'www.reddit.com': 'reddit.com',
   Facebook: 'facebook.com',
@@ -235,7 +237,7 @@ export const getFaviconDomain = (
 
   // If not in mapping, check if it's already a domain
   const isDomain =
-    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(
+    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
       source,
     );
   if (isDomain) {
