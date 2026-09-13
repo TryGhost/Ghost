@@ -318,11 +318,11 @@ catalogs:
       specifier: 3.2.2
       version: 3.2.2
     '@tryghost/color-utils':
-      specifier: 0.2.20
-      version: 0.2.20
+      specifier: 0.2.21
+      version: 0.2.21
     '@tryghost/custom-fonts':
-      specifier: 1.0.11
-      version: 1.0.11
+      specifier: 1.0.12
+      version: 1.0.12
     '@tryghost/debug':
       specifier: 2.3.14
       version: 2.3.14
@@ -330,8 +330,8 @@ catalogs:
       specifier: 3.3.15
       version: 3.3.15
     '@tryghost/helpers':
-      specifier: 1.1.106
-      version: 1.1.106
+      specifier: 1.1.107
+      version: 1.1.107
     '@tryghost/metrics':
       specifier: 3.6.0
       version: 3.6.0
@@ -348,17 +348,17 @@ catalogs:
       specifier: 4.0.7
       version: 4.0.7
     '@tryghost/string':
-      specifier: 0.3.5
-      version: 0.3.5
+      specifier: 0.3.6
+      version: 0.3.6
     '@tryghost/timezone-data':
-      specifier: 1.0.0
-      version: 1.0.0
+      specifier: 1.0.1
+      version: 1.0.1
     '@tryghost/tpl':
       specifier: 2.3.14
       version: 2.3.14
     '@tryghost/url-utils':
-      specifier: 5.2.9
-      version: 5.2.9
+      specifier: 5.3.0
+      version: 5.3.0
     '@tryghost/validator':
       specifier: 3.2.14
       version: 3.2.14
@@ -516,8 +516,8 @@ catalogs:
       specifier: 17.7.0
       version: 17.7.0
     got:
-      specifier: 15.1.0
-      version: 15.1.0
+      specifier: 16.0.0
+      version: 16.0.0
     hono:
       specifier: 4.12.18
       version: 4.12.18
@@ -711,6 +711,7 @@ overrides:
   eslint-plugin-ghost>@typescript-eslint/utils: 8.67.0
   ember-svg-jar>cheerio: 1.2.0
   juice>cheerio: 0.22.0
+  '@tryghost/kg-default-cards': workspace:*
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   ansi-html@<0.0.8: ^0.0.9
@@ -965,10 +966,10 @@ importers:
         version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.11
+        version: 1.0.12
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -998,10 +999,10 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 1.0.0
+        version: 1.0.1
       '@uiw/react-codemirror':
         specifier: 'catalog:'
         version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1213,7 +1214,7 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -1523,13 +1524,13 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/ember-promise-modals':
         specifier: 2.0.1
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2))(postcss@8.5.26)(supports-color@10.2.2)
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:*
         version: link:../../koenig/kg-clean-basic-html
@@ -1550,10 +1551,10 @@ importers:
         version: link:../../packages/nql-string
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 1.0.0
+        version: 1.0.1
       animejs:
         specifier: 3.2.2
         version: 3.2.2
@@ -2471,13 +2472,13 @@ importers:
         version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/config-url-helpers':
-        specifier: 1.0.27
-        version: 1.0.27
+        specifier: 1.0.28
+        version: 1.0.28
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.11
+        version: 1.0.12
       '@tryghost/database-info':
         specifier: 2.3.14
         version: 2.3.14
@@ -2495,16 +2496,16 @@ importers:
         version: 3.3.14
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/html-to-plaintext':
-        specifier: 1.0.11
-        version: 1.0.11
+        specifier: 1.0.12
+        version: 1.0.12
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/image-transform':
-        specifier: 1.4.17
-        version: 1.4.17(@types/node@22.20.1)
+        specifier: 1.4.18
+        version: 1.4.18(@types/node@22.20.1)
       '@tryghost/job-manager':
         specifier: 1.0.9
         version: 1.0.9(supports-color@10.2.2)
@@ -2543,7 +2544,7 @@ importers:
         version: 3.6.0(supports-color@10.2.2)
       '@tryghost/mg-clean-html':
         specifier: 'catalog:'
-        version: 0.12.6(encoding@0.1.13)
+        version: 0.12.6
       '@tryghost/mongo-knex':
         specifier: 'catalog:'
         version: 0.11.2(supports-color@10.2.2)
@@ -2578,8 +2579,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0(express@4.22.2(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/referrer-parser':
-        specifier: 0.1.21
-        version: 0.1.21
+        specifier: 0.1.22
+        version: 0.1.22
       '@tryghost/request':
         specifier: 'catalog:'
         version: 4.0.7
@@ -2590,17 +2591,17 @@ importers:
         specifier: 3.3.14
         version: 3.3.14
       '@tryghost/social-urls':
-        specifier: 0.1.63
-        version: 0.1.63
+        specifier: 0.1.64
+        version: 0.1.64
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/tpl':
         specifier: 'catalog:'
         version: 2.3.14
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.2.9
+        version: 5.3.0
       '@tryghost/validator':
         specifier: 'catalog:'
         version: 3.2.14
@@ -2735,7 +2736,7 @@ importers:
         version: 13.0.6
       got:
         specifier: 'catalog:'
-        version: 15.1.0
+        version: 16.0.0
       gscan:
         specifier: 6.6.1
         version: 6.6.1(supports-color@10.2.2)
@@ -3199,10 +3200,10 @@ importers:
         version: link:../kg-utils
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.5
+        version: 0.3.6
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.2.9
+        version: 5.3.0
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
@@ -3263,7 +3264,7 @@ importers:
         version: 0.13.1(lexical@0.13.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -3795,10 +3796,10 @@ importers:
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.20
+        version: 0.2.21
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.106
+        version: 1.1.107
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -9645,14 +9646,14 @@ packages:
   '@tryghost/bunyan-rotating-filestream@0.0.20':
     resolution: {integrity: sha512-CUovHdDq9qNIlOKeebVCcqgVfkQq/+khzNd8pO3gwjCSrXGhkM9NrYyHP2YTJVKGPMx1vJvDiP3Be/6sgfSn/Q==}
 
-  '@tryghost/color-utils@0.2.20':
-    resolution: {integrity: sha512-0KLCQDX7TbJGKNihs+OB1+3hEvhdP4YXOKpdbqJlUkvEFdY+Gl1FlI4WL8wnn0v6oc1aOjvrKmva5BUT0pWtIg==}
+  '@tryghost/color-utils@0.2.21':
+    resolution: {integrity: sha512-em9ELsVlQkndYMztMvfVavpOiDbiAm59HFePW5EGHwK8+6X+EKDLUfuTdn1d3XQX/IZAuSCXT06h9kGmUlfHsw==}
 
-  '@tryghost/config-url-helpers@1.0.27':
-    resolution: {integrity: sha512-l7Tfy8BwYWu9PEdDWRLbqH3BdBqQhfD9V+1L4YGG3PsBj6V9V7b6yUJj9glZngusceS2bWHllA1ffCFV+XFvtQ==}
+  '@tryghost/config-url-helpers@1.0.28':
+    resolution: {integrity: sha512-66kkD9MDyNana+2ThBoFxvsb3NLPSnrRk47Kjjl+1RlwFBX88r1TVxT7rVuT2OmGlAMtbX+7rtT6RGu3NQo+ng==}
 
-  '@tryghost/custom-fonts@1.0.11':
-    resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
+  '@tryghost/custom-fonts@1.0.12':
+    resolution: {integrity: sha512-omEMGJx4V+HkOfEJOjZ2M8SRiMwn4z8eK4bJbkPHv98NK1VUVRiu9UGOhmM2IN+4hAGw2DdOWYKtZsEDVQa0Jg==}
 
   '@tryghost/database-info@0.3.35':
     resolution: {integrity: sha512-S9OapApwzdh3GS0d3m+KgwH7IhZII6b9Aw5I89HA5VJRPeo6HdaDXiZzSDNcFaUzpx1FFBR0kDu7G+IRPD0eFA==}
@@ -9687,11 +9688,11 @@ packages:
     peerDependencies:
       express: ^4.0.0 || ^5.0.0
 
-  '@tryghost/helpers@1.1.106':
-    resolution: {integrity: sha512-Yjrb/VLvRqgtMsiKXvuSRoVvAm2HJ6SJakdo25va4sU9sA7yXBSWWHkukE8q27Ty9R2fE5jEEWziIhrZy+Tkog==}
+  '@tryghost/helpers@1.1.107':
+    resolution: {integrity: sha512-vKZ3ubocx9f7bSaSbPYh0Bo6/dMQYvS3ZdMepoBqf+M6ulwco20DMmTix6kXrLxtyURzWGkTWj5ZnWome3+JFw==}
 
-  '@tryghost/html-to-plaintext@1.0.11':
-    resolution: {integrity: sha512-pCmCQLrZN+IqTUli07I+1oZGkZN4a6PDU/lqJ2DTe6Up86OmPOKePWUH43zzOGM5RO3aaRP1I3zUzfOW1iCFxA==}
+  '@tryghost/html-to-plaintext@1.0.12':
+    resolution: {integrity: sha512-eesKdrz6F/FhIoW0rnep/EOYkoSakE4g9uuWlD/gXN/QaA4fzPq7VnRjT0Al2Ivfz7noF0v85qhMj5aPe0+Yxg==}
 
   '@tryghost/http-cache-utils@2.3.14':
     resolution: {integrity: sha512-V/AhKvumGPVLTl2osrkcPzOqje4FFUCYPaiDgJ9Lzy4D4E/tBafJR3M/M5EAbM2cv1u2UVVdoc/npNWu9zRnTg==}
@@ -9699,25 +9700,14 @@ packages:
   '@tryghost/http-stream@2.3.15':
     resolution: {integrity: sha512-mAbqtPO/ZSj3SC/accLR/XCaveR2FcBXC0AFqLl/ejxfA8d70Cnl72fRbPq+fck/Am5EW2R1WG9ZHXcmw5aWqQ==}
 
-  '@tryghost/image-transform@1.4.17':
-    resolution: {integrity: sha512-+WipAbQ6gTOB9hbhmTDHW7tzaB1lPIRszoN+z1qV+vlI+cR/4qO70Ux+HkSYT9gt4WpxRZJZCBCk3+x4Nm0LhQ==}
+  '@tryghost/image-transform@1.4.18':
+    resolution: {integrity: sha512-dyYs5Zdmqx9wPOI63WNAeAgGnDOL/4QdYs7ZDaSWc0Ybz4qKs+F2k7ciHBdDtwRNyrnSNf1HZAOyv31hTvGaOA==}
 
   '@tryghost/jest-snapshot@2.3.14':
     resolution: {integrity: sha512-AJR7y+jzFfTotL8TnwJ57MUARZHVFifQBwRaJbzukP/XZvMUwUODhYUF3WvU0cY8yVp33eUdcHjnt3rkYWu2Ow==}
 
   '@tryghost/job-manager@1.0.9':
     resolution: {integrity: sha512-Wlwr1R8oeU6HLB7RB1g6VxAH6VEZIaXTVV2GdvCbipK+TA0MIo6YOQUgrIky25RpyRqKXR0UuDIfXDB4+S+GgQ==}
-
-  '@tryghost/kg-default-cards@10.3.5':
-    resolution: {integrity: sha512-eJ6V8MNarip8f0iDoowB6JpwFXXKjzFj3Z6AbxT/ErERIuLEO0F3nJLN7qMenef68j5btsV8+goGHcMS6ZiGfA==}
-    engines: {node: ^22.13.1 || ^24.0.0}
-
-  '@tryghost/kg-markdown-html-renderer@7.2.5':
-    resolution: {integrity: sha512-qAhuJd/ceIT80tAh2rhEYDrR2YJq+yttJgq0GWoysc3rRGgxJlXcW4WhGRpZ7NZXDU4cZhuFoGBySDJiL9CoCA==}
-    engines: {node: ^22.13.1 || ^24.0.0}
-
-  '@tryghost/kg-utils@1.1.5':
-    resolution: {integrity: sha512-SlS6C1+j6czfX61zAU38z4jC2hPKaXaOh1nN8UplKpEY2wvGTd99udtTZScl+7Fc2k9/CasTKFWErH6+KE4Qyg==}
 
   '@tryghost/logging@5.4.5':
     resolution: {integrity: sha512-fjvRBSskqMPhH6BsAbfCWvJ6NY8nMtc2ivMnuMkiGMZiTbZFO0A91Ph+yusc9fsL30PZXl4zwo7FuzAg6KxuhA==}
@@ -9772,8 +9762,8 @@ packages:
   '@tryghost/promise@2.3.14':
     resolution: {integrity: sha512-6M9S2/OEB2E6W2DT5ZgdaK5V0ICT1XWHtzxgFC9LYuUg6jscIIlyXVYPJP+uSSDLLCwLXe8NuO1N3Rl5lJKOxg==}
 
-  '@tryghost/referrer-parser@0.1.21':
-    resolution: {integrity: sha512-Uz7bj8IadLah1j9GgieGQ0VGytdOG6mIlYdbpNu1r8/o9pjR2IS4bt88tvwpGSPNb47P9NrGntGn+Le1W/90jg==}
+  '@tryghost/referrer-parser@0.1.22':
+    resolution: {integrity: sha512-c0T7PQl3w3JSbYZStx8RNclmWftfdNGPlqdFXXAm6Z2ykE18nRminnCBAixmkrbcRZujyRjkAH2f480Vf6BU9Q==}
     engines: {node: '>=16.0.0'}
 
   '@tryghost/request@4.0.7':
@@ -9789,24 +9779,21 @@ packages:
   '@tryghost/security@3.3.14':
     resolution: {integrity: sha512-7LsI78iWiYKumKpjBocm6Gpaa4egPDMRyM4YAmn3G+kHpSwsvzvKfi3ONO9Yp+pqGlYkDeFAPZRmb8xfxmUOaQ==}
 
-  '@tryghost/social-urls@0.1.63':
-    resolution: {integrity: sha512-TBbs65r2V39y4nWWGgE+TNDTdX7HL1bfa7Q+UAqHxrMaoZYFjd3N9GbrkvPuSR9+wFqDNlMrJZlx9uawz0tqmg==}
+  '@tryghost/social-urls@0.1.64':
+    resolution: {integrity: sha512-GXBKIeV4nnrrrwaEwn/EYqRTSuLN2tCVaBPEidvAUKuBcsT0HlvPYfsg7Fs93Diq3uyYCfqNpYFxbNKVjRrG8A==}
 
-  '@tryghost/string@0.3.5':
-    resolution: {integrity: sha512-Ov2UYOuU5QutDo/UECtkhHR3jdT4R/aNxzKFk0iaH0yiwxLnlqEB4QBBVnYYIN8zECNAazRzkygtdFSlSkuaoA==}
+  '@tryghost/string@0.3.6':
+    resolution: {integrity: sha512-aYlvmvicb4nj3QtvkIr8JsQqKks1mphlCWJVirNMAyxzKIHY6rJC1g4FjCOlTHUCtNDhJyxxUaT6UznVndY0ZQ==}
 
-  '@tryghost/timezone-data@1.0.0':
-    resolution: {integrity: sha512-A9483jAxE13ivnHdLK1kQYRaQYW+BcrKz33Nkdb59erNXiJYoaWx0HBAQoXKlySvrVX+wvVd9g1LzF44LgqidQ==}
+  '@tryghost/timezone-data@1.0.1':
+    resolution: {integrity: sha512-ppqbSaNfziN63yIn4TyXqvpTKVJvtkG6Y4IT6BOUxpPA9pb6zSH6UNDGTFizfspEu/KJ1l8qYrTX+eCV4J4yrA==}
     engines: {node: '>=18.0.0'}
 
   '@tryghost/tpl@2.3.14':
     resolution: {integrity: sha512-qKo+X3dwf99tT5R2PBNBrlHYsi8ijfjF29+UgCWVVPmcNkjS1FklHyBxE/UOjkFLB/bP+ROeSwukX55JXKawVw==}
 
-  '@tryghost/url-utils@5.2.7':
-    resolution: {integrity: sha512-enJ084BtVwsr+q+1wz2hy/jjooBfDLh4FS4g2o8n1ZAgGAly4mch6w7IpDX6MjRcy6an/S1i/Jo3tMsHa2igfw==}
-
-  '@tryghost/url-utils@5.2.9':
-    resolution: {integrity: sha512-kBQ9jbmxW8TcCEeoBBqi+s08SZGbjBykwEbty8fNb9Bmd/m/KIr1ihHXP1lDiWYgRgs5yMgncCq8jAty9OxOOQ==}
+  '@tryghost/url-utils@5.3.0':
+    resolution: {integrity: sha512-RClSF6ISlCvMtCMDe+pbvr2R4fMGEOYf4obzGc7EXF6Ry+UBIO11iAWH7R+4AWBA2yIGnr3kZ0HkSY76Z7nCtw==}
 
   '@tryghost/validator@3.2.14':
     resolution: {integrity: sha512-lC+7tG90UO2gGnJZ/wbE7PYVTGAOWx+ir6FnSgVhGRBdkI0OVu7K76Ump2ICkD3e6zdxNAieBbMygT+h+aRMSw==}
@@ -15458,10 +15445,6 @@ packages:
     resolution: {integrity: sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==}
     engines: {node: '>=10.19.0'}
 
-  got@15.1.0:
-    resolution: {integrity: sha512-DG+DAAkRtno+oDr/GBsliAkhN9+zczOPM5qXk3efDZY3qvyRnZU+NwQlb/IOY6cSnxxTR9z3aHCcShJyjb0hJA==}
-    engines: {node: '>=22'}
-
   got@16.0.0:
     resolution: {integrity: sha512-UtzSUebtRHHAUaNB/X37X1LQgHvdSrgXUIWGUBDhLu05CYtUr9svjeN6wmG333nzdJASFUjXMOuRBjZLf8oF1w==}
     engines: {node: '>=22'}
@@ -15762,10 +15745,6 @@ packages:
 
   http2-wrapper@1.0.3:
     resolution: {integrity: sha512-V+23sDMr12Wnz7iTcDeJr3O6AIxlnvT/bmaAAAP/Xda35C90p9599p0F1eHR/N1KILWSoWVAiOMFjBBXaXSMxg==}
-    engines: {node: '>=10.19.0'}
-
-  http2-wrapper@2.2.1:
-    resolution: {integrity: sha512-V5nVw1PAOgfI3Lmeaj2Exmeg7fenjhRUgz1lPSezy1CuhPYbgQtbQj4jZfEAEMlaL+vupsvhjqCyjzob0yxsmQ==}
     engines: {node: '>=10.19.0'}
 
   https-browserify@1.0.0:
@@ -25970,7 +25949,7 @@ snapshots:
   '@jest/console@29.7.0':
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
@@ -25984,14 +25963,14 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0(supports-color@10.2.2)
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       ci-info: 3.9.0
       exit: 0.1.2
       graceful-fs: 4.2.11
       jest-changed-files: 29.7.0
-      jest-config: 29.7.0(@types/node@22.20.1)(babel-plugin-macros@3.1.0)(supports-color@10.2.2)
+      jest-config: 29.7.0(@types/node@26.0.0)(babel-plugin-macros@3.1.0)(supports-color@10.2.2)
       jest-haste-map: 29.7.0
       jest-message-util: 29.7.0
       jest-regex-util: 29.6.3
@@ -26026,7 +26005,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-mock: 29.7.0
     optional: true
 
@@ -26062,7 +26041,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -26082,7 +26061,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-regex-util: 30.0.1
     optional: true
 
@@ -26099,7 +26078,7 @@ snapshots:
       '@jest/transform': 29.7.0(supports-color@10.2.2)
       '@jest/types': 29.6.3
       '@jridgewell/trace-mapping': 0.3.31
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       collect-v8-coverage: 1.0.3
       exit: 0.1.2
@@ -26249,7 +26228,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       '@types/yargs': 17.0.35
       chalk: 4.1.2
     optional: true
@@ -29311,14 +29290,14 @@ snapshots:
     dependencies:
       long-timeout: 0.1.1
 
-  '@tryghost/color-utils@0.2.20':
+  '@tryghost/color-utils@0.2.21':
     dependencies:
       '@types/color': 4.2.1
       color: 3.2.1
 
-  '@tryghost/config-url-helpers@1.0.27': {}
+  '@tryghost/config-url-helpers@1.0.28': {}
 
-  '@tryghost/custom-fonts@1.0.11': {}
+  '@tryghost/custom-fonts@1.0.12': {}
 
   '@tryghost/database-info@0.3.35': {}
 
@@ -29389,11 +29368,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/helpers@1.1.106':
+  '@tryghost/helpers@1.1.107':
     dependencies:
       lodash-es: 4.18.1
 
-  '@tryghost/html-to-plaintext@1.0.11':
+  '@tryghost/html-to-plaintext@1.0.12':
     dependencies:
       html-to-text: 8.2.1
       lodash: 4.18.1
@@ -29405,10 +29384,10 @@ snapshots:
       '@tryghost/errors': 3.3.14
       '@tryghost/request': 4.0.7
 
-  '@tryghost/image-transform@1.4.17(@types/node@22.20.1)':
+  '@tryghost/image-transform@1.4.18(@types/node@22.20.1)':
     dependencies:
       '@tryghost/errors': 3.3.14
-      fs-extra: 11.3.6
+      fs-extra: 11.4.0
     optionalDependencies:
       sharp: 0.35.3(@types/node@22.20.1)
     transitivePeerDependencies:
@@ -29437,34 +29416,6 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/kg-default-cards@10.3.5(encoding@0.1.13)':
-    dependencies:
-      '@tryghost/kg-markdown-html-renderer': 7.2.5
-      '@tryghost/kg-utils': 1.1.5
-      '@tryghost/string': 0.3.5
-      '@tryghost/url-utils': 5.2.7
-      handlebars: 4.7.9
-      juice: 9.1.0(encoding@0.1.13)
-      luxon: 3.7.2
-    transitivePeerDependencies:
-      - encoding
-
-  '@tryghost/kg-markdown-html-renderer@7.2.5':
-    dependencies:
-      '@tryghost/kg-utils': 1.1.5
-      markdown-it: 14.3.0
-      markdown-it-footnote: 4.0.0
-      markdown-it-image-lazy-loading: 2.0.1
-      markdown-it-lazy-headers: 0.1.3
-      markdown-it-mark: 4.0.0
-      markdown-it-sub: 2.0.0
-      markdown-it-sup: 2.0.0
-      semver: 7.8.5
-
-  '@tryghost/kg-utils@1.1.5':
-    dependencies:
-      semver: 7.8.5
-
   '@tryghost/logging@5.4.5(supports-color@10.2.2)':
     dependencies:
       '@tryghost/bunyan-rotating-filestream': 0.0.20
@@ -29491,23 +29442,21 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/mg-clean-html@0.12.6(encoding@0.1.13)':
+  '@tryghost/mg-clean-html@0.12.6':
     dependencies:
-      '@tryghost/mg-utils': 0.11.6(encoding@0.1.13)
+      '@tryghost/mg-utils': 0.11.6
       escape-string-regexp: 5.0.0
       style-to-object: 2.0.2
     transitivePeerDependencies:
       - canvas
-      - encoding
 
-  '@tryghost/mg-utils@0.11.6(encoding@0.1.13)':
+  '@tryghost/mg-utils@0.11.6':
     dependencies:
-      '@tryghost/kg-default-cards': 10.3.5(encoding@0.1.13)
+      '@tryghost/kg-default-cards': link:koenig/kg-default-cards
       fast-xml-parser: 5.10.1
       linkedom: 0.18.13
     transitivePeerDependencies:
       - canvas
-      - encoding
 
   '@tryghost/mongo-knex@0.11.2(supports-color@10.2.2)':
     dependencies:
@@ -29586,7 +29535,7 @@ snapshots:
 
   '@tryghost/promise@2.3.14': {}
 
-  '@tryghost/referrer-parser@0.1.21': {}
+  '@tryghost/referrer-parser@0.1.22': {}
 
   '@tryghost/request@4.0.7':
     dependencies:
@@ -29609,30 +29558,20 @@ snapshots:
 
   '@tryghost/security@3.3.14':
     dependencies:
-      '@tryghost/string': 0.3.5
+      '@tryghost/string': 0.3.6
       bcryptjs: 3.0.3
 
-  '@tryghost/social-urls@0.1.63': {}
+  '@tryghost/social-urls@0.1.64': {}
 
-  '@tryghost/string@0.3.5':
+  '@tryghost/string@0.3.6':
     dependencies:
       unidecode: 1.1.0
 
-  '@tryghost/timezone-data@1.0.0': {}
+  '@tryghost/timezone-data@1.0.1': {}
 
   '@tryghost/tpl@2.3.14': {}
 
-  '@tryghost/url-utils@5.2.7':
-    dependencies:
-      cheerio: 1.2.0
-      lodash: 4.18.1
-      moment: 2.30.1
-      moment-timezone: 0.5.45
-      remark: 11.0.2
-      remark-footnotes: 1.0.0
-      unist-util-visit: 2.0.3
-
-  '@tryghost/url-utils@5.2.9':
+  '@tryghost/url-utils@5.3.0':
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
@@ -29899,7 +29838,7 @@ snapshots:
 
   '@types/graceful-fs@4.1.9':
     dependencies:
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
     optional: true
 
   '@types/hast@3.0.4':
@@ -38272,21 +38211,6 @@ snapshots:
       p-cancelable: 2.1.1
       responselike: 2.0.1
 
-  got@15.1.0:
-    dependencies:
-      '@sindresorhus/is': 8.1.0
-      byte-counter: 0.1.0
-      cacheable-lookup: 7.0.0
-      cacheable-request: 13.0.19
-      chunk-data: 0.1.0
-      decompress-response: 10.0.0
-      http2-wrapper: 2.2.1
-      keyv: 5.6.0
-      lowercase-keys: 4.0.1
-      responselike: 4.0.2
-      type-fest: 5.8.0
-      uint8array-extras: 1.5.0
-
   got@16.0.0:
     dependencies:
       '@sindresorhus/is': 8.1.0
@@ -38686,11 +38610,6 @@ snapshots:
       - debug
 
   http2-wrapper@1.0.3:
-    dependencies:
-      quick-lru: 5.1.1
-      resolve-alpn: 1.2.1
-
-  http2-wrapper@2.2.1:
     dependencies:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
@@ -39431,7 +39350,7 @@ snapshots:
       '@jest/expect': 29.7.0(supports-color@10.2.2)
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.7.2(babel-plugin-macros@3.1.0)
@@ -39505,6 +39424,37 @@ snapshots:
       - supports-color
     optional: true
 
+  jest-config@29.7.0(@types/node@26.0.0)(babel-plugin-macros@3.1.0)(supports-color@10.2.2):
+    dependencies:
+      '@babel/core': 7.29.7(supports-color@10.2.2)
+      '@jest/test-sequencer': 29.7.0
+      '@jest/types': 29.6.3
+      babel-jest: 29.7.0(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
+      chalk: 4.1.2
+      ci-info: 3.9.0
+      deepmerge: 4.3.1
+      glob: 7.2.3
+      graceful-fs: 4.2.11
+      jest-circus: 29.7.0(babel-plugin-macros@3.1.0)(supports-color@10.2.2)
+      jest-environment-node: 29.7.0
+      jest-get-type: 29.6.3
+      jest-regex-util: 29.6.3
+      jest-resolve: 29.7.0
+      jest-runner: 29.7.0(supports-color@10.2.2)
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 29.7.0
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 26.0.0
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+    optional: true
+
   jest-diff@29.7.0:
     dependencies:
       chalk: 4.1.2
@@ -39546,7 +39496,7 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
     optional: true
@@ -39557,7 +39507,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -39573,7 +39523,7 @@ snapshots:
   jest-haste-map@30.3.0:
     dependencies:
       '@jest/types': 30.3.0
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -39670,14 +39620,14 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-util: 29.7.0
     optional: true
 
   jest-mock@30.3.0:
     dependencies:
       '@jest/types': 30.3.0
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-util: 30.3.0
     optional: true
 
@@ -39728,7 +39678,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0(supports-color@10.2.2)
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -39757,7 +39707,7 @@ snapshots:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0(supports-color@10.2.2)
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       cjs-module-lexer: 1.4.3
       collect-v8-coverage: 1.0.3
@@ -39867,7 +39817,7 @@ snapshots:
   jest-util@30.3.0:
     dependencies:
       '@jest/types': 30.3.0
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
@@ -39897,7 +39847,7 @@ snapshots:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -39913,7 +39863,7 @@ snapshots:
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 10.2.2
@@ -39921,7 +39871,7 @@ snapshots:
 
   jest-worker@30.3.0:
     dependencies:
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
       '@ungap/structured-clone': 1.3.1
       jest-util: 30.3.0
       merge-stream: 2.0.0

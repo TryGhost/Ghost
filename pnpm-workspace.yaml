@@ -82,12 +82,12 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/brute-knex': 3.2.2
-  '@tryghost/color-utils': 0.2.20
-  '@tryghost/custom-fonts': 1.0.11
+  '@tryghost/color-utils': 0.2.21
+  '@tryghost/custom-fonts': 1.0.12
   '@tryghost/debug': 2.3.14
   '@tryghost/domain-events': 3.3.15
   '@tryghost/errors': 3.3.14
-  '@tryghost/helpers': 1.1.106
+  '@tryghost/helpers': 1.1.107
   '@tryghost/logging': 5.4.5
   '@tryghost/mg-clean-html': 0.12.6
   '@tryghost/metrics': 3.6.0
@@ -96,10 +96,10 @@ catalog:
   '@tryghost/nql-lang': 0.7.0
   '@tryghost/promise': 2.3.14
   '@tryghost/request': 4.0.7
-  '@tryghost/string': 0.3.5
-  '@tryghost/timezone-data': 1.0.0
+  '@tryghost/string': 0.3.6
+  '@tryghost/timezone-data': 1.0.1
   '@tryghost/tpl': 2.3.14
-  '@tryghost/url-utils': 5.2.9
+  '@tryghost/url-utils': 5.3.0
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/lodash': 4.17.25
@@ -145,7 +145,7 @@ catalog:
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
-  got: 15.1.0
+  got: 16.0.0
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
@@ -262,6 +262,14 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
   'ember-svg-jar>cheerio': 1.2.0
   'juice>cheerio': 0.22.0
+  # mg-utils depends on the npm release of kg-default-cards, so the published
+  # copy was installed alongside the workspace one that ghost/core links — and
+  # it dragged its own published kg-utils, kg-markdown-html-renderer and
+  # url-utils in with it. Point that edge at the workspace package instead, so
+  # content import renders cards with the same code Ghost itself renders them
+  # with. The override is global rather than scoped to mg-utils so the component
+  # tarball override that pack.mjs writes under the same key replaces it.
+  '@tryghost/kg-default-cards': 'workspace:*'
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
