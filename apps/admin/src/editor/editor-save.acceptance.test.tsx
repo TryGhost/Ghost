@@ -6,13 +6,12 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   post,
   renderAdminApp,
   staffRole,
+  submittedPost,
   tag,
   type CapturedEndpointRequest,
   type EndpointCapture,
@@ -40,21 +39,9 @@ function postIn(request: CapturedEndpointRequest | undefined): Record<string, un
   return body?.posts[0] ?? {};
 }
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  return postIn(capture.lastRequest);
-}
-
 function submittedBody(capture: EndpointCapture): string {
   const lexical = submittedPost(capture).lexical;
   return typeof lexical === 'string' ? lexical : '';
-}
-
-function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
 }
 
 /**
@@ -63,39 +50,19 @@ function editorChrome() {
  * serves whatever was saved last.
  */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
-  editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
-    tags: [],
-    ...overrides,
-  });
-  let saves = 0;
-
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
-
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
-
-  const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
+  return fakeEditorPost({
+    tags: [],
+    ...overrides,
   });
-
-  return saveApi;
 }
 
 /** A post that does not exist yet, with the create and the follow-up writes answered. */
 function fakeCreatablePost() {
-  editorChrome();
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
   let created = post({
     id: NEW_POST_ID,
@@ -204,7 +171,7 @@ describe('Post editor saving', () => {
   it(
     'creates a new post on the first edit and swaps the URL without remounting',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
       let created = post({
         id: NEW_POST_ID,
@@ -265,7 +232,7 @@ describe('Post editor saving', () => {
   it(
     'keeps typing that lands while the create is in flight and updates the new post',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
       let created = post({
         id: NEW_POST_ID,
@@ -435,7 +402,7 @@ describe('Post editor saving', () => {
   it(
     'halts on a collision and keeps the content',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
         posts: [
           post({
@@ -484,7 +451,7 @@ describe('Post editor saving', () => {
   it(
     'offers a retry in place when the session expired',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
         posts: [
           post({
@@ -523,7 +490,7 @@ describe('Post editor saving', () => {
   it(
     'still says saving stopped after the session banner is dismissed',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
         posts: [
           post({
@@ -560,7 +527,7 @@ describe('Post editor saving', () => {
   it(
     'does not leave the editor when the slug request finds no session',
     async () => {
-      editorChrome();
+      fakeEditorChrome();
       fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
         posts: [
           post({

@@ -304,8 +304,8 @@ function useLexicalConversion(postType: PostType) {
       try {
         const record: EditorRecord | undefined =
           postType === 'page'
-            ? (await editPage({ page: payload, options })).pages[0]
-            : (await editPost({ post: payload, options })).posts[0];
+            ? (await editPage({ page: payload, options, ...EDITOR_REQUEST_OPTIONS })).pages[0]
+            : (await editPost({ post: payload, options, ...EDITOR_REQUEST_OPTIONS })).posts[0];
         setState(record ? { id: source.id, record } : { id: source.id, error: true });
       } catch (error) {
         setState({ id: source.id, error });

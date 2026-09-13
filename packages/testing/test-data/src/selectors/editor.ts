@@ -35,6 +35,7 @@ export const featureImageTkIndicator = 'feature-image-tk-indicator';
 export const editorLeaveDialog = 'editor-leave-dialog';
 export const editorHeaderActions = 'editor-header-actions';
 export const editorPublishInputsError = 'editor-publish-inputs-error';
+export const unsplashSearchModal = 'unsplash-search-modal';
 
 // settings sidebar testids
 export const postSettingsSidebar = 'post-settings-sidebar';
@@ -153,9 +154,11 @@ export const featureImageUnsplashButton = 'Select feature image from Unsplash';
 export const removeFeatureImageButton = 'Remove feature image';
 export const addFacebookImageLabel = 'Add Facebook image';
 export const removeFacebookImageButton = 'Remove Facebook image';
+export const facebookImageUnsplashButton = 'Select Facebook image from Unsplash';
 export const toggleFeatureImageAltButton = 'Toggle between editing alt text and caption';
 export const addXImageLabel = 'Add X image';
 export const removeXImageButton = 'Remove X image';
+export const xImageUnsplashButton = 'Select X image from Unsplash';
 export const stayInEditorButton = 'Stay';
 export const leaveEditorButton = 'Leave';
 export const conflictReloadButton = 'Reload';

@@ -31,9 +31,12 @@ const http = (apiImpl) => {
         id: req.api_key.get('id'),
         type: req.api_key.get('type'),
       };
-      integration = {
-        id: req.api_key.get('integration_id'),
-      };
+      // Staff tokens belong to a user, not an integration
+      if (req.api_key.get('integration_id')) {
+        integration = {
+          id: req.api_key.get('integration_id'),
+        };
+      }
     }
 
     if (req.user?.id) {

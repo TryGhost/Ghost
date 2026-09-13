@@ -197,8 +197,36 @@ function comparableChildren(input: LexicalInput, siteUrl: string): unknown {
   return stripDirection(normalizeSiteUrls(rootChildren(parseLexical(input)), siteUrl));
 }
 
+// Four slots hold the documents one change verdict compares: saved, live, the
+// hidden editor's baseline and the latest revision. A hit moves back to the front.
+const CACHE_SLOTS = 4;
+
+interface CacheEntry {
+  input: string;
+  siteUrl: string;
+  normalized: string;
+}
+
+const normalizedCache: CacheEntry[] = [];
+
+// Only strings are cached: an object input could be mutated in place behind an
+// identity key, which would serve a stale verdict.
 export function normalizeLexicalForCompare(input: LexicalInput, siteUrl = ''): string {
-  return stableStringify(comparableChildren(input, siteUrl));
+  if (typeof input !== 'string') {
+    return stableStringify(comparableChildren(input, siteUrl));
+  }
+  const hit = normalizedCache.findIndex(
+    (entry) => entry.input === input && entry.siteUrl === siteUrl,
+  );
+  if (hit !== -1) {
+    const [entry] = normalizedCache.splice(hit, 1);
+    normalizedCache.unshift(entry);
+    return entry.normalized;
+  }
+  const normalized = stableStringify(comparableChildren(input, siteUrl));
+  normalizedCache.unshift({ input, siteUrl, normalized });
+  normalizedCache.length = Math.min(normalizedCache.length, CACHE_SLOTS);
+  return normalized;
 }
 
 export function lexicalEquals(a: LexicalInput, b: LexicalInput, siteUrl = ''): boolean {

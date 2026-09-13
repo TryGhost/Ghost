@@ -5,14 +5,12 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
   fakeTags,
   post,
   renderAdminApp,
   staffRole,
+  submittedPost,
   tag,
   unsavedChangesGuarded,
   type EndpointCapture,
@@ -43,20 +41,12 @@ const NOTICE = tag({ id: 'tag3', name: 'Notice', slug: 'notice', visibility: 'pu
 const NEWS_2 = tag({ id: 'tag4', name: 'News', slug: 'news-2', visibility: 'public' });
 const SITE_TAGS = [NEWS, SPORT, NOTICE, NEWS_2];
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
-
 function submittedTags(capture: EndpointCapture): Array<Record<string, unknown>> {
   return (submittedPost(capture).tags ?? []) as Array<Record<string, unknown>>;
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));

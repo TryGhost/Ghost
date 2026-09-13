@@ -8,7 +8,13 @@ export interface ImagesResponseType {
   }[];
 }
 
-export const useUploadImage = createMutation<ImagesResponseType, { file: File }>({
+export interface UploadImagePayload {
+  file: File;
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+}
+
+export const useUploadImage = createMutation<ImagesResponseType, UploadImagePayload>({
   method: 'POST',
   path: () => '/images/upload/',
   body: ({ file }) => {
@@ -17,6 +23,7 @@ export const useUploadImage = createMutation<ImagesResponseType, { file: File }>
     formData.append('purpose', 'image');
     return formData;
   },
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
 });
 
 const UploadedImageResponseSchema = z.object({

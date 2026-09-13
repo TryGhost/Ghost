@@ -30,6 +30,7 @@ import {
   editorStatus,
   editorTitleInput,
   editorWordCount,
+  facebookImageUnsplashButton,
   featureImageAltLabel,
   featureImageTkIndicator,
   featureImageUnsplashButton,
@@ -78,6 +79,7 @@ import {
   settingsXPreview,
   settingsXPreviewImage,
   settingsXTitleInput,
+  xImageUnsplashButton,
   restoreRevisionButton,
   settingsPostHistoryButton,
   settingsShowTitleToggle,
@@ -91,7 +93,6 @@ import {
   settingsTagsToken,
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
-  settingsTiersError,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -99,6 +100,7 @@ import {
   stayInEditorButton,
   tkIndicator,
   toggleFeatureImageAltButton,
+  unsplashSearchModal,
 } from '@tryghost/test-data/selectors/editor';
 
 /** Editor screen locators and gestures for acceptance specs; no assertions. */
@@ -176,7 +178,7 @@ export const editorScreen = {
   settingsTiers: () => page.getByTestId(settingsTiersPicker),
   settingsTier: (name: string) =>
     page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
-  settingsTiersError: () => page.getByTestId(settingsTiersError),
+  settingsTiersError: () => page.getByTestId(settingsTiersPicker).getByRole('alert'),
   settingsTagsField: () => page.getByTestId(settingsTagsField),
   settingsTagsInput: () => page.getByTestId(settingsTagsInput),
   settingsTagsTokens: () => page.getByTestId(settingsTagsToken),
@@ -240,6 +242,7 @@ export const editorScreen = {
       .map((row) => row.textContent ?? ''),
   settingsXImage: () => page.getByTestId(settingsXImage),
   settingsXImageInput: () => page.getByLabelText(addXImageLabel),
+  settingsXImageUnsplashButton: () => page.getByRole('button', { name: xImageUnsplashButton }),
   removeSettingsXImage: () => page.getByRole('button', { name: removeXImageButton }),
   settingsXTitle: () => page.getByTestId(settingsXTitleInput),
   settingsXDescription: () => page.getByTestId(settingsXDescriptionInput),
@@ -250,6 +253,8 @@ export const editorScreen = {
   settingsFacebookPreview: () => page.getByTestId(settingsFacebookPreview),
   settingsFacebookPreviewImage: () => page.getByTestId(settingsFacebookPreviewImage),
   settingsFacebookImageInput: () => page.getByLabelText(addFacebookImageLabel),
+  settingsFacebookImageUnsplashButton: () =>
+    page.getByRole('button', { name: facebookImageUnsplashButton }),
   removeSettingsFacebookImage: () => page.getByRole('button', { name: removeFacebookImageButton }),
 
   settingsPostHistory: () => page.getByTestId(settingsPostHistoryButton),
@@ -278,6 +283,11 @@ export const editorScreen = {
   featureImage: () => page.getByTestId(editorFeatureImage),
   featureImageInput: () => page.getByLabelText(addFeatureImageLabel),
   featureImageUnsplashButton: () => page.getByRole('button', { name: featureImageUnsplashButton }),
+  /** The Unsplash search modal, wherever the picker that opened it sits. */
+  unsplashModal: () => page.getByRole('heading', { name: 'Unsplash' }),
+  unsplashSearch: () => page.getByTestId(unsplashSearchModal),
+  unsplashSearchInput: () => page.getByPlaceholder('Search free high-resolution photos'),
+  unsplashInsertImage: () => page.getByTestId(unsplashSearchModal).getByText('Insert image'),
   removeFeatureImage: () => page.getByRole('button', { name: removeFeatureImageButton }),
   featureImageAltToggle: () => page.getByRole('button', { name: toggleFeatureImageAltButton }),
   featureImageAltInput: () => page.getByLabelText(featureImageAltLabel),

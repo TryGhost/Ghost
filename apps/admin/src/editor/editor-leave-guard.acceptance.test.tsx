@@ -5,10 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
   post,
   renderAdminApp,
   unsavedChangesGuarded,
@@ -31,16 +28,8 @@ const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
-}
-
 function fakeEditablePost(overrides: Partial<SavedPost> = {}, { failSaves = false } = {}) {
-  editorChrome();
+  fakeEditorChrome();
   let current = post({
     id: POST_ID,
     title: 'Hello from React',
@@ -78,7 +67,7 @@ function fakeEditablePost(overrides: Partial<SavedPost> = {}, { failSaves = fals
 }
 
 function fakeNewPost({ failUpdates = false } = {}) {
-  editorChrome();
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\/untitled\//, { slugs: [{ slug: 'untitled' }] });
   let created = post({
     id: NEW_POST_ID,
@@ -118,7 +107,7 @@ function fakeNewPost({ failUpdates = false } = {}) {
 }
 
 function fakeDeferredCleanSave() {
-  editorChrome();
+  fakeEditorChrome();
   let current = post({
     id: POST_ID,
     title: 'Hello from React',

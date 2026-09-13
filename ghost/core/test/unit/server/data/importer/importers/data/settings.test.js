@@ -137,6 +137,41 @@ describe('SettingsImporter', function () {
       assert.equal(siteUuid, undefined);
     });
 
+    it('Removes core settings even when the import file labels them with another group', function () {
+      const fakeSettings = [
+        {
+          key: 'admin_session_secret',
+          value: 'imported-secret',
+          group: 'site',
+          type: 'string',
+        },
+        {
+          key: 'machine_payments_secret',
+          value: 'imported-secret',
+          group: 'site',
+          type: 'string',
+        },
+        {
+          key: 'title',
+          value: 'Imported title',
+          group: 'site',
+          type: 'string',
+        },
+      ];
+
+      const importer = new SettingsImporter(
+        { settings: fakeSettings },
+        { dataKeyToImport: 'settings' },
+      );
+
+      importer.beforeImport();
+
+      assert.deepEqual(
+        importer.dataToImport.map((setting) => setting.key),
+        ['title'],
+      );
+    });
+
     it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {
       const fakeSettings = [
         {

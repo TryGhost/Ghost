@@ -15,7 +15,7 @@ import {
   renderAdminApp,
   settingsResponse,
   staffRole,
-  type EndpointCapture,
+  submittedPost,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -52,12 +52,6 @@ const MAILGUN_ON = {
 };
 
 type SavedPost = ReturnType<typeof post>;
-
-function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
-  const request = capture.requests.at(index);
-  const body = request?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
 
 /** The error body Ghost answers a failed save with, by status. */
 function failureBody(status: number) {
@@ -628,6 +622,61 @@ describe('Editor header actions', () => {
         .toHaveTextContent('Someone else has edited this post');
       await expect(publishScreen.complete()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+
+  it(
+    'returns focus to the Preview button when the preview closes',
+    async () => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.previewButton().click();
+      await expect.element(previewScreen.modal()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(previewScreen.modal()).toHaveCount(0);
+      await expect.element(editorScreen.previewButton()).toHaveFocus();
+    },
+    SLOW,
+  );
+
+  it(
+    'returns focus to the Publish button when the publish flow closes',
+    async () => {
+      publishChrome();
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await editorScreen.publishButton().click();
+      await expect.element(publishScreen.options()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(publishScreen.root()).toHaveCount(0);
+      await expect.element(editorScreen.publishButton()).toHaveFocus();
+    },
+    SLOW,
+  );
+
+  it(
+    'returns focus to the Unpublish button when the update flow closes',
+    async () => {
+      publishChrome();
+      fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await editorScreen.unpublishButton().click();
+      await expect.element(publishScreen.updateFlow()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      await expect.element(editorScreen.unpublishButton()).toHaveFocus();
     },
     SLOW,
   );

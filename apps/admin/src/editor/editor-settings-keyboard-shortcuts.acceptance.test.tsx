@@ -5,10 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
   fakeTiers,
   post,
   renderAdminApp,
@@ -46,11 +43,7 @@ function asRole(name: StaffRoleName) {
 }
 
 function fakeEditablePost(overrides: Partial<ReturnType<typeof post>> = {}) {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs and preview read these beyond the boot table.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeTiers([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],

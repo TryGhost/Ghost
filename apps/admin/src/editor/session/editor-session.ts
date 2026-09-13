@@ -23,6 +23,7 @@ import type {
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
+import { pick } from '@/editor/engine/pick';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
@@ -37,11 +38,13 @@ import {
   settingsFieldError,
   validatedFieldsOf,
   type EditorSettingsPatch,
+  type EditorSettingsFields,
   type SettingsFieldKey,
   type ValidatedSettingsFields,
 } from './settings-fields';
+import type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
-export type EditorWritePayload = Record<string, unknown>;
+export type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
 /** What a manual slug edit did, so the input can revert and report a failure. */
 type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
@@ -56,7 +59,7 @@ const AUTHORED_KEYS = ['title', 'slug'] as const;
 
 type AuthoredFields = Pick<EditablePostProjection, (typeof AUTHORED_KEYS)[number]>;
 
-export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
+interface PreparedWrite extends SaveRequest<EditorSaveSnapshot> {
   /** What the request submits, for the tracker's three-way rebase. */
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
@@ -65,15 +68,18 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   validated: ValidatedSettingsFields;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
-  payload: EditorWritePayload;
   options: PostWriteOptions;
-  isCreate: boolean;
 }
 
+/** `isCreate` picks the transport call, and with it the payload's identity. */
+export type PreparedSave =
+  | (PreparedWrite & { isCreate: true; payload: EditorCreatePayload })
+  | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
+
 export interface EditorSessionTransport {
-  create: (payload: EditorWritePayload) => Promise<EditorRecord | undefined>;
+  create: (payload: EditorCreatePayload) => Promise<EditorRecord | undefined>;
   update: (
-    payload: EditorWritePayload,
+    payload: EditorEditPayload,
     options: PostWriteOptions,
   ) => Promise<EditorRecord | undefined>;
   generateSlug: (text: string, postId: string | null) => Promise<string>;
@@ -91,9 +97,20 @@ export interface EditorSessionOptions {
   onError: (error: unknown) => void;
 }
 
+/** The state React renders, published together after a session change. */
+export interface EditorSessionView {
+  readonly state: SaveEngineState;
+  readonly isDirty: boolean;
+  readonly slug: string;
+  readonly settings: EditorSettingsFields;
+  readonly publishTime: { status: PostStatus; publishedAt: string | null };
+}
+
 export interface EditorSession {
   getState: () => SaveEngineState;
-  /** Notified on engine state changes and whenever dirtiness or the slug moves. */
+  /** A stable snapshot until one of the rendered values changes. */
+  getView: () => EditorSessionView;
+  /** Notified after engine, dirtiness, slug, settings or publish-time changes. */
   subscribe: (listener: () => void) => () => void;
   getSaveSnapshot: () => EditorSaveSnapshot;
   isDirty: () => boolean;
@@ -143,6 +160,17 @@ export interface EditorSession {
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
+}
+
+/** Stages one dirty settings field into both the submitted projection and the payload. */
+function stageSettingsField<Key extends SettingsFieldKey>(
+  key: Key,
+  fields: EditorSettingsFields,
+  projection: EditablePostPatch,
+  payload: EditorCreatePayload,
+): void {
+  projection[key] = fields[key];
+  payload[key] = identityFor(key, fields);
 }
 
 /**
@@ -227,13 +255,41 @@ export function createEditorSession({
 
   const slug = createSlugPort(machine);
 
-  // The engine reports its own state, but an edit the engine drops (a
-  // published post never autosaves) still changes whether the post is dirty.
   const changeListeners = new Set<() => void>();
-  let lastDirty: boolean;
-  let lastSlug = machine.getState().slug;
+  let view: EditorSessionView;
 
   function notifyChanged(): void {
+    if (disposed) {
+      return;
+    }
+    const state = engine.getState();
+    const isDirty = getSnapshot().isDirty;
+    const currentSlug = machine.getState().slug;
+    const currentPublishedAt = livePublishedAt();
+    const settings =
+      view && SETTINGS_FIELD_KEYS.every((key) => view.settings[key] === live[key])
+        ? view.settings
+        : pick(live, SETTINGS_FIELD_KEYS);
+    const publishTime =
+      view &&
+      view.publishTime.status === status &&
+      view.publishTime.publishedAt === currentPublishedAt
+        ? view.publishTime
+        : { status, publishedAt: currentPublishedAt };
+
+    // Body edits need no new React snapshot while the rendered values stay the
+    // same. Keep nested settings and time references stable across engine events.
+    if (
+      view &&
+      view.state === state &&
+      view.isDirty === isDirty &&
+      view.slug === currentSlug &&
+      view.settings === settings &&
+      view.publishTime === publishTime
+    ) {
+      return;
+    }
+    view = { state, isDirty, slug: currentSlug, settings, publishTime };
     for (const listener of changeListeners) {
       try {
         listener();
@@ -241,24 +297,6 @@ export function createEditorSession({
         onError(error);
       }
     }
-  }
-
-  function dirtyChanged(): void {
-    const next = getSnapshot().isDirty;
-    if (next === lastDirty) {
-      return;
-    }
-    lastDirty = next;
-    notifyChanged();
-  }
-
-  function slugChanged(): void {
-    const next = machine.getState().slug;
-    if (next === lastSlug) {
-      return;
-    }
-    lastSlug = next;
-    notifyChanged();
   }
 
   function patchLive(patch: EditablePostPatch): void {
@@ -273,7 +311,7 @@ export function createEditorSession({
       }
     }
     tracker.setLive(identity.id, patch);
-    dirtyChanged();
+    notifyChanged();
   }
 
   // A save writes a title and slug the writer never typed: the request's own
@@ -343,13 +381,12 @@ export function createEditorSession({
     });
   }
 
-  lastDirty = getSnapshot().isDirty;
   // A title commit and a load move the machine's slug without a field patch, so
   // the URL input hears about them through the session's own subscribers.
-  const stopSlugNotifications = machine.subscribe(slugChanged);
+  const stopSlugNotifications = machine.subscribe(notifyChanged);
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
-    const isCreate = request.snapshot.id === null;
+    const id = request.snapshot.id;
     const projection: EditablePostPatch = {
       title: request.title,
       slug: request.slug,
@@ -360,9 +397,9 @@ export function createEditorSession({
       updated_at: request.snapshot.updatedAt,
     };
 
-    const payload: EditorWritePayload = {
-      title: projection.title,
-      slug: projection.slug,
+    const payload: EditorCreatePayload = {
+      title: request.title,
+      slug: request.slug,
       lexical: projection.lexical,
       feature_image: projection.feature_image,
       feature_image_alt: projection.feature_image_alt,
@@ -372,15 +409,13 @@ export function createEditorSession({
     };
     // An Author's or Contributor's create is refused unless `authors` names them
     // (core/server/models/relations/authors.js). Updates never resend it.
-    if (isCreate && currentUserId) {
+    if (id === null && currentUserId) {
       payload.authors = [{ id: currentUserId }];
     }
 
-    const staged = projection as Record<string, unknown>;
     for (const key of SETTINGS_FIELD_KEYS) {
       if (tracker.isFieldDirty(key)) {
-        staged[key] = live[key];
-        payload[key] = identityFor(key, live[key]);
+        stageSettingsField(key, live, projection, payload);
       }
     }
     // The write contract requires the pair even when only one field changed.
@@ -390,36 +425,37 @@ export function createEditorSession({
       projection.visibility = live.visibility;
       payload.visibility = live.visibility;
       projection.tiers = live.tiers;
-      payload.tiers = live.tiers;
-    }
-    if (!isCreate) {
-      if (!projection.updated_at) {
-        // Without the token the server skips its collision check entirely and the
-        // save would overwrite whatever landed in the meantime.
-        return Promise.reject(
-          new Error('Cannot save without the version this post was loaded at.'),
-        );
-      }
-      payload.id = request.snapshot.id;
-      payload.updated_at = projection.updated_at;
+      payload.tiers = identityFor('tiers', live);
     }
     if (request.target.emailOnly !== undefined) {
       payload.email_only = request.target.emailOnly;
     }
 
-    return Promise.resolve({
+    const prepared: PreparedWrite = {
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
       validated: validatedFieldsOf(live),
       builtAtVersion: version,
-      payload,
       options: {
         saveRevision: request.saveRevision,
         newsletter: request.target.newsletter,
         emailSegment: request.target.emailSegment,
       },
-      isCreate,
+    };
+
+    if (id === null) {
+      return Promise.resolve({ ...prepared, isCreate: true, payload });
+    }
+    if (!projection.updated_at) {
+      // Without the token the server skips its collision check entirely and the
+      // save would overwrite whatever landed in the meantime.
+      return Promise.reject(new Error('Cannot save without the version this post was loaded at.'));
+    }
+    return Promise.resolve({
+      ...prepared,
+      isCreate: false,
+      payload: { ...payload, id, updated_at: projection.updated_at },
     });
   }
 
@@ -518,7 +554,7 @@ export function createEditorSession({
     if (created) {
       onIdAcquired(result.id);
     }
-    dirtyChanged();
+    notifyChanged();
   }
 
   const engine = createSaveEngine<EditorSaveSnapshot, PreparedSave, EditorSaveResult>({
@@ -531,12 +567,14 @@ export function createEditorSession({
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);
       }
-      // A save error moves dirtiness without going through a patch, so
-      // `lastDirty` is refreshed here rather than left to catch up.
-      dirtyChanged();
+      // A save error also moves dirtiness without going through a field patch.
+      notifyChanged();
     },
     onListenerError: onError,
   });
+
+  // Seed the external-store snapshot before the session is handed to React.
+  notifyChanged();
 
   // The one place the sidebar's save policy lives. A draft persists a settings
   // field the way the body does; every other status stages it until Update.
@@ -563,7 +601,7 @@ export function createEditorSession({
     pendingSlugEdits.add(edit);
     // Register the request before notifying listeners that may save or leave.
     const submission = slug.editSlug(input);
-    dirtyChanged();
+    notifyChanged();
     try {
       const proposal = await submission;
       if (disposed || !pendingSlugEdits.has(edit)) {
@@ -585,18 +623,17 @@ export function createEditorSession({
     } finally {
       pendingSlugEdits.delete(edit);
       if (!disposed) {
-        dirtyChanged();
+        notifyChanged();
       }
     }
   }
 
   return {
     getState: () => engine.getState(),
+    getView: () => view,
     subscribe: (listener) => {
-      const stopEngine = engine.subscribe(listener);
       changeListeners.add(listener);
       return () => {
-        stopEngine();
         changeListeners.delete(listener);
       };
     },
@@ -632,7 +669,7 @@ export function createEditorSession({
       version += 1;
       publishedAtEditedAt = version;
       releaseSavedPublishTime();
-      dirtyChanged();
+      notifyChanged();
     },
     getPublishedAt: livePublishedAt,
     patchLexical: (lexical) => patchLive({ lexical: JSON.stringify(lexical) }),
@@ -675,17 +712,17 @@ export function createEditorSession({
         return false;
       }
       tracker.revisionRestored(identity.id, revision);
-      dirtyChanged();
+      notifyChanged();
       return true;
     },
 
     setBaseline: (lexical) => {
       tracker.setBaseline(identity.id, lexical);
-      dirtyChanged();
+      notifyChanged();
     },
     baselineFailed: (error) => {
       tracker.baselineFailed(identity.id, error);
-      dirtyChanged();
+      notifyChanged();
     },
 
     // Only a draft's title drives the slug; a published URL must not move.
@@ -722,7 +759,7 @@ export function createEditorSession({
       publishedAt = next.published_at ?? null;
       releaseSavedPublishTime();
       latestRevision = latestRevisionOf(next);
-      dirtyChanged();
+      notifyChanged();
       return true;
     },
 
@@ -756,7 +793,7 @@ export function createEditorSession({
       tracker.load(identity.id, live);
       machine.loaded({ slug: live.slug, title: live.title });
       slug.reset();
-      dirtyChanged();
+      notifyChanged();
       return true;
     },
 

@@ -1,6 +1,6 @@
 import { useCallback, useId } from 'react';
 import { toast } from 'sonner';
-import { Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
+import { FieldError, Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -20,6 +20,7 @@ import {
   settingsXPreview,
   settingsXPreviewImage,
   settingsXTitleInput,
+  xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
@@ -28,6 +29,7 @@ import {
   uploadErrorMessage,
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   X_DESCRIPTION_MAX,
   X_DESCRIPTION_TOO_LONG,
@@ -36,7 +38,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { FieldError } from './field-error';
+import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
@@ -102,7 +104,9 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        session.editSettings({ twitter_image: getImageUrl(await uploadImage({ file })) });
+        session.editSettings({
+          twitter_image: getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })),
+        });
       } catch (error) {
         toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
@@ -152,6 +156,12 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
               </Inline>
             )}
           </ImageUploadDropzone>
+          <UnsplashPicker
+            disabled={isPending}
+            enabled={!!cardConfig.unsplash}
+            label={xImageUnsplashButton}
+            onSelect={({ src }) => session.editSettings({ twitter_image: src })}
+          />
         </ImageUpload>
       )}
 
@@ -168,7 +178,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
           // A cleared field is stored as no value, the way the excerpt is.
           onChange={(event) => session.stageSettings({ twitter_title: event.target.value || null })}
         />
-        {titleError ? <FieldError id={titleErrorId} message={titleError} /> : null}
+        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
       </Stack>
 
       <Stack gap="sm">
@@ -187,7 +197,7 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
           }
         />
         {descriptionError ? (
-          <FieldError id={descriptionErrorId} message={descriptionError} />
+          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
         ) : null}
       </Stack>
 

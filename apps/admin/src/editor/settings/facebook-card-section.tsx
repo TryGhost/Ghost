@@ -1,6 +1,6 @@
 import { useCallback, useId } from 'react';
 import { toast } from 'sonner';
-import { Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
+import { FieldError, Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -13,6 +13,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import {
+  facebookImageUnsplashButton,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -25,6 +26,7 @@ import {
   uploadErrorMessage,
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   OG_DESCRIPTION_MAX,
   OG_DESCRIPTION_TOO_LONG,
@@ -33,7 +35,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { FieldError } from './field-error';
+import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
@@ -106,7 +108,9 @@ export function FacebookCardSection({
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        session.editSettings({ og_image: getImageUrl(await uploadImage({ file })) });
+        session.editSettings({
+          og_image: getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })),
+        });
       } catch (error) {
         toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
       }
@@ -156,6 +160,12 @@ export function FacebookCardSection({
               </Inline>
             )}
           </ImageUploadDropzone>
+          <UnsplashPicker
+            disabled={isPending}
+            enabled={!!cardConfig.unsplash}
+            label={facebookImageUnsplashButton}
+            onSelect={({ src }) => session.editSettings({ og_image: src })}
+          />
         </ImageUpload>
       )}
 
@@ -172,7 +182,7 @@ export function FacebookCardSection({
           // A cleared field is stored as no value, the way the excerpt is.
           onChange={(event) => session.stageSettings({ og_title: event.target.value || null })}
         />
-        {titleError ? <FieldError id={titleErrorId} message={titleError} /> : null}
+        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
       </Stack>
 
       <Stack gap="sm">
@@ -191,7 +201,7 @@ export function FacebookCardSection({
           }
         />
         {descriptionError ? (
-          <FieldError id={descriptionErrorId} message={descriptionError} />
+          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
         ) : null}
       </Stack>
 

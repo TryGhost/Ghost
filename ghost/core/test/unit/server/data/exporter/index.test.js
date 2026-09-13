@@ -206,14 +206,17 @@ describe('Exporter', function () {
       } = require('../../../../../core/server/data/exporter/table-lists.js');
       const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
-      const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr) => {
-        return acc + Object.keys(defaultSettings[curr]).length;
-      }, 0);
+      // core settings are always excluded from exports
+      const nonCoreKeysLength = Object.keys(defaultSettings)
+        .filter((group) => group !== 'core')
+        .reduce((acc, curr) => {
+          return acc + Object.keys(defaultSettings[curr]).length;
+        }, 0);
 
       // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
       //       This is a reminder to think about the importer/exporter scenarios ;)
-      const allowedKeysLength = 113;
-      assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+      const allowedKeysLength = 99;
+      assert.equal(nonCoreKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
     });
   });
 });

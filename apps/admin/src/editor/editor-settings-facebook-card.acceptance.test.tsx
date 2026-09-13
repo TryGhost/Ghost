@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
+  UNSPLASH_PICKED,
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
   fakeTiers,
+  fakeUnsplashPhotos,
   post,
   renderAdminApp,
   staffRole,
+  submittedPost,
   unsavedChangesGuarded,
-  type EndpointCapture,
+  withoutUnsplash,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -22,9 +22,7 @@ import { editorScreen } from '@/editor/editor.screen';
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = { labs: { editorReact: true } };
-const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 const BACK_LABEL = 'Close Facebook card panel';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const FEATURE = 'https://example.com/content/images/2026/09/coast.png';
@@ -39,11 +37,6 @@ const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] } | undefined;
-  return body?.posts[0] ?? {};
-}
-
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
@@ -51,11 +44,7 @@ function asRole(name: StaffRoleName) {
 }
 
 function editorChrome() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs and preview read these beyond the boot table.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeTiers([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
@@ -65,14 +54,7 @@ function editorChrome() {
 /** A post that answers saves the way Ghost does: submitted fields back, fresh token. */
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   editorChrome();
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  return fakeEditorPost({
     custom_excerpt: null,
     excerpt: null,
     meta_title: null,
@@ -83,16 +65,6 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
     feature_image: null,
     tags: [],
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', ROUTE, () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', ROUTE, ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 
@@ -346,6 +318,74 @@ describe('Post settings Facebook card', () => {
       await expect
         .poll(() => submittedPost(saveApi).og_title, FIELD_POLL)
         .toBe('A contributor’s Facebook title');
+    },
+    SLOW,
+  );
+
+  it(
+    'offers Unsplash on an empty Facebook image field',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
+    'leaves Unsplash out while the site’s integration is off',
+    async () => {
+      fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withoutUnsplash() });
+      await openFacebookCard();
+
+      await expect.element(editorScreen.settingsFacebookImageInput()).toBeInTheDocument();
+      await expect(editorScreen.settingsFacebookImageUnsplashButton()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'saves a Facebook image picked from Unsplash as soon as it lands',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+      await editorScreen.unsplashInsertImage().click();
+
+      // A field save has no debounce, so it lands well inside the autosave's 3s.
+      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
+      expect(submittedPost(saveApi)).toMatchObject({ og_image: UNSPLASH_PICKED });
+      await expect.element(editorScreen.removeSettingsFacebookImage()).toBeVisible();
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps the pane open when Escape dismisses the Unsplash search',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      await editorScreen.settingsFacebookImageUnsplashButton().click();
+      await expect.element(editorScreen.unsplashModal()).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+      await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
     },
     SLOW,
   );

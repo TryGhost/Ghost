@@ -59,7 +59,7 @@ and script variants.
 To add an agreed language:
 
 1. Add its code and English label to
-   [`packages/i18n/lib/locale-data.json`](../../packages/i18n/lib/locale-data.json).
+   [`packages/i18n/src/locale-data.json`](../../packages/i18n/src/locale-data.json).
 2. From the repository root, run:
 
    ```bash

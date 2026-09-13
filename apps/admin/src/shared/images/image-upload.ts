@@ -11,7 +11,7 @@ export const ACCEPTED_IMAGE_TYPES = {
   'image/png': ['.png'],
   'image/svg+xml': ['.svg', '.svgz'],
   'image/webp': ['.webp'],
-};
+} as const;
 
 export const UNSUPPORTED_IMAGE_MESSAGE =
   'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';

@@ -14,9 +14,9 @@ import {
   createTestBucket,
   emptyTestBucket,
   deleteTestBucket,
-  getMinioConfig,
+  getS3Config,
   getObject,
-} from '../../../utils/minio';
+} from '../../../utils/s3';
 
 // config-utils is untyped JS, so it can't be imported; the adapter-manager is
 // required alongside it for its `.default` export.
@@ -40,10 +40,10 @@ taxonomies:
   author: /author/{slug}/
 `;
 
-// Skip when MinIO is unreachable. The flag is set by the integration
-// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// Skip when VersityGW is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes VersityGW once before
 // the forks spawn.
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
   'Integration: route-settings adapter-manager wiring',
   function () {
     let adminClient: S3Client;
@@ -71,7 +71,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
     const activateS3Store = () => {
       configUtils.set('adapters:route-settings:active', 'S3RouteSettingsStore');
       configUtils.set('adapters:route-settings:S3RouteSettingsStore', {
-        ...getMinioConfig(),
+        ...getS3Config(),
         bucket,
         staticFileURLPrefix: STATIC_PREFIX,
       });
@@ -113,7 +113,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
 // A booted Ghost always has both adapter types configured, so the guards that
 // skip an unconfigured type — or an unconfigured store within one — never run
-// in an end-to-end suite. They need no bucket, so they run regardless of MinIO.
+// in an end-to-end suite. They need no bucket, so they run regardless of VersityGW.
 describe('Integration: route-settings adapter config normalization', function () {
   const loadNconf = (): ConfigInstance => {
     const nconf = new Provider();

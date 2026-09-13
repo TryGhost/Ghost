@@ -6,7 +6,6 @@ import {
   activeThemeResponse,
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeMembers,
   fakeNewsletters,
   fakePages,
   fakePosts,
@@ -94,8 +93,7 @@ function editorChrome() {
   fakeSnippets([]);
   fakePosts([]);
   fakePages([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
+  // The header's publish inputs read the newsletter list.
   fakeNewsletters([]);
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],

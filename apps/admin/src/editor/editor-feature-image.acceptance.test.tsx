@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
-import { buildLexicalParagraph } from '@tryghost/test-data';
+import { page, userEvent } from 'vitest/browser';
 
 import {
+  UNSPLASH_PICKED,
+  currentRoute,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
+  fakeEditorPost,
+  fakeUnsplashPhotos,
   post,
   renderAdminApp,
-  type EndpointCapture,
+  submittedPost,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
@@ -25,40 +25,14 @@ const SAVE_POLL = { timeout: 10_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
-function submittedPost(capture: EndpointCapture): Record<string, unknown> {
-  const body = capture.lastRequest?.body as { posts: Record<string, unknown>[] };
-  return body.posts[0];
-}
-
 function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
-  let current = post({
-    id: POST_ID,
-    title: 'Hello from React',
-    slug: 'hello-from-react',
-    status: 'draft',
-    lexical: buildLexicalParagraph('Hello from React'),
-    updated_at: LOADED_AT,
-    published_at: null,
+  fakeEditorChrome();
+  return fakeEditorPost({
     tags: [],
     feature_image: null,
     feature_image_alt: null,
     feature_image_caption: null,
     ...overrides,
-  });
-  let saves = 0;
-
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({ posts: [current] }));
-
-  return fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), ({ body }) => {
-    saves += 1;
-    const submitted = (body as { posts: Partial<SavedPost>[] }).posts[0];
-    current = { ...current, ...submitted, updated_at: `2026-01-01T00:00:0${saves}.000Z` };
-    return { posts: [current] };
   });
 }
 
@@ -230,6 +204,27 @@ describe('Post editor feature image', () => {
   );
 
   it(
+    'saves an image picked from Unsplash with the credit it carries',
+    async () => {
+      const saveApi = fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImageUnsplashButton()).toBeVisible();
+      await editorScreen.featureImageUnsplashButton().click();
+      await editorScreen.unsplashInsertImage().click();
+
+      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+      const saved = submittedPost(saveApi);
+      expect(saved.feature_image).toBe(UNSPLASH_PICKED);
+      // The photographer credit the picker hands over, as the caption stores it.
+      expect(String(saved.feature_image_caption)).toContain('A Photographer');
+      await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
+    },
+    SLOW,
+  );
+
+  it(
     'clears the alt text and caption along with the image',
     async () => {
       const saveApi = fakeSavablePost({
@@ -248,6 +243,35 @@ describe('Post editor feature image', () => {
         feature_image_caption: null,
       });
       await expect.element(editorScreen.featureImageInput()).toBeInTheDocument();
+    },
+    SLOW,
+  );
+
+  it(
+    'stays in the editor when the upload finds no session',
+    async () => {
+      fakeSavablePost();
+      const uploadApi = fakeAdminEndpoint(
+        'POST',
+        '/images/upload/',
+        { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.featureImage()).toBeVisible();
+      await editorScreen.titleInput().fill('Brand New Name');
+      await userEvent.upload(
+        editorScreen.featureImageInput().element(),
+        new File(['image'], 'hills.png', { type: 'image/png' }),
+      );
+
+      // A 401 mid-upload must not navigate away from work that is still unsaved.
+      await expect.poll(() => uploadApi.requests.length, SAVE_POLL).toBe(1);
+      await expect.element(editorScreen.titleInput()).toHaveValue('Brand New Name');
+      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+      await expect.element(editorScreen.featureImageInput()).toBeInTheDocument();
+      await expect.element(page.getByText('Couldn’t upload the feature image.')).toBeVisible();
     },
     SLOW,
   );

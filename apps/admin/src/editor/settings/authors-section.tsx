@@ -1,6 +1,5 @@
 import { useCallback, useId, useState } from 'react';
-import { Label } from '@tryghost/shade/components';
-import { Text } from '@tryghost/shade/primitives';
+import { FieldError, Label } from '@tryghost/shade/components';
 import { useBrowseUsers, type User } from '@tryghost/admin-x-framework/api/users';
 import type { PostAuthor } from '@tryghost/admin-x-framework/api/posts';
 import { settingsAuthorsError } from '@tryghost/test-data/selectors/editor';
@@ -61,15 +60,9 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
         onRetry={() => void refetch()}
       />
       {invalid ? (
-        <Text
-          className="text-destructive"
-          data-testid={settingsAuthorsError}
-          id={errorId}
-          role="alert"
-          size="sm"
-        >
+        <FieldError data-testid={settingsAuthorsError} id={errorId}>
           {AUTHORS_REQUIRED}
-        </Text>
+        </FieldError>
       ) : null}
     </SettingsSection>
   );

@@ -114,6 +114,7 @@ describe('Exporter', function () {
       'subscriptions',
       'suppressions',
       'tags',
+      'tinybird_syncs',
       'tokens',
       'users',
       'webhooks',
@@ -174,7 +175,14 @@ describe('Exporter', function () {
       'members_stripe_webhook_secret',
       'machine_payments_secret',
       'machine_payments_deposit_address',
+      'admin_session_secret',
+      'theme_session_secret',
+      'members_email_auth_secret',
+      'members_private_key',
+      'ghost_private_key',
     ];
+
+    assert.equal(_.filter(exportData.data.settings, { group: 'core' }).length, 0);
 
     excludedSettings.forEach((settingKey) => {
       assert.equal(_.find(exportData.data.settings, { key: settingKey }), undefined);

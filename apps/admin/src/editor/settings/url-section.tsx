@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useCallback, useId, useState } from 'react';
-import { Input, Label } from '@tryghost/shade/components';
+import { FieldError, Input, Label } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import {
   settingsSlugError,
@@ -74,15 +74,9 @@ export function UrlSection({
         onKeyDown={onKeyDown}
       />
       {failed ? (
-        <Text
-          className="text-destructive"
-          data-testid={settingsSlugError}
-          id={errorId}
-          role="alert"
-          size="sm"
-        >
+        <FieldError data-testid={settingsSlugError} id={errorId}>
           {EDIT_FAILED}
-        </Text>
+        </FieldError>
       ) : null}
       <Text data-testid={settingsUrlPreview} size="sm" tone="secondary">
         {formatUrlPreview(siteUrl, value)}

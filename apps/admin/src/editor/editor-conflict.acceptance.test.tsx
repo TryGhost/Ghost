@@ -5,10 +5,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import {
   currentRoute,
   fakeAdminEndpoint,
-  fakeMembers,
-  fakeNewsletters,
-  fakePosts,
-  fakeSnippets,
+  fakeEditorChrome,
   post,
   renderAdminApp,
   unsavedChangesGuarded,
@@ -90,11 +87,7 @@ const theirs = (overrides: Partial<ReturnType<typeof mine>> = {}) => ({
  * refusal the read serves their version instead.
  */
 function fakeCollidingPost() {
-  fakeSnippets([]);
-  fakePosts([]);
-  // The header's publish inputs read the site's member total and newsletter list.
-  fakeMembers([]);
-  fakeNewsletters([]);
+  fakeEditorChrome();
   fakeAdminEndpoint('GET', /^\/slugs\/post\//, ({ url }) => ({
     slugs: [{ slug: decodeURIComponent(url.split('/slugs/post/')[1].split('/')[0]) }],
   }));
