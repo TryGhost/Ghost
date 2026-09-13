@@ -180,4 +180,21 @@ describe('Members list', () => {
     await expect(membersScreen.memberRows()).toHaveCount(1);
     await expect.element(membersScreen.link('Alice Alpha')).toBeVisible();
   });
+
+  it('builds a location filter through the filters UI', async () => {
+    const membersApi = fakeMembers(({ filter }) =>
+      filter
+        ? [member({ name: 'Ireland Member' })]
+        : [member({ name: 'Ireland Member' }), member({ name: 'France Member' })],
+    );
+    await renderAdminApp('/members');
+
+    await expect(membersScreen.memberRows()).toHaveCount(2);
+
+    await membersScreen.addFilter('Location', 'Ireland');
+
+    await expect(membersApi).toHaveSentFilter(/geolocation:~'Ireland'/);
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+    await expect.element(membersScreen.link('Ireland Member')).toBeVisible();
+  });
 });

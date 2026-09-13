@@ -22,6 +22,7 @@ describe('memberFields', () => {
     expect(Object.keys(memberFields)).toEqual([
       'name',
       'email',
+      'geolocation',
       'label',
       'subscribed',
       'last_seen_at',
@@ -49,6 +50,7 @@ describe('memberFields', () => {
   });
 
   it('keeps the expected operators for key member fields', () => {
+    expect(memberFields.geolocation.operators).toEqual(['contains', 'does-not-contain']);
     expect(memberFields.label.operators).toEqual(['is-any', 'is-not-any']);
     expect(memberFields.tier_id.operators).toEqual(['is-any', 'is-not-any']);
     expect(memberFields['newsletters.:slug'].operators).toEqual(['is']);

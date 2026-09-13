@@ -39,6 +39,15 @@ const MEMBER_FIELDS = [
     type: 'text',
     ui: { label: 'Email', placeholder: 'Enter email...', className: 'w-48' },
   },
+  // geolocation stored as a JSON string, so exact match and starts/ends operators are not useful. Contains-style
+  // operators search country / region / country_code inside that blob.
+  {
+    key: 'geolocation',
+    icon: 'flag',
+    type: 'text',
+    operators: ['contains', 'does-not-contain'],
+    ui: { label: 'Location', placeholder: 'Enter location...', className: 'w-48' },
+  },
   {
     key: 'label',
     icon: 'tag',

@@ -63,6 +63,7 @@ type PickerKey = StaticMemberFieldKey | `newsletters.${string}` | `metafields.${
 const BASIC_ORDER = [
   'name',
   'email',
+  'geolocation',
   'label',
   'subscribed',
   'last_seen_at',

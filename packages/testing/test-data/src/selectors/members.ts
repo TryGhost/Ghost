@@ -50,4 +50,5 @@ export const importLeaveConfirmationText = 'Leave without importing?';
 export const textFilterFields = {
   Name: 'Enter name...',
   Email: 'Enter email...',
+  Location: 'Enter location...',
 } as const;
