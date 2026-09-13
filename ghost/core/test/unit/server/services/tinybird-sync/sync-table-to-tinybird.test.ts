@@ -126,6 +126,7 @@ describe('syncTableToTinybird', () => {
       createId: () => ObjectId().toHexString(),
       batchSize: BATCH_SIZE,
       maxPayloadBytes: MAX_PAYLOAD_BYTES,
+      maxPayloadMessages: 1000,
       requestTimeoutMs: REQUEST_TIMEOUT_MS,
       ...options,
     });
@@ -203,6 +204,7 @@ describe('syncTableToTinybird', () => {
       createId: () => ObjectId().toHexString(),
       batchSize: BATCH_SIZE,
       maxPayloadBytes: MAX_PAYLOAD_BYTES,
+      maxPayloadMessages: 1000,
       requestTimeoutMs: REQUEST_TIMEOUT_MS,
     });
 
@@ -253,6 +255,19 @@ describe('syncTableToTinybird', () => {
       requests.every(({ lines }) =>
         lines.every(({ payload }) => payload.automation_id === twoByteCharacters),
       ),
+    );
+  });
+
+  it('splits requests by maximum message count without splitting events', async () => {
+    for (let index = 0; index < 5; index += 1) {
+      await insertRun(minutesBeforeNow(10), { id: `run-${index}` });
+    }
+
+    await sync({ maxPayloadMessages: 2 });
+
+    assert.deepEqual(
+      requests.map(({ lines }) => lines.length),
+      [2, 2, 1],
     );
   });
 
