@@ -262,6 +262,14 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.67.0
   'ember-svg-jar>cheerio': 1.2.0
   'juice>cheerio': 0.22.0
+  # mg-utils depends on the npm release of kg-default-cards, so the published
+  # copy was installed alongside the workspace one that ghost/core links — and
+  # it dragged its own published kg-utils, kg-markdown-html-renderer and
+  # url-utils in with it. Point that edge at the workspace package instead, so
+  # content import renders cards with the same code Ghost itself renders them
+  # with. Override is global so the component tarball override in pack.mjs correctly.
+  # overrides it.
+  '@tryghost/kg-default-cards': 'workspace:*'
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
