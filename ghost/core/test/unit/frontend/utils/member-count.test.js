@@ -52,4 +52,24 @@ describe('Member Count', function () {
       return assert.equal(result, mock.expected);
     });
   });
+
+  it('should round correctly at each range boundary', function () {
+    const boundaries = [
+      { members: 50, expected: '50' },
+      { members: 51, expected: '50+' },
+      { members: 100, expected: '100+' },
+      { members: 101, expected: '100+' },
+      { members: 1000, expected: '1,000+' },
+      { members: 1001, expected: '1,000+' },
+      { members: 10000, expected: '10,000+' },
+      { members: 10001, expected: '10,000+' },
+      { members: 100000, expected: '100,000+' },
+      { members: 100001, expected: '100k+' },
+      { members: 1000000, expected: '1m+' },
+      { members: 1000001, expected: '1m+' },
+    ];
+    boundaries.forEach(({ members, expected }) => {
+      assert.equal(memberCountRounding(members), expected, `memberCountRounding(${members})`);
+    });
+  });
 });
