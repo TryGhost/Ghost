@@ -68,7 +68,7 @@
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "jsdom": "catalog:",
-    "moment": "2.30.1",
+    "moment": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
     "sinon": "catalog:",

@@ -155,7 +155,7 @@ catalog:
   microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.30.1
-  moment-timezone: 0.5.45
+  moment-timezone: 0.6.3
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
