@@ -141,6 +141,25 @@ module.exports = {
       to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
     },
     // ============================================================
+    // apps/ — test data must not reach production source
+    // ============================================================
+    {
+      name: 'no-test-data-in-production-source',
+      comment:
+        'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests and fixtures are exempt.',
+      severity: 'error',
+      from: {
+        path: '^apps/[^/]+/src/',
+        pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/'],
+      },
+      to: {
+        // The root entry resolves to the workspace source; the subpaths stay
+        // unresolved specifiers. Both shapes are matched.
+        path: '^(?:@tryghost/test-data($|/)|packages/testing/test-data/)',
+        pathNot: ['^@tryghost/test-data/selectors/', '^packages/testing/test-data/src/selectors/'],
+      },
+    },
+    // ============================================================
     // apps/admin — domains cross into each other only via api.ts
     // ============================================================
     {
@@ -149,14 +168,19 @@ module.exports = {
         "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/',
+        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
           '^(?:@/|apps/admin/src/)$1($|/)',
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+
+          // Shared-shaped modules that still live inside a domain.
+          // Goal: move them under src/shared and work this list down to empty.
+          '^(?:@/|apps/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
+          '^(?:@/|apps/admin/src/)posts/list/post-time$',
         ],
       },
     },
@@ -173,9 +197,9 @@ module.exports = {
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)($|/)',
+        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new)/api(\\.ts)?$',
+          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
         ],
       },
     },
@@ -189,7 +213,7 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/admin/src/shared/' },
       to: {
-        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|layout)($|/)',
+        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
       },
     },
   ],
