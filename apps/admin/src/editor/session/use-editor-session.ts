@@ -85,6 +85,8 @@ export interface EditorSessionBinding {
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  /** The server ID the post holds, once a create has acknowledged one. */
+  persistedId: string | null;
   /** The server ID acquired by this session's first create, if it began new. */
   createdId: string | null;
   /** Moves when a reload replaces the document; keys the editor surface so both Koenig instances re-seed. */
@@ -112,6 +114,8 @@ export interface EditorSessionHandle {
    * an edit. The excerpt is a settings field wherever it is rendered.
    */
   commitSettings: () => void;
+  /** The title the engine holds, which is the default title while the input is blank. */
+  title: string;
   /** The slug the machine holds, which the URL section's input reads. */
   slug: string;
   /** Routes a manual slug edit through the slug machine, then the save policy. */
@@ -246,10 +250,14 @@ export function useEditorSession({
     };
   }, [session]);
 
-  const { state, isDirty, slug, settings, publishTime } = useSyncExternalStore(
-    session.subscribe,
-    session.getView,
-  );
+  const {
+    state,
+    isDirty,
+    title: engineTitle,
+    slug,
+    settings,
+    publishTime,
+  } = useSyncExternalStore(session.subscribe, session.getView);
 
   const stageSettings = session.patchFields;
 
@@ -443,6 +451,7 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
+    persistedId,
     createdId: isNew ? persistedId : null,
     isDirty: () => isDirty,
     contentKey,
@@ -456,6 +465,7 @@ export function useEditorSession({
     editSettings,
     stageSettings,
     commitSettings,
+    title: engineTitle,
     slug,
     editSlug: session.editSlug,
     publishTime,

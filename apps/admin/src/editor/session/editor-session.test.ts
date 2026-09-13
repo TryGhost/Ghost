@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { slugify } from '@tryghost/string';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
 import { deferred } from '@/utils/deferred';
 import {
   createEditorSession,
@@ -689,6 +690,23 @@ describe('createEditorSession', () => {
     expect(seen[3].settings).toBe(seen[1].settings);
     expect(initial.settings.custom_excerpt).toBeNull();
     expect(initial.publishTime.publishedAt).toBeNull();
+  });
+
+  it('publishes the title the engine holds, blank or not', () => {
+    const { session } = harness({ record: record() });
+    const loaded = session.getView();
+
+    session.patchTitle('Hello again');
+    const typed = session.getView();
+    session.patchTitle('Hello again');
+
+    expect(loaded.title).toBe('Hello');
+    expect(typed.title).toBe('Hello again');
+    expect(session.getView()).toBe(typed);
+
+    session.patchTitle('   ');
+
+    expect(session.getView().title).toBe(DEFAULT_TITLE);
   });
 
   it('publishes an accepted refetch together with retained local settings', () => {
