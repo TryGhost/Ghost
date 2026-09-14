@@ -47,7 +47,7 @@
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "prettier": "3.9.4",
+    "prettier": "3.9.6",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
