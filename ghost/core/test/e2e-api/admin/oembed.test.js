@@ -607,11 +607,9 @@ describe('Oembed API', function () {
       assert.equal(oembedMock.isDone(), true);
     });
 
-    it('strips unknown response fields', async function () {
-      // Uses `photo` because unknown providers returning rich/video are
-      // rejected outright as a security measure (ONC-1648); see the next
-      // test. `photo` still passes through so we can verify the legacy
-      // field-stripping behaviour.
+    it('rejects photo responses from non-allowlisted providers', async function () {
+      // `photo` responses can carry an `html` field too, so they get the
+      // same treatment as rich/video below.
       const pageMock = nock('http://test.com')
         .get('/')
         .reply(
@@ -623,30 +621,21 @@ describe('Oembed API', function () {
         version: '1.0',
         type: 'photo',
         url: 'http://test.com/photo.jpg',
+        html: '<img src=x onerror="alert(1)">',
         width: 200,
         height: 100,
-        unknown: 'test',
       });
 
       const url = encodeURIComponent('http://test.com');
-      const res = await request
+      await request
         .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
         .set('Origin', config.get('url'))
         .expect('Content-Type', /json/)
         .expect('Cache-Control', testUtils.cacheRules.private)
-        .expect(200);
+        .expect(422);
 
       assert.equal(pageMock.isDone(), true);
       assert.equal(oembedMock.isDone(), true);
-
-      assert.deepEqual(res.body, {
-        version: '1.0',
-        type: 'photo',
-        url: 'http://test.com/photo.jpg',
-        width: 200,
-        height: 100,
-      });
-      assert.equal(res.body.unknown, undefined);
     });
 
     it('rejects rich/video responses from non-allowlisted providers (ONC-1648)', async function () {
