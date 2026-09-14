@@ -29,6 +29,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { stripTypeScriptTypes } from 'node:module';
 import { parseArgs } from 'node:util';
 
 export type Profile = 'image' | 'archive';
@@ -50,6 +51,8 @@ export interface PruneResult {
   removed: number;
   bytes: number;
   byRule: Record<string, Stats>;
+  /** Inline-map bytes removed from surviving files, grouped like `kept`. */
+  inlineSourceMaps: Record<string, Stats>;
   /** Surviving bytes per package, present only when `measure` was set. */
   kept?: Record<string, Stats>;
 }
@@ -154,6 +157,37 @@ async function* walk(dir: string, prefix = ''): AsyncGenerator<string> {
   }
 }
 
+/**
+ * Match only a final source-map comment, including trailing whitespace.
+ * Parsing the prefix guards against lookalikes inside an enclosing block comment
+ * or an unfinished template/string. The built-in parser accepts CJS and ESM;
+ * unsupported syntax is conservatively left alone. No source is executed.
+ */
+function withoutInlineSourceMap(source: string): string {
+  const match =
+    /(?:\/\/# sourceMappingURL=data:application\/json(?:;charset=utf-8)?;base64,[A-Za-z0-9+/]+={0,2}|\/\*# sourceMappingURL=data:application\/json(?:;charset=utf-8)?;base64,[A-Za-z0-9+/]+={0,2}[\t ]*\*\/)[\t \r\n]*$/.exec(
+      source,
+    );
+  if (!match) {
+    return source;
+  }
+
+  const prefix = source.slice(0, match.index);
+  try {
+    stripTypeScriptTypes(prefix);
+  } catch {
+    return source;
+  }
+  // An unterminated string must be a syntax error at a real comment boundary.
+  // If it parses, the candidate was inside an existing line comment instead.
+  try {
+    stripTypeScriptTypes(`${prefix}"`);
+    return source;
+  } catch {
+    return prefix;
+  }
+}
+
 export async function prune(
   target: string,
   {
@@ -169,6 +203,7 @@ export async function prune(
   const rules = RULES.filter((rule) => rule.profiles.includes(profile));
   const byRule = Object.fromEntries(rules.map((rule) => [rule.name, { files: 0, bytes: 0 }]));
   const kept: Record<string, Stats> = {};
+  const inlineSourceMaps: Record<string, Stats> = {};
   let total = 0;
   let removed = 0;
   let bytes = 0;
@@ -177,10 +212,34 @@ export async function prune(
     total += 1;
     const rule = rules.find((r) => r.match(rel));
     if (!rule) {
+      let strippedBytes = 0;
+      if (profile === 'image' && rel.startsWith('node_modules/') && /\.[cm]?js$/.test(rel)) {
+        const absolute = path.join(target, rel);
+        const original = await fs.readFile(absolute);
+        const source = original.toString('utf8');
+        const stripped = withoutInlineSourceMap(source);
+        strippedBytes = Buffer.byteLength(source) - Buffer.byteLength(stripped);
+        if (strippedBytes) {
+          // Replace the file rather than modifying an inode shared with pnpm's store.
+          if (!dryRun) {
+            const { mode } = await fs.stat(absolute);
+            await fs.writeFile(
+              `${absolute}.prune`,
+              original.subarray(0, original.length - strippedBytes),
+              { mode, flag: 'wx' },
+            );
+            await fs.rename(`${absolute}.prune`, absolute);
+          }
+          const bucket = (inlineSourceMaps[bucketOf(rel)] ??= { files: 0, bytes: 0 });
+          bucket.files += 1;
+          bucket.bytes += strippedBytes;
+          bytes += strippedBytes;
+        }
+      }
       if (measure) {
         const bucket = (kept[bucketOf(rel)] ??= { files: 0, bytes: 0 });
         bucket.files += 1;
-        bucket.bytes += (await fs.stat(path.join(target, rel))).size;
+        bucket.bytes += (await fs.stat(path.join(target, rel))).size - (dryRun ? strippedBytes : 0);
       }
       continue;
     }
@@ -197,7 +256,7 @@ export async function prune(
     bytes += size;
   }
 
-  return { total, removed, bytes, byRule, ...(measure ? { kept } : {}) };
+  return { total, removed, bytes, byRule, inlineSourceMaps, ...(measure ? { kept } : {}) };
 }
 
 const mib = (value: number): string => `${(value / 1024 / 1024).toFixed(1)} MiB`;
@@ -215,6 +274,11 @@ export function reportPrune(result: PruneResult, { dryRun = false } = {}): void 
       );
     }
   }
+  const inlineBytes = Object.values(result.inlineSourceMaps).reduce(
+    (sum, stats) => sum + stats.bytes,
+    0,
+  );
+  console.log(`  inline source maps: ${mib(inlineBytes)}`);
   console.log(
     `  ${dryRun ? 'would remove' : 'removed'} ${result.removed} of ${result.total} files (${mib(result.bytes)})`,
   );
@@ -254,7 +318,10 @@ if (import.meta.main) {
       (acc, stats) => ({ files: acc.files + stats.files, bytes: acc.bytes + stats.bytes }),
       { files: 0, bytes: 0 },
     );
-    await fs.writeFile(values.report, `${JSON.stringify({ profile, total, packages }, null, 2)}\n`);
+    await fs.writeFile(
+      values.report,
+      `${JSON.stringify({ profile, total, packages, inlineSourceMaps: result.inlineSourceMaps }, null, 2)}\n`,
+    );
     console.log(
       `  wrote ${values.report} (${Object.keys(packages).length} packages, ${total.files} files, ${mib(total.bytes)})`,
     );
