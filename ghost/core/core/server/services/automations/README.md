@@ -17,3 +17,53 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.
 - [`welcome-email-automation-poll.ts`](welcome-email-automation-poll.ts) processes older welcome email runs.
+
+## Performance statistics
+
+The entry endpoint requires permission to read the selected automation. Unknown
+automation IDs return 404. It checks existence without loading actions, email
+contents, or email statistics.
+
+## Entries
+
+`GET /ghost/api/admin/automations/:id/entry-stats/` returns:
+
+```json
+{
+  "automation_entry_stats": [{
+    "automation_id": "…",
+    "total_run_count": 12,
+    "entries": [{"date": "2026-09-14", "count": 12}],
+    "window": {
+      "date_from": "2026-09-14",
+      "date_to": "2026-09-15",
+      "bucket": "day",
+      "timezone": "UTC"
+    }
+  }]
+}
+```
+
+One entry is one run, including repeat entries and deleted members. The endpoint
+reads the complete history in one Tinybird query and sums those daily counts for
+the total. There is no separately fetched total that can disagree with the series.
+Missing days are filled with zero from the first entry through today. An automation
+without entries returns a zero total and one zero bucket for today. `date_from` is
+inclusive and `date_to` is exclusive.
+
+Admin displays all-time data using the shared analytics grouping rules: daily for
+spans under 91 days, weekly for 91–270 days, and monthly for longer spans. Buckets
+sum entries; grouping does not limit the history to the web analytics 1,000-day
+fetch window. The API has no date-filter controls or parameters.
+
+## Availability
+
+This spike deliberately requires `automationsTinybirdSync`. A disabled flag,
+missing configuration/token, unavailable pipe, or invalid Tinybird response
+produces an error, never a successful zero or a SQL fallback. SQL repository
+helpers are retained for later restoration and tested separately.
+
+Admin treats any 404 from these requests as unavailable. Other failures show an
+inline retry. The `automationRunAnalytics` flag controls presentation.
+See the [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
+for sorting keys, migration behavior, and query tests.

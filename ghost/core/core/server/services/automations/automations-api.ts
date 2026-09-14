@@ -1,12 +1,16 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import type { AutomationsRepository, EditAutomationData } from './automations-repository';
-import { EMPTY_AUTOMATION_STATS, fetchAutomationStats } from './tinybird-automation-stats';
+import {
+  EMPTY_AUTOMATION_STATS,
+  fetchAutomationStats,
+  fetchAutomationEntryStats,
+} from './tinybird-automation-stats';
+import { fillEntryStats, getEntryStatsWindow } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
 const { knex } = require('../../data/db');
@@ -79,39 +83,39 @@ const repository = createDatabaseAutomationsRepository({
 });
 
 function getTinybirdClient() {
-  if (!labs.isSet('automationsTinybirdSync') || !config.get('tinybird:stats')) {
-    return null;
-  }
-  try {
-    const tinybirdService = TinybirdServiceWrapper.instance;
-    if (!tinybirdService?.getToken()?.token) {
-      return null;
-    }
-    return createTinybirdClient({
-      config,
-      // Fall back to MySQL after the first failed attempt.
-      request: requestExternal.extend({ retry: { limit: 0 } }),
-      settingsCache,
-      tinybirdService,
+  if (!labs.isSet('automationsTinybirdSync')) {
+    throw new errors.InternalServerError({
+      message: 'Tinybird automation stats require the automationsTinybirdSync flag.',
     });
-  } catch (error) {
-    logging.error('Error preparing Tinybird automation stats client:', error);
-    return null;
   }
+  if (!config.get('tinybird:stats')) {
+    throw new errors.InternalServerError({
+      message: 'Tinybird automation stats are enabled but not configured.',
+    });
+  }
+  const tinybirdService = TinybirdServiceWrapper.instance;
+  if (!tinybirdService?.getToken()?.token) {
+    throw new errors.InternalServerError({
+      message: 'Tinybird automation stats token is unavailable.',
+    });
+  }
+  return createTinybirdClient({
+    config,
+    // Surface the first failed attempt so Tinybird failures are visible.
+    request: requestExternal.extend({ retry: { limit: 0 } }),
+    settingsCache,
+    tinybirdService,
+  });
 }
 
 export async function browse() {
   const tinybirdClient = getTinybirdClient();
-  if (!tinybirdClient) {
-    return await repository.browse({ includeStats: true });
-  }
-
   const [browseResult, stats] = await Promise.all([
     repository.browse({ includeStats: false }),
     fetchAutomationStats(tinybirdClient),
   ]);
   if (stats === null) {
-    return await repository.browse({ includeStats: true });
+    throw new errors.InternalServerError({ message: 'Could not load Tinybird automation stats.' });
   }
 
   return {
@@ -133,6 +137,25 @@ export async function read(automationId: string) {
   }
 
   return automation;
+}
+
+async function requireAutomation(automationId: string) {
+  if (!(await repository.exists(automationId))) {
+    throw new errors.NotFoundError({ message: tpl(messages.automationNotFound) });
+  }
+}
+
+export async function readEntryStats(automationId: string) {
+  await requireAutomation(automationId);
+  const client = getTinybirdClient();
+  const stats = await fetchAutomationEntryStats(client, automationId);
+  if (stats === null) {
+    throw new errors.InternalServerError({
+      message: 'Could not load Tinybird automation entry stats.',
+    });
+  }
+  const window = getEntryStatsWindow(stats.entries);
+  return { automation_id: automationId, ...fillEntryStats(stats, window), window };
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

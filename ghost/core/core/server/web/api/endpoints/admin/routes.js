@@ -298,6 +298,7 @@ module.exports = function apiRoutes() {
     http(api.automationActionLinks.browse),
   );
   router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+  router.get('/automations/:id/entry-stats', mw.authAdminApi, http(api.automationEntryStats.read));
   router.post(
     '/automations/:id/email_preview',
     mw.authAdminApi,
