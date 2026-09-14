@@ -147,6 +147,7 @@ catalog:
   glob: 13.0.6
   globals: 17.7.0
   got: 16.0.0
+  jose: 6.2.12
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
