@@ -28,18 +28,21 @@ const serverFilterType = (value: MemberActivityEvent) =>
  * Mixed types deliberately use type priority ahead of ID, as Core does. */
 function legacyServer(
   source: MemberActivityEvent[],
-  { metadata = true, maxLimit = Infinity } = {},
+  { metadata = true, maxLimit = Infinity, textTimestamps = false } = {},
 ) {
   return vi.fn(
     async ({ filter, limit }: Record<string, string>): Promise<MemberActivityFeedResponseType> => {
       let matching = [...source];
       for (const match of filter.matchAll(/data\.created_at:(<)?'([^']+)'/g)) {
-        const cursor = Date.parse(match[2].replace(' ', 'T') + 'Z');
-        matching = matching.filter((value) =>
-          match[1]
-            ? Date.parse(value.data.created_at!) < cursor
-            : Date.parse(value.data.created_at!) === cursor,
-        );
+        const cursor = textTimestamps ? match[2] : Date.parse(match[2].replace(' ', 'T') + 'Z');
+        matching = matching.filter((value) => {
+          // SQLite compares the second-precision text Ghost stores, without
+          // converting the filter value to a date as MySQL does.
+          const stored = textTimestamps
+            ? value.data.created_at!.replace('T', ' ').replace(/\.000Z$/, '')
+            : Date.parse(value.data.created_at!);
+          return match[1] ? stored < cursor : stored === cursor;
+        });
       }
       for (const match of filter.matchAll(/type:-\[([^\]]+)\]/g)) {
         const excluded = match[1].replaceAll("'", '').split(',');
@@ -182,11 +185,29 @@ describe('member activity pagination against the legacy endpoint', () => {
     );
   });
 
+  it.each([1, 75])(
+    'paginates SQLite text timestamps with %s events at the boundary',
+    async (boundaryCount) => {
+      const source = [
+        ...Array.from({ length: boundaryCount }, (_, index) => event(index + 1)),
+        event(100, 'login_event', olderTimestamp),
+      ];
+      const result = await browseAll(legacyServer(source, { textTimestamps: true }), {
+        limit: Math.min(boundaryCount, 50),
+      });
+
+      expect(result.map(identity).sort()).toEqual(source.map(identity).sort());
+      expect(result[result.length - 1]).toEqual(source[source.length - 1]);
+      expect(new Set(result.map(identity)).size).toBe(source.length);
+    },
+  );
+
   it('keeps sub-second timestamp precision across page boundaries', async () => {
     const source = [
       event(3, 'login_event', '2026-09-14T10:00:00.900Z'),
       event(2, 'login_event', '2026-09-14T10:00:00.500Z'),
       event(1, 'login_event', '2026-09-14T10:00:00.100Z'),
+      event(0, 'login_event', '2026-09-14T10:00:00.000Z'),
     ];
     expect(await browseAll(legacyServer(source), { limit: 1 })).toEqual(source);
   });

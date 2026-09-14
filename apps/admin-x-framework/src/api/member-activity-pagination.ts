@@ -30,8 +30,12 @@ function eventTimestamp(event: MemberActivityEvent): string {
   if (!timestamp || !Number.isFinite(Date.parse(timestamp))) {
     throw new Error('Member activity returned an event without a valid timestamp.');
   }
-  // Keep milliseconds: truncating a timestamp can skip events before the cursor.
-  return new Date(timestamp).toISOString().replace('T', ' ').replace('Z', '');
+  // SQLite compares Ghost's second-precision timestamps as text. Omit a zero
+  // fraction to match those rows, but retain nonzero milliseconds for precision.
+  return new Date(timestamp)
+    .toISOString()
+    .replace('T', ' ')
+    .replace(/(?:\.000)?Z$/, '');
 }
 
 function validateEvents(events: MemberActivityEvent[]): void {
