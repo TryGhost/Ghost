@@ -19,6 +19,7 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
@@ -79,6 +80,55 @@ async function openFacebookCard() {
  * is given instead of the post's own, and the card they produce.
  */
 describe('Post settings Facebook card', () => {
+  it.each([
+    { result: 'success', status: 200 },
+    { result: 'failure', status: 415 },
+  ])(
+    'keeps a pending upload disabled after reopening the pane until $result',
+    async ({ status }) => {
+      const saveApi = fakeSavablePost();
+      const pending = deferred<void>();
+      const uploadApi = fakeAdminEndpoint(
+        'POST',
+        '/images/upload/',
+        async () => {
+          await pending.promise;
+          return status === 200 ? { images: [{ url: UPLOADED, ref: null }] } : { errors: [] };
+        },
+        { status },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openFacebookCard();
+
+      try {
+        await userEvent.upload(
+          editorScreen.settingsFacebookImageInput().element(),
+          new File(['image'], 'hills.png', { type: 'image/png' }),
+        );
+        await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
+        await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
+        await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+        await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+        await editorScreen.settingsSubviewRow('Facebook card').click();
+        await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+        await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
+        await expect.element(editorScreen.settingsFacebookImageUnsplashButton()).toBeDisabled();
+        expect(saveApi.requests).toHaveLength(0);
+      } finally {
+        pending.resolve();
+        // Settle the held request even when an assertion fails.
+        if (status === 200) {
+          await expect(saveApi).toHaveSavedFields({ og_image: UPLOADED });
+        } else {
+          await expect.element(editorScreen.settingsFacebookImageInput()).toBeEnabled();
+          await expect.element(editorScreen.settingsFacebookImageUnsplashButton()).toBeEnabled();
+          expect(saveApi.requests).toHaveLength(0);
+        }
+      }
+    },
+    SLOW,
+  );
+
   it(
     'opens the pane over the section list and comes back from it',
     async () => {

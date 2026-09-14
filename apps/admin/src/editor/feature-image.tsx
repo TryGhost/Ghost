@@ -1,31 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { LoadingIndicator } from '@tryghost/shade/components';
-import {
-  ImageUpload,
-  ImageUploadAction,
-  ImageUploadActions,
-  ImageUploadDropzone,
-  ImageUploadImage,
-  ImageUploadPreview,
-} from '@tryghost/shade/patterns';
-import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import {
-  ACCEPTED_IMAGE_TYPES,
-  UNSUPPORTED_IMAGE_MESSAGE,
-  uploadErrorMessage,
-} from '@/shared/images/image-upload';
+import { Inline } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
-import { EDITOR_REQUEST_OPTIONS } from './request-options';
-import { UnsplashPicker } from './unsplash-picker';
+import { ImageField } from './image-field';
+import type { UnsplashSelection } from './unsplash-picker';
+import { useImageFieldUpload } from './use-image-field-upload';
 
 const ALT_MAX_LENGTH = 191;
 const IMAGE_SUBJECT = 'feature image';
-const UNSPLASH_BUTTON_LABEL = 'Select feature image from Unsplash';
 
 export interface FeatureImageProps {
   image: string | null;
@@ -59,22 +43,10 @@ export function FeatureImage({
   onCaptionBlur,
   onTkCountChange,
 }: FeatureImageProps) {
-  const { mutateAsync: uploadImage, isPending } = useUploadImage();
   const [isEditingAlt, setIsEditingAlt] = useState(false);
   const [captionFocused, setCaptionFocused] = useState(false);
   const [captionTkCount, setCaptionTkCount] = useState(0);
   const captionApi = useRef<KoenigInstance | null>(null);
-
-  const handleUpload = useCallback(
-    async (file: File) => {
-      try {
-        onImageChange(getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })));
-      } catch (error) {
-        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
-      }
-    },
-    [uploadImage, onImageChange],
-  );
 
   const relayTkCount = useCallback(
     (count: number) => {
@@ -100,64 +72,42 @@ export function FeatureImage({
     onCaptionBlur();
   }, [onCaptionBlur]);
 
-  const clearImage = () => {
-    setIsEditingAlt(false);
-    relayTkCount(0);
-    onImageClear();
-  };
+  const changeImage = useCallback(
+    (src: string | null) => {
+      if (src === null) {
+        setIsEditingAlt(false);
+        relayTkCount(0);
+        onImageClear();
+        return;
+      }
+      onImageChange(src);
+    },
+    [onImageChange, onImageClear, relayTkCount],
+  );
 
-  if (!image) {
-    return (
-      <ImageUpload className="mb-4 h-14" data-testid="editor-feature-image">
-        <ImageUploadDropzone
-          accept={ACCEPTED_IMAGE_TYPES}
-          className="group/dropzone border-transparent bg-transparent transition-colors hover:bg-interactive-hover"
-          disabled={isPending}
-          inputAriaLabel="Add feature image"
-          noDragEventsBubbling
-          onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
-          onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
-        >
-          {isPending ? (
-            <LoadingIndicator size="sm" />
-          ) : (
-            <Inline gap="sm">
-              <LucideIcon.Plus
-                aria-hidden="true"
-                className="size-4 text-muted-foreground transition-colors group-hover/dropzone:text-foreground"
-              />
-              <span className="text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground">
-                Add feature image
-              </span>
-            </Inline>
-          )}
-        </ImageUploadDropzone>
-        <UnsplashPicker
-          className="top-1/2 right-2 -translate-y-1/2"
-          disabled={isPending}
-          enabled={!!cardConfig.unsplash}
-          label={UNSPLASH_BUTTON_LABEL}
-          onSelect={(picked) => {
-            onImageChange(picked.src);
-            onCaptionChange(picked.caption);
-          }}
-        />
-      </ImageUpload>
-    );
-  }
+  const upload = useImageFieldUpload(IMAGE_SUBJECT, changeImage);
+
+  const pickFromUnsplash = useCallback(
+    (picked: UnsplashSelection) => {
+      onImageChange(picked.src);
+      onCaptionChange(picked.caption);
+    },
+    [onCaptionChange, onImageChange],
+  );
 
   return (
-    <Stack className="mb-4" data-testid="editor-feature-image" gap="sm">
-      <ImageUpload className="max-h-[480px]">
-        <ImageUploadPreview>
-          <ImageUploadImage alt={alt ?? ''} role={alt ? 'img' : 'presentation'} src={image} />
-          <ImageUploadActions>
-            <ImageUploadAction aria-label="Remove feature image" onClick={clearImage}>
-              <LucideIcon.Trash2 />
-            </ImageUploadAction>
-          </ImageUploadActions>
-        </ImageUploadPreview>
-      </ImageUpload>
+    <ImageField
+      alt={alt}
+      className="mb-4"
+      src={image}
+      subject={IMAGE_SUBJECT}
+      testId="editor-feature-image"
+      unsplashEnabled={!!cardConfig.unsplash}
+      upload={upload}
+      variant="bar"
+      onChange={changeImage}
+      onUnsplashSelect={pickFromUnsplash}
+    >
       <Inline align="center" className="relative" gap="sm">
         {isEditingAlt ? (
           <input
@@ -210,6 +160,6 @@ export function FeatureImage({
           Alt
         </button>
       </Inline>
-    </Stack>
+    </ImageField>
   );
 }
