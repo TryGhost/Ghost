@@ -4,6 +4,7 @@ import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationEntryStats,
+  AutomationStatusStats,
 } from '@tryghost/admin-x-framework/api/automations';
 
 // Production inherits this root sizing from Ember's patterns/global.css.
@@ -50,7 +51,20 @@ const response = (id: string, total = 1432, empty = false) => {
   }
   return { automation_entry_stats: [data] };
 };
+const statusResponse = (id: string, counts: Partial<AutomationStatusStats> = {}) => ({
+  automation_status_stats: [
+    {
+      automation_id: id,
+      in_progress_run_count: 10,
+      completed_run_count: 6,
+      exited_early_run_count: 6,
+      unclassified_run_count: 0,
+      ...counts,
+    },
+  ],
+});
 const read = (id: string) => {
+  fakeAdminEndpoint('GET', `/automations/${id}/status-stats/`, statusResponse(id));
   return fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
 };
 const entries = () => page.getByRole('region', { name: 'Total entries' });
@@ -237,5 +251,393 @@ describe('Automation total entries', () => {
       .element(page.getByRole('button', { name: 'Show performance' }))
       .not.toBeInTheDocument();
     expect(request.requests).toHaveLength(0);
+  });
+});
+
+const statuses = () => page.getByRole('region', { name: 'Automation status counts' });
+const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
+const prepareStatuses = (id = 'first') => {
+  read(id);
+  fakeAdminEndpoint('GET', `/automations/${id}/entry-stats/`, response(id));
+};
+
+describe('Automation status counts', () => {
+  it('fetches only when opened and renders three display-only status cards', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', {
+        in_progress_run_count: 118,
+        completed_run_count: 1260,
+        exited_early_run_count: 54,
+      }),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(request.requests).toHaveLength(0);
+    await open();
+    await expect.element(statusCard('In progress')).toHaveTextContent('118');
+    await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
+    await expect.element(statusCard('Exited early')).toHaveTextContent('54');
+    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+    await expect.element(entries()).toHaveTextContent('1,432');
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+    const content = statuses().element();
+    await close();
+    expect(content.isConnected).toBe(true);
+    expect(content.closest('aside')?.inert).toBe(true);
+  });
+
+  it('keeps the chart and cards at a stable width throughout reopening', async () => {
+    prepareStatuses();
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+    const chartElement = entries().element();
+    const expectedWidth = chartElement.getBoundingClientRect().width;
+    await close();
+    await expect.poll(() => document.querySelector('aside')?.getBoundingClientRect().width).toBe(0);
+    const panel = chartElement.closest('aside')!;
+    const cards = ['In progress', 'Completed', 'Exited early'].map((name) =>
+      panel.querySelector(`[role="group"][aria-label="${name}"]`)!,
+    );
+    const expectedCardWidths = cards.map((card) => card.getBoundingClientRect().width);
+    // Pause the real CSS transition and seek through it, independent of frame timing.
+    const originalDuration = panel.style.transitionDuration;
+    panel.style.transitionDuration = '100s';
+    let transition: Animation | undefined;
+    try {
+      await open();
+      transition = panel
+        .getAnimations()
+        .find(
+          (animation) =>
+            animation instanceof CSSTransition && animation.transitionProperty === 'width',
+        );
+      expect(transition).toBeDefined();
+      transition!.pause();
+      const duration = Number(transition!.effect!.getComputedTiming().duration);
+      for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
+        transition!.currentTime = duration * progress;
+        const panelWidth = panel.getBoundingClientRect().width;
+        if (progress > 0 && progress < 1) {
+          expect(panelWidth).toBeGreaterThan(0);
+          expect(panelWidth).toBeLessThan(480);
+        }
+        expect(chartElement.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
+        cards.forEach((card, index) =>
+          expect(card.getBoundingClientRect().width).toBeCloseTo(expectedCardWidths[index], 0),
+        );
+      }
+    } finally {
+      transition?.finish();
+      panel.style.transitionDuration = originalDuration;
+    }
+    expect(entries().element()).toBe(chartElement);
+    await close();
+    expect(chartElement.isConnected).toBe(true);
+    expect(document.querySelector('aside')?.inert).toBe(true);
+    expect(chartElement.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
+  });
+
+  it('fetches both statistics once per page visit despite reopening, focus and reconnect', async () => {
+    prepareStatuses();
+    const chartRequest = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/entry-stats/',
+      response('first'),
+    );
+    const statusRequest = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first'),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    await expect.element(entries()).toHaveTextContent('1,432');
+    await close();
+    await open();
+    window.dispatchEvent(new Event('focus'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('offline'));
+    window.dispatchEvent(new Event('online'));
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+    expect(chartRequest.requests).toHaveLength(1);
+    expect(statusRequest.requests).toHaveLength(1);
+    await expect.element(statuses()).not.toHaveTextContent('Updating');
+  });
+
+  it('keeps the loading and populated layout aligned, including a close while fetching', async () => {
+    prepareStatuses();
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const chartRequest = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', async () => {
+      await pending;
+      return response('first');
+    });
+    const statusRequest = fakeAdminEndpoint('GET', '/automations/first/status-stats/', async () => {
+      await pending;
+      return statusResponse('first');
+    });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(page.getByRole('status', { name: 'Loading total entries' })).toBeVisible();
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+    const chartHeight = entries().element().getBoundingClientRect().height;
+    const cardTop = statusCard('Completed').element().getBoundingClientRect().top;
+    const cardHeight = statusCard('Completed').element().getBoundingClientRect().height;
+    await close();
+    finish();
+    await open();
+    await expect.element(entries()).toHaveTextContent('1,432');
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    expect(entries().element().getBoundingClientRect().height).toBeCloseTo(chartHeight, 0);
+    expect(statusCard('Completed').element().getBoundingClientRect().top).toBeCloseTo(cardTop, 0);
+    expect(statusCard('Completed').element().getBoundingClientRect().height).toBeCloseTo(
+      cardHeight,
+      0,
+    );
+    expect(chartRequest.requests).toHaveLength(1);
+    expect(statusRequest.requests).toHaveLength(1);
+  });
+
+  it('fits the sidebar to a narrow canvas without overflowing the chart or cards', async () => {
+    await page.viewport(400, 800);
+    try {
+      prepareStatuses();
+      await renderAdminApp('/automations/first', flags);
+      await open();
+      await expect.element(statusCard('Completed')).toHaveTextContent('6');
+      const panel = document.querySelector('aside')!;
+      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
+      expect(panel.scrollWidth).toBe(panel.clientWidth);
+      for (const name of ['In progress', 'Completed', 'Exited early']) {
+        const card = statusCard(name).element();
+        expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth);
+      }
+      expect(statusCard('Completed').element().getBoundingClientRect().top).toBeGreaterThan(
+        statusCard('In progress').element().getBoundingClientRect().top,
+      );
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('stacks cards at larger font sizes without overflowing labels', async () => {
+    prepareStatuses();
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    const inProgress = statusCard('In progress').element();
+    const completed = statusCard('Completed').element();
+    await expect
+      .poll(() => inProgress.getBoundingClientRect().top === completed.getBoundingClientRect().top)
+      .toBe(true);
+    document.documentElement.style.fontSize = '100%';
+    try {
+      await expect
+        .poll(() => completed.getBoundingClientRect().top > inProgress.getBoundingClientRect().top)
+        .toBe(true);
+      for (const name of ['In progress', 'Completed', 'Exited early']) {
+        const card = statusCard(name).element();
+        expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth);
+      }
+    } finally {
+      document.documentElement.style.fontSize = '62.5%';
+    }
+  });
+
+  it('shows loading until successful zero counts arrive', async () => {
+    prepareStatuses();
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', async () => {
+      await pending;
+      return statusResponse('first', {
+        in_progress_run_count: 0,
+        completed_run_count: 0,
+        exited_early_run_count: 0,
+      });
+    });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('status'))
+      .toHaveTextContent('Loading automation statuses');
+    await expect.element(statusCard('Completed')).not.toHaveTextContent('0');
+    finish();
+    for (const name of ['In progress', 'Completed', 'Exited early']) {
+      await expect.element(statusCard(name)).toHaveTextContent('0');
+    }
+    await expect.element(statuses().getByRole('status')).not.toBeInTheDocument();
+  });
+
+  it.each([1, 25])(
+    'identifies incomplete history without adding a fourth card (%s)',
+    async (count) => {
+      prepareStatuses();
+      fakeAdminEndpoint(
+        'GET',
+        '/automations/first/status-stats/',
+        statusResponse('first', { unclassified_run_count: count }),
+      );
+      await renderAdminApp('/automations/first', flags);
+      await open();
+      await expect
+        .element(statuses().getByRole('status'))
+        .toHaveTextContent(
+          `Status is unavailable for ${count} ${count === 1 ? 'entry' : 'entries'}.`,
+        );
+      await expect(statuses().getByRole('group')).toHaveCount(3);
+      await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    },
+  );
+
+  it('retries a failed status request while the chart remains available', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      { errors: [{ message: 'Failed' }] },
+      { status: 500 },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await expect.element(statusCard('Completed')).toHaveTextContent('—');
+    await expect.element(entries()).toHaveTextContent('1,432');
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', statusResponse('first'));
+    await statuses().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    await expect.element(statuses().getByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows unavailable values for older Core without a retry or false zeros', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', {}, { status: 404 });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('status'))
+      .toHaveTextContent('Status counts are unavailable on this version of Ghost.');
+    for (const name of ['In progress', 'Completed', 'Exited early']) {
+      await expect.element(statusCard(name)).toHaveTextContent('—');
+    }
+    await expect.element(statuses().getByRole('button')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { name: 'malformed', body: {} },
+    { name: 'wrong automation', body: statusResponse('other') },
+  ])('shows an error for a $name response', async ({ body }) => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/status-stats/', body);
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await expect.element(statusCard('Completed')).toHaveTextContent('—');
+  });
+
+  it('keeps a failed request across reopening until explicitly retried', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      { errors: [{ message: 'Failed' }] },
+      { status: 500 },
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await close();
+    await open();
+    await expect
+      .element(statuses().getByRole('alert'))
+      .toHaveTextContent('Could not load status counts.');
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+    expect(request.requests).toHaveLength(1);
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', { completed_run_count: 1300 }),
+    );
+    await statuses().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(statusCard('Completed')).toHaveTextContent('1,300');
+  });
+
+  it('keeps requests scoped through navigation and late responses', async () => {
+    prepareStatuses();
+    prepareStatuses('second');
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const first = fakeAdminEndpoint('GET', '/automations/first/status-stats/', async () => {
+      await pending;
+      return statusResponse('first');
+    });
+    fakeAdminEndpoint(
+      'GET',
+      '/automations/second/status-stats/',
+      statusResponse('second', { completed_run_count: 2500 }),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.poll(() => first.requests.length).toBe(1);
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('2,500');
+    finish();
+    await close();
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('2,500');
+    const revisit = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first', { completed_run_count: 1600 }),
+    );
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(statusCard('Completed')).toHaveTextContent('1,600');
+    await expect.poll(() => revisit.requests.length).toBe(1);
+  });
+
+  it('does not request counts with run analytics disabled', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint(
+      'GET',
+      '/automations/first/status-stats/',
+      statusResponse('first'),
+    );
+    await renderAdminApp('/automations/first', { labs: { automations: true } });
+    await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
+    expect(request.requests).toHaveLength(0);
+    await expect.element(statuses()).not.toBeInTheDocument();
   });
 });
