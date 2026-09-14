@@ -146,6 +146,28 @@ export const useReadAutomationEntryStats = createQueryWithId<
   parseResponse: (data) => AutomationEntryStatsResponseSchema.parse(data),
 });
 
+export const AutomationStatusStatsSchema = z.object({
+  automation_id: z.string(),
+  in_progress_run_count: z.number().int().nonnegative(),
+  completed_run_count: z.number().int().nonnegative(),
+  exited_early_run_count: z.number().int().nonnegative(),
+  unclassified_run_count: z.number().int().nonnegative(),
+});
+
+const AutomationStatusStatsResponseSchema = z.object({
+  automation_status_stats: z.array(AutomationStatusStatsSchema).length(1),
+});
+
+export type AutomationStatusStats = z.infer<typeof AutomationStatusStatsSchema>;
+
+export const useReadAutomationStatusStats = createQueryWithId<
+  z.infer<typeof AutomationStatusStatsResponseSchema>
+>({
+  dataType: 'AutomationStatusStatsResponseType',
+  path: (id) => `/automations/${id}/status-stats/`,
+  parseResponse: (data) => AutomationStatusStatsResponseSchema.parse(data),
+});
+
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
   dataType: 'AutomationActionLinksResponseType',
   path: (id) => `/automations/${id}/links/`,
