@@ -67,7 +67,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const location = useLocation();
   const savedViews = useMemberViews();
   const activeView = useActiveMemberView(savedViews, nql);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(isAdmin7 && search.length > 0);
   const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
   const [searchInput, setSearchInput] = useState(search);
   const commitSearch = useDebouncedCallback((value: string) => {
@@ -123,7 +123,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
   useEffect(() => {
     setSearchInput(search);
     commitSearch.cancel();
-  }, [search, commitSearch]);
+    if (isAdmin7 && search) {
+      setShowMobileSearch(true);
+    }
+  }, [search, commitSearch, isAdmin7]);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -148,15 +151,26 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
-  const headerSearch =
-    shouldShowMemberControls &&
-    (isAdmin7 ? (
-      <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
-    ) : (
-      <>
-        <Box className="hidden lg:flex">
-          <MembersHeaderSearch search={searchInput} onSearchChange={handleSearchChange} />
-        </Box>
+  const headerSearch = shouldShowMemberControls && (
+    <>
+      <Box className="hidden lg:flex">
+        <MembersHeaderSearch
+          collapsible={isAdmin7}
+          search={searchInput}
+          onSearchChange={handleSearchChange}
+        />
+      </Box>
+      {isAdmin7 ? (
+        <PageHeader.Action
+          aria-expanded={showMobileSearch}
+          className="lg:hidden"
+          label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+          iconOnly
+          onClick={handleMobileSearchToggle}
+        >
+          <LucideIcon.Search />
+        </PageHeader.Action>
+      ) : (
         <Button
           aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
           className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
@@ -165,8 +179,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
         >
           <LucideIcon.Search className="size-4" />
         </Button>
-      </>
-    ));
+      )}
+    </>
+  );
 
   const headerFilters = shouldShowMemberControls && !hasFilters && (
     <MembersFilters
@@ -178,6 +193,17 @@ const MembersPage: React.FC<MembersPageProps> = ({
       savedViews={savedViews}
       onFiltersChange={setFilters}
     />
+  );
+
+  const mobileSearchRow = shouldShowMemberControls && shouldShowMobileSearchRow && (
+    <Box className="w-full lg:hidden">
+      <MembersHeaderSearch
+        ariaLabel="Search members mobile"
+        autoFocus={mobileSearchOpenedByUser}
+        search={searchInput}
+        onSearchChange={handleSearchChange}
+      />
+    </Box>
   );
 
   return (
@@ -218,30 +244,23 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Actions>
               </PageHeader>
 
-              {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                  {shouldShowMobileSearchRow && (
-                    <div className="w-full lg:hidden">
-                      <MembersHeaderSearch
-                        ariaLabel="Search members mobile"
-                        autoFocus={mobileSearchOpenedByUser}
-                        search={searchInput}
-                        onSearchChange={handleSearchChange}
+              {isAdmin7 && mobileSearchRow}
+              {shouldShowMemberControls &&
+                (shouldShowFiltersRow || (!isAdmin7 && shouldShowMobileSearchRow)) && (
+                  <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                    {!isAdmin7 && mobileSearchRow}
+                    {shouldShowFiltersRow && (
+                      <MembersFilters
+                        activeView={activeView}
+                        filters={filters}
+                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+                        nql={nql}
+                        savedViews={savedViews}
+                        onFiltersChange={setFilters}
                       />
-                    </div>
-                  )}
-                  {shouldShowFiltersRow && (
-                    <MembersFilters
-                      activeView={activeView}
-                      filters={filters}
-                      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                      nql={nql}
-                      savedViews={savedViews}
-                      onFiltersChange={setFilters}
-                    />
-                  )}
-                </FilterBar>
-              )}
+                    )}
+                  </FilterBar>
+                )}
               {hasStripeEnabled && (
                 <MultipleActiveSubscriptionsBanner
                   count={multipleActiveSubscriptionsCount}
