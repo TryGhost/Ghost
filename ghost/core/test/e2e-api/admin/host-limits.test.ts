@@ -415,15 +415,17 @@ describe('Host limits', function () {
       await agent.get('config/').expectStatus(200);
     });
 
-    it('registers a periodic limit whose start date cannot be read', async function () {
-      // It counts from that date, so an unreadable one leaves the limit counting against
-      // nothing while reporting itself as applied.
+    it('drops a periodic limit whose start date cannot be read', async function () {
+      // This used to register the limit and report it as applied. A period is counted from
+      // the start date, so an unreadable one left the limit measuring the wrong thing: it
+      // counted against nothing, and once the count stopped being narrowed by a date at
+      // all it would have counted the site's whole history against one period's allowance.
       await setHostLimits(
         { emails: { maxPeriodic: 1 } },
         { subscription: { start: 'not a date' } },
       );
 
-      assert.equal(limits.service.isLimited('emails'), true);
+      assert.equal(limits.service.isLimited('emails'), false);
     });
   });
 

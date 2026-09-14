@@ -1,7 +1,7 @@
 import lowerCase from 'lodash/lowerCase.js';
 import template from 'lodash/template.js';
 
-import { SUPPORTED_INTERVALS, lastPeriodStart } from './date-utils.ts';
+import { SUPPORTED_INTERVALS, isReadableDate, lastPeriodStart } from './date-utils.ts';
 import type {
   CheckOptions,
   Count,
@@ -202,6 +202,14 @@ export class MaxPeriodicLimit extends Limit {
     if (!config.startDate) {
       throw new errors.IncorrectUsageError({
         message: 'Attempted to setup a periodic max limit without a start date',
+      });
+    }
+
+    if (!isReadableDate(config.startDate)) {
+      // A period has to be counted from somewhere. A limit that cannot say where would
+      // otherwise count the whole history against an allowance meant for one period.
+      throw new errors.IncorrectUsageError({
+        message: 'Attempted to setup a periodic max limit with an unreadable start date',
       });
     }
 

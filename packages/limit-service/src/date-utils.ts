@@ -4,7 +4,12 @@ import type { Interval } from './types.ts';
 
 const messages = {
   invalidInterval: 'Invalid interval specified. Only "month" value is accepted.',
+  unreadableStartDate: 'Invalid start date specified. A date in ISO 8601 format is required.',
 };
+
+/** Whether a date can be read at all. A period cannot be counted from one that cannot. */
+export const isReadableDate = (value: string): boolean =>
+  DateTime.fromISO(value, { zone: 'UTC' }).isValid;
 
 export const SUPPORTED_INTERVALS: readonly Interval[] = ['month'];
 
@@ -26,9 +31,17 @@ export const lastPeriodStart = (startDate: string, interval: Interval): string =
     // so the current period is the one beginning at the start date.
     const fullPeriodsPast = Math.max(0, Math.floor(now.diff(startDateISO, 'months').months));
 
-    const lastPeriodStartDate = startDateISO.plus({ months: fullPeriodsPast });
+    const lastPeriodStartDate = startDateISO.plus({ months: fullPeriodsPast }).toISO();
 
-    return lastPeriodStartDate.toISO() as string;
+    if (lastPeriodStartDate === null) {
+      // A start date that cannot be read arrives here as a date that cannot be written.
+      // Answering with nothing would read downstream as "this limit has no period", which
+      // silently turns a per-period allowance into a count of the whole history.
+      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      throw new Error(messages.unreadableStartDate);
+    }
+
+    return lastPeriodStartDate;
   }
 
   // new Error is allowed here, as this package runs in browsers and should not depend on

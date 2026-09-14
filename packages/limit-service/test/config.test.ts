@@ -69,6 +69,21 @@ describe('Config', function () {
             assertExists(countQuery);
             assert.equal(await countQuery(createMockKnex({firstResult: {count}})), count);
         });
+        it('counts the whole history when the cap is not periodic', async function () {
+            const knex = createMockKnex({firstResult: {count: 500}});
+            const countQuery = config.emails?.currentCountQuery;
+            assertExists(countQuery);
+
+            // A host capping emails outright gives the query no period. Narrowing by the
+            // date anyway makes knex refuse to build the query, and the publisher is told
+            // their send failed rather than that they are over their allowance.
+            const result = await countQuery(knex);
+
+            assert.equal(result, 500);
+            const chain = knex.mock.results[0]?.value as {where: Mock};
+            expect(chain.where).not.toHaveBeenCalled();
+        });
+
         it('queries emails since start date and returns sum', async function () {
             const knex = createMockKnex({firstResult: {count: 500}});
             const startDate = '2021-01-01T00:00:00Z';

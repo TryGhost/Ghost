@@ -100,3 +100,13 @@ describe('a period that has not begun', function () {
         assert.equal(lastPeriodStart(tomorrow, 'month'), tomorrow);
     });
 });
+
+describe('a start date that cannot be read', function () {
+    it('refuses it rather than answering with nothing', function () {
+        // Answering with nothing reads downstream as "this limit has no period", which
+        // silently turns a per-period allowance into a count of the whole history.
+        assert.throws(() => lastPeriodStart('not a date', 'month'));
+        assert.throws(() => lastPeriodStart('2026-01-01 00:00:00', 'month'));
+    });
+});
+

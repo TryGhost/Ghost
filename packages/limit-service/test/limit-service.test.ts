@@ -77,6 +77,26 @@ describe('Limit Service', function () {
     });
 
     describe('Loader', function () {
+        it('refuses a periodic limit whose start date cannot be read', function () {
+            // A period is counted from the start date. A limit that cannot say where its
+            // period begins would otherwise count the whole history against an allowance
+            // meant for one period, which reaches a publisher as a send they cannot make.
+            assert.throws(
+                () =>
+                    new LimitService({
+                        limits: {emails: {maxPeriodic: 1}},
+                        subscription: {startDate: 'not a date', interval: 'month'},
+                        errors
+                    }),
+                (err: unknown) => {
+                    assertThrownError(err);
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(err.message, /unreadable start date/);
+                    return true;
+                }
+            );
+        });
+
         it('throws if errors configuration is not specified', function () {
             const limits = {staff: {max: 2}};
 
