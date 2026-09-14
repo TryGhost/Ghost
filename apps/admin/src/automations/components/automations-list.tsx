@@ -162,7 +162,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
 
           return (
             <TableRow
-              key={automation.slug}
+              key={automation.id}
               className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
               data-testid="automation-list-row"
               onClick={handleRowClick}
