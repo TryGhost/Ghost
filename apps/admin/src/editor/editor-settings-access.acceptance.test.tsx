@@ -176,7 +176,7 @@ describe('Post settings access', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Please select at least one tier');
+        .toHaveTextContent('Please select at least one tier.');
       expect(createApi.requests).toHaveLength(0);
       await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Specific tier(s)');
       await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -196,7 +196,7 @@ describe('Post settings access', () => {
       // Nothing is selected yet, so the choice is held back rather than stripped.
       await expect
         .element(editorScreen.settingsTiersError())
-        .toHaveTextContent('Please select at least one tier');
+        .toHaveTextContent('Please select at least one tier.');
       await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
       await expect
         .element(editorScreen.settingsTiers())
@@ -363,7 +363,7 @@ describe('Post settings access', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Please select at least one tier');
+        .toHaveTextContent('Please select at least one tier.');
       expect(saveApi.requests).toHaveLength(0);
       await expect.element(editorScreen.updateButton()).toBeEnabled();
     },

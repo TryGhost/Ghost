@@ -7,13 +7,7 @@ import {
   settingsMetaTitleInput,
   settingsSerpPreview,
 } from '@tryghost/test-data/selectors/editor';
-import {
-  META_DESCRIPTION_MAX,
-  META_DESCRIPTION_TOO_LONG,
-  META_TITLE_MAX,
-  META_TITLE_TOO_LONG,
-  overLength,
-} from '@/editor/session/settings-fields';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import {
   META_DESCRIPTION_RECOMMENDED,
@@ -91,10 +85,8 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
 
   const metaTitle = session.settings.meta_title ?? '';
   const metaDescription = session.settings.meta_description ?? '';
-  const titleError = overLength(metaTitle, META_TITLE_MAX) ? META_TITLE_TOO_LONG : null;
-  const descriptionError = overLength(metaDescription, META_DESCRIPTION_MAX)
-    ? META_DESCRIPTION_TOO_LONG
-    : null;
+  const titleError = settingsFieldErrorFor('meta_title', session.settings);
+  const descriptionError = settingsFieldErrorFor('meta_description', session.settings);
 
   const previewTitle = seoTitle(metaTitle, session.bind.title);
   const previewDescription = seoDescription(metaDescription, session.settings.custom_excerpt ?? '');

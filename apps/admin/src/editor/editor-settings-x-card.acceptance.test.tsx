@@ -397,7 +397,7 @@ describe('Post settings X card', () => {
 
       await expect
         .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-        .toHaveTextContent('Twitter Title cannot be longer than 300 characters.');
+        .toHaveTextContent('X title cannot be longer than 300 characters.');
       await expect.element(editorScreen.settingsXTitle()).toHaveAttribute('aria-invalid', 'true');
       // Refused where the writer is typing rather than as a save they did not ask for.
       await expect.poll(unsavedChangesGuarded).toBe(true);
@@ -408,7 +408,7 @@ describe('Post settings X card', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Twitter Title cannot be longer than 300 characters.');
+        .toHaveTextContent('X title cannot be longer than 300 characters.');
       expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,
@@ -426,7 +426,7 @@ describe('Post settings X card', () => {
 
       await expect
         .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-        .toHaveTextContent('Twitter Description cannot be longer than 500 characters.');
+        .toHaveTextContent('X description cannot be longer than 500 characters.');
       await expect
         .element(editorScreen.settingsXDescription())
         .toHaveAttribute('aria-invalid', 'true');
@@ -437,7 +437,7 @@ describe('Post settings X card', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Twitter Description cannot be longer than 500 characters.');
+        .toHaveTextContent('X description cannot be longer than 500 characters.');
       expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,
