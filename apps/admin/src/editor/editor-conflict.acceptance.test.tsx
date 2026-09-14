@@ -25,9 +25,6 @@ const MY_IMAGE = 'https://example.com/content/images/mine.jpg';
 const THEIR_IMAGE = 'https://example.com/content/images/theirs.jpg';
 const READ_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
-// Watching the header means waiting out its 3s “Saving” hold.
-const SLOW = 20_000;
-
 // Captured before any test stubs it, so afterEach can put it back. Normally
 // undefined: `clipboard` lives on the prototype, not as an own property.
 const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
@@ -491,26 +488,22 @@ describe('Post editor update collision', () => {
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
   });
 
-  it(
-    'follows the status the other writer left the post in',
-    async () => {
-      const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await collide(saveApi);
+  it('follows the status the other writer left the post in', async () => {
+    const { saveApi } = fakeCollidingPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await collide(saveApi);
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft');
-      readAnswers(200, {
-        posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
-      });
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft');
+    readAnswers(200, {
+      posts: [theirs({ status: 'published', published_at: THEIR_SAVE_AT })],
+    });
 
-      await editorScreen.reloadAfterConflict().click();
-      await editorScreen.confirmConflictReload().click();
+    await editorScreen.reloadAfterConflict().click();
+    await editorScreen.confirmConflictReload().click();
 
-      // A stale chip would offer Draft for a post the next save publishes.
-      await expect.element(editorScreen.status()).toHaveTextContent('Published');
-    },
-    SLOW,
-  );
+    // A stale chip would offer Draft for a post the next save publishes.
+    await expect.element(editorScreen.status()).toHaveTextContent('Published');
+  });
 
   it.each([
     ['public', 'paid', 'Paid members only'],
