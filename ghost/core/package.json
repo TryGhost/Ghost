@@ -272,6 +272,7 @@
     "@types/nodemailer": "8.0.1",
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
+    "@types/probability-distributions": "catalog:",
     "@types/sanitize-html": "catalog:",
     "@types/semver": "catalog:",
     "@types/sinon": "catalog:",
