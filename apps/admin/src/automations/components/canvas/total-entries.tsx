@@ -4,9 +4,16 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useAutomationEntryStats } from '@/automations/hooks/use-automation-entry-stats';
 import { TotalEntriesChart } from './total-entries-chart';
+import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 
-export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const { chart, isLoading, isError, unavailable, retry } = useAutomationEntryStats(automationId);
+export const TotalEntries: React.FC<{ automationId: string; dateRange: PerformanceDateRange }> = ({
+  automationId,
+  dateRange,
+}) => {
+  const { chart, isLoading, isError, unavailable, retry } = useAutomationEntryStats(
+    automationId,
+    dateRange,
+  );
   const headingId = useId();
 
   return (
@@ -36,7 +43,9 @@ export const TotalEntries: React.FC<{ automationId: string }> = ({ automationId 
       {chart && <TotalEntriesChart data={chart} />}
       {unavailable && (
         <Text className="py-6" role="status" size="sm" tone="secondary">
-          All-time entry analytics are unavailable on this version of Ghost.
+          {dateRange.value === 'all'
+            ? 'Entry analytics are unavailable on this version of Ghost.'
+            : 'Entry analytics are unavailable for this date range.'}
         </Text>
       )}
       {isError && (

@@ -65,6 +65,18 @@ describe('automation entry chart mapping', () => {
     },
   );
 
+  it('preserves leading zero days in a selected range', () => {
+    const stats = history(30);
+    stats.entries.forEach((entry, index) => {
+      entry.count = index === 29 ? 2 : 0;
+    });
+    stats.total_run_count = 2;
+    const mapped = mapAutomationEntryStats(stats, 30);
+    expect(mapped.points).toHaveLength(30);
+    expect(mapped.points[0]).toMatchObject({ date: '2020-01-01', value: 0 });
+    expect(mapped.total).toBe('2');
+  });
+
   it('keeps an empty chart at zero with a usable axis', () => {
     const stats = history(1);
     stats.entries[0].count = 0;

@@ -127,7 +127,7 @@ export const AutomationEntryStatsSchema = z.object({
     date_from: z.iso.date(),
     date_to: z.iso.date(),
     bucket: z.literal('day'),
-    timezone: z.literal('UTC'),
+    timezone: z.string().min(1),
   }),
 });
 
