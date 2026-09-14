@@ -3,9 +3,10 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
 import { STATS_RANGES } from '@/shared/analytics/constants';
 
-export const mapAutomationEntryStats = (stats: AutomationEntryStats) => {
-  // This sentinel selects display grouping only; the API supplies the actual full history.
-  const range = STATS_RANGES.allTime.value;
+export const mapAutomationEntryStats = (
+  stats: AutomationEntryStats,
+  range: number = STATS_RANGES.allTime.value,
+) => {
   const points = sanitizeChartData(stats.entries, range, 'count', 'sum').map(({ date, count }) => ({
     date,
     value: count,
@@ -13,6 +14,7 @@ export const mapAutomationEntryStats = (stats: AutomationEntryStats) => {
     label: 'Entries',
   }));
   return {
+    allTime: range === STATS_RANGES.allTime.value,
     total: formatNumber(stats.total_run_count),
     points,
     range: getEffectiveChartRange(range, stats.entries, { fieldName: 'count' }),

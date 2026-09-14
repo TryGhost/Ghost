@@ -77,10 +77,10 @@ is not capped at the web analytics 1,000-day fetch window.
 
 Daily buckets remain the API contract. Admin's existing chart groups long histories
 by summing daily buckets: daily below 91 days, weekly for 91–270 days, and monthly
-for longer spans. Date-selector wiring belongs to NY-1590; this endpoint change does
-not alter the current all-time UI or status-count semantics. A future range consumer
-must key requests by automation, dates, and timezone and use the returned window
-rather than labelling a stale response with a newly selected range.
+for longer spans. Admin offers All time (the default), Last 7 days, Last 30 days,
+and Last 90 days, including today in the browser timezone, as in web analytics.
+The date selector controls only Total entries and its chart. Requests are keyed
+by automation, dates, and timezone; response windows are checked before display.
 
 ## Status counts
 
@@ -109,9 +109,12 @@ outcomes:
   explains this coverage gap below the three cards.
 
 The chart and status endpoints are independent requests; the cards can remain
-available if the chart fails, and vice versa. Their responses are cached from the
-first sidebar opening until navigation. Closing, reopening, focus, and reconnect
-do not refresh them. Failed requests require an explicit retry.
+available if the chart fails, and vice versa. Both fetch on first sidebar opening.
+Each entry date range is fetched once per page visit. Returning to a visited range
+reuses its result, including any error until an explicit retry. Changing or clearing
+the range does not change or refetch any status counts. The status endpoint has no
+date-range parameters. Closing, reopening, focus, and reconnect do not refresh
+either request. Navigation clears the entry-range cache and starts a new page visit.
 
 ## Availability
 

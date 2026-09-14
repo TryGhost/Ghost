@@ -12,7 +12,7 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
       </Text>
       <figure aria-label="Automation entries" className="relative">
         <figcaption className="sr-only">
-          All-time automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
+          Automation entries from {data.startDate} to {data.endDate}, in {data.timezone}.
         </figcaption>
         <GhAreaChart
           className="h-[180px]"
@@ -28,7 +28,7 @@ export const TotalEntriesChart: React.FC<{ data: AutomationEntriesChartData }> =
             size="sm"
             tone="secondary"
           >
-            No entries yet
+            {data.allTime ? 'No entries yet' : 'No entries in this period'}
           </Text>
         )}
       </figure>
