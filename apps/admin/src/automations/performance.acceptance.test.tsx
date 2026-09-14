@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
+import { settleRequests } from '@test-utils/acceptance/worker';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
@@ -41,7 +42,12 @@ const stats = (id: string, total = 1432, empty = false): AutomationEntryStats =>
           42, 40, 42, 38, 36, 38, 34, 36,
         ][day],
   })),
-  window: { date_from: '2026-06-22', date_to: '2026-07-22', bucket: 'day', timezone: 'UTC' },
+  window: {
+    date_from: '2026-06-22',
+    date_to: '2026-07-22',
+    bucket: 'day',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
 });
 const response = (id: string, total = 1432, empty = false) => {
   const data = stats(id, total, empty);
@@ -74,7 +80,11 @@ const close = () => page.getByRole('button', { name: 'Hide performance' }).click
 describe('Automation total entries', () => {
   it('fetches on opening and shows the total and chart date labels', async () => {
     read('first');
-    const request = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', response('first'));
+    const request = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      response('first'),
+    );
     await renderAdminApp('/automations/first', flags);
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
     expect(request.requests).toHaveLength(0);
@@ -99,7 +109,7 @@ describe('Automation total entries', () => {
     body.automation_entry_stats[0].entries.forEach((entry) => {
       entry.count = 7;
     });
-    fakeAdminEndpoint('GET', '/automations/first/entry-stats/', body);
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, body);
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(entries()).toHaveTextContent('210');
@@ -117,7 +127,7 @@ describe('Automation total entries', () => {
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    fakeAdminEndpoint('GET', '/automations/first/entry-stats/', async () => {
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, async () => {
       await pending;
       return response('first', 0, true);
     });
@@ -136,14 +146,14 @@ describe('Automation total entries', () => {
     read('first');
     fakeAdminEndpoint(
       'GET',
-      '/automations/first/entry-stats/',
+      /^\/automations\/first\/entry-stats\/\?/,
       { errors: [{ message: 'Failed' }] },
       { status: 500 },
     );
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
-    fakeAdminEndpoint('GET', '/automations/first/entry-stats/', response('first'));
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, response('first'));
     await entries().getByRole('button', { name: 'Retry' }).click();
     await expect.element(entries()).toHaveTextContent('1,432');
     await expect.element(entries().getByRole('alert')).not.toBeInTheDocument();
@@ -153,7 +163,7 @@ describe('Automation total entries', () => {
     read('first');
     fakeAdminEndpoint(
       'GET',
-      '/automations/first/entry-stats/',
+      /^\/automations\/first\/entry-stats\/\?/,
       { errors: [{ message: 'Not found' }] },
       { status: 404 },
     );
@@ -161,7 +171,7 @@ describe('Automation total entries', () => {
     await open();
     await expect
       .element(entries())
-      .toHaveTextContent('All-time entry analytics are unavailable on this version of Ghost.');
+      .toHaveTextContent('Entry analytics are unavailable on this version of Ghost.');
     await expect.element(entries().getByRole('figure')).not.toBeInTheDocument();
     await expect.element(entries().getByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
@@ -171,7 +181,7 @@ describe('Automation total entries', () => {
     { name: 'wrong automation', body: response('other') },
   ])('shows an error for a $name response', async ({ body }) => {
     read('first');
-    fakeAdminEndpoint('GET', '/automations/first/entry-stats/', body);
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, body);
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
@@ -180,7 +190,11 @@ describe('Automation total entries', () => {
 
   it('caches the chart until the next page visit', async () => {
     read('first');
-    const request = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', response('first'));
+    const request = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      response('first'),
+    );
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.element(entries()).toHaveTextContent('1,432');
@@ -197,7 +211,7 @@ describe('Automation total entries', () => {
     await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
     const revisit = fakeAdminEndpoint(
       'GET',
-      '/automations/first/entry-stats/',
+      /^\/automations\/first\/entry-stats\/\?/,
       response('first', 1500),
     );
     window.location.hash = '#/automations/first';
@@ -215,11 +229,11 @@ describe('Automation total entries', () => {
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    const first = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', async () => {
+    const first = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, async () => {
       await pending;
       return response('first');
     });
-    fakeAdminEndpoint('GET', '/automations/second/entry-stats/', response('second', 2500));
+    fakeAdminEndpoint('GET', /^\/automations\/second\/entry-stats\/\?/, response('second', 2500));
     await renderAdminApp('/automations/first', flags);
     await open();
     await expect.poll(() => first.requests.length).toBe(1);
@@ -231,7 +245,7 @@ describe('Automation total entries', () => {
     // Return navigation gives the late response a chance to populate only its own cache.
     const revisit = fakeAdminEndpoint(
       'GET',
-      '/automations/first/entry-stats/',
+      /^\/automations\/first\/entry-stats\/\?/,
       response('first', 1600),
     );
     await expect.element(entries()).not.toHaveTextContent('1,432');
@@ -244,7 +258,11 @@ describe('Automation total entries', () => {
 
   it('does not fetch entry stats with the feature flag disabled', async () => {
     read('first');
-    const request = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', response('first'));
+    const request = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      response('first'),
+    );
     await renderAdminApp('/automations/first', { labs: { automations: true } });
     await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
     await expect
@@ -258,7 +276,7 @@ const statuses = () => page.getByRole('region', { name: 'Automation status count
 const statusCard = (name: string) => statuses().getByRole('group', { name, exact: true });
 const prepareStatuses = (id = 'first') => {
   read(id);
-  fakeAdminEndpoint('GET', `/automations/${id}/entry-stats/`, response(id));
+  fakeAdminEndpoint('GET', new RegExp(`^/automations/${id}/entry-stats/\\?`), response(id));
 };
 
 describe('Automation status counts', () => {
@@ -346,11 +364,11 @@ describe('Automation status counts', () => {
     expect(chartElement.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
   });
 
-  it('fetches both statistics once per page visit despite reopening, focus and reconnect', async () => {
+  it('does not refetch the unchanged range or statuses on reopening, focus or reconnect', async () => {
     prepareStatuses();
     const chartRequest = fakeAdminEndpoint(
       'GET',
-      '/automations/first/entry-stats/',
+      /^\/automations\/first\/entry-stats\/\?/,
       response('first'),
     );
     const statusRequest = fakeAdminEndpoint(
@@ -382,10 +400,14 @@ describe('Automation status counts', () => {
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    const chartRequest = fakeAdminEndpoint('GET', '/automations/first/entry-stats/', async () => {
-      await pending;
-      return response('first');
-    });
+    const chartRequest = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      async () => {
+        await pending;
+        return response('first');
+      },
+    );
     const statusRequest = fakeAdminEndpoint('GET', '/automations/first/status-stats/', async () => {
       await pending;
       return statusResponse('first');
@@ -639,5 +661,321 @@ describe('Automation status counts', () => {
     await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
     expect(request.requests).toHaveLength(0);
     await expect.element(statuses()).not.toBeInTheDocument();
+  });
+});
+
+const selectRange = async (label: string) => {
+  await page.getByRole('button', { name: 'Filter performance' }).click();
+  await page.getByRole('menuitemradio', { name: label, exact: true }).click();
+};
+const rangeResponse = (url: string, count = 3) => {
+  const params = new URL(url).searchParams;
+  const from = params.get('date_from');
+  const to = params.get('date_to');
+  if (!from || !to) {
+    return response('first');
+  }
+  const start = Date.parse(from);
+  const end = Date.parse(to) + 86400000;
+  const days = (end - start) / 86400000;
+  return {
+    automation_entry_stats: [
+      {
+        automation_id: 'first',
+        total_run_count: count * days,
+        entries: Array.from({ length: days }, (_, i) => ({
+          date: new Date(start + i * 86400000).toISOString().slice(0, 10),
+          count,
+        })),
+        window: {
+          date_from: from,
+          date_to: new Date(end).toISOString().slice(0, 10),
+          bucket: 'day' as const,
+          timezone: params.get('timezone')!,
+        },
+      },
+    ],
+  };
+};
+
+describe('Automation performance dates', () => {
+  it('announces the selected date range and supports keyboard selection', async () => {
+    read('first');
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    const trigger = page.getByRole('button', { name: 'Filter performance' });
+    trigger.element().focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect
+      .element(page.getByRole('menuitemradio', { name: 'All time', checked: true }))
+      .toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('menuitemradio', { name: 'Last 7 days' })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    await expect.element(trigger).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('menuitemradio', { name: 'Last 7 days', checked: true }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('menuitemradio', { name: 'All time', checked: false }))
+      .toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(trigger).toHaveFocus();
+  });
+
+  it('caches visited entry ranges until navigating away from the automation', async () => {
+    read('first');
+    read('second');
+    let countPerDay = 3;
+    const requests = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url, countPerDay),
+    );
+    fakeAdminEndpoint('GET', /^\/automations\/second\/entry-stats\/\?/, response('second'));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    await selectRange('Last 30 days');
+    await expect.element(entries().getByText('90', { exact: true })).toBeVisible();
+    countPerDay = 5;
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await settleRequests();
+    expect(requests.requests).toHaveLength(3);
+
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByText('35', { exact: true })).toBeVisible();
+    expect(requests.requests).toHaveLength(5);
+  });
+
+  it('keeps a revisited range error until explicitly retried', async () => {
+    read('first');
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, response('first'));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    const failed = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      {},
+      { status: 500 },
+    );
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
+    await settleRequests();
+    expect(failed.requests).toHaveLength(1);
+    const retried = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    await entries().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    expect(retried.requests).toHaveLength(1);
+    expect(retried.lastRequest!.url).toBe(failed.lastRequest!.url);
+  });
+
+  it('filters only entries across date presets and clearing, without refetching status counts', async () => {
+    read('first');
+    const statusRequests = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/status-stats\//,
+      statusResponse('first', {
+        in_progress_run_count: 118,
+        completed_run_count: 1260,
+        exited_early_run_count: 42,
+      }),
+    );
+    const expectUnfilteredStatuses = async () => {
+      await expect.element(statusCard('In progress')).toHaveTextContent('118');
+      await expect.element(statusCard('Completed')).toHaveTextContent('1,260');
+      await expect.element(statusCard('Exited early')).toHaveTextContent('42');
+      await settleRequests();
+      expect(statusRequests.requests).toHaveLength(1);
+      expect(new URL(statusRequests.lastRequest!.url).search).toBe('');
+    };
+    const requests = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await expectUnfilteredStatuses();
+    expect(new URL(requests.requests[0].url).searchParams.has('date_from')).toBe(false);
+    await expect
+      .element(page.getByRole('button', { name: 'Clear date filter' }))
+      .not.toBeInTheDocument();
+    for (const days of [7, 30, 90]) {
+      await selectRange(`Last ${days} days`);
+      await expect.element(entries()).toHaveTextContent(String(days * 3));
+      const query = new URL(requests.lastRequest!.url).searchParams;
+      expect(
+        (Date.parse(query.get('date_to')!) - Date.parse(query.get('date_from')!)) / 86400000 + 1,
+      ).toBe(days);
+      expect(query.get('timezone')).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
+      await expect
+        .element(entries().getByRole('figure'))
+        .toHaveTextContent(query.get('date_from')!);
+      await expect
+        .element(page.getByRole('button', { name: 'Clear date filter' }))
+        .toHaveTextContent(`Last ${days} days`);
+      await expectUnfilteredStatuses();
+    }
+    const count = requests.requests.length;
+    await close();
+    await open();
+    await expect.element(entries().getByText('270', { exact: true })).toBeVisible();
+    expect(requests.requests.length).toBe(count);
+    await expectUnfilteredStatuses();
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await expectUnfilteredStatuses();
+    await expect
+      .element(page.getByRole('button', { name: 'Clear date filter' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('hides old totals while a range loads and ignores its late response after another selection', async () => {
+    read('first');
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const requests = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      async ({ url }) => {
+        const params = new URL(url).searchParams;
+        if (
+          params.has('date_from') &&
+          (Date.parse(params.get('date_to')!) - Date.parse(params.get('date_from')!)) / 86400000 ===
+            6
+        ) {
+          await gate;
+        }
+        return rangeResponse(url);
+      },
+    );
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await open();
+      await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+      await selectRange('Last 7 days');
+      await expect.poll(() => requests.requests.length).toBe(2);
+      await expect
+        .element(entries().getByRole('status', { name: 'Loading total entries' }))
+        .toBeVisible();
+      await expect.element(entries()).not.toHaveTextContent('1,432');
+      await selectRange('Last 30 days');
+      await expect.element(entries().getByText('90', { exact: true })).toBeVisible();
+      release();
+      await settleRequests();
+      await expect.element(entries().getByText('90', { exact: true })).toBeVisible();
+      await expect.element(entries()).not.toHaveTextContent('21');
+    } finally {
+      release();
+    }
+  });
+
+  it('distinguishes an empty range from a failed query and retries the selected range', async () => {
+    read('first');
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url, 0),
+    );
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await selectRange('Last 7 days');
+    await expect.element(entries()).toHaveTextContent('No entries in this period');
+    const failed = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      { errors: [{ message: 'Unavailable', type: 'InternalServerError' }] },
+      { status: 500 },
+    );
+    await selectRange('Last 30 days');
+    await expect.element(entries().getByRole('alert')).toHaveTextContent('Could not load entries.');
+    await expect.element(entries()).not.toHaveTextContent('No entries in this period');
+    const retry = fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    await entries().getByRole('button', { name: 'Retry' }).click();
+    await expect.element(entries().getByText('90', { exact: true })).toBeVisible();
+    expect(retry.lastRequest!.url).toBe(failed.lastRequest!.url);
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+  });
+
+  it('resets the range on another automation and ignores the previous page response', async () => {
+    read('first');
+    read('second');
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const first = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/first\/entry-stats\/\?/,
+      async ({ url }) => {
+        if (new URL(url).searchParams.has('date_from')) {
+          await gate;
+        }
+        return rangeResponse(url);
+      },
+    );
+    const second = fakeAdminEndpoint(
+      'GET',
+      /^\/automations\/second\/entry-stats\/\?/,
+      response('second', 2500),
+    );
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await open();
+      await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+      await selectRange('Last 7 days');
+      await expect.poll(() => first.requests.length).toBe(2);
+      window.location.hash = '#/automations/second';
+      await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+      await open();
+      await expect.element(entries().getByText('2,500', { exact: true })).toBeVisible();
+      expect(new URL(second.lastRequest!.url).searchParams.has('date_from')).toBe(false);
+      await expect
+        .element(page.getByRole('button', { name: 'Clear date filter' }))
+        .not.toBeInTheDocument();
+      release();
+      await settleRequests();
+      await expect.element(entries().getByText('2,500', { exact: true })).toBeVisible();
+    } finally {
+      release();
+    }
+  });
+
+  it('treats an unfiltered response to a filtered request as unavailable and allows clearing', async () => {
+    read('first');
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, response('first'));
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+    await selectRange('Last 7 days');
+    await expect
+      .element(entries())
+      .toHaveTextContent('Entry analytics are unavailable for this date range.');
+    await expect.element(entries()).not.toHaveTextContent('1,432');
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
   });
 });
