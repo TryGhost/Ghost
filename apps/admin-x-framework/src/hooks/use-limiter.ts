@@ -34,6 +34,69 @@ interface LimiterLimits {
   };
 }
 
+type PeriodicSubscription = {
+  startDate: string;
+  interval: 'month';
+};
+
+// limit-service resolves the period from this date with luxon's ISO parser. A value that
+// parser can't read leaves the limit with no period to count against, so it registers but
+// never fires, with nothing said about it. Anything not recognised here is treated as no
+// anchor at all, which at least warns. This covers the extended ISO forms a subscription
+// start arrives in, deliberately not the basic (20260821) or week-date (2026-W34-5) forms
+// luxon would also take, so it errs towards the warning rather than the silent limit.
+const ISO_START_DATE =
+  /^(\d{4})-(\d{2})-(\d{2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+
+// `Date.parse` normalises an impossible day instead of rejecting it — 2026-02-29 comes back
+// as 2026-03-01 — so the calendar fields are checked on their own. Doing it on the date
+// alone keeps this independent of any time or offset that follows it.
+const isRealCalendarDate = (year: number, month: number, day: number) => {
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
+};
+
+const parseSubscriptionStart = (start?: string) => {
+  if (!start) {
+    return undefined;
+  }
+
+  const isoParts = ISO_START_DATE.exec(start);
+
+  // `Date.parse` still covers what the calendar check can't see: an out-of-range time
+  if (!isoParts || Number.isNaN(Date.parse(start))) {
+    return undefined;
+  }
+
+  const [, year, month, day] = isoParts;
+
+  return isRealCalendarDate(Number(year), Number(month), Number(day)) ? start : undefined;
+};
+
+// A periodic limit is built from the subscription that anchors its period, and
+// registration stops at the first limit that throws — so one `maxPeriodic` limit with no
+// subscription would take down every limit registered after it. Leave those out instead.
+const usableLimits = (limits: Record<string, unknown>, subscription?: PeriodicSubscription) => {
+  if (subscription) {
+    return limits;
+  }
+
+  return Object.fromEntries(
+    Object.entries(limits).filter(([name, limit]) => {
+      if (limit && typeof limit === 'object' && 'maxPeriodic' in limit) {
+        // eslint-disable-next-line no-console
+        console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`);
+        return false;
+      }
+
+      return true;
+    }),
+  );
+};
+
 export interface Limiter {
   isLimited: (limitName: string) => boolean;
   isDisabled: (limitName: string) => boolean;
@@ -89,7 +152,17 @@ export const useLimiter = (): Limiter => {
       return noOpLimiter;
     }
 
-    const limits = { ...config.hostSettings.limits } as LimiterLimits;
+    // A subscription that can't anchor a period is treated as absent rather than built
+    // into one that resolves to no period on the way to the count query
+    const subscriptionStart = parseSubscriptionStart(config.hostSettings.subscription?.start);
+    const subscription: PeriodicSubscription | undefined = subscriptionStart
+      ? {
+          startDate: subscriptionStart,
+          interval: 'month',
+        }
+      : undefined;
+
+    const limits = usableLimits({ ...config.hostSettings.limits }, subscription) as LimiterLimits;
     const limiter = new LimitService();
 
     if (limits.staff) {
@@ -125,6 +198,7 @@ export const useLimiter = (): Limiter => {
 
     limiter.loadLimits({
       limits,
+      subscription,
       helpLink,
       errors: {
         HostLimitError,
