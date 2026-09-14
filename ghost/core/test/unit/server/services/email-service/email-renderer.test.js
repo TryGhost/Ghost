@@ -4548,7 +4548,7 @@ describe('Email renderer', function () {
       assert(!response.html.includes('finishing part only for members'));
       assert(
         response.html.includes(
-          'Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif',
+          'Devenez un(e) abonn&#xe9;(e) payant de Cathy&#39;s Blog pour acc&#xe9;der &#xe0; du contenu exclusif',
         ),
       );
       assert(

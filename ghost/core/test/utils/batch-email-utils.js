@@ -1,8 +1,8 @@
+/* global vi */ // vitest runs with globals:true; the shared eslint config only declares mocha's
 const { fixtureManager, mockManager } = require('./e2e-framework');
 const moment = require('moment');
 const models = require('../../core/server/models');
 const sinon = require('sinon');
-const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
 const assert = require('node:assert/strict');
 const { assertMatchSnapshot } = require('./assertions');
@@ -13,6 +13,84 @@ const getDefaultNewsletter = async function () {
 };
 
 let postCounter = 0;
+
+// Terminal statuses for a send. `emailJob` writes one of these as the last thing it
+// does, so observing the row is enough to know the job finished — no coupling to
+// whichever job transport dispatched it.
+const TERMINAL_EMAIL_STATUSES = ['submitted', 'failed'];
+const NON_TERMINAL_EMAIL_STATUSES = ['pending', 'submitting'];
+
+/**
+ * Waits until an email row reaches a terminal status.
+ *
+ * The default deadline sits inside the integration project's 10s testTimeout so this
+ * fails first and names the email. Raise it for a test that opts into a longer budget
+ * of its own, otherwise this caps the test rather than the other way round.
+ *
+ * @param {string} emailId
+ * @param {object} [options]
+ * @param {number} [options.timeout] Deadline in ms
+ * @returns {Promise<any>} The refreshed email model
+ */
+async function waitForEmailStatus(emailId, { timeout = 8000 } = {}) {
+  let email;
+
+  try {
+    await vi.waitUntil(
+      async () => {
+        email = await models.Email.findOne({ id: emailId });
+        if (!email) {
+          return false;
+        }
+        return TERMINAL_EMAIL_STATUSES.includes(email.get('status'));
+      },
+      { timeout, interval: 50 },
+    );
+  } catch (err) {
+    // vi.waitUntil rejects with a bare "Timed out in waitUntil!", and rejects
+    // immediately if the poll itself throws — so report both the row and the cause.
+    const status = email ? email.get('status') : 'no row';
+    throw new Error(`Timed out waiting for email ${emailId} to finish: ${status} (${err.message})`);
+  }
+
+  return email;
+}
+
+/**
+ * Waits until no newsletter send is in flight.
+ *
+ * `pending` and `submitting` are the only non-terminal email statuses, and both are
+ * written before the work they represent starts — so an empty result means no job is
+ * about to read members, batches or recipients. Asking the rows rather than a queue
+ * keeps this honest when the jobs backend runs work outside this process, where an
+ * empty local queue proves nothing.
+ *
+ * Two things this cannot see. A job that loses the `emailJob` status lock never writes
+ * a status, so it is invisible here. And `retryEmail` writes `pending` without taking
+ * the lock, so a late retry can admit a second job that is still reading batches after
+ * the first wrote a terminal status.
+ *
+ * Use it before an `afterEach` destroys data a running send would touch.
+ */
+async function waitForNoActiveSends() {
+  let active = [];
+
+  try {
+    await vi.waitUntil(
+      async () => {
+        const result = await models.Email.findAll({
+          filter: `status:[${NON_TERMINAL_EMAIL_STATUSES.join(',')}]`,
+        });
+        active = result.models;
+        return active.length === 0;
+      },
+      { timeout: 8000, interval: 50 },
+    );
+  } catch (err) {
+    const stuck = active.map((email) => `${email.id}=${email.get('status')}`).join(', ');
+    throw new Error(`Timed out waiting for newsletter sends to finish: ${stuck} (${err.message})`);
+  }
+}
 
 async function createPublishedPostEmail(agent, settings = {}, email_recipient_filter) {
   const post = {
@@ -69,7 +147,6 @@ let lastEmailModel;
  */
 async function sendEmail(agent, settings, email_recipient_filter) {
   // Prepare a post and email model
-  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
   const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
   assert.ok(emailModel.get('subject'));
@@ -78,7 +155,7 @@ async function sendEmail(agent, settings, email_recipient_filter) {
   assert.equal(emailModel.get('source_type'), 'lexical');
 
   // Await sending job
-  await completedPromise;
+  await waitForEmailStatus(emailModel.id);
 
   await emailModel.refresh();
   assert.equal(emailModel.get('status'), 'submitted');
@@ -95,7 +172,6 @@ async function sendEmail(agent, settings, email_recipient_filter) {
  */
 async function sendFailedEmail(agent, settings, email_recipient_filter) {
   // Prepare a post and email model
-  const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
   const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
   assert.ok(emailModel.get('subject'));
@@ -104,7 +180,7 @@ async function sendFailedEmail(agent, settings, email_recipient_filter) {
   assert.equal(emailModel.get('source_type'), 'lexical');
 
   // Await sending job
-  await completedPromise;
+  await waitForEmailStatus(emailModel.id);
 
   await emailModel.refresh();
   assert.equal(emailModel.get('status'), 'failed');
@@ -228,4 +304,6 @@ module.exports = {
   retryEmail,
   matchEmailSnapshot,
   getLastEmail,
+  waitForEmailStatus,
+  waitForNoActiveSends,
 };

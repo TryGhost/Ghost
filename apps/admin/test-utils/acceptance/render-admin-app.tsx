@@ -1,11 +1,10 @@
-import { QueryClient } from '@tanstack/react-query';
 import { render } from 'vitest-browser-react';
-import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
 
 import { composeLabsBootOverrides, installBootOverrides, type BootOverrides } from './boot';
+import { createFrameworkProps } from './framework-props';
 
 export interface RenderAdminAppOptions {
   /**
@@ -68,34 +67,11 @@ export async function renderAdminApp(
   // before the router is created.
   window.location.hash = `#${route}`;
 
-  // Fresh QueryClient per render, mirroring the production defaults
-  // (admin-x-framework utils/query-client.ts) so nothing outlives the test.
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-        staleTime: 5 * (60 * 1000), // 5 mins
-        gcTime: 10 * (60 * 1000), // 10 mins
-        // We have custom retry logic for specific errors in fetchApi()
-        retry: false,
-        networkMode: 'always',
-      },
-    },
-  });
-
-  const framework: TopLevelFrameworkProps = {
-    ghostVersion: '',
+  const framework = createFrameworkProps({
     externalNavigate: (link) => {
       document.body.dataset.externalNavigate = JSON.stringify(link);
     },
-    // Production shape, but without the real API key so tests never hit Unsplash
-    unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
-    sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
-    queryClient,
-  };
+  });
 
   return await render(<AdminAppRoot framework={framework} />, { container: rootElement });
 }

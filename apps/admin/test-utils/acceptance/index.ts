@@ -10,6 +10,7 @@ export {
 } from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
+export { InAppProviders, renderInApp } from './render-in-app';
 export {
   defineResource,
   fakeActions,

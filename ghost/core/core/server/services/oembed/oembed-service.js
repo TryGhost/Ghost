@@ -561,12 +561,12 @@ class OEmbedService {
    */
   async fetchOembedData(url, html, cardType) {
     // Lazy require the library to keep boot quick
-    const cheerio = require('cheerio');
+    const cheerio = require('cheerio/slim');
 
     // check for <link rel="alternate" type="application/json+oembed"> element
     let oembedUrl;
     try {
-      oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
+      oembedUrl = cheerio.load(html)('link[type="application/json+oembed"]').attr('href');
     } catch (e) {
       return this.unknownProvider(url);
     }

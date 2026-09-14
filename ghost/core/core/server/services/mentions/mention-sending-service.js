@@ -242,7 +242,7 @@ module.exports = class MentionSendingService {
    * @returns {URL[]}
    */
   getLinks(html) {
-    const cheerio = require('cheerio');
+    const cheerio = require('cheerio/slim');
     const $ = cheerio.load(html);
     const urls = [];
     const siteUrl = this.siteUrl;

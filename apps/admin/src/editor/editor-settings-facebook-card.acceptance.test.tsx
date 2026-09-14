@@ -285,7 +285,7 @@ describe('Post settings Facebook card', () => {
 
       await expect
         .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-        .toHaveTextContent('Facebook Title cannot be longer than 300 characters.');
+        .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
       await expect
         .element(editorScreen.settingsFacebookTitle())
         .toHaveAttribute('aria-invalid', 'true');
@@ -298,7 +298,7 @@ describe('Post settings Facebook card', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Facebook Title cannot be longer than 300 characters.');
+        .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
       expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,

@@ -227,6 +227,9 @@ describe('Editor header actions', () => {
 
       await expect.element(editorScreen.root()).toBeVisible();
       await expect.element(editorScreen.status()).toHaveTextContent('Published');
+      // The header's controls follow the acknowledged status through the session view.
+      await expect.element(editorScreen.updateButton()).toBeVisible();
+      await expect(editorScreen.previewButton()).toHaveCount(0);
     },
     SLOW,
   );
