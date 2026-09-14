@@ -801,6 +801,11 @@
           "object_type": "automation"
         },
         {
+          "name": "Add automations",
+          "action_type": "add",
+          "object_type": "automation"
+        },
+        {
           "name": "Poll automations",
           "action_type": "poll",
           "object_type": "automation"
@@ -987,7 +992,7 @@
           "collection": "all",
           "recommendation": "all",
           "gift_link": "all",
-          "automation": ["browse", "read", "edit"],
+          "automation": ["browse", "read", "add", "edit"],
           "identity": "read"
         },
         "DB Backup Integration": {
@@ -1036,7 +1041,7 @@
           "mention": "browse",
           "collection": "all",
           "recommendation": "all",
-          "automation": ["browse", "read", "edit"],
+          "automation": ["browse", "read", "add", "edit"],
           "member_signin_url": "read",
           "gift_link": "manage"
         },

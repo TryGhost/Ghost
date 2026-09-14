@@ -25,6 +25,17 @@ const controller = {
     },
   },
 
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: true,
+    async query(frame) {
+      return await automationsApi.add(frame.data?.automations?.[0]);
+    },
+  },
+
   edit: {
     headers: {
       cacheInvalidate: false,

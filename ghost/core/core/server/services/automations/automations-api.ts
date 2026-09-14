@@ -5,7 +5,12 @@ import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
-import type { AutomationsRepository, EditAutomationData } from './automations-repository';
+import type {
+  AddAutomationData,
+  AutomationsRepository,
+  EditAutomationData,
+} from './automations-repository';
+import { automationTriggerSchema } from './automation-trigger';
 import { EMPTY_AUTOMATION_STATS, fetchAutomationStats } from './tinybird-automation-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 
@@ -26,6 +31,10 @@ const messages = {
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
   invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
+  invalidAutomationTrigger:
+    'Automation trigger must be {"type":"free"} or {"type":"paid","tiers":"all"} or {"type":"paid","tiers":["<tier id>",...]}.',
+  invalidAutomationName: 'Automation name is required.',
+  invalidAddAutomationPayload: 'Automation create payload must include name and trigger.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -69,6 +78,18 @@ const editAutomationDataSchema = z.object({
     .min(1)
     .max(MAX_AUTOMATION_ACTIONS),
   edges: z.array(edgeSchema),
+  // Optional: an edit that leaves this out keeps the automation's current trigger.
+  trigger: automationTriggerSchema.optional(),
+});
+
+const automationNameSchema = z.string().trim().min(1).max(191);
+
+// Deliberately strict: an automation is created with a name and a trigger only.
+// Its actions, edges and status come from a subsequent edit, so that the graph
+// validation lives in exactly one place.
+const addAutomationDataSchema = z.strictObject({
+  name: automationNameSchema,
+  trigger: automationTriggerSchema,
 });
 
 const repository = createDatabaseAutomationsRepository({
@@ -147,6 +168,45 @@ export async function browseActionLinks(automationId: string, actionId: string) 
   return links;
 }
 
+export async function add(data: unknown) {
+  const parsedData = validateAddData(data);
+
+  return await repository.add(parsedData);
+}
+
+function validateAddData(data: unknown): AddAutomationData {
+  const result = addAutomationDataSchema.safeParse(data);
+
+  if (result.success) {
+    return result.data;
+  }
+
+  throwFirstFieldValidationError(result.error.issues, messages.invalidAddAutomationPayload);
+}
+
+/**
+ * Turn the first zod issue into the Ghost validation error for the field it came
+ * from, so API clients get a `property` they can highlight.
+ */
+function throwFirstFieldValidationError(
+  issues: ReadonlyArray<z.core.$ZodIssue>,
+  fallbackMessage: string,
+): never {
+  if (issues.some((issue) => issue.path[0] === 'name')) {
+    throwValidationError(messages.invalidAutomationName, 'name');
+  }
+
+  if (issues.some((issue) => issue.path[0] === 'trigger')) {
+    throwValidationError(messages.invalidAutomationTrigger, 'trigger');
+  }
+
+  if (issues.some((issue) => issue.path[0] === 'status')) {
+    throwValidationError(messages.invalidAutomationStatus, 'status');
+  }
+
+  throwValidationError(`${fallbackMessage} ${summarizeIssues(issues)}`);
+}
+
 export async function edit(automationId: string, data: unknown) {
   const parsedData = await validateEditData(data);
 
@@ -165,11 +225,7 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
   const result = editAutomationDataSchema.safeParse(data);
 
   if (!result.success) {
-    if (result.error.issues.some((issue) => issue.path[0] === 'status')) {
-      throwValidationError(messages.invalidAutomationStatus, 'status');
-    }
-
-    throwValidationError(buildInvalidAutomationPayloadMessage(result.error.issues));
+    throwFirstFieldValidationError(result.error.issues, messages.invalidAutomationPayload);
   }
 
   validateGraph(result.data.actions, result.data.edges);
@@ -281,17 +337,13 @@ function isEmptyParsedLexical(parsed: {
   return Array.isArray(children[0].children) && children[0].children.length === 0;
 }
 
-function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {
-  if (!issues.length) {
-    return messages.invalidAutomationPayload;
-  }
-
+function summarizeIssues(issues: ReadonlyArray<z.core.$ZodIssue>) {
   const issueSummaries = issues.slice(0, 3).map((issue) => {
     const path = issue.path.length ? issue.path.join('.') : 'payload';
     return `${path}: ${issue.message}`;
   });
 
-  return `${messages.invalidAutomationPayload} ${issueSummaries.join('; ')}.`;
+  return issueSummaries.join('; ') + (issueSummaries.length ? '.' : '');
 }
 
 function validateGraph(actions: EditAutomationData['actions'], edges: EditAutomationData['edges']) {

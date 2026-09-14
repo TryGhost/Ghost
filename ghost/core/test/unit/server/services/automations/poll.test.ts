@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
 import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
-import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../../core/server/services/member-welcome-emails/constants';
+import type { AutomationTrigger } from '../../../../../core/server/services/automations/automation-trigger';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../../../../core/server/models';
 
@@ -11,6 +11,11 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const labs = require('../../../../../core/shared/labs');
 
 const MAX_STEPS_PER_BATCH = 100;
+const BRONZE_TIER_ID = '6540000000000000000000b1';
+const SILVER_TIER_ID = '6540000000000000000000c2';
+const FREE_TRIGGER: AutomationTrigger = { type: 'free' };
+const ALL_TIERS_TRIGGER: AutomationTrigger = { type: 'paid', tiers: 'all' };
+const BRONZE_TRIGGER: AutomationTrigger = { type: 'paid', tiers: [BRONZE_TIER_ID] };
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
 type WaitStep = Extract<AutomationStepToRun, { type: 'wait' }>;
@@ -59,6 +64,7 @@ type MemberFixture = {
   uuid: string;
   enable_updates_and_announcements: boolean | null;
   newsletters: unknown[];
+  products: Array<{ id: string }>;
 };
 
 const fake = <TFunction extends (..._args: never[]) => unknown>(): StubbedFunction<TFunction> =>
@@ -72,6 +78,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     uuid: '00000000-0000-4000-8000-000000000001',
     enable_updates_and_announcements: true,
     newsletters: [{}],
+    products: [],
     ...attrs,
   };
 
@@ -79,7 +86,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     get(key: keyof MemberFixture): string | boolean | null | unknown[] {
       return values[key];
     },
-    related(key: 'newsletters') {
+    related(key: 'newsletters' | 'products') {
       return {
         models: values[key],
       };
@@ -93,7 +100,7 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     locked_by: 'lock-id',
     automation_run_id: 'run-id',
     automation_id: 'automation-id',
-    automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    automation_trigger: FREE_TRIGGER,
     automation_status: 'active',
     member_id: 'member-id',
     member_email: 'member@example.com',
@@ -350,7 +357,7 @@ describe('automations poll', function () {
 
   it('gift members run through paid automations', async function () {
     const step = buildEmailStep({
-      automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+      automation_trigger: ALL_TIERS_TRIGGER,
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     Member.findOne.resolves(buildMember({ status: 'gift' }));
@@ -364,6 +371,99 @@ describe('automations poll', function () {
       }),
     );
     sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+  });
+
+  it('keeps a member in a tier automation while they still hold one of its tiers', async function () {
+    const step = buildEmailStep({ automation_trigger: BRONZE_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(
+      buildMember({ status: 'paid', products: [{ id: SILVER_TIER_ID }, { id: BRONZE_TIER_ID }] }),
+    );
+
+    await poll(options);
+
+    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(automationsApi.markStepTerminal);
+  });
+
+  it('knocks a member out of a tier automation when they leave its tiers', async function () {
+    const step = buildEmailStep({ automation_trigger: BRONZE_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: SILVER_TIER_ID }] }));
+
+    await poll(options);
+
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+  });
+
+  it('knocks a member out of a paid automation when they stop being paid', async function () {
+    const step = buildEmailStep({ automation_trigger: ALL_TIERS_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'free' }));
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+  });
+
+  it('knocks a member out of a free automation when they become paid', async function () {
+    const step = buildEmailStep({ automation_trigger: FREE_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: BRONZE_TIER_ID }] }));
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.markStepTerminal,
+      step,
+      'member changed status',
+    );
+  });
+
+  it('reports a paid member status to the email service for a tier automation', async function () {
+    const step = buildEmailStep({ automation_trigger: BRONZE_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: BRONZE_TIER_ID }] }));
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(
+      memberWelcomeEmailService.api.sendAutomationEmail,
+      sinon.match({ memberStatus: 'paid' }),
+    );
+  });
+
+  it('fails a step whose automation has no usable trigger', async function () {
+    const step = buildEmailStep({ automation_trigger: null });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+    await poll(options);
+
+    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
+  });
+
+  it('loads the member tiers it needs to evaluate the trigger', async function () {
+    const step = buildEmailStep({ automation_trigger: BRONZE_TRIGGER });
+    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+    Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: BRONZE_TIER_ID }] }));
+
+    await poll(options);
+
+    sinon.assert.calledWith(
+      Member.findOne,
+      { id: step.member_id },
+      sinon.match({ withRelated: sinon.match.array.contains(['newsletters', 'products']) }),
+    );
   });
 
   it('sends email revision content and enqueues the next step', async function () {

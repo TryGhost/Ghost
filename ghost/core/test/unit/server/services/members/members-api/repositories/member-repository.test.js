@@ -1852,6 +1852,7 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'free',
+        tierIds: [],
       });
     });
 
@@ -1900,6 +1901,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'free',
+          tierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);
@@ -2185,6 +2187,36 @@ describe('MemberRepository', function () {
       sinon.restore();
     });
 
+    // linkSubscription reads the member's tiers twice: `related('products').fetch()`
+    // is the state after the subscription is linked, `related('products').toJSON()`
+    // the state before. The difference is what the member just gained.
+    const stubMemberProducts = ({ oldProducts, newProducts }) => {
+      Member.findOne.resolves({
+        id: 'member_id_123',
+        get: sinon.stub().callsFake((key) => {
+          const data = { email: 'test@example.com', name: 'Test Member', status: 'paid' };
+          return data[key];
+        }),
+        related: (relation) => ({
+          query: sinon.stub().returns({ fetchOne: sinon.stub().resolves({}) }),
+          toJSON: sinon.stub().returns(relation === 'products' ? oldProducts : {}),
+          fetch: sinon.stub().resolves({
+            toJSON: sinon.stub().returns(relation === 'products' ? newProducts : {}),
+            models: [],
+          }),
+        }),
+        toJSON: sinon.stub().returns({}),
+      });
+    };
+
+    const buildEditedMember = ({ status, previousStatus }) => ({
+      attributes: { status },
+      _previousAttributes: { status: previousStatus },
+      load: sinon.stub().resolvesThis(),
+      related: sinon.stub().returns({ models: [] }),
+      get: sinon.stub().callsFake((key) => ({ status, email: 'test@example.com' })[key]),
+    });
+
     it('triggers an automation event for paid signup', async function () {
       Member.edit.resolves({
         attributes: { status: 'paid' },
@@ -2216,7 +2248,101 @@ describe('MemberRepository', function () {
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
+        tierIds: [],
       });
+    });
+
+    it('passes the tiers the member just gained', async function () {
+      stubMemberProducts({ oldProducts: [], newProducts: [{ id: 'tier_bronze' }] });
+      Member.edit.resolves(buildEditedMember({ status: 'paid', previousStatus: 'free' }));
+
+      const repo = buildRepo();
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() }, context: {} },
+      );
+
+      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+        event: 'member_sign_up',
+        memberId: 'member_id_123',
+        memberEmail: 'test@example.com',
+        memberStatus: 'paid',
+        tierIds: ['tier_bronze'],
+      });
+    });
+
+    it('triggers automations when a paid member switches tiers', async function () {
+      stubMemberProducts({
+        oldProducts: [{ id: 'tier_bronze' }],
+        newProducts: [{ id: 'tier_silver' }],
+      });
+      Member.edit.resolves(buildEditedMember({ status: 'paid', previousStatus: 'paid' }));
+
+      const repo = buildRepo();
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() }, context: {} },
+      );
+
+      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+        event: 'member_sign_up',
+        memberId: 'member_id_123',
+        memberEmail: 'test@example.com',
+        memberStatus: 'paid',
+        tierIds: ['tier_silver'],
+      });
+    });
+
+    it('does not trigger automations when nothing about the tiers or status changed', async function () {
+      stubMemberProducts({
+        oldProducts: [{ id: 'tier_bronze' }],
+        newProducts: [{ id: 'tier_bronze' }],
+      });
+      Member.edit.resolves(buildEditedMember({ status: 'paid', previousStatus: 'paid' }));
+
+      const repo = buildRepo();
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() }, context: {} },
+      );
+
+      sinon.assert.notCalled(automationsApi.trigger);
+    });
+
+    it('does not enqueue a legacy welcome email run for a tier switch alone', async function () {
+      stubMemberProducts({
+        oldProducts: [{ id: 'tier_bronze' }],
+        newProducts: [{ id: 'tier_silver' }],
+      });
+      Member.edit.resolves(buildEditedMember({ status: 'paid', previousStatus: 'paid' }));
+
+      const repo = buildRepo({
+        Member,
+        WelcomeEmailAutomationRun,
+        MemberPaidSubscriptionEvent,
+        StripeCustomerSubscription,
+        MemberProductEvent,
+        MemberStatusEvent,
+        stripeAPIService,
+        productRepository,
+        Automation,
+        OfferRedemption: mockOfferRedemption,
+      });
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() }, context: {} },
+      );
+
+      sinon.assert.calledOnce(automationsApi.trigger);
+      sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
     });
 
     describe('legacy automations', function () {
@@ -2314,6 +2440,7 @@ describe('MemberRepository', function () {
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'paid',
+          tierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         sinon.assert.notCalled(Automation.findOne);

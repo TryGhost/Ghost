@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 
@@ -7,6 +8,23 @@ import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
+
+/**
+ * These tests run without a database, so they can only assert on failures that
+ * happen during validation, before the repository is reached. Asserting on the
+ * error *type and property* rather than its message keeps a database error from
+ * accidentally satisfying the assertion.
+ */
+const assertValidationError = async (promise: Promise<unknown>, property: string) => {
+  await assert.rejects(promise, (error: unknown) => {
+    assert(
+      error instanceof errors.ValidationError,
+      `Expected a ValidationError, got: ${(error as Error)?.message}`,
+    );
+    assert.equal(error.property, property);
+    return true;
+  });
+};
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
   id: ObjectId().toHexString(),
@@ -108,6 +126,42 @@ describe('automations API', function () {
       );
     });
 
+    it('rejects an invalid trigger', async function () {
+      await assertValidationError(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [buildSendEmailAction()],
+          edges: [],
+          trigger: { type: 'comped' },
+        }),
+        'trigger',
+      );
+    });
+
+    it('rejects a paid trigger with an empty tier list', async function () {
+      await assertValidationError(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [buildSendEmailAction()],
+          edges: [],
+          trigger: { type: 'paid', tiers: [] },
+        }),
+        'trigger',
+      );
+    });
+
+    it('rejects a tier id that is not an object id', async function () {
+      await assertValidationError(
+        automationsApi.edit(automationId, {
+          status: 'inactive',
+          actions: [buildSendEmailAction()],
+          edges: [],
+          trigger: { type: 'paid', tiers: ['bronze'] },
+        }),
+        'trigger',
+      );
+    });
+
     it('rejects a send email action with malformed Lexical child nodes', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
@@ -126,6 +180,45 @@ describe('automations API', function () {
           edges: [],
         }),
         /well-formed Lexical document/,
+      );
+    });
+  });
+
+  describe('add', function () {
+    it('rejects a missing name', async function () {
+      await assertValidationError(automationsApi.add({ trigger: { type: 'free' } }), 'name');
+    });
+
+    it('rejects a blank name', async function () {
+      await assertValidationError(
+        automationsApi.add({ name: '   ', trigger: { type: 'free' } }),
+        'name',
+      );
+    });
+
+    it('rejects a missing trigger', async function () {
+      await assertValidationError(automationsApi.add({ name: 'No trigger flow' }), 'trigger');
+    });
+
+    it('rejects an invalid trigger', async function () {
+      await assertValidationError(
+        automationsApi.add({ name: 'Bad trigger flow', trigger: { type: 'paid' } }),
+        'trigger',
+      );
+    });
+
+    it('rejects extra fields, so status and actions cannot be smuggled in', async function () {
+      await assert.rejects(
+        automationsApi.add({
+          name: 'Sneaky flow',
+          trigger: { type: 'free' },
+          status: 'active',
+        }),
+        (error: unknown) => {
+          assert(error instanceof errors.ValidationError);
+          assert.match(error.message, /payload/);
+          return true;
+        },
       );
     });
   });

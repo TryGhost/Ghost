@@ -2138,7 +2138,12 @@ module.exports = {
       validations: { isIn: [['active', 'inactive']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Legacy identifier for the two automations that predate configurable
+    // triggers. Nothing reads it any more; `trigger_config` selects automations.
+    slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    // JSON `AutomationTrigger` describing which members enter this automation.
+    // See `services/automations/automation-trigger.ts`.
+    trigger_config: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },

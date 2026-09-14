@@ -309,6 +309,7 @@ module.exports = function apiRoutes() {
     mw.authAdminApi,
     http(api.automationEmailPreviews.sendTestEmail),
   );
+  router.post('/automations', mw.authAdminApi, http(api.automations.add));
   router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
   router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 

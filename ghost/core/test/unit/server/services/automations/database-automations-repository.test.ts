@@ -16,6 +16,10 @@ import type {
 import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 const HOUR_MS = 60 * 60 * 1000;
+const FREE_AUTOMATION_NAME = 'Free member welcome flow';
+const PAID_AUTOMATION_NAME = 'Paid member welcome flow';
+const BRONZE_TIER_ID = '6540000000000000000000b1';
+const SILVER_TIER_ID = '6540000000000000000000c2';
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
 
 const toRepositoryDateISOString = (date: Date | string): string =>
@@ -68,9 +72,10 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
-    table.text('slug').notNullable().unique();
+    table.text('slug').unique();
     table.text('name').notNullable();
     table.text('status').notNullable();
+    table.text('trigger_config');
   });
 
   await database.schema.createTable('automation_actions', (table) => {
@@ -218,6 +223,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-free',
       name: 'Free member welcome flow',
       status: 'active',
+      trigger_config: JSON.stringify({ type: 'free' }),
     },
     {
       id: paidAutomationId,
@@ -226,6 +232,7 @@ const createDatabase = async (): Promise<Knex> => {
       slug: 'member-welcome-email-paid',
       name: 'Paid member welcome flow',
       status: 'active',
+      trigger_config: JSON.stringify({ type: 'paid', tiers: 'all' }),
     },
   ]);
 
@@ -425,7 +432,7 @@ describe('automations repository', function () {
 
   const getRunByMemberEmail = async (email: string): Promise<RunRow> =>
     await knex('automation_runs')
-      .select('automation_runs.*', 'automations.slug as automation_slug')
+      .select('automation_runs.*', 'automations.name as automation_name')
       .innerJoin('automations', 'automations.id', 'automation_runs.automation_id')
       .where('automation_runs.member_email', email)
       .first();
@@ -452,14 +459,24 @@ describe('automations repository', function () {
       .where('automation_run_steps.automation_run_id', runId)
       .first();
 
-  const getAutomationBySlug = async (slug: string) => {
+  const getAutomationByName = async (name: string) => {
     const automationSummaries = await repo.browse({ includeStats: false });
     const automationSummary = automationSummaries.data.find(
-      (automation) => automation.slug === slug,
+      (automation) => automation.name === name,
     );
     assert(automationSummary);
     const automation = await repo.getById(automationSummary.id);
     assert(automation);
+    return automation;
+  };
+
+  const createTierAutomation = async (name: string, tiers: string[]) => {
+    const automation = await repo.add({ name, trigger: { type: 'paid', tiers } });
+    await repo.edit(automation.id, {
+      status: 'active',
+      actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 1 } }],
+      edges: [],
+    });
     return automation;
   };
 
@@ -738,7 +755,7 @@ describe('automations repository', function () {
     });
 
     it('returns the newest run creation time for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+      const automationId = (await getAutomationByName(FREE_AUTOMATION_NAME)).id;
       const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
       const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
 
@@ -759,8 +776,8 @@ describe('automations repository', function () {
     });
 
     it('returns the number of runs for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+      const automationId = (await getAutomationByName(FREE_AUTOMATION_NAME)).id;
+      const otherAutomationId = (await getAutomationByName(PAID_AUTOMATION_NAME)).id;
 
       await insertRun(automationId);
       await insertRun(automationId);
@@ -786,7 +803,7 @@ describe('automations repository', function () {
     });
 
     it('returns zero for "in progress run count" if none of the runs have pending steps', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+      const automationId = (await getAutomationByName(FREE_AUTOMATION_NAME)).id;
       const { revision_id: revisionId } = await getActionByIndex(automationId, 0);
       const run = await insertRun(automationId);
       await insertStep(run.id, revisionId, { status: 'finished' });
@@ -799,8 +816,8 @@ describe('automations repository', function () {
     });
 
     it('returns the number of runs with pending steps for the automation', async function () {
-      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
-      const otherAutomationId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+      const automationId = (await getAutomationByName(FREE_AUTOMATION_NAME)).id;
+      const otherAutomationId = (await getAutomationByName(PAID_AUTOMATION_NAME)).id;
       const { revision_id: revisionId } = await getActionByIndex(automationId, 0);
       const { revision_id: otherRevisionId } = await getActionByIndex(otherAutomationId, 0);
 
@@ -897,7 +914,7 @@ describe('automations repository', function () {
 
   describe('URL serialization', function () {
     it('returns stored transform-ready email URLs as absolute URLs', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(emailAction);
 
@@ -916,7 +933,7 @@ describe('automations repository', function () {
     });
 
     it('stores internal URLs as transform-ready without creating a revision on an unchanged save', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(emailAction?.type === 'send_email');
 
@@ -961,7 +978,7 @@ describe('automations repository', function () {
 
   describe('email stats', function () {
     it('reports the opened count and rate as 0 when there are sends but no recorded opens', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(emailAction);
 
@@ -987,7 +1004,7 @@ describe('automations repository', function () {
     });
 
     it('reports zero counts and null rates when there are no sends', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = automation.actions.find((candidate) => candidate.type === 'send_email');
       assert(action);
       if (action.type !== 'send_email') {
@@ -1003,7 +1020,7 @@ describe('automations repository', function () {
     });
 
     it('calculates the open rate from the total sent count', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(emailAction);
 
@@ -1029,7 +1046,7 @@ describe('automations repository', function () {
     });
 
     it('aggregates click counts across revisions and rounds the rate', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(emailAction);
       const firstRevision = await knex('automation_action_revisions')
@@ -1061,7 +1078,7 @@ describe('automations repository', function () {
 
   describe('getAutomationActionLinks', function () {
     it('returns stored transform-ready destinations as absolute URLs', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = automation.actions.find((candidate) => candidate.type === 'send_email');
       assert(action);
       const revision = await getLatestActionRevisionByActionId(action.id);
@@ -1083,7 +1100,7 @@ describe('automations repository', function () {
     });
 
     it('aggregates unique member clicks by destination hash across action revisions', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = automation.actions.find((candidate) => candidate.type === 'send_email');
       assert(action);
       const existingRevision = await getLatestActionRevisionByActionId(action.id);
@@ -1190,7 +1207,7 @@ describe('automations repository', function () {
     });
 
     it('returns an empty list for a valid action without links', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       assert.deepEqual(
         await repo.getAutomationActionLinks(automation.id, automation.actions[0].id),
         [],
@@ -1198,8 +1215,8 @@ describe('automations repository', function () {
     });
 
     it('returns null when the action does not belong to the automation or is deleted', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
-      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
       const actionId = freeAutomation.actions[0].id;
 
       assert.equal(await repo.getAutomationActionLinks(paidAutomation.id, actionId), null);
@@ -1216,13 +1233,14 @@ describe('automations repository', function () {
         memberEmail: 'free@example.com',
         memberId: 'member_123',
         memberStatus: 'free',
+        tierIds: [],
       });
 
       const run = await getRunByMemberEmail('free@example.com');
       assert(run);
       assert.equal(run.member_email, 'free@example.com');
       assert.equal(run.member_id, 'member_123');
-      assert.equal(run.automation_slug, 'member-welcome-email-free');
+      assert.equal(run.automation_name, FREE_AUTOMATION_NAME);
       assert.equal(run.created_at, run.updated_at);
 
       const step = await getStepByRunId(run.id);
@@ -1252,6 +1270,7 @@ describe('automations repository', function () {
         memberEmail: 'fake-wait@example.com',
         memberId: 'member_123',
         memberStatus: 'free',
+        tierIds: [],
       });
       const afterTrigger = Date.now();
 
@@ -1270,11 +1289,12 @@ describe('automations repository', function () {
         memberEmail: 'paid@example.com',
         memberId: 'member_123',
         memberStatus: 'paid',
+        tierIds: [BRONZE_TIER_ID],
       });
 
       const run = await getRunByMemberEmail('paid@example.com');
       assert(run);
-      assert.equal(run.automation_slug, 'member-welcome-email-paid');
+      assert.equal(run.automation_name, PAID_AUTOMATION_NAME);
 
       const step = await getStepByRunId(run.id);
       assert(step);
@@ -1283,7 +1303,7 @@ describe('automations repository', function () {
     });
 
     it('inserts the first non-deleted step', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       await repo.edit(automation.id, {
         status: 'active',
         actions: [
@@ -1321,6 +1341,7 @@ describe('automations repository', function () {
         memberEmail: 'free@example.com',
         memberId: 'member_123',
         memberStatus: 'free',
+        tierIds: [],
       });
 
       const run = await getRunByMemberEmail('free@example.com');
@@ -1332,7 +1353,7 @@ describe('automations repository', function () {
     });
 
     it('does not trigger an automation for an inactive automation', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
       await repo.edit(freeAutomation.id, {
         ...freeAutomation,
         status: 'inactive',
@@ -1342,6 +1363,7 @@ describe('automations repository', function () {
         memberEmail: 'inactive-free@example.com',
         memberId: 'member_123',
         memberStatus: 'free',
+        tierIds: [],
       });
 
       assert.equal(await getRunByMemberEmail('inactive-free@example.com'), undefined);
@@ -1349,7 +1371,7 @@ describe('automations repository', function () {
     });
 
     it('does not trigger an automation for an automation with no actions', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
       await repo.edit(freeAutomation.id, {
         status: 'active',
         actions: [],
@@ -1360,10 +1382,162 @@ describe('automations repository', function () {
         memberEmail: 'free-no-actions@example.com',
         memberId: 'member_123',
         memberStatus: 'free',
+        tierIds: [],
       });
 
       assert.equal(await getRunByMemberEmail('free-no-actions@example.com'), undefined);
       assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
+    });
+
+    it('does not trigger a paid automation for a free member', async function () {
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
+
+      await repo.trigger({
+        memberEmail: 'free-only@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+        tierIds: [],
+      });
+
+      assert.equal(await getRunCountByAutomationId(paidAutomation.id), 0);
+    });
+
+    it('does not trigger a free automation for a paid member', async function () {
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
+
+      await repo.trigger({
+        memberEmail: 'paid-only@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+        tierIds: [BRONZE_TIER_ID],
+      });
+
+      assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
+    });
+
+    it('triggers an all-tiers paid automation for a gift member', async function () {
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
+
+      await repo.trigger({
+        memberEmail: 'gift@example.com',
+        memberId: 'member_123',
+        memberStatus: 'gift',
+        tierIds: [],
+      });
+
+      assert.equal(await getRunCountByAutomationId(paidAutomation.id), 1);
+    });
+
+    it('triggers every automation whose trigger matches, including overlapping ones', async function () {
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
+      const bronzeAutomation = await createTierAutomation('Bronze flow', [BRONZE_TIER_ID]);
+      const alsoBronzeAutomation = await createTierAutomation('Also bronze flow', [BRONZE_TIER_ID]);
+      const silverAutomation = await createTierAutomation('Silver flow', [SILVER_TIER_ID]);
+
+      await repo.trigger({
+        memberEmail: 'bronze@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+        tierIds: [BRONZE_TIER_ID],
+      });
+
+      assert.equal(await getRunCountByAutomationId(paidAutomation.id), 1);
+      assert.equal(await getRunCountByAutomationId(bronzeAutomation.id), 1);
+      assert.equal(await getRunCountByAutomationId(alsoBronzeAutomation.id), 1);
+      assert.equal(await getRunCountByAutomationId(silverAutomation.id), 0);
+    });
+
+    it('triggers a tier automation when the member gains any one of its tiers', async function () {
+      const automation = await createTierAutomation('Bronze or silver flow', [
+        BRONZE_TIER_ID,
+        SILVER_TIER_ID,
+      ]);
+
+      await repo.trigger({
+        memberEmail: 'silver@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+        tierIds: [SILVER_TIER_ID],
+      });
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 1);
+    });
+
+    it('enqueues a second run when a matching member is triggered again', async function () {
+      const automation = await createTierAutomation('Bronze flow', [BRONZE_TIER_ID]);
+
+      for (const memberEmail of ['first@example.com', 'second@example.com']) {
+        await repo.trigger({
+          memberEmail,
+          memberId: 'member_123',
+          memberStatus: 'paid',
+          tierIds: [BRONZE_TIER_ID],
+        });
+      }
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 2);
+    });
+
+    it('ignores automations with an unparseable trigger', async function () {
+      const automation = await createTierAutomation('Broken flow', [BRONZE_TIER_ID]);
+      await knex('automations').where('id', automation.id).update({ trigger_config: 'not json' });
+
+      await repo.trigger({
+        memberEmail: 'broken@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+        tierIds: [BRONZE_TIER_ID],
+      });
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 0);
+    });
+  });
+
+  describe('add', function () {
+    it('creates an inactive automation with no actions and no slug', async function () {
+      const created = await repo.add({
+        name: 'Brand new flow',
+        trigger: { type: 'paid', tiers: [BRONZE_TIER_ID] },
+      });
+
+      assert.equal(created.name, 'Brand new flow');
+      assert.equal(created.status, 'inactive');
+      assert.deepEqual(created.trigger, { type: 'paid', tiers: [BRONZE_TIER_ID] });
+      assert.deepEqual(created.actions, []);
+      assert.deepEqual(created.edges, []);
+
+      const row = await knex('automations').where('id', created.id).first();
+      assert.equal(row.slug, null);
+      assert.equal(row.trigger_config, JSON.stringify({ type: 'paid', tiers: [BRONZE_TIER_ID] }));
+    });
+
+    it('is readable through getById and browse', async function () {
+      const created = await repo.add({ name: 'Readable flow', trigger: { type: 'free' } });
+
+      const read = await repo.getById(created.id);
+      assert.deepEqual(read?.trigger, { type: 'free' });
+
+      const browsed = await repo.browse({ includeStats: false });
+      assert(browsed.data.some((automation) => automation.id === created.id));
+    });
+
+    it('rejects a duplicate name', async function () {
+      await repo.add({ name: 'Duplicate flow', trigger: { type: 'free' } });
+      await assert.rejects(() => repo.add({ name: 'Duplicate flow', trigger: { type: 'free' } }));
+    });
+
+    it('never triggers, because it has no actions yet', async function () {
+      const created = await repo.add({ name: 'Empty flow', trigger: { type: 'free' } });
+      await repo.edit(created.id, { status: 'active', actions: [], edges: [] });
+
+      await repo.trigger({
+        memberEmail: 'empty@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+        tierIds: [],
+      });
+
+      assert.equal(await getRunCountByAutomationId(created.id), 0);
     });
   });
 
@@ -1381,8 +1555,59 @@ describe('automations repository', function () {
       });
     };
 
+    it('updates the trigger when one is supplied', async function () {
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
+
+      const edited = await repo.edit(automation.id, {
+        ...automation,
+        trigger: { type: 'paid', tiers: [BRONZE_TIER_ID] },
+      });
+
+      assert.deepEqual(edited?.trigger, { type: 'paid', tiers: [BRONZE_TIER_ID] });
+      assert.deepEqual((await repo.getById(automation.id))?.trigger, {
+        type: 'paid',
+        tiers: [BRONZE_TIER_ID],
+      });
+    });
+
+    it('leaves the trigger alone when none is supplied', async function () {
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
+
+      const edited = await repo.edit(automation.id, {
+        status: automation.status,
+        actions: automation.actions,
+        edges: automation.edges,
+      });
+
+      assert.deepEqual(edited?.trigger, { type: 'free' });
+    });
+
+    it('routes members to the new trigger after an edit', async function () {
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
+      await repo.edit(automation.id, {
+        ...automation,
+        trigger: { type: 'paid', tiers: [BRONZE_TIER_ID] },
+      });
+
+      await repo.trigger({
+        memberEmail: 'retargeted-free@example.com',
+        memberId: 'member_123',
+        memberStatus: 'free',
+        tierIds: [],
+      });
+      assert.equal(await getRunCountByAutomationId(automation.id), 0);
+
+      await repo.trigger({
+        memberEmail: 'retargeted-bronze@example.com',
+        memberId: 'member_123',
+        memberStatus: 'paid',
+        tierIds: [BRONZE_TIER_ID],
+      });
+      assert.equal(await getRunCountByAutomationId(automation.id), 1);
+    });
+
     it('cancels pending unlocked steps when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const step = await insertStep(run.id, action.revision_id);
@@ -1406,7 +1631,7 @@ describe('automations repository', function () {
     });
 
     it('cancels pending steps with expired locks when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const step = await insertStep(run.id, action.revision_id, {
@@ -1428,7 +1653,7 @@ describe('automations repository', function () {
     });
 
     it('does not cancel pending steps with fresh locks when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const lockedAt = toDatabaseDate(new Date(Date.now() - 29 * 60 * 1000));
@@ -1451,8 +1676,8 @@ describe('automations repository', function () {
     });
 
     it('does not cancel pending steps for other automations when disabling an automation', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
-      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
       const freeAction = await getActionByIndex(freeAutomation.id, 0);
       const paidAction = await getActionByIndex(paidAutomation.id, 0);
       const freeRun = await insertRun(freeAutomation.id);
@@ -1474,7 +1699,7 @@ describe('automations repository', function () {
     });
 
     it('only inserts action revisions when action data changes', async function () {
-      const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const initialAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const initialRevisionCount = await getRevisionCount();
       const waitAction = initialAutomation.actions.find((action) => action.type === 'wait');
       const unchangedEmailAction = initialAutomation.actions.find(
@@ -1544,7 +1769,7 @@ describe('automations repository', function () {
     });
 
     it('resolves default email design setting slugs to the default design setting id', async function () {
-      const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const initialAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const addedActionId = ObjectId().toString();
       const addedAction: AutomationAction = {
         id: addedActionId,
@@ -1572,8 +1797,8 @@ describe('automations repository', function () {
     });
 
     it('rejects changing an action that is part of another automation', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
-      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const freeAutomation = await getAutomationByName(FREE_AUTOMATION_NAME);
+      const paidAutomation = await getAutomationByName(PAID_AUTOMATION_NAME);
       const paidAction = paidAutomation.actions[0];
 
       await assertValidationError(
@@ -1589,7 +1814,7 @@ describe('automations repository', function () {
     });
 
     it('rejects changing a soft-deleted action', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const now = toDatabaseDate(new Date());
       const softDeletedActionId = ObjectId().toString();
       await knex('automation_actions').insert({
@@ -1622,7 +1847,7 @@ describe('automations repository', function () {
     });
 
     it('rejects changing the type of an action', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const waitAction = automation.actions.find((action) => action.type === 'wait');
       const emailAction = automation.actions.find((action) => action.type === 'send_email');
       assert(waitAction, 'test setup expects wait action');
@@ -1725,7 +1950,7 @@ describe('automations repository', function () {
     };
 
     it('locks ready and steps with stale locks, but skips future and recently-locked steps', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const readyStep = await insertStep(run.id, action.revision_id, {
@@ -1789,7 +2014,7 @@ describe('automations repository', function () {
     });
 
     it('returns the next future pending ready_at when no steps can be locked', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const later = new Date(Date.now() + 60 * 1000);
@@ -1806,7 +2031,7 @@ describe('automations repository', function () {
     });
 
     it('does not schedule an immediate poll when due steps are locked by another worker', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const lockedAt = new Date(Date.now() - 60 * 1000);
@@ -1824,7 +2049,7 @@ describe('automations repository', function () {
     });
 
     it('respects the limit argument', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const readyAt1 = new Date(Date.now() - 2000).toISOString();
@@ -1857,7 +2082,7 @@ describe('automations repository', function () {
     });
 
     it('does not return the same steps to concurrent callers', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const readyAt = new Date(Date.now() - 1000).toISOString();
@@ -1893,7 +2118,7 @@ describe('automations repository', function () {
     });
 
     it('handles concurrent locks in the same transaction', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const readyAt = new Date(Date.now() - 1000).toISOString();
@@ -1910,7 +2135,7 @@ describe('automations repository', function () {
     });
 
     it('returns the next unlocked ready_at when selected rows lose the lock race', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const readyAt = new Date(Date.now() - 1000).toISOString();
@@ -1935,7 +2160,7 @@ describe('automations repository', function () {
 
   describe('finishStepAndEnqueueNext', function () {
     it('finishes a locked step and enqueues the next action revision', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -1973,7 +2198,7 @@ describe('automations repository', function () {
     });
 
     it('uses wait hours when the next action is a wait action', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const sendEmailAction = await getActionByIndex(automation.id, 1);
       assert.equal(sendEmailAction.action_type, 'send_email');
       const run = await insertRun(automation.id);
@@ -1996,7 +2221,7 @@ describe('automations repository', function () {
         knex,
         fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER,
       });
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const sendEmailAction = await getActionByIndex(automation.id, 1);
       assert.equal(sendEmailAction.action_type, 'send_email');
       const run = await insertRun(automation.id);
@@ -2015,7 +2240,7 @@ describe('automations repository', function () {
     });
 
     it('does not enqueue a duplicate next step when called again with the same locked step', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2039,7 +2264,7 @@ describe('automations repository', function () {
     });
 
     it('does not enqueue the next step when the automation was disabled after the step was locked', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2068,7 +2293,7 @@ describe('automations repository', function () {
     });
 
     it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2100,7 +2325,7 @@ describe('automations repository', function () {
     });
 
     it('returns null and does not enqueue when there is no next action', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const lastAction = await getActionByIndex(automation.id, 3);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, lastAction.revision_id, {
@@ -2122,7 +2347,7 @@ describe('automations repository', function () {
     });
 
     it('enqueues the latest revision of the next action', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const sendEmailAction = await getActionByIndex(automation.id, 1);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
@@ -2171,7 +2396,7 @@ describe('automations repository', function () {
 
   describe('markStepTerminal', function () {
     it('marks a locked step with a terminal status and clears the lock', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2202,7 +2427,7 @@ describe('automations repository', function () {
     });
 
     it('does not overwrite a step that is no longer pending', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2231,7 +2456,7 @@ describe('automations repository', function () {
     });
 
     it('does not mark a step terminal if the step lock has been taken by another runner', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2260,7 +2485,7 @@ describe('automations repository', function () {
 
   describe('retryStep', function () {
     it('reschedules a locked step for retry and clears the lock', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2290,7 +2515,7 @@ describe('automations repository', function () {
     });
 
     it('does not retry a locked step that is no longer pending', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {
@@ -2316,7 +2541,7 @@ describe('automations repository', function () {
     });
 
     it('marks the step disabled instead of retrying when the automation was disabled after the step was locked', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const automation = await getAutomationByName(FREE_AUTOMATION_NAME);
       const action = await getActionByIndex(automation.id, 0);
       const run = await insertRun(automation.id);
       const stepRow = await insertStep(run.id, action.revision_id, {

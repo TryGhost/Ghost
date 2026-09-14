@@ -7,26 +7,31 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Free member welcome flow",
-      "slug": "member-welcome-email-free",
       "stats": Object {
         "in_progress_run_count": 0,
         "last_run_created_at": null,
         "total_run_count": 0,
       },
       "status": "active",
+      "trigger": Object {
+        "type": "free",
+      },
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Paid member welcome flow",
-      "slug": "member-welcome-email-paid",
       "stats": Object {
         "in_progress_run_count": 0,
         "last_run_created_at": null,
         "total_run_count": 0,
       },
       "status": "active",
+      "trigger": Object {
+        "tiers": "all",
+        "type": "paid",
+      },
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
@@ -47,7 +52,7 @@ exports[`Automations API browse returns automations sourced from the database 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "676",
+  "content-length": "672",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -211,8 +216,10 @@ Object {
       ],
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Free member welcome flow",
-      "slug": "member-welcome-email-free",
       "status": "active",
+      "trigger": Object {
+        "type": "free",
+      },
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
@@ -223,7 +230,7 @@ exports[`Automations API read returns the automation, ordered actions, and edges
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1887",
+  "content-length": "1878",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

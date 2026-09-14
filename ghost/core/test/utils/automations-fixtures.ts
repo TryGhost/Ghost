@@ -56,6 +56,7 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(0),
       updated_at: timestamp(0),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+      trigger_config: JSON.stringify({ type: 'free' }),
       name: 'Free member welcome flow',
       status: 'active',
     },
@@ -64,6 +65,7 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(1),
       updated_at: timestamp(1),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+      trigger_config: JSON.stringify({ type: 'paid', tiers: 'all' }),
       name: 'Paid member welcome flow',
       status: 'active',
     },
@@ -97,9 +99,11 @@ export async function setupAutomationsFixture(): Promise<void> {
 }
 
 export async function cleanupAutomationsFixture(): Promise<void> {
+  // Automations created through the API have no slug at all, so clean those up
+  // too rather than leaking them into the next test.
   const automationIds: string[] = await db
     .knex('automations')
-    .whereIn('slug', TEST_AUTOMATION_SLUGS)
+    .where((builder) => builder.whereIn('slug', TEST_AUTOMATION_SLUGS).orWhereNull('slug'))
     .pluck('id');
 
   if (automationIds.length === 0) {

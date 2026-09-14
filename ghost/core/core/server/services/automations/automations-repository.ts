@@ -1,5 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
+import type { AutomationTrigger } from './automation-trigger';
 
 export type Pagination = {
   page: number;
@@ -58,7 +59,15 @@ export type AutomationEdge = {
 
 export type AutomationSummary = {
   id: string;
-  slug: string;
+  /**
+   * What makes members enter this automation.
+   *
+   * `null` means the automation's stored trigger could not be parsed, so no
+   * member will ever enter it. This is not reachable through the API, which
+   * validates triggers on the way in, but the database column is nullable and a
+   * row could predate or outlive a trigger format.
+   */
+  trigger: AutomationTrigger | null;
   name: string;
   status: string;
   created_at: string;
@@ -82,6 +91,15 @@ export type EditAutomationData = {
   status: string;
   actions: AutomationAction[];
   edges: AutomationEdge[];
+  /**
+   * Omit to leave the automation's existing trigger untouched.
+   */
+  trigger?: AutomationTrigger;
+};
+
+export type AddAutomationData = {
+  name: string;
+  trigger: AutomationTrigger;
 };
 
 export type AutomatedEmailRecipientWithMailgunId = {
@@ -113,8 +131,7 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  // NOTE: This property will be removed once we support additional automation triggers.
-  automation_slug: string;
+  automation_trigger: AutomationTrigger | null;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -158,16 +175,27 @@ export type BrowseOptions = Readonly<{
 
 export type AutomationsRepository = {
   browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  add(data: AddAutomationData): Promise<Automation>;
   getById(id: string): Promise<Automation | null>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,
   ): Promise<AutomationActionLink[] | null>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
+  /**
+   * Enqueue a run of every active automation whose trigger matches the member.
+   *
+   * Triggers may overlap, so one call can start several automations.
+   */
   trigger(options: {
     memberEmail: string;
     memberId: string;
-    memberStatus: 'free' | 'paid';
+    memberStatus: string;
+    /**
+     * The tiers that made the member eligible right now — the ones they just
+     * gained, not every tier they hold. Empty for free signups.
+     */
+    tierIds: ReadonlyArray<string>;
   }): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining

@@ -572,22 +572,29 @@ describe('Automations API', function () {
       await agent.get('automations/').expectStatus(200).expect(cacheInvalidateHeaderNotSet());
 
       const automations = await models.Base.knex('automations')
-        .select('id', 'name', 'slug', 'status')
+        .select('id', 'name', 'slug', 'status', 'trigger_config')
         .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS))
         .orderBy('slug');
 
       assert.deepEqual(
-        automations.map(({ name, slug, status }) => ({ name, slug, status })),
+        automations.map(({ name, slug, status, trigger_config: triggerConfig }) => ({
+          name,
+          slug,
+          status,
+          trigger: JSON.parse(triggerConfig),
+        })),
         [
           {
             name: 'Free member welcome flow',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
             status: 'inactive',
+            trigger: { type: 'free' },
           },
           {
             name: 'Paid member welcome flow',
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
             status: 'inactive',
+            trigger: { type: 'paid', tiers: 'all' },
           },
         ].sort((left, right) => left.slug.localeCompare(right.slug)),
       );
@@ -881,7 +888,150 @@ describe('Automations API', function () {
     });
   });
 
+  describe('add', function () {
+    const BRONZE_TIER_ID = '6540000000000000000000b1';
+
+    it('creates an inactive automation with a free trigger', async function () {
+      const { body } = await agent
+        .post('automations/')
+        .body({ automations: [{ name: 'New free flow', trigger: { type: 'free' } }] })
+        .expectStatus(201)
+        .expect(cacheInvalidateHeaderNotSet());
+
+      const automation = body.automations[0];
+      assert.equal(automation.name, 'New free flow');
+      assert.equal(automation.status, 'inactive');
+      assert.deepEqual(automation.trigger, { type: 'free' });
+      assert.deepEqual(automation.actions, []);
+      assert.deepEqual(automation.edges, []);
+
+      const { body: readBody } = await agent
+        .get(`automations/${automation.id}`)
+        .expectStatus(200);
+      assert.deepEqual(readBody.automations[0].trigger, { type: 'free' });
+    });
+
+    it('creates an automation with a tier-specific paid trigger', async function () {
+      const { body } = await agent
+        .post('automations/')
+        .body({
+          automations: [
+            { name: 'Bronze flow', trigger: { type: 'paid', tiers: [BRONZE_TIER_ID] } },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(body.automations[0].trigger, { type: 'paid', tiers: [BRONZE_TIER_ID] });
+    });
+
+    it('rejects an invalid trigger', async function () {
+      await agent
+        .post('automations/')
+        .body({ automations: [{ name: 'Bad flow', trigger: { type: 'comped' } }] })
+        .expectStatus(422);
+    });
+
+    it('rejects a paid trigger with an empty tier list', async function () {
+      await agent
+        .post('automations/')
+        .body({ automations: [{ name: 'Empty tiers flow', trigger: { type: 'paid', tiers: [] } }] })
+        .expectStatus(422);
+    });
+
+    it('rejects a missing name', async function () {
+      await agent
+        .post('automations/')
+        .body({ automations: [{ trigger: { type: 'free' } }] })
+        .expectStatus(422);
+    });
+
+    it('rejects a duplicate name', async function () {
+      await agent
+        .post('automations/')
+        .body({ automations: [{ name: 'Duplicate flow', trigger: { type: 'free' } }] })
+        .expectStatus(201);
+
+      await agent
+        .post('automations/')
+        .body({ automations: [{ name: 'Duplicate flow', trigger: { type: 'free' } }] })
+        .expectStatus(422);
+    });
+  });
+
   describe('edit', function () {
+    it('changes an automation trigger', async function () {
+      const { body: browseBody } = await agent.get('automations').expectStatus(200);
+      const automation = browseBody.automations.find(
+        (candidate) => candidate.name === 'Free member welcome flow',
+      );
+
+      const { body: editBody } = await agent
+        .put(`automations/${automation.id}`)
+        .body({
+          automations: [
+            {
+              status: 'inactive',
+              actions: [
+                { id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 24 } },
+              ],
+              edges: [],
+              trigger: { type: 'paid', tiers: ['6540000000000000000000b1'] },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      assert.deepEqual(editBody.automations[0].trigger, {
+        type: 'paid',
+        tiers: ['6540000000000000000000b1'],
+      });
+    });
+
+    it('leaves the trigger alone when an edit omits it', async function () {
+      const { body: browseBody } = await agent.get('automations').expectStatus(200);
+      const automation = browseBody.automations.find(
+        (candidate) => candidate.name === 'Free member welcome flow',
+      );
+
+      const { body: editBody } = await agent
+        .put(`automations/${automation.id}`)
+        .body({
+          automations: [
+            {
+              status: 'inactive',
+              actions: [
+                { id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 24 } },
+              ],
+              edges: [],
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      assert.deepEqual(editBody.automations[0].trigger, { type: 'free' });
+    });
+
+    it('rejects an invalid trigger', async function () {
+      const { body: browseBody } = await agent.get('automations').expectStatus(200);
+      const automation = browseBody.automations[0];
+
+      await agent
+        .put(`automations/${automation.id}`)
+        .body({
+          automations: [
+            {
+              status: 'inactive',
+              actions: [
+                { id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 24 } },
+              ],
+              edges: [],
+              trigger: { type: 'paid', tiers: ['not-an-object-id'] },
+            },
+          ],
+        })
+        .expectStatus(422);
+    });
+
     it('replaces automation actions and edges using frontend-generated ObjectIds', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 

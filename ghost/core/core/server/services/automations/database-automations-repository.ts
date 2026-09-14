@@ -11,7 +11,14 @@ import {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
   MEMBER_WELCOME_EMAIL_SLUGS,
 } from '../member-welcome-emails/constants';
+import {
+  doesTriggerMatchMember,
+  parseAutomationTrigger,
+  serializeAutomationTrigger,
+  type AutomationTrigger,
+} from './automation-trigger';
 import type {
+  AddAutomationData,
   AutomatedEmailEvents,
   Automation,
   AutomationBrowseResult,
@@ -31,14 +38,22 @@ import { getStaleLockCutoff } from './stale-lock-cutoff';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
-const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
+// The two automations that predate configurable triggers. Their slugs are kept
+// purely as the upsert key for this seed — nothing branches on them any more.
+const DEFAULT_WELCOME_EMAIL_AUTOMATIONS: ReadonlyArray<{
+  name: string;
+  slug: string;
+  trigger: AutomationTrigger;
+}> = [
   {
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+    trigger: { type: 'free' },
   },
   {
     name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
+    trigger: { type: 'paid', tiers: 'all' },
   },
 ];
 
@@ -50,13 +65,15 @@ const messages = {
   conflictingAutomationActionType:
     'Automation action "{actionId}" already exists with a different type.',
   defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.',
+  automationNameTaken: 'An automation named "{name}" already exists.',
 };
 
 const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
 type AutomationRow = {
   id: string;
-  slug: string;
+  slug: string | null;
+  trigger_config: string | null;
   name: string;
   status: string;
   created_at: DatabaseDate;
@@ -112,12 +129,16 @@ type NextActionRevisionRow = {
   wait_hours: number | null;
 };
 
+type TriggerCandidateRow = NextActionRevisionRow & {
+  trigger_config: string | null;
+};
+
 type StepToRunRow = {
   id: string;
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_slug: string;
+  automation_trigger_config: string | null;
   automation_status: 'inactive' | 'active';
   member_id: string | null;
   member_email: string;
@@ -236,6 +257,10 @@ export function createDatabaseAutomationsRepository({
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
           status: data.status,
+          // An absent trigger means "leave it as it is".
+          trigger_config: data.trigger
+            ? serializeAutomationTrigger(data.trigger)
+            : automation.trigger_config,
           updated_at: toDatabaseDate(now),
         });
 
@@ -249,10 +274,18 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
+    async add(data: AddAutomationData): Promise<Automation> {
+      return await knex.transaction(async (trx) => {
+        const automation = await addAutomation(trx, data);
+        return await buildAutomation(trx, automation);
+      });
+    },
+
     async trigger(options: {
       memberEmail: string;
       memberId: string;
-      memberStatus: 'free' | 'paid';
+      memberStatus: string;
+      tierIds: ReadonlyArray<string>;
     }): Promise<void> {
       return await knex.transaction((trx) =>
         trigger(trx, {
@@ -500,7 +533,7 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
 
 async function ensureAutomation(
   trx: Knex.Transaction,
-  defaults: Readonly<{ name: string; slug: string }>,
+  defaults: Readonly<{ name: string; slug: string; trigger: AutomationTrigger }>,
 ): Promise<AutomationRow> {
   const now = toDatabaseDate(new Date());
   const id = ObjectId().toHexString();
@@ -511,13 +544,29 @@ async function ensureAutomation(
       status: 'inactive',
       name: defaults.name,
       slug: defaults.slug,
+      trigger_config: serializeAutomationTrigger(defaults.trigger),
       created_at: now,
       updated_at: now,
     })
     .onConflict('slug')
     .ignore();
 
-  return requireAutomation(await loadAutomationBySlug(trx, defaults.slug), defaults.slug);
+  const automation = requireAutomation(
+    await loadAutomationBySlug(trx, defaults.slug),
+    defaults.slug,
+  );
+
+  // A row seeded before triggers existed, or by a migration that could not run,
+  // would otherwise never match a member.
+  if (automation.trigger_config === null) {
+    const triggerConfig = serializeAutomationTrigger(defaults.trigger);
+    await trx('automations')
+      .where('id', automation.id)
+      .update({ trigger_config: triggerConfig });
+    return { ...automation, trigger_config: triggerConfig };
+  }
+
+  return automation;
 }
 
 async function ensureWelcomeEmailAction(
@@ -578,38 +627,73 @@ async function trigger(
   options: Readonly<{
     memberEmail: string;
     memberId: string;
-    memberStatus: 'free' | 'paid';
+    memberStatus: string;
+    tierIds: ReadonlyArray<string>;
     fakeWaitHoursMultiplier: number | null;
   }>,
 ): Promise<void> {
-  const { memberEmail, memberId, memberStatus, fakeWaitHoursMultiplier } = options;
+  const { memberEmail, memberId, memberStatus, tierIds, fakeWaitHoursMultiplier } = options;
 
-  const firstAction = await findFirstActionRevision(trx, memberStatus);
-  if (!firstAction) {
-    return;
-  }
+  // Triggers may overlap, so a member can enter several automations at once.
+  const firstActions = await findFirstActionRevisions(trx, {
+    status: memberStatus,
+    tierIds,
+  });
 
   const now = new Date();
   const nowString = toDatabaseDate(now);
 
-  const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
+  for (const firstAction of firstActions) {
+    const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
 
-  const run = {
-    id: ObjectId().toHexString(),
-    created_at: nowString,
-    updated_at: nowString,
-    automation_id: firstAction.automation_id,
-    member_id: memberId,
-    member_email: memberEmail,
-  };
+    const run = {
+      id: ObjectId().toHexString(),
+      created_at: nowString,
+      updated_at: nowString,
+      automation_id: firstAction.automation_id,
+      member_id: memberId,
+      member_email: memberEmail,
+    };
 
-  await trx('automation_runs').insert(run);
-  await insertRunStep(trx, {
-    automationRunId: run.id,
-    automationActionRevisionId: firstAction.automation_action_revision_id,
-    now,
-    readyAt,
+    await trx('automation_runs').insert(run);
+    await insertRunStep(trx, {
+      automationRunId: run.id,
+      automationActionRevisionId: firstAction.automation_action_revision_id,
+      now,
+      readyAt,
+    });
+  }
+}
+
+async function addAutomation(
+  trx: Knex.Transaction,
+  data: Readonly<AddAutomationData>,
+): Promise<AutomationRow> {
+  const now = toDatabaseDate(new Date());
+  const id = ObjectId().toHexString();
+
+  const existing = await trx('automations').select('id').where('name', data.name).first();
+  if (existing) {
+    throw new errors.ValidationError({
+      message: tpl(messages.automationNameTaken, { name: data.name }),
+      property: 'name',
+    });
+  }
+
+  await trx('automations').insert({
+    id,
+    // New automations are never referred to by slug.
+    slug: null,
+    trigger_config: serializeAutomationTrigger(data.trigger),
+    name: data.name,
+    // An automation with no actions cannot send anything, so it starts inactive
+    // and is activated by an edit once it has a graph.
+    status: 'inactive',
+    created_at: now,
+    updated_at: now,
   });
+
+  return requireAutomation(await loadAutomation(trx, id), id);
 }
 
 async function insertRunStep(
@@ -704,7 +788,7 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
-      'automation.slug as automation_slug',
+      'automation.trigger_config as automation_trigger_config',
       'automation.status as automation_status',
       'run.member_id as member_id',
       'run.member_email as member_email',
@@ -759,7 +843,7 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
-    automation_slug: row.automation_slug,
+    automation_trigger: parseAutomationTrigger(row.automation_trigger_config),
     automation_status: row.automation_status,
     member_id: row.member_id,
     member_email: row.member_email,
@@ -789,15 +873,22 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
   }
 }
 
-async function findFirstActionRevision(
+/**
+ * The first action of every active automation whose trigger matches the member.
+ *
+ * Tier lists live in a JSON column, so matching happens in JS rather than SQL:
+ * we fetch the first action of every active automation and filter. The number of
+ * automations per site is small, so this is cheaper than it looks — and it keeps
+ * one definition of "matches" shared with the poll's exit conditions.
+ */
+async function findFirstActionRevisions(
   trx: Knex.Transaction,
-  memberStatus: 'free' | 'paid',
-): Promise<NextActionRevisionRow | null> {
-  const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
-
-  const row = await trx('automations as automation')
+  member: Readonly<{ status: string; tierIds: ReadonlyArray<string> }>,
+): Promise<NextActionRevisionRow[]> {
+  const rows: TriggerCandidateRow[] = await trx('automations as automation')
     .select(
       'automation.id as automation_id',
+      'automation.trigger_config as trigger_config',
       'actions.id as action_id',
       'revisions.id as automation_action_revision_id',
       'actions.type as type',
@@ -805,7 +896,6 @@ async function findFirstActionRevision(
     )
     .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
     .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-    .where('automation.slug', automationSlug)
     .where('automation.status', 'active')
     .whereNull('actions.deleted_at')
     .whereNotExists(
@@ -825,10 +915,23 @@ async function findFirstActionRevision(
         .max('created_at')
         .where('action_id', trx.ref('actions.id')),
     )
-    .orderBy(['actions.created_at', 'actions.id'])
-    .first();
+    .orderBy(['automation.created_at', 'automation.id', 'actions.created_at', 'actions.id']);
 
-  return row ?? null;
+  // `actions.created_at` ordering means the first row per automation is its
+  // first action; later rows for the same automation are steps further down.
+  const firstActionByAutomationId = new Map<string, TriggerCandidateRow>();
+  for (const row of rows) {
+    if (!firstActionByAutomationId.has(row.automation_id)) {
+      firstActionByAutomationId.set(row.automation_id, row);
+    }
+  }
+
+  return [...firstActionByAutomationId.values()].filter((row) =>
+    doesTriggerMatchMember(parseAutomationTrigger(row.trigger_config), {
+      status: member.status,
+      tierIds: member.tierIds,
+    }),
+  );
 }
 
 async function finishStepAndEnqueueNext(
@@ -1051,12 +1154,22 @@ async function updateStep(
   return changes >= 1;
 }
 
+const AUTOMATION_COLUMNS = [
+  'id',
+  'slug',
+  'trigger_config',
+  'name',
+  'status',
+  'created_at',
+  'updated_at',
+] as const;
+
 async function loadAutomation(
   trx: Knex.Transaction,
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select(...AUTOMATION_COLUMNS)
     .where('id', automationId)
     .first();
   return row ?? null;
@@ -1067,7 +1180,7 @@ async function loadAutomationBySlug(
   slug: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select(...AUTOMATION_COLUMNS)
     .where('slug', slug)
     .first();
   return row ?? null;
@@ -1075,7 +1188,7 @@ async function loadAutomationBySlug(
 
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
-    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .select(...AUTOMATION_COLUMNS)
     .orderBy('name');
 }
 
@@ -1096,6 +1209,7 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
     .select(
       'automations.id',
       'automations.slug',
+      'automations.trigger_config',
       'automations.name',
       'automations.status',
       'automations.created_at',
@@ -1115,6 +1229,7 @@ async function updateAutomation(
   await trx('automations')
     .update({
       status: automation.status,
+      trigger_config: automation.trigger_config,
       updated_at: automation.updated_at,
     })
     .where('id', automation.id);
@@ -1495,7 +1610,7 @@ async function buildAutomation(
 function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
   return {
     id: automation.id,
-    slug: automation.slug,
+    trigger: parseAutomationTrigger(automation.trigger_config),
     name: automation.name,
     status: automation.status,
     created_at: serializeDate(automation.created_at),

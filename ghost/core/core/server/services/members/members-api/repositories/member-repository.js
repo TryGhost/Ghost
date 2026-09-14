@@ -195,17 +195,25 @@ module.exports = class MemberRepository {
    * @param {string} memberId
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
+   * @param {string[]} tierIds Tiers the member just gained; empty for free signups.
    * @param {object} bookshelfOptions
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async #triggerMemberSignupAutomation(
+    memberId,
+    memberEmail,
+    memberStatus,
+    tierIds,
+    bookshelfOptions,
+  ) {
     const trigger = async () => {
       await this._automationsApi.trigger({
         event: 'member_sign_up',
         memberId,
         memberEmail,
         memberStatus,
+        tierIds,
       });
     };
 
@@ -279,13 +287,50 @@ module.exports = class MemberRepository {
    * @param {string} memberEmail
    * @param {'free' | 'paid'} memberStatus
    * @param {object} bookshelfOptions
+   * @param {string[]} [tierIds] Tiers the member just gained; empty for free signups.
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+  async triggerMemberSignupAutomation(
+    memberId,
+    memberEmail,
+    memberStatus,
+    bookshelfOptions,
+    tierIds = [],
+  ) {
     await Promise.all([
-      this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
+      this.#triggerMemberSignupAutomation(
+        memberId,
+        memberEmail,
+        memberStatus,
+        tierIds,
+        bookshelfOptions,
+      ),
       this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions),
     ]);
+  }
+
+  /**
+   * Trigger automations for a member who was already paid and has moved onto a
+   * different tier.
+   *
+   * Unlike a signup this deliberately skips the legacy welcome-email path: the
+   * member already had their welcome email, and only the new trigger-based
+   * automations care about which tier they are on now.
+   *
+   * @param {string} memberId
+   * @param {string} memberEmail
+   * @param {string[]} tierIds Tiers the member just gained.
+   * @param {object} bookshelfOptions
+   * @returns {Promise<void>}
+   */
+  async triggerMemberTierChangeAutomation(memberId, memberEmail, tierIds, bookshelfOptions) {
+    await this.#triggerMemberSignupAutomation(
+      memberId,
+      memberEmail,
+      'paid',
+      tierIds,
+      bookshelfOptions,
+    );
   }
 
   /**
@@ -1896,7 +1941,10 @@ module.exports = class MemberRepository {
       );
     }
 
-    if (updatedMember.attributes.status !== updatedMember._previousAttributes.status) {
+    const didStatusChange =
+      updatedMember.attributes.status !== updatedMember._previousAttributes.status;
+
+    if (didStatusChange) {
       await this._MemberStatusEvent.add(
         {
           member_id: data.id,
@@ -1907,23 +1955,43 @@ module.exports = class MemberRepository {
         },
         options,
       );
+    }
 
-      const context = options?.context || {};
-      const source = this._resolveContextSource(context);
+    const context = options?.context || {};
+    const source = this._resolveContextSource(context);
 
-      // Enqueue automation if:
-      // 1. The source is allowed to trigger automations
-      // 2. The member status changed to 'paid'
-      // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
-      if (
-        WELCOME_EMAIL_SOURCES.includes(source) &&
-        updatedMember.get('status') === 'paid' &&
-        updatedMember._previousAttributes.status !== 'gift'
-      ) {
+    // Tiers the member just gained, which is what automation triggers match on.
+    // Tiers they kept are deliberately excluded, so a Bronze -> Silver switch
+    // enters Silver automations without re-entering Bronze ones.
+    const addedTierIds = productsToAdd.filter((tierId) => typeof tierId === 'string');
+
+    // Enqueue automation if:
+    // 1. The source is allowed to trigger automations
+    // 2. The member status changed to 'paid'
+    // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
+    // `attributes` rather than `get()`: this runs on every subscription link, not
+    // only when the status changed.
+    const isPaidNow = updatedMember.attributes.status === 'paid';
+    const didBecomePaid =
+      didStatusChange && isPaidNow && updatedMember._previousAttributes.status !== 'gift';
+
+    if (WELCOME_EMAIL_SOURCES.includes(source)) {
+      if (didBecomePaid) {
         await this.triggerMemberSignupAutomation(
           memberModel.id,
           memberModel.get('email'),
           'paid',
+          options,
+          addedTierIds,
+        );
+      } else if (addedTierIds.length && isPaidNow) {
+        // The member was already paid and moved onto another tier. Automations
+        // triggered by that tier should start now, even though nothing about the
+        // member's status changed.
+        await this.triggerMemberTierChangeAutomation(
+          memberModel.id,
+          memberModel.get('email'),
+          addedTierIds,
           options,
         );
       }
