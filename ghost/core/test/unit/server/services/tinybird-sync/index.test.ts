@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { createTinybirdSyncService } from '../../../../../core/server/services/tinybird-sync/tinybird-sync-service';
+import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 describe('createTinybirdSyncService', () => {
   let databases: Knex[];
@@ -55,9 +56,12 @@ describe('createTinybirdSyncService', () => {
       table.text('updated_at');
     });
     await database.schema.createTable('tinybird_syncs', (table) => {
-      table.text('table_name');
+      table.text('id');
+      table.text('table_name').unique();
       table.text('last_synced_updated_at');
       table.text('last_synced_id');
+      table.text('created_at');
+      table.text('updated_at');
     });
 
     return database;
@@ -101,6 +105,32 @@ describe('createTinybirdSyncService', () => {
         { event: 'tinybird.sync.completed', table: 'automation_run_steps', sent: 0 },
       ],
     );
+  });
+
+  it('limits Traffic Analytics requests to 1000 messages', async () => {
+    const failure = new Error('stop loop');
+    const sleep = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
+    const database = await createEmptyDatabase();
+    const updatedAt = toDatabaseDate(new Date('2026-03-01T11:50:00.000Z'));
+    await database.batchInsert(
+      'automation_runs',
+      Array.from({ length: 1001 }, (_, index) => ({
+        id: `run-${index}`,
+        automation_id: `automation-${index}`,
+        created_at: updatedAt,
+        updated_at: updatedAt,
+      })),
+      500,
+    );
+    const requests: number[] = [];
+    const fetch: typeof globalThis.fetch = async (_input, init) => {
+      requests.push(String(init?.body).split('\n').length);
+      return new Response(null, { status: 202 });
+    };
+    const { service } = createService({ knex: database, sleep, random: () => 0, fetch });
+
+    service.start();
+    await vi.waitFor(() => assert.deepEqual(requests, [1000, 1]));
   });
 
   it('does not start without complete analytics config', () => {
