@@ -1,10 +1,10 @@
 const logging = require('@tryghost/logging');
 const labs = require('../../../shared/labs');
 const tiersService = require('../../services/tiers');
-const { requirementsByTier } = require('../../services/tier-checkout-config');
+const { checkoutConfigByTier } = require('../../services/tier-checkout-config');
 
 /**
- * What each tier asks a member for, or nothing when the site does not do that.
+ * What each tier collects at checkout, or nothing when the site does not do that.
  *
  * Looked up per request rather than kept with the tier, because a tier is loaded into
  * memory once at boot and these rows change underneath it: deleting a custom field
@@ -15,20 +15,20 @@ const { requirementsByTier } = require('../../services/tier-checkout-config');
  * resource of their own that carries them in full, and the payloads carrying tiers in
  * bulk each build their own reduced projection of a tier, so none of them pays for this.
  *
- * A failure costs the requirements and nothing else. A tier a reader cannot see the price
+ * A failure costs these settings and nothing else. A tier a reader cannot see the price
  * of is worse than one whose delivery question they meet a moment later.
  */
-async function requirements() {
+async function checkoutConfig() {
   if (!labs.isSet('stripeCheckoutCollection')) {
     return undefined;
   }
 
   try {
-    return requirementsByTier(await tiersService.checkout.browse());
+    return checkoutConfigByTier(await tiersService.checkout.browse());
   } catch (err) {
     logging.error(
-      { event: { name: 'tiers.requirements.read_failed' }, err },
-      'Failed to read what tiers ask a member for',
+      { event: { name: 'tiers.checkout_config.read_failed' }, err },
+      'Failed to read what tiers collect at checkout',
     );
     return undefined;
   }
@@ -50,7 +50,7 @@ const controller = {
       // Carried on the page rather than fetched while serializing, so the serializer
       // renders what it was handed. The admin controller looks none up, which is what
       // keeps them off the admin payload — no serializer needs to ask who is calling.
-      return { ...page, requirements: await requirements() };
+      return { ...page, checkoutConfig: await checkoutConfig() };
     },
   },
 };
