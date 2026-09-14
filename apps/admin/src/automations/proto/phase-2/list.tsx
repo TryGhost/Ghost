@@ -23,9 +23,12 @@ import { lanePath } from '@/automations/proto/shared/lanes';
 import { LaneSwitcher } from '@/automations/proto/shared/lane-switcher';
 import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
+  blankAutomation,
   deleteAutomation,
   duplicateAutomation,
+  insertAutomation,
   suggestCopyName,
+  updateAutomationDetails,
   useProtoAutomations,
 } from '@/automations/proto/shared/store';
 import { DetailsDialog } from './details-dialog';
@@ -44,51 +47,77 @@ const AutomationsList: React.FC = () => {
   // Held rather than confirmed per row, so the list has one dialog instead of
   // one behind every overflow menu.
   const [pendingDelete, setPendingDelete] = useState<AutomationDetail | null>(null);
-  // The row being copied, and the name and description offered for the copy.
-  const [pendingDuplicate, setPendingDuplicate] = useState<ProtoAutomation | null>(null);
-  const [duplicateDraft, setDuplicateDraft] = useState({ name: '', description: '' });
+  // The row being renamed, and the name and description offered for it.
+  const [pendingRename, setPendingRename] = useState<ProtoAutomation | null>(null);
+  const [renameDraft, setRenameDraft] = useState({ name: '', description: '' });
 
-  // Opens an unsaved automation rather than making one. `new` is a sentinel id,
-  // the same way Ghost's own tag creation uses /tags/new: the screen holds a draft
-  // and the record appears when Save is pressed.
+  // Makes the automation, then opens it. It used to do the opposite — navigate to a
+  // `/new` sentinel id, hold the whole thing locally, and write the record on the
+  // first Save.
+  //
+  // A team run-through didn't accept that model. Nothing on screen said the
+  // automation didn't exist yet, and Save meant two different things depending on
+  // whether it was the first press ("bring this into being") or any later one
+  // ("commit these edits"). Beehiiv, Kit and Resend all create on arrival, and the
+  // reason is that it's the only version where the screen can tell you the truth
+  // about what it is.
+  //
+  // So: create, land on a real id, and say so. The toast is the visible half; the
+  // half that matters is that it's true when it fires.
   //
   // No name-it-first dialog. The automation is named for you ("New automation",
   // then numbered), and the first real decision — what starts it — is the trigger
   // list waiting on the canvas.
   const handleCreate = () => {
-    navigate(toVersioned(`${lanePath(LANE)}/new`));
+    const record = blankAutomation();
+    insertAutomation(record);
+    navigate(toVersioned(`${lanePath(LANE)}/${record.automation.id}`));
+    // Past tense and no action. It reports something that already happened, and the
+    // screen it happened on is the one you're now looking at — there's nowhere for a
+    // "View" to take you. Duplicate's toast has one because that copy is elsewhere.
+    toast.success('Automation created');
   };
 
-  // Same dialog the automation's own ⋯ opens, so duplicating from the list and
-  // duplicating from inside are one act asked one way. From here it copies the
-  // SAVED record — there's no draft on this screen to prefer.
-  const openDuplicate = (entry: ProtoAutomation) => {
-    setDuplicateDraft({
-      name: suggestCopyName(entry.automation.name),
-      description: entry.description,
-    });
-    setPendingDuplicate(entry);
-  };
-
-  const confirmDuplicate = () => {
-    const name = duplicateDraft.name.trim();
-    if (!pendingDuplicate || !name) {
-      return;
-    }
-    const source = pendingDuplicate;
-    setPendingDuplicate(null);
-    const copyId = duplicateAutomation(
-      source.automation,
-      source.trigger,
-      duplicateDraft.description.trim(),
-      name,
-    );
+  // Instant. It used to open the naming dialog first, which made a two-press act out
+  // of the one thing in this list you'd want to do repeatedly — building the next
+  // tier's flow from the last one's. The name it offered was the name you'd accept,
+  // so the dialog was a confirmation step wearing a form.
+  //
+  // What makes instant safe is that the copy is inert: it's off, it isn't running,
+  // and Rename is directly above this in the same menu. The posts list duplicates
+  // exactly this way.
+  //
+  // Copies the SAVED record — there's no draft on this screen to prefer.
+  const handleDuplicate = (entry: ProtoAutomation) => {
+    const name = suggestCopyName(entry.automation.name);
+    const copyId = duplicateAutomation(entry.automation, entry.trigger, entry.description, name);
     toast.success(`“${name}” created`, {
       action: {
         label: 'View',
         onClick: () => navigate(toVersioned(`${lanePath(LANE)}/${copyId}`)),
       },
     });
+  };
+
+  // Rename, not "Edit details". The menu is a list of verbs and this is what you came
+  // to do; "Edit details" names a place rather than an act, and leaves you guessing
+  // which details. The description comes along because it's the line under the name
+  // in this very table — the two are what you're organising by, and splitting them
+  // across two actions would mean opening one dialog to fix a row and another to
+  // finish the job.
+  const openRename = (entry: ProtoAutomation) => {
+    setRenameDraft({ name: entry.automation.name, description: entry.description });
+    setPendingRename(entry);
+  };
+
+  const confirmRename = () => {
+    const name = renameDraft.name.trim();
+    if (!pendingRename || !name) {
+      return;
+    }
+    updateAutomationDetails(pendingRename.automation.id, name, renameDraft.description.trim());
+    setPendingRename(null);
+    toast.success('Automation updated');
   };
 
   const confirmDelete = () => {
@@ -136,22 +165,25 @@ const AutomationsList: React.FC = () => {
                 automations={automations}
                 basePath={lanePath(LANE)}
                 onDelete={setPendingDelete}
-                onDuplicate={openDuplicate}
+                onDuplicate={handleDuplicate}
+                onRename={openRename}
               />
             )}
           </ListPage.Body>
         </ListPage>
       </Container>
 
+      {/* The same dialog the detail screen's Edit details opens, so naming an
+                automation is one act asked one way wherever you do it. */}
       <DetailsDialog
-        blurb="Creates a copy of this automation. It starts turned off."
-        confirmLabel="Duplicate"
-        heading="Duplicate automation"
-        open={Boolean(pendingDuplicate)}
-        values={duplicateDraft}
-        onChange={setDuplicateDraft}
-        onConfirm={confirmDuplicate}
-        onOpenChange={() => setPendingDuplicate(null)}
+        blurb="Only you and your team can see this — members never do."
+        confirmLabel="Save"
+        heading="Rename automation"
+        open={Boolean(pendingRename)}
+        values={renameDraft}
+        onChange={setRenameDraft}
+        onConfirm={confirmRename}
+        onOpenChange={() => setPendingRename(null)}
       />
 
       <AlertDialog open={Boolean(pendingDelete)} onOpenChange={() => setPendingDelete(null)}>

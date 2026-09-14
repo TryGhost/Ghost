@@ -262,18 +262,23 @@ export const useProtoAutomation = (id: string | undefined): ProtoAutomation | un
  * A new automation, NOT written to the store.
  *
  * Creating is a two-step act: this makes the thing you're editing, and
- * insertAutomation is what saves it. Nothing exists until Save, which is the same
- * rule every other edit on this screen follows — and it's what Ghost's own tag
- * creation does (`/tags/new` holds a local draft; the record appears on save).
+ * Phase 2's list inserts it immediately and opens it — see handleCreate there. This
+ * used to argue the opposite: that nothing should exist until Save, the way Ghost's
+ * tag creation works (`/tags/new` holds a local draft; the record appears on save),
+ * and that creating on arrival would litter the list with empties.
  *
- * The alternative — writing immediately on "New automation" — contradicts that
- * rule and litters the list: click in, look, back out, and you've left an empty
- * automation behind with no way to know you did. The `(2)`, `(3)` numbering was
- * built to cope with exactly that collision, which is a symptom rather than a
- * feature.
+ * A team run-through settled it the other way. Nothing on the detail screen could
+ * say whether the automation existed, and Save meant two different things depending
+ * on whether it was the first press. Beehiiv, Kit and Resend all create on arrival
+ * for that reason. The empties are real and accepted: an abandoned one is a row with
+ * no trigger, which the table already draws as unfinished (a muted generic bolt),
+ * and Delete is live on the detail screen from the first frame.
  *
- * The id is minted here rather than at save so the screen can navigate to a real
- * URL the moment it saves, and so nothing has to be re-keyed on the way.
+ * The `(2)`, `(3)` numbering was built to cope with that collision. It's now doing
+ * the job it was designed for rather than papering over one.
+ *
+ * The id is minted here so the caller can navigate straight to a real URL, and so
+ * nothing has to be re-keyed on the way.
  */
 export const blankAutomation = (): ProtoAutomation => {
   const id = newId();

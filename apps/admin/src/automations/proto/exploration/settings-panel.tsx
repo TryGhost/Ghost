@@ -59,7 +59,6 @@ export interface SettingsPanelProps {
   onTriggerConfigChange: (next: TriggerConfig) => void;
   allowReentry: boolean;
   onAllowReentryChange: (next: boolean) => void;
-  onDuplicate: () => void;
   onDelete: () => void;
 }
 
@@ -71,7 +70,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onTriggerConfigChange,
   allowReentry,
   onAllowReentryChange,
-  onDuplicate,
   onDelete,
 }) => {
   // Some criteria word themselves from the configuration ("Leave Bronze, Gold"),
@@ -247,22 +245,27 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         />
       </div>
 
-      {/* What you can do TO this automation, as opposed to what it's set to. They
-                were in the header's ⋯ — which then existed for two items, and put the way
-                to delete something at the top right of a screen whose top right is
-                otherwise about publishing it.
-                
-                Last, and Delete last of all: this is the end of the panel because these
-                are the things you do when you're finished with it, and a destructive
-                action shouldn't sit above anything you might be reaching for. */}
+      {/* What you can do TO this automation, as opposed to what it's set to. It was
+                in the header's ⋯ — which then existed for two items, and put the way to
+                delete something at the top right of a screen whose top right is otherwise
+                about publishing it.
+
+                Delete alone. Duplicate stood beside it until a team run-through caught
+                what it actually copied: with explicit save the screen holds two versions
+                of the automation at once — saved, and your draft — and "Duplicate" names
+                neither, so the copy silently took the unsaved edits with it. Prompting to
+                save first only makes Duplicate interrogate you about automation A in order
+                to create automation B. The verb needs ONE unambiguous subject, and the
+                automations table is where it has one, so that's where it lives now.
+
+                Delete has no such problem — it removes the whole thing, draft and all —
+                and it stays here, last, because this is the end of the panel and a
+                destructive action shouldn't sit above anything you might be reaching for.
+
+                The colour is the whole warning at this size. It opens a confirm that says
+                what's actually at stake — members mid-flow, and the run history — so the
+                button doesn't have to. */}
       <Inline className="pt-2" gap="sm">
-        <Button type="button" variant="outline" onClick={onDuplicate}>
-          <LucideIcon.Copy strokeWidth={2} />
-          Duplicate
-        </Button>
-        {/* The colour is the whole warning at this size. It opens a confirm that
-                    says what's actually at stake — members mid-flow, and the run history —
-                    so the button doesn't have to. */}
         <Button
           className="text-destructive hover:text-destructive"
           type="button"

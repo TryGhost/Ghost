@@ -295,7 +295,8 @@ const AutomationFloat: React.FC = () => {
   const goBack = () => navigate(toVersioned(lanePath(LANE)));
 
   // Discarding a draft has no home in this lane at the moment: it lived in the
-  // header's ⋯, and the ⋯ has gone now that Duplicate and Delete are in Settings.
+  // header's ⋯, and the ⋯ has gone now that Delete is in Settings (and Duplicate
+  // is in the automations table — see the settings panel).
   // Parked rather than solved — it's a real action and it'll need somewhere, but
   // inventing a place for it wasn't the point of removing the menu.
   const handleDelete = () => {
@@ -598,7 +599,6 @@ const AutomationFloat: React.FC = () => {
                 onTriggerConfigChange: handleTriggerConfigChange,
                 allowReentry,
                 onAllowReentryChange: setAllowReentry,
-                onDuplicate: () => toast.success('Automation duplicated'),
                 onDelete: () => setDeleteOpen(true),
               }}
               onQueryChange={setQuery}

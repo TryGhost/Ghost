@@ -23,23 +23,12 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 
-import {
-  useBlocker,
-  useConfirmUnload,
-  useLocation,
-  useNavigate,
-  useParams,
-} from '@tryghost/admin-x-framework';
+import { useBlocker, useConfirmUnload, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { getRunData } from '@/automations/proto/shared/mock';
-import type { ProtoAutomation } from '@/automations/proto/shared/store';
 import {
-  blankAutomation,
   deleteAutomation,
-  duplicateAutomation,
-  insertAutomation,
   saveAutomation,
   setAutomationStatus,
-  suggestCopyName,
   updateAutomationDetails,
   useProtoAutomation,
   useStripeConnected,
@@ -208,34 +197,16 @@ const AutomationFloat: React.FC = () => {
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
   // `cancellationSurvey` already designs for.
-  // `new` is a sentinel id, not an automation — Ghost's tag detail uses the same
-  // one for /tags/new. Nothing exists in the store until Save, so the screen holds
-  // the whole thing locally until then.
-  const isCreating = id === 'new';
-  // Made once, on mount, and never mutated. The screen is keyed by id (see
-  // AutomationFloatScreen), so this is per-visit rather than something to reset —
-  // and keeping it pristine is what lets a rename be DIFFED rather than tracked.
-  const [newRecord] = useState<ProtoAutomation | null>(() =>
-    id === 'new' ? blankAutomation() : null,
-  );
-  // Name and description while creating. Their own state rather than an edit to
-  // the blank above: applied immediately in both modes, but here there's no store
-  // to apply them to, and overwriting the blank would destroy the only copy of
-  // what they started as.
-  const [newDetails, setNewDetails] = useState<{ name: string; description: string } | null>(null);
-  const storedRecord = useProtoAutomation(isCreating ? undefined : id);
-  const baseRecord = storedRecord ?? newRecord;
-  // The blank stands in for "what Save last committed" while creating, so every
-  // derivation below — the diff, the leave guard, the change summary — works
-  // unchanged: an automation you haven't saved is one whose saved version is empty.
-  const record =
-    baseRecord && newDetails
-      ? {
-          ...baseRecord,
-          description: newDetails.description,
-          automation: { ...baseRecord.automation, name: newDetails.name },
-        }
-      : (baseRecord ?? undefined);
+  // Every automation this screen opens exists. There is no half-made one.
+  //
+  // There used to be: `new` was a sentinel id (Ghost's tag detail still works that
+  // way for /tags/new), the screen held a blank record locally, and the first Save
+  // wrote it. That meant a second record shadowing the stored one, a second name and
+  // description held beside it, a branch in promoteDraft, and a key the screen
+  // wrapper had to hold across the /new → /:id navigation so publishing didn't tear
+  // the canvas down mid-write. All of it existed to describe a state the list now
+  // never produces — it creates the automation before sending you here.
+  const record = useProtoAutomation(id) ?? undefined;
   const scenario = record
     ? { automation: record.automation, ...getRunData(record.automation.id) }
     : undefined;
@@ -280,8 +251,6 @@ const AutomationFloat: React.FC = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsDraft, setSettingsDraft] = useState({ name: '', description: '' });
   // The copy's name and description, offered before it exists.
-  const [duplicateOpen, setDuplicateOpen] = useState(false);
-  const [duplicateDraft, setDuplicateDraft] = useState({ name: '', description: '' });
   // Edits are held here until Save commits them to the store, which is also why
   // they're the one piece of state that ISN'T persisted: an unsaved draft is
   // defined as the thing you haven't committed, and restoring one a week later
@@ -332,15 +301,6 @@ const AutomationFloat: React.FC = () => {
   useEffect(() => {
     setPaneAnimated(true);
   }, []);
-  // `leaving` suppresses the not-found read and the leave guard while an automation
-  // is removed or replaced under the screen. A first save used to end in a remount,
-  // which cleared it; now that the screen survives, it has to be put back down once
-  // the automation it was covering for exists.
-  useEffect(() => {
-    if (!isCreating) {
-      leaving.current = false;
-    }
-  }, [isCreating]);
 
   // What's running vs what's being edited. Derived up here, before the early
   // return, because the leave guards below need to know whether anything differs
@@ -348,16 +308,15 @@ const AutomationFloat: React.FC = () => {
   const publishedAutomation = savedAutomation;
   const activeDraft = draft ?? publishedAutomation;
 
-  // The diff is computed, not tracked. This used to be a `dirty` boolean flipped
-  // by the first edit and left true until publish or discard — so typing a
-  // character and deleting it left the screen insisting on changes that no longer
-  // existed, and offering to publish or discard nothing. Comparing the draft
-  // against what's published means an edit that cancels itself out stops
-  // counting, and the controls disappear on their own.
+  // The diff is computed, not tracked. A `dirty` boolean flipped by the first edit
+  // and left true until publish or discard meant typing a character and deleting it
+  // left the screen insisting on changes that no longer existed. Comparing the draft
+  // against what's published means an edit that cancels itself out stops counting,
+  // and the controls disappear on their own.
   //
   // changeSummary is therefore the single definition of "something differs":
-  // whatever becomes editable has to be represented there, or it won't register
-  // as a change anywhere on this screen.
+  // whatever becomes editable has to be represented there, or it won't register as a
+  // change anywhere on this screen.
   const changes =
     publishedAutomation && activeDraft
       ? changeSummary({
@@ -367,22 +326,13 @@ const AutomationFloat: React.FC = () => {
           draftTrigger: triggerConfig,
         })
       : [];
-  // A rename is a change too, and changeSummary can't see it: name and
-  // description aren't part of the draft/published split — they apply immediately
-  // — so there's nothing for it to diff. Without this, naming a new automation and
-  // leaving lost the name with no prompt, because every other signal said nothing
-  // had happened.
-  //
-  // Compared against the pristine blank rather than flagged on first edit, for the
-  // same reason the rest of this screen computes its diff: renaming and then
-  // renaming back should stop counting.
-  const detailsTouched = Boolean(
-    newRecord &&
-    newDetails &&
-    (newDetails.name !== newRecord.automation.name ||
-      newDetails.description !== newRecord.description),
-  );
-  const hasChanges = changes.length > 0 || detailsTouched;
+  // Name and description are no longer part of "unsaved work". They used to be:
+  // while creating there was no store to apply them to, so they were held beside the
+  // blank record and had to be diffed against it, or naming a new automation and
+  // leaving lost the name with no prompt. The automation exists before this screen
+  // opens now, so Rename writes through immediately, the same as renaming any
+  // other automation — and hasChanges is back to meaning what the canvas holds.
+  const hasChanges = changes.length > 0;
 
   // Edits are held, not written, so any difference is unsaved work that leaving
   // would destroy — in either lifecycle state, since a stopped automation's edits
@@ -484,35 +434,10 @@ const AutomationFloat: React.FC = () => {
   // reversible via Stop, and a blocking modal would interrupt the flow. All the
   // friction lives on Stop and on publishing to something already running.
   // Whatever's in the draft becomes the running version.
-  // First Save creates the automation; every Save after commits to it. The record
-  // being written is the same either way — what differs is whether the store has
-  // seen it before — so the two paths meet here rather than at each caller.
+  // Save commits the draft. One path — there is no first-save-creates case any more,
+  // which is what this function was mostly made of: an insert, a replace-navigate onto
+  // the new id, and two pieces of creating-only state to clear afterwards.
   const promoteDraft = (status?: LiveStatus) => {
-    if (isCreating && record) {
-      leaving.current = true;
-      insertAutomation({
-        ...record,
-        automation: { ...flowToCommit, status: status ?? draftFlow.status },
-        trigger: triggerConfig,
-      });
-      // replace: /new isn't somewhere to go Back to, and the automation now has a
-      // real id. The screen is keyed by id, so this remounts onto the saved record
-      // — which is why the write has to land first.
-      // replace: /new isn't somewhere to go Back to. `fromNew` tells the screen
-      // wrapper this is the same automation gaining an id rather than a move to a
-      // different one, so it holds its key and nothing remounts.
-      //
-      // Which means the state the remount used to reset has to be reset here: the
-      // draft IS the saved version now, and the creating-only name override would
-      // otherwise go on shadowing the record it was just written into.
-      navigate(toVersioned(`${lanePath(LANE)}/${draftFlow.id}`), {
-        replace: true,
-        state: { fromNew: true },
-      });
-      setDraft(null);
-      setNewDetails(null);
-      return;
-    }
     saveAutomation(id, flowToCommit, triggerConfig);
     if (status) {
       setAutomationStatus(id, status);
@@ -598,49 +523,23 @@ const AutomationFloat: React.FC = () => {
     setPublishOpen(true);
   };
 
-  // Duplicate asks before it copies, in the same dialog renaming uses.
+  // Duplicate is NOT on this screen. It lives in the automations table, and only
+  // there.
   //
-  // It used to fire straight off the menu and report itself in a toast, which was
-  // too quiet for something that creates a second automation: the only evidence
-  // was a message that disappears, and the copy's name had been decided for you.
-  // The dialog makes the act deliberate and hands back the one decision worth
-  // having — what the copy is called — already filled in, so confirming without
-  // reading it still gives a sensible answer.
-  const openDuplicate = () => {
-    setDuplicateDraft({
-      name: suggestCopyName(automation.name),
-      description: record.description,
-    });
-    setDuplicateOpen(true);
-  };
-
-  // Copies WHAT'S ON SCREEN — the draft, unsaved edits included — and leaves you
-  // where you are.
+  // It used to be here, in the menu below, and it copied what was on screen — the
+  // draft, unsaved edits included. Nobody reading the menu could tell: with explicit
+  // save the screen holds two versions of the automation at once, and "Duplicate" names
+  // neither of them. A team run-through hit this immediately.
   //
-  // Navigating to the copy was the other candidate, and it collides with explicit
-  // save: with unsaved changes, going there would open the "Discard unsaved
-  // changes?" guard, which is a baffling thing for Duplicate to ask. Staying put
-  // has no such collision, and the toast's action offers the trip anyway for
-  // anyone who wanted it — one click, on request, rather than imposed.
-  const confirmDuplicate = () => {
-    const name = duplicateDraft.name.trim();
-    if (!name) {
-      return;
-    }
-    setDuplicateOpen(false);
-    const copyId = duplicateAutomation(
-      draftFlow,
-      triggerConfig,
-      duplicateDraft.description.trim(),
-      name,
-    );
-    toast.success(`“${name}” created`, {
-      action: {
-        label: 'View',
-        onClick: () => navigate(toVersioned(`${lanePath(LANE)}/${copyId}`)),
-      },
-    });
-  };
+  // The fix isn't better wording, or asking you to save first — that makes Duplicate
+  // interrogate you about automation A in order to create automation B, and it's
+  // coercive when not saving was deliberate. The fix is that Duplicate needs ONE
+  // unambiguous subject, and the list is where it has one. It's a list-level verb
+  // anyway: you duplicate to get a starting point for something new, which is a thought
+  // you have while surveying what you've got, not mid-edit on one of them. Posts work
+  // the same way — duplicated from the posts list, never from inside the editor.
+  //
+  // Delete stays. Nothing ambiguous about removing the whole thing, draft and all.
 
   const openSettings = () => {
     // Seeded from the record each time it opens, so an abandoned edit doesn't
@@ -658,13 +557,7 @@ const AutomationFloat: React.FC = () => {
       return;
     }
     setSettingsOpen(false);
-    if (isCreating) {
-      // Nothing to update in the store yet — these ride alongside the blank until
-      // Save writes the whole record.
-      setNewDetails({ name, description: settingsDraft.description.trim() });
-    } else {
-      updateAutomationDetails(id, name, settingsDraft.description.trim());
-    }
+    updateAutomationDetails(id, name, settingsDraft.description.trim());
     toast.success('Automation updated');
   };
 
@@ -715,37 +608,41 @@ const AutomationFloat: React.FC = () => {
                     Duplicated rather than moved — the button below carries the inverse
                     class, so exactly one of the two is ever rendered.
 
-                    Still conditional, unlike Duplicate and Delete below. Those are
-                    temporarily unavailable; this one doesn't exist while the automation is
-                    live, because Publish IS the save then. A greyed Save there would say
-                    changes can't be committed, which is the opposite of true. */}
+                    Still conditional, unlike Delete below. That one is temporarily
+                    unavailable; this one doesn't exist while the automation is live,
+                    because Publish IS the save then. A greyed Save there would say changes
+                    can't be committed, which is the opposite of true. */}
         {liveStatus === 'inactive' && (
           <DropdownMenuItem className="lg:hidden" disabled={!hasChanges} onClick={handleSave}>
             <LucideIcon.Save /> Save
           </DropdownMenuItem>
         )}
-        {/* A verb, like every other row here. "Settings" was the one noun in a list
-                    of things you do, which made it read as a different kind of item —
-                    somewhere to go rather than something to perform. */}
+        {/* A verb, like every other row here. It was "Settings" — the one noun in a
+                    list of things you do, which read as somewhere to go rather than
+                    something to perform — and then "Edit details", which is a verb but
+                    names no particular thing: you can't tell from it which details, or
+                    that the name is one of them.
+
+                    "Rename" says the thing you came for. The description rides along in
+                    the same dialog, the way it does from the list's row menu, because the
+                    two are what an automation is filed under and fixing one usually means
+                    fixing the other. */}
         <DropdownMenuItem onClick={openSettings}>
-          <LucideIcon.Settings /> Edit details
-        </DropdownMenuItem>
-        {/* Disabled while creating rather than hidden. Both act on a record that
-                    doesn't exist yet — there's nothing to copy and nothing to remove until
-                    the first Save — but a menu whose contents change between visits teaches
-                    nobody what's in it. Showing them greyed says the automation isn't ready
-                    for them; removing them says they don't exist. */}
-        <DropdownMenuItem disabled={isCreating} onClick={openDuplicate}>
-          <LucideIcon.Copy /> Duplicate
+          <LucideIcon.PenLine /> Rename
         </DropdownMenuItem>
         {/* Delete sits last. A menu opens with the cursor at the top, so leading
                     with the one item that destroys something would put it directly under
                     the pointer. It used to be fenced off by a separator too; with four
                     items the rules were doing more to break the list up than the grouping
-                    justified, and the destructive colour already marks it. */}
+                    justified, and the destructive colour already marks it.
+
+                    No longer disabled on arrival. It used to be, because the automation
+                    didn't exist until the first Save and there was nothing to remove. It
+                    exists the moment this screen opens now, so Delete is live from the
+                    first frame — which is also the way out for anyone who opened New
+                    automation and changed their mind. */}
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
-          disabled={isCreating}
           onClick={() => setDeleteOpen(true)}
         >
           <LucideIcon.Trash2 /> Delete
@@ -1076,25 +973,12 @@ const AutomationFloat: React.FC = () => {
       <DetailsDialog
         blurb="Shown on your automations list. Members never see either of these."
         confirmLabel="Save"
-        heading="Automation details"
+        heading="Rename automation"
         open={settingsOpen}
         values={settingsDraft}
         onChange={setSettingsDraft}
         onConfirm={saveSettings}
         onOpenChange={setSettingsOpen}
-      />
-
-      {/* The copy, named before it exists. Same dialog as settings — naming a new
-                automation and renaming an existing one are the same act. */}
-      <DetailsDialog
-        blurb="Creates a copy of this automation. It starts turned off, and members never see either of these."
-        confirmLabel="Duplicate"
-        heading="Duplicate automation"
-        open={duplicateOpen}
-        values={duplicateDraft}
-        onChange={setDuplicateDraft}
-        onConfirm={confirmDuplicate}
-        onOpenChange={setDuplicateOpen}
       />
 
       {/* Delete. The one warning this screen can give that the list can't: how
@@ -1171,39 +1055,21 @@ const AutomationFloat: React.FC = () => {
 // styles, header treatments — can register without moving anything.
 const AutomationFloatScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   // Keyed by id so every piece of unsaved state — the draft, the trigger being
-  // configured, the member in focus — belongs to one automation and starts clean
-  // on the next. Without it, React reuses the instance across a route change and
-  // the previous automation's draft would follow you to the new one.
+  // configured, the member in focus — belongs to one automation and starts clean on
+  // the next. Without it, React reuses the instance across a route change and the
+  // previous automation's draft would follow you to the new one.
   //
-  // With ONE exception: saving a new automation swaps /new for its id, and that is
-  // the only route change that isn't a change of subject — it's the same
-  // automation, which has just gained an id. Letting the key change there tore the
-  // whole screen down and rebuilt it mid-publish: header, pane, and both React Flow
-  // canvases reassembling in full view. That was the flash, and no amount of
-  // animation on the pieces could hide it, because the pieces were what was being
-  // destroyed.
+  // It used to have to hold that key across one route change: saving a new
+  // automation swapped /new for a real id, which is the same automation gaining an
+  // id rather than a change of subject — and letting the key change there tore the
+  // screen down and rebuilt it mid-publish, header, pane and both React Flow
+  // canvases reassembling in full view. That was the first-publish flash.
   //
-  // `fromNew` is set by the navigate that does it, so this can't be confused with
-  // going from /new to some OTHER automation — a change of subject, which still has
-  // to reset. `heldFor` remembers which id the held key now stands for, so the next
-  // real navigation is still recognised as one.
-  const fromNew = Boolean((location.state as { fromNew?: boolean } | null)?.fromNew);
-  const screenKey = useRef(id);
-  const heldFor = useRef(id);
-  // Mutating a ref during render is safe here in a way it wasn't for the canvas's
-  // intro sequence: this only ever recomputes the same answer, so StrictMode's
-  // discarded first pass costs nothing.
-  if (id !== heldFor.current) {
-    if (fromNew && heldFor.current === 'new') {
-      heldFor.current = id;
-    } else {
-      screenKey.current = id;
-      heldFor.current = id;
-    }
-  }
-  return <AutomationFloat key={screenKey.current} />;
+  // The automation is created before this screen opens now, so its id never changes
+  // underneath it and there is no exception left to carve out. Every route change
+  // here really is a change of subject.
+  return <AutomationFloat key={id} />;
 };
 
 export default AutomationFloatScreen;

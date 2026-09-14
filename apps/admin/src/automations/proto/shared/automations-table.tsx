@@ -2,6 +2,10 @@ import React from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -83,7 +87,8 @@ const AutomationRow: React.FC<{
   basePath: string;
   onDelete?: (automation: AutomationDetail) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
-}> = ({ entry, basePath, onDelete, onDuplicate }) => {
+  onRename?: (entry: ProtoAutomation) => void;
+}> = ({ entry, basePath, onDelete, onDuplicate, onRename }) => {
   const { automation, description, trigger } = entry;
   const toVersioned = useVersionLink();
   const { metrics } = getRunData(automation.id);
@@ -96,7 +101,45 @@ const AutomationRow: React.FC<{
   // was chosen can't run, and reads as pending rather than as a fourth kind.
   const TriggerIcon = trigger ? triggerIcon(trigger) : LucideIcon.Zap;
 
-  return (
+  // The row's actions, written once and rendered into both menus — the ⋯ button and
+  // the right-click menu — so the two can't drift into offering different things.
+  //
+  // `Item` is DropdownMenuItem or ContextMenuItem. Radix gives them the same shape,
+  // and onSelect rather than onClick because it's the one that also fires on Enter
+  // and Space; onClick leaves a menu row that the keyboard can focus and not use.
+  const actions = (Item: React.ElementType) => (
+    <>
+      {onRename && (
+        <Item onSelect={() => onRename(entry)}>
+          <LucideIcon.PenLine /> Rename
+        </Item>
+      )}
+      {/* No dialog. It used to ask for a name first, on the reasoning that creating a
+                second automation deserves a deliberate act — but the name it offered was
+                always the one you'd accept, so the dialog was a confirmation step wearing
+                a form. The posts list duplicates instantly and so does this; the copy is
+                named "… (copy)", it's off, and it's one press from being renamed by the
+                row above. */}
+      {onDuplicate && (
+        <Item onSelect={() => onDuplicate(entry)}>
+          <LucideIcon.Copy /> Duplicate
+        </Item>
+      )}
+      {/* Last, and the only one that's coloured. A menu opens with the pointer at the
+                top, so the item that destroys something shouldn't be the one under it. */}
+      {onDelete && (
+        <Item
+          className="text-destructive focus:text-destructive"
+          onSelect={() => onDelete(automation)}
+        >
+          <LucideIcon.Trash2 /> Delete
+        </Item>
+      )}
+    </>
+  );
+  const hasActions = Boolean(onDelete || onDuplicate || onRename);
+
+  const row = (
     <TableRow
       className={cn(
         'relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0',
@@ -166,7 +209,7 @@ const AutomationRow: React.FC<{
         className="relative z-20 flex justify-end lg:p-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {(onDelete || onDuplicate) && (
+        {hasActions && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               {/* Bordered, and at the DEFAULT size — 34px, which is what every
@@ -182,25 +225,35 @@ const AutomationRow: React.FC<{
                 <LucideIcon.MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {onDuplicate && (
-                <DropdownMenuItem onClick={() => onDuplicate(entry)}>
-                  <LucideIcon.Copy /> Duplicate
-                </DropdownMenuItem>
-              )}
-              {onDelete && (
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => onDelete(automation)}
-                >
-                  <LucideIcon.Trash2 /> Delete
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
+            <DropdownMenuContent align="end">{actions(DropdownMenuItem)}</DropdownMenuContent>
           </DropdownMenu>
         )}
       </TableCell>
     </TableRow>
+  );
+
+  // Right-click opens the same menu, the way the posts list does. A list you work
+  // THROUGH — copying one row to start the next, clearing out the ones that didn't
+  // work — is one where the actions want to be under the pointer already, rather
+  // than at the end of a trip to the row's right edge.
+  //
+  // The ⋯ button stays. Right-click is a shortcut for people who know it's there,
+  // and it's unreachable from a keyboard or a touch screen; it can't be the only way
+  // to any of this.
+  //
+  // asChild so the trigger IS the <tr> — a wrapper element would be invalid inside
+  // tbody. Radix's root renders no DOM of its own and the content portals out, so
+  // the table's markup is unchanged. Radix also preventDefaults the native menu,
+  // which matters here because the row is covered by a stretched link and the
+  // browser would otherwise offer its own "open link in new tab" menu instead.
+  if (!hasActions) {
+    return row;
+  }
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{row}</ContextMenuTrigger>
+      <ContextMenuContent className="w-44">{actions(ContextMenuItem)}</ContextMenuContent>
+    </ContextMenu>
   );
 };
 
@@ -213,6 +266,7 @@ interface AutomationsTableProps {
   // one dialog serves the whole list instead of one per row.
   onDelete?: (automation: AutomationDetail) => void;
   onDuplicate?: (entry: ProtoAutomation) => void;
+  onRename?: (entry: ProtoAutomation) => void;
 }
 
 // Column headers + body. `data-testid` stays "automations-list" — callers
@@ -222,6 +276,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   basePath,
   onDelete,
   onDuplicate,
+  onRename,
 }) => (
   <Table className="flex flex-col" data-testid="automations-list">
     <TableHeader className="hidden lg:flex lg:flex-col">
@@ -246,6 +301,7 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
           entry={entry}
           onDelete={onDelete}
           onDuplicate={onDuplicate}
+          onRename={onRename}
         />
       ))}
     </TableBody>
