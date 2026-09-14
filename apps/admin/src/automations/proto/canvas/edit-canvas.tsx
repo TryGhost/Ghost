@@ -10,8 +10,10 @@ import {
   type Edge,
   EdgeLabelRenderer,
   type EdgeProps,
+  Handle,
   type Node,
   type NodeProps,
+  Position,
   ReactFlow,
   getSmoothStepPath,
 } from '@xyflow/react';
@@ -72,6 +74,7 @@ import {
 } from '@/automations/proto/shared/trigger-config';
 import {
   CANVAS_HUD_INSET,
+  HIDDEN_HANDLE_STYLE,
   CANVAS_SLOT_FILL,
   EDGE_STROKE,
   NODE_VISUAL_GAP,
@@ -85,7 +88,7 @@ import {
 } from './flow-utils';
 import { EmailAnalyticsSheet, type SheetEmail } from './email-analytics-sheet';
 import { EmailStatsFooter, EmailStatsInline } from './email-analytics';
-import { NODE_BODY_PADDING, NodeCard, NodeHeader } from './flow-node-shell';
+import { NODE_BODY_PADDING, NODE_CARD_FRAME, NodeCard, NodeHeader } from './flow-node-shell';
 import { EmailPreview } from './email-preview';
 import { TriggerEmptyState, TriggerFieldsForm } from './trigger-config-form';
 
@@ -153,8 +156,6 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
-  // The lane edits exits somewhere else — see TriggerFieldsForm.
-  exitsElsewhere?: boolean;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
   // something entirely different by it — "don't offer to edit this", not "this
@@ -170,7 +171,7 @@ type StepNodeData = {
   // animate again the next time anything re-renders it.
   isNew?: boolean;
   // Asks the canvas to confirm a different trigger. The node doesn't apply it
-  // itself: swapping the trigger discards the audience and exits configured under
+  // itself: swapping the trigger discards the settings and exits configured under
   // the old one, which is a warning the canvas owns.
   onRequestTriggerChange?: (type: TriggerType) => void;
   // Which action this card is, so the email's link fixtures can be looked up.
@@ -561,7 +562,6 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
               >
                 <TriggerFieldsForm
                   config={triggerConfig}
-                  exitsElsewhere={d.exitsElsewhere}
                   locked={triggerLocked}
                   onChange={d.onTriggerConfigChange}
                 />
@@ -689,16 +689,55 @@ const ExitNode: React.FC<NodeProps> = ({ data }) => {
     return () => cancelAnimationFrame(frame);
   }, [shown]);
   return (
-    <NodeCard
+    // The same material as every other card — elevated surface, border, shadow, the
+    // cards' own padding — at a different SIZE and a quieter weight.
+    //
+    // It was a full NodeCard: 400px wide with a 36px icon chip, identical to an email
+    // step, so at a glance the flow read as ending in one more thing the automation
+    // does. It isn't; it's the end of the line, and the only node here you can't act
+    // on. Hugging its content says that by being visibly smaller than everything above
+    // it, and the muted foreground says it again — this card reports rather than
+    // offers.
+    //
+    // Not a pill on --muted, which was the other thing tried. That made it part of the
+    // canvas rather than an object on it, and lost the one property it should keep:
+    // it's still a node in the flow, and the connector still lands on it.
+    //
+    // The 400px wrapper stays, and the card centres inside it. Nodes sit at x: 0 and
+    // the VIEWPORT is centred against NODE_WIDTH (see flow-utils), so a narrower node
+    // would hang off the column's left edge rather than centring under it.
+    //
+    // The read canvas keeps a full-width card here — see flow-canvas. With a member in
+    // focus that node reports their outcome and takes a run border and chip like every
+    // other card, so it has to be able to look like one.
+    <div
       className={cn(
+        'flex w-[400px] justify-center',
         enterDelay !== undefined && ENTER_CLASS,
         intro && INTRO_EXIT_CLASS,
         intro && !shown && 'translate-y-2 opacity-0',
       )}
       style={enterDelay === undefined ? undefined : { animationDelay: `${enterDelay}ms` }}
     >
-      <NodeHeader icon={LucideIcon.LogOut} title="Exit automation" />
-    </NodeCard>
+      <Handle position={Position.Top} style={HIDDEN_HANDLE_STYLE} type="target" />
+      <div
+        className={cn(
+          NODE_CARD_FRAME,
+          'border-border-default',
+          // p-4 (16px), against the cards' own p-6. Their padding is sized to hold a
+          // 36px icon chip and a stack of fields; around one line of text that made a
+          // box mostly full of air, reading as a card waiting for content rather than
+          // one that has all it needs. 16 keeps the family resemblance while letting
+          // the height say what the width already does — 12 took it far enough from
+          // the others to read as a different kind of thing.
+          'inline-flex items-center gap-3 p-4',
+          'text-muted-foreground',
+        )}
+      >
+        <LucideIcon.LogOut className="size-4 shrink-0" strokeWidth={2} />
+        <span className="text-md font-medium">Exit automation</span>
+      </div>
+    </div>
   );
 };
 
@@ -819,7 +858,6 @@ interface EditCanvasProps {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   triggerLocked?: boolean;
   // The screen edits exit conditions itself, so the trigger card doesn't offer them.
-  exitsElsewhere?: boolean;
   inlineAnalytics?: boolean;
 }
 
@@ -829,7 +867,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerConfig,
   onTriggerConfigChange,
   triggerLocked = false,
-  exitsElsewhere = false,
   inlineAnalytics = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
@@ -863,7 +900,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     return () => clearTimeout(timer);
   }, [newStepId]);
   // A trigger picked from the node's ⋯, waiting on the warning below. Swapping the
-  // trigger throws away the audience and exits configured under the old one, so the
+  // trigger throws away the settings and exits configured under the old one, so the
   // pick is held here rather than applied where it was made.
   const [pendingTriggerType, setPendingTriggerType] = useState<TriggerType | null>(null);
 
@@ -1050,7 +1087,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         triggerConfig: triggerConfig ?? undefined,
         onTriggerConfigChange,
         triggerLocked,
-        exitsElsewhere,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
@@ -1171,7 +1207,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     triggerConfig,
     onTriggerConfigChange,
     triggerLocked,
-    exitsElsewhere,
     inlineAnalytics,
     linksOpenId,
     layout,
@@ -1249,8 +1284,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             if (node.type !== 'step') {
               return;
             }
-            // The trigger's fields live in its card and its exitCriteria row opens
-            // the popover, so a bare card click does nothing.
+            // The trigger's fields live in its card, so a bare card click does nothing.
             if (node.id === '__trigger__') {
               return;
             }
@@ -1275,8 +1309,8 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
 
       <EmailAnalyticsSheet email={sheetEmail} onClose={() => setAnalyticsActionId(null)} />
 
-      {/* Picking a different trigger from the node's ⋯ resets the audience and
-                exits underneath it, which is worth saying out loud before it happens. */}
+      {/* Picking a different trigger from the node's ⋯ resets the settings and exits
+                underneath it, which is worth saying out loud before it happens. */}
       <AlertDialog
         open={pendingTriggerType !== null}
         onOpenChange={(open) => {
@@ -1289,7 +1323,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Change trigger?</AlertDialogTitle>
             <AlertDialogDescription>
-              The audience and exit conditions you’ve set for this trigger will be reset.
+              The settings and exit conditions you’ve set for this trigger will be reset.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

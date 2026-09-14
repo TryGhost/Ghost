@@ -72,7 +72,7 @@ interface StoreState {
 // migrate it. This is fixture data behind a Labs flag — a reseed is the correct
 // response to a shape change, and a migration path would be ceremony around data
 // nobody is going to miss.
-const VERSION = 11;
+const VERSION = 13;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({

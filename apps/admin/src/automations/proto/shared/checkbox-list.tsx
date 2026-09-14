@@ -20,9 +20,13 @@ export const CheckboxList: React.FC<{ children: React.ReactNode }> = ({ children
 export const CheckboxRow: React.FC<{
   checked: boolean;
   label: string;
-  // A row that states something rather than offering it — ticked, and not yours to
-  // untick. It sits in the list rather than in prose beneath it so that everything
-  // ending a run is in one place, whether or not you get a say in it.
+  // A row another row owns. The tiers under "Any paid tier" are ticked — "any" does
+  // include them — and inert, because the choice above them is what decides them.
+  //
+  // This used to carry the trigger's automatic exits, which were ticked and not yours
+  // to untick for a different reason: they stated a fact rather than offering a
+  // choice. Those are a sentence now, and the reason the label's treatment changed
+  // with them — see below.
   disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
 }> = ({ checked, label, disabled = false, onCheckedChange }) => (
@@ -40,8 +44,17 @@ export const CheckboxRow: React.FC<{
       disabled={disabled}
       onCheckedChange={(next) => onCheckedChange(next === true)}
     />
-    {/* Only the box dims. The words are still the answer to "what ends a run", and
-            greying them would say they matter less than the ones you chose. */}
-    <span className="text-control">{label}</span>
+    {/* The label dims with the box. It used to stay at full strength, because the
+            only disabled rows were the automatic exits: their words were part of the
+            answer to "what ends a run", and greying them would have said they counted
+            for less than the ones you'd picked. A row that's inert because another row
+            owns it is the opposite case — the dimming is the thing saying so, and half
+            a dimmed row reads as a rendering fault.
+
+            opacity-50 rather than a muted colour, matching what inputSurface('self')
+            already applies to the box beside it, so the two halves dim by the same
+            amount. On the span rather than the row for that reason: on the row it would
+            compound with the box's own and take it to 25%. */}
+    <span className={cn('text-control', disabled && 'opacity-50')}>{label}</span>
   </label>
 );

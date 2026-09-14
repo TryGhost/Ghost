@@ -8,27 +8,32 @@ import { LucideIcon } from '@tryghost/shade/utils';
 // onto the API type.
 //
 // ---------------------------------------------------------------------------
-// WHY AUDIENCE IS SEPARATE FROM THE TRIGGER
+// WHY EACH TRIGGER OWNS ITS OWN SETTINGS
 //
-// Tiers used to live inside the trigger: "Paid subscription starts" carried its
-// own tier chips, and every other trigger had none. Two things were wrong with
-// that. A signup trigger couldn't be narrowed to a tier at all, and every trigger
-// added later would have to decide for itself whether it has tiers and grow its
-// own UI for them.
+// There used to be an AUDIENCE model here: a membership scope (Any member / Free /
+// Paid / Complimentary) plus a tier list, attached to EVERY trigger, on the
+// reasoning that the trigger says what happens and the audience says who it applies
+// to. It read well and it generalised badly.
 //
-// They're now two questions. The trigger says WHAT HAPPENS; the audience says WHO
-// IT APPLIES TO, and every trigger gets it. The test for which side a setting
-// falls on: does it describe the event, or the person? A signup's source
-// describes the event and would belong in the trigger. A tier describes the
-// person and belongs here.
+// What it was generalising over was two triggers, one of which doesn't need it. A
+// signup welcome is general — that's the whole of it. And on the paid trigger, three
+// of the four scopes were dead: Free is impossible (they've just paid), Paid is a
+// synonym for the trigger, and Complimentary never fires it at all, because comping
+// assigns a tier without creating a subscription. One live value and three that
+// couldn't happen is not an axis.
 //
-// Every automation tool we looked at makes this split (Kit, Beehiiv, Outpost,
-// Audienceful). The two built for publishers rather than marketers use named
-// fields for it, as below, rather than a generic attribute query builder.
+// The real mistake was planning for triggers we haven't designed. Beehiiv doesn't
+// even have "paid subscription starts" — theirs is "Upgraded", which covers more
+// ground precisely because it commits to less. Ours may well move the same way, and
+// an audience model built to fit every future trigger would be the thing holding it
+// still. So: no shared model, each trigger carries the settings it actually has, and
+// the next one gets designed when we know what it is.
 //
-// The payoff shows up in the exit criteria: they can now read the audience, so
-// "cancel subscription" applies to a paid AUDIENCE and not just a paid trigger,
-// and "upgrade to paid" correctly disappears for an audience that's already paid.
+//   Member signs up            no settings. Everyone who becomes a member.
+//   Paid subscription starts   which tiers. All, or some of them.
+//
+// The exit criteria read the trigger directly now rather than going through an
+// audience, which is one fewer indirection for the same answers.
 // ---------------------------------------------------------------------------
 
 // The ids stay put while the labels move. "Member signs up" and "Paid
@@ -38,59 +43,45 @@ import { LucideIcon } from '@tryghost/shade/utils';
 // slot, which kept `future` when its label became "Exploration".)
 export type TriggerType = 'member_subscribes' | 'paid_subscription_starts';
 /**
- * The exits a publisher actually CHOOSES.
+ * WHAT ENDS A RUN — and why nobody chooses it.
  *
- * The test is: could a reasonable publisher want the other answer? Three of the
- * four pass it, and only unsubscribing doesn't — you cannot email someone who
- * left, so that one is stated rather than offered (AUTOMATIC_EXIT_SENTENCE).
+ * This was a list you picked from: unsubscribing and deletion stated as locked rows,
+ * then up to three you could tick. It's now a sentence, because every one of them
+ * turned out to be a consequence of something you'd already decided rather than a
+ * decision of its own.
  *
- * The reasons the other three pass aren't obvious, which is why they're written
- * down:
+ *   unsubscribes             You cannot email someone who left. Never was a choice.
+ *   cancels subscription     Only exists because you picked the paid trigger.
+ *   leaves the tiers         Only exists because you picked specific tiers.
  *
- *   upgrades_to_paid  A nurture sequence pitching an upgrade should stop when
- *                     they upgrade. A general onboarding shouldn't, or you
- *                     truncate someone's onboarding as a reward for paying you.
+ * The one that WAS a real choice — "stop when they upgrade to paid" — is gone. It
+ * was ours rather than the PM's, and its argument was a product opinion (a nurture
+ * sequence pitching an upgrade should stop when they upgrade) rather than anything
+ * the configuration implies. Offering exactly one opt-in setting on a trigger that
+ * otherwise has none is the same over-planning the audience model was.
  *
- *   cancels_paid      Cancelling in Ghost is usually an INTENT, not a lapse —
- *                     `cancel_at_period_end` on the subscription, and members
- *                     keep access until the period ends. So a publisher can
- *                     reasonably stop on the signal, or keep serving someone
- *                     who is still paid up for another three weeks.
+ * Which it costs something to drop, and the cost should be on the record: a free
+ * member who signs up, starts the welcome, then upgrades mid-flow is now in the
+ * welcome AND the paid flow. That's the behaviour until someone asks for the
+ * general answer, which is a real "exit when ⟨condition⟩" feature rather than one
+ * hardcoded criterion.
  *
- *   leaves_tiers      A Bronze member who upgrades to Gold has left the watched
- *                     tier without losing anything. Finishing their sequence is
- *                     a defensible answer.
- *
- * Adding the next real choice is one entry here and one in EXIT_CRITERIA.
+ * So the config carries no exits at all. The sentence is derived from the trigger
+ * and its tiers, which means it cannot drift from them, cannot be stale after a
+ * trigger change, and needs no reconciliation when the tiers move.
  */
-export type ExitCriterionId = 'upgrades_to_paid' | 'cancels_paid' | 'leaves_tiers';
-
-/**
- * Who an automation applies to.
- *
- * Two axes, and deliberately two fields on the card rather than one. They were
- * briefly a single flat list — Free, Any paid tier, then the tiers — which
- * modelled nicely (an empty list meant everyone, and one superset rule kept it
- * coherent) but read badly: the combobox hoists chosen options to the top, so
- * picking a tier lifted it out of its group and the list rearranged itself under
- * the cursor. Two stable lists beat one that moves.
- *
- * `scope` is the membership axis; `tierIds` narrows a paid audience further and
- * is meaningless otherwise. Empty tierIds under a paid scope means "any paid
- * tier" — the absence of a narrowing rather than a third scope value, so there's
- * no state where the scope says one thing and the tiers say another.
- */
-export type AudienceScope = 'all' | 'free' | 'paid' | 'comped';
-
-export interface Audience {
-  scope: AudienceScope;
-  tierIds: string[];
-}
 
 export interface TriggerConfig {
   type: TriggerType;
-  audience: Audience;
-  exitCriteria: ExitCriterionId[];
+  /**
+   * Which tiers the paid trigger watches. Every tier means "any tier" — the absence
+   * of a narrowing rather than a separate value, so there's no state where the field
+   * and the filter disagree. Empty is the error state, not "any".
+   *
+   * Meaningless on `member_subscribes`, which has no settings; it's held as an empty
+   * list there rather than as an optional field, so nothing has to null-check it.
+   */
+  tierIds: string[];
 }
 
 // Narrow list for now — the two triggers the team's proto covers. Adding a third
@@ -136,28 +127,8 @@ export const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIO
   }),
 );
 
-// The membership axis. "Any member" is a scope rather than a membership type,
-// which is why it leads rather than sitting among the others. The rest mirror
-// Ghost's own member statuses (free | paid | comped).
-//
-// Complimentary is here rather than being its own trigger, which was the other
-// option the project doc floats. A comped member isn't a different EVENT — they
-// still arrive by being given a tier — they're a different kind of member, which
-// is what this field is for. It's also what the requests describe: a publisher
-// whose comped member received no welcome at all wants them in the flow, not a
-// second flow.
-//
-// ('gift' is Ghost's fourth member status and isn't here — nobody has asked, and
-// gifting has its own lifecycle worth understanding before it gets an audience.)
-export const AUDIENCE_OPTIONS: { value: AudienceScope; label: string }[] = [
-  { value: 'all', label: 'Any member' },
-  { value: 'free', label: 'Free' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'comped', label: 'Complimentary' },
-];
-
 // Proto-only tier fixtures — the mock scenarios carry no tiers. All three are
-// paid: tiers only exist under a paid audience, so a "Free" tier here would be a
+// paid: tiers only exist on the paid trigger, so a "Free" tier here would be a
 // contradiction.
 export const TIER_OPTIONS: { id: string; name: string }[] = [
   { id: 'bronze', name: 'Bronze' },
@@ -167,48 +138,31 @@ export const TIER_OPTIONS: { id: string; name: string }[] = [
 
 export const ALL_TIER_IDS: string[] = TIER_OPTIONS.map((tier) => tier.id);
 
-export const ANY_AUDIENCE: Audience = { scope: 'all', tierIds: [] };
-
 export const tierNames = (tierIds: string[]): string[] =>
   TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id)).map((tier) => tier.name);
 
 /**
- * Members who are PAYING. Complimentary members deliberately aren't: they hold a
- * tier without a subscription, so there is nothing for them to cancel and nothing
- * about them that needs Stripe.
- */
-export const isPaidAudience = (config: Pick<TriggerConfig, 'type' | 'audience'>): boolean =>
-  config.type === 'paid_subscription_starts' || config.audience.scope === 'paid';
-
-/**
- * Members who are ON A TIER, paying or not.
+ * Members who are PAYING, which is now the same question as "is this the paid
+ * trigger" — it used to also be true of a paid AUDIENCE on any trigger.
  *
- * Comping someone means assigning them a tier (`tiers: [{id, expiry_at}]` on the
- * member), so a complimentary audience narrows by tier exactly as a paid one
- * does — and a comp ending is leaving that tier. This is what the Tiers field and
- * the tier exit hang off; isPaidAudience is the one about money.
+ * Kept as a named predicate rather than inlined: the exits and the Stripe check ask
+ * about money, not about which trigger was picked, and when a second paid trigger
+ * arrives this is the one line that has to know.
  */
-export const hasTiers = (config: Pick<TriggerConfig, 'type' | 'audience'>): boolean =>
-  isPaidAudience(config) || config.audience.scope === 'comped';
+export const isPaidTrigger = (config: Pick<TriggerConfig, 'type'>): boolean =>
+  config.type === 'paid_subscription_starts';
 
 /**
- * Exit criteria that can only happen on a site taking payments. Listed rather
- * than inferred from "all of them" so adding a non-paid criterion later doesn't
- * silently start requiring Stripe.
- */
-const STRIPE_CRITERIA: ExitCriterionId[] = ['upgrades_to_paid', 'cancels_paid', 'leaves_tiers'];
-
-/**
- * Does this configuration depend on Stripe?
+ * Triggers that carry a tier list. The same set as the paid ones today.
  *
- * True for a paid trigger or a paid audience, and also for a free automation
- * that exits on an upgrade — the trigger isn't the only thing that can need
- * payments. The screens use it to explain why publishing is unavailable rather
- * than to hide anything: a publisher without Stripe can still build the
- * automation and see what it would be.
+ * Separate from isPaidTrigger because they answer different questions and have come
+ * apart before: comping assigns a tier without a subscription, so a complimentary
+ * audience used to have tiers and no money. That audience is gone, but the
+ * distinction is the one that would come back with it.
  */
-export const needsStripe = (config: TriggerConfig): boolean =>
-  isPaidAudience(config) || config.exitCriteria.some((id) => STRIPE_CRITERIA.includes(id));
+export const hasTiers = (config: Pick<TriggerConfig, 'type'>): boolean => isPaidTrigger(config);
+
+export const needsStripe = (config: TriggerConfig): boolean => isPaidTrigger(config);
 
 /** Specific tiers are being watched, rather than any tier. */
 // A tier list that actually NARROWS the audience — some of the tiers, not all of
@@ -219,167 +173,85 @@ export const needsStripe = (config: TriggerConfig): boolean =>
 // to be stored the other way round, with an empty list meaning "any", but that left
 // "any" and "none chosen yet" as the same value — and the moment the field offered
 // an Any TIER row of its own, the two had to be told apart.
-export const hasTierFilter = (config: Pick<TriggerConfig, 'type' | 'audience'>): boolean =>
-  hasTiers(config) &&
-  config.audience.tierIds.length > 0 &&
-  config.audience.tierIds.length < ALL_TIER_IDS.length;
+export const hasTierFilter = (config: Pick<TriggerConfig, 'type' | 'tierIds'>): boolean =>
+  hasTiers(config) && config.tierIds.length > 0 && config.tierIds.length < ALL_TIER_IDS.length;
 
-interface ExitCriterion {
-  id: ExitCriterionId;
-  // A function of the config, so a criterion can name what it's actually watching
-  // ("Leave Bronze or Gold") instead of pointing vaguely at a setting elsewhere.
-  label: (config: Pick<TriggerConfig, 'type' | 'audience'>) => string;
-  // Which trigger + audience shapes this criterion is even meaningful for.
-  appliesTo: (config: Pick<TriggerConfig, 'type' | 'audience'>) => boolean;
-}
-
-// Labels complete the sentence their section opens with ("Also exit when they"),
-// and the change summary's ("Members now exit when they …"), so they're bare verb
-// phrases rather than standalone statements — no repeated subject.
-export const EXIT_CRITERIA: ExitCriterion[] = [
-  {
-    id: 'upgrades_to_paid',
-    label: () => 'Upgrade to paid',
-    // Only meaningful while they're free — so not for anyone already on a tier,
-    // comped included. A comped member converting to a real subscription is a
-    // genuine event, but it isn't this one: "upgrade to paid" as worded is the
-    // free-to-paid step, and comp-to-paid deserves its own name if anyone wants it.
-    appliesTo: (config) => config.type === 'member_subscribes' && !hasTiers(config),
-  },
-  {
-    id: 'cancels_paid',
-    label: () => 'Cancel subscription',
-    // Only where there's a subscription to cancel. A comped member's access ends
-    // when the publisher removes the comp or it expires — that's leaving the tier,
-    // not cancelling.
-    appliesTo: isPaidAudience,
-  },
-  {
-    id: 'leaves_tiers',
-    // Names the tiers rather than saying "selected tiers", so the chip is
-    // readable without looking back up at the audience block — and so it changes
-    // when the audience does, instead of quietly meaning something new.
-    label: (config) => {
-      const tiers = tierNames(config.audience.tierIds);
-      return tiers.length > 0 ? `Leave ${orList(tiers)}` : 'Leave selected tiers';
-    },
-    // Meaningless until specific tiers are the thing being watched — under "any
-    // paid tier" this would be the same event as cancelling.
-    appliesTo: hasTierFilter,
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Automatic exits — derived from the trigger and audience, never chosen.
-//
-// One rule generates all of them: A MEMBER EXITS WHEN THE AUTOMATION'S OWN ENTRY
-// CONDITIONS WOULD NO LONGER MATCH THEM. Cancelling ends a paid audience's claim
-// on someone; leaving Bronze ends a Bronze audience's. Unsubscribing is the one
-// that isn't about the audience — you cannot email someone who left.
-//
-// That rule is also why "leave selected tier" was never really a criterion. It's
-// the audience's tier clause read backwards, which is why it could only ever
-// appear once tiers were chosen, and why under "any paid tier" it was the same
-// event as cancelling.
-// ---------------------------------------------------------------------------
-
-/** "Bronze", "Bronze or Gold", "Bronze, Premium or Gold". */
+/**
+ * "a", "a or b", "a, b, or c" — with the serial comma, which is how the copy for this
+ * sentence was written and which earns its keep here: the last item can itself be a
+ * phrase ("leave the selected tier(s)"), and without the comma the list runs into it.
+ *
+ * It had no comma while this also named tiers ("Bronze, Premium or Gold"). Nothing
+ * else calls it now.
+ */
 const orList = (items: string[]): string =>
   items.length <= 1
     ? (items[0] ?? '')
-    : `${items.slice(0, -1).join(', ')} or ${items[items.length - 1]}`;
+    : items.length === 2
+      ? `${items[0]} or ${items[1]}`
+      : `${items.slice(0, -1).join(', ')}, or ${items[items.length - 1]}`;
 
 /**
- * The exits that aren't choices, stated rather than offered.
+ * What ends a run, as one sentence. See the block above for why it's a sentence.
  *
- * A constant, not a derivation. Cancelling and leaving a tier were in here for a
- * while on the reasoning that a member exits when the automation's entry
- * conditions stop matching them — a tidy rule, and wrong. Both have a defensible
- * other answer (see EXIT_CRITERIA), so both went back to being chips. These two
- * don't: you cannot email someone who unsubscribed, and you cannot email someone
- * who no longer exists.
+ * Two shapes, one per trigger. The parts are ordered by how universal the reason is
+ * — anyone can unsubscribe, only a paid member can cancel or leave a tier — so the
+ * sentence gets more specific as it goes and the reader can stop as soon as it stops
+ * being about them.
  *
- * Two OTHER things end a run, and they're deliberately not here:
+ * "exit early" rather than "exit": every run ends eventually, and the thing worth
+ * warning about is the ones that end before the flow is finished. "if" rather than
+ * "when", for the same reason — these are possibilities, not a schedule.
  *
- *   Turning the automation off  Already said at the moment it matters — the
- *                               confirmation dialog states that members in
- *                               progress will be removed. This card describes how
- *                               the automation is configured, not what happens
- *                               when you act on it.
- *   A delivery failing         A fault, not a rule. Run review names it on the
- *                               card for the member it happened to, which is
- *                               where it's useful; as a standing sentence it
- *                               would only say that we stop emailing people we
- *                               can't email.
+ * DELETION ISN'T NAMED. It used to be ("unsubscribe or are deleted"), stated
+ * alongside unsubscribing because both are things a publisher can't email through.
+ * It's out because a publisher deleting a member is a rare, deliberate act whose
+ * consequences they're already being warned about at the point they do it — so
+ * naming it here spends a clause of a sentence everyone reads on a case almost
+ * nobody hits. If it needs saying, the member-delete confirmation is where it lands,
+ * not here.
  *
- * Worth knowing before anyone reconciles this against the run data: ExitReason
- * folds "member deleted" into `unsubscribed` on purpose (see mock/types), because
- * the team hasn't settled whether the two read differently. This sentence names
- * them separately. If that split gets decided, both places move together.
+ * Which also lines this up with the run data, where ExitReason folds "member
+ * deleted" into `unsubscribed` (see mock/types) — one fewer place the two models
+ * disagree.
+ *
+ * The tiers aren't named — "the selected tier(s)" rather than "Bronze or Gold". The
+ * field naming them is directly above this line, and a sentence that restated it
+ * would have to be re-read every time the field changed.
+ *
+ * And the tier clause is there for EVERY paid selection, including "Any paid tier",
+ * where it's arguably redundant: watching all the tiers means leaving one of them for
+ * another is still inside the selection, so the only way out is cancelling — which
+ * the clause before it already named. It stays because the alternative is a sentence
+ * that grows and shrinks as you edit the field above it, and a reader who has to work
+ * out which version they're looking at. One sentence for the paid trigger, one for
+ * signup, both true, neither of them moving.
  */
-export const AUTOMATIC_EXIT_SENTENCE = 'Members always exit when they unsubscribe or are deleted.';
-
-// The same two facts as rows, for the exits field — ticked and not editable.
-//
-// They were a sentence under the field. As rows they sit with the choices, which
-// answers "what ends a run" in one place instead of two, and makes the difference
-// between stated and offered something you can see rather than read.
-export const AUTOMATIC_EXITS: { id: string; label: string }[] = [
-  { id: 'unsubscribes', label: 'Unsubscribes from emails' },
-  { id: 'member_deleted', label: 'Member is deleted' },
-];
-
-export const exitCriterion = (id: ExitCriterionId): ExitCriterion =>
-  EXIT_CRITERIA.find((criterion) => criterion.id === id) ?? EXIT_CRITERIA[0];
-
-export const availableCriteria = (config: TriggerConfig): ExitCriterion[] =>
-  EXIT_CRITERIA.filter((criterion) => criterion.appliesTo(config));
-
-// Every applicable criterion is on by default — you opt out of the ones you don't want
-// rather than hunting for the ones you do.
-const defaultCriteria = (config: Pick<TriggerConfig, 'type' | 'audience'>): ExitCriterionId[] =>
-  EXIT_CRITERIA.filter((criterion) => criterion.appliesTo(config)).map((criterion) => criterion.id);
+export const exitSentence = (config: Pick<TriggerConfig, 'type'>): string => {
+  const parts = isPaidTrigger(config)
+    ? ['unsubscribe', 'cancel their subscription', 'leave the selected tier(s)']
+    : ['unsubscribe'];
+  return `Members exit early if they ${orList(parts)}.`;
+};
 
 /**
- * A fresh config for a trigger type, with every applicable exit criterion on.
+ * A fresh config for a trigger type.
  *
  * Used when a trigger is chosen for the first time — a created automation starts
- * with no trigger at all, so there's nothing to merge into and the config is
- * built from the choice.
+ * with no trigger at all, so there's nothing to merge into and the config is built
+ * from the choice. Also what a trigger CHANGE produces: swapping the trigger throws
+ * the old settings away rather than trying to carry them across, which is what the
+ * confirm dialog on the canvas warns about.
  */
-export const triggerConfigFor = (type: TriggerType): TriggerConfig => {
-  // A trigger that has tiers starts with all of them — "any tier" — rather than
-  // with none, which is now the field's error state rather than its default.
-  const base = { type, audience: ANY_AUDIENCE };
-  const audience: Audience = hasTiers(base)
-    ? { ...ANY_AUDIENCE, tierIds: [...ALL_TIER_IDS] }
-    : ANY_AUDIENCE;
-  return { type, audience, exitCriteria: defaultCriteria({ type, audience }) };
-};
+export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
+  type,
+  // A trigger that has tiers starts with all of them — "any tier" — rather than with
+  // none, which is the field's error state rather than its default. One that doesn't
+  // holds an empty list, which nothing reads.
+  tierIds: hasTiers({ type }) ? [...ALL_TIER_IDS] : [],
+});
 
 export const DEFAULT_TRIGGER_CONFIG: TriggerConfig = triggerConfigFor('member_subscribes');
-
-// Changing the trigger OR the audience changes which criteria exist. Drop the
-// ones that no longer apply and switch on any that just became available, so the
-// set always matches the configuration rather than silently keeping a stale one.
-export const reconcileCriteria = (
-  config: TriggerConfig,
-  previous: TriggerConfig,
-): TriggerConfig => {
-  const wasAvailable = new Set(availableCriteria(previous).map((criterion) => criterion.id));
-  const kept = config.exitCriteria.filter((id) => exitCriterion(id).appliesTo(config));
-  const added = availableCriteria(config)
-    .map((criterion) => criterion.id)
-    .filter((id) => !wasAvailable.has(id));
-  const exitCriteria = [...new Set([...kept, ...added])];
-  // Preserve EXIT_CRITERIA order so chips don't reshuffle as they're toggled.
-  return {
-    ...config,
-    exitCriteria: EXIT_CRITERIA.filter((criterion) => exitCriteria.includes(criterion.id)).map(
-      (criterion) => criterion.id,
-    ),
-  };
-};
 
 /**
  * The trigger's own icon — the one shown beside it in the picker.
@@ -391,6 +263,13 @@ export const reconcileCriteria = (
  */
 export const triggerIcon = (config: Pick<TriggerConfig, 'type'>): ElementType =>
   TRIGGER_OPTIONS.find((option) => option.value === config.type)?.icon ?? TRIGGER_OPTIONS[0].icon;
+
+// What the trigger watches for, in a sentence — the same line the picker shows
+// under its name. A trigger with no settings has this and nothing else, so its card
+// says what it does rather than standing empty.
+export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string =>
+  TRIGGER_OPTIONS.find((option) => option.value === config.type)?.description ??
+  TRIGGER_OPTIONS[0].description;
 
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.
@@ -404,35 +283,26 @@ export const triggerReviewLabel = (config: TriggerConfig): string =>
   config.type === 'paid_subscription_starts' ? 'Started paid subscription' : 'Signed up';
 
 /**
- * Who this automation applies to, as one phrase — "Any member", "Free members",
- * "Bronze, Gold". Derived rather than stored so it can't disagree with the chips.
+ * Who this automation applies to, as one phrase — "Any member", "Bronze, Gold".
+ * Derived rather than stored so it can't disagree with the field.
+ *
+ * This used to read an audience that every trigger carried. It now reads the trigger
+ * itself, which is why there are only three answers: signup is everyone, and the paid
+ * trigger is either any tier or the tiers you named.
  */
-export const audienceLabel = (config: Pick<TriggerConfig, 'type' | 'audience'>): string => {
-  const tiers = tierNames(config.audience.tierIds);
+export const audienceLabel = (config: Pick<TriggerConfig, 'type' | 'tierIds'>): string => {
+  const tiers = tierNames(config.tierIds);
   if (hasTierFilter(config) && tiers.length > 0) {
     return tiers.join(', ');
   }
-  if (isPaidAudience(config)) {
-    return 'Paid members';
-  }
-  if (config.audience.scope === 'comped') {
-    return 'Complimentary members';
-  }
-  return config.audience.scope === 'free' ? 'Free members' : 'Any member';
+  return isPaidTrigger(config) ? 'Paid members' : 'Any member';
 };
 
 // The one-line summary shown wherever the config isn't editable (the read canvas).
 //
-// Audience leads, because who an automation applies to is what a reader is most
-// often checking. The automatic exits aren't repeated here — they're the same for
-// every automation with the same audience, so restating them on a read-only card
-// spends a line on something the audience already implies. Only a chosen exit is
-// worth naming, because only that one varies.
-export const triggerSummary = (config: TriggerConfig): string => {
-  const chosen = config.exitCriteria
-    .filter((id) => exitCriterion(id).appliesTo(config))
-    .map((id) => exitCriterion(id).label(config).toLowerCase());
-  return chosen.length > 0
-    ? `${audienceLabel(config)} · also exits when they ${orList(chosen)}`
-    : audienceLabel(config);
-};
+// Just who it applies to. It used to append the exits that had been chosen, because
+// those were the part that varied between two automations with the same audience.
+// Nothing varies now — the exits follow from the trigger and its tiers, both of
+// which this line already names — so appending them would restate the same line in
+// longer words.
+export const triggerSummary = (config: TriggerConfig): string => audienceLabel(config);

@@ -563,13 +563,9 @@ const AutomationFloat: React.FC = () => {
                 showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0',
               )}
             >
-              {/* exitsElsewhere: this lane's settings panel owns exit conditions, so the
-                              trigger card would be a second field editing the same value — and two
-                              controls for one thing is how they end up disagreeing. */}
               <EditCanvas
                 draft={draftFlow}
                 triggerConfig={triggerConfig}
-                exitsElsewhere
                 inlineAnalytics
                 onChange={handleDraftChange}
                 onTriggerConfigChange={handleTriggerConfigChange}
@@ -641,8 +637,6 @@ const AutomationFloat: React.FC = () => {
                 // Publish commits.
                 onDetailsChange: ({ name, description }) =>
                   updateAutomationDetails(id, name, description),
-                triggerConfig,
-                onTriggerConfigChange: handleTriggerConfigChange,
                 allowReentry,
                 onAllowReentryChange: setAllowReentry,
                 onDelete: () => setDeleteOpen(true),

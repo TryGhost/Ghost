@@ -11,7 +11,12 @@ import { HIDDEN_HANDLE_STYLE } from './flow-utils';
 // surface, and cards were sitting on it — so a popover opened from a card was the
 // identical fill, and the two levels could never be tuned apart.
 export const NODE_CARD_SURFACE = 'bg-surface-elevated';
-export const NODE_CARD_SHELL = `w-[400px] rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
+// Everything that makes a card a card EXCEPT its width, so a node that hugs its own
+// content (the edit canvas's exit node) can be the same material as the ones above it
+// without being the same size. Splitting it here rather than re-listing the tokens
+// there is the whole point of this file.
+export const NODE_CARD_FRAME = `rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
+export const NODE_CARD_SHELL = `w-[400px] ${NODE_CARD_FRAME}`;
 export const NODE_CARD_PADDING = 'p-6';
 
 // Card border/emphasis per state, shared by both canvases so selection (edit) and
