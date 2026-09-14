@@ -10,13 +10,14 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
-import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSendTestEmail } from '@tryghost/admin-x-framework/api/email-previews';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 
 import { emailPreviewAudience, type PreviewAudience } from './preview-url';
 
@@ -39,7 +40,7 @@ export function SendTestEmail({
   const id = useId();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const { data: configData } = useBrowseConfig({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
   const { mutateAsync: sendTestEmail, isPending } = useSendTestEmail();
   const handleError = useHandleError();
   const [editedAddress, setEditedAddress] = useState<string | null>(null);

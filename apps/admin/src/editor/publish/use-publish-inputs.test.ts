@@ -49,7 +49,6 @@ describe('assemblePublishInputs', () => {
         ],
       },
       user: { isAdmin: true, isAuthorOrContributor: false },
-      timezone: 'Europe/Amsterdam',
       isValid: true,
     });
   });
@@ -64,9 +63,7 @@ describe('assemblePublishInputs', () => {
       // Core always serves `all_blocked_email_domains` (members group) as a string array.
       settingsData.settings.push({ key: 'all_blocked_email_domains', value: blockedDomains });
 
-      const assembled = assemblePublishInputs(data);
-      expect(assembled.isValid).toBe(true);
-      expect(assembled.timezone).toBe('Europe/Amsterdam');
+      expect(assemblePublishInputs(data).isValid).toBe(true);
     },
   );
 

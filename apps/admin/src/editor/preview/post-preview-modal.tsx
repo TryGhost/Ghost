@@ -18,7 +18,6 @@ import {
 } from '@tryghost/shade/components';
 import {
   getSettingValue,
-  useBrowseSettings,
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
@@ -37,6 +36,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
@@ -94,7 +94,7 @@ export function PostPreviewModal({
 
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
   const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const membersEnabled =

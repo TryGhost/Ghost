@@ -39,11 +39,24 @@ function middayTimezone(): string {
   return `Etc/GMT${offset >= 0 ? '-' : '+'}${Math.abs(offset)}`;
 }
 
+// The settings groups the editor's settings hook asks for, which every editor
+// reader shares; a narrower list would drop keys another surface reads.
+const SETTINGS_GROUPS =
+  'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor';
+
+let settingsRequestUrl: string | null = null;
+
 function withTimezone(timezone: string) {
+  settingsRequestUrl = null;
   return {
     ...FLAG_ON,
     boot: {
-      browseSettings: { response: settingsResponse({ settings: { timezone } }) },
+      browseSettings: {
+        response: (request: Request) => {
+          settingsRequestUrl = request.url;
+          return settingsResponse({ settings: { timezone } });
+        },
+      },
     },
   };
 }
@@ -125,6 +138,9 @@ describe('Post settings publish date', () => {
     await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
     await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
     await expect.element(editorScreen.settingsPublishDateLabel()).toHaveTextContent('Publish date');
+    expect(new URL(settingsRequestUrl ?? '', 'http://localhost').searchParams.get('group')).toBe(
+      SETTINGS_GROUPS,
+    );
   });
 
   it('persists a draft’s publish time on its own, as a UTC instant', async () => {
