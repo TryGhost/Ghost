@@ -1402,6 +1402,29 @@ export class GiftService {
     );
   }
 
+  // Entry point for the daily send-gift-reminders fallback job. The exact
+  // per-gift scheduler drives the same poll through StartGiftReminderFlushEvent;
+  // both converge on processReminders(), whose row locks and reminder marker keep
+  // them from sending twice. A failed poll propagates so the jobs service reports
+  // a failure rather than an idle completion.
+  async sendReminders(): Promise<void> {
+    const startedAt = Date.now();
+    const { remindedCount, skippedCount, failedCount } = await this.processReminders();
+
+    logging.info(
+      {
+        system: {
+          event: 'send_gift_reminders.completed',
+          reminded_count: remindedCount,
+          skipped_count: skippedCount,
+          failed_count: failedCount,
+          duration_ms: Date.now() - startedAt,
+        },
+      },
+      `[Background Job] send-gift-reminders processed reminders: ${remindedCount} sent, ${skippedCount} not due, ${failedCount} rejected`,
+    );
+  }
+
   async processReminders(): Promise<{
     remindedCount: number;
     skippedCount: number;

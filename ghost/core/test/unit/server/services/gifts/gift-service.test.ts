@@ -1664,6 +1664,53 @@ describe('GiftService', function () {
     });
   });
 
+  describe('sendReminders', function () {
+    it('runs the reminder poll once and logs a structured completion event with its counts', async function () {
+      const infoLog = sinon.stub(logging, 'info');
+      const service = createService();
+      const processReminders = sinon
+        .stub(service, 'processReminders')
+        .resolves({ remindedCount: 2, skippedCount: 1, failedCount: 3 });
+
+      await service.sendReminders();
+
+      sinon.assert.calledOnce(processReminders);
+      const completionLog = infoLog
+        .getCalls()
+        .find((call) => (call.args[0] as any)?.system?.event === 'send_gift_reminders.completed');
+      assert.ok(completionLog, 'the job logs a structured send_gift_reminders.completed event');
+      const { system } = completionLog!.args[0] as any;
+      assert.equal(system.reminded_count, 2);
+      assert.equal(system.skipped_count, 1);
+      assert.equal(system.failed_count, 3);
+      assert.equal(typeof system.duration_ms, 'number');
+      assert.equal(
+        completionLog!.args[1],
+        '[Background Job] send-gift-reminders processed reminders: 2 sent, 1 not due, 3 rejected',
+      );
+    });
+
+    // Only a failed poll query escapes processReminders (per-gift failures are
+    // counted there), and a run that never polled must reach the jobs service
+    // as a failure rather than look like an idle completion.
+    it('propagates a failed reminder poll and logs no completion', async function () {
+      const infoLog = sinon.stub(logging, 'info');
+      const service = createService();
+      sinon.stub(service, 'processReminders').rejects(new Error('reminder poll is broken'));
+
+      await assert.rejects(() => service.sendReminders(), /reminder poll is broken/);
+
+      assert.ok(
+        infoLog
+          .getCalls()
+          .every(
+            (call) => (call.args[0] as any)?.system?.event !== 'send_gift_reminders.completed',
+          ),
+        'a failed poll must not be reported as completed',
+      );
+    });
+  });
+
   describe('redeem', function () {
     it('redeems the gift, saves it, and grants gift access to the member', async function () {
       const gift = buildGift();
