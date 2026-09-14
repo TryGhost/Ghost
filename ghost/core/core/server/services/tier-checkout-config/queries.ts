@@ -1,13 +1,13 @@
 import type { Knex } from 'knex';
-import { FIELD_STATUS } from '../members-custom-fields/schema';
+import { FIELD_STATUS } from '../members-metafields/schema';
 import { STRIPE_PORT } from '@tryghost/checkout';
 import { DbCheckoutOptions } from './schema';
 import type { CollectionRow, QuestionRow } from './codec';
 
 export const QUESTIONS_TABLE = 'products_checkout_fields';
 export const CONFIG_TABLE = 'products_checkout_config';
-export const BINDINGS_TABLE = 'members_custom_field_bindings';
-export const FIELDS_TABLE = 'members_custom_fields';
+export const BINDINGS_TABLE = 'members_metafield_bindings';
+export const FIELDS_TABLE = 'members_metafields';
 
 const ACTIVE = FIELD_STATUS.active;
 
@@ -23,7 +23,7 @@ function collectionQuery(db: Knex) {
 
   const landsIn = (alias: string, binding: string) =>
     function (this: Knex.JoinClause) {
-      this.on(`${alias}.key`, `${binding}.custom_field_key`).andOn(
+      this.on(`${alias}.key`, `${binding}.metafield_key`).andOn(
         db.raw(`${alias}.status = ?`, [ACTIVE]),
       );
     };
@@ -44,11 +44,11 @@ function collectionQuery(db: Knex) {
       'products.id as product_id',
       `${CONFIG_TABLE}.id as config_id`,
       ...optionColumns,
-      'name_binding.custom_field_key as shipping_name_key',
+      'name_binding.metafield_key as shipping_name_key',
       'name_field.key as shipping_name_collectable',
-      'shipping_binding.custom_field_key as shipping_address_key',
+      'shipping_binding.metafield_key as shipping_address_key',
       'shipping_field.key as shipping_address_collectable',
-      'phone_binding.custom_field_key as phone_key',
+      'phone_binding.metafield_key as phone_key',
       'phone_field.key as phone_collectable',
     ]);
 
@@ -75,7 +75,7 @@ export function questionRows(db: Knex, productId?: string) {
   const query = db(QUESTIONS_TABLE)
     .join(BINDINGS_TABLE, `${BINDINGS_TABLE}.id`, `${QUESTIONS_TABLE}.binding_id`)
     .leftJoin({ question_field: FIELDS_TABLE }, function () {
-      this.on('question_field.key', `${BINDINGS_TABLE}.custom_field_key`).andOn(
+      this.on('question_field.key', `${BINDINGS_TABLE}.metafield_key`).andOn(
         db.raw('question_field.status = ?', [ACTIVE]),
       );
     })

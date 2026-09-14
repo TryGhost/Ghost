@@ -156,31 +156,63 @@ gh pr view <pr-number> --repo TryGhost/Ghost \
 Resolve real failures and base conflicts without flattening the subtree merge.
 Verify the graph again after any branch update.
 
+The PR title must begin `[Don't merge]`, and the first paragraph of its body
+must state that the normal squash and rebase controls must not be used. Include
+the guarded merge command with the actual PR number and source split tip in the
+body. Keep those protections in place through review and green CI so a reviewer
+cannot accidentally apply Ghost's normal merge policy.
+
 ## Use the guarded merge operation
 
 The merge must retain both the subtree topology and the import branch as the
 second parent of GitHub's merge commit. Do not manually reproduce the
 repository-setting sequence from prose.
 
-An authorized admin should run:
+The agent runs the read-only preflight while preparing the import:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
     TryGhost/Ghost \
     <pr-number> \
     <source-split-tip> \
+    --dry-run
+```
+
+Once it passes, a human Ghost repository administrator—not the agent—runs:
+
+```bash
+.agents/skills/migrate-internal-package/scripts/merge-history-pr \
+    TryGhost/Ghost \
+    <pr-number> \
+    <source-split-tip> \
+    <dry-run-head-sha> \
     --confirm
 ```
 
-Use `--dry-run` instead of `--confirm` for read-only preflight. The script:
+The handoff must substitute the real PR number, source split tip and head SHA
+reported by the successful dry run; placeholders are not acceptable. The
+script rejects `--confirm` if the PR head has changed, so any intervening push
+returns control to the agent for a fresh review and preflight. Include the
+dry-run result so the administrator can verify the expected PR head and ancestry
+before running the command. Do not use GitHub's normal squash/rebase buttons or
+manually remove the `[Don't merge]` prefix.
 
-1. verifies authentication, PR state, checks and imported-history reachability;
-2. records the current `allow_merge_commit` setting;
-3. enables merge commits only when necessary;
-4. merges with `--merge --match-head-commit`;
-5. restores the setting through an exit trap;
-6. verifies the merged commit has two parents;
-7. verifies the source split tip remains an ancestor of the merged result.
+The script:
+
+1. verifies authentication and rejects PRs that belong to a GitHub stack;
+2. verifies PR state, checks and imported-history reachability;
+3. records the current `allow_merge_commit` setting;
+4. enables merge commits only when necessary;
+5. rejects any head other than the SHA validated by the dry run and merges with
+   `--merge --match-head-commit`;
+6. restores the setting through an exit trap;
+7. verifies the merged commit has two parents;
+8. verifies the source split tip remains an ancestor of the merged result.
+
+GitHub requires stacked PRs to use an asynchronous merge operation. Do not use
+that path for a history import: it would leave the repository-wide merge-commit
+setting enabled while waiting for a background operation. Unstack the import PR
+and rerun the preflight instead.
 
 If branch protection or a merge queue blocks the operation, report the exact
 blocker. Do not add `--admin` or bypass policy.

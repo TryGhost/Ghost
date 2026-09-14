@@ -7,6 +7,7 @@ import {
   member,
   renderAdminApp,
   type Member,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { membersScreen } from '@/members/members.screen';
 import { memberDetailScreen } from './member-detail.screen';
@@ -39,6 +40,7 @@ describe('Member detail leave guard', () => {
     await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.nameInput().fill('Ada B');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await memberDetailScreen.backLink().click();
 
     await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
@@ -50,6 +52,7 @@ describe('Member detail leave guard', () => {
     await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.nameInput().fill('Ada B');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
 
     await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
@@ -61,9 +64,13 @@ describe('Member detail leave guard', () => {
     await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.nameInput().fill('Ada B');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
 
     await memberDetailScreen.stayButton().click();
+    // The dismissed dialog outlives the click, so re-triggering the guard
+    // without waiting it out clicks Leave on the instance already going away.
+    await expect(memberDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.element(memberDetailScreen.nameInput()).toHaveValue('Ada B');
 
     await sidebarScreen.shellNav().getByRole('link', { name: 'Members' }).click();
@@ -81,14 +88,13 @@ describe('Member detail leave guard', () => {
     await membersScreen.link('Ada Lovelace').click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
     await memberDetailScreen.nameInput().fill('Ada B');
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve)));
-    });
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 
     await expect.element(memberDetailScreen.leaveConfirmationText()).toBeVisible();
     await memberDetailScreen.stayButton().click();
+    await expect(memberDetailScreen.leaveConfirmationText()).toHaveCount(0);
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
     await expect.element(memberDetailScreen.nameInput()).toHaveValue('Ada B');
 
@@ -108,6 +114,7 @@ describe('Member detail leave guard', () => {
     await membersScreen.link('Ada Lovelace').click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));
     await memberDetailScreen.nameInput().fill('Ada B');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
     window.history.back();
 

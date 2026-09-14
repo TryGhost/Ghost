@@ -46,9 +46,6 @@ export interface Site {
   portal_default_plan?: PortalDefaultPlan;
   portal_products?: string[];
   products?: GiftProduct[];
-  labs?: {
-    giftSubCustomization?: boolean;
-  };
   portal_signup_gift_promotion?: boolean;
   portal_account_gift_promotion?: boolean;
 }
@@ -136,12 +133,8 @@ export function getAvailableGiftDurations({ site }: { site: Site | null }): Gift
   );
 }
 
-export function isGiftCustomizationEnabled({ site }: { site: Site | null }): boolean {
-  return site?.labs?.giftSubCustomization === true;
-}
-
 function canShowGiftPromotion({ site }: { site: Site | null }): boolean {
-  return isGiftCustomizationEnabled({ site }) && getAvailableGiftDurations({ site }).length > 0;
+  return getAvailableGiftDurations({ site }).length > 0;
 }
 
 export function canShowSignupGiftPromotion({ site }: { site: Site | null }): boolean {

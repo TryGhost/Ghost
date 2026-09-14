@@ -75,8 +75,8 @@ describe('Member Custom Fields Admin API', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('members_custom_field_values').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
     await models.Base.knex('members').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['member', 'member_custom_field'])
@@ -589,7 +589,7 @@ describe('Member Custom Fields Admin API', function () {
     it('rejects a batch larger than a single request may create', async function () {
       // Work per request is bounded independently of the site ceiling: even
       // with room to spare, one request cannot ask for unbounded work.
-      configUtils.set('members:customFields:maxDefinitions', 100000);
+      configUtils.set('members:metafields:maxDefinitions', 100000);
       const oversized = Array.from({ length: 101 }, (_unused, index) => ({
         name: `Field ${index}`,
         type: 'short_text',
@@ -677,7 +677,7 @@ describe('Member Custom Fields Admin API', function () {
     // reach this state — each create appends a distinct rank — so it is set up
     // directly, which is exactly what the migration does to a real site.
     async function asNeverReordered() {
-      await models.Base.knex('members_custom_fields').update({ sort_order: 0 });
+      await models.Base.knex('members_metafields').update({ sort_order: 0 });
     }
 
     it('falls back to creation order while every field holds the default rank', async function () {
@@ -857,7 +857,7 @@ describe('Member Custom Fields Admin API', function () {
     }
 
     it('rejects a create once the site is at the limit', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 2);
+      configUtils.set('members:metafields:maxDefinitions', 2);
 
       await createField({ name: 'Company' });
       await createField({ name: 'Role' });
@@ -876,28 +876,28 @@ describe('Member Custom Fields Admin API', function () {
     it('applies a limit change to the very next request, with no restart', async function () {
       // This is the behaviour that makes the cap operable: raising it must take
       // effect immediately, which is only true if config is read per request.
-      configUtils.set('members:customFields:maxDefinitions', 1);
+      configUtils.set('members:metafields:maxDefinitions', 1);
       await createField({ name: 'Company' });
       await createFieldExpecting('Role', 403);
 
-      configUtils.set('members:customFields:maxDefinitions', 2);
+      configUtils.set('members:metafields:maxDefinitions', 2);
       const created = await createField({ name: 'Role' });
       assert.equal(created.key, 'role');
 
       // ...and lowering it blocks the next create just as immediately.
-      configUtils.set('members:customFields:maxDefinitions', 1);
+      configUtils.set('members:metafields:maxDefinitions', 1);
       await createFieldExpecting('Bio', 403);
     });
 
     it('leaves definitions already over a lowered limit in place', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 3);
+      configUtils.set('members:metafields:maxDefinitions', 3);
       await createField({ name: 'Company' });
       await createField({ name: 'Role' });
       await createField({ name: 'Bio' });
 
       // Lowering the cap below the current count is a valid operator action.
       // It stops new definitions; it never removes existing ones.
-      configUtils.set('members:customFields:maxDefinitions', 1);
+      configUtils.set('members:metafields:maxDefinitions', 1);
 
       const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
       assert.equal(list.members_metafields.length, 3);
@@ -907,7 +907,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('counts archived definitions towards the limit, and frees a slot only on delete', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 2);
+      configUtils.set('members:metafields:maxDefinitions', 2);
       await createField({ name: 'Company' });
       const spare = await createField({ name: 'Role' });
 
@@ -925,7 +925,7 @@ describe('Member Custom Fields Admin API', function () {
 
     it('restores an archived definition while at the limit', async function () {
       // Restoring changes no row count, so the cap has nothing to say about it.
-      configUtils.set('members:customFields:maxDefinitions', 2);
+      configUtils.set('members:metafields:maxDefinitions', 2);
       await createField({ name: 'Company' });
       const archived = await createField({ name: 'Role' });
       await setStatus(archived.key, 'archived');
@@ -935,7 +935,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('rejects a batch that would cross the limit, writing none of it', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 3);
+      configUtils.set('members:metafields:maxDefinitions', 3);
       await createField({ name: 'Company' });
 
       // Two slots remain, so a batch of three is refused outright rather than
@@ -966,7 +966,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('accepts a batch that exactly fills the remaining space', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 3);
+      configUtils.set('members:metafields:maxDefinitions', 3);
       await createField({ name: 'Company' });
 
       const { body } = await agent
@@ -982,7 +982,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('rejects every create when the limit is zero', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 0);
+      configUtils.set('members:metafields:maxDefinitions', 0);
       const body = await createFieldExpecting('Company', 403);
       assert.deepEqual(body.errors[0].details, { limit: 0, total: 0, requested: 1 });
     });
@@ -1005,7 +1005,7 @@ describe('Member Custom Fields Admin API', function () {
 
     unreadableSettings.forEach(([description, value]) => {
       it(`falls back to the default ceiling when the setting is ${description}`, async function () {
-        configUtils.set('members:customFields:maxDefinitions', value);
+        configUtils.set('members:metafields:maxDefinitions', value);
         await createField({ name: 'Company' });
 
         const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
@@ -1022,8 +1022,8 @@ describe('Member Custom Fields Admin API', function () {
       // the module that resolves it, so this asserts against what Ghost
       // actually ships rather than against the implementation's own idea of
       // it. Read before the override, which is what makes it unreadable.
-      const shipped = configUtils.config.get('members:customFields:maxDefinitions');
-      configUtils.set('members:customFields:maxDefinitions', 'not-a-number');
+      const shipped = configUtils.config.get('members:metafields:maxDefinitions');
+      configUtils.set('members:metafields:maxDefinitions', 'not-a-number');
 
       // Filled in batches rather than one create at a time: a hundred-odd
       // sequential authenticated requests trip Ghost's spam prevention and
@@ -1048,13 +1048,13 @@ describe('Member Custom Fields Admin API', function () {
 
     it('honours a numeric limit supplied as a string', async function () {
       // Config set through an environment variable arrives as a string.
-      configUtils.set('members:customFields:maxDefinitions', '1');
+      configUtils.set('members:metafields:maxDefinitions', '1');
       await createField({ name: 'Company' });
       await createFieldExpecting('Role', 403);
     });
 
     it('does not record an activity-log entry for a create the limit rejected', async function () {
-      configUtils.set('members:customFields:maxDefinitions', 1);
+      configUtils.set('members:metafields:maxDefinitions', 1);
       await createField({ name: 'Company' });
       await createFieldExpecting('Role', 403);
 
@@ -1321,7 +1321,7 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, { [good.key]: 'Ghosts', [stale.key]: 'kept' });
 
       // Corrupt the stored field's type directly, past the service's immutability.
-      await models.Base.knex('members_custom_fields')
+      await models.Base.knex('members_metafields')
         .where('key', stale.key)
         .update({ type: 'no_longer_a_type' });
 
@@ -1371,7 +1371,7 @@ describe('Member Custom Fields Admin API', function () {
     it('rejects a write naming more fields than the site may define', async function () {
       // The ceiling is the operator's configured definitions limit, so it moves
       // with the setting rather than being fixed in the service.
-      configUtils.set('members:customFields:maxDefinitions', 3);
+      configUtils.set('members:metafields:maxDefinitions', 3);
       const memberId = await createMember();
 
       const atCeiling = Object.fromEntries(Array.from({ length: 3 }, (_, i) => [`k${i}`, 'v']));
@@ -1485,10 +1485,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(await readValues(memberId), undefined);
       // The row survives archiving — only the definition was hidden, and the
       // value is still attached to it (restoring the field brings it back).
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.equal(rows.length, 1);
     });
 
@@ -1507,7 +1504,7 @@ describe('Member Custom Fields Admin API', function () {
 
       type WrittenRow = { path: string; written_by_type: string; written_by_id: string | null };
       const writersOf = async (): Promise<WrittenRow[]> =>
-        models.Base.knex('members_custom_field_values')
+        models.Base.knex('members_metafield_values')
           .where('member_id', memberId)
           .orderBy('path')
           .select('path', 'written_by_type', 'written_by_id');
@@ -1562,10 +1559,7 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
 
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.equal(rows.length, 0);
     });
 
@@ -1734,10 +1728,7 @@ describe('Member Custom Fields Admin API', function () {
 
       await agent.delete(`members/${memberId}/`).expectStatus(204);
 
-      const rows = await models.Base.knex('members_custom_field_values').where(
-        'member_id',
-        memberId,
-      );
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
       assert.deepEqual(rows, []);
     });
 
@@ -2001,7 +1992,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(actions.length, 1);
       assert.equal(contextOf(actions[0]).key, field.key);
 
-      const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
+      const row = await models.Base.knex('members_metafields').where('key', field.key).first();
       assert.equal(actions[0].resource_id, row.id);
     });
 
@@ -2239,7 +2230,7 @@ describe('Member Custom Fields Admin API', function () {
 
   describe('Authorization', function () {
     // The full role matrix is pinned in migration.test.js; here we only prove
-    // the endpoint enforces the permission — a role without it is rejected.
+    // the endpoint enforces the permission — a role without it may look but not touch.
     beforeAll(async function () {
       await agent.loginAsEditor();
     });
@@ -2248,8 +2239,9 @@ describe('Member Custom Fields Admin API', function () {
       await agent.loginAsOwner();
     });
 
-    it('forbids a role without permission from browsing', async function () {
-      await agent.get('members/metafields/custom/').expectStatus(403);
+    it('lets a role without permission read what the site collects', async function () {
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent.get('members/metafields/custom/company/').expectStatus(404);
     });
 
     it('forbids a role without permission from creating', async function () {
@@ -2264,6 +2256,17 @@ describe('Member Custom Fields Admin API', function () {
         .put('members/metafields/custom/')
         .body({ members_metafields: [{ key: 'topic' }] })
         .expectStatus(403);
+    });
+
+    it('answers for the namespace before it answers for the caller', async function () {
+      // Nobody can define a field here, so the namespace is the reason and the role is
+      // beside the point. Answering 403 would send this caller after a permission that
+      // would not have helped them.
+      const { body } = await agent
+        .post('members/metafields/shopify/')
+        .body({ members_metafields: [{ name: 'Topic', type: 'short_text' }] })
+        .expectStatus(422);
+      assert.match(body.errors[0].context, /shopify/);
     });
   });
 

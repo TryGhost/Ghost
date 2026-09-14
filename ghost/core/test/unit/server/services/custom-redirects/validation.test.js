@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 
 const { validate } = require('../../../../../core/server/services/custom-redirects/validation');
 
-describe('UNIT: custom redirects validation', function () {
+describe('custom redirects validation', function () {
   it('passes validation for a valid redirects config', function () {
     const config = [
       {

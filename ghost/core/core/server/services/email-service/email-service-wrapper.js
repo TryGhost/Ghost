@@ -25,6 +25,7 @@ class EmailServiceWrapper {
     const EmailRenderer = require('./email-renderer');
     const SendingService = require('./sending-service');
     const BatchSendingService = require('./batch-sending-service');
+    const { SendingStatusService } = require('./sending-status-service');
     const EmailSegmenter = require('./email-segmenter');
     const { DomainWarmingService } = require('./domain-warming-service');
 
@@ -150,6 +151,7 @@ class EmailServiceWrapper {
       sentry,
       getRequiredUrlRelations,
     });
+    const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
     if (ghostServer) {
       // Two phases: stop claiming batches immediately, drain in-flight ones later.
@@ -192,6 +194,7 @@ class EmailServiceWrapper {
         Email,
       },
       getRequiredUrlRelations,
+      sendingStatusService,
     });
   }
 }

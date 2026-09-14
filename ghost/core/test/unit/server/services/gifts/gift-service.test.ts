@@ -260,9 +260,6 @@ describe('GiftService', function () {
       staffServiceEmails,
       giftReminderScheduler,
       checkoutAdapter,
-      labsService: {
-        isSet: sinon.stub().returns(false),
-      },
       settingsCache: {
         get: settingsCacheGet,
       },

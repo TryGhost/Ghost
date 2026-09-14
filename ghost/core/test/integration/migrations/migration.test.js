@@ -87,7 +87,7 @@ describe('Migrations', function () {
     // Custom assertion to wrap all permissions
     function assertCompletePermissions(permissions) {
       // If you have to change this number, please add the relevant `assertHavePermission` checks below
-      assert.equal(permissions.length, 143);
+      assert.equal(permissions.length, 141);
 
       assertHavePermission(permissions, 'Export database', [
         'Administrator',
@@ -477,16 +477,6 @@ describe('Migrations', function () {
         'Super Editor',
       ]);
 
-      assertHavePermission(permissions, 'Browse member custom fields', [
-        'Administrator',
-        'Admin Integration',
-        'Super Editor',
-      ]);
-      assertHavePermission(permissions, 'Read member custom fields', [
-        'Administrator',
-        'Admin Integration',
-        'Super Editor',
-      ]);
       assertHavePermission(permissions, 'Add member custom fields', [
         'Administrator',
         'Admin Integration',

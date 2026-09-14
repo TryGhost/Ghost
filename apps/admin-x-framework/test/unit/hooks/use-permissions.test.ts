@@ -32,6 +32,14 @@ describe('usePermissions', () => {
     expect(result.current).toBe(false);
   });
 
+  it('forwards request options to the current-user query', () => {
+    const options = { requestOptions: { sessionExpiryRedirect: false } };
+
+    renderHook(() => usePermission(['Administrator'], options));
+
+    expect(mockUseCurrentUser).toHaveBeenCalledWith(options);
+  });
+
   it('returns false when current user has no roles', () => {
     mockUseCurrentUser.mockReturnValue({
       data: {

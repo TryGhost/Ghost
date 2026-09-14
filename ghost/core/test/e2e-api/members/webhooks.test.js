@@ -58,6 +58,13 @@ async function getOfferByStripeCoupon(stripeCouponId) {
 }
 
 async function assertMemberEvents({ eventType, memberId, asserts }) {
+  // These rows are not written by the request under test. Ghost dispatches the member
+  // and subscription events once the transaction that created them has committed, and a
+  // subscriber then writes a row for each one. That write is still running when the
+  // response reaches us, so read the rows only once every dispatched event has been
+  // handled.
+  await DomainEvents.allSettled();
+
   const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
   for (let i = 0; i < asserts.length; i++) {
     assertObjectMatches(events[i], asserts[i]);
@@ -1310,11 +1317,6 @@ describe('Members API', function () {
       assert.equal(member.status, 'paid', 'The member should be "paid"');
       assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-      mockManager.assert.sentEmail({
-        subject: '🙌 Thank you for signing up to Ghost!',
-        to: 'checkout-webhook-test@email.com',
-      });
-
       // Check whether MRR and status has been set
       await assertSubscription(member.subscriptions[0].id, {
         subscription_id: subscription.id,
@@ -1357,10 +1359,20 @@ describe('Members API', function () {
         ],
       });
 
-      // Wait for the dispatched events (because this happens async)
+      // Neither of these emails is sent by the webhook request itself. The staff
+      // notification comes from a subscriber to a domain event that is only dispatched
+      // once the member transaction has committed, and the member's own signup email is
+      // started by the webhook handler without being awaited. Both can therefore still
+      // be in flight when the request returns, and nothing decides which of the two is
+      // sent first, so wait for each on its own rather than reading them in send order.
       await DomainEvents.allSettled();
 
-      mockManager.assert.sentEmail({
+      await mockManager.assert.sentEmailEventually({
+        subject: '🙌 Thank you for signing up to Ghost!',
+        to: 'checkout-webhook-test@email.com',
+      });
+
+      await mockManager.assert.sentEmailEventually({
         subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
         to: 'jbloggs@example.com',
       });
@@ -1406,6 +1418,9 @@ describe('Members API', function () {
           },
         });
 
+        // The status matters as much as what was stored. Saving a value is allowed to
+        // fail, but failing the webhook is not: Stripe retries an event it could not
+        // deliver, which risks doing the payment work twice.
         await membersAgent
           .post('/webhooks/stripe/')
           .body(webhookPayload)
@@ -1416,7 +1431,8 @@ describe('Members API', function () {
               payload: webhookPayload,
               secret: process.env.WEBHOOK_SECRET,
             }),
-          );
+          )
+          .expectStatus(200);
 
         const { body } = await adminAgent.get(`/members/?search=${encodeURIComponent(email)}`);
         assert.equal(body.members.length, 1, 'The member was not created');
@@ -1456,11 +1472,11 @@ describe('Members API', function () {
       });
 
       afterEach(async function () {
-        await models.Base.knex('members_custom_field_values').del();
-        await models.Base.knex('members_custom_field_bindings').del();
+        await models.Base.knex('members_metafield_values').del();
+        await models.Base.knex('members_metafield_bindings').del();
         await models.Base.knex('products_checkout_fields').del();
         await models.Base.knex('products_checkout_config').del();
-        await models.Base.knex('members_custom_fields').del();
+        await models.Base.knex('members_metafields').del();
         // The second tier one test adds is a paid product, and `getPaidProduct` asks for
         // whichever paid product comes first. Leaving it behind would decide that answer
         // for every test after this one.
@@ -1522,6 +1538,30 @@ describe('Members API', function () {
         });
 
         assert.equal(member.metafields.custom[phone], '+447700900123');
+      });
+
+      // The values a session carries have nothing to do with each other beyond arriving
+      // together, so one the catalog refuses must not cost the publisher the rest. A
+      // shipping address is the case that matters: a courier needs it, and a t-shirt size
+      // typed too long is no reason to lose it.
+      it('keeps the values it can when one of them is refused', async function () {
+        const member = await sendCheckoutWebhook('checkout-partly-refused@email.com', {
+          custom_fields: [
+            { key: fieldKeys.question, type: 'text', text: { value: 'X'.repeat(300) } },
+          ],
+          shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
+        });
+
+        assert.equal(
+          member.metafields.custom[fieldKeys.question],
+          undefined,
+          'the answer too long to store was not stored',
+        );
+        assert.equal(member.metafields.custom[fieldKeys.recipient], 'Bex Jones');
+        assert.deepEqual(member.metafields.custom[fieldKeys.address], {
+          line1: '1 High Street',
+          country: 'GB',
+        });
       });
 
       // The member has already paid by the time this runs, so losing an answer must never
@@ -1600,7 +1640,7 @@ describe('Members API', function () {
           shipping: { name: 'Bex Jones', address: { line1: '1 High Street', country: 'GB' } },
         });
 
-        const written = await models.Base.knex('members_custom_field_values')
+        const written = await models.Base.knex('members_metafield_values')
           .where('member_id', member.id)
           .distinct('written_by_type')
           .pluck('written_by_type');
@@ -1609,14 +1649,14 @@ describe('Members API', function () {
         // The id is the point: it resolves back to the tier that asked, what it was
         // collected as, and the field it landed in — which is everything worth
         // knowing about how a value got here, and more than a name could say.
-        const resolved = await models.Base.knex('members_custom_field_values')
+        const resolved = await models.Base.knex('members_metafield_values')
           .join(
-            'members_custom_field_bindings',
-            'members_custom_field_bindings.id',
-            'members_custom_field_values.written_by_id',
+            'members_metafield_bindings',
+            'members_metafield_bindings.id',
+            'members_metafield_values.written_by_id',
           )
-          .where('members_custom_field_values.member_id', member.id)
-          .distinct('members_custom_field_bindings.port')
+          .where('members_metafield_values.member_id', member.id)
+          .distinct('members_metafield_bindings.port')
           .pluck('port');
         assert.deepEqual(
           resolved.sort(),

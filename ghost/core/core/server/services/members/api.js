@@ -22,7 +22,7 @@ const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
-const customFieldsService = require('../members-custom-fields');
+const metafieldsService = require('../members-metafields');
 const { t } = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -271,10 +271,10 @@ function createApiInstance(config) {
     giftService,
     // Resolved here rather than passed as the module: the members service needs
     // the values service itself, and reading it at construction is what ties the
-    // two together in boot order. Custom fields is initialised in initCore, the
+    // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
-    customFieldValues: customFieldsService.values,
-    customFieldDefinitions: customFieldsService.definitions,
+    metafieldValues: metafieldsService.values,
+    metafieldDefinitions: metafieldsService.definitions,
   });
 
   return membersApiInstance;

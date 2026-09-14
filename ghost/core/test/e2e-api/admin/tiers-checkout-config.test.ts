@@ -69,8 +69,8 @@ describe('Tier Checkout Admin API', function () {
     mockManager.restore();
     await models.Base.knex('products_checkout_fields').del();
     await models.Base.knex('products_checkout_config').del();
-    await models.Base.knex('members_custom_field_bindings').del();
-    await models.Base.knex('members_custom_fields').del();
+    await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('members_metafields').del();
     // The history outlives the fields it describes, which is the point of it — but across
     // tests in one file it would leave each one reading the ones before.
     await models.Base.knex('actions').where('resource_type', 'member_custom_field').del();
@@ -353,7 +353,7 @@ describe('Tier Checkout Admin API', function () {
       assert.match(body.errors[0].context, /archived/);
 
       assert.deepEqual(
-        await models.Base.knex('members_custom_field_bindings').select(),
+        await models.Base.knex('members_metafield_bindings').select(),
         [],
         'and nothing was bound',
       );
@@ -437,7 +437,7 @@ describe('Tier Checkout Admin API', function () {
         'the field made for the recipient went back with the request',
       );
       assert.deepEqual(
-        await models.Base.knex('members_custom_field_bindings').select(),
+        await models.Base.knex('members_metafield_bindings').select(),
         [],
         'and so did the binding made before it',
       );
@@ -474,7 +474,7 @@ describe('Tier Checkout Admin API', function () {
       await setCheckout(shipping({ address: { custom_field_key: '' } }), 422);
       await setCheckout({ phone: { collect: true } }, 422);
 
-      assert.deepEqual(await models.Base.knex('members_custom_field_bindings').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafield_bindings').select(), []);
     });
 
     // The destination is site-wide, so it is one answer however many tiers collect it.
@@ -564,7 +564,7 @@ describe('Tier Checkout Admin API', function () {
       );
       assert.match(body.errors[0].context, /lowercase letters, numbers and underscores/);
 
-      assert.deepEqual(await models.Base.knex('members_custom_fields').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafields').select(), []);
     });
 
     // A key is a property name on the plain object a member's values travel as, so one
@@ -577,7 +577,7 @@ describe('Tier Checkout Admin API', function () {
         assert.match(body.errors[0].context, /cannot be used as a custom field key/);
       }
 
-      assert.deepEqual(await models.Base.knex('members_custom_fields').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafields').select(), []);
     });
 
     // Minting holds back room for a numbering suffix; a stated key is written as given,
@@ -589,7 +589,7 @@ describe('Tier Checkout Admin API', function () {
       );
       assert.match(body.errors[0].context, /at most 191 characters/);
 
-      assert.deepEqual(await models.Base.knex('members_custom_fields').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafields').select(), []);
     });
 
     // Which kinds of thing exist is the request schema's to state, so naming one that
@@ -651,7 +651,7 @@ describe('Tier Checkout Admin API', function () {
       assert.deepEqual(body.members_metafields, [], 'no field was made for it');
 
       assert.deepEqual(
-        await models.Base.knex('members_custom_field_bindings').select(),
+        await models.Base.knex('members_metafield_bindings').select(),
         [],
         'and nothing was bound',
       );
@@ -754,7 +754,7 @@ describe('Tier Checkout Admin API', function () {
     // whether anything is collected, so one left behind changes nothing.
     it('collects nothing when only the options row is left', async function () {
       await collectShipping();
-      await models.Base.knex('members_custom_field_bindings').del();
+      await models.Base.knex('members_metafield_bindings').del();
 
       const [options] = await models.Base.knex('products_checkout_config').select();
       assert.ok(options, 'the options row outlived the collection');
@@ -772,7 +772,7 @@ describe('Tier Checkout Admin API', function () {
       // kept elsewhere, so its binding survives — but a recipient with nowhere to send
       // the parcel is not a delivery, so the tier reports collecting nothing.
       assert.deepEqual(
-        (await models.Base.knex('members_custom_field_bindings').select()).map(
+        (await models.Base.knex('members_metafield_bindings').select()).map(
           (row: { port: string }) => row.port,
         ),
         ['shipping_name'],
@@ -786,10 +786,10 @@ describe('Tier Checkout Admin API', function () {
 
       // Archiving is reversible, so the binding waits rather than being torn out, and
       // the tier goes on reporting where the value goes.
-      const [binding] = await models.Base.knex('members_custom_field_bindings')
+      const [binding] = await models.Base.knex('members_metafield_bindings')
         .where('port', 'shipping_address')
         .select();
-      assert.equal(binding.custom_field_key, 'delivery_address');
+      assert.equal(binding.metafield_key, 'delivery_address');
       assert.equal((await readCheckout()).shipping.address.custom_field_key, 'delivery_address');
 
       await setStatus('delivery_address', 'active');
@@ -878,7 +878,7 @@ describe('Tier Checkout Admin API', function () {
   // rest of it.
   describe('When collection stops', function () {
     const bindingsFor = (port: string) =>
-      models.Base.knex('members_custom_field_bindings').where('port', port).select();
+      models.Base.knex('members_metafield_bindings').where('port', port).select();
 
     it('forgets the binding rather than keeping it switched off', async function () {
       await createField({ name: 'Delivery address', type: 'address' });
@@ -886,7 +886,7 @@ describe('Tier Checkout Admin API', function () {
 
       await setCheckout({ shipping: { collect: false } });
 
-      assert.deepEqual(await models.Base.knex('members_custom_field_bindings').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafield_bindings').select(), []);
       assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
     });
 
@@ -974,9 +974,7 @@ describe('Tier Checkout Admin API', function () {
         .expectStatus(422);
 
       assert.deepEqual(
-        await models.Base.knex('members_custom_field_bindings')
-          .where('product_id', secondId)
-          .select(),
+        await models.Base.knex('members_metafield_bindings').where('product_id', secondId).select(),
         [],
       );
 
@@ -1044,7 +1042,7 @@ describe('Tier Checkout Admin API', function () {
       await setCheckout({ shipping: { collect: false } });
 
       // Off, so the tier reports nothing and the checkout asks for nothing.
-      assert.deepEqual(await models.Base.knex('members_custom_field_bindings').select(), []);
+      assert.deepEqual(await models.Base.knex('members_metafield_bindings').select(), []);
       assert.deepEqual(await readCheckout(), { tier_id: tierId, custom_fields: [] });
 
       const { body } = await agent.get('members/metafields/custom/').expectStatus(200);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FieldTypeSchema } from '@tryghost/custom-field-types';
+import { FieldTypeSchema } from '@tryghost/metafield-types';
 
 export const CheckoutQuestion = z.object({
   key: z.string(),

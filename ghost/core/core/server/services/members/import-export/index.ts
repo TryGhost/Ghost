@@ -1,19 +1,19 @@
 import type { Knex } from 'knex';
-import type { CsvField } from '@tryghost/custom-field-types/csv';
-import type { WrittenBy } from '../../members-custom-fields';
+import type { CsvField } from '@tryghost/metafield-types/csv';
+import type { WrittenBy } from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
   type EmailNotifications,
   type Tier,
-  type CustomFieldsImport,
+  type MetafieldsImport,
   type FailureReporter,
 } from './import/importer';
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
 import MembersCSVExporter, {
   type ExportOptions,
-  type CustomFieldDefinition,
+  type MetafieldDefinition,
 } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
@@ -44,8 +44,8 @@ interface ImporterServices {
   getInlineThreshold(): number;
   stripeAPIService: unknown;
   productRepository: unknown;
-  // The custom fields services the members service hands the import composition root.
-  customFields: {
+  // The metafields services the members service hands the import composition root.
+  metafields: {
     definitions: { browse(): Promise<CsvField[]> };
     values: {
       planWrite(values: Record<string, unknown>): Promise<unknown[]>;
@@ -58,9 +58,9 @@ interface ImporterServices {
   };
 }
 
-// The custom fields services the members service hands the export composition root.
-interface CustomFieldsServices {
-  definitions: { browse(): Promise<CustomFieldDefinition[]> };
+// The metafields services the members service hands the export composition root.
+interface MetafieldsServices {
+  definitions: { browse(): Promise<MetafieldDefinition[]> };
   values: {
     getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
   };
@@ -115,13 +115,13 @@ export function makeImporter(deps: ImporterServices) {
       }),
   };
 
-  const customFields: CustomFieldsImport = {
-    activeFields: async () => deps.customFields.definitions.browse(),
-    planWrite: (values) => deps.customFields.values.planWrite(values),
+  const metafields: MetafieldsImport = {
+    activeFields: async () => deps.metafields.definitions.browse(),
+    planWrite: (values) => deps.metafields.values.planWrite(values),
     // Every value the import writes came out of the file, whichever column carried it.
     // An import has no id to give until runs are tracked, so it names its kind only.
     applyWrite: (memberId, plan, executor) =>
-      deps.customFields.values.applyWrite(memberId, plan, {
+      deps.metafields.values.applyWrite(memberId, plan, {
         writtenBy: { type: 'import', id: null },
         executor,
       }),
@@ -155,7 +155,7 @@ export function makeImporter(deps: ImporterServices) {
       productRepository: deps.productRepository,
     }),
     gifts,
-    customFields,
+    metafields,
     email,
     report,
     addJob: deps.addJob,
@@ -165,12 +165,12 @@ export function makeImporter(deps: ImporterServices) {
 }
 
 // Build the members CSV exporter. The same composition root from the other direction:
-// knex and the members id lookup are wired here, and the custom fields definitions and
+// knex and the members id lookup are wired here, and the metafields definitions and
 // values services are injected (boot builds them before this one).
 export function makeExporter({
   definitions,
   values,
-}: CustomFieldsServices): (options?: ExportOptions) => Promise<NodeJS.ReadableStream> {
+}: MetafieldsServices): (options?: ExportOptions) => Promise<NodeJS.ReadableStream> {
   const exporter = new MembersCSVExporter({
     knex: db.knex,
 
@@ -188,10 +188,10 @@ export function makeExporter({
       },
     },
 
-    customFields: {
+    metafields: {
       // Boot builds the definitions and values services before this one, so they
       // are always present -- no not-initialised state to guard.
-      activeDefinitions: async (): Promise<CustomFieldDefinition[]> => definitions.browse(),
+      activeDefinitions: async (): Promise<MetafieldDefinition[]> => definitions.browse(),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds),
     },
   });

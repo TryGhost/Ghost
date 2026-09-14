@@ -73,6 +73,19 @@ describe('Unit: Service: state-bridge', function () {
         });
     });
 
+    describe('#refreshFeatureFlagOverrides', function () {
+        it('refreshes Ember flags and notifies React subscribers', function () {
+            const refreshFeatureFlagOverrides = sinon.spy(feature, 'refreshFeatureFlagOverrides');
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.refreshFeatureFlagOverrides();
+
+            expect(refreshFeatureFlagOverrides.calledOnce).to.be.true;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+        });
+    });
+
     describe('#onUpdate', function () {
         it('ignores unknown data types', function () {
             run(() => {
@@ -304,6 +317,14 @@ describe('Unit: Service: state-bridge', function () {
 
             expect(store.unloadAll.calledOnce).to.be.true;
             expect(store.unloadAll.calledWith('integration')).to.be.true;
+        });
+
+        it('unloads snippets when React snippet queries are invalidated', function () {
+            run(() => {
+                service.onInvalidate('SnippetsResponseType');
+            });
+
+            expect(store.unloadAll.calledOnceWith('snippet')).to.be.true;
         });
 
         it('unloads all tags when tag queries are invalidated', function () {

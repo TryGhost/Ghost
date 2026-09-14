@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 
-import { renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  fakeMembers,
+  fakeNewsletters,
+  fakePosts,
+  fakeSnippets,
+  post,
+  renderAdminApp,
+} from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 
 /**
  * The editor is a focused writing surface — Ghost hides the nav sidebar for it,
@@ -36,6 +45,21 @@ describe('Editor chrome', () => {
   it('hides it for a page too', async () => {
     await renderAdminApp('/editor/page/abc123');
 
+    await expect(sidebar()).toHaveCount(0);
+  });
+
+  // The decision lives on the route handle, so it must hold on both sides of
+  // the `editorReact` gate — here the React editor serves the route.
+  it('hides it with editorReact on', async () => {
+    fakeSnippets([]);
+    fakePosts([]);
+    // The header's publish inputs read the site's member total and newsletter list.
+    fakeMembers([]);
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
+    await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
+
+    await expect.element(editorScreen.root()).toBeVisible();
     await expect(sidebar()).toHaveCount(0);
   });
 

@@ -33,15 +33,27 @@ describe('jobs-service wrapper', function () {
     assert.throws(() => jobsService.getInstance(), /used before init/);
   });
 
-  it('init builds the service from the jobs adapter and getInstance returns it', function () {
-    const fakeBackend = {
+  function makeFakeBackend() {
+    return {
       requiredFns: ['start', 'enqueue', 'scheduleRecurring', 'shutdown'],
+      shutdownCalls: 0,
       start() {},
       enqueue() {},
       scheduleRecurring() {},
-      async shutdown() {},
+      async shutdown() {
+        this.shutdownCalls += 1;
+      },
     };
-    sinon.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(fakeBackend);
+  }
+
+  function stubAdapters() {
+    const jobsBackend = makeFakeBackend();
+    sinon.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(jobsBackend);
+    return { jobsBackend };
+  }
+
+  it('init builds the service from the jobs adapter and getInstance returns it', function () {
+    stubAdapters();
 
     const service = jobsService.init();
 
@@ -50,5 +62,34 @@ describe('jobs-service wrapper', function () {
       service,
       'getInstance returns the instance built by init',
     );
+  });
+
+  it('init after a shutdown reuses the same instance, so captured references stay live', async function () {
+    stubAdapters();
+
+    const service = jobsService.init();
+    await jobsService.shutdown({ timeoutMs: 10 });
+
+    assert.equal(jobsService.init(), service, 'the instance survives a reboot');
+  });
+
+  it('re-init clears handlers so a reboot can register the same job types again', function () {
+    stubAdapters();
+
+    class RebootJob {
+      static type = 'reboot-job';
+    }
+    jobsService.init().handle(RebootJob, async () => {});
+
+    jobsService.init().handle(RebootJob, async () => {});
+  });
+
+  it('shutdown after init shuts down the backend', async function () {
+    const { jobsBackend } = stubAdapters();
+
+    jobsService.init();
+    await jobsService.shutdown({ timeoutMs: 10 });
+
+    assert.equal(jobsBackend.shutdownCalls, 1, 'the jobs backend was shut down');
   });
 });

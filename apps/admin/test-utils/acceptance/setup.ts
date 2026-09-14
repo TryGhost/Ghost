@@ -35,6 +35,7 @@ afterEach(async () => {
   } finally {
     resetFakeApi();
     resetDeclaredResources();
+    sessionStorage.clear();
     window.location.hash = '';
     verifyNoUnhandledRequests();
   }

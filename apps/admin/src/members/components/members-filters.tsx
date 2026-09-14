@@ -4,6 +4,7 @@ import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { type Filter, Filters } from '@tryghost/shade/patterns';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
@@ -31,6 +32,7 @@ import {
   useTierValueSource,
 } from '@/shared/filter-sources';
 import type { MemberView } from '@/members/hooks/use-member-views';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface MembersFiltersProps {
   filters: Filter[];
@@ -186,22 +188,34 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
+  const useConsolidatedFilterUI = useFeatureFlag('postsListReact');
   const showIconOnlyTrigger = iconOnly && !hasFilters;
   const addFilterButtonClassName = cn(
     'bg-white dark:bg-background',
     showIconOnlyTrigger &&
       'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base',
+    hasFilters && (useConsolidatedFilterUI ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
   );
 
   const clearAndSaveButtons = hasFilters ? (
-    <div className="flex shrink-0 items-center gap-4 sm:absolute sm:top-0 sm:right-0">
+    <Inline
+      className={cn(
+        'shrink-0 sm:absolute sm:top-0 sm:right-0',
+        !useConsolidatedFilterUI && 'gap-4',
+      )}
+      data-testid="members-filter-actions"
+      gap={useConsolidatedFilterUI ? 'sm' : undefined}
+    >
       <Button
-        className="hidden items-center gap-1 !px-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground lg:inline-flex"
+        className={cn(
+          'hidden items-center text-muted-foreground hover:text-foreground lg:inline-flex',
+          !useConsolidatedFilterUI && 'gap-1 !px-0 text-sm font-normal hover:bg-transparent',
+        )}
         type="button"
-        variant="ghost"
+        variant={useConsolidatedFilterUI ? 'outline' : 'ghost'}
         onClick={() => onFiltersChange([])}
       >
-        <LucideIcon.X className="size-4" />
+        {!useConsolidatedFilterUI && <LucideIcon.X className="size-4" />}
         Clear
       </Button>
       {nql && (
@@ -212,16 +226,28 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
           onDeleted={() => onFiltersChange([])}
         />
       )}
-    </div>
+    </Inline>
   ) : undefined;
 
   return (
     <Filters
       addButtonClassName={addFilterButtonClassName}
-      addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
+      addButtonIcon={
+        useConsolidatedFilterUI ? (
+          hasFilters ? (
+            <LucideIcon.ListFilterPlus className="size-4" />
+          ) : (
+            <LucideIcon.ListFilter className="size-4" />
+          )
+        ) : hasFilters ? (
+          <LucideIcon.FunnelPlus />
+        ) : (
+          <LucideIcon.Funnel />
+        )
+      }
       addButtonText={hasFilters ? 'Add filter' : 'Filter'}
       allowMultiple={true}
-      className={`[&>button]:order-last ${hasFilters ? 'sm:!pr-40 [&>button]:border-none' : 'w-auto'}`}
+      className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}

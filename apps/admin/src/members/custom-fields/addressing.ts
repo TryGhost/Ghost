@@ -1,5 +1,5 @@
 import { escapeNqlString } from '@tryghost/nql-string';
-import { formatIdentity, parseIdentity } from '@tryghost/custom-field-types/identity';
+import { formatIdentity, parseIdentity } from '@tryghost/metafield-types/identity';
 import {
   PRESENCE_OPERATORS,
   getCompoundChildren,

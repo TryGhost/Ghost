@@ -7,10 +7,7 @@ import {
 import { appRender, fireEvent, waitFor, within } from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 import { toDateValue } from '../src/utils/date-time';
-import {
-  GIFT_FORM_STATE_KEY,
-  createGiftFormState,
-} from '../src/components/pages/beta-gift/form-state';
+import { GIFT_FORM_STATE_KEY, createGiftFormState } from '../src/components/pages/gift/form-state';
 
 const defaultGiftResponse = {
   gifts: [
@@ -460,7 +457,6 @@ describe('Portal Data links:', () => {
 
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
         portal_signup_gift_promotion: false,
         portal_account_gift_promotion: false,
       };
@@ -475,7 +471,6 @@ describe('Portal Data links:', () => {
     test('opens a completed personalized gift at the delivery step', async () => {
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       const productId = site.products.find((product) => product.type === 'paid').id;
       const draft = createGiftFormState({ buyerName: 'Jamie' });
@@ -503,7 +498,6 @@ describe('Portal Data links:', () => {
       window.location.hash = '#/portal/gift';
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       let { popupFrame, ...utils } = await setup({ site, showPopup: false });
       popupFrame = await utils.findByTitle(/portal-popup/i);
@@ -523,7 +517,6 @@ describe('Portal Data links:', () => {
       window.location.hash = '#/portal/gift';
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       let { popupFrame, ...utils } = await setup({ site, showPopup: false });
       popupFrame = await utils.findByTitle(/portal-popup/i);
@@ -539,7 +532,6 @@ describe('Portal Data links:', () => {
       window.location.hash = '#/portal/gift';
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       let { popupFrame, ...utils } = await setup({ site, showPopup: false });
       popupFrame = await utils.findByTitle(/portal-popup/i);
@@ -670,8 +662,8 @@ describe('Portal Data links:', () => {
       expect(
         await within(popupIframeDocument).findByText(/You've been gifted a membership/i),
       ).toBeInTheDocument();
-      expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
-      expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
+      expect(within(popupIframeDocument).queryAllByText(/Bronze/i)).not.toHaveLength(0);
+      expect(within(popupIframeDocument).queryAllByText(/1 year/i)).not.toHaveLength(0);
       expect(
         within(popupIframeDocument).queryByText(/Five great stories to read every day/i),
       ).toBeInTheDocument();
@@ -706,7 +698,6 @@ describe('Portal Data links:', () => {
     test('opens gift success page for immediate email delivery', async () => {
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       const tierId = site.products.find((product) => product.type === 'paid').id;
       window.location.href = `https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123&gift_tier=${tierId}&gift_cadence=year&gift_duration=12&gift_delivery=email`;
@@ -739,7 +730,6 @@ describe('Portal Data links:', () => {
     test('opens gift success page with scheduled delivery wording for a future date', async () => {
       const site = {
         ...FixtureSite.singleTier.basic,
-        labs: { giftSubCustomization: true },
       };
       const tierId = site.products.find((product) => product.type === 'paid').id;
       const futureDate = new Date();

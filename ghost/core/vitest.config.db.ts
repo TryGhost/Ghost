@@ -94,6 +94,43 @@ const sharedDbConfig = {
   hookTimeout: 60000,
 };
 
+// Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
+// test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + MinIO,
+// minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
+// report without failing.
+type CoverageLane = {
+  reportsDirectory: string;
+  thresholds: {
+    statements: number;
+    branches: number;
+    functions: number;
+    lines: number;
+  };
+};
+
+const COVERAGE_LANES: Record<string, CoverageLane> = {
+  e2e: {
+    reportsDirectory: 'coverage-e2e',
+    thresholds: { statements: 70, branches: 56, functions: 74, lines: 70 },
+  },
+  integration: {
+    reportsDirectory: 'coverage-integration',
+    thresholds: { statements: 47, branches: 32, functions: 47, lines: 47 },
+  },
+};
+
+// Object.hasOwn, not a truthy lookup: 'constructor' and the rest of
+// Object.prototype would otherwise resolve to inherited members and silently
+// skip the gate. An empty string is a bad value too, not "unset".
+const laneName = process.env.COVERAGE_LANE;
+if (laneName !== undefined && !Object.hasOwn(COVERAGE_LANES, laneName)) {
+  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  throw new Error(
+    `Unknown COVERAGE_LANE '${laneName}' — expected one of: ${Object.keys(COVERAGE_LANES).join(', ')}`,
+  );
+}
+const coverageLane = laneName === undefined ? undefined : COVERAGE_LANES[laneName];
+
 export default defineConfig({
   test: {
     resolveSnapshotPath,
@@ -109,6 +146,27 @@ export default defineConfig({
     // Local runs use the compact `dot` reporter. CI uses `default` plus
     // `github-actions` for inline annotations (mirrors vitest.config.ts).
     reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
+    // Coverage for the CI acceptance lanes (test:ci:e2e / test:ci:integration),
+    // which pass --coverage and pick their lane via COVERAGE_LANE. `include`
+    // is what reports never-loaded files under vitest 4 (there is no `all`).
+    coverage: {
+      provider: 'v8',
+      include: ['core/*.js', 'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}'],
+      exclude: [
+        'core/frontend/src/**',
+        'core/frontend/public/**',
+        'core/frontend/helpers/**',
+        'core/server/data/migrations/**',
+        'core/server/data/schema/schema.js',
+        'core/server/web/api/testmode/**',
+        'core/server/services/koenig/**',
+        // Type-only declarations: no runtime code, and the remapper's parser
+        // rejects them ('Expected `from` but found `{`' on `import type`).
+        '**/*.d.ts',
+      ],
+      reporter: ['text-summary', 'cobertura'],
+      ...coverageLane,
+    },
     projects: [
       {
         ssr: sharedSsrConfig,

@@ -18,7 +18,7 @@ let sentry;
 const sentryModulePath = require.resolve('../../../core/shared/sentry');
 const originalSentryModule = require.cache[sentryModulePath];
 
-describe('UNIT: sentry', function () {
+describe('sentry', function () {
   afterEach(async function () {
     await configUtils.restore();
     sinon.restore();

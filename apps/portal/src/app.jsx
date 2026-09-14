@@ -14,8 +14,8 @@ import { transformPortalAnchorToRelative } from './utils/transform-portal-anchor
 import { getActivePage, isAccountPage, isOfferPage } from './pages';
 import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
-import { GIFT_DURATION_CATALOGUE, isGiftCustomizationEnabled } from './utils/gift-subscriptions';
-import { clearGiftFormState } from './components/pages/beta-gift/form-state';
+import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
+import { clearGiftFormState } from './components/pages/gift/form-state';
 import './app.css';
 import {
   hasRecommendations,
@@ -1150,7 +1150,7 @@ export default class App extends React.Component {
   }
 
   /**Get Portal page from Link/Data-attribute path*/
-  getPageFromLinkPath(path, site) {
+  getPageFromLinkPath(path) {
     const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
     const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
     const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
@@ -1254,23 +1254,19 @@ export default class App extends React.Component {
           signup: false,
         },
       };
-    } else if (path === 'gift' && isGiftCustomizationEnabled({ site })) {
+    } else if (path === 'gift') {
       return {
         page: 'gift',
         pageData: {
           giftStep: 'plan',
         },
       };
-    } else if (path === 'gift/delivery' && isGiftCustomizationEnabled({ site })) {
+    } else if (path === 'gift/delivery') {
       return {
         page: 'gift',
         pageData: {
           giftStep: 'delivery',
         },
-      };
-    } else if (path === 'gift' || path === 'gift/delivery') {
-      return {
-        page: 'gift',
       };
     } else if (path === 'share') {
       return {

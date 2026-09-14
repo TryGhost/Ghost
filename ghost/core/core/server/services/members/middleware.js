@@ -2,11 +2,10 @@ const crypto = require('crypto');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
-const emailSuppressionList = require('../email-suppression-list');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
-const { formattedMemberResponse, formatNewsletterResponse } = require('./utils');
+const { formatNewsletterResponse } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const onHeaders = require('on-headers');
@@ -18,6 +17,9 @@ const messages = {
   missingUuid: 'Missing uuid.',
   invalidUuid: 'Invalid uuid.',
   invalidKey: 'Invalid key.',
+  // Says that nobody is signed in, without naming the cookie that would have said
+  // so. Which cookie carries a session is Ghost's business, not the caller's.
+  noMemberSession: 'You must be signed in to do this.',
 };
 
 const getFreeTier = async function getFreeTier() {
@@ -114,6 +116,94 @@ const getRedirectUrl = function getRedirectUrl({ action, referrer, searchParams,
   }
 
   return redirectUrl.href;
+};
+
+/**
+ * Establish who is signed in, without loading them.
+ *
+ * Sets `req.identity` to an id and an email address, or to null when nobody is
+ * signed in. One lookup against an indexed column, with no relations attached and
+ * nothing fetched from outside Ghost.
+ *
+ * Deliberately not the member's record. Most endpoints that serve a member need to
+ * act on one rather than describe one, and the one that describes a member reads
+ * it again after writing anyway, because the response has to say what Ghost now
+ * holds rather than what was sent. What to load is the endpoint's own business.
+ *
+ * Distinct from `loadMemberSession`, which loads the whole member and is what a
+ * themed page renders from.
+ */
+const loadMemberIdentity = async function loadMemberIdentity(req, res, next) {
+  try {
+    Object.assign(req, {
+      identity: await membersService.ssr.getMemberIdentityFromSession(req, res),
+    });
+  } catch (err) {
+    // Only a missing or unreadable cookie means nobody is signed in. Establishing
+    // an identity also reaches the database, and answering "you are not signed in"
+    // to that failing would tell a signed-in member something false and leave the
+    // real fault unreported.
+    if (!errors.utils.isGhostError(err) || err.errorType !== 'BadRequestError') {
+      return next(err);
+    }
+    Object.assign(req, { identity: null });
+  }
+
+  return next();
+};
+
+/**
+ * Hand the identity to whatever comes next, in the place the API framework reads.
+ *
+ * The framework takes whoever is acting from `req.member` and nowhere else, so a
+ * controller behind either gate below finds the identity there.
+ */
+const carryIdentity = function carryIdentity(req, res) {
+  Object.assign(req, { member: req.identity });
+  res.locals.member = req.member;
+};
+
+/**
+ * Refuse a request that `loadMemberIdentity` could not put a name to.
+ *
+ * For endpoints where an unknown caller is asking for something they have no right
+ * to: changing a member's record, or reading what a publisher collects.
+ *
+ * Reads only `req.identity`, so a route using this must register
+ * `loadMemberIdentity` first. It looks nothing up itself: what a route needs is
+ * declared by the middleware it lists, rather than depending on what some earlier
+ * one happened to leave behind.
+ */
+const rejectWhenAnonymous = function rejectWhenAnonymous(req, res, next) {
+  if (!req.identity) {
+    return next(
+      new errors.UnauthorizedError({
+        message: tpl(messages.noMemberSession),
+      }),
+    );
+  }
+
+  carryIdentity(req, res);
+  return next();
+};
+
+/**
+ * Answer with nothing when `loadMemberIdentity` could not put a name to the request.
+ *
+ * For reading who you are, where not knowing is an ordinary answer rather than a
+ * failure: a themed page asks on every view and most of those views have no member.
+ *
+ * The counterpart to `rejectWhenAnonymous`, and separate from it because which of
+ * the two applies is a fact about the endpoint, not a setting on a shared one.
+ */
+const emptyWhenAnonymous = function emptyWhenAnonymous(req, res, next) {
+  if (!req.identity) {
+    res.writeHead(204);
+    return res.end();
+  }
+
+  carryIdentity(req, res);
+  return next();
 };
 
 /**
@@ -243,42 +333,6 @@ const deleteSession = async function deleteSession(req, res) {
   }
 };
 
-const getMemberData = async function getMemberData(req, res) {
-  try {
-    const member = await membersService.ssr.getMemberDataFromSession(req, res);
-    if (member) {
-      res.json(formattedMemberResponse(member));
-    } else {
-      res.json(null);
-    }
-  } catch (err) {
-    res.writeHead(204);
-    res.end();
-  }
-};
-
-const deleteSuppression = async function deleteSuppression(req, res) {
-  try {
-    const member = await membersService.ssr.getMemberDataFromSession(req, res);
-    const options = {
-      id: member.id,
-    };
-    await emailSuppressionList.removeEmail(member.email);
-    await membersService.api.members.update({ email_disabled: false }, options);
-
-    res.writeHead(204);
-    res.end();
-  } catch (err) {
-    if (!err.statusCode) {
-      logging.error(err);
-    }
-    res.writeHead(err.statusCode ?? 500, {
-      'Content-Type': 'text/plain;charset=UTF-8',
-    });
-    res.end(err.message);
-  }
-};
-
 const getMemberNewsletters = async function getMemberNewsletters(req, res) {
   try {
     const memberData = req.member; // validation assumed
@@ -348,46 +402,6 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
   } catch (err) {
     res.writeHead(400);
     res.end('Failed to update newsletters');
-  }
-};
-
-const updateMemberData = async function updateMemberData(req, res) {
-  try {
-    const data = _.pick(
-      req.body,
-      'name',
-      'expertise',
-      'subscribed',
-      'newsletters',
-      'enable_comment_notifications',
-      'enable_updates_and_announcements',
-    );
-    const member = await membersService.ssr.getMemberDataFromSession(req, res);
-    if (member) {
-      const options = {
-        id: member.id,
-        withRelated: [
-          'stripeSubscriptions',
-          'stripeSubscriptions.customer',
-          'stripeSubscriptions.stripePrice',
-          'newsletters',
-        ],
-      };
-      await membersService.api.members.update(data, options);
-      const updatedMember = await membersService.ssr.getMemberDataFromSession(req, res);
-
-      res.json(formattedMemberResponse(updatedMember));
-    } else {
-      res.json(null);
-    }
-  } catch (err) {
-    if (!err.statusCode) {
-      logging.error(err);
-    }
-    res.writeHead(err.statusCode ?? 500, {
-      'Content-Type': 'text/plain;charset=UTF-8',
-    });
-    res.end(err.message);
   }
 };
 
@@ -500,17 +514,17 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
 // Set req.member & res.locals.member if a cookie is set
 module.exports = {
   loadMemberSession,
+  loadMemberIdentity,
+  rejectWhenAnonymous,
+  emptyWhenAnonymous,
   authMemberByUuid,
   createSessionFromMagicLink,
   getIdentityToken,
   getEntitlementToken,
   getMemberNewsletters,
-  getMemberData,
-  updateMemberData,
   updateMemberNewsletters,
   deleteSession,
   accessInfoSession,
-  deleteSuppression,
   createIntegrityToken,
   verifyIntegrityToken,
 };

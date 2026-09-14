@@ -16,7 +16,7 @@ import type { PostResource } from '@/posts/list/post-resource';
 type PostStatus = 'draft' | 'scheduled' | 'published' | 'sent';
 
 function statusOf(post: PostListItem): PostStatus {
-  return (post.status ?? 'draft') as PostStatus;
+  return post.status ?? 'draft';
 }
 
 /**
@@ -73,7 +73,9 @@ export function getPostDateField(post: PostListItem): 'updated_at' | 'published_
 }
 
 export function getPostDate(post: PostListItem): string | undefined {
-  return getPostDateField(post) === 'updated_at' ? post.updated_at : post.published_at;
+  return (
+    (getPostDateField(post) === 'updated_at' ? post.updated_at : post.published_at) ?? undefined
+  );
 }
 
 export interface PostMetaLine {

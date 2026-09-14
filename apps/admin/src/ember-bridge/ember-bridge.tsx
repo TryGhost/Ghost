@@ -23,6 +23,7 @@ export interface StateBridge {
   onUpdate: (dataType: string, response: unknown) => void;
   onInvalidate: (dataType: string) => void;
   onDelete: (dataType: string, id: string) => void;
+  refreshFeatureFlagOverrides?: () => void;
   isFeatureEnabled?: (name: string) => boolean | undefined;
   preloadAdminThemeStylesheet?: () => Promise<void>;
   applyAdminThemePreference?: (mode: AdminThemeMode) => Promise<void> | void;
@@ -105,6 +106,7 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
   member: 'MembersResponseType',
   tag: 'TagsResponseType',
   label: 'LabelsResponseType',
+  snippet: 'SnippetsResponseType',
 };
 
 /**
@@ -314,11 +316,15 @@ export function applyEmberAdminThemePreference(mode: AdminThemeMode): boolean {
 }
 
 /**
- * React -> Ember mutation sync handlers for the FrameworkProvider. Each
- * forwards a successful React mutation to Ember's store sync and no-ops when
- * the bridge is absent (standalone React).
+ * React -> Ember handlers for the FrameworkProvider. Feature flag overrides
+ * wait for Ember to load; mutation handlers no-op when the bridge is absent.
  */
 export const emberMutationHandlers = {
+  onFeatureFlagOverridesChange: (): (() => void) => {
+    return waitForStateBridge((stateBridge) => {
+      stateBridge.refreshFeatureFlagOverrides?.();
+    });
+  },
   onUpdate: (dataType: string, response: unknown): void => {
     window.EmberBridge?.state.onUpdate(dataType, response);
   },

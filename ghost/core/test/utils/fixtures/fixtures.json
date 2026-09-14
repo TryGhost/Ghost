@@ -547,16 +547,6 @@
                     "object_type": "label"
                 },
                 {
-                    "name": "Browse member custom fields",
-                    "action_type": "browse",
-                    "object_type": "member_custom_field"
-                },
-                {
-                    "name": "Read member custom fields",
-                    "action_type": "read",
-                    "object_type": "member_custom_field"
-                },
-                {
                     "name": "Edit member custom fields",
                     "action_type": "edit",
                     "object_type": "member_custom_field"
@@ -1261,7 +1251,6 @@
                     "recommendation": ["browse", "read"],
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
-                    "member_custom_field": ["browse", "read"],
                     "offer": ["browse", "read"],
                     "comment": "all",
                     "gift_link": "manage"

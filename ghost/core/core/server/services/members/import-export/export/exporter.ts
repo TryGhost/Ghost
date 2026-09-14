@@ -4,7 +4,7 @@ import type { Knex } from 'knex';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { csvCellsForFields } = require('@tryghost/custom-field-types/csv');
+const { csvCellsForFields } = require('@tryghost/metafield-types/csv');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {
@@ -14,16 +14,16 @@ export interface ExportOptions {
   [option: string]: unknown;
 }
 
-// A custom field definition, opaque to the exporter: it only counts the set and hands
+// A metafield definition, opaque to the exporter: it only counts the set and hands
 // it to the values codec, which decides the columns. Named for intent; its shape is
-// the custom fields service's concern, not this one's.
-export type CustomFieldDefinition = Record<string, unknown>;
+// the metafields service's concern, not this one's.
+export type MetafieldDefinition = Record<string, unknown>;
 
-// The custom fields collaborator: the active column set for this export, and the
+// The metafields collaborator: the active column set for this export, and the
 // per-member values that fill those columns. Both resolve empty when the feature is
 // off, so the exporter carries no flag of its own.
-export interface CustomFieldsService {
-  activeDefinitions(): Promise<CustomFieldDefinition[]>;
+export interface MetafieldsService {
+  activeDefinitions(): Promise<MetafieldDefinition[]>;
   valuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
 }
 
@@ -36,7 +36,7 @@ export interface MembersRepository {
 export interface ExporterDeps {
   knex: Knex;
   members: MembersRepository;
-  customFields: CustomFieldsService;
+  metafields: MetafieldsService;
 }
 
 interface BatchRelatedData {
@@ -45,14 +45,14 @@ interface BatchRelatedData {
   stripeCustomerMap: Map<string, string>;
   subscribedSet: Set<string>;
   giftIdMap: Map<string, string>;
-  customFieldValuesMap: Map<string, Record<string, unknown>>;
+  metafieldValuesMap: Map<string, Record<string, unknown>>;
 }
 
 // The reference data read once up front and shared across every batch.
 interface ReferenceData {
   allProducts: Record<string, string>;
   allLabels: Record<string, string>;
-  activeCustomFields: CustomFieldDefinition[];
+  activeMetafields: MetafieldDefinition[];
 }
 
 // A member row as the export query selects it -- the shape the stream emits, and the
@@ -75,8 +75,8 @@ const MEMBER_COLUMNS = ['id', 'email', 'name', 'note', 'status', 'created_at'] s
   keyof MemberDbRow
 >;
 
-// The db row with its related data resolved onto it. custom_field_cells later spreads
-// into one column per active custom field.
+// The db row with its related data resolved onto it. metafield_cells later spreads
+// into one column per active metafield.
 interface MemberExportRow extends MemberDbRow {
   created_at: string;
   tiers: Array<{ name: string }>;
@@ -85,12 +85,12 @@ interface MemberExportRow extends MemberDbRow {
   comped: boolean;
   gift_id: string | null;
   stripe_customer_id: string | null;
-  custom_field_cells: Record<string, unknown>;
+  metafield_cells: Record<string, unknown>;
 }
 
 // One row of the members export CSV: a flattened export row encoded into cells. This
 // type is the export's column contract -- the output serializer takes the columns from
-// these keys. The fixed member columns are typed; custom_field_cells spreads in whatever
+// these keys. The fixed member columns are typed; metafield_cells spreads in whatever
 // per-site columns the database holds, so the row also carries an open string index.
 type ExportCsvRow = {
   id: string;
@@ -128,25 +128,25 @@ export function toExportCsvRow(row: MemberExportRow): ExportCsvRow {
     labels: namesToCsv(row.labels),
     tiers: namesToCsv(row.tiers),
     gift_id: row.gift_id || '',
-    ...row.custom_field_cells,
+    ...row.metafield_cells,
   };
 }
 
 const BATCH_SIZE = 1000;
 
 // Streams the matching members as flat rows, each carrying its related data (tiers,
-// labels, subscription, gift, Stripe customer, custom fields) for the output serializer
-// to turn into CSV lines. The members aggregate and custom fields are reached only
+// labels, subscription, gift, Stripe customer, metafields) for the output serializer
+// to turn into CSV lines. The members aggregate and metafields are reached only
 // through the ports above, so nothing Bookshelf- or flag-shaped leaks into the export.
 export default class MembersCSVExporter {
   private _knex: Knex;
   private _members: MembersRepository;
-  private _customFields: CustomFieldsService;
+  private _metafields: MetafieldsService;
 
-  constructor({ knex, members, customFields }: ExporterDeps) {
+  constructor({ knex, members, metafields }: ExporterDeps) {
     this._knex = knex;
     this._members = members;
-    this._customFields = customFields;
+    this._metafields = metafields;
   }
 
   async export(options: ExportOptions = {}): Promise<Readable> {
@@ -192,7 +192,7 @@ export default class MembersCSVExporter {
   }
 
   // products and labels are small, stable tables, read once up front as id->name
-  // maps. Custom field definitions are read once too, which fixes the column set for
+  // maps. Metafield definitions are read once too, which fixes the column set for
   // the whole file: archiving a field mid-export cannot leave the header ragged. It
   // can still leave that field's cells empty from the batch after the archive
   // onwards, because the per-batch value read applies its own active filter.
@@ -222,9 +222,9 @@ export default class MembersCSVExporter {
       'Read the products and labels an export names',
     );
 
-    const activeCustomFields = await this._customFields.activeDefinitions();
+    const activeMetafields = await this._metafields.activeDefinitions();
 
-    return { allProducts, allLabels, activeCustomFields };
+    return { allProducts, allLabels, activeMetafields };
   }
 
   // Group the member stream into batches so the related-data reads are one query per
@@ -256,7 +256,7 @@ export default class MembersCSVExporter {
   // Each flattened row is pushed individually so a batch's rows do not pile up in memory.
   private createProcessingTransform(reference: ReferenceData): Transform {
     const assembleRelatedData = (memberIds: string[]) =>
-      this.assembleRelatedData(memberIds, reference.activeCustomFields);
+      this.assembleRelatedData(memberIds, reference.activeMetafields);
     const flattenBatch = (members: MemberDbRow[], related: BatchRelatedData) =>
       this.flattenBatch(members, related, reference);
 
@@ -279,15 +279,15 @@ export default class MembersCSVExporter {
     });
   }
 
-  // One query per related table for the whole batch, not one per member. Custom field
+  // One query per related table for the whole batch, not one per member. Metafield
   // values are read only when there are columns to fill.
   private async assembleRelatedData(
     memberIds: string[],
-    activeCustomFields: CustomFieldDefinition[],
+    activeMetafields: MetafieldDefinition[],
   ): Promise<BatchRelatedData> {
     const knex = this._knex;
 
-    const [tiers, labels, stripeCustomers, subscriptions, gifts, customFieldValuesMap] =
+    const [tiers, labels, stripeCustomers, subscriptions, gifts, metafieldValuesMap] =
       await Promise.all([
         knex('members_products')
           .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
@@ -311,8 +311,8 @@ export default class MembersCSVExporter {
           .where('status', 'redeemed')
           .whereIn('redeemer_member_id', memberIds),
 
-        activeCustomFields.length > 0
-          ? this._customFields.valuesForMembers(memberIds)
+        activeMetafields.length > 0
+          ? this._metafields.valuesForMembers(memberIds)
           : new Map<string, Record<string, unknown>>(),
       ]);
 
@@ -336,7 +336,7 @@ export default class MembersCSVExporter {
           row.id,
         ]),
       ),
-      customFieldValuesMap,
+      metafieldValuesMap,
     };
   }
 
@@ -345,15 +345,9 @@ export default class MembersCSVExporter {
     related: BatchRelatedData,
     reference: ReferenceData,
   ): MemberExportRow[] {
-    const {
-      tiersMap,
-      labelsMap,
-      stripeCustomerMap,
-      subscribedSet,
-      giftIdMap,
-      customFieldValuesMap,
-    } = related;
-    const { allProducts, allLabels, activeCustomFields } = reference;
+    const { tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, metafieldValuesMap } =
+      related;
+    const { allProducts, allLabels, activeMetafields } = reference;
 
     return members.map((row) => {
       const tierConcat = tiersMap.get(row.id);
@@ -374,10 +368,7 @@ export default class MembersCSVExporter {
         // only knowable from the database. Every member carries a cell for every
         // active field's column, so a member with no values still contributes the
         // full set -- the CSV header is taken from whichever row streams first.
-        custom_field_cells: csvCellsForFields(
-          activeCustomFields,
-          customFieldValuesMap.get(row.id) || {},
-        ),
+        metafield_cells: csvCellsForFields(activeMetafields, metafieldValuesMap.get(row.id) || {}),
       };
     });
   }

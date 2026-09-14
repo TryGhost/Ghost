@@ -1,4 +1,4 @@
-import { isCustomFieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { isMetafieldColumn } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import Papa from 'papaparse';
 import { z } from 'zod';
 
@@ -89,7 +89,7 @@ function toExportErrorRow(row: RawErrorRow): Record<string, string> {
   }
 
   for (const [key, value] of Object.entries(row)) {
-    if (isCustomFieldColumn(key)) {
+    if (isMetafieldColumn(key)) {
       shaped[key] = cell(value);
     }
   }

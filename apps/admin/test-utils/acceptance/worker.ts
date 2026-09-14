@@ -468,11 +468,35 @@ export async function startFakeApi({
 
   trackInFlightRequests(worker);
 
-  await worker.start({
-    serviceWorker: { url: '/mockServiceWorker.js' },
-    onUnhandledRequest: 'bypass',
-    quiet: true,
-  });
+  // MSW stops its service worker on `beforeunload`. Nothing here ever unloads
+  // the page — vitest disposes it — so that listener buys this tier nothing,
+  // and it actively hurts: a spec reads the app's unsaved-changes guard by
+  // dispatching a synthetic `beforeunload` (see unsavedChangesGuarded), which
+  // would take the fake API down with it. Drop it as the worker registers it,
+  // then put back exactly what was there — the browser runner installs its own
+  // addEventListener, and discarding it silently breaks error reporting.
+  const installed = Object.getOwnPropertyDescriptor(window, 'addEventListener');
+  const addListener = window.addEventListener.bind(window);
+  window.addEventListener = function (type: string, ...rest: unknown[]) {
+    if (type === 'beforeunload') {
+      return;
+    }
+    (addListener as (...args: unknown[]) => void)(type, ...rest);
+  } as typeof window.addEventListener;
+
+  try {
+    await worker.start({
+      serviceWorker: { url: '/mockServiceWorker.js' },
+      onUnhandledRequest: 'bypass',
+      quiet: true,
+    });
+  } finally {
+    if (installed) {
+      Object.defineProperty(window, 'addEventListener', installed);
+    } else {
+      Reflect.deleteProperty(window, 'addEventListener');
+    }
+  }
 
   return worker;
 }

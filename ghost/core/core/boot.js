@@ -130,11 +130,11 @@ async function initCore({ ghostServer, config }) {
   giftLinksService.init();
   debug('End: Gift Links Service');
 
-  // Member custom fields service: knex-backed, wired once the DB is ready.
-  debug('Begin: Member Custom Fields Service');
-  const memberCustomFieldsService = require('./server/services/members-custom-fields');
-  memberCustomFieldsService.init();
-  debug('End: Member Custom Fields Service');
+  // Member metafields service: knex-backed, wired once the DB is ready.
+  debug('Begin: Member Metafields Service');
+  const memberMetafieldsService = require('./server/services/members-metafields');
+  memberMetafieldsService.init();
+  debug('End: Member Metafields Service');
 
   if (ghostServer) {
     // Job Service allows parts of Ghost to run in the background
@@ -690,12 +690,14 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
+    assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
     registerJobHandlers({
       jobsService,
       memberJobs,
       giftService: gifts.service,
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
+      mentionsSendingService: mentionsService.sendingService,
     });
     await jobsService.start();
     debug('End: Register job handlers');

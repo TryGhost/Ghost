@@ -7,6 +7,7 @@ import ExternalMediaInlinerJob from '../../../../../core/server/services/media-i
 import ContentCSVImportJob from '../../../../../core/server/services/content-import/jobs/content-csv-import-job';
 import UpdateCheckJob from '../../../../../core/server/services/update-check/jobs/update-check-job';
 import ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
+import SendWebmentionsJob from '../../../../../core/server/services/mentions/send-webmentions-job';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -17,15 +18,20 @@ describe('register-job-handlers', function () {
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
   let giftService: { cleanup: sinon.SinonStub };
   let mentionsController: { processWebmention: sinon.SinonStub };
+  let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
-  function handlerFor(type: string) {
+  function registrationFor(type: string) {
     const call = jobsService.handle
       .getCalls()
       .find((c) => (c.args[0] as { type?: string }).type === type);
     assert.ok(call, `a handler is registered for ${type}`);
-    return call!.args[1] as (job: unknown) => Promise<void>;
+    return call!;
+  }
+
+  function handlerFor(type: string) {
+    return registrationFor(type).args[1] as (job: unknown) => Promise<void>;
   }
 
   beforeEach(function () {
@@ -37,6 +43,7 @@ describe('register-job-handlers', function () {
     };
     giftService = { cleanup: sinon.stub().resolves() };
     mentionsController = { processWebmention: sinon.stub().resolves() };
+    mentionsSendingService = { sendWebmentions: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
@@ -44,6 +51,7 @@ describe('register-job-handlers', function () {
       giftService,
       mediaInliner,
       mentionsController,
+      mentionsSendingService,
     });
   });
 
@@ -134,5 +142,33 @@ describe('register-job-handlers', function () {
     await processWebmentionHandler(job);
 
     assert.ok(mentionsController.processWebmention.calledOnceWithExactly(job));
+  });
+
+  // Guards the webmention isolation itself: dropping the options object in a
+  // refactor would silently move webmentions back onto the shared queue while
+  // every handler-behavior test still passes.
+  it('registers process-webmention on the dedicated webmentions queue', function () {
+    const registration = registrationFor('process-webmention');
+
+    assert.deepEqual(registration.args[2], { queue: 'webmentions', concurrency: 3 });
+  });
+
+  it('runs send-webmentions with the injected mentions sending service', async function () {
+    const sendWebmentionsHandler = handlerFor('send-webmentions');
+    const job = new SendWebmentionsJob({
+      sourceUrl: 'https://site.com/post/',
+      html: '<a href="https://example.com/">link</a>',
+      previousHtml: null,
+    });
+
+    await sendWebmentionsHandler(job);
+
+    assert.ok(mentionsSendingService.sendWebmentions.calledOnceWithExactly(job));
+  });
+
+  it('registers send-webmentions on the dedicated webmentions queue', function () {
+    const registration = registrationFor('send-webmentions');
+
+    assert.deepEqual(registration.args[2], { queue: 'webmentions', concurrency: 3 });
   });
 });

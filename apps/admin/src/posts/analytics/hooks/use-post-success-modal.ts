@@ -3,6 +3,7 @@ import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface PublishedPostData {
   id: string;
@@ -24,6 +25,7 @@ export const usePostSuccessModal = () => {
   const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
   const [postCount, setPostCount] = useState<number | null>(null);
   const { site } = useAnalyticsData();
+  const improveSendingUI = useFeatureFlag('improveSendingUI');
 
   // Fetch the published post data if we have it
   const { data: postResponse } = useBrowsePosts({
@@ -72,15 +74,20 @@ export const usePostSuccessModal = () => {
     }
 
     const showPostCount = !!postCount;
+    const isEmailStillSending = improveSendingUI && post.email?.status !== 'submitted';
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
       const parts = [];
 
       if (post.email_only) {
-        parts.push('Your email was sent to');
+        parts.push(isEmailStillSending ? 'Your email is being sent to' : 'Your email was sent to');
       } else if (post.email?.email_count) {
-        parts.push('Your post was published on your site and sent to');
+        parts.push(
+          isEmailStillSending
+            ? 'Your post was published on your site and is being sent to'
+            : 'Your post was published on your site and sent to',
+        );
       } else {
         parts.push('Your post was published on your site');
       }
@@ -156,7 +163,7 @@ export const usePostSuccessModal = () => {
       author: getAuthorsText(post.authors),
       onClose: handleClose,
     };
-  }, [post, isModalOpen, postCount, site?.title]);
+  }, [post, isModalOpen, postCount, site?.title, improveSendingUI]);
 
   useEffect(() => {
     const checkForPublishedPost = () => {

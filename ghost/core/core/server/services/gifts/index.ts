@@ -55,7 +55,6 @@ export function init(options: GiftServiceInitOptions): void {
   const MailgunClient = require('../lib/mailgun-client');
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
-  const labsService = require('../../../shared/labs');
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsHelpers = require('../settings-helpers');
   const emailAddressParser = require('../email-address/email-address-parser');
@@ -134,7 +133,6 @@ export function init(options: GiftServiceInitOptions): void {
     },
     giftReminderScheduler,
     checkoutAdapter,
-    labsService,
     settingsCache,
   });
 

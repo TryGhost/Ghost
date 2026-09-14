@@ -193,7 +193,6 @@ describe('App', function () {
     const app = new App({ siteUrl: 'http://example.com' });
     const site = {
       ...FixtureSite.singleTier.basic,
-      labs: { giftSubCustomization: true },
     };
 
     expect(app.getPageFromLinkPath('gift', site)).toEqual({

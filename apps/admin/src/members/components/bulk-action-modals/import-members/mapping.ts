@@ -1,6 +1,6 @@
 import validator from 'validator';
 import {
-  isCustomFieldColumn,
+  isMetafieldColumn,
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -202,10 +202,10 @@ export function detectFieldTypes(
   // original data. sampleData only keeps keys with non-empty values, so
   // entirely-empty columns (e.g. an empty "note" column) would be missed if
   // we only checked sampled entries. A custom field column auto-maps to itself here;
-  // isCustomFieldColumn holds it apart from the fuzzy core-field heuristics below.
+  // isMetafieldColumn holds it apart from the fuzzy core-field heuristics below.
   if (data.length > 0) {
     for (const key of columnsOf(data)) {
-      if (!mapping.name && /name/i.test(key) && !isCustomFieldColumn(key)) {
+      if (!mapping.name && /name/i.test(key) && !isMetafieldColumn(key)) {
         mapping.name = key;
         continue;
       }
@@ -225,7 +225,7 @@ export function detectFieldTypes(
 
     const entry = sampledData[i];
     for (const [key, value] of Object.entries(entry)) {
-      if (!mapping.email && value && validator.isEmail(value) && !isCustomFieldColumn(key)) {
+      if (!mapping.email && value && validator.isEmail(value) && !isMetafieldColumn(key)) {
         mapping.email = key;
       }
     }

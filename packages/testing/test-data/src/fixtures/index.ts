@@ -76,7 +76,7 @@ export function settingsResponse({ labs, settings }: SettingsOverrides = {}): Se
   };
 
   return {
-    settings: Object.entries(merged).map(([key, value]) => ({ key, value })),
+    settings: Object.entries(clone(merged)).map(([key, value]) => ({ key, value })),
     meta: { filters: { ...settingsMeta.filters } },
   };
 }

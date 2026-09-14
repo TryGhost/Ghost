@@ -5,7 +5,7 @@ import logging from '@tryghost/logging';
 import { RedirectsService } from '../../../../../core/server/services/custom-redirects/redirects-service';
 import { InMemoryStore } from './helpers/in-memory-store';
 
-describe('UNIT: RedirectsService', function () {
+describe('RedirectsService', function () {
   let store: InMemoryStore;
   let redirectManager: {
     removeAllRedirects: sinon.SinonStub;

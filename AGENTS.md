@@ -11,6 +11,7 @@ Start with:
 - [Writing codebase documentation](docs/contributing/documentation.md)
 - [Testing](docs/contributing/testing.md)
 - [Shipping](docs/contributing/shipping.md)
+- [Codebase direction](docs/codebase/direction.md)
 - [Monorepo structure](docs/codebase/monorepo-structure.md)
 
 ## Required workflow
@@ -18,7 +19,7 @@ Start with:
 - Always use `pnpm`, never npm or Yarn. External dependency versions belong in
   the catalogs in `pnpm-workspace.yaml`; workspace dependencies use
   `workspace:` versions.
-- Run `pnpm setup` before other commands in a fresh checkout or worktree.
+- Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
 - Use `pnpm check` as the default full validation command. Browser E2E and Ember
   Admin tests run separately; follow the testing guide.
 - Read the nearest `AGENTS.md`, `CLAUDE.md`, and README before changing a package

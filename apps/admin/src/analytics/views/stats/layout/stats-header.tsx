@@ -29,9 +29,9 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
 
   return (
     <>
-      <header className="z-40 -mx-6 bg-white/70 backdrop-blur-md dark:bg-background admin7:-mx-(--page-gutter)">
+      <header className="z-40 -mx-(--page-gutter) bg-white/70 backdrop-blur-md dark:bg-background">
         <div
-          className="relative flex w-full items-center justify-between gap-5 px-6 pt-5 pb-0 admin7:flex-wrap admin7:px-(--page-gutter) admin7:pt-[28px]!"
+          className="relative flex w-full flex-wrap items-center justify-between gap-5 px-(--page-gutter) pt-[28px]! pb-0"
           data-header="header"
         >
           <H1

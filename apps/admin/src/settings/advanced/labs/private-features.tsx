@@ -25,6 +25,11 @@ const features: Feature[] = [
     flag: 'automationRunAnalytics',
   },
   {
+    title: 'Automations Tinybird sync',
+    description: 'Sync automations data to Tinybird.',
+    flag: 'automationsTinybirdSync',
+  },
+  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',
@@ -45,11 +50,6 @@ const features: Feature[] = [
     flag: 'adminUIRefresh',
   },
   {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
-  },
-  {
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX',
@@ -59,6 +59,11 @@ const features: Feature[] = [
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
+  },
+  {
+    title: 'Improve sending UI',
+    description: 'Enables improvements to email sending and delivery status for large email sends',
+    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -101,16 +106,16 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'Gift subscription durations and delivery',
-    description:
-      'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
-    flag: 'giftSubCustomization',
-  },
-  {
     title: 'React posts & pages lists',
     description:
       'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
     flag: 'postsListReact',
+  },
+  {
+    title: 'React editor',
+    description:
+      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
+    flag: 'editorReact',
   },
   {
     title: 'Self-serve archives',

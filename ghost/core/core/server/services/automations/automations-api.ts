@@ -73,7 +73,7 @@ const repository = createDatabaseAutomationsRepository({
 });
 
 export async function browse() {
-  return await repository.browse();
+  return await repository.browse({ includeStats: true });
 }
 
 export async function read(automationId: string) {

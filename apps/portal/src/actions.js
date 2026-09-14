@@ -14,8 +14,8 @@ import {
   getRefDomain,
 } from './utils/helpers';
 import { t } from './utils/i18n';
-import { clearGiftFormState } from './components/pages/beta-gift/form-state';
-import { restoreGiftEntryRoute } from './components/pages/beta-gift/navigation';
+import { clearGiftFormState } from './components/pages/gift/form-state';
+import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
 
 const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
 

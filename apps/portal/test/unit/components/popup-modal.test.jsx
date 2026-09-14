@@ -11,7 +11,6 @@ describe('PopupContent', () => {
       yearlyPrice: getPriceData({ amount: 5000, interval: 'year' }),
     });
     const site = getSiteData({
-      labs: { giftSubCustomization: true },
       products: [product],
       portalProducts: [product.id],
     });
