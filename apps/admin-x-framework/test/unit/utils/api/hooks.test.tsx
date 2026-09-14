@@ -266,6 +266,36 @@ describe('API hooks', () => {
         });
       });
     });
+
+    it('aborts the underlying request when the query is cancelled', async () => {
+      const originalFetch = globalThis.fetch;
+      const signals: AbortSignal[] = [];
+      globalThis.fetch = vi.fn<typeof globalThis.fetch>((_input, init) => {
+        signals.push(init!.signal!);
+        // Never settles, so the request is still in flight when it is cancelled
+        return new Promise<Response>(() => {});
+      });
+
+      try {
+        const useTestQuery = createQuery({
+          dataType: 'test',
+          path: '/test/',
+        });
+
+        renderHook(() => useTestQuery(), { wrapper });
+
+        await waitFor(() => expect(signals.length).toBe(1));
+        expect(signals[0].aborted).toBe(false);
+
+        await act(async () => {
+          await queryClient.cancelQueries();
+        });
+
+        expect(signals[0].aborted).toBe(true);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
   });
 
   describe('createInfiniteQuery', () => {

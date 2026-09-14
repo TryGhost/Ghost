@@ -70,15 +70,20 @@ export const createQuery =
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       queryKey: [options.dataType, url],
-      queryFn: async () => {
+      queryFn: async ({ signal }) => {
         if (options.parseResponse) {
           const data = await fetchApi<unknown>(url, {
             headers: options.headers,
             ...requestOptions,
+            signal,
           });
           return options.parseResponse(data);
         }
-        return fetchApi<ResponseData>(url, { headers: options.headers, ...requestOptions });
+        return fetchApi<ResponseData>(url, {
+          headers: options.headers,
+          ...requestOptions,
+          signal,
+        });
       },
     });
 
@@ -162,16 +167,21 @@ export const createInfiniteQuery =
         options.dataType,
         apiUrl(options.path, searchParams || options.defaultSearchParams),
       ],
-      queryFn: async ({ pageParam }) => {
+      queryFn: async ({ pageParam, signal }) => {
         const url = apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams);
         if (options.parseResponse) {
           const data = await fetchApi<unknown>(url, {
             headers: options.headers,
             ...requestOptions,
+            signal,
           });
           return options.parseResponse(data);
         }
-        return fetchApi<PageData>(url, { headers: options.headers, ...requestOptions });
+        return fetchApi<PageData>(url, {
+          headers: options.headers,
+          ...requestOptions,
+          signal,
+        });
       },
       initialPageParam: undefined,
       getNextPageParam: (data) =>

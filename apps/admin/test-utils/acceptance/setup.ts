@@ -5,6 +5,7 @@ import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
 import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from './worker';
 import { resetDeclaredResources } from './resources';
+import { resetQueryClient } from './framework-props';
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every
@@ -25,11 +26,13 @@ beforeAll(async () => {
 
 afterEach(async () => {
   // Order is load-bearing: unmount first (a live app refetches against a
-  // reset worker); drain before the reset (stragglers must hit their
-  // declared fakes) and before the verification (late 418s belong to the
-  // test that caused them); finally so a drain timeout can't leak handlers
-  // or 418 records into the next test.
+  // reset worker); cancel React Query next (an unmounted query stays in
+  // flight until its request is aborted); drain before the reset
+  // (stragglers must hit their declared fakes) and before the verification
+  // (late 418s belong to the test that caused them); finally so a drain
+  // timeout can't leak handlers or 418 records into the next test.
   await cleanup();
+  await resetQueryClient();
   try {
     await settleRequests();
   } finally {

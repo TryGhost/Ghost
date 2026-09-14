@@ -180,6 +180,53 @@ describe('useFetchApi', () => {
     ).rejects.toBeInstanceOf(TimeoutError);
   });
 
+  it('rejects with an abort error when the caller signal aborts', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const controller = new AbortController();
+
+    const request = result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+      signal: controller.signal,
+      retry: false,
+    });
+    controller.abort();
+
+    const error = await request.catch((reason: unknown) => reason);
+
+    expect((error as Error).name).toBe('AbortError');
+    expect(error).not.toBeInstanceOf(TimeoutError);
+  });
+
+  it('aborts an upload-progress request when the caller signal aborts', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const controller = new AbortController();
+
+    const request = result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+      method: 'POST',
+      body: 'test',
+      signal: controller.signal,
+      retry: false,
+      onUploadProgress: () => {},
+    });
+    controller.abort();
+
+    const error = await request.catch((reason: unknown) => reason);
+
+    expect((error as Error).name).toBe('AbortError');
+  });
+
+  it('still throws a timeout error when a caller signal is supplied', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const controller = new AbortController();
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+        signal: controller.signal,
+        timeout: 20,
+        retry: false,
+      }),
+    ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
   it('emits upload progress when onUploadProgress is provided', async () => {
     const realXhrSend = XMLHttpRequest.prototype.send;
     vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function (

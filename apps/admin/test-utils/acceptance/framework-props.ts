@@ -1,6 +1,22 @@
 import { QueryClient } from '@tanstack/react-query';
 import { defaultUnsplashConfig, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
 
+let activeQueryClient: QueryClient | undefined;
+
+/**
+ * Cancels the rendered app's in-flight queries and empties its cache, so a
+ * cancelled request aborts instead of landing on the fake API after teardown.
+ */
+export async function resetQueryClient(): Promise<void> {
+  const queryClient = activeQueryClient;
+  activeQueryClient = undefined;
+
+  if (queryClient) {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+  }
+}
+
 /**
  * The framework props every browser-mode render runs on: a fresh QueryClient
  * per render carrying the production defaults (admin-x-framework
@@ -22,6 +38,8 @@ export function createFrameworkProps(
       },
     },
   });
+
+  activeQueryClient = queryClient;
 
   return {
     ghostVersion: '',

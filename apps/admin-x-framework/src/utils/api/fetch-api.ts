@@ -25,6 +25,8 @@ export interface RequestOptions {
   responseType?: ResponseType;
   /** False leaves the caller to handle `SessionExpiredError` instead of leaving the page. */
   sessionExpiryRedirect?: boolean;
+  /** Aborts the request; combined with `timeout` when both are given. */
+  signal?: AbortSignal;
   onUploadProgress?: (progress: number) => void;
 }
 
@@ -175,11 +177,16 @@ export const useFetchApi = () => {
         retry = true,
         responseType,
         sessionExpiryRedirect = true,
+        signal,
         onUploadProgress,
       }: RequestOptions = {},
     ): Promise<ResponseData> => {
       /* eslint-enable @typescript-eslint/no-explicit-any */
-      const controller = new AbortController();
+      const timeoutController = new AbortController();
+      let timedOut = false;
+      const requestSignal = signal
+        ? AbortSignal.any([signal, timeoutController.signal])
+        : timeoutController.signal;
 
       const requestInit: InternalRequestInit = {
         method,
@@ -195,7 +202,7 @@ export const useFetchApi = () => {
         credentials,
         mode: 'cors',
         body,
-        signal: controller.signal,
+        signal: requestSignal,
       };
 
       // attempt retries for 15 seconds in two situations:
@@ -225,7 +232,12 @@ export const useFetchApi = () => {
       // Otherwise, we prefer `fetch`.
       const fetchFn = onUploadProgress ? fetchWithXhr.bind(null, onUploadProgress) : fetch;
 
-      const timeoutHandle = timeout ? setTimeout(() => controller.abort(), timeout) : undefined;
+      const timeoutHandle = timeout
+        ? setTimeout(() => {
+            timedOut = true;
+            timeoutController.abort();
+          }, timeout)
+        : undefined;
 
       try {
         while (attempts === 0 || retry) {
@@ -264,7 +276,8 @@ export const useFetchApi = () => {
               'name' in error &&
               error.name === 'AbortError'
             ) {
-              throw new TimeoutError();
+              // A caller signal aborting is a cancellation, not a timeout
+              throw timedOut ? new TimeoutError() : error;
             }
 
             if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
