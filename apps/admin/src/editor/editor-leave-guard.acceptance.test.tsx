@@ -106,7 +106,7 @@ function fakeNewPost({ failUpdates = false } = {}) {
   };
 }
 
-function fakeDeferredCleanSave() {
+function fakeDeferredSave() {
   fakeEditorChrome();
   let current = post({
     id: POST_ID,
@@ -371,20 +371,26 @@ describe('Post editor leave guard', () => {
   });
 
   it('arms the browser unload prompt while unsaved work exists', async () => {
-    fakeEditablePost();
+    const { saveApi, resolveSave } = fakeDeferredSave();
     await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     expect(unsavedChangesGuarded()).toBe(false);
 
     await appendToBody(' and more');
-    await expect.poll(unsavedChangesGuarded).toBe(true);
+    try {
+      // Keep unsaved work observable even when the fast autosave has already started.
+      await expect.poll(unsavedChangesGuarded).toBe(true);
+      await expect.poll(() => saveApi.requests.length).toBe(1);
+    } finally {
+      resolveSave();
+    }
 
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
 
   it('keeps the browser unload prompt armed for a clean write in flight', async () => {
-    const { saveApi, resolveSave } = fakeDeferredCleanSave();
+    const { saveApi, resolveSave } = fakeDeferredSave();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
