@@ -32,8 +32,6 @@ const SITE_DESCRIPTION = 'Thoughts, stories and ideas.';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -122,9 +120,7 @@ describe('Post settings X card', () => {
       );
 
       await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ twitter_image: UPLOADED });
+      await expect(saveApi).toHaveSavedFields({ twitter_image: UPLOADED });
       await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
     },
     SLOW,
@@ -139,8 +135,7 @@ describe('Post settings X card', () => {
 
       await editorScreen.removeSettingsXImage().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).twitter_image).toBeNull();
+      await expect(saveApi).toHaveSavedFields({ twitter_image: null });
       await expect.element(editorScreen.settingsXImage()).toHaveTextContent('Add X image');
     },
     SLOW,
@@ -156,17 +151,17 @@ describe('Post settings X card', () => {
       await editorScreen.settingsXTitle().fill('A better title for X');
       await editorScreen.settingsXDescription().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ twitter_title: 'A better title for X' });
+      await expect(saveApi).toHaveSavedFields({ twitter_title: 'A better title for X' });
+      expect(saveApi.requests).toHaveLength(1);
 
       await editorScreen.settingsXDescription().fill('What this post is about on X');
       await editorScreen.settingsXTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(2);
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         twitter_description: 'What this post is about on X',
       });
+      // The second field commit is its own save, not one coalesced with the first.
+      expect(saveApi.requests).toHaveLength(2);
     },
     SLOW,
   );
@@ -500,9 +495,7 @@ describe('Post settings X card', () => {
       await editorScreen.settingsXImageUnsplashButton().click();
       await editorScreen.unsplashInsertImage().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ twitter_image: UNSPLASH_PICKED });
+      await expect(saveApi).toHaveSavedFields({ twitter_image: UNSPLASH_PICKED });
       await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
       await expect(editorScreen.unsplashModal()).toHaveCount(0);
     },

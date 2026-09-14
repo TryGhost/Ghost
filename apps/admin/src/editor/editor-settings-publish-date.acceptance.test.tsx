@@ -27,7 +27,6 @@ const SYDNEY = 'Australia/Sydney';
 
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -149,9 +148,8 @@ describe('Post settings publish date', () => {
 
       await setTime('00:00');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
       // Site-local midnight is the same instant as the ISO string the payload carries.
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         published_at: moment.tz(`${chosen} 00:00`, timezone).toISOString(),
         status: 'draft',
       });

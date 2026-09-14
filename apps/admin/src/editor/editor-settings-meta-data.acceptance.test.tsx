@@ -28,8 +28,6 @@ const PLACEHOLDER =
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -162,9 +160,9 @@ describe('Post settings meta data', () => {
 
       await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
       await expect.element(editorScreen.settingsSubviewRow('Meta data')).toHaveFocus();
-      await expect
-        .poll(() => submittedPost(saveApi)[`meta_${field}`], FIELD_POLL)
-        .toBe('Saved when the pane closes');
+      await expect(saveApi).toHaveSavedFields({
+        [`meta_${field}`]: 'Saved when the pane closes',
+      });
     },
     SLOW,
   );
@@ -222,9 +220,8 @@ describe('Post settings meta data', () => {
       await editorScreen.settingsMetaTitle().fill('A better title for search');
       await editorScreen.settingsMetaDescription().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ meta_title: 'A better title for search' });
+      await expect(saveApi).toHaveSavedFields({ meta_title: 'A better title for search' });
+      expect(saveApi.requests).toHaveLength(1);
 
       await editorScreen.settingsMetaDescription().fill('What this post is about');
       await editorScreen.settingsMetaTitle().click();

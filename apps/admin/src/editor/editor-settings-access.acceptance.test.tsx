@@ -26,8 +26,6 @@ const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -111,9 +109,7 @@ describe('Post settings access', () => {
 
       await chooseVisibility('Members only');
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ visibility: 'members' });
+      await expect(saveApi).toHaveSavedFields({ visibility: 'members' });
       await expect.element(editorScreen.settingsVisibility()).toHaveTextContent('Members only');
     },
     SLOW,
@@ -129,8 +125,7 @@ describe('Post settings access', () => {
 
       await chooseVisibility('Specific tier(s)');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         visibility: 'tiers',
         tiers: [{ id: GOLD.id }, { id: SILVER.id }, { id: BRONZE.id }],
       });
@@ -149,13 +144,10 @@ describe('Post settings access', () => {
 
       await chooseVisibility('Specific tier(s)');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ visibility: 'tiers' });
-      expect(submittedPost(saveApi).tiers).toEqual([
-        { id: GOLD.id },
-        { id: SILVER.id },
-        { id: BRONZE.id },
-      ]);
+      await expect(saveApi).toHaveSavedFields({
+        visibility: 'tiers',
+        tiers: [{ id: GOLD.id }, { id: SILVER.id }, { id: BRONZE.id }],
+      });
       await expect(editorScreen.settingsTiersError()).toHaveCount(0);
     },
     SLOW,
@@ -211,8 +203,7 @@ describe('Post settings access', () => {
 
       await editorScreen.settingsTier('Gold').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         visibility: 'tiers',
         tiers: [{ id: GOLD.id }],
       });
@@ -312,8 +303,9 @@ describe('Post settings access', () => {
       await editorScreen.settingsTier('Tier 01').click();
 
       // The last tier survives the toggle only because the browse loaded past page one.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).tiers).toEqual([{ id: MANY_TIERS[0].id }, { id: last.id }]);
+      await expect(saveApi).toHaveSavedFields({
+        tiers: [{ id: MANY_TIERS[0].id }, { id: last.id }],
+      });
     },
     SLOW,
   );

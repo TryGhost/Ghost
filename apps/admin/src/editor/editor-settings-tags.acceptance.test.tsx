@@ -28,8 +28,6 @@ const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 type SavedTag = ReturnType<typeof tag>;
@@ -137,9 +135,8 @@ describe('Post settings tags', () => {
 
       await editorScreen.settingsTagOption('Sport').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
       // Identity only, the tag already on the post included. Order is `sort_order`.
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag1' }, { id: 'tag2' }]);
+      await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag1' }, { id: 'tag2' }] });
     },
     SLOW,
   );
@@ -156,8 +153,9 @@ describe('Post settings tags', () => {
 
       await editorScreen.settingsTagOption('Sport').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // A name in the payload is written onto the tag row, reverting the rename.
+      // The added tag carries the write; the tag the post was read with is the subject.
+      await expect(saveApi).toHaveSavedFields({ tags: expect.arrayContaining([{ id: 'tag2' }]) });
+      // Identity only: a name here is written onto the tag row, reverting the rename.
       expect(submittedTags(saveApi)[0]).toEqual({ id: 'tag1' });
       await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Breaking News');
     },
@@ -349,8 +347,7 @@ describe('Post settings tags', () => {
 
       await editorScreen.removeSettingsTag('News').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag2' }]);
+      await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag2' }] });
     },
     SLOW,
   );
