@@ -7,10 +7,7 @@ const ObjectId = require('bson-objectid').default;
 const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
 const { mockSystemTime } = require('../../../utils/clock-utils');
-const {
-  waitForEmailStatus,
-  waitForNoActiveSends,
-} = require('../../../utils/batch-email-utils');
+const { waitForEmailStatus, waitForNoActiveSends } = require('../../../utils/batch-email-utils');
 
 describe('Domain Warming Integration Tests', function () {
   let agent;
@@ -61,8 +58,10 @@ describe('Domain Warming Integration Tests', function () {
     await db.knex.batchInsert('members_newsletters', newsletterRows, 500);
   }
 
-  // Helper: Send a post as email and return the email model
-  async function sendEmail(title) {
+  // Helper: Send a post as email and return the email model. `timeout` is for callers
+  // that opt into a longer budget than the project default, so the wait does not become
+  // the thing that fails first on a slow runner.
+  async function sendEmail(title, { timeout } = {}) {
     const res = await agent
       .post('posts/')
       .body({ posts: [{ title, status: 'draft' }] })
@@ -76,7 +75,7 @@ describe('Domain Warming Integration Tests', function () {
       .expectStatus(200);
 
     const email = await models.Email.findOne({ post_id: postId });
-    await waitForEmailStatus(email.id);
+    await waitForEmailStatus(email.id, { timeout });
     await email.refresh();
     return email;
   }
@@ -145,10 +144,11 @@ describe('Domain Warming Integration Tests', function () {
       clock = null;
     }
 
+    // Wait before restoring: a send still in flight needs the Mailgun mock alive.
+    await waitForNoActiveSends();
+
     mockManager.restore();
     await configUtils.restore();
-
-    await waitForNoActiveSends();
 
     // Clean up test data using bulk deletes for performance
     const patterns = ['warmup', 'day2', 'sameday', 'multi', 'limit', 'nowarmup', 'maxlimit', 'gap'];
@@ -365,7 +365,9 @@ describe('Domain Warming Integration Tests', function () {
       for (let day = 0; day < 5; day++) {
         setDay(day);
 
-        const email = await sendEmail(`Test Post MaxLimit Day ${day + 1}`);
+        const email = await sendEmail(`Test Post MaxLimit Day ${day + 1}`, {
+          timeout: 50000,
+        });
         const csdCount = email.get('csd_email_count');
         const totalCount = email.get('email_count');
 

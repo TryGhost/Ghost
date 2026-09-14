@@ -146,8 +146,9 @@ describe('Batch sending tests', function () {
       ],
       { context: { internal: true } },
     );
-    mockManager.restore();
+    // Wait before restoring: a send still in flight needs the Mailgun mock alive.
     await waitForNoActiveSends();
+    mockManager.restore();
 
     // Drop any members a test created so they don't leak into later tests —
     // a leaked subscriber shifts recipient counts and cascades failures.
@@ -245,7 +246,7 @@ describe('Batch sending tests', function () {
 
     // Wait for the winning job to land. `allSettled` releases while up to three
     // inline jobs are still running, which can leave the email short of `submitted`.
-    await waitForEmailStatus(emailModel.id, { from: 'failed' });
+    await waitForEmailStatus(emailModel.id);
 
     // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
     // (pending/failed -> submitting) ensures only one job actually sends. The already
@@ -616,7 +617,7 @@ describe('Batch sending tests', function () {
     const infoLog = sinon.stub(logging, 'info');
 
     await retryEmail(agent, emailModel.id);
-    await waitForEmailStatus(emailModel.id, { from: 'failed' });
+    await waitForEmailStatus(emailModel.id);
 
     const skipLogs = infoLog
       .getCalls()

@@ -183,9 +183,8 @@ describe('Resume interrupted sends', function () {
     const mailgunStub = mockManager.getMailgunCreateMessageStub();
     mailgunStub.resetHistory();
 
+    // No job should be enqueued for this email, so there is nothing to wait for.
     await emailService.service.resumeInterruptedSends();
-    // No job should be enqueued for this email, so no awaitCompletion — we use allSettled
-    // in afterEach to drain anything else.
 
     await emailModel.refresh();
     assert.equal(

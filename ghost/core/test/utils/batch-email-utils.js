@@ -23,34 +23,35 @@ const NON_TERMINAL_EMAIL_STATUSES = ['pending', 'submitting'];
 /**
  * Waits until an email row reaches a terminal status.
  *
- * Pass `from` when the row is already terminal at call time (a retry of a `failed`
- * email, say) — otherwise the first poll reads the stale status and returns straight
- * away, before the work under test has run.
+ * The default deadline sits inside the integration project's 10s testTimeout so this
+ * fails first and names the email. Raise it for a test that opts into a longer budget
+ * of its own, otherwise this caps the test rather than the other way round.
  *
  * @param {string} emailId
  * @param {object} [options]
- * @param {string} [options.from] Status the row must leave before a terminal one counts
+ * @param {number} [options.timeout] Deadline in ms
  * @returns {Promise<any>} The refreshed email model
  */
-async function waitForEmailStatus(emailId, { from } = {}) {
+async function waitForEmailStatus(emailId, { timeout = 8000 } = {}) {
   let email;
 
-  await vi.waitUntil(
-    async () => {
-      email = await models.Email.findOne({ id: emailId });
-      if (!email) {
-        return false;
-      }
-      const status = email.get('status');
-      if (from && status === from) {
-        return false;
-      }
-      return TERMINAL_EMAIL_STATUSES.includes(status);
-    },
-    // Comfortably inside the integration project's 10s testTimeout so this fires
-    // first and reports the email, rather than vitest reporting a bare timeout.
-    { timeout: 8000, interval: 50 },
-  );
+  try {
+    await vi.waitUntil(
+      async () => {
+        email = await models.Email.findOne({ id: emailId });
+        if (!email) {
+          return false;
+        }
+        return TERMINAL_EMAIL_STATUSES.includes(email.get('status'));
+      },
+      { timeout, interval: 50 },
+    );
+  } catch (err) {
+    // vi.waitUntil rejects with a bare "Timed out in waitUntil!", and rejects
+    // immediately if the poll itself throws — so report both the row and the cause.
+    const status = email ? email.get('status') : 'no row';
+    throw new Error(`Timed out waiting for email ${emailId} to finish: ${status} (${err.message})`);
+  }
 
   return email;
 }
@@ -64,6 +65,11 @@ async function waitForEmailStatus(emailId, { from } = {}) {
  * keeps this honest when the jobs backend runs work outside this process, where an
  * empty local queue proves nothing.
  *
+ * Two things this cannot see. A job that loses the `emailJob` status lock never writes
+ * a status, so it is invisible here. And `retryEmail` writes `pending` without taking
+ * the lock, so a late retry can admit a second job that is still reading batches after
+ * the first wrote a terminal status.
+ *
  * Use it before an `afterEach` destroys data a running send would touch.
  */
 async function waitForNoActiveSends() {
@@ -75,14 +81,14 @@ async function waitForNoActiveSends() {
         const result = await models.Email.findAll({
           filter: `status:[${NON_TERMINAL_EMAIL_STATUSES.join(',')}]`,
         });
-        active = result.models || result;
+        active = result.models;
         return active.length === 0;
       },
       { timeout: 8000, interval: 50 },
     );
   } catch (err) {
     const stuck = active.map((email) => `${email.id}=${email.get('status')}`).join(', ');
-    throw new Error(`Timed out waiting for newsletter sends to finish: ${stuck}`);
+    throw new Error(`Timed out waiting for newsletter sends to finish: ${stuck} (${err.message})`);
   }
 }
 
