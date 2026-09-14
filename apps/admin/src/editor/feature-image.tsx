@@ -1,6 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 import { Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
+import {
+  editorFeatureImage,
+  editorFeatureImageCaption,
+  featureImageTkIndicator,
+} from '@tryghost/test-data/selectors/editor';
 import type { KoenigInstance } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
@@ -101,7 +106,7 @@ export function FeatureImage({
       className="mb-4"
       src={image}
       subject={IMAGE_SUBJECT}
-      testId="editor-feature-image"
+      testId={editorFeatureImage}
       unsplashEnabled={!!cardConfig.unsplash}
       upload={upload}
       variant="bar"
@@ -122,7 +127,7 @@ export function FeatureImage({
             onChange={(event) => onAltChange(event.target.value)}
           />
         ) : (
-          <div className="flex-1 text-sm" data-testid="editor-feature-image-caption">
+          <div className="flex-1 text-sm" data-testid={editorFeatureImageCaption}>
             <FeatureImageCaption
               darkMode={darkMode}
               html={caption}
@@ -139,7 +144,7 @@ export function FeatureImage({
         {captionTkCount > 0 && !isEditingAlt && (
           <button
             className="rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
-            data-testid="feature-image-tk-indicator"
+            data-testid={featureImageTkIndicator}
             type="button"
             onClick={focusCaption}
           >

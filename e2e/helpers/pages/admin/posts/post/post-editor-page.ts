@@ -19,8 +19,8 @@ import {
   postsBackLink,
   publishAtScheduleOption,
   publishCompleteBookmark,
-  publishConfirmButton,
-  publishContinueButton,
+  publishConfirm,
+  publishContinue,
   publishFlowComplete,
   publishFlowConfirm,
   publishFlowModal,
@@ -160,10 +160,10 @@ class PublishFlow extends BasePage {
       ? page.getByTestId(publishSettingEmailRecipients)
       : page.locator('[data-test-setting="email-recipients"]');
     this.continueButton = react
-      ? page.getByTestId(publishContinueButton)
+      ? page.getByTestId(publishContinue)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="continue"]');
     this.confirmButton = react
-      ? page.getByTestId(publishConfirmButton)
+      ? page.getByTestId(publishConfirm)
       : page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
     this.closeButton = react
       ? this.modal.getByRole('button', { name: 'Close', exact: true })

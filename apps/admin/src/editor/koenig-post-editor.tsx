@@ -1,5 +1,6 @@
 import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
+import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
   type EditorResource,
@@ -57,7 +58,7 @@ function KoenigInstanceMount({
   return (
     <div
       data-secondary-instance={isSecondary ? 'true' : 'false'}
-      data-testid={isSecondary ? 'editor-secondary-instance' : 'editor-body'}
+      data-testid={isSecondary ? editorSecondaryInstance : editorBody}
       hidden={isSecondary}
     >
       <KoenigComposer

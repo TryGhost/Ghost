@@ -20,6 +20,7 @@ import {
   type EndpointCapture,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
+import { editorBody } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from '@/editor/editor.screen';
 import { OLD_SCHEMA_CORPUS } from '@/editor/engine/__fixtures__';
 import { deferred } from '@/utils/deferred';
@@ -99,7 +100,7 @@ async function appendToBody(text: string) {
 }
 
 function bodyElement(): Element | null {
-  return document.querySelector('[data-testid="editor-body"]');
+  return document.querySelector(`[data-testid="${editorBody}"]`);
 }
 
 /**

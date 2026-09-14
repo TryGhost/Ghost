@@ -3,6 +3,7 @@ import { Inline, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { editorScheduleCountdown, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import type { SaveEngineState } from './engine/save-engine';
@@ -40,7 +41,7 @@ function ScheduleCountdown({
   return (
     <time
       className="text-state-success"
-      data-testid="editor-schedule-countdown"
+      data-testid={editorScheduleCountdown}
       dateTime={publishedAt ?? undefined}
     >
       {emailOnly ? 'to be sent' : 'to be published'}
@@ -155,7 +156,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
     <Inline
       align="center"
       className="text-sm"
-      data-testid="editor-status"
+      data-testid={editorStatus}
       gap="xs"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
