@@ -1683,6 +1683,16 @@ describe('Email renderer', function () {
       await emailRenderer.renderBody(post, newsletter, segment, options);
     });
 
+    it('renders posts with malformed inline style declarations', async function () {
+      renderedPost = '<p style="foo; color: red">Malformed style</p>';
+      const post = createModel(basePost);
+      const newsletter = createModel(baseNewsletter);
+
+      const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+      assert.match(response.html, /Malformed style/);
+    });
+
     it('renders the post title as the top-level heading', async function () {
       const post = createModel(basePost);
       const newsletter = createModel(baseNewsletter);
