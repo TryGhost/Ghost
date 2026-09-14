@@ -1,0 +1,56 @@
+- name: recorded_outcomes_and_latest_versions
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation
+  expected_result: |
+    {"in_progress_run_count":2,"completed_run_count":2,"exited_early_run_count":4,"unclassified_run_count":2}
+
+- name: other_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=other-automation
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: other_site
+  parameters: site_uuid=15840000-0000-4000-8000-000000000001&automation_id=status-automation
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: empty_history
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=missing
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: pending_unknown
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-pending_unknown
+  expected_result: |
+    {"in_progress_run_count":1,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: exit_without_finished
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-exit_without_finished
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":1,"unclassified_run_count":0}
+
+- name: unknown_exit
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-unknown_exit
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":1}
+
+- name: finished_only
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-finished_only
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":1,"exited_early_run_count":0,"unclassified_run_count":0}
+
+- name: missing_steps
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-missing_steps
+  expected_result: |
+    {"in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"unclassified_run_count":1}
+
+- name: missing_site
+  parameters: automation_id=status-automation
+  expected_http_status: 400
+  expected_result: >-
+    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid and automation_id. Please provide a value or set a default value in the pipe code.
+
+- name: missing_automation
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000
+  expected_http_status: 400
+  expected_result: >-
+    Template Syntax Error: Required parameter is not defined. Check the parameters site_uuid and automation_id. Please provide a value or set a default value in the pipe code.

@@ -20,9 +20,9 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 
 ## Performance statistics
 
-The entry endpoint requires permission to read the selected automation. Unknown
-automation IDs return 404. It checks existence without loading actions, email
-contents, or email statistics.
+The entry and status endpoints require permission to read the selected automation.
+Unknown automation IDs return 404. Both endpoints check existence without loading
+its actions, email contents, or email statistics.
 
 ## Entries
 
@@ -55,6 +55,37 @@ Admin displays all-time data using the shared analytics grouping rules: daily fo
 spans under 91 days, weekly for 91–270 days, and monthly for longer spans. Buckets
 sum entries; grouping does not limit the history to the web analytics 1,000-day
 fetch window. The API has no date-filter controls or parameters.
+
+## Status counts
+
+`GET /ghost/api/admin/automations/:id/status-stats/` returns:
+
+```json
+{
+  "automation_status_stats": [{
+    "automation_id": "…",
+    "in_progress_run_count": 4,
+    "completed_run_count": 6,
+    "exited_early_run_count": 1,
+    "unclassified_run_count": 1
+  }]
+}
+```
+
+All counts are all-time, with each run counted once using its latest recorded step
+outcomes:
+
+- **In progress:** any pending step; takes precedence over every other outcome.
+- **Completed:** at least one step, all finished.
+- **Exited early:** no pending or unknown steps, and at least one failed,
+  automation-disabled, member-status-changed, or member-unsubscribed step.
+- **Unclassified:** missing or unknown history without pending steps. Admin
+  explains this coverage gap below the three cards.
+
+The chart and status endpoints are independent requests; the cards can remain
+available if the chart fails, and vice versa. Their responses are cached from the
+first sidebar opening until navigation. Closing, reopening, focus, and reconnect
+do not refresh them. Failed requests require an explicit retry.
 
 ## Availability
 

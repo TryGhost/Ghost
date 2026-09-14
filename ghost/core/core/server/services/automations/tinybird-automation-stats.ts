@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import { z } from 'zod';
-import type { AutomationBrowseResult } from './automations-repository';
+import type { AutomationBrowseResult, AutomationStatusStats } from './automations-repository';
 import type { EntryStatsData } from './automation-entry-stats';
 
 export type TinybirdClient = {
@@ -105,6 +105,34 @@ export async function fetchAutomationEntryStats(
     };
   } catch (error) {
     logging.error('Error fetching Tinybird automation entry stats:', error);
+    return null;
+  }
+}
+
+export async function fetchAutomationStatusStats(
+  client: TinybirdClient,
+  automationId: string,
+): Promise<AutomationStatusStats | null> {
+  try {
+    const rows = await client.fetch('api_automation_status_stats', { version: '', automationId });
+    const parsed = z
+      .array(
+        z.object({
+          in_progress_run_count: runCountSchema,
+          completed_run_count: runCountSchema,
+          exited_early_run_count: runCountSchema,
+          unclassified_run_count: runCountSchema,
+        }),
+      )
+      .length(1)
+      .safeParse(rows);
+    if (!parsed.success) {
+      logging.error('Unexpected response from the Tinybird automation status stats pipe');
+      return null;
+    }
+    return parsed.data[0];
+  } catch (error) {
+    logging.error('Error fetching Tinybird automation status stats:', error);
     return null;
   }
 }
