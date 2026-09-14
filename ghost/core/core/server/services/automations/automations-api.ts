@@ -9,6 +9,7 @@ import {
   EMPTY_AUTOMATION_STATS,
   fetchAutomationStats,
   fetchAutomationEntryStats,
+  fetchAutomationStatusStats,
 } from './tinybird-automation-stats';
 import { fillEntryStats, getEntryStatsWindow } from './automation-entry-stats';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
@@ -156,6 +157,18 @@ export async function readEntryStats(automationId: string) {
   }
   const window = getEntryStatsWindow(stats.entries);
   return { automation_id: automationId, ...fillEntryStats(stats, window), window };
+}
+
+export async function readStatusStats(automationId: string) {
+  await requireAutomation(automationId);
+  const client = getTinybirdClient();
+  const stats = await fetchAutomationStatusStats(client, automationId);
+  if (stats === null) {
+    throw new errors.InternalServerError({
+      message: 'Could not load Tinybird automation status stats.',
+    });
+  }
+  return { automation_id: automationId, ...stats };
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

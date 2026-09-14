@@ -1,0 +1,40 @@
+DESCRIPTION >
+    All-time run status counts for one automation, using recorded step outcomes.
+
+NODE selected_status_runs
+SQL >
+    %
+    SELECT id
+    FROM _mv_automation_runs FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_id = {{ String(automation_id, required=True) }}
+
+NODE run_status_flags
+SQL >
+    %
+    SELECT
+        automation_run_id,
+        -- Combine categories after FINAL has selected each step's latest version.
+        groupBitOr(toUInt8(multiIf(
+            status = 'pending', 1,
+            status = 'finished', 2,
+            status IN ('automation disabled', 'failed', 'member changed status', 'member unsubscribed'), 4,
+            8
+        ))) AS status_flags
+    FROM _mv_automation_run_steps FINAL
+    WHERE site_uuid = {{ String(site_uuid, required=True) }}
+        AND automation_run_id IN (SELECT id FROM selected_status_runs)
+    GROUP BY automation_run_id
+
+NODE automation_status_counts
+SQL >
+    SELECT
+        -- Any pending step wins. Finished-only is 2; known exits with/without finished steps are 6/4.
+        countIf(bitAnd(status_flags, 1) != 0) AS in_progress_run_count,
+        countIf(status_flags = 2) AS completed_run_count,
+        countIf(status_flags IN (4, 6)) AS exited_early_run_count,
+        (SELECT count() FROM selected_status_runs)
+            - in_progress_run_count - completed_run_count - exited_early_run_count AS unclassified_run_count
+    FROM run_status_flags
+
+TYPE ENDPOINT
