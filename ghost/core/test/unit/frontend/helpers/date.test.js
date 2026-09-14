@@ -249,4 +249,74 @@ describe('{{date}} helper', function () {
     context.hash.locale = 'en-us';
     assert.equal(String(date.call({ published_at }, context)), 'Wed, 01 Jan 2014 01:58:58 +0400');
   });
+
+  it('caches locale candidates across calls for the same locale', function () {
+    const timezone = 'Europe/Dublin';
+    const format = 'll';
+    const testDate = '2014-11-20T01:28:58.593-04:00';
+    const maximizeSpy = sinon.spy(Intl.Locale.prototype, 'maximize');
+
+    const localesToTest = ['zh', 'not-a-real-locale-tag'];
+
+    localesToTest.forEach(function (locale) {
+      const context = {
+        hash: { format },
+        data: {
+          site: {
+            timezone,
+            locale,
+          },
+        },
+      };
+
+      const expected = String(date.call({ published_at: testDate }, context));
+
+      // First call for this locale computes the candidates...
+      const callsAfterFirst = maximizeSpy.callCount;
+
+      // ...subsequent calls with the same locale must not recompute them.
+      for (let i = 0; i < 3; i += 1) {
+        const rendered = date.call({ published_at: testDate }, context);
+        assertExists(rendered);
+        assert.equal(String(rendered), expected);
+      }
+
+      assert.equal(
+        maximizeSpy.callCount,
+        callsAfterFirst,
+        `Intl.Locale#maximize should not be called again for cached locale "${locale}"`,
+      );
+    });
+  });
+
+  it('only constructs a "now" moment for timeago when timeago is requested', function () {
+    const timezone = 'Europe/Dublin';
+    const testDate = '2014-11-20T01:28:58.593-04:00';
+
+    const momentSpy = sinon.spy(moment.fn, 'tz');
+
+    const contextWithoutTimeago = {
+      hash: {},
+      data: {
+        site: { timezone },
+      },
+    };
+
+    momentSpy.resetHistory();
+    date.call({ published_at: testDate }, contextWithoutTimeago);
+    // Only the dateMoment's .tz(timezone) call, no separate "now" moment.
+    assert.equal(momentSpy.callCount, 1);
+
+    const contextWithTimeago = {
+      hash: { timeago: true },
+      data: {
+        site: { timezone },
+      },
+    };
+
+    momentSpy.resetHistory();
+    date.call({ published_at: testDate }, contextWithTimeago);
+    // One .tz(timezone) call for "now", one for dateMoment.
+    assert.equal(momentSpy.callCount, 2);
+  });
 });
