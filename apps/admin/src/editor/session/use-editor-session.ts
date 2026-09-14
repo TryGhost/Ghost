@@ -259,14 +259,12 @@ export function useEditorSession({
     };
   }, [session]);
 
-  const {
-    state,
-    isDirty,
-    title: engineTitle,
-    slug,
-    settings,
-    publishTime,
-  } = useSyncExternalStore(session.subscribe, session.getView);
+  const view = useSyncExternalStore(session.subscribe, session.getView);
+  const { state, title: engineTitle, slug, settings, publishTime } = view;
+
+  // The view keeps its identity until one of the six values it publishes
+  // changes, so it stands in for all of them as a dependency.
+  const isDirtyNow = useCallback(() => view.isDirty, [view]);
 
   const stageSettings = session.patchFields;
 
@@ -447,10 +445,13 @@ export function useEditorSession({
     [session],
   );
 
-  return {
-    bind: {
+  const dispatchExplicit = useCallback(() => void session.dispatchExplicit(), [session]);
+
+  const excerpt = settings.custom_excerpt ?? '';
+  const bind = useMemo<EditorSessionBinding>(
+    () => ({
       title,
-      excerpt: settings.custom_excerpt ?? '',
+      excerpt,
       initialLexical,
       onTitleChange,
       onTitleBlur,
@@ -458,36 +459,78 @@ export function useEditorSession({
       onLexicalChange,
       onSecondaryChange,
       onSecondaryError,
-    },
-    state,
-    persistedId,
-    createdId: isNew ? persistedId : null,
-    isDirty: () => isDirty,
-    contentKey,
-    loadedRecord,
-    hasUnsavedContent: session.hasUnsavedContent,
-    contentText,
-    reload,
-    restoreRevision,
-    patchFeatureImage: session.patchFeatureImage,
-    settings,
-    editSettings,
-    stageSettings,
-    commitSettings,
-    title: engineTitle,
-    slug,
-    editSlug: session.editSlug,
-    publishTime,
-    editPublishedAt,
-    getSaveSnapshot: session.getSaveSnapshot,
-    getLiveLexical: session.getLiveLexical,
-    dispatchField: session.dispatchField,
-    dispatchExplicit: () => void session.dispatchExplicit(),
-    saveExplicit: session.dispatchExplicit,
-    dispatchPublish,
-    reauthSucceeded: session.reauthSucceeded,
-    reauthAbandoned: session.reauthAbandoned,
-    leaveRequested: session.leaveRequested,
-    dispose: session.dispose,
-  };
+    }),
+    [
+      excerpt,
+      initialLexical,
+      onExcerptChange,
+      onLexicalChange,
+      onSecondaryChange,
+      onSecondaryError,
+      onTitleBlur,
+      onTitleChange,
+      title,
+    ],
+  );
+
+  // `react-hooks/exhaustive-deps` is off repo-wide: every member below is either
+  // listed here or reached through `session`, which never changes.
+  return useMemo<EditorSessionHandle>(
+    () => ({
+      bind,
+      state,
+      persistedId,
+      createdId: isNew ? persistedId : null,
+      isDirty: isDirtyNow,
+      contentKey,
+      loadedRecord,
+      hasUnsavedContent: session.hasUnsavedContent,
+      contentText,
+      reload,
+      restoreRevision,
+      patchFeatureImage: session.patchFeatureImage,
+      settings,
+      editSettings,
+      stageSettings,
+      commitSettings,
+      title: engineTitle,
+      slug,
+      editSlug: session.editSlug,
+      publishTime,
+      editPublishedAt,
+      getSaveSnapshot: session.getSaveSnapshot,
+      getLiveLexical: session.getLiveLexical,
+      dispatchField: session.dispatchField,
+      dispatchExplicit,
+      saveExplicit: session.dispatchExplicit,
+      dispatchPublish,
+      reauthSucceeded: session.reauthSucceeded,
+      reauthAbandoned: session.reauthAbandoned,
+      leaveRequested: session.leaveRequested,
+      dispose: session.dispose,
+    }),
+    [
+      bind,
+      commitSettings,
+      contentKey,
+      contentText,
+      dispatchExplicit,
+      dispatchPublish,
+      editPublishedAt,
+      editSettings,
+      engineTitle,
+      isDirtyNow,
+      isNew,
+      loadedRecord,
+      persistedId,
+      publishTime,
+      reload,
+      restoreRevision,
+      session,
+      settings,
+      slug,
+      stageSettings,
+      state,
+    ],
+  );
 }

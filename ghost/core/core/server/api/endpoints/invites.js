@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const invites = require('../../services/invites');
 const models = require('../../models');
 const api = require('./index');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const ALLOWED_INCLUDES = [];
 const UNSAFE_ATTRS = ['role_id'];
 
@@ -26,7 +27,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return models.Invite.findPage(frame.options);
+      return models.Invite.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 

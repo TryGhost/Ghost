@@ -7,7 +7,6 @@ const { SafeString } = require('../../../../core/frontend/services/handlebars');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const configUtils = require('../../../utils/config-utils');
-const config = configUtils.config;
 const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const assetHash = require('../../../../core/frontend/services/asset-hash');
 
@@ -21,12 +20,12 @@ describe('getAssetUrl', function () {
 
   it('should return asset url with just context', function () {
     const testUrl = getAssetUrl('myfile.js');
-    assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+    assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
   });
 
   it('should return asset url with just context even with leading /', function () {
     const testUrl = getAssetUrl('/myfile.js');
-    assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+    assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
   });
 
   it('should not add asset to url if ghost.css for default templates', function () {
@@ -38,23 +37,23 @@ describe('getAssetUrl', function () {
   it('should not add asset to url has public in it', function () {
     const testUrl = getAssetUrl('public/myfile.js');
     // Non-existent public files fall back to global hash
-    assert.equal(testUrl, '/public/myfile.js?v=' + config.get('assetHash'));
+    assert.equal(testUrl, '/public/myfile.js?v=' + assetHash.getGlobalHash());
   });
 
   it('should use the global hash when contentBasedHash is disabled', function () {
     configUtils.set('caching:assets:contentBasedHash:enabled', false);
     const testUrl = getAssetUrl('public/ghost.css');
-    assert.equal(testUrl, '/public/ghost.css?v=' + config.get('assetHash'));
+    assert.equal(testUrl, '/public/ghost.css?v=' + assetHash.getGlobalHash());
   });
 
   it('should return hash before #', function () {
     const testUrl = getAssetUrl('myfile.svg#arrow-up');
-    assert.equal(testUrl, `/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
+    assert.equal(testUrl, `/assets/myfile.svg?v=${assetHash.getGlobalHash()}#arrow-up`);
   });
 
   it('should handle Handlebars’ SafeString', function () {
     const testUrl = getAssetUrl(new SafeString('myfile.js'));
-    assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+    assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
   });
 
   describe('favicon', function () {
@@ -91,25 +90,25 @@ describe('getAssetUrl', function () {
     it('should return asset minified url when hasMinFile & useMinFiles are both set to true', function () {
       configUtils.set('useMinFiles', true);
       const testUrl = getAssetUrl('myfile.js', true);
-      assert.equal(testUrl, '/assets/myfile.min.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/myfile.min.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should NOT return asset minified url when hasMinFile true but useMinFiles is false', function () {
       configUtils.set('useMinFiles', false);
       const testUrl = getAssetUrl('myfile.js', true);
-      assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should NOT return asset minified url when hasMinFile false but useMinFiles is true', function () {
       configUtils.set('useMinFiles', true);
       const testUrl = getAssetUrl('myfile.js', false);
-      assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should not add min to anything besides the last .', function () {
       configUtils.set('useMinFiles', true);
       const testUrl = getAssetUrl('test.page/myfile.js', true);
-      assert.equal(testUrl, '/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/test.page/myfile.min.js?v=' + assetHash.getGlobalHash());
     });
   });
 
@@ -124,12 +123,12 @@ describe('getAssetUrl', function () {
 
     it('should return asset url with just context', function () {
       const testUrl = getAssetUrl('myfile.js');
-      assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/blog/assets/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should return asset url with just context even with leading /', function () {
       const testUrl = getAssetUrl('/myfile.js');
-      assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/blog/assets/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should not add asset to url if ghost.css for default templates', function () {
@@ -141,7 +140,7 @@ describe('getAssetUrl', function () {
     it('should not add asset to url has public in it', function () {
       const testUrl = getAssetUrl('public/myfile.js');
       // Non-existent public files fall back to global hash
-      assert.equal(testUrl, '/blog/public/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/blog/public/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     describe('favicon', function () {
@@ -172,32 +171,35 @@ describe('getAssetUrl', function () {
       it('should return asset minified url when hasMinFile & useMinFiles are both set to true', function () {
         configUtils.set('useMinFiles', true);
         const testUrl = getAssetUrl('myfile.js', true);
-        assert.equal(testUrl, '/blog/assets/myfile.min.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/blog/assets/myfile.min.js?v=' + assetHash.getGlobalHash());
       });
 
       it('should NOT return asset minified url when hasMinFile true but useMinFiles is false', function () {
         configUtils.set('useMinFiles', false);
         const testUrl = getAssetUrl('myfile.js', true);
-        assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/blog/assets/myfile.js?v=' + assetHash.getGlobalHash());
       });
 
       it('should NOT return asset minified url when hasMinFile false but useMinFiles is true', function () {
         configUtils.set('useMinFiles', true);
         const testUrl = getAssetUrl('myfile.js', false);
-        assert.equal(testUrl, '/blog/assets/myfile.js?v=' + config.get('assetHash'));
+        assert.equal(testUrl, '/blog/assets/myfile.js?v=' + assetHash.getGlobalHash());
       });
 
       it('should not add min to anything besides the last .', function () {
         configUtils.set('useMinFiles', true);
         const testUrl = getAssetUrl('test.page/myfile.js', true);
-        assert.equal(testUrl, '/blog/assets/test.page/myfile.min.js?v=' + config.get('assetHash'));
+        assert.equal(
+          testUrl,
+          '/blog/assets/test.page/myfile.min.js?v=' + assetHash.getGlobalHash(),
+        );
       });
     });
   });
 
   describe('with asset CDN url configured', function () {
     beforeEach(function () {
-      configUtils.set({ assetHash: 'abc' });
+      sinon.stub(assetHash, 'getGlobalHash').returns('abc');
       configUtils.set({ 'urls:assets': 'https://assets.example.com/my-site' });
     });
 
@@ -223,7 +225,7 @@ describe('getAssetUrl', function () {
     });
 
     it('should still append hash to CDN url', function () {
-      configUtils.set({ assetHash: 'xyz123' });
+      assetHash.getGlobalHash.returns('xyz123');
       const testUrl = getAssetUrl('js/app.js');
       assert.equal(testUrl, 'https://assets.example.com/my-site/assets/js/app.js?v=xyz123');
     });
@@ -309,7 +311,7 @@ describe('getAssetUrl', function () {
       const testUrl = getAssetUrl('nonexistent/file.js');
 
       // Should use global hash since file doesn't exist
-      assert.equal(testUrl, '/assets/nonexistent/file.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/nonexistent/file.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should fallback to global hash when no active theme', function () {
@@ -319,7 +321,7 @@ describe('getAssetUrl', function () {
       const testUrl = getAssetUrl('myfile.js');
 
       // Should use global hash
-      assert.equal(testUrl, '/assets/myfile.js?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/myfile.js?v=' + assetHash.getGlobalHash());
     });
 
     it('should use file-based hash for public assets when file exists', function () {
@@ -332,7 +334,7 @@ describe('getAssetUrl', function () {
     it('should fallback to global hash for non-existent public assets', function () {
       // Non-existent public files fall back to global hash
       const testUrl = getAssetUrl('public/nonexistent.css');
-      assert.equal(testUrl, '/public/nonexistent.css?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/public/nonexistent.css?v=' + assetHash.getGlobalHash());
     });
 
     it('should return different hashes for different theme asset files', function () {
@@ -363,7 +365,7 @@ describe('getAssetUrl', function () {
       const testUrl = getAssetUrl('../../../package.json');
 
       // Should use global hash because path traversal is blocked
-      assert.equal(testUrl, '/assets/../../../package.json?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/assets/../../../package.json?v=' + assetHash.getGlobalHash());
     });
 
     it('should prevent path traversal in public assets', function () {
@@ -371,7 +373,7 @@ describe('getAssetUrl', function () {
       const testUrl = getAssetUrl('public/../../../package.json');
 
       // Should use global hash because path traversal is blocked
-      assert.equal(testUrl, '/public/../../../package.json?v=' + config.get('assetHash'));
+      assert.equal(testUrl, '/public/../../../package.json?v=' + assetHash.getGlobalHash());
     });
   });
 });

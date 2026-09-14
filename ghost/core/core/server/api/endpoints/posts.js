@@ -3,7 +3,7 @@ const models = require('../../models');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
-const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const allowedIncludes = [
   'tags',
   'authors',
@@ -80,11 +80,7 @@ const controller = {
       unsafeAttrs: unsafeAttrs,
     },
     query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
-      return postsService.browsePosts(options);
+      return postsService.browsePosts(restrictAdminApiQueryOptions(frame.options));
     },
   },
 
@@ -108,12 +104,8 @@ const controller = {
     },
     validation: {},
     async query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
       return {
-        data: await postsService.export(options),
+        data: await postsService.export(restrictAdminApiQueryOptions(frame.options)),
         filename: getCSVExportFileName('analytics'),
       };
     },

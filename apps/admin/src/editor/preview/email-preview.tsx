@@ -11,7 +11,7 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
 import type { Newsletter } from '@tryghost/admin-x-framework/api/newsletters';
 import {
@@ -24,6 +24,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { SendTestEmail } from './send-test-email';
 import {
   audienceDescription,
@@ -93,7 +94,7 @@ export function EmailPreview({
   onNewsletterChange,
   onRetryNewsletterLookup,
 }: EmailPreviewProps) {
-  const { data: settingsData } = useBrowseSettings({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
   const [defaultEmailAddress] = getSettingValues<string>(settingsData?.settings ?? [], [
     'default_email_address',
   ]);

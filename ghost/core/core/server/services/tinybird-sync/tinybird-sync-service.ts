@@ -11,6 +11,7 @@ const BATCH_SIZE = 5000;
 // This should be a little less than the maximum, because rows are chunked by
 // JSON line, not bytes strictly.
 const MAX_PAYLOAD_BYTES = 9 * 1024 * 1024;
+const MAX_PAYLOAD_MESSAGES = 1000;
 const REQUEST_TIMEOUT_MS = 60 * 1000;
 
 type Logger = {
@@ -52,6 +53,7 @@ export function createTinybirdSyncService({
           createId,
           batchSize: BATCH_SIZE,
           maxPayloadBytes: MAX_PAYLOAD_BYTES,
+          maxPayloadMessages: MAX_PAYLOAD_MESSAGES,
           requestTimeoutMs: REQUEST_TIMEOUT_MS,
         });
         logging.info(

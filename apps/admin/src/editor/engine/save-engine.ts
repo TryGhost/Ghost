@@ -130,6 +130,9 @@ export type SaveOutcome<R extends SaveResult = SaveResult> =
   | { ok: true; result: R }
   | { ok: false; error: SaveError };
 
+/** A prepare failure is typed like an execute failure, so its kind drives the same handling. */
+export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: SaveError };
+
 export type DropReason = 'not-draft' | 'clean' | 'suppressed' | 'conflict' | 'halted' | 'disposed';
 
 export type SaveCompletion =
@@ -177,8 +180,9 @@ export interface SaveEnginePorts<
 > {
   getSnapshot: () => S;
   slug: SlugPort;
-  /** Builds and validates the candidate; runs inside the single-flight unit, before any IO. */
-  prepare: (request: SaveRequest<S>, signal: AbortSignal) => Promise<P>;
+  /** Builds and validates the candidate; runs inside the single-flight unit, before any IO.
+   * A typed failure skips execute; a rejected promise is treated as an `unknown` error. */
+  prepare: (request: SaveRequest<S>, signal: AbortSignal) => Promise<PrepareOutcome<P>>;
   /** IO only. A rejected promise is treated as an `unknown` error. */
   execute: (prepared: P, signal: AbortSignal) => Promise<SaveOutcome<R>>;
   /** Awaited before the pending slot drains. Must not throw: adopt the acknowledged id/status/updated_at before any work that can fail. */
@@ -637,19 +641,23 @@ export function createSaveEngine<
           return;
         }
       }
-      const prepared = await ports.prepare(
+      const preparation = await ports.prepare(
         buildRequest(slot.command, snapshot, proposal),
         abort.signal,
       );
       if (disposed) {
         return;
       }
-      outcome = await ports.execute(prepared, abort.signal);
-      if (disposed) {
-        return;
-      }
-      if (outcome.ok) {
-        await ports.reconcile(prepared, outcome.result);
+      if (!preparation.ok) {
+        outcome = { ok: false, error: preparation.error };
+      } else {
+        outcome = await ports.execute(preparation.prepared, abort.signal);
+        if (disposed) {
+          return;
+        }
+        if (outcome.ok) {
+          await ports.reconcile(preparation.prepared, outcome.result);
+        }
       }
     } catch (cause) {
       outcome = { ok: false, error: toSaveError(cause) };

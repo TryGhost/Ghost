@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const zlib = require('zlib');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
+const ghostConfig = require('../../../../../core/shared/config');
 
 describe('oembed-service', function () {
   /** @type {OembedService} */
@@ -176,20 +177,22 @@ describe('oembed-service', function () {
       assert.equal(response, undefined);
     });
 
-    it('still returns photo-type responses from non-allowlisted providers', async function () {
+    it('drops photo-type responses from non-allowlisted providers', async function () {
+      // `photo` responses may also carry an `html` field, which would be
+      // rendered via innerHTML just like rich/video.
       nock('https://www.example.com').get('/oembed').reply(200, {
         type: 'photo',
         version: '1.0',
         title: 'Test Title',
         url: 'https://www.example.com/photo.jpg',
+        html: '<img src=x onerror="alert(1)">',
         width: 640,
         height: 480,
       });
 
       const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
 
-      assert.equal(response.type, 'photo');
-      assert.equal(response.url, 'https://www.example.com/photo.jpg');
+      assert.equal(response, undefined);
     });
   });
 
@@ -691,6 +694,33 @@ describe('oembed-service', function () {
 
   describe('processImageFromUrl', function () {
     const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+    const icoBytes = Buffer.from([
+      0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x10, 0x10, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00,
+    ]);
+    let pngBytes;
+
+    beforeAll(async function () {
+      pngBytes = await sharp({
+        create: { width: 1, height: 1, channels: 3, background: 'red' },
+      })
+        .png()
+        .toBuffer();
+    });
+
+    const buildService = (saveRaw, bytes) =>
+      new OembedService({
+        config: ghostConfig,
+        imageStore: {
+          getSanitizedFileName: sinon.stub().returns('favicon'),
+          saveRaw,
+        },
+        externalRequest() {
+          return {
+            buffer: async () => Buffer.from(bytes),
+          };
+        },
+      });
 
     it('normalizes Uint8Array image responses from Got 15 to Buffer', async function () {
       const bytes = new Uint8Array(Buffer.from('img-bytes'));
@@ -711,11 +741,7 @@ describe('oembed-service', function () {
     it('returns null without fetching when the image URL is missing', async function () {
       const externalRequest = sinon.stub();
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon
             .stub()
@@ -732,18 +758,14 @@ describe('oembed-service', function () {
     });
 
     it('stores downloaded bookmark assets via image storage and returns the adapter URL', async function () {
-      const imageBytes = Buffer.from('img-bytes');
+      const imageBytes = pngBytes;
       const saveRaw = sinon
         .stub()
         .resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample-x.png');
       const getSanitizedFileName = sinon.stub().returns('sample');
 
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
           saveRaw,
@@ -776,16 +798,12 @@ describe('oembed-service', function () {
     it('writes a fresh key on every call, even for identical bytes (ONC-1788)', async function () {
       // A content hash would collide here and force an overwrite, which the
       // production bucket rejects. A unique key avoids the overwrite entirely.
-      const imageBytes = Buffer.from('ico-bytes');
+      const imageBytes = icoBytes;
       const saveRaw = sinon.stub().resolves('/stored');
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
           saveRaw,
@@ -816,11 +834,7 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
           saveRaw,
@@ -828,7 +842,7 @@ describe('oembed-service', function () {
         },
         externalRequest() {
           return {
-            buffer: async () => Buffer.from('bytes'),
+            buffer: async () => pngBytes,
           };
         },
       });
@@ -845,11 +859,7 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
           generateUnique,
@@ -857,7 +867,7 @@ describe('oembed-service', function () {
         },
         externalRequest() {
           return {
-            buffer: async () => Buffer.from('bytes'),
+            buffer: async () => pngBytes,
           };
         },
       });
@@ -869,17 +879,13 @@ describe('oembed-service', function () {
 
     it('throws when storage lacks saveRaw', async function () {
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon.stub().returns('sample'),
         },
         externalRequest() {
           return {
-            buffer: async () => Buffer.from('img-bytes'),
+            buffer: async () => pngBytes,
           };
         },
       });
@@ -892,11 +898,7 @@ describe('oembed-service', function () {
 
     it('throws when external request fails', async function () {
       const service = new OembedService({
-        config: {
-          getContentPath() {
-            return '/tmp/content/images';
-          },
-        },
+        config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon.stub().returns('sample'),
           saveRaw: sinon.stub().resolves('/stored'),
@@ -912,28 +914,103 @@ describe('oembed-service', function () {
       );
     });
 
-    describe('SVG bookmark images', function () {
-      const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-      const SVG =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="red"/></svg>';
+    describe('stored file type', function () {
+      const HTML = '<!doctype html><html><body><script>alert(1)</script></body></html>';
 
-      const buildService = (saveRaw, bytes) =>
-        new OembedService({
+      it('names the stored file after its contents rather than the URL', async function () {
+        const saveRaw = sinon.stub().resolves('/stored');
+
+        await buildService(saveRaw, pngBytes).processImageFromUrl(
+          'https://example.com/brandicon.html',
+          'icon',
+        );
+
+        assert.match(
+          saveRaw.firstCall.args[1],
+          new RegExp(`^icon/favicon-${UUID_RE.source}\\.png$`),
+        );
+      });
+
+      it('names an extensionless image after its contents', async function () {
+        const saveRaw = sinon.stub().resolves('/stored');
+
+        await buildService(saveRaw, icoBytes).processImageFromUrl(
+          'https://example.com/favicon',
+          'icon',
+        );
+
+        assert.match(saveRaw.firstCall.args[1], /\.ico$/);
+      });
+
+      for (const url of [
+        'https://example.com/brandicon.html',
+        'https://example.com/cover.html?fake=.png',
+        'https://example.com/favicon.png',
+        'https://example.com/favicon',
+      ]) {
+        it(`rejects a file that is not an image (${url})`, async function () {
+          const saveRaw = sinon.stub().resolves('/stored');
+
+          await assert.rejects(
+            () => buildService(saveRaw, HTML).processImageFromUrl(url, 'thumbnail'),
+            { message: /not a supported file type/ },
+          );
+          sinon.assert.notCalled(saveRaw);
+        });
+      }
+
+      it('rejects image types outside the upload allowlist', async function () {
+        const saveRaw = sinon.stub().resolves('/stored');
+        const avif = await sharp({
+          create: { width: 1, height: 1, channels: 3, background: 'red' },
+        })
+          .avif()
+          .toBuffer();
+
+        await assert.rejects(
+          () =>
+            buildService(saveRaw, avif).processImageFromUrl(
+              'https://example.com/cover.avif',
+              'thumbnail',
+            ),
+          { message: /not a supported file type/ },
+        );
+        sinon.assert.notCalled(saveRaw);
+      });
+
+      it('follows the configured image upload allowlist', async function () {
+        const saveRaw = sinon.stub().resolves('/stored');
+        const avif = await sharp({
+          create: { width: 1, height: 1, channels: 3, background: 'red' },
+        })
+          .avif()
+          .toBuffer();
+
+        const service = new OembedService({
           config: {
-            getContentPath() {
-              return '/tmp/content/images';
-            },
+            get: () => ({ images: { extensions: ['.avif'] } }),
           },
           imageStore: {
-            getSanitizedFileName: sinon.stub().returns('favicon'),
+            getSanitizedFileName: sinon.stub().returns('cover'),
             saveRaw,
           },
           externalRequest() {
             return {
-              buffer: async () => Buffer.from(bytes),
+              buffer: async () => avif,
             };
           },
         });
+
+        await service.processImageFromUrl('https://example.com/cover', 'thumbnail');
+
+        assert.match(saveRaw.firstCall.args[1], /\.avif$/);
+      });
+    });
+
+    describe('SVG bookmark images', function () {
+      const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+      const SVG =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="red"/></svg>';
 
       it('stores an SVG icon as a PNG', async function () {
         const saveRaw = sinon.stub().resolves('/stored');
@@ -1065,19 +1142,18 @@ describe('oembed-service', function () {
       it('leaves raster images untouched', async function () {
         const saveRaw = sinon.stub().resolves('/stored');
 
-        await buildService(saveRaw, PNG_MAGIC).processImageFromUrl(
+        await buildService(saveRaw, pngBytes).processImageFromUrl(
           'https://example.com/favicon.PNG',
           'icon',
         );
 
-        assert.deepEqual(saveRaw.firstCall.args[0], PNG_MAGIC);
-        // extension case is preserved, so existing URLs do not change
-        assert.match(saveRaw.firstCall.args[1], /\.PNG$/);
+        assert.deepEqual(saveRaw.firstCall.args[0], pngBytes);
+        assert.match(saveRaw.firstCall.args[1], /\.png$/);
       });
 
       it('does not convert a raster file containing the text <svg', async function () {
         const saveRaw = sinon.stub().resolves('/stored');
-        const png = Buffer.concat([PNG_MAGIC, Buffer.from('<svg width="1">')]);
+        const png = Buffer.concat([pngBytes, Buffer.from('<svg width="1">')]);
 
         await buildService(saveRaw, png).processImageFromUrl(
           'https://example.com/favicon.png',

@@ -5,18 +5,20 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
-const config = configUtils.config;
 const asset = require('../../../../core/frontend/helpers/asset');
+const assetHash = require('../../../../core/frontend/services/asset-hash');
 const settingsCache = require('../../../../core/shared/settings-cache');
+
+const GLOBAL_HASH = 'abc';
 
 describe('{{asset}} helper', function () {
   let rendered;
   const localSettingsCache = {};
 
   beforeAll(function () {
-    configUtils.set({ assetHash: 'abc' });
     configUtils.set({ useMinFiles: true });
 
+    sinon.stub(assetHash, 'getGlobalHash').returns(GLOBAL_HASH);
     sinon.stub(settingsCache, 'get').callsFake(function (key) {
       return localSettingsCache[key];
     });
@@ -115,7 +117,6 @@ describe('{{asset}} helper', function () {
 
   describe('with contentBasedHash enabled', function () {
     beforeAll(function () {
-      configUtils.set({ assetHash: 'abc' });
       configUtils.set({ 'caching:assets:contentBasedHash:enabled': true });
     });
 
@@ -133,15 +134,15 @@ describe('{{asset}} helper', function () {
     it('falls back to global hash for non-existent public assets', function () {
       rendered = asset('public/nonexistent.js');
       assertExists(rendered);
-      // Non-existent files fall back to global hash (using config value)
-      assert.equal(String(rendered), '/public/nonexistent.js?v=' + config.get('assetHash'));
+      // Non-existent files fall back to the global hash
+      assert.equal(String(rendered), '/public/nonexistent.js?v=' + GLOBAL_HASH);
     });
 
     it('falls back to global hash for theme assets without active theme', function () {
       rendered = asset('js/asset.js');
       assertExists(rendered);
-      // No active theme, so falls back to global hash (using config value)
-      assert.equal(String(rendered), '/assets/js/asset.js?v=' + config.get('assetHash'));
+      // No active theme, so falls back to the global hash
+      assert.equal(String(rendered), '/assets/js/asset.js?v=' + GLOBAL_HASH);
     });
   });
 });

@@ -89,6 +89,35 @@ describe('Asset Hash Service', function () {
     });
   });
 
+  describe('getGlobalHash', function () {
+    it('should return a 10 character hex hash', function () {
+      const hash = assetHash.getGlobalHash();
+
+      assert.equal(typeof hash, 'string');
+      assert.match(hash, /^[0-9a-f]{10}$/);
+    });
+
+    it('should return the same hash on repeated calls', function () {
+      const hash1 = assetHash.getGlobalHash();
+      const hash2 = assetHash.getGlobalHash();
+
+      assert.equal(hash1, hash2);
+    });
+
+    it('should generate a new hash after the cache is cleared', function () {
+      const hash1 = assetHash.getGlobalHash();
+
+      // the hash is seeded from Date.now(), so move time on to guarantee a
+      // different value rather than relying on the clock ticking
+      const nowStub = sinon.stub(Date, 'now').returns(Date.now() + 1000);
+      assetHash.clearCache();
+      const hash2 = assetHash.getGlobalHash();
+      nowStub.restore();
+
+      assert.notEqual(hash1, hash2);
+    });
+  });
+
   describe('clearCache', function () {
     it('should clear all cached hashes', function () {
       const testFilePath = path.join(fixturesPath, 'package.json');

@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { EditorStatus, RecipientCount } from './editor-status';
+import { RecipientCount } from './editor-status';
 
 const mocks = vi.hoisted(() => ({
   useMembersCount: vi.fn(() => ({ count: null })),
-  useBrowseSettings: vi.fn(() => ({ data: { settings: [] } })),
 }));
 
 vi.mock('@tryghost/admin-x-framework/api/members', async (importOriginal) => {
@@ -15,16 +14,8 @@ vi.mock('@tryghost/admin-x-framework/api/members', async (importOriginal) => {
   };
 });
 
-vi.mock('@tryghost/admin-x-framework/api/settings', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@tryghost/admin-x-framework/api/settings')>();
-  return {
-    ...actual,
-    useBrowseSettings: mocks.useBrowseSettings,
-  };
-});
-
-// The status line shares its count and settings keys with the publish flow, so
-// the refetches it initiates have to opt out of the session-expiry redirect too.
+// The status line shares its count key with the publish flow, so the refetches
+// it initiates have to opt out of the session-expiry redirect too.
 const OPTED_OUT = { requestOptions: { sessionExpiryRedirect: false } };
 
 describe('RecipientCount', () => {
@@ -35,16 +26,5 @@ describe('RecipientCount', () => {
 
     expect(screen.getByText('all members')).toBeInTheDocument();
     expect(mocks.useMembersCount).toHaveBeenCalledWith(filter, OPTED_OUT);
-  });
-});
-
-describe('EditorStatus', () => {
-  it('reads its timezone setting without the global error handler or the redirect', () => {
-    render(<EditorStatus isDirty={false} state={{ kind: 'idle' }} />);
-
-    expect(mocks.useBrowseSettings).toHaveBeenCalledWith({
-      defaultErrorHandler: false,
-      ...OPTED_OUT,
-    });
   });
 });
