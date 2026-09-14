@@ -7,7 +7,7 @@ import {
   OG_TITLE_MAX,
   type ValidatedSettingsFields,
 } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { useSettingsField } from './use-settings-field';
 
 const SETTINGS: ValidatedSettingsFields = {
@@ -26,7 +26,7 @@ function fakeSession(settings: Partial<ValidatedSettingsFields> = {}) {
     settings: { ...SETTINGS, ...settings },
     stageSettings: vi.fn(),
     commitSettings: vi.fn(),
-  } as unknown as EditorSessionHandle & {
+  } as unknown as EditorSettingsPort & {
     stageSettings: ReturnType<typeof vi.fn>;
     commitSettings: ReturnType<typeof vi.fn>;
   };

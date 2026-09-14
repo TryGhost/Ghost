@@ -20,6 +20,7 @@ import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
+import { type EditorSettingsPort, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
@@ -33,7 +34,7 @@ import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
 
-function ExcerptSection({ session }: { session: EditorSessionHandle }) {
+function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
 
   return (
@@ -55,7 +56,7 @@ function FeaturedSection({
   session,
   postType,
 }: {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }) {
   const inputId = useId();
@@ -94,7 +95,7 @@ export interface PostSettingsSidebarProps {
  * through the session, which owns when it is persisted (see the README).
  */
 export function PostSettingsSidebar({
-  session,
+  session: handle,
   postType,
   siteUrl,
   cardConfig,
@@ -102,6 +103,9 @@ export function PostSettingsSidebar({
   currentUser,
   hasInlineExcerpt = false,
 }: PostSettingsSidebarProps) {
+  // The sections take the narrow port rather than the handle, so an edit they
+  // cannot see does not hand them a new object.
+  const session = useEditorSettingsPort(handle);
   // Owner, Administrator and Editor manage featured and access.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
   const canTag = !!currentUser && !isContributorUser(currentUser);
@@ -150,6 +154,7 @@ export function PostSettingsSidebar({
         postType={postType}
         session={session}
         showExcerpt={hasInlineExcerpt}
+        state={handle.state}
       />
     ),
   };
