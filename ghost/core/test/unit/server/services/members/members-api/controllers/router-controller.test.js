@@ -142,8 +142,8 @@ describe('RouterController', function () {
         getAll: sinon.stub(),
       };
       newslettersServiceStub.getAll.resolves([
-        { id: 'abc123', name: 'Newsletter 1', status: 'active' },
-        { id: 'def456', name: 'Newsletter 2', status: 'active' },
+        { id: 'abc123', name: 'Newsletter 1', status: 'active', visibility: 'members' },
+        { id: 'def456', name: 'Newsletter 2', status: 'active', visibility: 'paid' },
       ]);
       const routerController = new RouterController({
         tiersService,
@@ -1985,16 +1985,19 @@ describe('RouterController', function () {
             id: 'abc123',
             name: 'Newsletter 1',
             status: 'active',
+            visibility: 'members',
           },
           {
             id: 'def456',
             name: 'Newsletter 2',
             status: 'active',
+            visibility: 'members',
           },
           {
             id: 'ghi789',
             name: 'Newsletter 3',
             status: 'active',
+            visibility: 'members',
           },
         ];
 
@@ -2011,7 +2014,7 @@ describe('RouterController', function () {
         newslettersServiceStub.getAll
           .withArgs({
             filter: `name:[${newsletterNamesFilter}]`,
-            columns: ['id', 'name', 'status'],
+            columns: ['id', 'name', 'status', 'visibility'],
           })
           .resolves(newsletters);
 
@@ -2044,7 +2047,7 @@ describe('RouterController', function () {
         newslettersServiceStub.getAll
           .withArgs({
             filter: `name:['${INVALID_NEWSLETTER_NAME}']`,
-            columns: ['id', 'name', 'status'],
+            columns: ['id', 'name', 'status', 'visibility'],
           })
           .resolves([]);
 
@@ -2086,7 +2089,7 @@ describe('RouterController', function () {
         newslettersServiceStub.getAll
           .withArgs({
             filter: `name:[${newsletterNames}]`,
-            columns: ['id', 'name', 'status'],
+            columns: ['id', 'name', 'status', 'visibility'],
           })
           .resolves(newsletters);
 
@@ -2097,6 +2100,48 @@ describe('RouterController', function () {
         await assert.rejects(controller.sendMagicLink(req, res), {
           message: `Cannot subscribe to archived newsletters Newsletter 2`,
         });
+      });
+
+      it('drops paid-only newsletters for free signups', async function () {
+        req.body.newsletters = [{ name: 'Free Newsletter' }, { name: 'Paid Newsletter' }];
+
+        const controller = createRouterController({
+          newslettersService: {
+            getAll: sinon.stub().resolves([
+              { id: 'abc123', name: 'Free Newsletter', status: 'active', visibility: 'members' },
+              { id: 'def456', name: 'Paid Newsletter', status: 'active', visibility: 'paid' },
+            ]),
+          },
+        });
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
+          { id: 'abc123' },
+        ]);
+      });
+
+      it('keeps paid-only newsletters for gift signups', async function () {
+        req.body.newsletters = [{ name: 'Paid Newsletter' }];
+        req.body.giftToken = 'gift-token-123';
+
+        const controller = createRouterController({
+          newslettersService: {
+            getAll: sinon
+              .stub()
+              .resolves([
+                { id: 'def456', name: 'Paid Newsletter', status: 'active', visibility: 'paid' },
+              ]),
+          },
+        });
+
+        await controller.sendMagicLink(req, res);
+
+        sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+        assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
+          { id: 'def456' },
+        ]);
       });
     });
 
@@ -2355,9 +2400,9 @@ describe('RouterController', function () {
         getAll: sinon.stub(),
       };
       newslettersServiceStub.getAll.resolves([
-        { id: 'abc123', name: 'Newsletter 1', status: 'active' },
-        { id: 'def456', name: 'Newsletter 2', status: 'active' },
-        { id: 'ghi789', name: 'Newsletter 3', status: 'active' },
+        { id: 'abc123', name: 'Newsletter 1', status: 'active', visibility: 'members' },
+        { id: 'def456', name: 'Newsletter 2', status: 'active', visibility: 'members' },
+        { id: 'ghi789', name: 'Newsletter 3', status: 'active', visibility: 'members' },
       ]);
       routerController = new RouterController({
         tiersService,
@@ -2379,6 +2424,30 @@ describe('RouterController', function () {
       ];
       const result = await routerController._validateNewsletters(requestedNewsletters);
       assert.deepEqual(result, [{ id: 'abc123' }, { id: 'def456' }, { id: 'ghi789' }]);
+    });
+
+    it('drops paid-only newsletters by default', async function () {
+      newslettersServiceStub.getAll.resolves([
+        { id: 'abc123', name: 'Newsletter 1', status: 'active', visibility: 'members' },
+        { id: 'def456', name: 'Newsletter 2', status: 'active', visibility: 'paid' },
+      ]);
+      const result = await routerController._validateNewsletters([
+        { name: 'Newsletter 1' },
+        { name: 'Newsletter 2' },
+      ]);
+      assert.deepEqual(result, [{ id: 'abc123' }]);
+    });
+
+    it('keeps paid-only newsletters when allowPaid is set', async function () {
+      newslettersServiceStub.getAll.resolves([
+        { id: 'abc123', name: 'Newsletter 1', status: 'active', visibility: 'members' },
+        { id: 'def456', name: 'Newsletter 2', status: 'active', visibility: 'paid' },
+      ]);
+      const result = await routerController._validateNewsletters(
+        [{ name: 'Newsletter 1' }, { name: 'Newsletter 2' }],
+        { allowPaid: true },
+      );
+      assert.deepEqual(result, [{ id: 'abc123' }, { id: 'def456' }]);
     });
 
     it('returns undefined if newsletters is an empty array', async function () {

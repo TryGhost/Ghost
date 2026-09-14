@@ -271,18 +271,10 @@ describe('Members Service Middleware', function () {
         enable_comment_notifications: false,
         status: 'free',
       };
-      sinon.stub(membersService, 'api').get(() => {
-        return {
-          members: {
-            update: sinon.stub().resolves({
-              ...req.member,
-              toJSON: () => JSON.stringify(req.member),
-            }),
-          },
-        };
-      });
+      const edit = sinon.stub().resolves(req.member);
+      sinon.stub(membersService, 'api').get(() => ({ account: { edit } }));
       await membersMiddleware.updateMemberNewsletters(req, res);
-      // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
+      sinon.assert.calledOnceWithExactly(edit, req.body, 'test');
       sinon.assert.calledOnce(res.json);
     });
 
@@ -299,8 +291,8 @@ describe('Members Service Middleware', function () {
       };
       sinon.stub(membersService, 'api').get(() => {
         return {
-          members: {
-            update: sinon.stub().rejects(new Error('Test Error')),
+          account: {
+            edit: sinon.stub().rejects(new Error('Test Error')),
           },
         };
       });

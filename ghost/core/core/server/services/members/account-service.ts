@@ -45,9 +45,23 @@ interface MemberBreadService {
   ): Promise<Record<string, unknown> | null>;
 }
 
+interface Newsletter {
+  id: string;
+}
+
+interface MemberModel {
+  get(attribute: string): unknown;
+  related(relation: 'newsletters'): { map<T>(fn: (newsletter: Newsletter) => T): T[] };
+}
+
 interface MemberRepository {
+  get(data: { id: string }, options: Record<string, unknown>): Promise<MemberModel | null>;
   update(data: Record<string, unknown>, options: Record<string, unknown>): Promise<unknown>;
   update(data: Record<string, unknown>, options: Record<string, unknown>): Promise<unknown>;
+}
+
+interface NewslettersService {
+  getAll(options: { filter: string; columns: string[] }): Promise<Newsletter[]>;
 }
 
 interface EmailSuppressionList {
@@ -69,6 +83,7 @@ export interface MemberAccountServiceDeps {
   members: MemberRepository;
   emailSuppressionList: EmailSuppressionList;
   metafieldValues: MetafieldValues;
+  newslettersService: NewslettersService;
 }
 
 export class MemberAccountService {
@@ -76,17 +91,20 @@ export class MemberAccountService {
   #members: MemberRepository;
   #emailSuppressionList: EmailSuppressionList;
   #metafieldValues: MetafieldValues;
+  #newslettersService: NewslettersService;
 
   constructor({
     memberBREADService,
     members,
     emailSuppressionList,
     metafieldValues,
+    newslettersService,
   }: MemberAccountServiceDeps) {
     this.#memberBREADService = memberBREADService;
     this.#members = members;
     this.#emailSuppressionList = emailSuppressionList;
     this.#metafieldValues = metafieldValues;
+    this.#newslettersService = newslettersService;
   }
 
   /** Everything a member is shown about themselves. */
@@ -110,7 +128,12 @@ export class MemberAccountService {
             MEMBERS,
           );
 
-    await this.#members.update(_.pick(data, WRITABLE_FIELDS), {
+    const changes = _.pick(data, WRITABLE_FIELDS);
+    if (Array.isArray(changes.newsletters) && changes.newsletters.length > 0) {
+      changes.newsletters = await this.#withoutNewPaidNewsletters(changes.newsletters, memberId);
+    }
+
+    await this.#members.update(changes, {
       id: memberId,
       withRelated: WRITE_RELATIONS,
     });
@@ -128,6 +151,27 @@ export class MemberAccountService {
     // Ghost now holds, which is not always what they sent. Setting the older
     // `subscribed` flag, for one, is stored as a list of newsletters.
     return this.read(memberId);
+  }
+
+  /** Paid-only newsletters are for paying members: a free member keeps any they have but can't add one. */
+  async #withoutNewPaidNewsletters(requested: Array<{ id?: string }>, memberId: string) {
+    const member = await this.#members.get({ id: memberId }, { withRelated: ['newsletters'] });
+    if (!member || member.get('status') !== 'free') {
+      return requested;
+    }
+
+    const paidNewsletters = await this.#newslettersService.getAll({
+      filter: 'visibility:-members',
+      columns: ['id'],
+    });
+    const paidIds = new Set<string | undefined>(paidNewsletters.map((newsletter) => newsletter.id));
+    const currentIds = new Set<string | undefined>(
+      member.related('newsletters').map((newsletter) => newsletter.id),
+    );
+
+    return requested.filter(
+      (newsletter) => !paidIds.has(newsletter?.id) || currentIds.has(newsletter?.id),
+    );
   }
 
   /**
