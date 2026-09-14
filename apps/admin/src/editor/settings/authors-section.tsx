@@ -1,4 +1,4 @@
-import { useCallback, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { FieldError, Label } from '@tryghost/shade/components';
 import { useBrowseUsers, type User } from '@tryghost/admin-x-framework/api/users';
 import type { PostAuthor } from '@tryghost/admin-x-framework/api/posts';
@@ -26,12 +26,21 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
   const [browsing, setBrowsing] = useState(false);
   const startBrowsing = useCallback(() => setBrowsing(true), []);
 
-  const { data, isFetching, isError, refetch } = useBrowseUsers({
-    defaultErrorHandler: false,
-    enabled: browsing,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-    searchParams: AUTHORS_SEARCH_PARAMS,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isError, refetch } =
+    useBrowseUsers({
+      defaultErrorHandler: false,
+      enabled: browsing,
+      requestOptions: EDITOR_REQUEST_OPTIONS,
+      searchParams: AUTHORS_SEARCH_PARAMS,
+    });
+
+  // Core caps `limit=all`, so the response can still contain a next page. The
+  // list is not complete, and so still loading, until every page has arrived.
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && !isError) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isError]);
 
   const authors = session.settings.authors as ReadonlyArray<PostAuthor>;
   // A post this session created carries its author's identity alone, and the
@@ -52,7 +61,7 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
         inputId={inputId}
         invalid={invalid}
         loadError={isError}
-        loading={isFetching}
+        loading={isFetching || hasNextPage}
         selected={selected}
         staff={data?.users ?? []}
         onChange={change}

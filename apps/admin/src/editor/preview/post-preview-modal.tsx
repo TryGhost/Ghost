@@ -35,6 +35,7 @@ import {
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
 
+import { NEWSLETTERS_SEARCH_PARAMS, PAID_TIERS_SEARCH_PARAMS } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
 import { useEditorSettings } from '@/editor/use-editor-settings';
@@ -111,7 +112,7 @@ export function PostPreviewModal({
     (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
 
   const { data: tiersData } = useBrowseTiers({
-    searchParams: { filter: 'type:paid', limit: 'all' },
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
     enabled: open && prepareState === 'ready' && paidMembersEnabled === true,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
@@ -119,16 +120,39 @@ export function PostPreviewModal({
 
   const {
     data: newslettersData,
+    fetchNextPage: fetchNextNewsletterPage,
+    hasNextPage: hasNextNewsletterPage,
     isError: activeNewslettersError,
-    isFetching: activeNewslettersFetching,
+    isFetching: newslettersFetching,
+    isFetchingNextPage: isFetchingNextNewsletterPage,
     refetch: refetchActiveNewsletters,
   } = useBrowseNewsletters({
-    searchParams: { filter: 'status:active', limit: 'all' },
+    searchParams: NEWSLETTERS_SEARCH_PARAMS,
     enabled: open && prepareState === 'ready' && emailAvailable,
     requestOptions: EDITOR_REQUEST_OPTIONS,
-    staleTime: 0,
   });
-  const activeNewsletters = useMemo(() => newslettersData?.newsletters ?? [], [newslettersData]);
+
+  // Core caps `limit=all`, so the response can still contain a next page. A
+  // newsletter past the cap would otherwise be taken for an archived one.
+  useEffect(() => {
+    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !activeNewslettersError) {
+      void fetchNextNewsletterPage();
+    }
+  }, [
+    activeNewslettersError,
+    fetchNextNewsletterPage,
+    hasNextNewsletterPage,
+    isFetchingNextNewsletterPage,
+  ]);
+  const activeNewslettersFetching =
+    newslettersFetching || hasNextNewsletterPage || isFetchingNextNewsletterPage;
+  // The browse carries every newsletter, which is also the publish flow's list;
+  // narrowing here shares that one cache entry instead of asking for a subset.
+  const activeNewsletters = useMemo(
+    () =>
+      (newslettersData?.newsletters ?? []).filter((newsletter) => newsletter.status === 'active'),
+    [newslettersData],
+  );
 
   // The post's newsletter is what its email renders as, so it stays selectable
   // even once it has left the active list.
