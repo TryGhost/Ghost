@@ -5,10 +5,28 @@ import http from 'http';
 import express from 'express';
 import sinon from 'sinon';
 import fs from 'fs-extra';
+import request from 'supertest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 describe('Local Storage Base', function () {
   describe('serve', function () {
+    it('sets nosniff and keeps the extension-based Content-Type', async function () {
+      const localStorageBase = new LocalStorageBase({
+        storagePath: path.resolve(__dirname, 'media-storage'),
+        staticFileURLPrefix: 'content/media',
+        siteUrl: 'http://example.com/blog/',
+      });
+
+      const app = express();
+      app.use(localStorageBase.serve());
+
+      await request(app)
+        .get('/content/media/image.jpg')
+        .expect(200)
+        .expect('Content-Type', 'image/jpeg')
+        .expect('X-Content-Type-Options', 'nosniff');
+    });
+
     it('returns a 416 RangeNotSatisfiableError if given an invalid range', async function () {
       const localStorageBase = new LocalStorageBase({
         storagePath: path.resolve(__dirname, 'media-storage'),
