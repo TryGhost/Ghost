@@ -145,8 +145,18 @@ export default class LimitsService extends Service {
     // Periodic limits pass the period start as the second argument. The default
     // emails query counts recipients via knex, which doesn't exist in the browser
     async getEmailsCount(_db, startDate) {
-        const since = new Date(startDate).toISOString();
-        const emails = await this.store.query('email', {filter: `created_at:>='${since}'`, fields: 'id,email_count', limit: 'all'});
+        // Only a limit that resets has a period to count within. A host capping emails
+        // outright configures a plain maximum instead, and the whole history is what that
+        // caps. Formatting the missing date anyway throws, and the publish flow reports
+        // whatever it catches, so the publisher is told their sending is disabled because
+        // of an invalid time value.
+        const query = {fields: 'id,email_count', limit: 'all'};
+
+        if (startDate) {
+            query.filter = `created_at:>='${new Date(startDate).toISOString()}'`;
+        }
+
+        const emails = await this.store.query('email', query);
 
         return emails.reduce((total, email) => total + (email.emailCount ?? 0), 0);
     }

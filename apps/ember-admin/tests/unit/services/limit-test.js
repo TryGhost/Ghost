@@ -113,6 +113,19 @@ describe('Unit | Service | limit', function () {
             expect(limitService.limiter.isLimited('customThemes')).to.be.true;
         });
 
+        // A host capping emails outright rather than per period gives the counter no
+        // period. Asking for the date anyway throws, and the publish flow reports what it
+        // catches, so a publisher was told sending was off because of an invalid time value.
+        it('counts every email when the cap is not periodic', async function () {
+            const query = sinon.stub().resolves([{emailCount: 7}]);
+            limitService.set('store', {query});
+
+            const count = await limitService.getEmailsCount();
+
+            expect(count).to.equal(7);
+            expect(query.firstCall.args[1].filter).to.be.undefined;
+        });
+
         it('keeps the limits it has when the configuration is gone', function () {
             limitService.config.hostSettings = {
                 limits: {staff: {max: 1}}
