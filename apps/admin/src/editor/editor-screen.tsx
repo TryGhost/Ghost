@@ -29,7 +29,7 @@ import {
 import { EditorHeaderActions } from './editor-header-actions';
 import { EditorStatus } from './editor-status';
 import { PostEditor } from './post-editor';
-import type { EditorStatusNewsletter, EditorStatusRecord } from './post-status';
+import type { EditorStatusRecord } from './post-status';
 import { SessionBanners } from './session/session-banners';
 import { PostSettingsSidebar } from './settings/post-settings-sidebar';
 import { useFeatureImageBinding } from './session/feature-image-binding';
@@ -86,9 +86,7 @@ function statusRecordOf(
   }
 
   const email = 'email' in record ? record.email : null;
-  // The API types the relation as a bare object; the editor read includes it.
-  const newsletter =
-    'newsletter' in record ? (record.newsletter as EditorStatusNewsletter | null) : null;
+  const newsletter = 'newsletter' in record ? (record.newsletter ?? null) : null;
 
   return {
     status: record.status,
