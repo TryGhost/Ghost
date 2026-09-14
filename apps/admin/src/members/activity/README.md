@@ -44,3 +44,19 @@ older response shapes, cancellation, and retries. Browser E2E tests in
 
 Default enablement and deletion of the Ember implementation are separate rollout
 steps after validation.
+
+## Manual testing
+
+1. Open `/ghost/#/members-activity?labs=membersActivityReact` to enable React for
+   the browser session, or enable **React member activity** in Labs' private
+   features. The React table has separate Member, Event, and Time columns.
+2. Search for a member, clear the selection, and click a member in the table.
+   Open their profile and use **View all member activity** to return.
+3. Toggle event filters, reload, and use browser Back/Forward. The selected
+   member and excluded event types should follow the URL.
+4. Scroll through a long feed. Check subscription amounts, donations, gifts,
+   post links, and the extra email-delivery filters in a member-specific view.
+5. Open a historical email, switch desktop/mobile previews, and close it with
+   Escape. Check that the original subject/content remains visible.
+6. Turn the experiment off and clear any session override (see the linked
+   feature-flag guide). Reload the same activity URL to check the Ember fallback.

@@ -33,10 +33,10 @@ export default class MembersActivityRoute extends MembersManagementRoute {
             ? this.router.currentRoute?.params?.path
             : null;
         if (parkedPath !== 'members-activity') {
-            const url = window.location.hash;
-            const state = window.history.state;
-            this.router.replaceWith('react-fallback', 'members-activity')
-                .finally(() => window.history.replaceState(state, '', url));
+            // Suppress the parking transition's URL update entirely. Restoring
+            // the hash afterwards with replaceState is too late: React can
+            // observe the queryless URL and keep it after that silent restore.
+            this.router.replaceWith('react-fallback', 'members-activity').method(null);
         }
     }
 
