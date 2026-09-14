@@ -1,12 +1,23 @@
-const probabilityDistributions = require('probability-distributions');
+import * as probabilityDistributions from 'probability-distributions';
 
-const generateEvents = ({
+type EventShape = 'flat' | 'linear' | 'ease-in' | 'ease-out';
+type EventTrend = 'positive' | 'negative';
+
+type GenerateEventsOptions = {
+  shape?: EventShape;
+  trend?: EventTrend;
+  total?: number;
+  startTime?: Date;
+  endTime?: Date;
+};
+
+export const generateEvents = ({
   shape = 'flat',
   trend = 'positive',
   total = 0,
   startTime = new Date(),
   endTime = new Date(),
-} = {}) => {
+}: GenerateEventsOptions = {}): Date[] => {
   if (total <= 0) {
     return [];
   }
@@ -44,5 +55,3 @@ const generateEvents = ({
     return new Date(startTimeValue + timeDifference * x);
   });
 };
-
-module.exports = generateEvents;
