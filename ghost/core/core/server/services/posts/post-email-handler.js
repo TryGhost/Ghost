@@ -22,7 +22,7 @@ class PostEmailHandler {
    * Validates email can be sent before saving the post (if an email will be sent)
    *
    * @param {import('@tryghost/api-framework').Frame} frame
-   * @returns {Promise<{newsletter: Object, emailRecipientFilter: string, emailCount: number}|null>}
+   * @returns {Promise<import('../email-service/email-service').EmailPreflight|null>}
    */
   async validateBeforeSave(frame) {
     const newStatus = frame.data.posts[0].status;
@@ -33,7 +33,10 @@ class PostEmailHandler {
 
     const existingPost = await this.models.Post.findOne(
       { id: frame.options.id, status: 'all' },
-      { columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'] },
+      {
+        columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter'],
+        transacting: frame.options.transacting,
+      },
     );
     const previousStatus = existingPost?.get('status');
 
@@ -51,12 +54,7 @@ class PostEmailHandler {
 
     const newsletter = await this.getNewsletter(frame, existingPost);
 
-    const { emailCount } = await this.emailService.checkCanSendEmail(
-      newsletter,
-      emailRecipientFilter,
-    );
-
-    return { newsletter, emailRecipientFilter, emailCount };
+    return this.emailService.prepareEmail(newsletter, emailRecipientFilter);
   }
 
   /**
@@ -89,11 +87,17 @@ class PostEmailHandler {
    */
   async getNewsletter(frame, existingPost) {
     if (frame.options.newsletter) {
-      return this.models.Newsletter.findOne({ slug: frame.options.newsletter });
+      return this.models.Newsletter.findOne(
+        { slug: frame.options.newsletter },
+        { transacting: frame.options.transacting },
+      );
     }
 
     if (existingPost?.get('newsletter_id')) {
-      return this.models.Newsletter.findOne({ id: existingPost.get('newsletter_id') });
+      return this.models.Newsletter.findOne(
+        { id: existingPost.get('newsletter_id') },
+        { transacting: frame.options.transacting },
+      );
     }
 
     return null;
@@ -108,9 +112,10 @@ class PostEmailHandler {
    * @param {Object} [options.preflight.newsletter]
    * @param {string} [options.preflight.emailRecipientFilter]
    * @param {number} [options.preflight.emailCount]
+   * @param {object} [options.transacting]
    * @returns {Promise<void>}
    */
-  async createOrRetryEmail(model, { preflight } = {}) {
+  async createOrRetryEmail(model, { preflight, transacting } = {}) {
     if (!model.get('newsletter_id')) {
       return;
     }
@@ -126,9 +131,9 @@ class PostEmailHandler {
     let email;
 
     if (!postEmail) {
-      email = await this.emailService.createEmail(model, { preflight });
+      email = await this.emailService.createEmail(model, { preflight, transacting });
     } else if (postEmail.get('status') === 'failed') {
-      email = await this.emailService.retryEmail(postEmail);
+      email = await this.emailService.retryEmail(postEmail, { transacting });
     }
 
     if (email) {
