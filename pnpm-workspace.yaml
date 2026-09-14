@@ -367,4 +367,8 @@ versioning:
 # with `pnpm patch juice@<version>` when juice is bumped - and note juice 12+ is
 # ESM, so a major bump also needs the `require('juice')` call sites updated.
 patchedDependencies:
+  # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
+  # helpers Ghost never calls; the patch defers that require, as 9.x does. The
+  # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
+  '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
   juice@11.1.1: patches/juice@11.1.1.patch
