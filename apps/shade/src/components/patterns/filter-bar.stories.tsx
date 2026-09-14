@@ -58,6 +58,7 @@ export const WithFilters: Story = {
       <FilterBar>
         <Filters
           addButtonText="Add filter"
+          className="sm:pr-44"
           clearButton={
             <FilterBar.Actions>
               <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
@@ -71,6 +72,37 @@ export const WithFilters: Story = {
           showClearButton={true}
           onChange={setFilters}
         />
+      </FilterBar>
+    );
+  },
+};
+
+export const SeparateActions: Story = {
+  name: 'Separate actions',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Place actions beside Filters to reserve their width in normal flow, stacking them below filters on narrow screens. Actions passed through clearButton stay anchored inside Filters; reserve space for custom actions with className.',
+      },
+    },
+  },
+  render: () => {
+    const [filters, setFilters] = useState<Filter[]>([
+      createFilter('memberStatus', 'is', ['complimentary']),
+    ]);
+
+    return (
+      <FilterBar className="flex-col sm:flex-row">
+        <Filters fields={memberStatusFields} filters={filters} onChange={setFilters} />
+        {filters.length > 0 && (
+          <FilterBar.Actions>
+            <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+              Clear
+            </FilterBar.Action>
+            <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+          </FilterBar.Actions>
+        )}
       </FilterBar>
     );
   },

@@ -35,9 +35,9 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
       <Inline
         align="start"
         className={cn(
-          'w-full',
+          'relative w-full [&>[data-slot=filter-bar-actions]]:static',
           isAdmin7 &&
-            'relative -mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
+            '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-filter-bar-item-hover!',
           className,
         )}
         data-control-shape={controlShape}
@@ -52,24 +52,15 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
 }
 
 const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
-  ({ className, gap = 'sm', ...props }, ref) => {
-    const isInFilterBar = useFilterBarContext();
-    const { isAdmin7 } = useShade();
-
-    return (
-      <Inline
-        ref={ref}
-        className={cn(
-          'shrink-0 sm:absolute',
-          isInFilterBar && isAdmin7 ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
-          className,
-        )}
-        data-slot="filter-bar-actions"
-        gap={gap}
-        {...props}
-      />
-    );
-  },
+  ({ className, gap = 'sm', ...props }, ref) => (
+    <Inline
+      ref={ref}
+      className={cn('shrink-0 sm:absolute sm:top-0 sm:right-0', className)}
+      data-slot="filter-bar-actions"
+      gap={gap}
+      {...props}
+    />
+  ),
 );
 FilterBarActions.displayName = 'FilterBar.Actions';
 

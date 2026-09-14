@@ -37,7 +37,7 @@ const inputGroupVariants = cva(
       },
       shape: {
         rounded: 'rounded-control',
-        pill: 'rounded-full',
+        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-control has-[>[data-align=block-start]]:rounded-control has-[>textarea]:rounded-control',
       },
     },
     defaultVariants: {
