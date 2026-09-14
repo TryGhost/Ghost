@@ -6,6 +6,8 @@ export {
   fakeEditorPost,
   fakeUnsplashPhotos,
   submittedPost,
+  withFastAutosave,
+  withoutAutosave,
   withoutUnsplash,
 } from './editor';
 export { currentRoute, renderAdminApp } from './render-admin-app';

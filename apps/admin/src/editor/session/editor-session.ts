@@ -91,6 +91,8 @@ export interface EditorSessionOptions {
   /** Authors the create. Core rejects an Author's or Contributor's create without it. */
   currentUserId?: string;
   saveFailureMessage: string;
+  /** Reads the autosave debounce in milliseconds; defaults to the engine's 3 seconds. */
+  autosaveDebounceMs?: () => number | undefined;
   transport: EditorSessionTransport;
   /** Called once the create acknowledges; the caller replaces the URL. */
   onIdAcquired: (id: string) => void;
@@ -207,6 +209,7 @@ export function createEditorSession({
   siteUrl,
   currentUserId,
   saveFailureMessage,
+  autosaveDebounceMs,
   transport,
   onIdAcquired,
   onError,
@@ -566,6 +569,7 @@ export function createEditorSession({
     prepare,
     execute,
     reconcile,
+    autosaveDebounceMs,
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
         tracker.markSaveError(next.error.message);

@@ -14,6 +14,7 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
   withoutUnsplash,
   type StaffRoleName,
 } from '@test-utils/acceptance';
@@ -21,7 +22,7 @@ import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const BACK_LABEL = 'Close X card panel';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';

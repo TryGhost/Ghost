@@ -14,11 +14,12 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // What a real publish stamps: seconds the minute-granular fields cannot show.

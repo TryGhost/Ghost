@@ -126,6 +126,28 @@ describe('createSaveEngine', () => {
         snapshot: { version: 2 },
       });
     });
+
+    it('debounces by what the port answers, asked again at every restart', async () => {
+      let answer = 10;
+      const h = setup({}, { autosaveDebounceMs: () => answer });
+
+      void h.engine.dispatch('autosave');
+      await vi.advanceTimersByTimeAsync(9);
+      expect(h.execute).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      await h.succeed();
+
+      // The port's answer is read at the restart, so a later value is the one that counts.
+      answer = 20;
+      h.edit();
+      void h.engine.dispatch('autosave');
+      await vi.advanceTimersByTimeAsync(10);
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(10);
+      expect(h.execute).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('interleavings', () => {

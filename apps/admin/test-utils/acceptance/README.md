@@ -55,6 +55,11 @@ The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConf
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
 
+// The editor's autosave debounce, injected as a test-only `/config/` key, so a
+// save that lands proves it was sent without waiting (`withoutAutosave()`), or
+// autosave fires at once (`withFastAutosave()`):
+await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();
 me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01T00:00:00.000Z"}});

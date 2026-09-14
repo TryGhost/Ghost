@@ -14,6 +14,7 @@ import {
   renderAdminApp,
   staffRole,
   unsavedChangesGuarded,
+  withoutAutosave,
   type EndpointCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -21,7 +22,7 @@ import { editorScreen } from '@/editor/editor.screen';
 const PAGE_ID = 'pg123';
 const NEW_PAGE_ID = 'pg789';
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${PAGE_ID}/\\?`);
