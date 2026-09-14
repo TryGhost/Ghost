@@ -8,6 +8,10 @@ import type { Provider } from 'nconf';
  * `readOnly` flag on each store, but `Provider._execute` *skips* read-only
  * stores for a destructive action and returns `undefined`, so flipping that
  * flag would silently swallow config writes instead of surfacing them.
+ *
+ * `required()` is deliberately absent: despite sitting alongside these on the
+ * provider, it only calls `get()` for each key and throws when one is missing,
+ * so it stays usable on a frozen config.
  */
 const MUTATORS = [
   'set',
@@ -19,8 +23,35 @@ const MUTATORS = [
   'remove',
   'file',
   'use',
-  'required',
 ] as const;
+
+/**
+ * Recursively freeze a value so that a caller mutating what `get()` handed back
+ * fails loudly instead of silently corrupting the cache for everyone.
+ *
+ * Nested objects are shared by reference with nconf's own stores, so this
+ * freezes those too - which is the intent: after `freeze()` nothing should be
+ * writing to config through any route.
+ */
+function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+
+  const obj = value as unknown as object;
+
+  if (seen.has(obj)) {
+    return value;
+  }
+
+  seen.add(obj);
+
+  for (const nested of Object.values(obj)) {
+    deepFreeze(nested, seen);
+  }
+
+  return Object.freeze(value);
+}
 
 /**
  * The freeze API added to the config instance.
@@ -68,7 +99,10 @@ export function bindFreeze(nconf: Provider): asserts nconf is Provider & ConfigF
       return cache.get(key);
     }
 
-    const value = originalGet(key);
+    // Frozen, so that a caller which mutates the object it was handed gets a
+    // loud TypeError rather than quietly rewriting the cache for every
+    // subsequent reader
+    const value = deepFreeze(originalGet(key));
     cache.set(key, value);
 
     return value;

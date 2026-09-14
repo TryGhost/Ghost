@@ -136,6 +136,44 @@ describe('Unit: shared/config/freeze', function () {
     });
   });
 
+  describe('cached objects are immutable', function () {
+    it('rejects mutation of an object handed back by get', function () {
+      const config = buildConfig({
+        defaults: { database: { client: 'sqlite3', connection: { filename: 'db.sqlite' } } },
+      });
+      config.freeze();
+
+      const database = config.get('database') as Record<string, unknown>;
+
+      assert.throws(() => {
+        database.pool = { min: 1 };
+      }, TypeError);
+      assert.throws(() => {
+        (database.connection as Record<string, unknown>).timezone = 'Z';
+      }, TypeError);
+    });
+
+    it('keeps a parent read and a nested read in agreement', function () {
+      const config = buildConfig({
+        defaults: { database: { client: 'sqlite3', connection: { filename: 'db.sqlite' } } },
+      });
+      config.freeze();
+
+      const database = config.get('database') as Record<string, unknown>;
+
+      // a caller that tries to bolt something on must not be able to make
+      // get('database').pool and get('database:pool') disagree
+      try {
+        database.pool = { min: 1 };
+      } catch {
+        // expected - the point is what the two reads say afterwards
+      }
+
+      assert.equal((config.get('database') as Record<string, unknown>).pool, undefined);
+      assert.equal(config.get('database:pool'), undefined);
+    });
+  });
+
   describe('isFrozen', function () {
     it('reports the freeze state', function () {
       const config = buildConfig();
@@ -170,7 +208,6 @@ describe('Unit: shared/config/freeze', function () {
         remove: ['defaults'],
         file: ['some', '/tmp/nope.json'],
         use: ['defaults', { type: 'literal', store: {} }],
-        required: [['a']],
       };
 
       for (const [method, args] of Object.entries(methods)) {
@@ -184,6 +221,16 @@ describe('Unit: shared/config/freeze', function () {
           `expected ${method}() to throw while frozen`,
         );
       }
+    });
+
+    it('still validates required keys while frozen', function () {
+      // required() sits alongside the mutators on the provider but only reads -
+      // it calls get() per key and throws when one is missing
+      const config = buildConfig({ defaults: { url: 'http://localhost:2368' } });
+      config.freeze();
+
+      assert.equal(config.required(['url']), true);
+      assert.throws(() => config.required(['url', 'nope']), /Missing required keys: nope/);
     });
 
     it('names the key that was written in the error', function () {
