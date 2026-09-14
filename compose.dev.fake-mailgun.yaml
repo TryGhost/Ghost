@@ -1,0 +1,6 @@
+services:
+  ghost-dev:
+    environment:
+      bulkEmail__mailgun__apiKey: fake-mailgun-api-key
+      bulkEmail__mailgun__domain: fake.mailgun.test
+      bulkEmail__mailgun__baseUrl: http://host.docker.internal:${FAKE_MAILGUN_PORT:?Start with pnpm dev:fake-mailgun}/v3
