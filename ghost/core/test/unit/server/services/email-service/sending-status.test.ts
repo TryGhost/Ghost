@@ -303,13 +303,13 @@ describe('buildSendingStatus', function () {
     );
   });
 
-  it('limits distinct completion samples rather than rows for high-throughput sends', function () {
+  it('uses distinct completion timestamps for high-throughput sends', function () {
     for (const status of ['pending', 'submitted'] as const) {
       const completed = Array.from({ length: 30 }, (_, index) =>
         batch({ status, createdAt: `12:00:0${Math.floor(index / 10)}` }),
       );
-      // Ten batches per second gives 100 recipients/second. The last 20 rows
-      // alone only span two timestamps, despite three being available.
+      // Ten batches per second gives 100 recipients/second, with enough distinct
+      // timestamps to estimate after only two seconds.
       const batches =
         status === 'pending'
           ? completed
@@ -323,6 +323,27 @@ describe('buildSendingStatus', function () {
         1,
       );
     }
+  });
+
+  it('smooths a brief submission slowdown using the full minute of throughput', function () {
+    const timestamps = [
+      ...Array.from({ length: 41 }, (_, index) => index),
+      ...Array.from({ length: 10 }, (_, index) => 42 + index * 2),
+    ];
+    const batches: SendingBatch[] = timestamps.map((seconds) => ({
+      status: 'submitted',
+      recipientCount: 1000,
+      createdAt: at('12:00:00'),
+      updatedAt: new Date(at('12:00:00').getTime() + seconds * 1000),
+    }));
+    batches.push(batch({ status: 'pending', createdAt: '12:00:00', recipientCount: 100_000 }));
+
+    // 50,000 recipients completed in the measured minute, including the slowdown.
+    assert.deepEqual(buildSendingStatus(email({ recipientCount: 151_000 }), batches).progress, {
+      completed: 51_000,
+      total: 151_000,
+      estimatedSecondsRemaining: 120,
+    });
   });
 
   describe('recipient-weighted estimates', function () {
@@ -349,11 +370,11 @@ describe('buildSendingStatus', function () {
     });
 
     it('weights timings by recipient count rather than averaging rates', function () {
-      assert.equal(estimate([10, 10, 100, 10, 100, 10, 100], [0, 4, 20, 4, 20, 4, 20], 330), 72);
+      assert.equal(estimate([10, 10, 100, 10, 100, 10, 100], [0, 2, 10, 2, 10, 2, 10], 330), 36);
     });
 
     it('includes both slow and fast completions in aggregate throughput', function () {
-      assert.equal(estimate([10, 10, 10, 10, 10, 10, 10], [0, 10, 10, 100, 10, 0.1, 10]), 234);
+      assert.equal(estimate([10, 10, 10, 10, 10, 10, 10], [0, 1, 1, 10, 1, 0.01, 1]), 24);
     });
 
     it('retains large batches that take proportionally longer', function () {
@@ -363,8 +384,18 @@ describe('buildSendingStatus', function () {
     it('starts estimating after two measured intervals', function () {
       assert.equal(estimate([10], [0]), null);
       assert.equal(estimate([10, 10], [0, 10]), null);
+      assert.equal(estimate([10, 10, 10], [0, 1, 1]), 10);
       assert.equal(estimate([10, 10, 10], [0, 10, 10]), 100);
       assert.equal(estimate([10, 10, 10], [0, 100, 10]), 550);
+      assert.equal(estimate([10, 10, 10], [0, 100, 100]), 1000);
+    });
+
+    it('excludes the baseline recipients at the minute boundary', function () {
+      assert.equal(estimate([10, 10, 1000, 10, 10], [0, 10, 10, 30, 30]), 300);
+    });
+
+    it('keeps the full interval that crosses the minute boundary', function () {
+      assert.equal(estimate([10, 10, 1000, 10, 10], [0, 10, 10, 30, 35]), 325);
     });
 
     it('smooths a slow interval as more completions enter the window', function () {

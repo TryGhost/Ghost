@@ -7,22 +7,22 @@ import {
   createTestBucket,
   emptyTestBucket,
   deleteTestBucket,
-  getMinioConfig,
+  getS3Config,
   putObject,
-} from '../../../utils/minio';
+} from '../../../utils/s3';
 
 const STATIC_PREFIX = 'content/images';
-const minioConfig = getMinioConfig();
+const s3Config = getS3Config();
 
 // read() builds the object key as [tenantPrefix/]storagePath/relativePath, so a
 // test fixture must be written at that exact key for read() to find it.
 const objectKey = (relativePath: string, tenantPrefix = '') =>
   [tenantPrefix, STATIC_PREFIX, relativePath].filter(Boolean).join('/');
 
-// Skip when MinIO is unreachable. The flag is set by the integration
-// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// Skip when VersityGW is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes VersityGW once before
 // the forks spawn. (PLA-170)
-describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
+describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
   'Integration: S3Storage.read',
   function () {
     let adminClient: ReturnType<typeof createTestS3Client>;
@@ -30,9 +30,9 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')(
 
     const createStorage = (overrides = {}) =>
       new S3Storage({
-        ...minioConfig,
+        ...s3Config,
         bucket,
-        cdnUrl: `${minioConfig.endpoint}/${bucket}`,
+        cdnUrl: `${s3Config.endpoint}/${bucket}`,
         staticFileURLPrefix: STATIC_PREFIX,
         multipartUploadThresholdBytes: 10 * 1024 * 1024,
         multipartChunkSizeBytes: 10 * 1024 * 1024,

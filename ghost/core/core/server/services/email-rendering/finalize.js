@@ -1,4 +1,4 @@
-const cheerio = require('cheerio');
+const cheerio = require('cheerio/slim');
 const juice = require('juice');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 

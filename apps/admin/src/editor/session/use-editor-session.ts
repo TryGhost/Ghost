@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
@@ -34,6 +33,7 @@ import {
 import type { RestoredRevision } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
 import type { PostType } from '@/editor/card-config';
+import { reportEditorError } from '@/editor/report-error';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
@@ -85,6 +85,8 @@ export interface EditorSessionBinding {
 export interface EditorSessionHandle {
   bind: EditorSessionBinding;
   state: SaveEngineState;
+  /** The server ID the post holds, once a create has acknowledged one. */
+  persistedId: string | null;
   /** The server ID acquired by this session's first create, if it began new. */
   createdId: string | null;
   /** Moves when a reload replaces the document; keys the editor surface so both Koenig instances re-seed. */
@@ -112,6 +114,8 @@ export interface EditorSessionHandle {
    * an edit. The excerpt is a settings field wherever it is rendered.
    */
   commitSettings: () => void;
+  /** The title the engine holds, which is the default title while the input is blank. */
+  title: string;
   /** The slug the machine holds, which the URL section's input reads. */
   slug: string;
   /** Routes a manual slug edit through the slug machine, then the save policy. */
@@ -151,12 +155,6 @@ function pageStatus(status: PostStatus | undefined): PageStatus | undefined {
   return status === 'sent' ? undefined : status;
 }
 
-function reportError(error: unknown): void {
-  // eslint-disable-next-line no-console
-  console.error(error);
-  Sentry.captureException(error);
-}
-
 export function useEditorSession({
   postType,
   record,
@@ -191,7 +189,7 @@ export function useEditorSession({
       currentUserId,
       saveFailureMessage: `Couldn’t save this ${postType}.`,
       onIdAcquired: setPersistedId,
-      onError: reportError,
+      onError: reportEditorError,
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -246,10 +244,14 @@ export function useEditorSession({
     };
   }, [session]);
 
-  const { state, isDirty, slug, settings, publishTime } = useSyncExternalStore(
-    session.subscribe,
-    session.getView,
-  );
+  const {
+    state,
+    isDirty,
+    title: engineTitle,
+    slug,
+    settings,
+    publishTime,
+  } = useSyncExternalStore(session.subscribe, session.getView);
 
   const stageSettings = session.patchFields;
 
@@ -443,6 +445,7 @@ export function useEditorSession({
       onSecondaryError,
     },
     state,
+    persistedId,
     createdId: isNew ? persistedId : null,
     isDirty: () => isDirty,
     contentKey,
@@ -456,6 +459,7 @@ export function useEditorSession({
     editSettings,
     stageSettings,
     commitSettings,
+    title: engineTitle,
     slug,
     editSlug: session.editSlug,
     publishTime,

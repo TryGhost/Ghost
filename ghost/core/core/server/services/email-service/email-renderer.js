@@ -192,7 +192,7 @@ function escapeRegExp(string) {
  * @return {ReturnType<typeof cheerio.load>}
  */
 function cheerioLoad(html) {
-  const cheerio = require('cheerio');
+  const cheerio = require('cheerio/slim');
   return cheerio.load(html);
 }
 

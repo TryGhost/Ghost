@@ -14,7 +14,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo } from 'react';
 import { z } from 'zod';
 import { parseRecipientSegments } from './email-recipients-boundary';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
@@ -37,6 +37,7 @@ export function EmailRecipientsOptions({
   onSetNewsletter,
   onSetRecipientFilter,
 }: EmailRecipientsOptionsProps) {
+  const newsletterId = useId();
   const { data: settingsData } = useBrowseSettings({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -152,14 +153,14 @@ export function EmailRecipientsOptions({
 
       {state.newsletters.length > 1 ? (
         <Stack gap="sm">
-          <Label htmlFor="publish-newsletter">Newsletter</Label>
+          <Label htmlFor={newsletterId}>Newsletter</Label>
           <Select
             value={state.newsletter?.slug ?? ''}
             onValueChange={(slug) =>
               onSetNewsletter(state.newsletters.find((option) => option.slug === slug) ?? null)
             }
           >
-            <SelectTrigger data-testid={publishNewsletterSelect} id="publish-newsletter">
+            <SelectTrigger data-testid={publishNewsletterSelect} id={newsletterId}>
               <SelectValue placeholder="Select a newsletter" />
             </SelectTrigger>
             <SelectContent>
