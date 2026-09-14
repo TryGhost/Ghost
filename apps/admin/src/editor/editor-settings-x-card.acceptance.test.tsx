@@ -2,18 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  UNSPLASH_PICKED,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
   fakeEditorPost,
-  fakeEndpoint,
   fakeTiers,
+  fakeUnsplashPhotos,
   post,
   renderAdminApp,
-  settingsResponse,
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutUnsplash,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -71,44 +72,6 @@ function fakeImageUpload() {
   return fakeAdminEndpoint('POST', '/images/upload/', {
     images: [{ url: UPLOADED, ref: null }],
   });
-}
-
-const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
-// The picker asks Unsplash for a wider rendition of the image it inserts.
-const UNSPLASH_PICKED = 'https://images.unsplash.com/photo-1?ixid=1&w=2000';
-
-/** One Unsplash photo, in the shape the search modal lays out and inserts. */
-function fakeUnsplashPhotos() {
-  fakeEndpoint('GET', 'https://api.unsplash.com/photos', [
-    {
-      id: 'photo-1',
-      color: '#123456',
-      alt_description: 'A hillside',
-      height: 800,
-      width: 1200,
-      likes: 12,
-      urls: { regular: UNSPLASH_REGULAR },
-      links: {
-        html: 'https://unsplash.com/photos/photo-1',
-        download: 'https://unsplash.com/photos/photo-1/download',
-        download_location: 'https://api.unsplash.com/photos/photo-1/download',
-      },
-      user: {
-        name: 'A Photographer',
-        links: { html: 'https://unsplash.com/@photographer' },
-        profile_image: { medium: 'https://images.unsplash.com/profile-1' },
-      },
-    },
-  ]);
-  fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
-}
-
-/** The site fixture turns Unsplash on, so only the off case needs an override. */
-function withoutUnsplash() {
-  return {
-    ...FLAG_ON,
-    boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
-  };
 }
 
 async function openXCard() {
@@ -517,7 +480,7 @@ describe('Post settings X card', () => {
     'leaves Unsplash out while the site’s integration is off',
     async () => {
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, withoutUnsplash());
+      await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withoutUnsplash() });
       await openXCard();
 
       await expect.element(editorScreen.settingsXImageInput()).toBeInTheDocument();
@@ -542,6 +505,38 @@ describe('Post settings X card', () => {
       expect(submittedPost(saveApi)).toMatchObject({ twitter_image: UNSPLASH_PICKED });
       await expect.element(editorScreen.removeSettingsXImage()).toBeVisible();
       await expect(editorScreen.unsplashModal()).toHaveCount(0);
+    },
+    SLOW,
+  );
+
+  it(
+    'keeps keyboard navigation inside Unsplash and restores focus after Escape',
+    async () => {
+      fakeSavablePost();
+      fakeUnsplashPhotos();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openXCard();
+
+      await editorScreen.settingsXImageUnsplashButton().click();
+      await expect.element(editorScreen.unsplashSearchInput()).toHaveFocus();
+      await expect.element(editorScreen.unsplashInsertImage()).toBeVisible();
+
+      // Back past the close button: focus must wrap inside the search rather
+      // than reaching the picker button in the pane behind it.
+      await userEvent.keyboard('{Shift>}{Tab}{Tab}{/Shift}');
+      expect(editorScreen.unsplashSearch().element().contains(document.activeElement)).toBe(true);
+
+      // Traverse past the close button, search field and one photo's links.
+      // Every stop stays inside, including the forward wrap.
+      for (let i = 0; i < 6; i++) {
+        await userEvent.keyboard('{Tab}');
+        expect(editorScreen.unsplashSearch().element().contains(document.activeElement)).toBe(true);
+      }
+      await userEvent.keyboard('{Escape}');
+
+      await expect(editorScreen.unsplashModal()).toHaveCount(0);
+      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+      await expect.element(editorScreen.settingsXImageUnsplashButton()).toHaveFocus();
     },
     SLOW,
   );

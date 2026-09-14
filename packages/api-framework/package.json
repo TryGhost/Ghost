@@ -20,11 +20,11 @@
     "lint": "eslint . --cache"
   },
   "dependencies": {
-    "@tryghost/debug": "catalog:api-framework-migration",
-    "@tryghost/errors": "catalog:api-framework-migration",
-    "@tryghost/promise": "catalog:api-framework-migration",
-    "@tryghost/tpl": "catalog:api-framework-migration",
-    "@tryghost/validator": "catalog:api-framework-migration",
+    "@tryghost/debug": "catalog:",
+    "@tryghost/errors": "catalog:",
+    "@tryghost/promise": "catalog:",
+    "@tryghost/tpl": "catalog:",
+    "@tryghost/validator": "catalog:",
     "lodash": "catalog:"
   },
   "devDependencies": {

@@ -27,7 +27,7 @@
         "sinon": "22.1.0"
     },
     "dependencies": {
-        "@tryghost/errors": "2.2.1",
+        "@tryghost/errors": "catalog:",
         "lodash": "4.18.1",
         "luxon": "3.7.2"
     },

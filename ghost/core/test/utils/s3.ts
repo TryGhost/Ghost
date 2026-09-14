@@ -12,7 +12,7 @@ import {
 
 const DEFAULT_TEST_BUCKET_PREFIX = 'test-redirects';
 
-export interface MinioTestConfig {
+export interface S3TestConfig {
   endpoint: string;
   region: string;
   forcePathStyle: boolean;
@@ -20,21 +20,21 @@ export interface MinioTestConfig {
   secretAccessKey: string;
 }
 
-// MinIO serves buckets via URL path (http://host/bucket/key) rather than
+// VersityGW serves buckets via URL path (http://host/bucket/key) rather than
 // AWS's virtual-host style (https://bucket.s3.amazonaws.com/key), so
 // forcePathStyle stays true.
-export function getMinioConfig(): MinioTestConfig {
+export function getS3Config(): S3TestConfig {
   return {
-    endpoint: process.env.MINIO_TEST_ENDPOINT || 'http://127.0.0.1:9000',
-    region: process.env.MINIO_TEST_REGION || 'us-east-1',
+    endpoint: process.env.S3_TEST_ENDPOINT || 'http://127.0.0.1:9000',
+    region: process.env.S3_TEST_REGION || 'us-east-1',
     forcePathStyle: true,
-    accessKeyId: process.env.MINIO_TEST_ACCESS_KEY || 'minio-user',
-    secretAccessKey: process.env.MINIO_TEST_SECRET_KEY || 'minio-pass',
+    accessKeyId: process.env.S3_TEST_ACCESS_KEY || 's3-user',
+    secretAccessKey: process.env.S3_TEST_SECRET_KEY || 's3-pass',
   };
 }
 
 export function createTestS3Client(): S3Client {
-  const cfg = getMinioConfig();
+  const cfg = getS3Config();
   return new S3Client({
     endpoint: cfg.endpoint,
     region: cfg.region,

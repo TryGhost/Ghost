@@ -11,19 +11,15 @@ import {
   useEditPage,
   useEditorPage,
   pagesDataType,
-  type PageEditableData,
+  type PageStatus,
 } from '@tryghost/admin-x-framework/api/pages';
 import {
   useAddPost,
   useEditPost,
   useEditorPost,
   postsDataType,
-  type PostEditableData,
+  type PostStatus,
 } from '@tryghost/admin-x-framework/api/posts';
-import type {
-  CreateContentData,
-  EditContentData,
-} from '@tryghost/admin-x-framework/api/content-types';
 import {
   buildPostEditorReadParams,
   type PostWriteOptions,
@@ -41,9 +37,10 @@ import type { PostType } from '@/editor/card-config';
 import { contentToText } from './content-text';
 import {
   createEditorSession,
+  type EditorCreatePayload,
+  type EditorEditPayload,
   type EditorSession,
   type EditorSessionView,
-  type EditorWritePayload,
 } from './editor-session';
 import { createPublishDispatcher } from './publish-dispatch';
 import type { PublishDispatcher } from '@/editor/publish/publish-options';
@@ -149,6 +146,11 @@ export interface UseEditorSessionOptions {
   currentUserId?: string;
 }
 
+/** A page is never sent, so the page write contract has no such status. */
+function pageStatus(status: PostStatus | undefined): PageStatus | undefined {
+  return status === 'sent' ? undefined : status;
+}
+
 function reportError(error: unknown): void {
   // eslint-disable-next-line no-console
   console.error(error);
@@ -191,33 +193,33 @@ export function useEditorSession({
       onIdAcquired: setPersistedId,
       onError: reportError,
       transport: {
-        create: async (payload: EditorWritePayload) => {
+        create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
           if (current.postType === 'page') {
             const { pages } = await current.addPage({
-              page: payload as CreateContentData<PageEditableData>,
+              page: { ...payload, status: pageStatus(payload.status) },
               sessionExpiryRedirect: false,
             });
             return pages[0];
           }
           const { posts } = await current.addPost({
-            post: payload as CreateContentData<PostEditableData>,
+            post: payload,
             sessionExpiryRedirect: false,
           });
           return posts[0];
         },
-        update: async (payload: EditorWritePayload, options: PostWriteOptions) => {
+        update: async (payload: EditorEditPayload, options: PostWriteOptions) => {
           const current = transport.current;
           if (current.postType === 'page') {
             const { pages } = await current.editPage({
-              page: payload as EditContentData<PageEditableData>,
+              page: { ...payload, status: pageStatus(payload.status) },
               options,
               sessionExpiryRedirect: false,
             });
             return pages[0];
           }
           const { posts } = await current.editPost({
-            post: payload as EditContentData<PostEditableData>,
+            post: payload,
             options,
             sessionExpiryRedirect: false,
           });

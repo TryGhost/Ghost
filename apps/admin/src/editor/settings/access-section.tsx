@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import {
   Checkbox,
+  FieldError,
   Label,
   Select,
   SelectContent,
@@ -94,6 +95,7 @@ export interface AccessSectionProps {
  */
 export function AccessSection({ session, postType }: AccessSectionProps) {
   const selectId = useId();
+  const tiersErrorId = useId();
   const { data: settingsData } = useBrowseSettings({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -105,6 +107,7 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
 
   const visibility = selectedVisibility(session.settings.visibility, defaultContentVisibility);
   const selected = new Set(selectedTierIds(session.settings.tiers));
+  const tiersMissing = tiersIncomplete(session.settings);
 
   const { data: tiersData } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -146,7 +149,14 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
       </Select>
 
       {visibility === 'tiers' ? (
-        <Stack data-testid={settingsTiersPicker} gap="md">
+        <Stack
+          aria-describedby={tiersMissing ? tiersErrorId : undefined}
+          aria-invalid={tiersMissing}
+          aria-label="Tiers"
+          data-testid={settingsTiersPicker}
+          gap="md"
+          role="group"
+        >
           <TierGroup
             heading="Active tiers"
             options={options.filter((option) => !option.archived)}
@@ -159,10 +169,10 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
             selected={selected}
             onToggle={toggleTier}
           />
-          {tiersIncomplete(session.settings) ? (
-            <Text className="text-destructive" data-testid={settingsTiersError} size="sm">
+          {tiersMissing ? (
+            <FieldError data-testid={settingsTiersError} id={tiersErrorId}>
               {TIERS_REQUIRED}
-            </Text>
+            </FieldError>
           ) : null}
         </Stack>
       ) : null}

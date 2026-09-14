@@ -26,7 +26,8 @@ const getSettingsTableData = function getSettingsTableData(settingsData) {
   return (
     settingsData &&
     settingsData.filter((setting) => {
-      return !SETTING_KEYS_BLOCKLIST.includes(setting.key);
+      // core settings hold instance secrets and are never imported, so never export them
+      return setting.group !== 'core' && !SETTING_KEYS_BLOCKLIST.includes(setting.key);
     })
   );
 };

@@ -533,6 +533,12 @@ async function initBackgroundServices({ config }) {
     ]);
   }
 
+  const labs = require('./shared/labs');
+  if (labs.isSet('automationsTinybirdSync')) {
+    const tinybirdSync = require('./server/services/tinybird-sync');
+    tinybirdSync.start();
+  }
+
   try {
     const updateCheck = require('./server/services/update-check');
     await updateCheck.scheduleJobs(jobsService);
