@@ -311,6 +311,39 @@ describe('Post settings access', () => {
   );
 
   it(
+    'reports a failed tier lookup and lets the writer retry',
+    async () => {
+      fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });
+      const tiersApi = fakeAdminEndpoint(
+        'GET',
+        /^\/tiers\//,
+        { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openAccess();
+
+      await expect
+        .element(editorScreen.settingsLoadError())
+        .toHaveTextContent('Couldn’t load tiers.');
+      await expect(editorScreen.settingsTier('Gold')).toHaveCount(0);
+      await expect(editorScreen.settingsTiersError()).toHaveCount(0);
+      expect(tiersApi.requests).toHaveLength(1);
+
+      // Once the session is restored, retry the lookup in the existing editor.
+      fakeTiers(SITE_TIERS);
+      await editorScreen.settingsLoadErrorRetry().click();
+
+      await expect
+        .element(editorScreen.settingsTier('Gold'))
+        .toHaveAttribute('data-state', 'checked');
+      await expect(editorScreen.settingsLoadError()).toHaveCount(0);
+      expect(tiersApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+
+  it(
     'asks for a tier again when the last one is unpicked',
     async () => {
       const saveApi = fakeSavablePost({ visibility: 'tiers', tiers: [{ id: GOLD.id }] });

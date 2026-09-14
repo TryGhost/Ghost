@@ -40,6 +40,8 @@ export const unsplashSearchModal = 'unsplash-search-modal';
 // settings sidebar testids
 export const postSettingsSidebar = 'post-settings-sidebar';
 export const settingsMenuToggle = 'settings-menu-toggle';
+// Shared by every section that reports a failed browse.
+export const settingsLoadError = 'settings-load-error';
 export const settingsExcerptInput = 'settings-excerpt-input';
 export const settingsFeaturedToggle = 'settings-featured-toggle';
 export const settingsShowTitleToggle = 'settings-show-title-toggle';
