@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import {
@@ -11,14 +11,9 @@ import {
 } from '@tryghost/shade/patterns';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import {
-  ACCEPTED_IMAGE_TYPES,
-  UNSUPPORTED_IMAGE_MESSAGE,
-  uploadErrorMessage,
-} from '@/shared/images/image-upload';
-import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { ACCEPTED_IMAGE_TYPES, UNSUPPORTED_IMAGE_MESSAGE } from '@/shared/images/image-upload';
 import { UnsplashPicker, type UnsplashSelection } from './unsplash-picker';
+import type { ImageFieldUpload } from './use-image-field-upload';
 
 /** `bar` is the strip above the post title, `panel` the box a settings pane holds. */
 const VARIANTS = {
@@ -40,6 +35,8 @@ export interface ImageFieldProps {
   subject: string;
   /** The site's Unsplash setting: nothing is offered while it is off. */
   unsplashEnabled: boolean;
+  /** Owned outside a conditionally rendered pane so pending uploads survive closing it. */
+  upload: ImageFieldUpload;
   variant?: ImageFieldVariant;
   className?: string;
   testId?: string;
@@ -61,6 +58,7 @@ export function ImageField({
   src,
   subject,
   unsplashEnabled,
+  upload,
   variant = 'panel',
   className,
   testId,
@@ -69,20 +67,9 @@ export function ImageField({
   onUnsplashSelect,
   children,
 }: ImageFieldProps) {
-  const { mutateAsync: uploadImage, isPending: isUploading } = useUploadImage();
+  const { isUploading, onUpload } = upload;
   const styles = VARIANTS[variant];
   const addLabel = `Add ${subject}`;
-
-  const handleUpload = useCallback(
-    async (file: File) => {
-      try {
-        onChange(getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })));
-      } catch (error) {
-        toast.error(uploadErrorMessage(error, subject));
-      }
-    },
-    [onChange, subject, uploadImage],
-  );
 
   if (!src) {
     return (
@@ -93,7 +80,7 @@ export function ImageField({
           disabled={isUploading}
           inputAriaLabel={addLabel}
           noDragEventsBubbling
-          onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
+          onDropAccepted={(files) => files[0] && void onUpload(files[0])}
           onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
         >
           {isUploading ? (

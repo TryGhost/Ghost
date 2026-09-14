@@ -6,6 +6,7 @@ import type { PostCardConfig } from './card-config';
 import { FeatureImageCaption } from './feature-image-caption';
 import { ImageField } from './image-field';
 import type { UnsplashSelection } from './unsplash-picker';
+import { useImageFieldUpload } from './use-image-field-upload';
 
 const ALT_MAX_LENGTH = 191;
 const IMAGE_SUBJECT = 'feature image';
@@ -84,6 +85,8 @@ export function FeatureImage({
     [onImageChange, onImageClear, relayTkCount],
   );
 
+  const upload = useImageFieldUpload(IMAGE_SUBJECT, changeImage);
+
   const pickFromUnsplash = useCallback(
     (picked: UnsplashSelection) => {
       onImageChange(picked.src);
@@ -100,6 +103,7 @@ export function FeatureImage({
       subject={IMAGE_SUBJECT}
       testId="editor-feature-image"
       unsplashEnabled={!!cardConfig.unsplash}
+      upload={upload}
       variant="bar"
       onChange={changeImage}
       onUnsplashSelect={pickFromUnsplash}

@@ -196,6 +196,10 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+Returning to the section list and reopening the same social-card pane keeps an
+in-progress image upload pending. Its file picker and Unsplash button stay
+disabled until the upload succeeds or fails.
+
 ## Escape
 
 Escape closes one layer, the innermost the writer is in. In a tag or author list

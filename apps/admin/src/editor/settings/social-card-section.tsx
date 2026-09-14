@@ -5,6 +5,7 @@ import BrandIcon from '@/shared/brand-icon/brand-icon';
 import type { PostCardConfig } from '@/editor/card-config';
 import { ImageField } from '@/editor/image-field';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import { useImageFieldUpload } from '@/editor/use-image-field-upload';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
@@ -71,6 +72,7 @@ export function SocialCardSection({
     (src: string | null) => session.editSettings({ [network.imageKey]: src }),
     [network.imageKey, session],
   );
+  const upload = useImageFieldUpload(imageSubject, editImage);
 
   const previewRow = (row: SocialPreviewRow) => {
     if (row === 'title') {
@@ -112,6 +114,7 @@ export function SocialCardSection({
         subject={imageSubject}
         testId={network.imageTestId}
         unsplashEnabled={!!cardConfig.unsplash}
+        upload={upload}
         onChange={editImage}
       />
 
