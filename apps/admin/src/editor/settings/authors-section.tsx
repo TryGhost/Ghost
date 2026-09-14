@@ -5,13 +5,13 @@ import type { PostAuthor } from '@tryghost/admin-x-framework/api/posts';
 import { settingsAuthorsError } from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { AUTHORS_REQUIRED } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 import { AuthorsPicker } from './authors-picker';
 import { AUTHORS_SEARCH_PARAMS, selectedAuthors, type AuthorOption } from './authors-options';
 
 export interface AuthorsSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   currentUser?: User;
 }
 

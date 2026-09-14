@@ -11,14 +11,14 @@ import {
 import { DateTimePicker } from '@/editor/date-time-picker';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSection } from './settings-section';
 
 /** A scheduled post is re-timed from the publish menu, not from here. */
 const RESCHEDULE_NOTE = 'Use the publish menu to re-schedule';
 
 export interface PublishDateSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
 }
 
 /**

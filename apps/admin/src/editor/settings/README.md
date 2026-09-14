@@ -3,7 +3,9 @@
 `apps/admin/src/editor/settings/` holds the settings panel beside the post
 editor: the frame, its header toggle, and the sections that edit a post's
 non-body fields. Nothing here talks to the API. Every field goes through the
-editing session, which is the only writer.
+editing session, which is the only writer. A section is handed a narrow port
+onto that session — the settings fields, their writers, and the few other
+members the sections read — rather than the whole editing handle.
 
 ## Save policy
 

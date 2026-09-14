@@ -1,4 +1,4 @@
-import { Suspense, useCallback } from 'react';
+import { memo, Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
@@ -82,7 +82,9 @@ function KoenigInstanceMount({
   );
 }
 
-export function KoenigPostEditor(props: KoenigPostEditorProps) {
+// Memoized: every prop is referentially stable, so a settings edit elsewhere in
+// the editor must not re-render two composer subtrees.
+export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPostEditorProps) {
   const editor = loadKoenig();
   const { onSecondaryError } = props;
 
@@ -120,4 +122,4 @@ export function KoenigPostEditor(props: KoenigPostEditorProps) {
       </ErrorBoundary>
     </div>
   );
-}
+});
