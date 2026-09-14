@@ -72,7 +72,7 @@ describe('saving post access', () => {
       for (const save of [session.dispatchExplicit, session.dispatchPublish]) {
         expect(await save()).toMatchObject({
           kind: 'failed',
-          error: { kind: 'validation', message: 'Please select at least one tier' },
+          error: { kind: 'validation', message: 'Please select at least one tier.' },
         });
       }
       expect(create).not.toHaveBeenCalled();

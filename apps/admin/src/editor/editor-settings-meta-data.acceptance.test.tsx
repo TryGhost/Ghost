@@ -299,7 +299,7 @@ describe('Post settings meta data', () => {
 
       await expect
         .element(editorScreen.settingsSubviewPane().getByRole('alert'))
-        .toHaveTextContent('Meta Title cannot be longer than 300 characters.');
+        .toHaveTextContent('Meta title cannot be longer than 300 characters.');
       await expect
         .element(editorScreen.settingsMetaTitle())
         .toHaveAttribute('aria-invalid', 'true');
@@ -312,7 +312,7 @@ describe('Post settings meta data', () => {
 
       await expect
         .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Meta Title cannot be longer than 300 characters.');
+        .toHaveTextContent('Meta title cannot be longer than 300 characters.');
       expect(saveApi.requests).toHaveLength(0);
     },
     SLOW,

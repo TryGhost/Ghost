@@ -27,13 +27,7 @@ import {
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import {
-  X_DESCRIPTION_MAX,
-  X_DESCRIPTION_TOO_LONG,
-  X_TITLE_MAX,
-  X_TITLE_TOO_LONG,
-  overLength,
-} from '@/editor/session/settings-fields';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
@@ -77,10 +71,8 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
   const twitterImage = session.settings.twitter_image ?? '';
   const twitterTitle = session.settings.twitter_title ?? '';
   const twitterDescription = session.settings.twitter_description ?? '';
-  const titleError = overLength(twitterTitle, X_TITLE_MAX) ? X_TITLE_TOO_LONG : null;
-  const descriptionError = overLength(twitterDescription, X_DESCRIPTION_MAX)
-    ? X_DESCRIPTION_TOO_LONG
-    : null;
+  const titleError = settingsFieldErrorFor('twitter_title', session.settings);
+  const descriptionError = settingsFieldErrorFor('twitter_description', session.settings);
 
   const previewTitle = socialTitle({
     own: twitterTitle,
