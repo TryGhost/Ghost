@@ -152,7 +152,10 @@ function estimateSecondsRemaining({
   // Include the baseline at or before the last minute so the first interval's
   // recipients have their full elapsed time. Sparse sends still need two intervals.
   const cutoff = completions[completions.length - 1].timestamp - ETA_WINDOW_MS;
-  const baseline = completions.findLastIndex((sample) => sample.timestamp <= cutoff);
+  let baseline = completions.length - 1;
+  while (baseline > 0 && completions[baseline].timestamp > cutoff) {
+    baseline -= 1;
+  }
   const window = completions.slice(
     Math.max(0, Math.min(baseline, completions.length - ETA_MIN_INTERVALS - 1)),
   );
