@@ -14,6 +14,8 @@ import {
   submittedPost,
   tag,
   withFastAutosave,
+  withoutAutosave,
+  unsavedChangesGuarded,
   type CapturedEndpointRequest,
   type EndpointCapture,
   type RenderAdminAppOptions,
@@ -90,9 +92,10 @@ function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
   return { ...FLAG_ON, boot: { browseMe: { response: me } } };
 }
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 function bodyElement(): Element | null {
@@ -110,7 +113,7 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
     const url = saveApi.lastRequest?.url ?? '';
@@ -134,9 +137,10 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
     await editorScreen.titleInput().click();
     await editorScreen.body().click();
 
@@ -151,7 +155,7 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.body()).toBeVisible();
     await expect.poll(() => saveApi.requests.length).toBe(0);
 
-    await typeIntoBody(' edited');
+    await appendToBody(' edited');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
   });
@@ -184,7 +188,7 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.body()).toBeVisible();
     const mountedBody = bodyElement();
 
-    await typeIntoBody('First words');
+    await appendToBody('First words');
 
     await expect.poll(() => createApi.requests.length).toBe(1);
     expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
@@ -205,7 +209,7 @@ describe('Post editor saving', () => {
       await renderAdminApp('/editor/post', bootAs(role));
       await expect.element(editorScreen.body()).toBeVisible();
 
-      await typeIntoBody('First words');
+      await appendToBody('First words');
 
       await expect.poll(() => createApi.requests.length).toBe(1);
       expect(submittedPost(createApi).authors).toEqual([{ id: CURRENT_USER_ID }]);
@@ -246,11 +250,11 @@ describe('Post editor saving', () => {
     await renderAdminApp('/editor/post', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
 
-    await typeIntoBody('First words');
+    await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     try {
-      await typeIntoBody(' and then some');
+      await appendToBody(' and then some');
       expect(submittedBody(createApi)).not.toContain('and then some');
     } finally {
       createResponse.resolve({ posts: [created] });
@@ -268,10 +272,10 @@ describe('Post editor saving', () => {
 
   it('saves on Cmd-S and asks the server for a revision', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
@@ -313,7 +317,7 @@ describe('Post editor saving', () => {
       await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
       await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-      await typeIntoBody(' and more');
+      await appendToBody(' and more');
 
       await expect.element(editorScreen.status()).toHaveTextContent('Saving');
       await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
@@ -343,7 +347,7 @@ describe('Post editor saving', () => {
         }),
       ],
     });
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
     await expect.poll(() => saveApi.requests.length).toBe(1);
 
     await expect.element(editorScreen.status()).toHaveTextContent('Published');
@@ -354,7 +358,7 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
     expect(submittedPost(saveApi)).not.toHaveProperty('tags');
@@ -392,14 +396,14 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect
       .element(editorScreen.conflictBanner())
       .toHaveTextContent('Someone else is editing this post');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
-    await typeIntoBody(' again');
+    await appendToBody(' again');
 
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await expect.element(editorScreen.body()).toHaveTextContent('and more again');
@@ -429,7 +433,7 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect.element(editorScreen.reauthBanner()).toHaveTextContent('Your session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
@@ -464,7 +468,7 @@ describe('Post editor saving', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
 
     await expect.element(editorScreen.reauthBanner()).toBeVisible();
     await editorScreen.dismissReauth().click();

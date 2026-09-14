@@ -136,9 +136,10 @@ function fakeDeferredCleanSave() {
   };
 }
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 /**
@@ -175,7 +176,7 @@ function watchLeaveDialog(): () => number {
 async function openDirtyEditor(options: RenderAdminAppOptions) {
   await renderAdminApp(`/editor/post/${POST_ID}`, options);
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-  await typeIntoBody(' and more');
+  await appendToBody(' and more');
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
   await expect.poll(unsavedChangesGuarded).toBe(true);
 }
@@ -318,10 +319,10 @@ describe('Post editor leave guard', () => {
     await renderAdminApp('/editor/post', withFastAutosave(FLAG_ON));
     await expect.element(editorScreen.body()).toBeVisible();
 
-    await typeIntoBody('First words');
+    await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
     // The URL swap lands on a post the writer has already moved past.
-    await typeIntoBody(' and then some');
+    await appendToBody(' and then some');
     resolveCreate();
 
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
@@ -336,7 +337,7 @@ describe('Post editor leave guard', () => {
 
     await renderAdminApp('/editor/post', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
-    await typeIntoBody('First words');
+    await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     await editorScreen.backLink('post').click();
@@ -354,9 +355,9 @@ describe('Post editor leave guard', () => {
 
     await renderAdminApp('/editor/post', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
-    await typeIntoBody('First words');
+    await appendToBody('First words');
     await expect.poll(() => createApi.requests.length).toBe(1);
-    await typeIntoBody(' and then some');
+    await appendToBody(' and then some');
 
     await editorScreen.backLink('post').click();
     resolveCreate();
@@ -376,7 +377,7 @@ describe('Post editor leave guard', () => {
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     expect(unsavedChangesGuarded()).toBe(false);
 
-    await typeIntoBody(' and more');
+    await appendToBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
 
     await expect.poll(unsavedChangesGuarded).toBe(false);

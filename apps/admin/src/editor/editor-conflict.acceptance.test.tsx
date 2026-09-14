@@ -137,14 +137,15 @@ const saveFails = (status: number) =>
     { status },
   );
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 async function collide(saveApi: EndpointCapture) {
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-  await typeIntoBody(' and more');
+  await appendToBody(' and more');
   await expect.poll(() => saveApi.requests.length).toBe(1);
   await expect.element(editorScreen.conflictBanner()).toBeVisible();
 }
@@ -247,8 +248,7 @@ describe('Post editor update collision', () => {
     await expect.poll(featureImageSrc).toBe(THEIR_IMAGE);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
 
-    await typeIntoBody(' plus mine');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' plus mine');
 
     await expect.poll(() => saveApi.requests.length).toBe(2);
     expect(postIn(saveApi.lastRequest)).toMatchObject({
@@ -294,8 +294,7 @@ describe('Post editor update collision', () => {
       posts: [beforeLatest],
     }));
 
-    await typeIntoBody(' accepted first');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' accepted first');
     await expect.poll(() => acceptedSave.requests.length).toBe(1);
     await expect.poll(() => staleRead.requests.length).toBe(1);
 
@@ -313,8 +312,7 @@ describe('Post editor update collision', () => {
       },
       { status: 409 },
     );
-    await typeIntoBody(' then conflicted');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' then conflicted');
     await expect.poll(() => collisionSave.requests.length).toBe(1);
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
@@ -355,8 +353,7 @@ describe('Post editor update collision', () => {
     const detailRead = fakeAdminEndpoint('GET', READ_ROUTE, () => pendingDetailRead.promise);
     const acceptedSave = fakeAdminEndpoint('PUT', READ_ROUTE, () => ({ posts: [afterSave] }));
 
-    await typeIntoBody(' accepted first');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' accepted first');
     await expect.poll(() => acceptedSave.requests.length).toBe(1);
     await expect.poll(() => detailRead.requests.length).toBe(1);
 
@@ -374,8 +371,7 @@ describe('Post editor update collision', () => {
       },
       { status: 409 },
     );
-    await typeIntoBody(' then conflicted');
-    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await appendToBody(' then conflicted');
     await expect.poll(() => collisionSave.requests.length).toBe(1);
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
@@ -572,7 +568,7 @@ describe('Post editor update collision', () => {
     }));
     const staleRead = readAnswers(200, { posts: [mine()] });
 
-    await typeIntoBody(' plus mine');
+    await appendToBody(' plus mine');
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect.poll(() => acceptedSave.requests.length).toBe(1);
