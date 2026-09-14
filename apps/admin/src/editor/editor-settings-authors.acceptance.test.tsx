@@ -13,6 +13,7 @@ import {
   staffUser,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
   type StaffRoleName,
   type StaffUser,
 } from '@test-utils/acceptance';
@@ -22,7 +23,7 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const OWNER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 

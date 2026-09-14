@@ -54,7 +54,10 @@ export function dispatchAny(engine: SaveEngine, kind: DispatchIntent) {
   }
 }
 
-export function setup(overrides: Partial<SnapshotFields> = {}) {
+export function setup(
+  overrides: Partial<SnapshotFields> = {},
+  ports: { autosaveDebounceMs?: () => number | undefined } = {},
+) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;
   const requests: SaveRequest[] = [];
   const signals: AbortSignal[] = [];
@@ -131,6 +134,7 @@ export function setup(overrides: Partial<SnapshotFields> = {}) {
     reconcile,
     onStateChange: (state) => states.push(state),
     onListenerError: (error) => listenerErrors.push(error),
+    ...ports,
   });
 
   function nextRequest() {

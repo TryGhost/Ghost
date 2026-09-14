@@ -151,7 +151,14 @@ function mergeLabsIntoSettingsBody(body: unknown, labs: LabsFlags): unknown {
   return { ...body, settings };
 }
 
-function withMergedLabs(
+function mergeConfigFields(body: unknown, fields: Record<string, unknown>): unknown {
+  if (!isRecord(body) || !isRecord(body.config)) {
+    return body;
+  }
+  return { ...body, config: { ...body.config, ...fields } };
+}
+
+function withMergedResponse(
   override: BootOverride,
   merge: (body: unknown) => unknown,
   fallback: () => unknown,
@@ -179,15 +186,36 @@ function withMergedLabs(
 export function composeLabsBootOverrides(labs: LabsFlags, boot: BootOverrides = {}): BootOverrides {
   return {
     ...boot,
-    browseConfig: withMergedLabs(
+    browseConfig: withMergedResponse(
       boot.browseConfig ?? {},
       (body) => mergeLabsIntoConfigBody(body, labs),
       () => configResponse({ labs }),
     ),
-    browseSettings: withMergedLabs(
+    browseSettings: withMergedResponse(
       boot.browseSettings ?? {},
       (body) => mergeLabsIntoSettingsBody(body, labs),
       () => settingsResponse({ labs }),
+    ),
+  };
+}
+
+/**
+ * Extra `/config/` fields compiled onto the boot overrides, the way `labs`
+ * flags are: merged into a `browseConfig` override response if the test has
+ * one, otherwise onto the canned test-data response. As with
+ * `composeLabsBootOverrides`, the fields named here win over the same key in a
+ * spec's own `browseConfig` response.
+ */
+export function composeConfigBootOverrides(
+  fields: Record<string, unknown>,
+  boot: BootOverrides = {},
+): BootOverrides {
+  return {
+    ...boot,
+    browseConfig: withMergedResponse(
+      boot.browseConfig ?? {},
+      (body) => mergeConfigFields(body, fields),
+      () => mergeConfigFields(configResponse(), fields),
     ),
   };
 }

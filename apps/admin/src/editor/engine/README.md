@@ -17,6 +17,8 @@
 | `leave`                           | navigating away from a dirty draft with unrevisioned changes or an armed autosave | none                                | yes             | never; preserves the current status                                                                                                       |
 | `publish` / `schedule` / `revert` | the publish flow                                                                  | none                                | no              | the only status-changing commands; each carries an explicit target                                                                        |
 
+The autosave debounce is 3 seconds unless the caller passes `autosaveDebounceMs`, which the engine calls at each restart of the debounce and uses in place of the default.
+
 ### Commands
 
 `dispatch(kind, options?)` captures an immutable `SaveCommand` (`{kind, target?, requiresRevision, requiresReconfirmation}`) at dispatch time. Status commands derive their `target` from the source transition when captured and never re-derive it from a later snapshot, so a response resync cannot turn a queued schedule into a publish:

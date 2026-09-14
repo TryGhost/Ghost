@@ -183,6 +183,8 @@ export interface SaveEnginePorts<
   execute: (prepared: P, signal: AbortSignal) => Promise<SaveOutcome<R>>;
   /** Awaited before the pending slot drains. Must not throw: adopt the acknowledged id/status/updated_at before any work that can fail. */
   reconcile: (prepared: P, result: R) => Promise<void> | void;
+  /** The autosave debounce in milliseconds, read at each restart; defaults to `AUTOSAVE_DEBOUNCE_MS`. */
+  autosaveDebounceMs?: () => number | undefined;
   setTimeout?: (fn: () => void, ms: number) => unknown;
   clearTimeout?: (handle: unknown) => void;
   onStateChange?: (state: SaveEngineState) => void;
@@ -360,6 +362,7 @@ export function createSaveEngine<
   P extends SaveRequest<S> = SaveRequest<S>,
   R extends SaveResult = SaveResult,
 >(ports: SaveEnginePorts<S, P, R>): SaveEngine {
+  const autosaveDebounceMs = (): number => ports.autosaveDebounceMs?.() ?? AUTOSAVE_DEBOUNCE_MS;
   const schedule = ports.setTimeout ?? ((fn, ms) => globalThis.setTimeout(fn, ms));
   const cancel = ports.clearTimeout ?? ((handle) => globalThis.clearTimeout(handle as number));
   const reportListenerError = ports.onListenerError ?? rethrowAsync;
@@ -473,7 +476,7 @@ export function createSaveEngine<
     const handle = schedule(() => {
       debounce = null;
       enqueue(AUTOSAVE, waiters);
-    }, AUTOSAVE_DEBOUNCE_MS);
+    }, autosaveDebounceMs());
     debounce = { handle, waiters };
     setState(deriveState());
   }
