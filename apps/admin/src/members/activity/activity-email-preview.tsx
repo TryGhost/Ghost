@@ -89,7 +89,7 @@ export default function ActivityEmailPreview({ email, onClose }: ActivityEmailPr
         }}
         onInteractOutside={(event) => event.preventDefault()}
       >
-        <Inline className="border-b border-border-default p-4" gap="md" justify="between">
+        <Inline className="border-b border-border-default p-4" gap="md" justify="between" wrap>
           <DialogTitle>Email preview</DialogTitle>
           <Inline gap="md">
             <ToggleGroup
