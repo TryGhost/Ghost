@@ -3,6 +3,7 @@ import { deferred, type Deferred } from '@/utils/deferred';
 import {
   createSaveEngine,
   type DispatchIntent,
+  type PrepareOutcome,
   type SaveEngine,
   type SaveEngineState,
   type SaveError,
@@ -89,7 +90,10 @@ export function setup(
     }),
   };
 
-  const prepare = vi.fn((request: SaveRequest) => Promise.resolve(request));
+  // Annotated so a test can answer with a typed prepare failure.
+  const prepare = vi.fn((request: SaveRequest): Promise<PrepareOutcome<SaveRequest>> =>
+    Promise.resolve({ ok: true, prepared: request }),
+  );
 
   const execute = vi.fn(async (prepared: SaveRequest, signal: AbortSignal) => {
     requests.push(prepared);
