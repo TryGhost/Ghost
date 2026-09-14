@@ -1,4 +1,5 @@
 import ObjectId from 'bson-objectid';
+import { z } from 'zod';
 import { Meta, createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -109,6 +110,39 @@ export const useBrowseAutomations = createQuery<AutomationsResponseType>({
 export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>({
   dataType,
   path: (id) => `/automations/${id}/`,
+});
+
+export const AutomationEntryStatsSchema = z.object({
+  automation_id: z.string(),
+  total_run_count: z.number().int().nonnegative(),
+  entries: z
+    .array(
+      z.object({
+        date: z.iso.date(),
+        count: z.number().int().nonnegative(),
+      }),
+    )
+    .min(1),
+  window: z.object({
+    date_from: z.iso.date(),
+    date_to: z.iso.date(),
+    bucket: z.literal('day'),
+    timezone: z.literal('UTC'),
+  }),
+});
+
+const AutomationEntryStatsResponseSchema = z.object({
+  automation_entry_stats: z.array(AutomationEntryStatsSchema).length(1),
+});
+
+export type AutomationEntryStats = z.infer<typeof AutomationEntryStatsSchema>;
+
+export const useReadAutomationEntryStats = createQueryWithId<
+  z.infer<typeof AutomationEntryStatsResponseSchema>
+>({
+  dataType: 'AutomationEntryStatsResponseType',
+  path: (id) => `/automations/${id}/entry-stats/`,
+  parseResponse: (data) => AutomationEntryStatsResponseSchema.parse(data),
 });
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
