@@ -66,6 +66,7 @@ describe('TinybirdService', function () {
       const result = tinybirdService._generateToken();
       const decoded = jwt.verify(result.token, tinybirdConfig.adminToken);
       assert.ok(decoded);
+      assert.ok(decoded.scopes.some((scope) => scope.resource === 'api_automation_entry_stats'));
       decoded.scopes.forEach((scope) => {
         assert.ok(scope.type === 'PIPES:READ');
         assert.ok(scope.resource);

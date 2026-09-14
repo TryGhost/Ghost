@@ -1,0 +1,29 @@
+- name: all_time_latest_versions
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d&automation_id=automation-1
+  expected_result: |
+    {"date":"2020-01-01","count":3}
+    {"date":"2020-02-01","count":1}
+
+- name: other_automation
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d&automation_id=automation-2
+  expected_result: |
+    {"date":"2020-01-01","count":1}
+
+- name: other_site
+  parameters: site_uuid=6cce57c1-c0df-4771-bb86-53cbf494f90f&automation_id=automation-1
+  expected_result: |
+    {"date":"2020-01-01","count":1}
+
+- name: empty_history
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d&automation_id=missing
+  expected_result: ''
+
+- name: missing_site
+  parameters: automation_id=automation-1
+  expected_http_status: 400
+  expected_result: ''
+
+- name: missing_automation
+  parameters: site_uuid=bd05ceed-1df9-4af7-832a-d3b5faa7ca1d
+  expected_http_status: 400
+  expected_result: ''

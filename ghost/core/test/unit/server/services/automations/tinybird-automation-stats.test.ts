@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 import logging from '@tryghost/logging';
-import { fetchAutomationStats } from '../../../../../core/server/services/automations/tinybird-automation-stats';
+import {
+  fetchAutomationStats,
+  fetchAutomationEntryStats,
+} from '../../../../../core/server/services/automations/tinybird-automation-stats';
 
 const clientReturning = (value: unknown) => ({ fetch: sinon.stub().resolves(value) });
 
@@ -69,7 +72,7 @@ describe('fetchAutomationStats', function () {
     { total_run_count: null },
     { total_run_count: -1 },
     { in_progress_run_count: 1.5 },
-  ])('omits invalid stats: %j', async function (overrides) {
+  ])('rejects invalid stats: %j', async function (overrides) {
     sinon.stub(logging, 'error');
     const stats = await fetchAutomationStats(
       clientReturning([
@@ -83,5 +86,66 @@ describe('fetchAutomationStats', function () {
       ]),
     );
     assert.equal(stats, null);
+  });
+});
+
+describe('fetchAutomationEntryStats', function () {
+  afterEach(() => sinon.restore());
+
+  it('derives the total and ordered daily counts from one all-time query', async function () {
+    const client = clientReturning([
+      { date: '2026-09-14', count: '11' },
+      { date: '2020-01-01', count: 2 },
+    ]);
+    assert.deepEqual(await fetchAutomationEntryStats(client, 'selected'), {
+      total_run_count: 13,
+      entries: [
+        { date: '2020-01-01', count: 2 },
+        { date: '2026-09-14', count: 11 },
+      ],
+    });
+    sinon.assert.calledOnceWithExactly(client.fetch, 'api_automation_entry_stats', {
+      version: '',
+      automationId: 'selected',
+    });
+  });
+
+  it('returns zero for a successful empty history', async function () {
+    assert.deepEqual(await fetchAutomationEntryStats(clientReturning([]), 'selected'), {
+      total_run_count: 0,
+      entries: [],
+    });
+  });
+
+  it.each([
+    { name: 'missing response', rows: null },
+    { name: 'invalid date', rows: [{ date: '2026-02-30', count: 1 }] },
+    { name: 'negative count', rows: [{ date: '2026-09-01', count: -1 }] },
+    { name: 'null count', rows: [{ date: '2026-09-01', count: null }] },
+    { name: 'fractional count', rows: [{ date: '2026-09-01', count: 1.5 }] },
+    {
+      name: 'duplicate day',
+      rows: [
+        { date: '2026-09-01', count: 1 },
+        { date: '2026-09-01', count: 2 },
+      ],
+    },
+    {
+      name: 'unsafe total',
+      rows: [
+        { date: '2026-09-01', count: Number.MAX_SAFE_INTEGER },
+        { date: '2026-09-02', count: 1 },
+      ],
+    },
+  ])('rejects and logs $name', async function ({ rows }) {
+    const error = sinon.stub(logging, 'error');
+    assert.equal(await fetchAutomationEntryStats(clientReturning(rows), 'selected'), null);
+    sinon.assert.calledOnce(error);
+  });
+
+  it('returns null when Tinybird fails', async function () {
+    sinon.stub(logging, 'error');
+    const client = { fetch: sinon.stub().rejects(new Error('unavailable')) };
+    assert.equal(await fetchAutomationEntryStats(client, 'selected'), null);
   });
 });

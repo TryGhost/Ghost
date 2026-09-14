@@ -1,9 +1,16 @@
 import logging from '@tryghost/logging';
 import { z } from 'zod';
 import type { AutomationBrowseResult } from './automations-repository';
+import type { EntryStatsData } from './automation-entry-stats';
 
 export type TinybirdClient = {
-  fetch(pipeName: string, options: { version: string }): Promise<unknown>;
+  fetch(
+    pipeName: string,
+    options: {
+      version: string;
+      automationId?: string;
+    },
+  ): Promise<unknown>;
 };
 
 export type AutomationStats = NonNullable<AutomationBrowseResult['stats']>;
@@ -34,7 +41,9 @@ export async function fetchAutomationStats(
   let rows: unknown;
   try {
     // Override the traffic analytics version: this pipe has no version suffix.
-    rows = await client.fetch('api_automation_browse_stats', { version: '' });
+    rows = await client.fetch('api_automation_browse_stats', {
+      version: '',
+    });
   } catch (error) {
     logging.error('Error fetching Tinybird automation stats:', error);
     return null;
@@ -65,4 +74,37 @@ export async function fetchAutomationStats(
       },
     ]),
   );
+}
+
+export async function fetchAutomationEntryStats(
+  client: TinybirdClient,
+  automationId: string,
+): Promise<EntryStatsData | null> {
+  try {
+    const rows = await client.fetch('api_automation_entry_stats', {
+      version: '',
+      automationId,
+    });
+    const parsed = z.array(z.object({ date: z.iso.date(), count: runCountSchema })).safeParse(rows);
+    if (
+      !parsed.success ||
+      new Set(parsed.data.map((row) => row.date)).size !== parsed.data.length
+    ) {
+      logging.error('Unexpected response from the Tinybird automation entry stats pipe');
+      return null;
+    }
+    // Derive the total from the same query result so concurrent entries cannot skew it.
+    const total = parsed.data.reduce((sum, row) => sum + row.count, 0);
+    if (!Number.isSafeInteger(total)) {
+      logging.error('Automation entry total exceeds the supported integer range');
+      return null;
+    }
+    return {
+      total_run_count: total,
+      entries: parsed.data.sort((a, b) => a.date.localeCompare(b.date)),
+    };
+  } catch (error) {
+    logging.error('Error fetching Tinybird automation entry stats:', error);
+    return null;
+  }
 }

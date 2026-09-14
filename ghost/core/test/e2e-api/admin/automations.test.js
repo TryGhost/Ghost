@@ -4,9 +4,16 @@ const sinon = require('sinon');
 const nock = require('nock');
 const TinybirdServiceWrapper = require('../../../core/server/services/tinybird');
 const configUtils = require('../../utils/config-utils');
+const {
+  createDatabaseAutomationsRepository,
+} = require('../../../core/server/services/automations/database-automations-repository');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
+const repository = createDatabaseAutomationsRepository({
+  knex: models.Base.knex,
+  fakeWaitHoursMultiplier: null,
+});
 const mailService = require('../../../core/server/services/mail');
 const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
 const {
@@ -115,6 +122,7 @@ describe('Automations API', function () {
   let agent;
   let schedulerKey;
   let schedulerToken;
+  let previousTinybirdInstance;
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -132,10 +140,27 @@ describe('Automations API', function () {
 
   beforeEach(async function () {
     await setupAutomationsFixture();
+    previousTinybirdInstance = TinybirdServiceWrapper.instance;
+    mockManager.mockLabsEnabled('automationsTinybirdSync');
+    configUtils.set('tinybird', {
+      workspaceId: 'test-workspace-id',
+      adminToken: 'test-admin-token',
+      stats: { endpoint: 'https://api.tinybird.co', version: 'v2' },
+    });
+    TinybirdServiceWrapper.init();
+    nock('https://api.tinybird.co')
+      .persist()
+      .get('/v0/pipes/api_automation_browse_stats.json')
+      .query({ site_uuid: (await models.Settings.findOne({ key: 'site_uuid' })).get('value') })
+      .reply(200, { data: [] });
   });
 
   afterEach(async function () {
     sinon.restore();
+    nock.cleanAll();
+    await configUtils.restore();
+    TinybirdServiceWrapper.instance = previousTinybirdInstance;
+    mockManager.restore();
     await cleanupAutomationsFixture();
   });
 
@@ -253,8 +278,8 @@ describe('Automations API', function () {
       );
     });
 
-    it('returns latest automation run timestamp', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
+    it('retains SQL repository coverage: returns latest automation run timestamp', async function () {
+      const beforeBody = { automations: (await repository.browse({ includeStats: true })).data };
       const automationId = beforeBody.automations[0].id;
       const olderRunCreatedAt = new Date('2026-01-01T00:00:00.000Z');
       const latestRunCreatedAt = new Date('2026-01-02T00:00:00.000Z');
@@ -262,10 +287,13 @@ describe('Automations API', function () {
       await createAutomationRun(automationId, olderRunCreatedAt);
       await createAutomationRun(automationId, latestRunCreatedAt);
 
-      const { body } = await agent.get('automations').expectStatus(200);
+      const body = { automations: (await repository.browse({ includeStats: true })).data };
       const automation = body.automations.find((candidate) => candidate.id === automationId);
 
-      assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
+      assert.equal(
+        automation.stats.last_run_created_at.toISOString(),
+        latestRunCreatedAt.toISOString(),
+      );
     });
 
     it('returns zero total run counts for automations without runs', async function () {
@@ -277,14 +305,14 @@ describe('Automations API', function () {
       );
     });
 
-    it('returns the total automation run count', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
+    it('retains SQL repository coverage: returns the total automation run count', async function () {
+      const beforeBody = { automations: (await repository.browse({ includeStats: true })).data };
       const automationId = beforeBody.automations[0].id;
 
       await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
       await createAutomationRun(automationId, new Date('2026-01-02T00:00:00.000Z'));
 
-      const { body } = await agent.get('automations').expectStatus(200);
+      const body = { automations: (await repository.browse({ includeStats: true })).data };
       const automation = body.automations.find((candidate) => candidate.id === automationId);
 
       assert.equal(automation.stats.total_run_count, 2);
@@ -299,8 +327,8 @@ describe('Automations API', function () {
       );
     });
 
-    it('returns the number of runs with pending steps', async function () {
-      const { body: beforeBody } = await agent.get('automations').expectStatus(200);
+    it('retains SQL repository coverage: returns the number of runs with pending steps', async function () {
+      const beforeBody = { automations: (await repository.browse({ includeStats: true })).data };
       const automationId = beforeBody.automations[0].id;
 
       const pendingRunId = await createAutomationRun(
@@ -318,7 +346,7 @@ describe('Automations API', function () {
 
       await createAutomationRun(automationId, new Date('2026-01-03T00:00:00.000Z'));
 
-      const { body } = await agent.get('automations').expectStatus(200);
+      const body = { automations: (await repository.browse({ includeStats: true })).data };
       const automation = body.automations.find((candidate) => candidate.id === automationId);
 
       assert.equal(automation.stats.in_progress_run_count, 1);
@@ -327,25 +355,10 @@ describe('Automations API', function () {
     describe('with Tinybird configured', function () {
       const TINYBIRD_ENDPOINT = 'https://api.tinybird.co';
 
-      let previousTinybirdInstance;
-
       beforeEach(function () {
-        previousTinybirdInstance = TinybirdServiceWrapper.instance;
-        mockManager.mockLabsEnabled('automationsTinybirdSync');
+        nock.cleanAll();
         mockManager.mockLabsDisabled('automationRunAnalytics');
         mockManager.mockSetting('web_analytics_enabled', false);
-        configUtils.set('tinybird', {
-          workspaceId: 'test-workspace-id',
-          adminToken: 'test-admin-token',
-          stats: { endpoint: TINYBIRD_ENDPOINT, version: 'v2' },
-        });
-        TinybirdServiceWrapper.init();
-      });
-
-      afterEach(async function () {
-        await configUtils.restore();
-        mockManager.restore();
-        TinybirdServiceWrapper.instance = previousTinybirdInstance;
       });
 
       it('initializes automation stats through StatsService with web analytics disabled', async function () {
@@ -408,61 +421,59 @@ describe('Automations API', function () {
         });
       });
 
-      it('uses database stats when the flag is disabled', async function () {
+      it('fails without SQL statistics when the flag is disabled', async function () {
         mockManager.mockLabsDisabled('automationsTinybirdSync');
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-
-        const { body } = await agent.get('automations').expectStatus(200);
-
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
+        await expectTinybirdFailure();
       });
 
-      it('uses database stats when no Tinybird token is available', async function () {
-        sinon.stub(TinybirdServiceWrapper.instance, 'getToken').returns(null);
-        const [automation] = await models.Base.knex('automations').select('id');
-        await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-
-        const { body } = await agent.get('automations').expectStatus(200);
-
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
+      async function expectTinybirdFailure() {
+        const queries = [];
+        const capture = (query) => queries.push(query.sql);
+        models.Base.knex.on('query', capture);
+        try {
+          await agent.get('automations').expectStatus(500);
+        } finally {
+          models.Base.knex.removeListener('query', capture);
+        }
+        assert.ok(
+          queries.every((sql) => !/\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)),
         );
+      }
+
+      it('fails when Tinybird stats configuration is missing', async function () {
+        configUtils.set('tinybird:stats', null);
+        await expectTinybirdFailure();
+      });
+
+      it('fails when no Tinybird token is available', async function () {
+        sinon.stub(TinybirdServiceWrapper.instance, 'getToken').returns(null);
+        await expectTinybirdFailure();
       });
 
       it.each([undefined, ''])(
-        'uses MySQL without requesting Tinybird when the local token is %j',
+        'fails without requesting Tinybird when the local token is %j',
         async function (token) {
           configUtils.set('tinybird', {
             stats: { local: { enabled: true, endpoint: TINYBIRD_ENDPOINT, token } },
           });
           TinybirdServiceWrapper.init();
-          const [automation] = await models.Base.knex('automations').select('id');
-          await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
           const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
           const tinybird = nock(TINYBIRD_ENDPOINT)
             .get('/v0/pipes/api_automation_browse_stats.json')
             .query({ site_uuid: siteUuid, ghost_client: 'server' })
             .reply(200, { data: [] });
 
-          const { body } = await agent.get('automations').expectStatus(200);
-
+          await expectTinybirdFailure();
           assert.equal(tinybird.isDone(), false);
-          assert.equal(
-            body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-            1,
-          );
         },
       );
 
       it.each(['client preparation', 'request construction'])(
-        'uses MySQL when token generation throws during %s',
+        'fails when token generation throws during %s',
         async function (stage) {
-          const error = sinon.stub(require('@tryghost/logging'), 'error');
+          sinon.stub(require('@tryghost/logging'), 'error');
           const getToken = sinon.stub(TinybirdServiceWrapper.instance, 'getToken');
           if (stage === 'request construction') {
             getToken.onFirstCall().returns({ token: 'test-token' });
@@ -470,46 +481,27 @@ describe('Automations API', function () {
           } else {
             getToken.throws(new Error('Token signing failed'));
           }
-          const [automation] = await models.Base.knex('automations').select('id');
-          await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-
-          const { body } = await agent.get('automations').expectStatus(200);
-
-          assert.equal(
-            body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-            1,
-          );
-          assert.ok(error.calledOnce);
+          await expectTinybirdFailure();
         },
       );
 
       it.each([
+        { reason: 'missing', status: 404, response: 'missing pipe' },
         { reason: 'unavailable', status: 500, response: 'nope' },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
-      ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {
+      ])('fails when Tinybird is $reason', async function ({ status, response }) {
         sinon.stub(require('@tryghost/logging'), 'error');
-        const [automation] = await models.Base.knex('automations').select('id');
-        const createdAt = new Date('2026-01-01T00:00:00.000Z');
-        const runId = await createAutomationRun(automation.id, createdAt);
-        await createAutomationRunStep(automation.id, runId, 'pending');
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const tinybird = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
           .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(status, response);
 
-        const { body } = await agent.get('automations').expectStatus(200);
-
+        await expectTinybirdFailure();
         assert.ok(tinybird.isDone());
-        assert.equal(body.automations.length, 2);
-        assert.deepEqual(body.automations.find((item) => item.id === automation.id).stats, {
-          last_run_created_at: createdAt.toISOString(),
-          total_run_count: 1,
-          in_progress_run_count: 1,
-        });
       });
 
-      it('falls back after one retryable response without the test-only retry override', async function () {
+      it('fails after one retryable response without the test-only retry override', async function () {
         const got = require('got').default;
         const requestExternal = require('../../../core/server/lib/request-external');
         // Use Got's normal retry policy, without request-external's test-only hook.
@@ -517,8 +509,6 @@ describe('Automations API', function () {
           .stub(requestExternal, 'extend')
           .callsFake((options) => got.extend(options));
         sinon.stub(require('@tryghost/logging'), 'error');
-        const [automation] = await models.Base.knex('automations').select('id');
-        await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
         const firstAttempt = nock(TINYBIRD_ENDPOINT)
           .get('/v0/pipes/api_automation_browse_stats.json')
@@ -529,15 +519,10 @@ describe('Automations API', function () {
           .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(200, { data: [] });
 
-        const { body } = await agent.get('automations').expectStatus(200);
-
+        await expectTinybirdFailure();
         assert.ok(extend.calledOnce);
         assert.ok(firstAttempt.isDone());
         assert.equal(retry.isDone(), false);
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
       });
 
       it('keeps zero stats for a successful empty Tinybird response', async function () {
