@@ -48,7 +48,6 @@ export function init(options: GiftServiceInitOptions): void {
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
   const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
   const { StartGiftDeliveryFlushEvent } = require('./events/start-gift-delivery-flush-event');
-  const jobs = require('./jobs');
   const emailAnalyticsJobs = require('../email-analytics/jobs');
 
   const { GhostMailer } = require('../mail');
@@ -191,8 +190,6 @@ export function init(options: GiftServiceInitOptions): void {
       logging.error(err, `Failed to process gift delivery ${event.data.deliveryId}`);
     }
   });
-
-  jobs.scheduleGiftReminderJob();
 }
 
 // Re-arms future deliveries and retries sends interrupted by a previous

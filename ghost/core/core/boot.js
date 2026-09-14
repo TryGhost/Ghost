@@ -502,6 +502,17 @@ async function initBackgroundServices({ config }) {
   }
 
   // Runs before activitypub.init for the same reason as the gift cleanup
+  // above: reminders would otherwise go unsent for the life of the process
+  // if an unrelated background service fails.
+  try {
+    const giftJobs = require('./server/services/gifts/jobs');
+    await giftJobs.scheduleGiftReminderJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  // Runs before activitypub.init for the same reason as the gift cleanup
   // above: tokens and expired comped subscriptions would otherwise go
   // uncleaned for the life of the process if an unrelated background
   // service fails.
