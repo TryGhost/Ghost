@@ -179,6 +179,14 @@ export class LimitService {
   /** Checks if any of the configured limits acceded */
   async checkIfAnyOverLimit(options: CheckOptions = {}): Promise<boolean> {
     for (const limit of Object.values(this.limits)) {
+      // An allowlist limit judges one particular value, and this question names no value,
+      // so there is nothing for it to answer. Asking anyway raises an incorrect-usage error
+      // that escapes this method, which would leave a site unable to answer whether it is
+      // over any limit purely because it also has one of these.
+      if (limit instanceof AllowlistLimit) {
+        continue;
+      }
+
       if (await this.isOver(limit, options)) {
         return true;
       }
