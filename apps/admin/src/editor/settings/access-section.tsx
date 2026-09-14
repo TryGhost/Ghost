@@ -21,7 +21,7 @@ import type { PostType } from '@/editor/card-config';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
-import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
+import type { EditorSettingsPort } from './editor-settings-port';
 import { SectionLoadError } from './section-load-error';
 import { SettingsSection } from './settings-section';
 import {
@@ -86,7 +86,7 @@ function TierGroup({
 }
 
 export interface AccessSectionProps {
-  session: EditorSessionHandle;
+  session: EditorSettingsPort;
   postType: PostType;
 }
 
