@@ -1,34 +1,10 @@
 import { useCallback } from 'react';
-import { toast } from 'sonner';
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  LoadingIndicator,
-  Textarea,
-} from '@tryghost/shade/components';
-import {
-  ImageUpload,
-  ImageUploadAction,
-  ImageUploadActions,
-  ImageUploadDropzone,
-  ImageUploadImage,
-  ImageUploadPreview,
-} from '@tryghost/shade/patterns';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
-import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
+import { Field, FieldError, FieldLabel, Input, Textarea } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
-import {
-  ACCEPTED_IMAGE_TYPES,
-  UNSUPPORTED_IMAGE_MESSAGE,
-  uploadErrorMessage,
-} from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { ImageField } from '@/editor/image-field';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
-import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
 import { SettingsSubview } from './settings-subview';
 import {
@@ -66,14 +42,11 @@ export function SocialCardSection({
   featureImage,
   cardConfig,
 }: SocialCardSectionProps) {
-  const { mutateAsync: uploadImage, isPending } = useUploadImage();
-
   const title = useSettingsField(session, network.titleKey);
   const description = useSettingsField(session, network.descriptionKey);
   const image = session.settings[network.imageKey] ?? '';
 
   const imageSubject = `${network.name} image`;
-  const addImageLabel = `Add ${imageSubject}`;
 
   const previewTitle = socialTitle({
     own: title.value,
@@ -97,17 +70,6 @@ export function SocialCardSection({
   const editImage = useCallback(
     (src: string | null) => session.editSettings({ [network.imageKey]: src }),
     [network.imageKey, session],
-  );
-
-  const handleUpload = useCallback(
-    async (file: File) => {
-      try {
-        editImage(getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })));
-      } catch (error) {
-        toast.error(uploadErrorMessage(error, imageSubject));
-      }
-    },
-    [editImage, imageSubject, uploadImage],
   );
 
   const previewRow = (row: SocialPreviewRow) => {
@@ -145,47 +107,13 @@ export function SocialCardSection({
       title={`${network.name} card`}
       wide
     >
-      {image ? (
-        <ImageUpload className="max-h-[480px]" data-testid={network.imageTestId}>
-          <ImageUploadPreview>
-            <ImageUploadImage role="presentation" src={image} />
-            <ImageUploadActions>
-              <ImageUploadAction
-                aria-label={`Remove ${imageSubject}`}
-                onClick={() => editImage(null)}
-              >
-                <LucideIcon.Trash2 />
-              </ImageUploadAction>
-            </ImageUploadActions>
-          </ImageUploadPreview>
-        </ImageUpload>
-      ) : (
-        <ImageUpload className="h-[120px]" data-testid={network.imageTestId}>
-          <ImageUploadDropzone
-            accept={ACCEPTED_IMAGE_TYPES}
-            disabled={isPending}
-            inputAriaLabel={addImageLabel}
-            noDragEventsBubbling
-            onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
-            onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
-          >
-            {isPending ? (
-              <LoadingIndicator size="sm" />
-            ) : (
-              <Inline gap="sm">
-                <LucideIcon.Plus aria-hidden="true" className="size-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{addImageLabel}</span>
-              </Inline>
-            )}
-          </ImageUploadDropzone>
-          <UnsplashPicker
-            disabled={isPending}
-            enabled={!!cardConfig.unsplash}
-            label={`Select ${imageSubject} from Unsplash`}
-            onSelect={({ src }) => editImage(src)}
-          />
-        </ImageUpload>
-      )}
+      <ImageField
+        src={image || null}
+        subject={imageSubject}
+        testId={network.imageTestId}
+        unsplashEnabled={!!cardConfig.unsplash}
+        onChange={editImage}
+      />
 
       <Field>
         <FieldLabel htmlFor={title.fieldProps.id}>{network.name} title</FieldLabel>
