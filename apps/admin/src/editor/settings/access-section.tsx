@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   settingsTiersError,
@@ -18,6 +18,7 @@ import {
   settingsVisibilitySelect,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
+import { useEditorSettings } from '@/editor/use-editor-settings';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { TIERS_REQUIRED, tiersIncomplete } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
@@ -97,10 +98,7 @@ export interface AccessSectionProps {
 export function AccessSection({ session, postType }: AccessSectionProps) {
   const selectId = useId();
   const tiersErrorId = useId();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const { data: settingsData } = useEditorSettings();
   const defaultContentVisibility = getSettingValue<string>(
     settingsData?.settings ?? null,
     'default_content_visibility',

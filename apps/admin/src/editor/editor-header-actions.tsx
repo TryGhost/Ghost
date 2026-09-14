@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
 import {
@@ -17,6 +17,7 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
@@ -170,10 +171,7 @@ function PublishActions({
   onPreview,
 }: PublishActionsProps) {
   const inputs = usePublishInputs();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
     defaultErrorHandler: false,
