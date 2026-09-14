@@ -137,7 +137,10 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
       )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
-          const description = AUTOMATION_DESCRIPTIONS[automation.slug];
+          // NOTE: We will soon start reading this description from the API and stop using hard-coded values.
+          const description = automation.slug
+            ? AUTOMATION_DESCRIPTIONS[automation.slug]
+            : undefined;
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
