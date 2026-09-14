@@ -21,4 +21,8 @@ export {
   TierCheckoutConfig,
 } from './models';
 
-export { toCheckoutConfigResponse, requirementsByTier, type TierRequirements } from './serializers';
+export {
+  toCheckoutConfigResponse,
+  checkoutConfigByTier,
+  type TierCheckoutSlice,
+} from './serializers';
