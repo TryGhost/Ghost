@@ -25,14 +25,15 @@ pnpm dev:fake-mailgun
 ```
 
 This starts the full development environment, including the Admin and Portal
-watchers, plus the E2E fake Mailgun server. Ghost sends bulk email to the fake
+watchers, plus the E2E fake Mailgun server running in Docker. Ghost sends bulk email to the fake
 Mailgun API, which personalizes each recipient's message and forwards it to
 [Mailpit](http://localhost:8025). Transactional email continues to use Mailpit
 over SMTP. No Mailgun credentials or local configuration files are needed.
 
-The fake server chooses an available host port automatically. Press `Ctrl+C`
-to stop the fake server, watchers, and development containers; database and
-content volumes are preserved. Run one development variant at a time.
+The fake server is only exposed on the internal Docker network. Compose waits
+for Mailpit and fake Mailgun to be healthy before starting Ghost. Press `Ctrl+C`
+to stop the development environment; database and content volumes are preserved.
+Run one development variant at a time.
 
 ## Test with Mailgun
 
