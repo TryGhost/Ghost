@@ -248,6 +248,7 @@
     }
   },
   "optimization": {
+    "freezeConfig": true,
     "maxLimit": 100,
     "allowLimitAll": false,
     "getHelper": {

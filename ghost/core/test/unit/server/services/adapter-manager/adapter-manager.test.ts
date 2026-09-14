@@ -11,6 +11,7 @@ import {
 import { resolveAdapterEntryPoint } from '../../../../../core/server/services/adapter-manager/utils';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
 import { bindAll as bindHelpers } from '../../../../../core/shared/config/helpers';
+import { bindFreeze } from '../../../../../core/shared/config/freeze';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
 import type { Adapter } from '../../../../../core/server/services/adapter-manager/types';
 
@@ -42,6 +43,7 @@ function makeConfig(adapters: object = {}): ConfigInstance {
 
   bindUrlHelpers(nconf);
   bindHelpers(nconf);
+  bindFreeze(nconf);
 
   return nconf;
 }
