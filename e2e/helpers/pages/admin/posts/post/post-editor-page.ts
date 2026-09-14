@@ -34,6 +34,7 @@ import {
   publishTypeEmailOnlyOption,
   publishTypePublishAndEmailOption,
   publishTypePublishOnlyOption,
+  settingsMenuToggle,
 } from '@tryghost/test-data/selectors/editor';
 
 type PublishType = 'publish' | 'publish+send' | 'send';
@@ -319,7 +320,7 @@ export class PostEditorPage extends AdminPage {
       ? headerActions.getByRole('button', { name: editorPreviewButton, exact: true })
       : page.getByRole('button', { name: 'Preview' });
     this.previewModal = new PostPreviewModal(page, { implementation });
-    this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
+    this.settingsToggleButton = page.getByTestId(settingsMenuToggle);
     this.publishFlow = new PublishFlow(page, { implementation });
     this.screenTitle = page.locator('[data-test-screen-title]');
     // Ember marks the Koenig container; React wraps each instance in its own
