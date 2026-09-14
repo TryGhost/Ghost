@@ -13,6 +13,12 @@ import {
   Button,
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
+import {
+  editorConflictBanner,
+  editorConflictReloadConfirm,
+  editorReauthBanner,
+  editorSaveErrorBanner,
+} from '@tryghost/test-data/selectors/editor';
 import type { SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import type { ReloadOutcome } from './use-editor-session';
@@ -88,7 +94,7 @@ function ConflictBanner({
     <>
       <Banner
         className="mx-4 mb-2 shrink-0 bg-destructive text-destructive-foreground"
-        data-testid="editor-conflict-banner"
+        data-testid={editorConflictBanner}
         role="alert"
         size="sm"
         variant="destructive"
@@ -121,7 +127,7 @@ function ConflictBanner({
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent
           className={EDITOR_CONFIRM_DIALOG_LAYER}
-          data-testid="editor-conflict-reload-confirm"
+          data-testid={editorConflictReloadConfirm}
           overlayClassName={EDITOR_CONFIRM_DIALOG_LAYER}
         >
           <AlertDialogHeader>
@@ -160,7 +166,7 @@ export function SessionBanners({
     return (
       <Banner
         className="mx-4 mb-2 shrink-0"
-        data-testid="editor-reauth-banner"
+        data-testid={editorReauthBanner}
         role="alert"
         size="sm"
         variant="warning"
@@ -194,7 +200,7 @@ export function SessionBanners({
     return (
       <Banner
         className="mx-4 mb-2 shrink-0"
-        data-testid="editor-save-error-banner"
+        data-testid={editorSaveErrorBanner}
         role="alert"
         size="sm"
         variant="destructive"

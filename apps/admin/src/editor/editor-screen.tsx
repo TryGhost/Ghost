@@ -19,7 +19,11 @@ import {
   isEditorUser,
   isOwnerUser,
 } from '@tryghost/admin-x-framework/api/users';
-import { settingsMenuToggle } from '@tryghost/test-data/selectors/editor';
+import {
+  editorLeaveDialog,
+  editorLoadError,
+  settingsMenuToggle,
+} from '@tryghost/test-data/selectors/editor';
 import {
   type CardConfigPostSource,
   type PostCardConfig,
@@ -51,7 +55,7 @@ function EditorLoading() {
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <Stack align="center" className="h-full" data-testid="editor-load-error" justify="center">
+    <Stack align="center" className="h-full" data-testid={editorLoadError} justify="center">
       <Text tone="secondary">{message}</Text>
       <Button variant="outline" onClick={onRetry}>
         Retry
@@ -212,7 +216,7 @@ function EditorContent({
         ) : null}
       </Inline>
       {snippetDialog}
-      <DirtyConfirmDialog testId="editor-leave-dialog" {...leaveGuard.dialogProps} />
+      <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
     </Stack>
   );
 }

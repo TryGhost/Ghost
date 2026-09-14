@@ -3,7 +3,7 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
   publishEmailErrorStep,
-  publishRetryEmailButton,
+  publishRetryEmail,
   publishRetryError,
 } from '@tryghost/test-data/selectors/editor';
 import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
@@ -58,7 +58,7 @@ export function CompleteWithEmailErrorStep({
 
       <div>
         <Button
-          data-testid={publishRetryEmailButton}
+          data-testid={publishRetryEmail}
           disabled={status === 'running'}
           size="lg"
           variant="destructive"

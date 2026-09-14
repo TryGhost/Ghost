@@ -17,6 +17,7 @@ import {
   type Tier,
 } from '@test-utils/acceptance';
 import { installBootOverrides } from '@test-utils/acceptance/boot';
+import { postPreviewNewslettersError } from '@tryghost/test-data/selectors/editor';
 import { PostPreviewModal } from '@/editor/preview/post-preview-modal';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
@@ -476,7 +477,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(page.getByTestId(postPreviewNewslettersError)).toBeVisible();
     await expect.element(previewScreen.testEmailButton()).toBeDisabled();
     expect(previewApi.requests).toHaveLength(0);
 
@@ -497,7 +498,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(page.getByTestId(postPreviewNewslettersError)).toBeVisible();
     await expect.element(previewScreen.testEmailButton()).toBeDisabled();
     expect(previewApi.requests).toHaveLength(0);
 

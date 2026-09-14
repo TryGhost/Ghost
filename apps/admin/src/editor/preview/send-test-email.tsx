@@ -16,6 +16,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSendTestEmail } from '@tryghost/admin-x-framework/api/email-previews';
+import { postPreviewTestEmailInput } from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 
@@ -103,7 +104,7 @@ export function SendTestEmail({
           <Stack gap="md">
             <Label htmlFor={id}>Send test email</Label>
             <Input
-              data-testid="post-preview-test-email-input"
+              data-testid={postPreviewTestEmailInput}
               id={id}
               placeholder="you@yoursite.com"
               type="email"
