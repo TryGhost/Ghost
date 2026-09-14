@@ -465,7 +465,7 @@ describe('{{ghost_head}} helper', function () {
     getStub.withArgs('site_uuid').returns('77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
 
     // Force the usage of a fixed asset hash so we have reliable snapshots
-    configUtils.set('assetHash', 'asset-hash');
+    sinon.stub(assetHash, 'getGlobalHash').returns('asset-hash');
     // Disable file-based hashing so all assets use the fixed global hash above
     sinon.stub(assetHash, 'getHashForFile').returns(null);
 
