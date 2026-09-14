@@ -13,12 +13,11 @@ module.exports = class IdentityTokenServiceWrapper {
     const issuer = urlUtils.urlFor('admin', true);
 
     const settings = require('../../../shared/settings-cache');
-    const jose = require('node-jose');
+    const { getPublicKeyInfo } = require('../../lib/public-jwk');
 
     const privateKey = settings.get('ghost_private_key');
-    const keyStore = jose.JWK.createKeyStore();
-    const key = await keyStore.add(privateKey, 'pem');
+    const { kid } = await getPublicKeyInfo(privateKey);
 
-    IdentityTokenServiceWrapper.instance = new IdentityTokenService(privateKey, issuer, key.kid);
+    IdentityTokenServiceWrapper.instance = new IdentityTokenService(privateKey, issuer, kid);
   }
 };
