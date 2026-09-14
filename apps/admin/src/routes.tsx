@@ -172,6 +172,19 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(() => import('./automations/proto/exploration/detail')),
   },
   {
+    path: '/automations-proto/exploration-2',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => import('./automations/proto/exploration-2/list')),
+  },
+  {
+    path: '/automations-proto/exploration-2/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => import('./automations/proto/exploration-2/detail')),
+  },
+  {
     // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
     // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
     // tag with the literal slug "new" was already unreachable.

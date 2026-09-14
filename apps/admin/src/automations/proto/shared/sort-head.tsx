@@ -22,6 +22,13 @@ interface SortHeadProps<K extends string> {
   onSort: (key: K) => void;
   /** Sets the (fixed) column width — with table-fixed that governs the column. */
   className?: string;
+  /**
+   * Names the control for anyone who can't see the column. Only needed when `label`
+   * is empty — a column whose cells are self-describing (a status dot beside the
+   * name it belongs to) doesn't want a word in the header, but its sort button
+   * still has to say what it sorts.
+   */
+  ariaLabel?: string;
 }
 
 export function SortHead<K extends string>({
@@ -30,6 +37,7 @@ export function SortHead<K extends string>({
   sort,
   onSort,
   className,
+  ariaLabel,
 }: SortHeadProps<K>): React.ReactElement {
   const active = sort.key === sortKey;
   return (
@@ -40,6 +48,7 @@ export function SortHead<K extends string>({
     // own borders are off (see the border-b-0 notes at the call sites).
     <TableHead className={cn('px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
       <TableHeadButton
+        aria-label={ariaLabel}
         className="font-medium text-muted-foreground normal-case"
         // type="button" is required: Shade's Button sets no default type, so
         // this renders a native submit button. The React admin mounts inside

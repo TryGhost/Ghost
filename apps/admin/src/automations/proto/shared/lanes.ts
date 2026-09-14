@@ -24,7 +24,7 @@
 // flow mechanics. Mechanics are common; screens diverge.
 // ---------------------------------------------------------------------------
 
-export type LaneId = 'phase-1' | 'phase-2' | 'exploration';
+export type LaneId = 'phase-1' | 'phase-2' | 'exploration' | 'exploration-2';
 
 export interface Lane {
   id: LaneId;
@@ -39,6 +39,11 @@ export const LANES: Lane[] = [
   { id: 'phase-1', label: 'Phase 1', note: 'Being built now' },
   { id: 'phase-2', label: 'Phase 2', note: 'Per-tier automations — in design' },
   { id: 'exploration', label: 'Exploration', note: 'Not scheduled' },
+  // A second exploration rather than edits to the first. The lanes exist so work can
+  // diverge without anything being lost, and that applies to two ideas about the same
+  // screen as much as it does to two phases — the first exploration is a state worth
+  // being able to go back and look at, not a draft of this one.
+  { id: 'exploration-2', label: 'Exploration 2', note: 'Not scheduled' },
 ];
 
 export const lanePath = (lane: LaneId): string => `/automations-proto/${lane}`;
