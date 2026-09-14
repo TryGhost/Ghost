@@ -1,12 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
-import { StrictMode } from 'react';
 
-import { fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
 import { publishRecipientFree } from '@tryghost/test-data/selectors/editor';
-import { TestWrapper } from '@test-utils/fixtures/query-client';
-import '@/index.css';
 
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
 import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
@@ -122,7 +119,7 @@ async function renderPublishFlow(
   const dispatch = completesWith(saved());
   const onCompleted = vi.fn();
   const renderModal = (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>> = {}) => (
-    <TestWrapper>
+    <InAppProviders>
       <PublishFlowModal
         dispatch={dispatch}
         post={draft()}
@@ -134,7 +131,7 @@ async function renderPublishFlow(
         {...props}
         {...nextProps}
       />
-    </TestWrapper>
+    </InAppProviders>
   );
 
   const rendered = await render(renderModal());
@@ -643,20 +640,18 @@ describe('Publish flow', () => {
     const checkPublishingLimit = vi.fn(() => Promise.resolve());
 
     await render(
-      <StrictMode>
-        <TestWrapper>
-          <PublishFlowModal
-            dispatch={dispatch}
-            limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
-            post={draft()}
-            site={{ ...SITE, mailgunConfigured: false }}
-            timezone="Etc/UTC"
-            user={USER}
-            onClose={() => {}}
-            onCompleted={onCompleted}
-          />
-        </TestWrapper>
-      </StrictMode>,
+      <InAppProviders>
+        <PublishFlowModal
+          dispatch={dispatch}
+          limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
+          post={draft()}
+          site={{ ...SITE, mailgunConfigured: false }}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+          onCompleted={onCompleted}
+        />
+      </InAppProviders>,
     );
 
     await expect.poll(() => refreshSettings.mock.calls.length).toBe(1);
@@ -850,11 +845,10 @@ describe('Publish flow', () => {
   );
 
   it(
-    'stays on the step when the current-user read expires mid-flow',
+    'does not re-read the current user when the writer moves between steps',
     async () => {
-      // Each step mounts its own recipient-count observer, which re-reads the
-      // current user - so the session can expire on a request the flow makes
-      // only because the writer moved between steps.
+      // The providers and every step read the current user; the app keeps that
+      // read fresh for minutes, so a 401 after the first read must never be hit.
       const signedIn = fakeAdminEndpoint('GET', /^\/users\/me\//, {
         users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }],
       });
@@ -867,9 +861,13 @@ describe('Publish flow', () => {
       const expired = fakeAdminEndpoint('GET', /^\/users\/me\//, SESSION_EXPIRED, { status: 401 });
       await publishScreen.continueButton().click();
 
-      await expect.element(publishScreen.confirm()).toBeInTheDocument();
-      await expect.poll(() => expired.requests.length).toBeGreaterThan(0);
-      await expect.element(publishScreen.confirm()).toBeInTheDocument();
+      // The confirm step names its audience, so its own count observer has
+      // resolved - off the cached user, without a second read.
+      await expect
+        .element(publishScreen.confirmButton())
+        .toHaveTextContent('Publish & send, right now');
+      expect(signedIn.requests).toHaveLength(1);
+      expect(expired.requests).toHaveLength(0);
     },
     SLOW,
   );
@@ -1007,7 +1005,7 @@ describe('Update flow', () => {
     const { pathname } = window.location;
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1022,7 +1020,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     // An unreadable count drops the number rather than reporting none.
@@ -1039,7 +1037,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1048,7 +1046,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={onClose}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('has been published');
@@ -1064,19 +1062,17 @@ describe('Update flow', () => {
     const onReverted = vi.fn();
 
     await render(
-      <StrictMode>
-        <TestWrapper>
-          <UpdateFlowModal
-            dispatch={dispatch}
-            post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
-            site={SITE}
-            timezone="Etc/UTC"
-            user={USER}
-            onClose={onClose}
-            onReverted={onReverted}
-          />
-        </TestWrapper>
-      </StrictMode>,
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1091,7 +1087,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1100,7 +1096,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={onClose}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1126,7 +1122,7 @@ describe('Update flow', () => {
     const onReverted = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1136,7 +1132,7 @@ describe('Update flow', () => {
           onClose={onClose}
           onReverted={onReverted}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1164,7 +1160,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
     const onReverted = vi.fn();
     const modal = (post: PublishFlowPost) => (
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={post}
@@ -1174,7 +1170,7 @@ describe('Update flow', () => {
           onClose={onClose}
           onReverted={onReverted}
         />
-      </TestWrapper>
+      </InAppProviders>
     );
     const rendered = await render(
       modal(draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })),
@@ -1205,7 +1201,7 @@ describe('Update flow', () => {
 
   it('names a since-archived newsletter a scheduled post was already sent to', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1222,7 +1218,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1238,7 +1234,7 @@ describe('Update flow', () => {
 
   it('describes the audience for a scheduled email that has not been sent yet', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1253,7 +1249,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1263,7 +1259,7 @@ describe('Update flow', () => {
 
   it('does not claim a scheduled email-only post will be published', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1279,7 +1275,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1292,7 +1288,7 @@ describe('Update flow', () => {
 
   it('does not count the current default newsletter for a missing persisted newsletter', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1308,7 +1304,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1321,7 +1317,7 @@ describe('Update flow', () => {
 
   it('does not replace a missing persisted segment with the current site default', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1336,7 +1332,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1349,7 +1345,7 @@ describe('Update flow', () => {
 
   it('does not claim that a failed published email was sent', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1369,7 +1365,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
