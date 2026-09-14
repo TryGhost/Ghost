@@ -1,7 +1,21 @@
-const automationsApi = require('../../services/automations/automations-api');
+import * as automationsApi from '../../services/automations/automations-api';
 
-/** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
+type ReadFrame = {
+  data: {
+    id: string;
+  };
+};
+
+type EditFrame = {
+  options: {
+    id: string;
+  };
+  data?: {
+    automations?: unknown[];
+  };
+};
+
+export const controller = {
   docName: 'automations',
 
   browse: {
@@ -20,7 +34,7 @@ const controller = {
     },
     data: ['id'],
     permissions: true,
-    async query(frame) {
+    async query(frame: ReadFrame) {
       return await automationsApi.read(frame.data.id);
     },
   },
@@ -31,7 +45,7 @@ const controller = {
     },
     options: ['id'],
     permissions: true,
-    async query(frame) {
+    async query(frame: EditFrame) {
       return await automationsApi.edit(frame.options.id, frame.data?.automations?.[0]);
     },
   },
@@ -50,5 +64,3 @@ const controller = {
     },
   },
 };
-
-module.exports = controller;
