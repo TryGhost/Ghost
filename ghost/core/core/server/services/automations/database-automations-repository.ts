@@ -176,6 +176,10 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
+    async exists(id) {
+      return !!(await knex('automations').where({ id }).first('id'));
+    },
+
     async getById(id: string): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
         const automation = await loadAutomation(trx, id);
@@ -185,6 +189,31 @@ export function createDatabaseAutomationsRepository({
         }
 
         return await buildAutomation(trx, automation);
+      });
+    },
+
+    async getEntryStats(id, window) {
+      return await knex.transaction(async (trx) => {
+        const total = await trx('automation_runs')
+          .where('automation_id', id)
+          .count({ count: '*' })
+          .first();
+        const rows = await trx('automation_runs')
+          .where('automation_id', id)
+          .where('created_at', '>=', toDatabaseDate(window.date_from))
+          .where('created_at', '<', toDatabaseDate(window.date_to))
+          .select(trx.raw('DATE(??) as ??', ['created_at', 'date']))
+          .count<{ date: DatabaseDate; count: string | number }[]>({ count: '*' })
+          .groupByRaw('DATE(??)', ['created_at'])
+          .orderBy('date');
+
+        return {
+          total_run_count: Number(total?.count ?? 0),
+          entries: rows.map((row) => ({
+            date: fromDatabaseDate(row.date).toISOString().slice(0, 10),
+            count: Number(row.count),
+          })),
+        };
       });
     },
 

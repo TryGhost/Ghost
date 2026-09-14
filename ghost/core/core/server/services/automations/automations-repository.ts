@@ -1,5 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
+import type { EntryStatsData, EntryStatsWindow } from './automation-entry-stats';
 
 export type Pagination = {
   page: number;
@@ -158,7 +159,9 @@ export type BrowseOptions = Readonly<{
 
 export type AutomationsRepository = {
   browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
+  exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
+  getEntryStats(id: string, window: EntryStatsWindow): Promise<EntryStatsData>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,

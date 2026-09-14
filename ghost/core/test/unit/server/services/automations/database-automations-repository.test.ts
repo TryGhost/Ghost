@@ -642,6 +642,57 @@ describe('automations repository', function () {
     await knex?.destroy();
   });
 
+  describe('getEntryStats', function () {
+    it('counts runs once, scopes by automation, and uses an inclusive start and exclusive end', async function () {
+      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+      const otherId = (await getAutomationBySlug('member-welcome-email-paid')).id;
+      const dates = [
+        '2026-08-15 23:59:59',
+        '2026-08-16 00:00:00',
+        '2026-09-14 23:59:59',
+        '2026-09-14 12:00:00',
+        '2026-09-15 00:00:00',
+      ];
+      await knex('automation_runs').insert(
+        dates.map((createdAt) => ({
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          member_email: 'same@example.com',
+          member_id: null,
+          created_at: createdAt,
+          updated_at: createdAt,
+        })),
+      );
+      await insertRun(otherId);
+      const result = await repo.getEntryStats(automationId, {
+        date_from: '2026-08-16',
+        date_to: '2026-09-15',
+        bucket: 'day',
+        timezone: 'UTC',
+      });
+      assert.deepEqual(result, {
+        total_run_count: 5,
+        entries: [
+          { date: '2026-08-16', count: 1 },
+          { date: '2026-09-14', count: 2 },
+        ],
+      });
+    });
+
+    it('returns a genuine zero for an automation without runs', async function () {
+      const automationId = (await getAutomationBySlug('member-welcome-email-free')).id;
+      assert.deepEqual(
+        await repo.getEntryStats(automationId, {
+          date_from: '2026-08-16',
+          date_to: '2026-09-15',
+          bucket: 'day',
+          timezone: 'UTC',
+        }),
+        { total_run_count: 0, entries: [] },
+      );
+    });
+  });
+
   describe('browse', function () {
     const deleteActionsForAutomationIds = async (automationIds: string[]) => {
       const actionIds = await knex('automation_actions')
