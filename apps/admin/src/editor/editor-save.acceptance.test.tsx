@@ -31,9 +31,6 @@ const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
 
-// Watching the header means waiting out its 3s “Saving” hold.
-const SLOW = 20_000;
-
 type SavedPost = ReturnType<typeof post>;
 
 function postIn(request: CapturedEndpointRequest | undefined): Record<string, unknown> {
@@ -310,20 +307,16 @@ describe('Post editor saving', () => {
     await expect.poll(() => saveApi.requests.length).toBe(1);
   });
 
-  it(
-    'reports the save in the header and settles on saved',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('reports the save in the header and settles on saved', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-      await appendToBody(' and more');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+    await appendToBody(' and more');
 
-      await expect.element(editorScreen.status()).toHaveTextContent('Saving');
-      await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
+  });
 
   it('reports a status the post reached elsewhere once a save refetches it', async () => {
     const saveApi = fakeSavablePost();
