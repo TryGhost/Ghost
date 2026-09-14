@@ -1,0 +1,17 @@
+diff --git a/lib/cheerio.js b/lib/cheerio.js
+index 809e0ac78bc01a98675b43a771140e9f35cd4c71..23c565ad94ec15dd2e7f8e605b1bb849ef6769bd 100644
+--- a/lib/cheerio.js
++++ b/lib/cheerio.js
+@@ -3,7 +3,11 @@
+ /**
+  * Module dependencies.
+  */
+-var cheerio = require('cheerio');
++// Ghost patch: cheerio's main entry eagerly loads parse5, undici and the whatwg
++// encoding stack (~20MB RSS per process) none of which juice uses - the `xml`
++// option below sets _useHtmlParser2, so parsing goes through htmlparser2 either
++// way. cheerio/slim is that same htmlparser2 path without the unused baggage.
++var cheerio = require('cheerio/slim');
+ var utils = require('./utils');
+ 
+ var cheerioLoad = function(html, options, encodeEntities) {
