@@ -23,10 +23,16 @@ const config = {
     },
     emails: {
         currentCountQuery: async (knex: Knex, startDate?: string) => {
-            const result = await knex('emails')
-                .sum('email_count', {as: 'count'})
-                .where('created_at', '>=', startDate)
-                .first();
+            const query = knex('emails').sum('email_count', {as: 'count'});
+
+            // Only a limit that resets has a period to count within. A host capping emails
+            // outright configures `max` instead, and the whole history is what that caps, so
+            // there is nothing to narrow by. Handing the missing date to the query builder
+            // anyway makes it refuse to build the query, which reaches the publisher as a
+            // failed send rather than a refused one.
+            const counted = startDate ? query.where('created_at', '>=', startDate) : query;
+
+            const result = await counted.first();
 
             return result.count;
         }
