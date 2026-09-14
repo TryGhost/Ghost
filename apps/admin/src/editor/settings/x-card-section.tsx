@@ -1,6 +1,13 @@
-import { useCallback, useId } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { FieldError, Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  Input,
+  LoadingIndicator,
+  Textarea,
+} from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -27,7 +34,6 @@ import {
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
@@ -41,6 +47,7 @@ import {
   socialImage,
   socialTitle,
 } from './social-card-fields';
+import { useSettingsField } from './use-settings-field';
 
 const IMAGE_SUBJECT = 'X image';
 const ADD_IMAGE_LABEL = 'Add X image';
@@ -62,25 +69,19 @@ export interface XCardSectionProps {
  * stand in for the post's own, and the result they produce.
  */
 export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCardSectionProps) {
-  const titleId = useId();
-  const titleErrorId = useId();
-  const descriptionId = useId();
-  const descriptionErrorId = useId();
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
 
+  const title = useSettingsField(session, 'twitter_title');
+  const description = useSettingsField(session, 'twitter_description');
   const twitterImage = session.settings.twitter_image ?? '';
-  const twitterTitle = session.settings.twitter_title ?? '';
-  const twitterDescription = session.settings.twitter_description ?? '';
-  const titleError = settingsFieldErrorFor('twitter_title', session.settings);
-  const descriptionError = settingsFieldErrorFor('twitter_description', session.settings);
 
   const previewTitle = socialTitle({
-    own: twitterTitle,
+    own: title.value,
     metaTitle: session.settings.meta_title ?? '',
     title: session.bind.title,
   });
   const previewDescription = socialDescription({
-    own: twitterDescription,
+    own: description.value,
     customExcerpt: session.settings.custom_excerpt ?? '',
     metaDescription: session.settings.meta_description ?? '',
     postExcerpt: session.loadedRecord?.excerpt ?? '',
@@ -157,41 +158,26 @@ export function XCardSection({ session, siteUrl, featureImage, cardConfig }: XCa
         </ImageUpload>
       )}
 
-      <Stack gap="sm">
-        <Label htmlFor={titleId}>X title</Label>
+      <Field>
+        <FieldLabel htmlFor={title.fieldProps.id}>X title</FieldLabel>
         <Input
-          aria-describedby={titleError ? titleErrorId : undefined}
-          aria-invalid={!!titleError}
           data-testid={settingsXTitleInput}
-          id={titleId}
           placeholder={truncate(previewTitle, SOCIAL_TITLE_PLACEHOLDER_LENGTH)}
-          value={twitterTitle}
-          onBlur={session.commitSettings}
-          // A cleared field is stored as no value, the way the excerpt is.
-          onChange={(event) => session.stageSettings({ twitter_title: event.target.value || null })}
+          {...title.fieldProps}
         />
-        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
-      </Stack>
+        <FieldError {...title.errorProps}>{title.error}</FieldError>
+      </Field>
 
-      <Stack gap="sm">
-        <Label htmlFor={descriptionId}>X description</Label>
+      <Field>
+        <FieldLabel htmlFor={description.fieldProps.id}>X description</FieldLabel>
         <Textarea
-          aria-describedby={descriptionError ? descriptionErrorId : undefined}
-          aria-invalid={!!descriptionError}
           data-testid={settingsXDescriptionInput}
-          id={descriptionId}
           placeholder={truncate(previewDescription, SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH)}
           rows={3}
-          value={twitterDescription}
-          onBlur={session.commitSettings}
-          onChange={(event) =>
-            session.stageSettings({ twitter_description: event.target.value || null })
-          }
+          {...description.fieldProps}
         />
-        {descriptionError ? (
-          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
-        ) : null}
-      </Stack>
+        <FieldError {...description.errorProps}>{description.error}</FieldError>
+      </Field>
 
       <Stack gap="sm">
         <Text size="sm" weight="medium">

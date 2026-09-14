@@ -1,6 +1,13 @@
-import { useCallback, useId } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { FieldError, Input, Label, LoadingIndicator, Textarea } from '@tryghost/shade/components';
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  Input,
+  LoadingIndicator,
+  Textarea,
+} from '@tryghost/shade/components';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -26,7 +33,6 @@ import {
 } from '@/shared/images/image-upload';
 import type { PostCardConfig } from '@/editor/card-config';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { UnsplashPicker } from '@/editor/unsplash-picker';
 import { truncate } from './meta-data-fields';
@@ -40,6 +46,7 @@ import {
   socialImage,
   socialTitle,
 } from './social-card-fields';
+import { useSettingsField } from './use-settings-field';
 
 const IMAGE_SUBJECT = 'Facebook image';
 const ADD_IMAGE_LABEL = 'Add Facebook image';
@@ -66,25 +73,19 @@ export function FacebookCardSection({
   featureImage,
   cardConfig,
 }: FacebookCardSectionProps) {
-  const titleId = useId();
-  const titleErrorId = useId();
-  const descriptionId = useId();
-  const descriptionErrorId = useId();
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
 
+  const title = useSettingsField(session, 'og_title');
+  const description = useSettingsField(session, 'og_description');
   const ogImage = session.settings.og_image ?? '';
-  const ogTitle = session.settings.og_title ?? '';
-  const ogDescription = session.settings.og_description ?? '';
-  const titleError = settingsFieldErrorFor('og_title', session.settings);
-  const descriptionError = settingsFieldErrorFor('og_description', session.settings);
 
   const previewTitle = socialTitle({
-    own: ogTitle,
+    own: title.value,
     metaTitle: session.settings.meta_title ?? '',
     title: session.bind.title,
   });
   const previewDescription = socialDescription({
-    own: ogDescription,
+    own: description.value,
     customExcerpt: session.settings.custom_excerpt ?? '',
     metaDescription: session.settings.meta_description ?? '',
     postExcerpt: session.loadedRecord?.excerpt ?? '',
@@ -161,41 +162,26 @@ export function FacebookCardSection({
         </ImageUpload>
       )}
 
-      <Stack gap="sm">
-        <Label htmlFor={titleId}>Facebook title</Label>
+      <Field>
+        <FieldLabel htmlFor={title.fieldProps.id}>Facebook title</FieldLabel>
         <Input
-          aria-describedby={titleError ? titleErrorId : undefined}
-          aria-invalid={!!titleError}
           data-testid={settingsFacebookTitleInput}
-          id={titleId}
           placeholder={truncate(previewTitle, SOCIAL_TITLE_PLACEHOLDER_LENGTH)}
-          value={ogTitle}
-          onBlur={session.commitSettings}
-          // A cleared field is stored as no value, the way the excerpt is.
-          onChange={(event) => session.stageSettings({ og_title: event.target.value || null })}
+          {...title.fieldProps}
         />
-        {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
-      </Stack>
+        <FieldError {...title.errorProps}>{title.error}</FieldError>
+      </Field>
 
-      <Stack gap="sm">
-        <Label htmlFor={descriptionId}>Facebook description</Label>
+      <Field>
+        <FieldLabel htmlFor={description.fieldProps.id}>Facebook description</FieldLabel>
         <Textarea
-          aria-describedby={descriptionError ? descriptionErrorId : undefined}
-          aria-invalid={!!descriptionError}
           data-testid={settingsFacebookDescriptionInput}
-          id={descriptionId}
           placeholder={truncate(previewDescription, SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH)}
           rows={3}
-          value={ogDescription}
-          onBlur={session.commitSettings}
-          onChange={(event) =>
-            session.stageSettings({ og_description: event.target.value || null })
-          }
+          {...description.fieldProps}
         />
-        {descriptionError ? (
-          <FieldError id={descriptionErrorId}>{descriptionError}</FieldError>
-        ) : null}
-      </Stack>
+        <FieldError {...description.errorProps}>{description.error}</FieldError>
+      </Field>
 
       <Stack gap="sm">
         <Text size="sm" weight="medium">
