@@ -222,6 +222,9 @@ describe('Member activity', () => {
     await screen.eventType('Signups').click();
     await userEvent.keyboard('{Escape}');
     await expect.element(screen.text('Signed up')).not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('status', { name: 'Loading member activity' }))
+      .toBeVisible();
     release?.();
     await expect.element(screen.heading('No activities match the current filter')).toBeVisible();
   });
@@ -281,6 +284,7 @@ describe('Member activity', () => {
     );
     screen.scrollToEnd();
     await expect.element(screen.heading('Couldn’t load more activity')).toBeVisible();
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Couldn’t load more activity');
     await expect(screen.rows()).toHaveCount(50);
     fakeAdminEndpoint('GET', EVENTS, ({ url }) => ({
       events: new URL(url).searchParams.get('filter')?.includes('data.created_at:<')

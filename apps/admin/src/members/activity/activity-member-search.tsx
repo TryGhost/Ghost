@@ -47,12 +47,14 @@ export default function ActivityMemberSearch({ onSelect }: { onSelect: (id: stri
           />
           <CommandList>
             {loading ? (
-              <Inline className="p-4" justify="center">
+              <Inline aria-label="Loading members" className="p-4" justify="center" role="status">
                 <LoadingIndicator size="sm" />
               </Inline>
             ) : isError ? (
               <Stack className="p-4" gap="sm">
-                <p className="text-sm text-muted-foreground">Couldn’t load members</p>
+                <p className="text-sm text-muted-foreground" role="alert">
+                  Couldn’t load members
+                </p>
                 <Button variant="outline" onClick={() => void refetch()}>
                   Retry
                 </Button>

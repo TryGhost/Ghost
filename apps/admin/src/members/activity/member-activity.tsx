@@ -202,6 +202,7 @@ function ActivityPage() {
                     Retry
                   </Button>
                 }
+                role="alert"
                 title="Couldn’t load activity settings"
               />
             ) : memberMissing ? (
@@ -212,6 +213,7 @@ function ActivityPage() {
                   </Button>
                 }
                 description="This member may have been deleted."
+                role="alert"
                 title="Member not found"
               />
             ) : memberFailed ? (
@@ -221,10 +223,16 @@ function ActivityPage() {
                     Retry
                   </Button>
                 }
+                role="alert"
                 title="Couldn’t load member"
               />
             ) : loading ? (
-              <Inline className="grow py-10" justify="center">
+              <Inline
+                aria-label="Loading member activity"
+                className="grow py-10"
+                justify="center"
+                role="status"
+              >
                 <LoadingIndicator size="lg" />
               </Inline>
             ) : (
@@ -301,6 +309,7 @@ function ActivityPage() {
                         Retry
                       </Button>
                     }
+                    role="alert"
                     title={
                       events.length
                         ? 'Couldn’t load more activity'
@@ -309,7 +318,12 @@ function ActivityPage() {
                   />
                 )}
                 {feed.isFetchingNextPage && (
-                  <Inline className="py-6" justify="center">
+                  <Inline
+                    aria-label="Loading more activity"
+                    className="py-6"
+                    justify="center"
+                    role="status"
+                  >
                     <LoadingIndicator size="md" />
                   </Inline>
                 )}

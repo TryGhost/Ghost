@@ -161,7 +161,13 @@ export default function ActivityEmailPreview({ email, onClose }: ActivityEmailPr
                 )}
               </Stack>
               {loading ? (
-                <Inline className="grow" gap="none" justify="center">
+                <Inline
+                  aria-label="Loading email preview"
+                  className="grow"
+                  gap="none"
+                  justify="center"
+                  role="status"
+                >
                   <LoadingIndicator size="md" />
                 </Inline>
               ) : preview ? (
@@ -186,6 +192,7 @@ export default function ActivityEmailPreview({ email, onClose }: ActivityEmailPr
                       ? 'The email preview could not be loaded.'
                       : 'The original email content is no longer available.'
                   }
+                  role="alert"
                   title="Couldn’t load the email preview"
                 >
                   <LucideIcon.MailWarning />
