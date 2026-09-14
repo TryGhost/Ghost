@@ -102,7 +102,7 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   //
   // Skipped under test, where the suites rewrite config between cases on
   // purpose via configUtils.
-  if (!nconf.isTestEnv() && nconf.get('optimization:freezeConfig') !== false) {
+  if (!nconf.isTestEnv()) {
     nconf.freeze();
   }
 
