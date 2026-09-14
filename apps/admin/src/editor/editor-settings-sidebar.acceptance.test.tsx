@@ -28,8 +28,6 @@ const WIDE_VIEWPORT = { width: 1280, height: 800 };
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -160,9 +158,7 @@ describe('Post settings sidebar', () => {
 
       await editorScreen.settingsFeatured().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ featured: true });
+      await expect(saveApi).toHaveSavedFields({ featured: true });
       await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
     },
     SLOW,

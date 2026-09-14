@@ -29,8 +29,6 @@ const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -141,9 +139,7 @@ describe('Post settings authors', () => {
       await expect(editorScreen.settingsAuthorOption('Owner User')).toHaveCount(0);
       await editorScreen.settingsAuthorOption('Nadia Ahmed').click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: NADIA.id }]);
+      await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }, { id: NADIA.id }] });
       await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Owner User', 'Nadia Ahmed']);
     },
     SLOW,
@@ -162,8 +158,7 @@ describe('Post settings authors', () => {
 
       await editorScreen.removeAuthor('Nadia Ahmed').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }]);
+      await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }] });
       await expect.poll(editorScreen.settingsAuthorNames).toEqual(['Owner User']);
     },
     SLOW,
@@ -275,8 +270,7 @@ describe('Post settings authors', () => {
 
       await userEvent.keyboard('{Tab}');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: JOSE.id }]);
+      await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }, { id: JOSE.id }] });
 
       await userEvent.keyboard('{Backspace}');
 
@@ -297,8 +291,7 @@ describe('Post settings authors', () => {
       // Nothing typed, so the pick is the second row rather than the first.
       await userEvent.keyboard('{ArrowDown}{Enter}');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).authors).toEqual([{ id: OWNER_ID }, { id: JOSE.id }]);
+      await expect(saveApi).toHaveSavedFields({ authors: [{ id: OWNER_ID }, { id: JOSE.id }] });
 
       // The list shrank under the highlight; Enter still takes what it points at.
       await expect

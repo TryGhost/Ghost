@@ -21,8 +21,6 @@ const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // A slug edit waits on the generator and then on the save queue.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -135,9 +133,7 @@ describe('Post settings URL', () => {
       await expect.poll(() => slugApi.requests.length, POLL).toBe(1);
       expect(slugApi.requests[0].url).toContain('/slugs/post/new-slug/');
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ slug: 'new-slug-2' });
+      await expect(saveApi).toHaveSavedFields({ slug: 'new-slug-2' });
       await expect.element(editorScreen.settingsSlug()).toHaveValue('new-slug-2');
       await expect
         .element(editorScreen.settingsUrlPreview())
