@@ -150,6 +150,16 @@ describe('User API', function () {
     }
   });
 
+  it('Can not order users by password', async function () {
+    await agent
+      .get('users/?order=password%20ASC')
+      .expectStatus(400)
+      .expect(({ body }) => {
+        assert.equal(body.errors[0].type, 'BadRequestError');
+        assert.equal(body.errors[0].context, 'Restricted fields cannot be used in order.');
+      });
+  });
+
   it('Can retrieve a user by id', async function () {
     const userId = fixtureManager.get('users', 0).id;
     await agent
