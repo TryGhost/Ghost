@@ -148,7 +148,7 @@ catalog:
   globals: 17.7.0
   got: 16.0.0
   jose: 6.2.12
-  js-yaml: 4.3.0
+  js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
   juice: 11.1.1
@@ -345,6 +345,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: js-yaml@4.3.2
+  - js-yaml@4.3.2
 
 # configuration for pnpm's changeset functionality
 versioning:
