@@ -42,11 +42,7 @@ for (const react of [false, true]) {
         .toBe(2);
 
       await page.goto('/ghost/#/members-activity');
-      if (react) {
-        await expect(page.getByTestId('member-activity-page')).toBeVisible();
-      } else {
-        await expect(page.getByTestId('member-activity-page')).toBeHidden();
-      }
+      await expect(page.getByTestId('member-activity-page')).toBeVisible({ visible: react });
 
       await expect(
         page.getByRole('heading', { name: 'Member activity', exact: true }),
