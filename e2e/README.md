@@ -281,7 +281,7 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
-# Check fake Stripe fixtures and Mailgun forwarding (no infra)
+# Check the fake Stripe server against captured Stripe responses (no infra, ~1s)
 pnpm test:fixtures
 
 # Put a Stripe test account into the state fixtures are captured from
