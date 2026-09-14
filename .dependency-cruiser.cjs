@@ -146,11 +146,11 @@ module.exports = {
     {
       name: 'no-test-data-in-production-source',
       comment:
-        'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests and fixtures are exempt.',
+        'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests, fixtures, and test utilities are exempt.',
       severity: 'error',
       from: {
         path: '^apps/[^/]+/src/',
-        pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/'],
+        pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/', '(^|/)__test-utils__/'],
       },
       to: {
         // The root entry resolves to the workspace source; the subpaths stay
