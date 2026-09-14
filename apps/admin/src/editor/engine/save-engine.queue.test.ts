@@ -5,6 +5,7 @@ import {
   TIMED_SAVE_INTERVAL_MS,
   type PostStatus,
   type SaveEngineState,
+  type SaveError,
   type SaveOutcome,
   type SaveSnapshot,
 } from './save-engine';
@@ -20,6 +21,7 @@ import {
   setup,
   transport,
   validation,
+  type Harness,
 } from './__test-utils__/engine-harness';
 
 beforeEach(() => {
@@ -319,13 +321,36 @@ describe('createSaveEngine', () => {
       });
     });
 
-    it.each([validation, hostLimit])(
-      'suppresses background saves after a $kind error on a draft save until the snapshot changes',
-      async (error) => {
+    // Either port can report the error, so both are held to the same suppression.
+    const reportedBy = [
+      {
+        port: 'execute',
+        fail: async (h: Harness, error: SaveError) => {
+          void h.engine.dispatch('explicit');
+          await h.fail(error);
+        },
+      },
+      {
+        port: 'prepare',
+        fail: async (h: Harness, error: SaveError) => {
+          h.prepare.mockResolvedValueOnce({ ok: false, error });
+          await h.engine.dispatch('explicit');
+        },
+      },
+    ];
+
+    it.each(
+      [validation, hostLimit].flatMap((error) =>
+        reportedBy.map((reporter) => ({ ...reporter, error })),
+      ),
+    )(
+      'suppresses background saves after a $error.kind error $port reported on a draft save until the snapshot changes',
+      async ({ error, fail }) => {
         const h = setup();
-        void h.engine.dispatch('explicit');
-        await h.fail(error);
+        await fail(h, error);
         expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error });
+        // A prepare failure never reached the transport, so count from what ran.
+        const executed = h.execute.mock.calls.length;
 
         await expect(h.engine.dispatch('autosave')).resolves.toEqual({
           kind: 'dropped',
@@ -336,18 +361,18 @@ describe('createSaveEngine', () => {
           reason: 'suppressed',
         });
         await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
-        expect(h.execute).toHaveBeenCalledTimes(1);
+        expect(h.execute).toHaveBeenCalledTimes(executed);
 
         void h.engine.dispatch('explicit');
         await flush();
-        expect(h.execute).toHaveBeenCalledTimes(2);
+        expect(h.execute).toHaveBeenCalledTimes(executed + 1);
         await h.fail(error);
 
         h.edit();
         void h.engine.dispatch('autosave');
         await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
-        expect(h.execute).toHaveBeenCalledTimes(3);
-        expect(h.requests[2]).toMatchObject({
+        expect(h.execute).toHaveBeenCalledTimes(executed + 2);
+        expect(h.requests.at(-1)).toMatchObject({
           command: { kind: 'autosave' },
           snapshot: { version: 2 },
         });
@@ -612,7 +637,7 @@ describe('createSaveEngine', () => {
       const engine = createSaveEngine({
         getSnapshot: () => snapshot,
         slug: idleSlug,
-        prepare: (request) => Promise.resolve(request),
+        prepare: (request) => Promise.resolve({ ok: true, prepared: request }),
         execute: (prepared) =>
           Promise.resolve<SaveOutcome>({
             ok: true,

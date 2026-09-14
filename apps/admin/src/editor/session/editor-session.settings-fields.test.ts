@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dispatchedIntents } from '@/editor/session/__test-utils__/save-engine-spy';
+import { capturedPorts, dispatchedIntents } from '@/editor/session/__test-utils__/save-engine-spy';
 import {
   body,
   record,
@@ -17,6 +17,7 @@ vi.mock('@/editor/engine/save-engine', async (importOriginal) => {
 
 beforeEach(() => {
   dispatchedIntents.length = 0;
+  capturedPorts.length = 0;
 });
 
 describe('createEditorSession', () => {
@@ -529,6 +530,33 @@ describe('createEditorSession', () => {
         error: { kind: 'validation', message: META_TITLE_TOO_LONG },
       });
       expect(state.updates).toHaveLength(0);
+    });
+
+    // Pins where the refusal lives: the engine only suppresses background saves
+    // on a `validation` kind, and only `prepare` can report one before the IO.
+    it('refuses the over-long value from the prepare port the session handed the engine', async () => {
+      const { session, state } = sessionHarness({ record: record() });
+
+      session.patchFields({ meta_title: 'a'.repeat(META_TITLE_MAX + 1) });
+      const snapshot = session.getSaveSnapshot();
+      const outcome = await capturedPorts[0].prepare(
+        {
+          command: { kind: 'explicit', requiresRevision: false, requiresReconfirmation: false },
+          snapshot,
+          title: snapshot.title,
+          slug: snapshot.slug,
+          target: { status: snapshot.status, publishedAt: snapshot.publishedAt },
+          saveRevision: false,
+        },
+        new AbortController().signal,
+      );
+
+      expect(outcome).toEqual({
+        ok: false,
+        error: { kind: 'validation', message: META_TITLE_TOO_LONG },
+      });
+      expect(state.updates).toHaveLength(0);
+      expect(state.creates).toHaveLength(0);
     });
 
     it('stages a field on a published post until an explicit save', async () => {

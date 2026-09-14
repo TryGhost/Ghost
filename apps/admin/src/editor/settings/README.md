@@ -18,9 +18,11 @@ What that gate does depends on the post's status.
 The gate also holds a draft's field save back while a value it would send is not
 yet valid: an incomplete tier pairing, or a publish time that has not passed. The
 value stays staged, the section says why, and the next save the writer asks for
-is refused with the same message. A draft's body autosave is refused for that
-reason too while such a value stands, and the save banner carries the message
-whether or not the sidebar is open, so closing the panel does not hide it.
+is refused with the same message. A draft's body autosave is not held back the
+same way: it runs, and the same rule fails it before any request is sent, so the
+engine reports that error until the value is valid again. The save banner carries
+the message whether or not the sidebar is open, so closing the panel does not
+hide it.
 
 Staging is not a weaker form of saving. A staged value lives in the same live
 document as the body, so it counts everywhere unsaved work counts: the post
