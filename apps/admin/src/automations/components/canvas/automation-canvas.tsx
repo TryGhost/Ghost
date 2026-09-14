@@ -679,11 +679,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   return (
     <Inline
       align="stretch"
-      className="relative min-h-0 flex-1 overflow-hidden bg-background"
+      className="@container relative min-h-0 flex-1 overflow-hidden bg-background"
       data-testid="automation-canvas"
       gap="none"
     >
-      {automationRunAnalyticsEnabled && <PerformanceSidebar />}
+      {automationRunAnalyticsEnabled && <PerformanceSidebar automationId={automation.id} />}
       <div ref={viewport.measureCanvas} className="relative min-w-0 flex-1">
         <ReactFlow
           className="[--xy-background-color:var(--color-gray-50)] [--xy-background-pattern-color:var(--color-gray-500)] [--xy-edge-stroke:var(--color-gray-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-gray-900)] dark:[--xy-edge-stroke:var(--color-gray-800)]"
