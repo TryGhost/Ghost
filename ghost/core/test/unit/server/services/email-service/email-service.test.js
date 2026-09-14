@@ -588,15 +588,11 @@ describe('Email Service', function () {
   });
 
   describe('resumeInterruptedSends', function () {
+    // The scanner runs one query per cutoff side. Tests that don't exercise the stale
+    // path get an empty list for it and the given emails for the fresh one.
     const filterAwareFindAll =
       (emails) =>
-      async ({ filter }) => {
-        if (filter.includes('created_at:<')) {
-          return { models: [] };
-        }
-        const status = filter.includes('status:pending') ? 'pending' : 'submitting';
-        return { models: emails.filter((email) => email.get('status') === status) };
-      };
+      async ({ filter }) => ({ models: filter.includes('created_at:<') ? [] : emails });
 
     it('Per-email try/catch: one bad email does not skip the others', async function () {
       const errorLog = sinon.stub(logging, 'error');
@@ -729,16 +725,11 @@ describe('Email Service', function () {
         verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
         models: {
           Email: {
-            findAll: async ({ filter }) => {
-              if (filter.includes('created_at:<')) {
-                return {
-                  models: filter.includes('status:pending')
-                    ? [stalePendingEmail]
-                    : [staleSubmittingEmail],
-                };
-              }
-              return { models: filter.includes('status:submitting') ? [freshEmail] : [] };
-            },
+            findAll: async ({ filter }) => ({
+              models: filter.includes('created_at:<')
+                ? [staleSubmittingEmail, stalePendingEmail]
+                : [freshEmail],
+            }),
           },
         },
         batchSendingService: {
@@ -867,11 +858,11 @@ describe('Email Service', function () {
       await localService.resumeInterruptedSends();
       const after = Date.now();
 
-      assert.equal(capturedFilters.length, 4);
-      assert.deepEqual(
-        capturedFilters.map((filter) => filter.match(/status:(pending|submitting)/)[1]).sort(),
-        ['pending', 'pending', 'submitting', 'submitting'],
-      );
+      assert.equal(capturedFilters.length, 2);
+      // Both sides ask for both statuses, against one shared cutoff.
+      for (const filter of capturedFilters) {
+        assert.match(filter, /status:\[pending,submitting\]/);
+      }
       assert.equal(
         new Set(capturedFilters.map((filter) => filter.match(/created_at:[<>]'([^']+)'/)[1])).size,
         1,
