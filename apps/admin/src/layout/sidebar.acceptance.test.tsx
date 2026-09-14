@@ -359,7 +359,7 @@ describe('Network notification badge', () => {
 describe('Theme error notification', () => {
   const DEPRECATED_HELPER_ERROR = {
     code: 'GS001-DEPR-PURL',
-    rule: 'Replace deprecated helper',
+    rule: 'Replace deprecated <code>{{pageUrl}}</code> helper',
     details: 'The <code>{{pageUrl}}</code> helper has been deprecated.',
     failures: [{ ref: 'default.hbs', message: 'deprecated usage' }],
     fatal: false,
@@ -386,19 +386,51 @@ describe('Theme error notification', () => {
     await expect.element(sidebarScreen.themeErrorsBanner()).toBeVisible();
   });
 
-  it('opens the theme errors dialog when the banner is clicked', async () => {
+  it('shows formatted theme issues and expandable details when the banner is clicked', async () => {
     await renderAdminApp('/site', {
       boot: {
-        browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) },
+        browseActiveTheme: {
+          response: activeThemeResponse({
+            errors: [DEPRECATED_HELPER_ERROR],
+            warnings: [
+              {
+                code: 'GS001-DEPR-TWITTER-URL',
+                rule: 'Replace <code>{{twitter_url}}</code>',
+                details: 'Use the social_url helper.',
+                failures: [],
+                fatal: false,
+                level: 'warning',
+              },
+            ],
+          }),
+        },
       },
     });
 
     await sidebarScreen.themeErrorsBanner().click();
 
-    await expect.element(sidebarScreen.themeErrorsDialog()).toBeVisible();
-    await expect
-      .element(sidebarScreen.themeErrorsDialog())
-      .toHaveTextContent('Replace deprecated helper');
+    const dialog = sidebarScreen.themeErrorsDialog();
+    await expect.element(dialog).toBeVisible();
+    await expect.element(dialog).toHaveTextContent('1 error, 1 warning');
+    await expect.element(dialog).toHaveTextContent('Replace deprecated {{pageUrl}} helper');
+    await expect.element(dialog).not.toHaveTextContent('<code>');
+
+    const error = dialog.getByRole('button', { name: /GS001-DEPR-PURL/ });
+    const warning = dialog.getByRole('button', { name: /GS001-DEPR-TWITTER-URL/ });
+    await expect.element(error).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(warning).toHaveAttribute('aria-expanded', 'false');
+    expect(error.element().querySelector('code')?.textContent).toBe('{{pageUrl}}');
+
+    await error.click();
+    await expect.element(dialog).toHaveTextContent('The {{pageUrl}} helper has been deprecated.');
+    await expect.element(dialog).toHaveTextContent('Affected files');
+    await expect.element(dialog).toHaveTextContent('default.hbs: deprecated usage');
+    await warning.click();
+    await expect.element(dialog).toHaveTextContent('Use the social_url helper.');
+    await expect.element(error).toHaveAttribute('aria-expanded', 'true');
+
+    await dialog.getByRole('button', { name: 'OK', exact: true }).click();
+    await expect.element(dialog).not.toBeInTheDocument();
   });
 
   it('shows no banner when the active theme has no errors', async () => {
