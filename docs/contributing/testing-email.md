@@ -35,27 +35,6 @@ for Mailpit and fake Mailgun to be healthy before starting Ghost. Press `Ctrl+C`
 to stop the development environment; database and content volumes are preserved.
 Run one development variant at a time.
 
-### Devcontainers and Codespaces
-
-Devcontainers start their services before you attach. Running
-`pnpm dev:fake-mailgun` inside one does not apply the Compose overlay to the
-existing backend. Instead, opt in by adding the fake Mailgun overlay to
-`dockerComposeFile` in [`.devcontainer/devcontainer.json`](../../.devcontainer/devcontainer.json),
-before the devcontainer-specific override:
-
-```json
-"dockerComposeFile": [
-  "../compose.dev.yaml",
-  "../compose.dev.fake-mailgun.yaml",
-  "compose.devcontainer.yaml"
-]
-```
-
-Rebuild the devcontainer after changing the list. The normal attach process
-starts Ghost with bulk email routed to the fake service; no additional dev
-command is needed. Open the forwarded Mailpit port `8025` to inspect messages.
-To opt out, remove the fake Mailgun overlay and rebuild again.
-
 ## Test with Mailgun
 
 Use the Mailgun development variant when the provider interaction is part of
