@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const zlib = require('zlib');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
+const requestExternal = require('../../../../../core/server/lib/request-external');
 
 describe('oembed-service', function () {
   /** @type {OembedService} */
@@ -18,7 +19,7 @@ describe('oembed-service', function () {
           return true;
         },
       },
-      externalRequest: got,
+      externalRequest: requestExternal,
     });
 
     nock.disableNetConnect();
@@ -90,6 +91,19 @@ describe('oembed-service', function () {
         assert.equal(error.statusCode, 422);
         assert.equal(error.context, 'Request failed with error code 500');
       }
+    });
+
+    it('should return a ValidationError if upstream returns malformed data', async function () {
+      nock('https://www.youtube.com')
+        .get('/oembed')
+        .query(true)
+        .reply(200, { type: 'rich', html: { not: 'a string' } });
+
+      await assert.rejects(oembedService.knownProvider('https://www.youtube.com/watch?v=1234'), {
+        name: 'ValidationError',
+        statusCode: 422,
+        context: 'Provider returned an invalid oEmbed response',
+      });
     });
   });
 
@@ -552,7 +566,7 @@ describe('oembed-service', function () {
         .query((query) => {
           // Ensure the URL is converted to a watch URL and retains existing query params.
           const actual = query.url;
-          const expected = 'https://youtube.com/watch?param=existing&v=1234';
+          const expected = 'https://www.youtube.com/watch?param=existing&v=1234';
 
           assert.equal(actual, expected, 'URL passed to oembed endpoint is incorrect');
 
@@ -580,7 +594,7 @@ describe('oembed-service', function () {
         .query((query) => {
           // Ensure the URL is converted to a watch URL and retains existing query params.
           const actual = query.url;
-          const expected = 'https://youtube.com/watch?param=existing&v=1234';
+          const expected = 'https://www.youtube.com/watch?param=existing&v=1234';
 
           assert.equal(actual, expected, 'URL passed to oembed endpoint is incorrect');
 

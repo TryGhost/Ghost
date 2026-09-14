@@ -57,6 +57,7 @@ catalog:
   '@codemirror/view': 6.43.6
   '@eslint/compat': 2.1.0
   '@eslint/js': 9.39.5
+  '@extractus/oembed-extractor': 6.0.0
   '@faker-js/faker': 10.5.0
   '@playwright/test': 1.61.1
   '@radix-ui/react-avatar': 1.2.1

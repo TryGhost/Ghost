@@ -13,7 +13,7 @@ const imageTransform = require('@tryghost/image-transform');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
-const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
+const { USER_AGENT } = require('./user-agent');
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 const DEFAULT_REQUEST_TIMEOUT = 5000;
 
@@ -160,10 +160,13 @@ class OEmbedService {
    * @param {Object} [options]
    */
   async knownProvider(url, options = {}) {
-    const { extract } = require('@extractus/oembed-extractor');
+    const { extractOembed } = require('./extract-oembed');
 
     try {
-      return await extract(url, {}, options);
+      return await extractOembed(url, {
+        fetch: this.externalRequest.fetch,
+        signal: options.signal,
+      });
     } catch (err) {
       if (
         err.message === 'Request failed with error code 401' ||
