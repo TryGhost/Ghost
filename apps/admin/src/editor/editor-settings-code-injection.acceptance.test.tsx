@@ -39,8 +39,6 @@ const ROW_LABEL = 'Code injection';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -255,9 +253,7 @@ describe('Post settings code injection', () => {
       await typeInto(headEditor(), '<script>head();</script>');
       await footEditor().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         codeinjection_head: '<script>head();</script>',
       });
 
@@ -316,8 +312,9 @@ describe('Post settings code injection', () => {
       await editorScreen.settingsSubviewBack(BACK_LABEL).click();
 
       await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).codeinjection_head).toBe('<script>onClose();</script>');
+      await expect(saveApi).toHaveSavedFields({
+        codeinjection_head: '<script>onClose();</script>',
+      });
 
       await editorScreen.settingsSubviewRow(ROW_LABEL).click();
       await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
@@ -340,8 +337,7 @@ describe('Post settings code injection', () => {
       await typeInto(editor, '');
       await otherEditor.click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)[field]).toBeNull();
+      await expect(saveApi).toHaveSavedFields({ [field]: null });
       await expect.poll(() => editor.element().textContent).toBe('');
     },
     SLOW,

@@ -30,8 +30,6 @@ const POST_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPage = ReturnType<typeof post>;
 
@@ -153,9 +151,7 @@ describe('Post settings show title and feature image', () => {
 
       await editorScreen.settingsShowTitle().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: false });
+      await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: false });
       await expect
         .element(editorScreen.settingsShowTitle())
         .toHaveAttribute('data-state', 'unchecked');
@@ -176,8 +172,7 @@ describe('Post settings show title and feature image', () => {
 
       await editorScreen.settingsShowTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: true });
+      await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
     },
     SLOW,
   );
@@ -259,8 +254,7 @@ describe('Post settings show title and feature image', () => {
 
       await editorScreen.settingsShowTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPage(saveApi)).toMatchObject({ show_title_and_feature_image: true });
+      await expect(saveApi).toHaveSavedFields({ show_title_and_feature_image: true });
       await expect(editorScreen.settingsShowTitleWarning()).toHaveCount(0);
       expect(themesApi.requests).toHaveLength(0);
     },

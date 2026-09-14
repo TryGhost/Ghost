@@ -22,8 +22,6 @@ const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -100,9 +98,7 @@ describe('Post settings template', () => {
 
       await chooseTemplate('Longread');
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ custom_template: 'custom-longread' });
+      await expect(saveApi).toHaveSavedFields({ custom_template: 'custom-longread' });
       await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Longread');
     },
     SLOW,
@@ -120,8 +116,7 @@ describe('Post settings template', () => {
 
       await chooseTemplate('Default');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).custom_template).toBeNull();
+      await expect(saveApi).toHaveSavedFields({ custom_template: null });
       await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
     },
     SLOW,

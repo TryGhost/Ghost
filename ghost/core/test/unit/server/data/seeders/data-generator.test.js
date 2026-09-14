@@ -10,7 +10,7 @@ const StripePricesImporter = importers.find((i) => i.table === 'stripe_prices');
 const AutomationsImporter = importers.find((i) => i.table === 'automations');
 const AutomationRunStepsImporter = importers.find((i) => i.table === 'automation_run_steps');
 
-const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
+const { generateEvents } = require('../../../../../core/server/data/seeders/utils/event-generator');
 const { randomDateBetween } = require('../../../../../core/server/data/seeders/utils/random');
 
 const DataGenerator = require('../../../../../core/server/data/seeders/data-generator');

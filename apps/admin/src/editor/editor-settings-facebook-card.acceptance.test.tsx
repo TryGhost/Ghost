@@ -32,8 +32,6 @@ const SITE_DESCRIPTION = 'Thoughts, stories and ideas.';
 // A settings save waits on the engine's queue, so these journeys outlast the default timeout.
 const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -119,9 +117,7 @@ describe('Post settings Facebook card', () => {
       );
 
       await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ og_image: UPLOADED });
+      await expect(saveApi).toHaveSavedFields({ og_image: UPLOADED });
       await expect.element(editorScreen.removeSettingsFacebookImage()).toBeVisible();
     },
     SLOW,
@@ -136,8 +132,7 @@ describe('Post settings Facebook card', () => {
 
       await editorScreen.removeSettingsFacebookImage().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ og_image: null });
+      await expect(saveApi).toHaveSavedFields({ og_image: null });
       await expect.element(editorScreen.settingsFacebookImageInput()).toBeInTheDocument();
     },
     SLOW,
@@ -153,17 +148,17 @@ describe('Post settings Facebook card', () => {
       await editorScreen.settingsFacebookTitle().fill('A better title for Facebook');
       await editorScreen.settingsFacebookDescription().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ og_title: 'A better title for Facebook' });
+      await expect(saveApi).toHaveSavedFields({ og_title: 'A better title for Facebook' });
+      expect(saveApi.requests).toHaveLength(1);
 
       await editorScreen.settingsFacebookDescription().fill('What this post is about');
       await editorScreen.settingsFacebookTitle().click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(2);
-      expect(submittedPost(saveApi)).toMatchObject({
+      await expect(saveApi).toHaveSavedFields({
         og_description: 'What this post is about',
       });
+      // The second field commit is its own save, not one coalesced with the first.
+      expect(saveApi.requests).toHaveLength(2);
     },
     SLOW,
   );
@@ -315,9 +310,7 @@ describe('Post settings Facebook card', () => {
       await editorScreen.settingsFacebookTitle().fill('A contributor’s Facebook title');
       await editorScreen.settingsFacebookDescription().click();
 
-      await expect
-        .poll(() => submittedPost(saveApi).og_title, FIELD_POLL)
-        .toBe('A contributor’s Facebook title');
+      await expect(saveApi).toHaveSavedFields({ og_title: 'A contributor’s Facebook title' });
     },
     SLOW,
   );
@@ -361,9 +354,7 @@ describe('Post settings Facebook card', () => {
       await editorScreen.settingsFacebookImageUnsplashButton().click();
       await editorScreen.unsplashInsertImage().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({ og_image: UNSPLASH_PICKED });
+      await expect(saveApi).toHaveSavedFields({ og_image: UNSPLASH_PICKED });
       await expect.element(editorScreen.removeSettingsFacebookImage()).toBeVisible();
       await expect(editorScreen.unsplashModal()).toHaveCount(0);
     },
