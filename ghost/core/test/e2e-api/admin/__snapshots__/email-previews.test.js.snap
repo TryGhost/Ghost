@@ -231,37 +231,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -365,27 +334,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -1027,7 +975,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36982",
+  "content-length": "35817",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1172,37 +1120,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -1306,27 +1223,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -1990,7 +1886,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "41302",
+  "content-length": "40137",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2166,37 +2062,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -2300,27 +2165,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -2969,7 +2813,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "36694",
+  "content-length": "35529",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3474,37 +3318,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -3608,27 +3421,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -4291,7 +4083,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "37539",
+  "content-length": "36374",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4822,37 +4614,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -4956,27 +4717,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -5639,7 +5379,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "37539",
+  "content-length": "36374",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

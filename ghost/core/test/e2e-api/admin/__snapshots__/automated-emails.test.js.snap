@@ -671,37 +671,6 @@ table[class=body] a[class=small] {
     font-size: 11px !important;
   }
 }
-.kg-nft-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 14px;
-  line-height: 1.3;
-  padding-top: 4px;
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 4px;
-}
-.kg-twitter-link {
-  display: block;
-  text-decoration: none !important;
-  color: #15212A !important;
-  font-family: inherit !important;
-  font-size: 15px;
-  padding: 8px;
-  line-height: 1.3;
-}
-.kg-cta-link-accent .kg-cta-sponsor-label a {
-  color: #FF1A75 !important;
-}
-.kg-cta-text a:not(.kg-cta-link-accent .kg-cta-text a) {
-  color: #15212A;
-  text-decoration: underline;
-}
-.kg-cta-link-accent .kg-cta-text a {
-  color: #FF1A75 !important;
-}
 @media only screen and (max-width: 620px) {
   table.body .kg-bookmark-card {
     width: 90vw;
@@ -805,27 +774,6 @@ table[class=body] a[class=small] {
     font-weight: inherit;
     line-height: inherit;
   }
-}
-.post-title-link {
-  display: block;
-  margin-top: 32px;
-  color: #15212A;
-  text-align: center;
-  line-height: 1.1;
-}
-.post-title-link-left {
-  text-align: left;
-}
-.view-online-link {
-  word-wrap: none;
-  white-space: nowrap;
-  color: #15212a;
-  color: rgba(0, 0, 0, 0.6);
-  text-decoration: underline !important;
-}
-.kg-audio-link {
-  color: #15212a !important;
-  color: rgba(0, 0, 0, 0.6) !important;
 }
 @media only screen and (max-width: 620px) {
   .hide-mobile {
@@ -1332,7 +1280,7 @@ exports[`Automated Emails API Preview Can render preview 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "22620",
+  "content-length": "21455",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
