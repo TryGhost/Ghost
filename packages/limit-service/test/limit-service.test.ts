@@ -688,3 +688,27 @@ describe('Limit Service', function () {
         });
     });
 });
+/**
+ * A service is constructed before it is given anything, and one consumer deliberately never
+ * gives it anything: a self-hosted site has no host limits, so Admin builds the service and
+ * leaves it empty. Asking it a question then has to answer, not fail.
+ */
+describe('A service that was never loaded', function () {
+    it('answers that it is not limited', function () {
+        assert.equal(new LimitService().isLimited('staff'), false);
+    });
+
+    it('answers the over-limit checks rather than throwing', async function () {
+        const limitService = new LimitService();
+
+        assert.equal(await limitService.checkIsOverLimit('staff'), undefined);
+        assert.equal(await limitService.checkWouldGoOverLimit('staff'), undefined);
+    });
+
+    it('lets the error-raising checks pass', async function () {
+        const limitService = new LimitService();
+
+        await limitService.errorIfIsOverLimit('staff');
+        await limitService.errorIfWouldGoOverLimit('staff');
+    });
+});
