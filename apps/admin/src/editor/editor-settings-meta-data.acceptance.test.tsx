@@ -68,7 +68,7 @@ async function openMetaData() {
 
 /** Whether the countdown is showing the writer they are past the recommendation. */
 function countdownIsOver(): boolean {
-  return !!editorScreen.settingsSubviewPane().element().querySelector('span.text-red');
+  return !!editorScreen.settingsSubviewPane().element().querySelector('span.text-destructive');
 }
 
 /**

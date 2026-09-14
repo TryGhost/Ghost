@@ -194,7 +194,13 @@ describe('Post settings access', () => {
       await chooseVisibility('Specific tier(s)');
 
       // Nothing is selected yet, so the choice is held back rather than stripped.
-      await expect.element(editorScreen.settingsTiersError()).toBeVisible();
+      await expect
+        .element(editorScreen.settingsTiersError())
+        .toHaveTextContent('Please select at least one tier');
+      await expect.element(editorScreen.settingsTiers()).toHaveAttribute('aria-invalid', 'true');
+      await expect
+        .element(editorScreen.settingsTiers())
+        .toHaveAttribute('aria-describedby', editorScreen.settingsTiersError().element().id);
       expect(saveApi.requests).toHaveLength(0);
       // Archived paid tiers are offered after the active ones; free tiers are not.
       await expect.element(editorScreen.settingsTier('Bronze')).toBeVisible();

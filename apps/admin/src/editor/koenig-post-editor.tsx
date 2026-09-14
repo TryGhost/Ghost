@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useMemo } from 'react';
+import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import ErrorBoundary from '@/settings/components/error-boundary';
 import {
@@ -83,7 +83,7 @@ function KoenigInstanceMount({
 }
 
 export function KoenigPostEditor(props: KoenigPostEditorProps) {
-  const editor = useMemo(() => loadKoenig(), []);
+  const editor = loadKoenig();
   const { onSecondaryError } = props;
 
   const onSecondaryInstanceError = useCallback(

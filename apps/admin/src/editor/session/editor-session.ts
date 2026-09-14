@@ -23,6 +23,7 @@ import type {
   RevisionProjection,
 } from '@/editor/engine/change-tracker';
 import type { LexicalInput } from '@/editor/engine/lexical-compare';
+import { pick } from '@/editor/engine/pick';
 import type { PostWriteOptions } from '@tryghost/admin-x-framework/api/post-contract';
 import { toSaveError } from './error-mapping';
 import { createSlugPort } from './slug-port';
@@ -41,8 +42,9 @@ import {
   type SettingsFieldKey,
   type ValidatedSettingsFields,
 } from './settings-fields';
+import type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
-export type EditorWritePayload = Record<string, unknown>;
+export type { EditorCreatePayload, EditorEditPayload } from './write-payload';
 
 /** What a manual slug edit did, so the input can revert and report a failure. */
 type SlugEditOutcome = 'applied' | 'unchanged' | 'failed';
@@ -57,7 +59,7 @@ const AUTHORED_KEYS = ['title', 'slug'] as const;
 
 type AuthoredFields = Pick<EditablePostProjection, (typeof AUTHORED_KEYS)[number]>;
 
-export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
+interface PreparedWrite extends SaveRequest<EditorSaveSnapshot> {
   /** What the request submits, for the tracker's three-way rebase. */
   projection: EditablePostPatch;
   /** What the live post held for the authored fields when the request was built. */
@@ -66,15 +68,18 @@ export interface PreparedSave extends SaveRequest<EditorSaveSnapshot> {
   validated: ValidatedSettingsFields;
   /** The edit version the request was built at, for the settings adoption guard. */
   builtAtVersion: number;
-  payload: EditorWritePayload;
   options: PostWriteOptions;
-  isCreate: boolean;
 }
 
+/** `isCreate` picks the transport call, and with it the payload's identity. */
+export type PreparedSave =
+  | (PreparedWrite & { isCreate: true; payload: EditorCreatePayload })
+  | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
+
 export interface EditorSessionTransport {
-  create: (payload: EditorWritePayload) => Promise<EditorRecord | undefined>;
+  create: (payload: EditorCreatePayload) => Promise<EditorRecord | undefined>;
   update: (
-    payload: EditorWritePayload,
+    payload: EditorEditPayload,
     options: PostWriteOptions,
   ) => Promise<EditorRecord | undefined>;
   generateSlug: (text: string, postId: string | null) => Promise<string>;
@@ -155,6 +160,17 @@ export interface EditorSession {
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
   dispose: () => void;
+}
+
+/** Stages one dirty settings field into both the submitted projection and the payload. */
+function stageSettingsField<Key extends SettingsFieldKey>(
+  key: Key,
+  fields: EditorSettingsFields,
+  projection: EditablePostPatch,
+  payload: EditorCreatePayload,
+): void {
+  projection[key] = fields[key];
+  payload[key] = identityFor(key, fields);
 }
 
 /**
@@ -253,9 +269,7 @@ export function createEditorSession({
     const settings =
       view && SETTINGS_FIELD_KEYS.every((key) => view.settings[key] === live[key])
         ? view.settings
-        : (Object.fromEntries(
-            SETTINGS_FIELD_KEYS.map((key) => [key, live[key]]),
-          ) as EditorSettingsFields);
+        : pick(live, SETTINGS_FIELD_KEYS);
     const publishTime =
       view &&
       view.publishTime.status === status &&
@@ -372,7 +386,7 @@ export function createEditorSession({
   const stopSlugNotifications = machine.subscribe(notifyChanged);
 
   function prepare(request: SaveRequest<EditorSaveSnapshot>): Promise<PreparedSave> {
-    const isCreate = request.snapshot.id === null;
+    const id = request.snapshot.id;
     const projection: EditablePostPatch = {
       title: request.title,
       slug: request.slug,
@@ -383,9 +397,9 @@ export function createEditorSession({
       updated_at: request.snapshot.updatedAt,
     };
 
-    const payload: EditorWritePayload = {
-      title: projection.title,
-      slug: projection.slug,
+    const payload: EditorCreatePayload = {
+      title: request.title,
+      slug: request.slug,
       lexical: projection.lexical,
       feature_image: projection.feature_image,
       feature_image_alt: projection.feature_image_alt,
@@ -395,15 +409,13 @@ export function createEditorSession({
     };
     // An Author's or Contributor's create is refused unless `authors` names them
     // (core/server/models/relations/authors.js). Updates never resend it.
-    if (isCreate && currentUserId) {
+    if (id === null && currentUserId) {
       payload.authors = [{ id: currentUserId }];
     }
 
-    const staged = projection as Record<string, unknown>;
     for (const key of SETTINGS_FIELD_KEYS) {
       if (tracker.isFieldDirty(key)) {
-        staged[key] = live[key];
-        payload[key] = identityFor(key, live[key]);
+        stageSettingsField(key, live, projection, payload);
       }
     }
     // The write contract requires the pair even when only one field changed.
@@ -413,36 +425,37 @@ export function createEditorSession({
       projection.visibility = live.visibility;
       payload.visibility = live.visibility;
       projection.tiers = live.tiers;
-      payload.tiers = live.tiers;
-    }
-    if (!isCreate) {
-      if (!projection.updated_at) {
-        // Without the token the server skips its collision check entirely and the
-        // save would overwrite whatever landed in the meantime.
-        return Promise.reject(
-          new Error('Cannot save without the version this post was loaded at.'),
-        );
-      }
-      payload.id = request.snapshot.id;
-      payload.updated_at = projection.updated_at;
+      payload.tiers = identityFor('tiers', live);
     }
     if (request.target.emailOnly !== undefined) {
       payload.email_only = request.target.emailOnly;
     }
 
-    return Promise.resolve({
+    const prepared: PreparedWrite = {
       ...request,
       projection,
       authoredFrom: { title: live.title, slug: live.slug },
       validated: validatedFieldsOf(live),
       builtAtVersion: version,
-      payload,
       options: {
         saveRevision: request.saveRevision,
         newsletter: request.target.newsletter,
         emailSegment: request.target.emailSegment,
       },
-      isCreate,
+    };
+
+    if (id === null) {
+      return Promise.resolve({ ...prepared, isCreate: true, payload });
+    }
+    if (!projection.updated_at) {
+      // Without the token the server skips its collision check entirely and the
+      // save would overwrite whatever landed in the meantime.
+      return Promise.reject(new Error('Cannot save without the version this post was loaded at.'));
+    }
+    return Promise.resolve({
+      ...prepared,
+      isCreate: false,
+      payload: { ...payload, id, updated_at: projection.updated_at },
     });
   }
 

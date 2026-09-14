@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { timingSafeStringEqual } = require('../../../shared/timing-safe-string-equal');
 
 class RequestIntegrityTokenProvider {
   #themeSecret;
@@ -45,7 +46,7 @@ class RequestIntegrityTokenProvider {
     hmac.update(`${timestamp.toString()}:${nonce}`);
     const expectedHmac = hmac.digest('hex');
 
-    if (expectedHmac !== hmacDigest) {
+    if (!timingSafeStringEqual(expectedHmac, hmacDigest)) {
       // HMAC mismatch
       return false;
     }

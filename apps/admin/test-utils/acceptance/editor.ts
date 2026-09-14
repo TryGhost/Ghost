@@ -1,12 +1,12 @@
-import { buildLexicalParagraph, post, type Post } from '@tryghost/test-data';
-import { fakeMembers, fakeNewsletters, fakePosts, fakeSnippets } from './resources';
-import { fakeAdminEndpoint, type EndpointCapture } from './worker';
+import { buildLexicalParagraph, post, settingsResponse, type Post } from '@tryghost/test-data';
+import type { RenderAdminAppOptions } from './render-admin-app';
+import { fakeNewsletters, fakePosts, fakeSnippets } from './resources';
+import { fakeAdminEndpoint, fakeEndpoint, type EndpointCapture } from './worker';
 
 /** Supporting reads shared by the editor's header and card configuration. */
 export function fakeEditorChrome(): void {
   fakeSnippets([]);
   fakePosts([]);
-  fakeMembers([]);
   fakeNewsletters([]);
 }
 
@@ -43,4 +43,41 @@ export function fakeEditorPost(
 export function submittedPost(capture: EndpointCapture, index = -1): Record<string, unknown> {
   const body = capture.requests.at(index)?.body as { posts: Record<string, unknown>[] } | undefined;
   return body?.posts[0] ?? {};
+}
+
+const UNSPLASH_REGULAR = 'https://images.unsplash.com/photo-1?ixid=1&w=1080';
+// The picker asks Unsplash for a wider rendition of the image it inserts.
+export const UNSPLASH_PICKED = 'https://images.unsplash.com/photo-1?ixid=1&w=2000';
+
+/** One Unsplash photo, in the shape the search modal lays out and inserts. */
+export function fakeUnsplashPhotos(): void {
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos', [
+    {
+      id: 'photo-1',
+      color: '#123456',
+      alt_description: 'A hillside',
+      height: 800,
+      width: 1200,
+      likes: 12,
+      urls: { regular: UNSPLASH_REGULAR },
+      links: {
+        html: 'https://unsplash.com/photos/photo-1',
+        download: 'https://unsplash.com/photos/photo-1/download',
+        download_location: 'https://api.unsplash.com/photos/photo-1/download',
+      },
+      user: {
+        name: 'A Photographer',
+        links: { html: 'https://unsplash.com/@photographer' },
+        profile_image: { medium: 'https://images.unsplash.com/profile-1' },
+      },
+    },
+  ]);
+  fakeEndpoint('GET', 'https://api.unsplash.com/photos/photo-1/download', {});
+}
+
+/** The site fixture turns Unsplash on, so only the off case needs an override. */
+export function withoutUnsplash(): RenderAdminAppOptions {
+  return {
+    boot: { browseSettings: { response: settingsResponse({ settings: { unsplash: false } }) } },
+  };
 }

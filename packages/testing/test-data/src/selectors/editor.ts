@@ -35,6 +35,7 @@ export const featureImageTkIndicator = 'feature-image-tk-indicator';
 export const editorLeaveDialog = 'editor-leave-dialog';
 export const editorHeaderActions = 'editor-header-actions';
 export const editorPublishInputsError = 'editor-publish-inputs-error';
+export const unsplashSearchModal = 'unsplash-search-modal';
 
 // settings sidebar testids
 export const postSettingsSidebar = 'post-settings-sidebar';

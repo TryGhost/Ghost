@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Label } from '@tryghost/shade/components';
+import { FieldError, Label } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import {
@@ -65,15 +65,9 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
         onChange={(date) => session.editPublishedAt(date.toISOString())}
       />
       {invalid ? (
-        <Text
-          className="text-destructive"
-          data-testid={settingsPublishDateError}
-          id={errorId}
-          role="alert"
-          size="sm"
-        >
+        <FieldError data-testid={settingsPublishDateError} id={errorId}>
           {PUBLISHED_AT_MUST_BE_PAST}
-        </Text>
+        </FieldError>
       ) : null}
       {isScheduled && !isPastScheduled ? (
         <Text data-testid={settingsPublishDateNote} size="sm" tone="secondary">
