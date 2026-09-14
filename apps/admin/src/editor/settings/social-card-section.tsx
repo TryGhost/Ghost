@@ -19,12 +19,6 @@ import {
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
-import {
-  settingsFacebookDescriptionInput,
-  settingsFacebookPreview,
-  settingsFacebookPreviewImage,
-  settingsFacebookTitleInput,
-} from '@tryghost/test-data/selectors/editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -46,14 +40,12 @@ import {
   socialImage,
   socialTitle,
 } from './social-card-fields';
+import type { SocialCardNetwork, SocialPreviewRow } from './social-card-networks';
 import { useSettingsField } from './use-settings-field';
 
-const IMAGE_SUBJECT = 'Facebook image';
-const ADD_IMAGE_LABEL = 'Add Facebook image';
-const REMOVE_IMAGE_LABEL = 'Remove Facebook image';
-const UNSPLASH_BUTTON_LABEL = 'Select Facebook image from Unsplash';
-
-export interface FacebookCardSectionProps {
+export interface SocialCardSectionProps {
+  /** Which network's card this pane edits (see `social-card-networks.ts`). */
+  network: SocialCardNetwork;
   session: EditorSessionHandle;
   /** The site's homepage URL, which the card previews the post under. */
   siteUrl: string;
@@ -64,20 +56,24 @@ export interface FacebookCardSectionProps {
 }
 
 /**
- * The card Facebook shows for the post: an image, title and description that
- * stand in for the post's own, and the result they produce.
+ * The card a network renders for the post: an image, a title and a description
+ * that stand in for the post's own, and the result they produce.
  */
-export function FacebookCardSection({
+export function SocialCardSection({
+  network,
   session,
   siteUrl,
   featureImage,
   cardConfig,
-}: FacebookCardSectionProps) {
+}: SocialCardSectionProps) {
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
 
-  const title = useSettingsField(session, 'og_title');
-  const description = useSettingsField(session, 'og_description');
-  const ogImage = session.settings.og_image ?? '';
+  const title = useSettingsField(session, network.titleKey);
+  const description = useSettingsField(session, network.descriptionKey);
+  const image = session.settings[network.imageKey] ?? '';
+
+  const imageSubject = `${network.name} image`;
+  const addImageLabel = `Add ${imageSubject}`;
 
   const previewTitle = socialTitle({
     own: title.value,
@@ -92,42 +88,71 @@ export function FacebookCardSection({
     siteDescription: cardConfig.siteDescription,
   });
   const previewImage = socialImage({
-    own: ogImage,
+    own: image,
     featureImage: featureImage ?? '',
-    siteSocialImage: cardConfig.siteOgImage ?? '',
+    siteSocialImage: cardConfig[network.siteImageKey] ?? '',
     siteCoverImage: cardConfig.siteCoverImage ?? '',
   });
+
+  const editImage = useCallback(
+    (src: string | null) => session.editSettings({ [network.imageKey]: src }),
+    [network.imageKey, session],
+  );
 
   const handleUpload = useCallback(
     async (file: File) => {
       try {
-        session.editSettings({
-          og_image: getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })),
-        });
+        editImage(getImageUrl(await uploadImage({ file, ...EDITOR_REQUEST_OPTIONS })));
       } catch (error) {
-        toast.error(uploadErrorMessage(error, IMAGE_SUBJECT));
+        toast.error(uploadErrorMessage(error, imageSubject));
       }
     },
-    [session, uploadImage],
+    [editImage, imageSubject, uploadImage],
   );
+
+  const previewRow = (row: SocialPreviewRow) => {
+    if (row === 'title') {
+      return (
+        <Text key={row} size="md" weight="medium">
+          {network.truncatesPreviewTitle
+            ? truncate(previewTitle, SOCIAL_PREVIEW_LENGTH)
+            : previewTitle}
+        </Text>
+      );
+    }
+
+    if (row === 'description') {
+      return (
+        <Text key={row} size="sm" tone="secondary">
+          {truncate(previewDescription, SOCIAL_PREVIEW_LENGTH)}
+        </Text>
+      );
+    }
+
+    return (
+      <Text key={row} size="sm" tone="secondary">
+        {siteDomain(siteUrl)}
+      </Text>
+    );
+  };
 
   return (
     <SettingsSubview
-      closeLabel="Close Facebook card panel"
-      icon={<BrandIcon className="size-4" name="facebook" />}
-      id="facebook-card"
-      label="Facebook card"
-      title="Facebook card"
+      closeLabel={`Close ${network.name} card panel`}
+      icon={<BrandIcon className="size-4" name={network.icon} />}
+      id={network.id}
+      label={`${network.name} card`}
+      title={`${network.name} card`}
       wide
     >
-      {ogImage ? (
-        <ImageUpload className="max-h-[480px]">
+      {image ? (
+        <ImageUpload className="max-h-[480px]" data-testid={network.imageTestId}>
           <ImageUploadPreview>
-            <ImageUploadImage role="presentation" src={ogImage} />
+            <ImageUploadImage role="presentation" src={image} />
             <ImageUploadActions>
               <ImageUploadAction
-                aria-label={REMOVE_IMAGE_LABEL}
-                onClick={() => session.editSettings({ og_image: null })}
+                aria-label={`Remove ${imageSubject}`}
+                onClick={() => editImage(null)}
               >
                 <LucideIcon.Trash2 />
               </ImageUploadAction>
@@ -135,11 +160,11 @@ export function FacebookCardSection({
           </ImageUploadPreview>
         </ImageUpload>
       ) : (
-        <ImageUpload className="h-[120px]">
+        <ImageUpload className="h-[120px]" data-testid={network.imageTestId}>
           <ImageUploadDropzone
             accept={ACCEPTED_IMAGE_TYPES}
             disabled={isPending}
-            inputAriaLabel={ADD_IMAGE_LABEL}
+            inputAriaLabel={addImageLabel}
             noDragEventsBubbling
             onDropAccepted={(files) => files[0] && void handleUpload(files[0])}
             onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
@@ -149,23 +174,23 @@ export function FacebookCardSection({
             ) : (
               <Inline gap="sm">
                 <LucideIcon.Plus aria-hidden="true" className="size-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{ADD_IMAGE_LABEL}</span>
+                <span className="text-sm text-muted-foreground">{addImageLabel}</span>
               </Inline>
             )}
           </ImageUploadDropzone>
           <UnsplashPicker
             disabled={isPending}
             enabled={!!cardConfig.unsplash}
-            label={UNSPLASH_BUTTON_LABEL}
-            onSelect={({ src }) => session.editSettings({ og_image: src })}
+            label={`Select ${imageSubject} from Unsplash`}
+            onSelect={({ src }) => editImage(src)}
           />
         </ImageUpload>
       )}
 
       <Field>
-        <FieldLabel htmlFor={title.fieldProps.id}>Facebook title</FieldLabel>
+        <FieldLabel htmlFor={title.fieldProps.id}>{network.name} title</FieldLabel>
         <Input
-          data-testid={settingsFacebookTitleInput}
+          data-testid={network.titleTestId}
           placeholder={truncate(previewTitle, SOCIAL_TITLE_PLACEHOLDER_LENGTH)}
           {...title.fieldProps}
         />
@@ -173,9 +198,9 @@ export function FacebookCardSection({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={description.fieldProps.id}>Facebook description</FieldLabel>
+        <FieldLabel htmlFor={description.fieldProps.id}>{network.name} description</FieldLabel>
         <Textarea
-          data-testid={settingsFacebookDescriptionInput}
+          data-testid={network.descriptionTestId}
           placeholder={truncate(previewDescription, SOCIAL_DESCRIPTION_PLACEHOLDER_LENGTH)}
           rows={3}
           {...description.fieldProps}
@@ -185,31 +210,23 @@ export function FacebookCardSection({
 
       <Stack gap="sm">
         <Text size="sm" weight="medium">
-          Facebook preview
+          {network.name} preview
         </Text>
         <Stack
           className="overflow-hidden rounded-md border border-border"
-          data-testid={settingsFacebookPreview}
+          data-testid={network.previewTestId}
           gap="none"
         >
           {previewImage ? (
             <img
               alt=""
               className="h-[220px] w-full object-cover"
-              data-testid={settingsFacebookPreviewImage}
+              data-testid={network.previewImageTestId}
               src={previewImage}
             />
           ) : null}
           <Stack className="bg-surface-elevated p-4" gap="xs">
-            <Text size="sm" tone="secondary">
-              {siteDomain(siteUrl)}
-            </Text>
-            <Text size="md" weight="medium">
-              {truncate(previewTitle, SOCIAL_PREVIEW_LENGTH)}
-            </Text>
-            <Text size="sm" tone="secondary">
-              {truncate(previewDescription, SOCIAL_PREVIEW_LENGTH)}
-            </Text>
+            {network.previewRows.map(previewRow)}
           </Stack>
         </Stack>
       </Stack>
