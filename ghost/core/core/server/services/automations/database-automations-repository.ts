@@ -19,6 +19,7 @@ import type {
   AutomationEdge,
   AutomationEmailStats,
   AutomationSummary,
+  AutomationStatusStats,
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
@@ -213,6 +214,73 @@ export function createDatabaseAutomationsRepository({
             date: fromDatabaseDate(row.date).toISOString().slice(0, 10),
             count: Number(row.count),
           })),
+        };
+      });
+    },
+
+    async getStatusStats(id): Promise<AutomationStatusStats> {
+      return await knex.transaction(async (trx) => {
+        const exitStatuses: AutomationStepTerminalStatus[] = [
+          'automation disabled',
+          'failed',
+          'member changed status',
+          'member unsubscribed',
+        ];
+        const knownStatuses = ['pending', 'finished', ...exitStatuses];
+        const placeholders = (values: string[]) => values.map(() => '?').join(', ');
+        const terminalCounts = trx('automation_run_steps as steps')
+          .innerJoin('automation_runs as runs', 'runs.id', 'steps.automation_run_id')
+          .where('runs.automation_id', id)
+          .select('steps.automation_run_id')
+          .select(trx.raw("SUM(steps.status = 'finished') AS finished_count"))
+          .select(
+            trx.raw(
+              `SUM(steps.status IN (${placeholders(exitStatuses)})) AS exited_count`,
+              exitStatuses,
+            ),
+          )
+          .select(
+            trx.raw(
+              `SUM(steps.status NOT IN (${placeholders(knownStatuses)})) AS unknown_count`,
+              knownStatuses,
+            ),
+          )
+          .groupBy('steps.automation_run_id')
+          .as('terminal_counts');
+        const runStates = trx('automation_runs as runs')
+          .where('runs.automation_id', id)
+          .leftJoin(
+            loadInProgressRuns(trx, id).as('in_progress_runs'),
+            'runs.id',
+            'in_progress_runs.automation_run_id',
+          )
+          .leftJoin(terminalCounts, 'runs.id', 'terminal_counts.automation_run_id')
+          .select(
+            trx.raw(`CASE
+            WHEN in_progress_runs.automation_run_id IS NOT NULL THEN 'in_progress'
+            WHEN COALESCE(terminal_counts.unknown_count, 0) > 0
+              OR COALESCE(terminal_counts.finished_count + terminal_counts.exited_count, 0) = 0 THEN 'unclassified'
+            WHEN terminal_counts.exited_count > 0 THEN 'exited_early'
+            ELSE 'completed'
+          END AS run_state`),
+          )
+          .as('run_states');
+        const counts = await trx
+          .from(runStates)
+          .select(
+            ...['in_progress', 'completed', 'exited_early', 'unclassified'].map((state) =>
+              trx.raw('COUNT(CASE WHEN run_state = ? THEN 1 END) AS ??', [
+                state,
+                `${state}_run_count`,
+              ]),
+            ),
+          )
+          .first();
+        return {
+          in_progress_run_count: Number(counts.in_progress_run_count),
+          completed_run_count: Number(counts.completed_run_count),
+          exited_early_run_count: Number(counts.exited_early_run_count),
+          unclassified_run_count: Number(counts.unclassified_run_count),
         };
       });
     },
@@ -1108,11 +1176,20 @@ async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> 
     .orderBy('name');
 }
 
-async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
-  const inProgressRuns = trx('automation_run_steps')
+function loadInProgressRuns(trx: Knex.Transaction, automationId?: string) {
+  const query = trx('automation_run_steps')
     .distinct('automation_run_id')
-    .where('status', 'pending')
-    .as('in_progress_runs');
+    .where('automation_run_steps.status', 'pending');
+  if (automationId) {
+    query
+      .innerJoin('automation_runs', 'automation_runs.id', 'automation_run_steps.automation_run_id')
+      .where('automation_runs.automation_id', automationId);
+  }
+  return query;
+}
+
+async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+  const inProgressRuns = loadInProgressRuns(trx).as('in_progress_runs');
   const runStats = trx('automation_runs')
     .select('automation_runs.automation_id')
     .max({ last_run_created_at: 'automation_runs.created_at' })

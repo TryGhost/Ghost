@@ -114,15 +114,24 @@ sources before adding test data to it.
 
 ### Automation statistics
 
-Run rows are sorted by `(site_uuid, automation_id, id)`. Ownership is immutable and
-the row ID remains in the key, preserving latest-version deduplication. The site
+Run rows are sorted by `(site_uuid, automation_id, id)` and step rows by
+`(site_uuid, automation_run_id, id)`. Ownership is immutable and the individual
+row ID remains in each key, preserving latest-version deduplication. The site
 prefix also supports the automation list. Queries use `FINAL` before aggregating.
 
-Changing sorting keys rebuilds the materialized table. Its `FORWARD_QUERY` copies
-existing rows so the migration does not depend on retained raw events. Keep it
-through deployment of the new layout, then remove it after every target environment
-has migrated. Deploy the related datafiles together.
+Changing sorting keys rebuilds the materialized tables. Their `FORWARD_QUERY`
+copies existing rows so the migration does not depend on retained raw events.
+Keep it through deployment of the new layout, then remove it after every target
+environment has migrated. Deploy the related datafiles together.
 
 The entry pipe returns the full daily history. Core derives the total from that
-same result. Run `tb test run` to check the entry pipe against the committed
-fixtures, including duplicates, old versions, and site isolation.
+same result. The status pipe combines each run's latest step categories with a
+bit mask: pending=1, finished=2, known exit=4, unknown=8. Any pending bit wins;
+finished-only is 2; known exits with or without finished steps are 6 or 4. Missing
+and unknown history is the selected run count minus the three classified counts.
+The list continues using its existing pending-run view.
+
+Do not turn these into incrementing materialized counters without a retraction
+or deduplication strategy: inserted versions include retries and status changes.
+Run `tb test run` to check the entry and status pipes against the committed
+fixtures, including duplicates, old versions, missing history, and site isolation.
