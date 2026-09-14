@@ -89,3 +89,13 @@ describe('Date Utils', function () {
         });
     });
 });
+
+describe('a period that has not begun', function () {
+    it('counts from the start date rather than from before the subscription existed', function () {
+        const tomorrow = DateTime.now().toUTC().plus({days: 1}).toISO() as string;
+
+        // Not a month earlier, which would charge usage from before the site was
+        // subscribed against the current allowance.
+        assert.equal(lastPeriodStart(tomorrow, 'month'), tomorrow);
+    });
+});
