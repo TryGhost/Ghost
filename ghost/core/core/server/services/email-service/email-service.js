@@ -11,6 +11,7 @@
  * @property {object} newsletter
  * @property {string} emailRecipientFilter
  * @property {number} emailCount
+ * @property {number|undefined} csdEmailCount
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -158,6 +159,23 @@ class EmailService {
   }
 
   /**
+   * Validate the audience and calculate the counts needed to create an email.
+   * @param {object} newsletter
+   * @param {string} emailRecipientFilter
+   * @param {object} [options]
+   * @param {number} [options.emailCount]
+   * @returns {Promise<EmailPreflight>}
+   */
+  async prepareEmail(newsletter, emailRecipientFilter, options) {
+    const { emailCount } = await this.checkCanSendEmail(newsletter, emailRecipientFilter, options);
+    const csdEmailCount = this.#domainWarmingService.isEnabled()
+      ? await this.#domainWarmingService.getWarmupLimit(emailCount)
+      : undefined; // Undefined means domain warming was not used, distinct from 0.
+
+    return { newsletter, emailRecipientFilter, emailCount, csdEmailCount };
+  }
+
+  /**
    *
    * @param {Post} post
    * @param {object} [options]
@@ -172,15 +190,11 @@ class EmailService {
       preflight?.newsletter?.id &&
       preflight.newsletter.id === newsletter?.id &&
       preflight.emailRecipientFilter === emailRecipientFilter;
-    const { emailCount } = preflightMatches
-      ? await this.checkCanSendEmail(newsletter, emailRecipientFilter, {
+    const { emailCount, csdEmailCount } = preflightMatches
+      ? await this.prepareEmail(newsletter, emailRecipientFilter, {
           emailCount: preflight.emailCount,
         })
-      : await this.checkCanSendEmail(newsletter, emailRecipientFilter);
-
-    const csdEmailCount = this.#domainWarmingService.isEnabled()
-      ? await this.#domainWarmingService.getWarmupLimit(emailCount)
-      : undefined; // Undefined here means domain warming was not used -- distinct from 0
+      : await this.prepareEmail(newsletter, emailRecipientFilter);
 
     const email = await this.#models.Email.add({
       post_id: post.id,
@@ -200,6 +214,11 @@ class EmailService {
       source_type: post.get('lexical') ? 'lexical' : 'mobiledoc',
     });
 
+    await this.#scheduleEmail(email);
+    return email;
+  }
+
+  async #scheduleEmail(email) {
     try {
       this.#batchSendingService.scheduleEmail(email);
     } catch (e) {
