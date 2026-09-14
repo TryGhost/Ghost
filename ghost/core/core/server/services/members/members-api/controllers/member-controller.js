@@ -16,6 +16,7 @@ module.exports = class MemberController {
    * @param {any} deps.tokenService
    * @param {any} deps.sendEmailWithMagicLink
    * @param {any} deps.settingsCache
+   * @param {any} deps.tierChangeCollection
    */
   constructor({
     memberRepository,
@@ -26,6 +27,7 @@ module.exports = class MemberController {
     tokenService,
     sendEmailWithMagicLink,
     settingsCache,
+    tierChangeCollection,
   }) {
     this._memberRepository = memberRepository;
     this._productRepository = productRepository;
@@ -35,6 +37,7 @@ module.exports = class MemberController {
     this._tokenService = tokenService;
     this._sendEmailWithMagicLink = sendEmailWithMagicLink;
     this._settingsCache = settingsCache;
+    this._tierChangeCollection = tierChangeCollection;
   }
 
   async updateEmailAddress(req, res) {
@@ -91,6 +94,7 @@ module.exports = class MemberController {
       let ghostPriceId = req.body.priceId;
       const tierId = req.body.tierId;
       const cadence = req.body.cadence;
+      const collected = req.body.collected;
 
       if (
         cancelAtPeriodEnd === undefined &&
@@ -158,6 +162,11 @@ module.exports = class MemberController {
         }
 
         const stripePrice = await this._paymentsService.getPriceForTierCadence(tier, cadence);
+
+        // Before the price changes, not after. A member who ends up paying for a tier
+        // that ships something, with nowhere to ship it, is the failure this prevents —
+        // so a value that cannot be stored stops the change rather than following it.
+        await this._collectForTierChange({ email, tierId, collected });
 
         await this._memberRepository.updateSubscription({
           email,
@@ -236,6 +245,34 @@ module.exports = class MemberController {
       });
       res.end(err.message);
     }
+  }
+
+  /**
+   * Take what this member supplied for the tier they are moving onto.
+   *
+   * Nothing is asked of a member already on the tier: they are changing cadence rather
+   * than arriving somewhere new, and what the tier collects they have already given.
+   *
+   * @private
+   */
+  async _collectForTierChange({ email, tierId, collected }) {
+    if (!this._tierChangeCollection) {
+      return;
+    }
+
+    const member = await this._memberRepository.get({ email }, { withRelated: ['products'] });
+    if (!member) {
+      return;
+    }
+
+    const alreadyOnTier = member
+      .related('products')
+      .models.some((product) => product.id === tierId);
+    if (alreadyOnTier) {
+      return;
+    }
+
+    await this._tierChangeCollection.collect(member.id, tierId, collected);
   }
 
   async applyOfferToSubscription(req, res) {
