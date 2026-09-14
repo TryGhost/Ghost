@@ -124,6 +124,38 @@ describe('Post settings template', () => {
   );
 
   it(
+    'reports a failed theme lookup and lets the writer retry',
+    async () => {
+      fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
+      fakeSavablePost();
+      const themesApi = fakeAdminEndpoint(
+        'GET',
+        /^\/themes\//,
+        { errors: [{ message: 'Authorization failed', type: 'UnauthorizedError' }] },
+        { status: 401 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await editorScreen.settingsToggle().click();
+      await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+
+      await expect
+        .element(editorScreen.settingsLoadError())
+        .toHaveTextContent('Couldn’t load templates.');
+      await expect(editorScreen.settingsTemplate()).toHaveCount(0);
+      expect(themesApi.requests).toHaveLength(1);
+
+      // Once the session is restored, retry the lookup in the existing editor.
+      fakeSiteThemes([SHARED_TEMPLATE, LONGREAD_TEMPLATE]);
+      await editorScreen.settingsLoadErrorRetry().click();
+
+      await expect.element(editorScreen.settingsTemplate()).toHaveTextContent('Default');
+      await expect(editorScreen.settingsLoadError()).toHaveCount(0);
+      expect(themesApi.requests).toHaveLength(1);
+    },
+    SLOW,
+  );
+
+  it(
     'leaves the section out when the active theme offers no templates',
     async () => {
       // Slug templates are the theme's, never the writer's, to pick.

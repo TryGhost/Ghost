@@ -219,7 +219,8 @@ granted. The tier list is every one of the site's paid
 tiers, active ones before archived, and it loads only while `Specific tier(s)`
 is the choice. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
-selection, and a tier ID without type metadata is preserved.
+selection, and a tier ID without type metadata is preserved. A failed tier
+lookup shows an error and a Retry action in place of the list.
 
 The write contract drops `visibility: 'tiers'` whenever no tiers accompany it,
 so sending that pairing would be answered with the post's unchanged visibility
@@ -285,7 +286,9 @@ The theme decides which templates a post may render with, so the section is the
 active theme's list and nothing else: its slugless templates, by name, under a
 Default that stands for the post carrying no template. A template the theme no
 longer offers reads as the default. A theme with no such templates leaves the
-section out entirely, and every role that can open the sidebar sees it.
+section out entirely, and every role that can open the sidebar sees it. A failed
+theme lookup is not the same as an empty one: the section stays and shows an
+error and a Retry action.
 
 A theme may also bind a template to one post URL. Where the post's slug matches
 one, the theme applies that template whatever the field holds, so the select is
