@@ -379,9 +379,27 @@ describe('Limit Service', function () {
             assert.equal(errorIfWouldGoOverLimitResult, undefined);
         });
 
-        it('Throws an error when an allowlist limit is checked', async function () {
+        it('rethrows non-HostLimitError from errorIfIsOverLimit', async function () {
+            // Naming the limit reaches the check directly, where asking an allowlist limit
+            // without a value no longer does now that the sweep passes over them.
+            const limitService = new LimitService({
+                limits: {customThemes: {allowlist: ['casper', 'dawn', 'lyra']}},
+                errors
+            });
+
+            try {
+                await limitService.checkIsOverLimit('customThemes', {});
+                assert.fail('Should have thrown');
+            } catch (err) {
+                assertThrownError(err);
+                assert.equal(err.errorType, 'IncorrectUsageError');
+                assert.match(err.message, /allowlist limit without a value/);
+            }
+        });
+
+        it('skips an allowlist limit rather than failing on it', async function () {
+
             const limits = {
-                // TODO: allowlist type of limits doesn't have "checkIsOverLimit" implemented yet!
                 customThemes: {
                     allowlist: ['casper', 'dawn', 'lyra']
                 }
@@ -389,13 +407,9 @@ describe('Limit Service', function () {
 
             const limitService = new LimitService({limits, errors});
 
-            try {
-                await limitService.checkIfAnyOverLimit();
-                assert.fail('Should have errored');
-            } catch (err) {
-                assertThrownError(err);
-                assert.deepEqual(err.message, `Attempted to check an allowlist limit without a value`);
-            }
+            // This used to raise `Attempted to check an allowlist limit without a value`,
+            // which escaped and left the site unable to answer the question at all.
+            assert.equal(await limitService.checkIfAnyOverLimit(), false);
         });
     });
 
@@ -665,5 +679,36 @@ describe('A limit its host did not configure', function () {
     it('raises nothing', async function () {
         await limitService.errorIfIsOverLimit('members');
         await limitService.errorIfWouldGoOverLimit('members');
+    });
+});
+
+/**
+ * Whether a site is over any of its limits is asked without naming one, so every limit has
+ * to be able to answer it. An allowlist limit cannot: it judges one particular value, and
+ * there is no value in the question.
+ */
+describe('Checking every limit at once', function () {
+    it('answers for a site that has an allowlist limit', async function () {
+        const limitService = new LimitService({
+            limits: {
+                customThemes: {allowlist: ['casper']},
+                staff: {max: 100, currentCountQuery: () => 1}
+            },
+            errors
+        });
+
+        assert.equal(await limitService.checkIfAnyOverLimit(), false);
+    });
+
+    it('still reports a site that is over a limit it can answer for', async function () {
+        const limitService = new LimitService({
+            limits: {
+                customThemes: {allowlist: ['casper']},
+                staff: {max: 0, currentCountQuery: () => 5}
+            },
+            errors
+        });
+
+        assert.equal(await limitService.checkIfAnyOverLimit(), true);
     });
 });
