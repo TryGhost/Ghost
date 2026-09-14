@@ -154,5 +154,10 @@ module.exports = {
 
     get featurebase() {
         return require('./featurebase');
+    },
+
+    get forms() {
+        return require('./forms');
     }
 };
+

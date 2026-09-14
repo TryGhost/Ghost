@@ -44,6 +44,21 @@ module.exports = function apiRoutes() {
     // ## Recommendations
     router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
 
+    // ## Forms
+    router.get('/forms/:id/embed.js', async (req, res) => {
+        try {
+            const formsService = require('../../../../services/forms');
+            const script = await formsService.generateEmbedScript(req.params.id);
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            return res.send(script);
+        } catch (e) {
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            return res.send('');
+        }
+    });
+    router.get('/forms/:id', http(api.formsPublic.read));
+    router.post('/forms/:id/submissions', http(api.formsPublic.addSubmission));
+
     // ## Search index
     router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));
     router.get('/search-index/authors', mw.authenticatePublic, http(api.searchIndexPublic.fetchAuthors));

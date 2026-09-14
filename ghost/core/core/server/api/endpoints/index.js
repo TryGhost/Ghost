@@ -196,6 +196,10 @@ module.exports = {
         return apiFramework.pipeline(require('./snippets'), localUtils);
     },
 
+    get forms() {
+        return apiFramework.pipeline(require('./forms'), localUtils);
+    },
+
     get stats() {
         return apiFramework.pipeline(require('./stats'), localUtils);
     },
@@ -322,5 +326,9 @@ module.exports = {
 
     get searchIndexPublic() {
         return apiFramework.pipeline(require('./search-index-public'), localUtils, 'content');
+    },
+
+    get formsPublic() {
+        return apiFramework.pipeline(require('./forms-public'), localUtils, 'content');
     }
 };

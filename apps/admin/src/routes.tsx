@@ -105,6 +105,10 @@ const appRoutes: RouteObject[] = [
         lazy: lazyComponent(() => import("./automations/editor")),
     },
     {
+        path: "/forms",
+        lazy: lazyComponent(() => import("./forms/forms")),
+    },
+    {
         // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
         // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
         // tag with the literal slug "new" was already unreachable.

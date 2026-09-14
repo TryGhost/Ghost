@@ -72,7 +72,9 @@ const BACKUP_TABLES = [
     'automation_run_steps',
     'automation_runs',
     'welcome_email_automation_runs',
-    'welcome_email_automated_emails'
+    'welcome_email_automated_emails',
+    'forms',
+    'form_submissions'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

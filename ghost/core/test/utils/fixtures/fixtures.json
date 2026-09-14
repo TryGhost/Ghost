@@ -637,6 +637,31 @@
                     "object_type": "snippet"
                 },
                 {
+                    "name": "Browse forms",
+                    "action_type": "browse",
+                    "object_type": "form"
+                },
+                {
+                    "name": "Read forms",
+                    "action_type": "read",
+                    "object_type": "form"
+                },
+                {
+                    "name": "Edit forms",
+                    "action_type": "edit",
+                    "object_type": "form"
+                },
+                {
+                    "name": "Add forms",
+                    "action_type": "add",
+                    "object_type": "form"
+                },
+                {
+                    "name": "Delete forms",
+                    "action_type": "destroy",
+                    "object_type": "form"
+                },
+                {
                     "name": "Browse offers",
                     "action_type": "browse",
                     "object_type": "offer"

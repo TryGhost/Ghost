@@ -68,6 +68,30 @@ function MembersNavItemContent({
     );
 }
 
+function FormsNavItemContent({isActive}: {isActive: boolean}) {
+    return (
+        <>
+            <NavMenuItem.Link
+                isActive={isActive}
+                to="forms"
+                activeOnSubpath
+            >
+                <LucideIcon.FormInput className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
+                <NavMenuItem.Label>Forms</NavMenuItem.Label>
+            </NavMenuItem.Link>
+            <a aria-label="Create new form"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
+                href="#/forms?new=true"
+            >
+                <LucideIcon.Plus
+                    className="mt-px stroke-[1.5px]!"
+                    size={20}
+                />
+            </a>
+        </>
+    );
+}
+
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const {data: settingsData} = useBrowseSettings();
@@ -99,6 +123,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
+    const isFormsRouteActive = useIsActiveLink({path: 'forms', activeOnSubpath: true});
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
@@ -220,6 +245,10 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
+
+                    <NavMenuItem>
+                        <FormsNavItemContent isActive={isFormsRouteActive} />
+                    </NavMenuItem>
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

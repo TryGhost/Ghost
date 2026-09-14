@@ -408,6 +408,19 @@ module.exports = function apiRoutes() {
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
     router.delete('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
 
+    // ## Forms
+    router.get('/forms', mw.authAdminApi, http(api.forms.browse));
+    router.post('/forms', mw.authAdminApi, http(api.forms.add));
+    router.get('/forms/:id', mw.authAdminApi, http(api.forms.read));
+    router.put('/forms/:id', mw.authAdminApi, http(api.forms.edit));
+    router.delete('/forms/:id', mw.authAdminApi, http(api.forms.destroy));
+    router.get('/forms/:id/submissions', mw.authAdminApi, http(api.forms.browseSubmissions));
+    router.get('/forms/:id/submissions/export', mw.authAdminApi, http(api.forms.exportSubmissions));
+    router.delete('/forms/:id/submissions/:submission_id', mw.authAdminApi, http(api.forms.destroySubmission));
+    router.get('/forms/:id/posts', mw.authAdminApi, http(api.forms.browseAttachedPosts));
+    router.post('/forms/:id/attach', mw.authAdminApi, http(api.forms.attachToPost));
+    router.post('/forms/:id/detach', mw.authAdminApi, http(api.forms.detachFromPost));
+
     // ## Custom theme settings
     router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
     router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
