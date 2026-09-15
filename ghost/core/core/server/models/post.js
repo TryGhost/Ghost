@@ -1554,10 +1554,10 @@ Post = ghostBookshelf.Model.extend(
       isAdd = action === 'add';
       isDestroy = action === 'destroy';
 
-      if (limitService.isLimited('members')) {
+      if (limitService.service.isLimited('members')) {
         // You can't publish a post if you're over your member limit
         if ((isEdit && isChanging('status') && isDraft()) || (isAdd && isPublished())) {
-          await limitService.errorIfIsOverLimit('members');
+          await limitService.service.errorIfIsOverLimit('members');
         }
       }
 

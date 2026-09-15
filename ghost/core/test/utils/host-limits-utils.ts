@@ -1,16 +1,20 @@
-// Both of these are CommonJS with no types of their own, so the shape this file relies on
-// is stated here rather than inferred as `any`.
+// Loaded with `require`, deliberately. Ghost's server is CommonJS, and this runner gives a
+// module a separate instance per loading style: `import`ing these would hand this file a
+// second limit service and a second config, and configuring those would leave the ones
+// serving the requests under test untouched. The annotations are the types of the real
+// modules, so what is reached for here is still checked.
+/** `config-utils` is JavaScript with no types of its own, so state what is used of it. */
 interface ConfigUtils {
   set(config: Record<string, unknown>): void;
   restore(): Promise<void>;
 }
 
-interface LimitService {
-  init(): void;
-}
-
-const configUtils = require('./config-utils') as ConfigUtils;
-const limits = require('../../core/server/services/limits') as LimitService;
+const config: typeof import('../../core/shared/config') = require('../../core/shared/config');
+const configUtils: ConfigUtils = require('./config-utils');
+const limits: typeof import('../../core/server/services/limits') = require('../../core/server/services/limits');
+const {
+  fromHostSettings,
+}: typeof import('../../core/server/services/limits/host-settings') = require('../../core/server/services/limits/host-settings');
 
 /** One limit as a host configures it: a value, never a function. */
 export interface HostLimitConfig {
@@ -53,11 +57,11 @@ export async function setHostLimits(
   rest: HostSettings = {},
 ): Promise<void> {
   configUtils.set({ hostSettings: { ...rest, limits: limitsConfig } });
-  await limits.init();
+  limits.init(fromHostSettings(config));
 }
 
 /** Put the site back to having no limits, and the limit service back in step with that. */
 export async function restoreHostLimits(): Promise<void> {
   await configUtils.restore();
-  await limits.init();
+  limits.init(fromHostSettings(config));
 }

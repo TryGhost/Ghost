@@ -934,12 +934,12 @@ User = ghostBookshelf.Model.extend(
 
       // If we have a staff user limit & the staff user is being unsuspended (don't count contributors)
       if (
-        limitService.isLimited('staff') &&
+        limitService.service.isLimited('staff') &&
         action === 'edit' &&
         isUnsuspending &&
         !userModel.hasRole('Contributor')
       ) {
-        await limitService.errorIfWouldGoOverLimit('staff');
+        await limitService.service.errorIfWouldGoOverLimit('staff');
       }
 
       if (action === 'edit') {
@@ -1003,14 +1003,14 @@ User = ghostBookshelf.Model.extend(
         }
 
         if (
-          limitService.isLimited('staff') &&
+          limitService.service.isLimited('staff') &&
           userModel.hasRole('Contributor') &&
           role.name !== 'Contributor'
         ) {
           // CASE: if your site is limited to a certain number of staff users
           // Trying to change the role of a contributor, who doesn't count towards the limit, to any other role requires a limit check
           // To check if it's OK to add one more staff user
-          await limitService.errorIfWouldGoOverLimit('staff');
+          await limitService.service.errorIfWouldGoOverLimit('staff');
         }
 
         return User.getOwnerUser().then((owner) => {

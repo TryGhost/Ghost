@@ -156,7 +156,7 @@ class EmailServiceWrapper {
       settingsCache,
       emailRenderer,
       emailSegmenter,
-      limitService,
+      limitService: limitService.service,
       membersRepository,
       verificationTrigger: membersService.verificationTrigger,
       emailAnalyticsJobs,

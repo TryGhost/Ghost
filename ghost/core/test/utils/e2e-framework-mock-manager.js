@@ -471,11 +471,11 @@ const mockLabsDisabled = (flag, alpha = true) => {
 const mockLimitService = (limit, options) => {
   if (!mocks.limitService) {
     mocks.limitService = {
-      isLimited: sinon.stub(limitService, 'isLimited'),
-      isDisabled: sinon.stub(limitService, 'isDisabled'),
-      checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
-      errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
-      limitsExisted: !!limitService.limits,
+      isLimited: sinon.stub(limitService.service, 'isLimited'),
+      isDisabled: sinon.stub(limitService.service, 'isDisabled'),
+      checkWouldGoOverLimit: sinon.stub(limitService.service, 'checkWouldGoOverLimit'),
+      errorIfWouldGoOverLimit: sinon.stub(limitService.service, 'errorIfWouldGoOverLimit'),
+      limitsExisted: !!limitService.service.limits,
       originalEntries: new Map(),
       mockedLimits: new Set(), // Track which limits we've mocked
     };
@@ -486,18 +486,18 @@ const mockLimitService = (limit, options) => {
   mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
 
   // Mock the limits property for checking allowlist
-  if (!limitService.limits) {
-    limitService.limits = {};
+  if (!limitService.service.limits) {
+    limitService.service.limits = {};
   }
   if (!mocks.limitService.originalEntries.has(limit)) {
     mocks.limitService.originalEntries.set(
       limit,
-      Object.prototype.hasOwnProperty.call(limitService.limits, limit)
-        ? limitService.limits[limit]
+      Object.prototype.hasOwnProperty.call(limitService.service.limits, limit)
+        ? limitService.service.limits[limit]
         : undefined,
     );
   }
-  limitService.limits[limit] = {
+  limitService.service.limits[limit] = {
     allowlist: options.allowlist || [],
   };
   mocks.limitService.mockedLimits.add(limit); // Track this limit
@@ -536,22 +536,22 @@ const restoreLimitService = () => {
       mocks.limitService.isDisabled.restore();
     }
 
-    if (limitService.limits && mocks.limitService.originalEntries) {
+    if (limitService.service.limits && mocks.limitService.originalEntries) {
       for (const [limit, original] of mocks.limitService.originalEntries) {
         if (original === undefined) {
-          delete limitService.limits[limit];
+          delete limitService.service.limits[limit];
         } else {
-          limitService.limits[limit] = original;
+          limitService.service.limits[limit] = original;
         }
       }
     }
 
     if (
       !mocks.limitService.limitsExisted &&
-      limitService.limits &&
-      Object.keys(limitService.limits).length === 0
+      limitService.service.limits &&
+      Object.keys(limitService.service.limits).length === 0
     ) {
-      limitService.limits = undefined;
+      limitService.service.limits = undefined;
     }
 
     delete mocks.limitService;

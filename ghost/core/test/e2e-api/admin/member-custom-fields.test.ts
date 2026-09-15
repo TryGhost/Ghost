@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 
+import { restoreHostLimits, setHostLimits } from '../../utils/host-limits-utils';
+
 const {
   agentProvider,
   fixtureManager,
   mockManager,
   configUtils,
-  hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
@@ -2412,7 +2413,7 @@ describe('Member Custom Fields Admin API', function () {
   // plan drops can still see and export the fields it already has.
   describe('Host limit', function () {
     afterEach(async function () {
-      await hostLimits.restoreHostLimits();
+      await restoreHostLimits();
     });
 
     it('leaves every route alone when the limit is unset', async function () {
@@ -2430,7 +2431,7 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     it('leaves every route alone when the limit is present but not disabled', async function () {
-      await hostLimits.setHostLimits({ limitCustomFields: { disabled: false } });
+      await setHostLimits({ limitCustomFields: { disabled: false } });
 
       const field = await createField({ name: 'Permitted' });
       await setStatus(field.key, 'archived');
@@ -2444,7 +2445,7 @@ describe('Member Custom Fields Admin API', function () {
         // Created before the limit goes on, standing in for a site that had the feature
         // and then dropped below the plan that includes it.
         existingKey = (await createField({ name: 'Bought earlier' })).key;
-        await hostLimits.setHostLimits({
+        await setHostLimits({
           limitCustomFields: {
             disabled: true,
             error: 'Custom fields are available on the Publisher plan and above.',
@@ -2552,7 +2553,7 @@ describe('Member Custom Fields Admin API', function () {
       });
 
       it('falls back to generic copy when the host sets no message', async function () {
-        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+        await setHostLimits({ limitCustomFields: { disabled: true } });
 
         const { body } = await agent
           .post('members/metafields/custom/')
