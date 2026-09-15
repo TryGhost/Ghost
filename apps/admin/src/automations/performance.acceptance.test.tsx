@@ -70,6 +70,7 @@ const statusResponse = (id: string, counts: Partial<AutomationStatusStats> = {})
   ],
 });
 const read = (id: string) => {
+  fakeAdminEndpoint('GET', `/automations/${id}/runs/`, { automation_runs: [] });
   fakeAdminEndpoint('GET', `/automations/${id}/status-stats/`, statusResponse(id));
   return fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [detail(id)] });
 };
@@ -977,5 +978,225 @@ describe('Automation performance dates', () => {
     await expect.element(entries()).not.toHaveTextContent('1,432');
     await page.getByRole('button', { name: 'Clear date filter' }).click();
     await expect.element(entries().getByText('1,432', { exact: true })).toBeVisible();
+  });
+});
+
+const runsRegion = () => page.getByRole('region', { name: 'Automation runs', exact: true });
+const runsResponse = () => ({
+  automation_runs: Array.from({ length: 10 }, (_, i) => ({
+    id: `run-${10 - i}`,
+    failed: i === 6,
+    created_at: new Date(Date.UTC(2026, 8, 14 - i, 12)).toISOString(),
+    status: (['in_progress', 'completed', 'exited_early', 'unclassified'] as const)[i % 4],
+    member:
+      i === 2
+        ? null
+        : {
+            id: i < 2 ? 'repeat-member' : `member-${i}`,
+            name: i < 2 ? 'Noah Bennett' : i === 3 ? ' ' : `Member ${i}`,
+            email:
+              i < 2
+                ? 'noah@example.com'
+                : i === 3
+                  ? 'no-name@example.com'
+                  : `member-${i}@example.com`,
+          },
+  })),
+});
+
+describe('Automation run list', () => {
+  it('fetches on first opening and shows ten runs in server order with member and status fallbacks', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    await renderAdminApp('/automations/first', flags);
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(request.requests).toHaveLength(0);
+    await open();
+    await expect(runsRegion().getByRole('row')).toHaveCount(11);
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await expect(runsRegion().getByText('noah@example.com', { exact: true })).toHaveCount(2);
+    await expect.element(runsRegion().getByText('Deleted member')).toBeVisible();
+    await expect.element(runsRegion().getByText('no-name@example.com')).toBeVisible();
+    await expect(runsRegion().getByText('no-name@example.com', { exact: true })).toHaveCount(1);
+    expect(
+      Array.from(runsRegion().element().querySelectorAll('time')).map((time) => time.dateTime),
+    ).toEqual(runsResponse().automation_runs.map((run) => run.created_at));
+    for (const label of ['In progress', 'Completed', 'Exited early', 'Unclassified']) {
+      await expect.element(runsRegion().getByRole('img', { name: label }).first()).toBeVisible();
+    }
+    await expect
+      .element(runsRegion().getByRole('columnheader', { name: 'Entered' }))
+      .toHaveAttribute('aria-sort', 'descending');
+    await expect
+      .element(runsRegion().getByRole('img', { name: 'Exited early — Failed', exact: true }))
+      .toHaveAttribute('title', 'Exited early — Failed');
+    await expect(runsRegion().getByRole('link')).toHaveCount(0);
+    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+    expect(request.requests).toHaveLength(1);
+    await expect
+      .poll(() => document.querySelector('aside')?.getBoundingClientRect().width)
+      .toBe(480);
+  });
+
+  it('keeps a request running through closing and replaces loading with the empty state', async () => {
+    prepareStatuses();
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const request = fakeAdminEndpoint('GET', '/automations/first/runs/', async () => {
+      await pending;
+      return { automation_runs: [] };
+    });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('Loading automation runs');
+    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet.');
+    await close();
+    finish();
+    await open();
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No entries yet.');
+    expect(request.requests).toHaveLength(1);
+  });
+
+  it('caches runs across closing and entry date changes, then fetches again on the next visit', async () => {
+    prepareStatuses();
+    read('second');
+    fakeAdminEndpoint('GET', /^\/automations\/first\/entry-stats\/\?/, ({ url }) =>
+      rangeResponse(url),
+    );
+    const request = fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await close();
+    await open();
+    await selectRange('Last 7 days');
+    await expect.element(entries().getByText('21', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Clear date filter' }).click();
+    window.dispatchEvent(new Event('focus'));
+    window.dispatchEvent(new Event('online'));
+    await settleRequests();
+    expect(request.requests).toHaveLength(1);
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    expect(request.requests).toHaveLength(1);
+    await open();
+    await expect.poll(() => request.requests.length).toBe(2);
+  });
+
+  it('keeps errors until explicit retry without disrupting the chart or counts', async () => {
+    prepareStatuses();
+    const request = fakeAdminEndpoint('GET', '/automations/first/runs/', {}, { status: 500 });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load automation runs.');
+    await expect.element(entries()).toHaveTextContent('1,432');
+    await expect.element(statusCard('Completed')).toHaveTextContent('6');
+    await close();
+    await open();
+    await expect.element(runsRegion().getByRole('alert')).toBeVisible();
+    await settleRequests();
+    expect(request.requests).toHaveLength(1);
+    fakeAdminEndpoint('GET', '/automations/first/runs/', runsResponse());
+    await runsRegion().getByRole('button', { name: 'Retry' }).click();
+    await expect(runsRegion().getByText('Noah Bennett', { exact: true })).toHaveCount(2);
+    await expect.element(runsRegion().getByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows unavailable for a missing endpoint without a retry or false empty state', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', {}, { status: 404 });
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(runsRegion().getByRole('status'))
+      .toHaveTextContent('The run list is unavailable on this version of Ghost.');
+    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet.');
+    await expect(runsRegion().getByRole('button')).toHaveCount(0);
+  });
+
+  it('shows a malformed response as an error', async () => {
+    prepareStatuses();
+    fakeAdminEndpoint('GET', '/automations/first/runs/', {});
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect
+      .element(runsRegion().getByRole('alert'))
+      .toHaveTextContent('Could not load automation runs.');
+    await expect.element(runsRegion()).not.toHaveTextContent('No entries yet.');
+  });
+
+  it('discards a pending request on navigation, including returning before it resolves', async () => {
+    prepareStatuses();
+    prepareStatuses('second');
+    let finish!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const stale = runsResponse();
+    stale.automation_runs[0].member!.name = 'Stale member';
+    const first = fakeAdminEndpoint('GET', '/automations/first/runs/', async () => {
+      await pending;
+      return stale;
+    });
+    const second = runsResponse();
+    second.automation_runs[0].member!.name = 'Second automation';
+    fakeAdminEndpoint('GET', '/automations/second/runs/', second);
+    await renderAdminApp('/automations/first', flags);
+    await open();
+    await expect.poll(() => first.requests.length).toBe(1);
+    window.location.hash = '#/automations/second';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(runsRegion()).toHaveTextContent('Second automation');
+    await expect.element(runsRegion()).not.toHaveTextContent('Stale member');
+    const fresh = runsResponse();
+    fresh.automation_runs[0].member!.name = 'Fresh member';
+    const revisit = fakeAdminEndpoint('GET', '/automations/first/runs/', fresh);
+    window.location.hash = '#/automations/first';
+    await expect.element(page.getByRole('button', { name: 'Show performance' })).toBeVisible();
+    await open();
+    await expect.element(runsRegion()).toHaveTextContent('Fresh member');
+    expect(revisit.requests).toHaveLength(1);
+    finish();
+    await settleRequests();
+    await expect.element(runsRegion()).not.toHaveTextContent('Stale member');
+    await expect.element(runsRegion()).toHaveTextContent('Fresh member');
+  });
+
+  it('fits long member names and emails inside a narrow sidebar', async () => {
+    await page.viewport(400, 800);
+    try {
+      prepareStatuses();
+      const body = runsResponse();
+      body.automation_runs[0].member!.name = 'A very long member name '.repeat(10);
+      body.automation_runs[1].member!.name = '';
+      body.automation_runs[1].member!.email = `${'long'.repeat(20)}@example.com`;
+      fakeAdminEndpoint('GET', '/automations/first/runs/', body);
+      await renderAdminApp('/automations/first', flags);
+      await open();
+      await expect(runsRegion().getByRole('row')).toHaveCount(11);
+      await expect
+        .element(runsRegion().getByRole('img', { name: 'Completed' }).first())
+        .toBeVisible();
+      const panel = document.querySelector('aside')!;
+      const expectedWidth = Math.min(480, panel.parentElement!.getBoundingClientRect().width - 60);
+      await expect.poll(() => panel.getBoundingClientRect().width).toBeCloseTo(expectedWidth, 0);
+      expect(panel.scrollWidth).toBe(panel.clientWidth);
+      const table = runsRegion().getByRole('table').element();
+      expect(table.getBoundingClientRect().width).toBeLessThanOrEqual(
+        runsRegion().element().clientWidth,
+      );
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 });

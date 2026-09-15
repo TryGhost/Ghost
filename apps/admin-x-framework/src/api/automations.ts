@@ -167,6 +167,44 @@ export const useReadAutomationStatusStats = createQueryWithId<
   parseResponse: (data) => AutomationStatusStatsResponseSchema.parse(data),
 });
 
+export const AutomationRunSchema = z
+  .object({
+    id: z.string().min(1),
+    created_at: z.iso.datetime(),
+    status: z.enum(['in_progress', 'completed', 'exited_early', 'unclassified']),
+    failed: z.boolean(),
+    member: z
+      .object({
+        id: z.string().min(1),
+        name: z.string().nullable(),
+        email: z.string(),
+      })
+      .nullable(),
+  })
+  .refine((run) => !run.failed || run.status === 'exited_early', {
+    message: 'Only exited-early runs can have a failure flag.',
+  });
+
+export const AutomationRunsResponseSchema = z.object({
+  automation_runs: z
+    .array(AutomationRunSchema)
+    .max(10)
+    .refine(
+      (runs) => new Set(runs.map((run) => run.id)).size === runs.length,
+      'Run IDs must be unique',
+    ),
+});
+
+export type AutomationRun = z.infer<typeof AutomationRunSchema>;
+
+export const useBrowseAutomationRuns = createQueryWithId<
+  z.infer<typeof AutomationRunsResponseSchema>
+>({
+  dataType: 'AutomationRunsResponseType',
+  path: (id) => `/automations/${id}/runs/`,
+  parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+});
+
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
   dataType: 'AutomationActionLinksResponseType',
   path: (id) => `/automations/${id}/links/`,

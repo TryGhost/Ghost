@@ -4,6 +4,7 @@ import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
+import { RunList } from './run-list';
 import { PerformanceDateFilter } from './performance-date-filter';
 import {
   createPerformanceDateRange,
@@ -80,6 +81,7 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
               )}
               <TotalEntries automationId={automationId} dateRange={dateRange} />
               <StatusCounts automationId={automationId} />
+              <RunList automationId={automationId} />
             </Stack>
           )}
         </Box>
