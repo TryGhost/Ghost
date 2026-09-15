@@ -400,6 +400,59 @@ describe('Automated Emails API', function () {
         });
     });
 
+    it('Requires slug on add', async function () {
+      await agent
+        .post('automated_emails')
+        .body({
+          automated_emails: [
+            {
+              name: 'Free member welcome flow',
+              status: 'active',
+              subject: 'Test',
+            },
+          ],
+        })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+    });
+
+    it('Validates slug on add', async function () {
+      await agent
+        .post('automated_emails')
+        .body({
+          automated_emails: [
+            {
+              name: 'Free member welcome flow',
+              slug: 'invalid-slug',
+              status: 'active',
+              subject: 'Test',
+            },
+          ],
+        })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+    });
+
     it('Validates name on add', async function () {
       await agent
         .post('automated_emails')
@@ -756,6 +809,33 @@ describe('Automated Emails API', function () {
             {
               name: 'Free member welcome flow',
               status: 'invalid-status',
+            },
+          ],
+        })
+        .expectStatus(422)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        });
+    });
+
+    it('Validates slug on edit', async function () {
+      const automatedEmail = await createAutomatedEmail();
+
+      await agent
+        .put(`automated_emails/${automatedEmail.id}`)
+        .body({
+          automated_emails: [
+            {
+              name: 'Free member welcome flow',
+              slug: 'invalid-slug',
             },
           ],
         })
