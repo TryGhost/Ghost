@@ -9,6 +9,92 @@ import request from 'supertest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 describe('Local Storage Base', function () {
+  describe('fileMode', function () {
+    let storagePath: string;
+    let sourcePath: string;
+
+    const modeOf = async (filePath: string) => (await fs.stat(filePath)).mode & 0o777;
+    const createStorage = (fileMode?: number) =>
+      new LocalStorageBase({
+        storagePath,
+        staticFileURLPrefix: 'content/imports',
+        fileMode,
+      });
+
+    beforeEach(async function () {
+      storagePath = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-local-base-mode-'));
+      sourcePath = path.join(await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-upload-')), 'upload');
+      await fs.writeFile(sourcePath, 'title\nA post\n');
+      await fs.chmod(sourcePath, 0o644);
+    });
+
+    afterEach(async function () {
+      sinon.restore();
+      await fs.remove(storagePath);
+      await fs.remove(path.dirname(sourcePath));
+    });
+
+    it('creates raw files with the configured mode', async function () {
+      const storage = createStorage(0o600);
+
+      await storage.saveRaw(Buffer.from('[]'), 'members-import-1.json');
+
+      assert.equal(await modeOf(path.join(storagePath, 'members-import-1.json')), 0o600);
+    });
+
+    it('gives saved copies the configured mode and leaves the upload alone', async function () {
+      const storage = createStorage(0o600);
+
+      const url = await storage.save(
+        { name: 'content-csv-import-1', path: sourcePath },
+        storagePath,
+      );
+
+      assert.equal(storage.urlToPath(url), 'content-csv-import-1');
+      assert.equal(await modeOf(path.join(storagePath, 'content-csv-import-1')), 0o600);
+      assert.equal(await modeOf(sourcePath), 0o644);
+    });
+
+    it('removes a saved copy when the copy fails', async function () {
+      const storage = createStorage(0o600);
+      sinon.stub(fs, 'copy').callsFake(async (_src: string, dest: string) => {
+        await fs.writeFile(dest, 'partial');
+        throw new Error('ENOSPC: no space left on device');
+      });
+
+      await assert.rejects(
+        storage.save({ name: 'content-csv-import-2', path: sourcePath }, storagePath),
+        /ENOSPC/,
+      );
+
+      assert.equal(await fs.pathExists(path.join(storagePath, 'content-csv-import-2')), false);
+    });
+
+    it('leaves file modes alone when no mode is configured, as the images, media and files stores do', async function () {
+      const storage = createStorage();
+      const chmod = sinon.spy(fs, 'chmod');
+
+      await storage.saveRaw(Buffer.from('[]'), 'raw.json');
+      await storage.save({ name: 'copy', path: sourcePath }, storagePath);
+
+      sinon.assert.notCalled(chmod);
+      assert.equal(await modeOf(path.join(storagePath, 'raw.json')), 0o666 & ~process.umask());
+      assert.equal(await modeOf(path.join(storagePath, 'copy')), 0o644);
+    });
+
+    it('leaves a failed copy alone when no mode is configured, as before', async function () {
+      const storage = createStorage();
+      sinon.stub(fs, 'copy').callsFake(async (_src: string, dest: string) => {
+        await fs.writeFile(dest, 'partial');
+        throw new Error('ENOSPC: no space left on device');
+      });
+
+      await assert.rejects(storage.save({ name: 'copy', path: sourcePath }, storagePath), /ENOSPC/);
+
+      assert.equal(await fs.pathExists(path.join(storagePath, 'copy')), true);
+    });
+  });
+
   describe('serve', function () {
     it('sets nosniff and keeps the extension-based Content-Type', async function () {
       const localStorageBase = new LocalStorageBase({
