@@ -14,6 +14,7 @@ const url = require('url');
 const security = require('@tryghost/security');
 const { resolveResourceRead } = require('./api-adapter');
 const urlUtils = require('../../../shared/url-utils').default;
+const { getMarkdownPath } = require('../llms/markdown');
 const registry = require('./registry');
 
 /**
@@ -103,16 +104,22 @@ class ParentRouter {
     if (targetRoute) {
       debug('_respectDominantRouter');
 
-      // CASE: transform /tag/:slug/ -> /tag/[a-zA-Z0-9-_]+/ to able to find url pieces to append
-      // e.g. /tag/bacon/page/2/  -> 'page/2' (to append)
-      // e.g. /bacon/welcome/     -> '' (nothing to append)
-      const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
-      const toAppend = req.url.replace(new RegExp(matchPath), '');
+      let targetPath;
+      if (url.parse(req.url).pathname.endsWith('.md')) {
+        targetPath = getMarkdownPath(targetRoute);
+      } else {
+        // CASE: transform /tag/:slug/ -> /tag/[a-zA-Z0-9-_]+/ to able to find url pieces to append
+        // e.g. /tag/bacon/page/2/  -> 'page/2' (to append)
+        // e.g. /bacon/welcome/     -> '' (nothing to append)
+        const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
+        const toAppend = req.url.replace(new RegExp(matchPath), '');
+        targetPath = urlUtils.urlJoin(targetRoute, toAppend);
+      }
 
       return urlUtils.redirect301(
         res,
         url.format({
-          pathname: urlUtils.createUrl(urlUtils.urlJoin(targetRoute, toAppend), false, false, true),
+          pathname: urlUtils.createUrl(targetPath, false, false, true),
           search: url.parse(req.originalUrl).search,
         }),
       );

@@ -1,0 +1,14 @@
+routes:
+  /:
+    data: page.about
+    template: index
+
+collections:
+  /rubrique/:
+    permalink: /rubrique/{slug}/
+    template: index
+    data: page.contact
+
+taxonomies:
+  tag: /tag/{slug}/
+  author: /author/{slug}/
