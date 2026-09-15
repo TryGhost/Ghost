@@ -4,8 +4,8 @@ import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useReadAutomationStatusStats } from '@tryghost/admin-x-framework/api/automations';
 import { mapAutomationStatusStats } from '@/automations/utils/automation-status-stats';
 
-export const useAutomationStatusStats = (automationId: string) => {
-  const query = useReadAutomationStatusStats(automationId, performanceQueryOptions);
+export const useAutomationStatusStats = (automationId: string, requestId: string) => {
+  const query = useReadAutomationStatusStats(automationId, requestId, performanceQueryOptions);
   const stats = query.data?.automation_status_stats[0];
   // Never display a response for a different automation, including cached data.
   const wrongAutomation = !!stats && stats.automation_id !== automationId;

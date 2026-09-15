@@ -1,4 +1,5 @@
 import React from 'react';
+import type { AutomationRunStatusFilter } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
   Skeleton,
@@ -21,8 +22,16 @@ const statusIcons = {
   unclassified: { Icon: LucideIcon.CircleHelp, color: 'text-muted-foreground' },
 };
 
-export const RunList: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const { data, isLoading, isError, unavailable, retry } = useAutomationRuns(automationId);
+export const RunList: React.FC<{
+  automationId: string;
+  requestId: string;
+  status: AutomationRunStatusFilter | null;
+}> = ({ automationId, requestId, status }) => {
+  const { data, isLoading, isError, unavailable, retry } = useAutomationRuns(
+    automationId,
+    status,
+    requestId,
+  );
   return (
     <Stack aria-label="Automation runs" gap="sm" role="region">
       <Table aria-label="Automation runs" className="table-fixed">
@@ -115,7 +124,7 @@ export const RunList: React.FC<{ automationId: string }> = ({ automationId }) =>
       )}
       {data?.length === 0 && (
         <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-          No entries yet.
+          {status ? 'No matching entries.' : 'No entries yet.'}
         </Text>
       )}
       {unavailable && (
