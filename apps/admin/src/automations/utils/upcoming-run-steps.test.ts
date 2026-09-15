@@ -65,6 +65,7 @@ describe('upcoming downstream steps', () => {
       title: 'Wait 2 days',
       statusLabel: 'Not reached',
     });
+    expect(planned.cards[1].email?.subject).toBe('Current saved email');
     expect(planned.cards.map((card) => card.timestamp)).toEqual([
       { label: 'est.', value: '2026-09-15T12:00:00.000Z', estimated: true },
       { label: 'est.', value: '2026-09-15T12:00:00.000Z', estimated: true },

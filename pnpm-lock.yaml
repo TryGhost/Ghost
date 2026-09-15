@@ -1018,6 +1018,9 @@ importers:
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:*
         version: link:../../koenig/kg-clean-basic-html
+      '@tryghost/kg-markdown-html-renderer':
+        specifier: workspace:*
+        version: link:../../koenig/kg-markdown-html-renderer
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
