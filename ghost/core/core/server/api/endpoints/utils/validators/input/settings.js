@@ -43,11 +43,25 @@ function isValidNavigationUrl(value) {
   );
 }
 
+// Local installs serve uploaded icons from http://localhost:2368, which has no TLD
+function isLocalhostIconUrl(value) {
+  try {
+    return (
+      new URL(value).hostname === 'localhost' &&
+      validator.isURL(value, { ...iconUrlOptions, require_tld: false })
+    );
+  } catch {
+    return false;
+  }
+}
+
 function isValidNavigationIcon(value) {
   return (
     _.isString(value) &&
     !value.match(/\s/) &&
-    (validator.isURL(value, iconUrlOptions) || value.match(iconUrlRegex))
+    (validator.isURL(value, iconUrlOptions) ||
+      value.match(iconUrlRegex) ||
+      isLocalhostIconUrl(value))
   );
 }
 
