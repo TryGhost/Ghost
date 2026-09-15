@@ -2464,6 +2464,9 @@ importers:
       '@tryghost/adapter-base-cache':
         specifier: workspace:*
         version: link:../../packages/adapters/cache-base
+      '@tryghost/adapter-base-import-files':
+        specifier: workspace:*
+        version: link:../../packages/adapters/import-files-base
       '@tryghost/adapter-base-jobs':
         specifier: workspace:*
         version: link:../../packages/adapters/jobs-base
