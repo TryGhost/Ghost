@@ -221,7 +221,7 @@ class EmailService {
 
     // make sure recurring background analytics jobs are running once we have emails
     try {
-      await this.#emailAnalyticsJobs.scheduleRecurringNewslettersJob(true);
+      await this.#emailAnalyticsJobs.scheduleRecurringNewslettersJob(this.#jobsService, true);
     } catch (e) {
       logging.error(e);
     }

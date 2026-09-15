@@ -19,6 +19,7 @@ describe('register-job-handlers', function () {
   let giftService: { cleanup: sinon.SinonStub; processReminders: sinon.SinonStub };
   let mentionsController: { processWebmention: sinon.SinonStub };
   let mentionsSendingService: { sendWebmentions: sinon.SinonStub };
+  let emailAnalyticsNewsletters: { startFetch: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -44,6 +45,7 @@ describe('register-job-handlers', function () {
     giftService = { cleanup: sinon.stub().resolves(), processReminders: sinon.stub().resolves() };
     mentionsController = { processWebmention: sinon.stub().resolves() };
     mentionsSendingService = { sendWebmentions: sinon.stub().resolves() };
+    emailAnalyticsNewsletters = { startFetch: sinon.stub().resolves() };
 
     registerJobHandlers({
       jobsService,
@@ -52,6 +54,7 @@ describe('register-job-handlers', function () {
       mediaInliner,
       mentionsController,
       mentionsSendingService,
+      emailAnalyticsNewsletters,
     });
   });
 
@@ -149,6 +152,30 @@ describe('register-job-handlers', function () {
     const updateCheckHandler = handlerFor('update-check');
 
     await updateCheckHandler(new UpdateCheckJob());
+  });
+
+  it('runs email-analytics-fetch-latest with the injected newsletters wrapper', async function () {
+    const fetchLatestHandler = handlerFor('email-analytics-fetch-latest');
+
+    await fetchLatestHandler({});
+
+    assert.ok(emailAnalyticsNewsletters.startFetch.calledOnceWithExactly());
+  });
+
+  it('propagates email-analytics-fetch-latest failures', async function () {
+    const error = new Error('restore scheduled is broken');
+    emailAnalyticsNewsletters.startFetch.rejects(error);
+    const fetchLatestHandler = handlerFor('email-analytics-fetch-latest');
+
+    await assert.rejects(async () => {
+      await fetchLatestHandler({});
+    }, error);
+  });
+
+  it('registers email-analytics-fetch-latest on its own single-worker queue', function () {
+    const registration = registrationFor('email-analytics-fetch-latest');
+
+    assert.deepEqual(registration.args[2], { queue: 'email-analytics', concurrency: 1 });
   });
 
   it('runs process-webmention with the injected mentions controller', async function () {

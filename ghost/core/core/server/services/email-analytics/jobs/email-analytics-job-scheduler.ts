@@ -1,5 +1,7 @@
 import * as path from 'node:path';
 import moment from 'moment';
+import type { JobsService } from '../../jobs-service/jobs-service';
+import EmailAnalyticsFetchLatestJob from './email-analytics-fetch-latest-job';
 
 const logging = require('@tryghost/logging');
 
@@ -66,7 +68,10 @@ export class EmailAnalyticsJobScheduler {
     );
   }
 
-  async scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean = false): Promise<void> {
+  async scheduleRecurringNewslettersJob(
+    jobsService: Pick<JobsService, 'scheduleRecurring'>,
+    skipNewsletterEmailCheck: boolean = false,
+  ): Promise<void> {
     if (this.#hasScheduledNewslettersJob) {
       return;
     }
@@ -91,13 +96,9 @@ export class EmailAnalyticsJobScheduler {
         );
 
     if (emailCount > 0 && !this.#hasScheduledNewslettersJob) {
-      const at = randomFiveMinuteCron();
-      logging.info(`[Background Job] email-analytics-fetch-latest scheduled at ${at}`);
-      this.#jobManager.addJob({
-        at,
-        job: path.resolve(__dirname, 'fetch-latest/index.js'),
-        name: 'email-analytics-fetch-latest',
-      });
+      const cron = randomFiveMinuteCron();
+      logging.info(`[Background Job] email-analytics-fetch-latest scheduled at ${cron}`);
+      await jobsService.scheduleRecurring(new EmailAnalyticsFetchLatestJob(), { cron });
 
       this.#hasScheduledNewslettersJob = true;
     }

@@ -14,6 +14,8 @@ import type MentionController from '../mentions/mention-controller';
 import type MentionSendingService from '../mentions/mention-sending-service';
 import ProcessWebmentionJob from '../mentions/process-webmention-job';
 import SendWebmentionsJob from '../mentions/send-webmentions-job';
+import type { EmailAnalyticsServiceWrapper } from '../email-analytics/email-analytics-service-wrapper';
+import EmailAnalyticsFetchLatestJob from '../email-analytics/jobs/email-analytics-fetch-latest-job';
 
 const updateCheck = require('../update-check');
 
@@ -35,6 +37,7 @@ interface RegisterJobHandlersDependencies {
   mediaInliner: ExternalMediaInliner;
   mentionsController: MentionController;
   mentionsSendingService: MentionSendingService;
+  emailAnalyticsNewsletters: EmailAnalyticsServiceWrapper;
 }
 
 export default function registerJobHandlers({
@@ -44,6 +47,7 @@ export default function registerJobHandlers({
   mediaInliner,
   mentionsController,
   mentionsSendingService,
+  emailAnalyticsNewsletters,
 }: RegisterJobHandlersDependencies): void {
   jobsService.handle(CleanTokensJob, async () => {
     await memberJobs.cleanTokens();
@@ -72,6 +76,16 @@ export default function registerJobHandlers({
   jobsService.handle(UpdateCheckJob, async () => {
     await updateCheck({ rethrowErrors: true });
   });
+
+  // A surge fetch can occupy its worker for minutes; its own lane keeps it
+  // from blocking the shared workers.
+  jobsService.handle(
+    EmailAnalyticsFetchLatestJob,
+    async () => {
+      await emailAnalyticsNewsletters.startFetch();
+    },
+    { queue: 'email-analytics', concurrency: 1 },
+  );
 
   jobsService.handle(
     ProcessWebmentionJob,

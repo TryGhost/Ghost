@@ -538,7 +538,7 @@ async function initBackgroundServices({ config }) {
   if (config.get('backgroundJobs:emailAnalytics')) {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
     await Promise.all([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
+      emailAnalyticsJobs.scheduleRecurringNewslettersJob(jobsService),
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
@@ -704,6 +704,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const gifts = require('./server/services/gifts');
     const memberJobs = require('./server/services/members/jobs');
     const mentionsService = require('./server/services/mentions');
+    const emailAnalytics = require('./server/services/email-analytics');
     memberJobs.init();
     assert(gifts.service, 'Gift service should be initialized');
     assert(mentionsService.controller, 'Mentions controller should be initialized');
@@ -715,6 +716,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       mediaInliner: mediaInliner.getInstance(),
       mentionsController: mentionsService.controller,
       mentionsSendingService: mentionsService.sendingService,
+      emailAnalyticsNewsletters: emailAnalytics.newsletters,
     });
     await jobsService.start();
     debug('End: Register job handlers');

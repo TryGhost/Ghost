@@ -12,6 +12,7 @@ describe('Email Service', function () {
   let emailRenderer;
   let sendingService;
   let scheduleRecurringNewslettersJob;
+  let jobsService;
   let domainWarmingService;
   let getMembersCount;
 
@@ -24,6 +25,7 @@ describe('Email Service', function () {
     verificicationRequired = false;
     scheduleEmail = sinon.stub().returns();
     scheduleRecurringNewslettersJob = sinon.stub().resolves();
+    jobsService = { scheduleRecurring: sinon.stub().resolves() };
     settings = {};
     settingsCache = {
       get(key) {
@@ -116,6 +118,7 @@ describe('Email Service', function () {
       emailAnalyticsJobs: {
         scheduleRecurringNewslettersJob,
       },
+      jobsService,
       domainWarmingService: domainWarmingService,
     });
   });
@@ -308,7 +311,7 @@ describe('Email Service', function () {
       assert.equal(email.get('status'), 'pending');
       assert.equal(email.get('source'), post.get('mobiledoc'));
       assert.equal(email.get('source_type'), 'mobiledoc');
-      sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
+      sinon.assert.calledOnceWithExactly(scheduleRecurringNewslettersJob, jobsService, true);
     });
 
     it('Reuses the recipient count when preflight data matches the saved post', async function () {
