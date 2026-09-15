@@ -1,16 +1,7 @@
-import { QueryClient } from '@tanstack/react-query';
-import { StrictMode, useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import { render } from 'vitest-browser-react';
-import { ShadeApp } from '@tryghost/shade/app';
-import {
-  FrameworkProvider,
-  defaultUnsplashConfig,
-  type TopLevelFrameworkProps,
-} from '@tryghost/admin-x-framework';
 
-import '@/index.css';
 import {
   configResponse,
   currentUserResponse,
@@ -18,6 +9,7 @@ import {
   fakeNewsletters,
   fakeTiers,
   newsletter,
+  renderInApp,
   settingsResponse,
   staffRole,
   tier,
@@ -25,6 +17,7 @@ import {
   type Tier,
 } from '@test-utils/acceptance';
 import { installBootOverrides } from '@test-utils/acceptance/boot';
+import { postPreviewNewslettersError } from '@tryghost/test-data/selectors/editor';
 import { PostPreviewModal } from '@/editor/preview/post-preview-modal';
 import { previewScreen } from '@/editor/preview/preview.screen';
 
@@ -38,36 +31,6 @@ interface RenderOptions {
   previewUrl?: string;
   onBeforeOpen?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
-}
-
-/** Mounts a subject in the app's provider stack, against the fake Ghost API. */
-async function renderInApp(children: ReactNode) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { refetchOnWindowFocus: false, retry: false, networkMode: 'always' },
-    },
-  });
-
-  const framework: TopLevelFrameworkProps = {
-    ghostVersion: '',
-    externalNavigate: () => {},
-    unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
-    sentryDSN: null,
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
-    queryClient,
-  };
-
-  return await render(
-    <StrictMode>
-      <FrameworkProvider {...framework}>
-        <ShadeApp className="shade-admin" darkMode={false}>
-          {children}
-        </ShadeApp>
-      </FrameworkProvider>
-    </StrictMode>,
-  );
 }
 
 async function renderPreviewModal({
@@ -514,7 +477,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(page.getByTestId(postPreviewNewslettersError)).toBeVisible();
     await expect.element(previewScreen.testEmailButton()).toBeDisabled();
     expect(previewApi.requests).toHaveLength(0);
 
@@ -535,7 +498,7 @@ describe('Post preview modal', () => {
 
     await previewScreen.emailTab().click();
 
-    await expect.element(page.getByTestId('post-preview-newsletters-error')).toBeVisible();
+    await expect.element(page.getByTestId(postPreviewNewslettersError)).toBeVisible();
     await expect.element(previewScreen.testEmailButton()).toBeDisabled();
     expect(previewApi.requests).toHaveLength(0);
 

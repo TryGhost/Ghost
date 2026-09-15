@@ -9,9 +9,10 @@ import tailwindcss from '@tailwindcss/vite';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
 /**
- * Acceptance tier: full-app tests in real Chromium via Vitest Browser Mode,
- * against a fake Ghost Admin API (test-utils/acceptance/). Unit tests stay
- * in vite.config.ts (jsdom).
+ * Browser mode: real Chromium via Vitest Browser Mode against a fake Ghost
+ * Admin API (test-utils/acceptance/). `*.acceptance.test.tsx` boots the whole
+ * app; `*.component.test.tsx` mounts one component in the app's provider
+ * stack. Unit tests stay in vite.config.ts (jsdom).
  */
 
 /*
@@ -38,9 +39,12 @@ export default defineConfig({
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
-    include: ['src/**/*.acceptance.test.tsx'],
+    include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
     setupFiles: ['./test-utils/acceptance/setup.ts'],
+    // Most journeys finish well under a second, but a few that wait out a
+    // product-side hold reach ~6s; this leaves those headroom on slower CI.
+    testTimeout: 15_000,
     expect: {
       // Full-app renders are slower than unit renders; the harness's
       // toHaveCount matcher derives its polling from this too.

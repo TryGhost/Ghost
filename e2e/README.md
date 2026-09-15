@@ -62,7 +62,7 @@ E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
 
 ### Build Mode (Prebuilt Image)
 
-Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
+Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/ghost/assets`.
 
 ```bash
 # From repository root
@@ -239,7 +239,7 @@ Global teardown (`tests/global.teardown.ts`) does:
 Modes:
 
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
-- Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
+- Build mode: Ghost uses a prebuilt image and serves assets from `/ghost/assets`
 
 ### Best Practices
 
@@ -258,7 +258,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 1. **Setup**: Ubuntu runner with Node.js and Docker
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
-3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into `/content/files`)
+3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
 5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 6. **Artifacts**: Upload Playwright traces and reports on failure

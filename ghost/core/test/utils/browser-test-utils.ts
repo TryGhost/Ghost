@@ -1,38 +1,18 @@
-const { JSDOM } = require('jsdom');
+import { JSDOM } from 'jsdom';
 
-/**
- * @typedef {Object} BrowserEnvironment
- * @property {import('jsdom').JSDOM} dom - The JSDOM instance
- * @property {import('jsdom').DOMWindow} window - The window object
- * @property {Document} document - The document object
- * @property {Storage} localStorage - Mocked localStorage
- * @property {Storage} sessionStorage - Mocked sessionStorage
- * @property {typeof XMLHttpRequest} XMLHttpRequest - Mocked XMLHttpRequest
- * @property {XMLHttpRequest} lastXHR - The last XMLHttpRequest instance created
- */
+type BrowserEnvironmentOptions = {
+  url?: string;
+  referrer?: string;
+  html?: string;
+  runScripts?: boolean;
+};
 
-/**
- * @typedef {Object} BrowserEnvironmentOptions
- * @property {string} [url='https://example.com'] - The URL to use for the window
- * @property {string} [referrer='https://referrer.com'] - The referrer to use
- * @property {string} [html='<!DOCTYPE html><html><body></body></html>'] - The HTML content
- * @property {boolean} [runScripts=true] - Whether to run scripts
- * @property {Object} [storage] - Storage configuration
- * @property {'localStorage'|'sessionStorage'} [storage.type='localStorage'] - Which storage to use
- */
-
-/**
- * Creates a browser-like environment using JSDOM
- * @param {BrowserEnvironmentOptions} options - Configuration options
- * @returns {BrowserEnvironment} The browser environment
- */
-function createBrowserEnvironment(options = {}) {
+export function createBrowserEnvironment(options: BrowserEnvironmentOptions = {}) {
   const {
     url = 'https://example.com',
     referrer = 'https://referrer.com',
     html = '<!DOCTYPE html><html><body></body></html>',
     runScripts = true,
-    // storage = {type: 'localStorage'}
   } = options;
 
   // Create JSDOM instance
@@ -49,23 +29,26 @@ function createBrowserEnvironment(options = {}) {
   const document = window.document;
 
   // Create a storage mock
-  function createStorageMock() {
+  function createStorageMock(): Storage {
+    const entries = new Map<string, string>();
     return {
-      getItem: function (key) {
-        return this[key] || null;
+      get length() {
+        return entries.size;
       },
-      setItem: function (key, value) {
-        this[key] = value;
+      key(index: number) {
+        return [...entries.keys()][index] ?? null;
       },
-      removeItem: function (key) {
-        delete this[key];
+      getItem(key: string) {
+        return entries.get(key) ?? null;
       },
-      clear: function () {
-        Object.keys(this).forEach((key) => {
-          if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
-            delete this[key];
-          }
-        });
+      setItem(key: string, value: string) {
+        entries.set(key, value);
+      },
+      removeItem(key: string) {
+        entries.delete(key);
+      },
+      clear() {
+        entries.clear();
       },
     };
   }
@@ -87,7 +70,7 @@ function createBrowserEnvironment(options = {}) {
   // Mock crypto for UUID generation
   Object.defineProperty(window, 'crypto', {
     value: {
-      getRandomValues: (arr) => {
+      getRandomValues: (arr: Uint8Array) => {
         for (let i = 0; i < arr.length; i++) {
           arr[i] = Math.floor(Math.random() * 256);
         }
@@ -98,28 +81,35 @@ function createBrowserEnvironment(options = {}) {
   });
 
   // Track the last XMLHttpRequest instance
-  let lastXHR = null;
+  let lastXHR: MockXMLHttpRequest | null = null;
 
   // Mock XMLHttpRequest
   class MockXMLHttpRequest {
-    constructor() {
-      this.readyState = 0;
-      this.status = 0;
-      this.responseText = '';
-      this.onreadystatechange = null;
-      this.onload = null;
-      this.onerror = null;
-      this._data = null;
-      this.method = null;
-      this.url = null;
-      this.async = null;
-      this.requestHeaders = {};
+    static readonly UNSENT = 0;
+    static readonly OPENED = 1;
+    static readonly HEADERS_RECEIVED = 2;
+    static readonly LOADING = 3;
+    static readonly DONE = 4;
 
+    readyState = 0;
+    status = 0;
+    responseText = '';
+    onreadystatechange: (() => void) | null = null;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    _data: Document | XMLHttpRequestBodyInit | null = null;
+    method: string | null = null;
+    url: string | null = null;
+    async: boolean | null = null;
+    requestHeaders: Record<string, string> = {};
+
+    constructor() {
       // Store this instance as the last one created
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       lastXHR = this;
     }
 
-    open(method, _url, async) {
+    open(method: string, _url: string, async: boolean) {
       this.method = method;
       this.url = _url;
       this.async = async;
@@ -129,11 +119,11 @@ function createBrowserEnvironment(options = {}) {
       }
     }
 
-    setRequestHeader(header, value) {
+    setRequestHeader(header: string, value: string) {
       this.requestHeaders[header] = value;
     }
 
-    send(data) {
+    send(data: Document | XMLHttpRequestBodyInit | null = null) {
       this._data = data;
       this.readyState = 4;
       this.status = 200;
@@ -146,13 +136,6 @@ function createBrowserEnvironment(options = {}) {
       }
     }
   }
-
-  // Add static properties to match XMLHttpRequest
-  MockXMLHttpRequest.UNSENT = 0;
-  MockXMLHttpRequest.OPENED = 1;
-  MockXMLHttpRequest.HEADERS_RECEIVED = 2;
-  MockXMLHttpRequest.LOADING = 3;
-  MockXMLHttpRequest.DONE = 4;
 
   // Replace the global XMLHttpRequest
   Object.defineProperty(window, 'XMLHttpRequest', {
@@ -214,22 +197,18 @@ function createBrowserEnvironment(options = {}) {
   };
 }
 
-/**
- * @typedef {Object} LoadScriptOptions
- * @property {Object} [dataAttributes] - Data attributes to set on the script element
- */
+type LoadScriptOptions = {
+  dataAttributes?: Record<string, string>;
+};
 
-/**
- * Loads a script into the JSDOM environment
- * @param {BrowserEnvironment} env - The browser environment
- * @param {string} scriptContent - The script content to load
- * @param {LoadScriptOptions} [options] - Options for loading the script
- * @returns {void}
- */
-function loadScript(env, scriptContent, options = {}) {
+/** Loads a script into the JSDOM environment. */
+export function loadScript(
+  env: ReturnType<typeof createBrowserEnvironment>,
+  scriptContent: string,
+  options: LoadScriptOptions = {},
+): void {
   const { dataAttributes = {} } = options;
 
-  // Create a script element with data attributes
   const scriptElement = env.document.createElement('script');
   Object.entries(dataAttributes).forEach(([key, value]) => {
     scriptElement.setAttribute(`data-${key}`, value);
@@ -237,8 +216,3 @@ function loadScript(env, scriptContent, options = {}) {
   scriptElement.textContent = scriptContent;
   env.document.body.appendChild(scriptElement);
 }
-
-module.exports = {
-  createBrowserEnvironment,
-  loadScript,
-};

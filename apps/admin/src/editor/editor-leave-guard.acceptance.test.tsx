@@ -9,6 +9,8 @@ import {
   post,
   renderAdminApp,
   unsavedChangesGuarded,
+  withFastAutosave,
+  withoutAutosave,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -20,11 +22,9 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
 // The posts list is React-owned here so the back link is a router link and the
 // blocker sees the navigation; the hash-anchor path has its own test below.
-const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
-
-// The autosave debounce is 3s, so these journeys outlast the default timeout.
-const SLOW = 20_000;
-const SAVE_POLL = { timeout: 10_000 };
+// Each test names its own autosave regime, since the debounce decides whether a write
+// came from the exit or from an autosave; naming none leaves the editor's real 3s.
+const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true, postsListReact: true } };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -106,7 +106,7 @@ function fakeNewPost({ failUpdates = false } = {}) {
   };
 }
 
-function fakeDeferredCleanSave() {
+function fakeDeferredSave() {
   fakeEditorChrome();
   let current = post({
     id: POST_ID,
@@ -136,9 +136,10 @@ function fakeDeferredCleanSave() {
   };
 }
 
-async function typeIntoBody(text: string) {
-  await editorScreen.body().click();
-  await userEvent.keyboard(`{End}${text}`);
+async function appendToBody(text: string) {
+  const body = editorScreen.body();
+  // One input event: a fast autosave must not split a keyboard sequence into several saves.
+  await body.fill(`${body.element().textContent ?? ''}${text}`);
 }
 
 /**
@@ -172,10 +173,10 @@ function watchLeaveDialog(): () => number {
 }
 
 /** Opens the editor and leaves it with an edit the server has not seen. */
-async function openDirtyEditor(labs: RenderAdminAppOptions = FLAG_ON) {
-  await renderAdminApp(`/editor/post/${POST_ID}`, labs);
+async function openDirtyEditor(options: RenderAdminAppOptions) {
+  await renderAdminApp(`/editor/post/${POST_ID}`, options);
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-  await typeIntoBody(' and more');
+  await appendToBody(' and more');
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
   await expect.poll(unsavedChangesGuarded).toBe(true);
 }
@@ -186,258 +187,220 @@ async function openDirtyEditor(labs: RenderAdminAppOptions = FLAG_ON) {
  * work and either lets the writer through or asks them to confirm.
  */
 describe('Post editor leave guard', () => {
-  it(
-    'saves a dirty draft on the way out and leaves without asking',
-    async () => {
-      const saveApi = fakeEditablePost();
-      await openDirtyEditor();
-      const dialogInsertions = watchLeaveDialog();
+  it('saves a dirty draft on the way out and leaves without asking', async () => {
+    const saveApi = fakeEditablePost();
+    await openDirtyEditor(withoutAutosave(FLAG_ON));
+    const dialogInsertions = watchLeaveDialog();
 
-      await editorScreen.backLink('post').click();
+    await editorScreen.backLink('post').click();
 
-      await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-      // Not a single frame of it: the save on the way out is silent.
-      expect(dialogInsertions()).toBe(0);
-      expect(saveApi.requests.length).toBe(1);
-      // Leaving is the writer's last checkpoint, so it earns a revision.
-      expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe('/posts');
+    // Not a single frame of it: the save on the way out is silent.
+    expect(dialogInsertions()).toBe(0);
+    expect(saveApi.requests.length).toBe(1);
+    // Leaving is the writer's last checkpoint, so it earns a revision.
+    expect(saveApi.lastRequest?.url ?? '').toContain('save_revision=true');
+  });
 
-  it(
-    'leaves a clean post silently and saves nothing',
-    async () => {
-      const saveApi = fakeEditablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+  it('leaves a clean post silently and saves nothing', async () => {
+    const saveApi = fakeEditablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
-      await editorScreen.backLink('post').click();
+    await editorScreen.backLink('post').click();
 
-      await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      expect(saveApi.requests.length).toBe(0);
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    expect(saveApi.requests.length).toBe(0);
+  });
 
-  it(
-    'asks before leaving a published post with unsaved changes, and stays on cancel',
-    async () => {
-      // A published post never autosaves, so its edits are still unsaved when
-      // the writer leaves.
-      const saveApi = fakeEditablePost({
-        status: 'published',
-        published_at: '2026-01-01T00:00:00.000Z',
-      });
-      await openDirtyEditor();
+  it('asks before leaving a published post with unsaved changes, and stays on cancel', async () => {
+    // A published post never autosaves, so its edits are still unsaved when
+    // the writer leaves.
+    const saveApi = fakeEditablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    await openDirtyEditor(withFastAutosave(FLAG_ON));
 
-      await editorScreen.backLink('post').click();
+    await editorScreen.backLink('post').click();
 
-      await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      await editorScreen.stayInEditor().click();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    await editorScreen.stayInEditor().click();
 
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-      expect(saveApi.requests.length).toBe(0);
-    },
-    SLOW,
-  );
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    expect(saveApi.requests.length).toBe(0);
+  });
 
   it.each([
-    { name: 'router link', options: FLAG_ON },
+    { name: 'router link', options: withFastAutosave(FLAG_ON) },
     { name: 'native hash link', options: { labs: { editorReact: true } } },
-  ])(
-    'keeps the dialog open until leaving through a $name',
-    async ({ options }) => {
-      const saveApi = fakeEditablePost({
-        status: 'published',
-        published_at: '2026-01-01T00:00:00.000Z',
-      });
-      await openDirtyEditor(options);
+  ])('keeps the dialog open until leaving through a $name', async ({ options }) => {
+    const saveApi = fakeEditablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    await openDirtyEditor(options);
 
-      await editorScreen.backLink('post').click();
-      await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      const dialog = document.querySelector(editorScreen.leaveDialogSelector)!;
-      let beganClosing = false;
-      const recordState = () => {
-        beganClosing ||= dialog.getAttribute('data-state') === 'closed';
-      };
-      const observer = new MutationObserver(recordState);
-      observer.observe(dialog, { attributes: true, attributeFilter: ['data-state'] });
-      try {
-        await editorScreen.leaveEditor().click();
+    await editorScreen.backLink('post').click();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    const dialog = document.querySelector(editorScreen.leaveDialogSelector)!;
+    let beganClosing = false;
+    const recordState = () => {
+      beganClosing ||= dialog.getAttribute('data-state') === 'closed';
+    };
+    const observer = new MutationObserver(recordState);
+    observer.observe(dialog, { attributes: true, attributeFilter: ['data-state'] });
+    try {
+      await editorScreen.leaveEditor().click();
 
-        await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-        await expect(editorScreen.root()).toHaveCount(0);
-        // The dialog must unmount with the editor, without starting its close
-        // animation and revealing the editor on the way to the destination.
-        recordState();
-        expect(beganClosing).toBe(false);
-      } finally {
-        observer.disconnect();
-      }
-      // Confirming discards the edit; nothing is written on the way out.
-      expect(saveApi.requests.length).toBe(0);
-    },
-    SLOW,
-  );
+      await expect.poll(currentRoute).toBe('/posts');
+      await expect(editorScreen.root()).toHaveCount(0);
+      // The dialog must unmount with the editor, without starting its close
+      // animation and revealing the editor on the way to the destination.
+      recordState();
+      expect(beganClosing).toBe(false);
+    } finally {
+      observer.disconnect();
+    }
+    // Confirming discards the edit; nothing is written on the way out.
+    expect(saveApi.requests.length).toBe(0);
+  });
 
-  it(
-    'asks before leaving when the save on the way out fails',
-    async () => {
-      const saveApi = fakeEditablePost({}, { failSaves: true });
-      await openDirtyEditor();
-      await expect.element(editorScreen.saveErrorBanner(), SAVE_POLL).toBeVisible();
-      expect(saveApi.requests.length).toBeGreaterThanOrEqual(1);
+  it('asks before leaving when the save on the way out fails', async () => {
+    const saveApi = fakeEditablePost({}, { failSaves: true });
+    await openDirtyEditor(withFastAutosave(FLAG_ON));
+    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    expect(saveApi.requests.length).toBeGreaterThanOrEqual(1);
 
-      await editorScreen.backLink('post').click();
+    await editorScreen.backLink('post').click();
 
-      // Nothing the engine can do persists the edit, so the writer decides.
-      await expect.element(editorScreen.leaveDialog(), SAVE_POLL).toBeVisible();
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    // Nothing the engine can do persists the edit, so the writer decides.
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
 
-      await editorScreen.stayInEditor().click();
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
-    },
-    SLOW,
-  );
+    await editorScreen.stayInEditor().click();
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+  });
 
-  it(
-    'guards a native hash anchor out of the editor',
-    async () => {
-      // With the posts list served by Ember the back link is a raw `#/posts`
-      // anchor, which reaches the router as a POP it cannot block.
-      const saveApi = fakeEditablePost({
-        status: 'published',
-        published_at: '2026-01-01T00:00:00.000Z',
-      });
-      await openDirtyEditor({ labs: { editorReact: true } });
+  it('guards a native hash anchor out of the editor', async () => {
+    // With the posts list served by Ember the back link is a raw `#/posts`
+    // anchor, which reaches the router as a POP it cannot block.
+    const saveApi = fakeEditablePost({
+      status: 'published',
+      published_at: '2026-01-01T00:00:00.000Z',
+    });
+    await openDirtyEditor(withFastAutosave({ labs: { editorReact: true } }));
 
-      await editorScreen.backLink('post').click();
+    await editorScreen.backLink('post').click();
 
-      await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      expect(saveApi.requests.length).toBe(0);
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(saveApi.requests.length).toBe(0);
 
-      // Cancelling drops the intercepted anchor, so the writer stays put and
-      // the next click on the same link asks again rather than going through.
-      await editorScreen.stayInEditor().click();
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
+    // Cancelling drops the intercepted anchor, so the writer stays put and
+    // the next click on the same link asks again rather than going through.
+    await editorScreen.stayInEditor().click();
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
-      await editorScreen.backLink('post').click();
-      await expect.element(editorScreen.leaveDialog()).toBeVisible();
-      expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-    },
-    SLOW,
-  );
+    await editorScreen.backLink('post').click();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+  });
 
-  it(
-    'replaces the URL of a created post without asking to leave',
-    async () => {
-      const { createApi, updateApi, resolveCreate } = fakeNewPost();
+  it('replaces the URL of a created post without asking to leave', async () => {
+    const { createApi, updateApi, resolveCreate } = fakeNewPost();
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await expect.element(editorScreen.body()).toBeVisible();
+    await renderAdminApp('/editor/post', withFastAutosave(FLAG_ON));
+    await expect.element(editorScreen.body()).toBeVisible();
 
-      await typeIntoBody('First words');
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
-      // The URL swap lands on a post the writer has already moved past.
-      await typeIntoBody(' and then some');
-      resolveCreate();
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    // The URL swap lands on a post the writer has already moved past.
+    await appendToBody(' and then some');
+    resolveCreate();
 
-      await expect.poll(currentRoute, SAVE_POLL).toBe(`/editor/post/${NEW_POST_ID}`);
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-      await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
-      // Nothing treated the swap as a leave, so no revision was cut for it.
-      expect(updateApi.requests.every((r) => !r.url.includes('save_revision=true'))).toBe(true);
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+    // Nothing treated the swap as a leave, so no revision was cut for it.
+    expect(updateApi.requests.every((r) => !r.url.includes('save_revision=true'))).toBe(true);
+  });
 
-  it(
-    'preserves a blocked exit when a create acquires its ID',
-    async () => {
-      const { createApi, resolveCreate } = fakeNewPost();
+  it('preserves a blocked exit when a create acquires its ID', async () => {
+    const { createApi, resolveCreate } = fakeNewPost();
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await expect.element(editorScreen.body()).toBeVisible();
-      await typeIntoBody('First words');
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
+    await renderAdminApp('/editor/post', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
 
-      await editorScreen.backLink('post').click();
-      expect(currentRoute()).toBe('/editor/post');
+    await editorScreen.backLink('post').click();
+    expect(currentRoute()).toBe('/editor/post');
 
-      // The create acknowledgement wants to replace the URL, but the writer's
-      // already-blocked exit remains the destination that ultimately proceeds.
-      resolveCreate();
-      await expect.poll(currentRoute, SAVE_POLL).toBe('/posts');
-      await expect(editorScreen.leaveDialog()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    // The create acknowledgement wants to replace the URL, but the writer's
+    // already-blocked exit remains the destination that ultimately proceeds.
+    resolveCreate();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.leaveDialog()).toHaveCount(0);
+  });
 
-  it(
-    'applies a deferred created-post URL after the writer cancels the exit',
-    async () => {
-      const { createApi, resolveCreate } = fakeNewPost({ failUpdates: true });
+  it('applies a deferred created-post URL after the writer cancels the exit', async () => {
+    const { createApi, resolveCreate } = fakeNewPost({ failUpdates: true });
 
-      await renderAdminApp('/editor/post', FLAG_ON);
-      await expect.element(editorScreen.body()).toBeVisible();
-      await typeIntoBody('First words');
-      await expect.poll(() => createApi.requests.length, SAVE_POLL).toBe(1);
-      await typeIntoBody(' and then some');
+    await renderAdminApp('/editor/post', FLAG_ON);
+    await expect.element(editorScreen.body()).toBeVisible();
+    await appendToBody('First words');
+    await expect.poll(() => createApi.requests.length).toBe(1);
+    await appendToBody(' and then some');
 
-      await editorScreen.backLink('post').click();
-      resolveCreate();
+    await editorScreen.backLink('post').click();
+    resolveCreate();
 
-      await expect.element(editorScreen.leaveDialog(), SAVE_POLL).toBeVisible();
-      expect(currentRoute()).toBe('/editor/post');
-      await editorScreen.stayInEditor().click();
+    await expect.element(editorScreen.leaveDialog()).toBeVisible();
+    expect(currentRoute()).toBe('/editor/post');
+    await editorScreen.stayInEditor().click();
 
-      await expect.poll(currentRoute, SAVE_POLL).toBe(`/editor/post/${NEW_POST_ID}`);
-      await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
-    },
-    SLOW,
-  );
+    await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('First words and then some');
+  });
 
-  it(
-    'arms the browser unload prompt while unsaved work exists',
-    async () => {
-      fakeEditablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  it('arms the browser unload prompt while unsaved work exists', async () => {
+    const { saveApi, resolveSave } = fakeDeferredSave();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave(FLAG_ON));
 
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      expect(unsavedChangesGuarded()).toBe(false);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    expect(unsavedChangesGuarded()).toBe(false);
 
-      await typeIntoBody(' and more');
+    await appendToBody(' and more');
+    try {
+      // Keep unsaved work observable even when the fast autosave has already started.
       await expect.poll(unsavedChangesGuarded).toBe(true);
-
-      await expect.poll(unsavedChangesGuarded, SAVE_POLL).toBe(false);
-    },
-    SLOW,
-  );
-
-  it(
-    'keeps the browser unload prompt armed for a clean write in flight',
-    async () => {
-      const { saveApi, resolveSave } = fakeDeferredCleanSave();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-
-      await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
-      expect(unsavedChangesGuarded()).toBe(false);
-
-      await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-
+      await expect.poll(() => saveApi.requests.length).toBe(1);
+    } finally {
       resolveSave();
-      await expect.poll(unsavedChangesGuarded, SAVE_POLL).toBe(false);
-    },
-    SLOW,
-  );
+    }
+
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
+  it('keeps the browser unload prompt armed for a clean write in flight', async () => {
+    const { saveApi, resolveSave } = fakeDeferredSave();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    expect(unsavedChangesGuarded()).toBe(false);
+
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    resolveSave();
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
 });

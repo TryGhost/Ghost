@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
-const automationsController = require('../../../../core/server/api/endpoints/automations');
+const {
+  controller: automationsController,
+} = require('../../../../core/server/api/endpoints/automations');
 const {
   StartAutomationsPollEvent,
 } = require('../../../../core/server/services/automations/events/start-automations-poll-event');

@@ -259,17 +259,31 @@ class LocalStorageBase extends StorageBase {
   }
 
   /**
+   * Sets response headers for a file about to be served from local storage.
+   * `send` only derives Content-Type from the extension when it hasn't been
+   * set yet, so subclasses can override this to enforce their own type.
+   *
+   * `nosniff` stops browsers from second-guessing the declared Content-Type
+   * based on the file's contents.
+   */
+  setServeHeaders(res: Response, _filePath: string): void {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  }
+
+  /**
    * For some reason send divides the max age number by 1000
    * Fallthrough: false ensures that if an image isn't found, it automatically 404s
    * Wrap server static errors
    */
   serve(): RequestHandler {
     const { storagePath, errorMessages } = this;
+    const setHeaders = (res: Response, filePath: string) => this.setServeHeaders(res, filePath);
 
     return function serveStaticContent(req: Request, res: Response, next: NextFunction) {
       return serveStatic(storagePath, {
         maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year in ms
         fallthrough: false,
+        setHeaders,
       })(req, res, (err?: ServeStaticError) => {
         if (err) {
           if (err.statusCode === 404) {

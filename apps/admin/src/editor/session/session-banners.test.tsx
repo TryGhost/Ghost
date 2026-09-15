@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { editorConflictReloadConfirm } from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 import { SessionBanners } from './session-banners';
@@ -91,7 +92,7 @@ describe('SessionBanners', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
 
     expect(onReload).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId('editor-conflict-reload-confirm')).not.toBeInTheDocument();
+    expect(screen.queryByTestId(editorConflictReloadConfirm)).not.toBeInTheDocument();
   });
 
   it('confirms before a reload discards local edits, and cancelling reloads nothing', async () => {
@@ -100,7 +101,7 @@ describe('SessionBanners', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
 
-    expect(await screen.findByTestId('editor-conflict-reload-confirm')).toBeVisible();
+    expect(await screen.findByTestId(editorConflictReloadConfirm)).toBeVisible();
     expect(onReload).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));

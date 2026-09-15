@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 
 const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
+const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
 const EmailSegmenter = require('../../../../core/server/services/email-service/email-segmenter');
 
 describe('Email recipient count', function () {
@@ -20,7 +20,9 @@ describe('Email recipient count', function () {
   beforeEach(function () {
     mockManager.mockMail();
     mockManager.mockStripe();
-    sinon.stub(jobManager, 'addJob');
+    // Stop the send at the email-service/transport boundary rather than at a
+    // specific job queue, so this keeps holding when the transport changes.
+    sinon.stub(BatchSendingService.prototype, 'scheduleEmail');
   });
 
   afterEach(function () {

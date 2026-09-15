@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { StoredSendingStatus } from './sending-status-schema';
 
-const ETA_COMPLETION_WINDOW = 20;
+const ETA_WINDOW_MS = 60_000;
 const ETA_MIN_INTERVALS = 2;
 
 export const SendingPhase = z.enum(['preparing', 'submitting']);
@@ -144,12 +144,21 @@ function estimateSecondsRemaining({
     }
   }
 
-  // Limit usable timestamps, not rows: fast sends may finish many batches per timestamp.
-  const window = completions.slice(-ETA_COMPLETION_WINDOW);
   // Three distinct timestamps provide two measured intervals for an initial rate.
-  if (window.length < ETA_MIN_INTERVALS + 1) {
+  if (completions.length < ETA_MIN_INTERVALS + 1) {
     return null;
   }
+
+  // Include the baseline at or before the last minute so the first interval's
+  // recipients have their full elapsed time. Sparse sends still need two intervals.
+  const cutoff = completions[completions.length - 1].timestamp - ETA_WINDOW_MS;
+  let baseline = completions.length - 1;
+  while (baseline > 0 && completions[baseline].timestamp > cutoff) {
+    baseline -= 1;
+  }
+  const window = completions.slice(
+    Math.max(0, Math.min(baseline, completions.length - ETA_MIN_INTERVALS - 1)),
+  );
 
   // Measure combined throughput across the window, including overlapping workers.
   // The first completion is only the baseline: its recipients were processed

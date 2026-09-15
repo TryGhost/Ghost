@@ -1,12 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
-import { StrictMode } from 'react';
 
-import { fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
+import { InAppProviders, fakeAdminEndpoint, fakeLabels, fakeTiers } from '@test-utils/acceptance';
 import { publishRecipientFree } from '@tryghost/test-data/selectors/editor';
-import { TestWrapper } from '@test-utils/fixtures/query-client';
-import '@/index.css';
 
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
 import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
@@ -26,9 +23,6 @@ const EVERYONE = 'status:free,status:-free';
 const SESSION_EXPIRED = {
   errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
 };
-// The email poller waits a second between reads, so these journeys outlast the default timeout.
-const SLOW = 25_000;
-
 const SITE: PublishSiteInput = {
   membersEnabled: true,
   mailgunConfigured: true,
@@ -122,7 +116,7 @@ async function renderPublishFlow(
   const dispatch = completesWith(saved());
   const onCompleted = vi.fn();
   const renderModal = (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>> = {}) => (
-    <TestWrapper>
+    <InAppProviders>
       <PublishFlowModal
         dispatch={dispatch}
         post={draft()}
@@ -134,7 +128,7 @@ async function renderPublishFlow(
         {...props}
         {...nextProps}
       />
-    </TestWrapper>
+    </InAppProviders>
   );
 
   const rendered = await render(renderModal());
@@ -158,94 +152,82 @@ describe('Publish flow', () => {
     fakeLabels([]);
   });
 
-  it(
-    'publishes and emails a draft, then hands the celebration to the list',
-    async () => {
-      const { dispatch, onCompleted } = await renderPublishFlow();
+  it('publishes and emails a draft, then hands the celebration to the list', async () => {
+    const { dispatch, onCompleted } = await renderPublishFlow();
 
-      await expect.element(publishScreen.options()).toBeInTheDocument();
-      await publishScreen.continueButton().click();
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await publishScreen.continueButton().click();
 
-      await expect.element(publishScreen.confirm()).toBeInTheDocument();
-      await expect
-        .element(publishScreen.confirmButton())
-        .toHaveTextContent('Publish & send, right now');
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish & send, right now');
 
-      await publishScreen.confirmButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect.element(publishScreen.complete()).toBeInTheDocument();
-      expect(dispatch).toHaveBeenCalledWith({
-        kind: 'publish',
-        options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
-      });
-      expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
-        id: POST_ID,
-        type: 'post',
-      });
-      await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
-      await expect
-        .element(publishScreen.complete())
-        .toHaveTextContent('That’s 42 posts published, keep going!');
-      expect(onCompleted).toHaveBeenCalledTimes(1);
-      expect(onCompleted).toHaveBeenCalledWith({
-        postId: POST_ID,
-        isScheduled: false,
-        hasEmail: true,
-      });
-    },
-    SLOW,
-  );
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+    expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+      id: POST_ID,
+      type: 'post',
+    });
+    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+    await expect
+      .element(publishScreen.complete())
+      .toHaveTextContent('That’s 42 posts published, keep going!');
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
 
-  it(
-    'holds the confirm button through the email poll so the publish cannot be dispatched twice',
-    async () => {
-      const email = { status: 'pending' };
-      fakeEmailPolling(email);
-      const { dispatch } = await renderPublishFlow();
+  it('holds the confirm button through the email poll so the publish cannot be dispatched twice', async () => {
+    const email = { status: 'pending' };
+    fakeEmailPolling(email);
+    const { dispatch } = await renderPublishFlow();
 
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect
-        .poll(() => publishScreen.confirmButton().element().textContent, { timeout: 2000 })
-        .toContain('Publishing & sending');
-      await expect
-        .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'), {
-          timeout: 2000,
-        })
-        .toBe(true);
-      expect(dispatch).toHaveBeenCalledTimes(1);
+    await expect
+      .poll(() => publishScreen.confirmButton().element().textContent, { timeout: 2000 })
+      .toContain('Publishing & sending');
+    await expect
+      .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'), {
+        timeout: 2000,
+      })
+      .toBe(true);
+    expect(dispatch).toHaveBeenCalledTimes(1);
 
-      // Keep polling pending until the running button has been observed.
-      email.status = 'submitted';
-      await expect.element(publishScreen.complete()).toBeInTheDocument();
-      expect(dispatch).toHaveBeenCalledTimes(1);
-    },
-    SLOW,
-  );
+    // Keep polling pending until the running button has been observed.
+    email.status = 'submitted';
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
 
-  it(
-    'completes nothing when the flow is torn down mid-poll',
-    async () => {
-      fakeEmailPolling({ status: 'pending' });
-      const { dispatch, onCompleted, unmount } = await renderPublishFlow();
+  it('completes nothing when the flow is torn down mid-poll', async () => {
+    fakeEmailPolling({ status: 'pending' });
+    const { dispatch, onCompleted, unmount } = await renderPublishFlow();
 
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
-      // The save has landed and the poll is running.
-      await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    // The save has landed and the poll is running.
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
 
-      await unmount();
+    await unmount();
 
-      // Long enough for two poll ticks to have landed had the run continued.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 2500);
-      });
-      expect(onCompleted).not.toHaveBeenCalled();
-      expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
-    },
-    SLOW,
-  );
+    // Long enough for two poll ticks to have landed had the run continued.
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 2500);
+    });
+    expect(onCompleted).not.toHaveBeenCalled();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
 
   it('completes nothing when the flow is torn down during the save', async () => {
     let finishDispatch: (completion: SaveCompletion) => void = () => {};
@@ -341,6 +323,30 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
+  it('gives each publish-at radio its own id, reached from exactly one label', async () => {
+    await renderPublishFlow();
+
+    await publishScreen.setting('publish-at').click();
+
+    const labelledId = async (name: string) => {
+      const control = page.getByRole('radio', { name });
+      await expect.element(control).toBeInTheDocument();
+
+      const id = control.element().getAttribute('id') ?? '';
+      const labels = document.querySelectorAll(`label[for="${id}"]`);
+
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toHaveTextContent(name);
+
+      return id;
+    };
+
+    const now = await labelledId('Set it live now');
+    const schedule = await labelledId('Schedule for later');
+
+    expect(now).not.toBe(schedule);
+  });
+
   // One pinned instant, two zones a day apart: whatever zone the runner uses, it
   // agrees with at most one of them, so a browser-day mapping fails at least one.
   it.each([
@@ -366,29 +372,25 @@ describe('Publish flow', () => {
     },
   );
 
-  it(
-    'sends without publishing when the email-only type is chosen',
-    async () => {
-      fakeEmailPolling({ status: 'submitted' });
-      const { dispatch } = await renderPublishFlow();
+  it('sends without publishing when the email-only type is chosen', async () => {
+    fakeEmailPolling({ status: 'submitted' });
+    const { dispatch } = await renderPublishFlow();
 
-      await publishScreen.setting('publish-type').click();
-      await page.getByLabelText('Email only').click();
-      await publishScreen.continueButton().click();
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
 
-      await expect
-        .element(publishScreen.confirm())
-        .toHaveTextContent('and will not be published on your site.');
-      await publishScreen.confirmButton().click();
+    await expect
+      .element(publishScreen.confirm())
+      .toHaveTextContent('and will not be published on your site.');
+    await publishScreen.confirmButton().click();
 
-      await expect.element(publishScreen.complete()).toBeInTheDocument();
-      expect(dispatch).toHaveBeenCalledWith({
-        kind: 'publish',
-        options: { emailOnly: true, newsletter: 'weekly', emailSegment: EVERYONE },
-      });
-    },
-    SLOW,
-  );
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: true, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+  });
 
   it('cannot continue with Email only after clearing every recipient', async () => {
     await renderPublishFlow();
@@ -619,20 +621,18 @@ describe('Publish flow', () => {
     const checkPublishingLimit = vi.fn(() => Promise.resolve());
 
     await render(
-      <StrictMode>
-        <TestWrapper>
-          <PublishFlowModal
-            dispatch={dispatch}
-            limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
-            post={draft()}
-            site={{ ...SITE, mailgunConfigured: false }}
-            timezone="Etc/UTC"
-            user={USER}
-            onClose={() => {}}
-            onCompleted={onCompleted}
-          />
-        </TestWrapper>
-      </StrictMode>,
+      <InAppProviders>
+        <PublishFlowModal
+          dispatch={dispatch}
+          limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
+          post={draft()}
+          site={{ ...SITE, mailgunConfigured: false }}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+          onCompleted={onCompleted}
+        />
+      </InAppProviders>,
     );
 
     await expect.poll(() => refreshSettings.mock.calls.length).toBe(1);
@@ -652,89 +652,73 @@ describe('Publish flow', () => {
     expect(onCompleted).toHaveBeenCalledTimes(1);
   });
 
-  it(
-    'completes with a note when the email cannot be confirmed either way',
-    async () => {
-      // The poller's reload fails, the way a 401 does with the redirect opted out.
-      fakeAdminEndpoint(
-        'GET',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        { errors: [{ message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      const { dispatch, onCompleted } = await renderPublishFlow();
+  it('completes with a note when the email cannot be confirmed either way', async () => {
+    // The poller's reload fails, the way a 401 does with the redirect opted out.
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    const { dispatch, onCompleted } = await renderPublishFlow();
 
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect
-        .element(publishScreen.completeNote())
-        .toHaveTextContent('couldn’t confirm the newsletter was sent');
-      await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
-      expect(dispatch).toHaveBeenCalledTimes(1);
-      expect(onCompleted).toHaveBeenCalledTimes(1);
-    },
-    SLOW,
-  );
+    await expect
+      .element(publishScreen.completeNote())
+      .toHaveTextContent('couldn’t confirm the newsletter was sent');
+    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+  });
 
-  it(
-    'never claims an email-only send landed when it could not be confirmed',
-    async () => {
-      fakeAdminEndpoint(
-        'GET',
-        new RegExp(`^/posts/${POST_ID}/\\?`),
-        { errors: [{ message: 'Authorization failed' }] },
-        { status: 401 },
-      );
-      await renderPublishFlow();
+  it('never claims an email-only send landed when it could not be confirmed', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    await renderPublishFlow();
 
-      await publishScreen.setting('publish-type').click();
-      await page.getByLabelText('Email only').click();
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect
-        .element(publishScreen.completeNote())
-        .toHaveTextContent('couldn’t confirm the newsletter was sent');
-      // Nothing on the step may assert a send, or celebrate one.
-      await expect
-        .element(publishScreen.complete())
-        .toHaveTextContent('Your post has been created');
-      await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
-      await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
-      await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
-    },
-    SLOW,
-  );
+    await expect
+      .element(publishScreen.completeNote())
+      .toHaveTextContent('couldn’t confirm the newsletter was sent');
+    // Nothing on the step may assert a send, or celebrate one.
+    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
+  });
 
-  it(
-    'never claims an email-only send landed when the reload has no email',
-    async () => {
-      fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-        posts: [{ id: POST_ID, status: 'published', email: null }],
-      });
-      const { onCompleted } = await renderPublishFlow();
+  it('never claims an email-only send landed when the reload has no email', async () => {
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [{ id: POST_ID, status: 'published', email: null }],
+    });
+    const { onCompleted } = await renderPublishFlow();
 
-      await publishScreen.setting('publish-type').click();
-      await page.getByLabelText('Email only').click();
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect
-        .element(publishScreen.completeNote())
-        .toHaveTextContent('couldn’t confirm the newsletter was sent');
-      await expect
-        .element(publishScreen.complete())
-        .toHaveTextContent('Your post has been created');
-      await expect.element(publishScreen.complete()).not.toHaveTextContent('email has been sent');
-      expect(onCompleted).toHaveBeenCalledWith({
-        postId: POST_ID,
-        isScheduled: false,
-        hasEmail: false,
-      });
-    },
-    SLOW,
-  );
+    await expect
+      .element(publishScreen.completeNote())
+      .toHaveTextContent('couldn’t confirm the newsletter was sent');
+    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('email has been sent');
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: false,
+    });
+  });
 
   it('shows a validation failure in place', async () => {
     const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));
@@ -773,103 +757,88 @@ describe('Publish flow', () => {
       .toHaveTextContent('can no longer be published from here');
   });
 
-  it(
-    'offers a retry when the email fails after a successful publish',
-    async () => {
-      fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
-      const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
-      await renderPublishFlow();
+  it('offers a retry when the email fails after a successful publish', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+    await renderPublishFlow();
 
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
-      await publishScreen.retryEmailButton().click();
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
 
-      await expect.element(publishScreen.complete()).toBeInTheDocument();
-      expect(retryApi.requests).toHaveLength(1);
-    },
-    SLOW,
-  );
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(retryApi.requests).toHaveLength(1);
+  });
 
-  it(
-    'keeps an expired session inside the flow instead of leaving the page',
-    async () => {
-      const { pathname } = window.location;
-      // The recipient count and the email retry are the flow's own requests,
-      // issued over an editor that may still hold unsaved work: a 401 on
-      // either has to surface here rather than navigate.
-      const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
-        status: 401,
-      });
-      fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
-      const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
-        status: 401,
-      });
-      await renderPublishFlow();
+  it('keeps an expired session inside the flow instead of leaving the page', async () => {
+    const { pathname } = window.location;
+    // The recipient count and the email retry are the flow's own requests,
+    // issued over an editor that may still hold unsaved work: a 401 on
+    // either has to surface here rather than navigate.
+    const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
+      status: 401,
+    });
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+      status: 401,
+    });
+    await renderPublishFlow();
 
-      await expect.element(publishScreen.options()).toBeInTheDocument();
-      await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
-      await publishScreen.retryEmailButton().click();
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
 
-      await expect
-        .element(publishScreen.emailError().getByRole('alert'))
-        .toHaveTextContent('You are not authorised to make this request.');
-      expect(retryApi.requests).toHaveLength(1);
-      expect(window.location.pathname).toBe(pathname);
-    },
-    SLOW,
-  );
+    await expect
+      .element(publishScreen.emailError().getByRole('alert'))
+      .toHaveTextContent('You are not authorised to make this request.');
+    expect(retryApi.requests).toHaveLength(1);
+    expect(window.location.pathname).toBe(pathname);
+  });
 
-  it(
-    'stays on the step when the current-user read expires mid-flow',
-    async () => {
-      // Each step mounts its own recipient-count observer, which re-reads the
-      // current user - so the session can expire on a request the flow makes
-      // only because the writer moved between steps.
-      const signedIn = fakeAdminEndpoint('GET', /^\/users\/me\//, {
-        users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }],
-      });
-      await renderPublishFlow();
+  it('does not re-read the current user when the writer moves between steps', async () => {
+    // The providers and every step read the current user; the app keeps that
+    // read fresh for minutes, so a 401 after the first read must never be hit.
+    const signedIn = fakeAdminEndpoint('GET', /^\/users\/me\//, {
+      users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }],
+    });
+    await renderPublishFlow();
 
-      await expect.element(publishScreen.options()).toBeInTheDocument();
-      await expect.poll(() => signedIn.requests.length).toBeGreaterThan(0);
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect.poll(() => signedIn.requests.length).toBeGreaterThan(0);
 
-      // The session expires while the modal sits open.
-      const expired = fakeAdminEndpoint('GET', /^\/users\/me\//, SESSION_EXPIRED, { status: 401 });
-      await publishScreen.continueButton().click();
+    // The session expires while the modal sits open.
+    const expired = fakeAdminEndpoint('GET', /^\/users\/me\//, SESSION_EXPIRED, { status: 401 });
+    await publishScreen.continueButton().click();
 
-      await expect.element(publishScreen.confirm()).toBeInTheDocument();
-      await expect.poll(() => expired.requests.length).toBeGreaterThan(0);
-      await expect.element(publishScreen.confirm()).toBeInTheDocument();
-    },
-    SLOW,
-  );
+    // The confirm step names its audience, so its own count observer has
+    // resolved - off the cached user, without a second read.
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish & send, right now');
+    expect(signedIn.requests).toHaveLength(1);
+    expect(expired.requests).toHaveLength(0);
+  });
 
-  it(
-    'never claims an audience of none when the count expires',
-    async () => {
-      fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
-      const { onCompleted } = await renderPublishFlow();
+  it('never claims an audience of none when the count expires', async () => {
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
+    const { onCompleted } = await renderPublishFlow();
 
-      await publishScreen.setting('publish-type').click();
-      await page.getByLabelText('Email only').click();
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
 
-      // An unreadable count is not a count of zero.
-      await expect
-        .element(publishScreen.complete())
-        .toHaveTextContent('was sent to all subscribers');
-      await expect.element(publishScreen.complete()).not.toHaveTextContent('0 subscribers');
-      expect(onCompleted).toHaveBeenCalledTimes(1);
-    },
-    SLOW,
-  );
+    // An unreadable count is not a count of zero.
+    await expect.element(publishScreen.complete()).toHaveTextContent('was sent to all subscribers');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('0 subscribers');
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+  });
 
   it('keeps the recipient picker usable when its segment queries expire', async () => {
     const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, SESSION_EXPIRED, { status: 401 });
@@ -983,7 +952,7 @@ describe('Update flow', () => {
     const { pathname } = window.location;
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -998,7 +967,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     // An unreadable count drops the number rather than reporting none.
@@ -1015,7 +984,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1024,7 +993,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={onClose}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('has been published');
@@ -1040,19 +1009,17 @@ describe('Update flow', () => {
     const onReverted = vi.fn();
 
     await render(
-      <StrictMode>
-        <TestWrapper>
-          <UpdateFlowModal
-            dispatch={dispatch}
-            post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
-            site={SITE}
-            timezone="Etc/UTC"
-            user={USER}
-            onClose={onClose}
-            onReverted={onReverted}
-          />
-        </TestWrapper>
-      </StrictMode>,
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1067,7 +1034,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1076,7 +1043,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={onClose}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1102,7 +1069,7 @@ describe('Update flow', () => {
     const onReverted = vi.fn();
 
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
@@ -1112,7 +1079,7 @@ describe('Update flow', () => {
           onClose={onClose}
           onReverted={onReverted}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await publishScreen.revertToDraft().click();
@@ -1140,7 +1107,7 @@ describe('Update flow', () => {
     const onClose = vi.fn();
     const onReverted = vi.fn();
     const modal = (post: PublishFlowPost) => (
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={dispatch}
           post={post}
@@ -1150,7 +1117,7 @@ describe('Update flow', () => {
           onClose={onClose}
           onReverted={onReverted}
         />
-      </TestWrapper>
+      </InAppProviders>
     );
     const rendered = await render(
       modal(draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })),
@@ -1181,7 +1148,7 @@ describe('Update flow', () => {
 
   it('names a since-archived newsletter a scheduled post was already sent to', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1198,7 +1165,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1214,7 +1181,7 @@ describe('Update flow', () => {
 
   it('describes the audience for a scheduled email that has not been sent yet', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1229,7 +1196,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1239,7 +1206,7 @@ describe('Update flow', () => {
 
   it('does not claim a scheduled email-only post will be published', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1255,7 +1222,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1268,7 +1235,7 @@ describe('Update flow', () => {
 
   it('does not count the current default newsletter for a missing persisted newsletter', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1284,7 +1251,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1297,7 +1264,7 @@ describe('Update flow', () => {
 
   it('does not replace a missing persisted segment with the current site default', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1312,7 +1279,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect
@@ -1325,7 +1292,7 @@ describe('Update flow', () => {
 
   it('does not claim that a failed published email was sent', async () => {
     await render(
-      <TestWrapper>
+      <InAppProviders>
         <UpdateFlowModal
           dispatch={completesWith(saved('draft'))}
           post={draft({
@@ -1345,7 +1312,7 @@ describe('Update flow', () => {
           user={USER}
           onClose={() => {}}
         />
-      </TestWrapper>,
+      </InAppProviders>,
     );
 
     await expect

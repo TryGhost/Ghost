@@ -11,7 +11,9 @@ import {
   rejectPostsContentApiRestrictedOrderFields,
   rejectTagsContentApiRestrictedFieldsTransformer,
   rejectTagsRestrictedOrderFields,
+  restrictAdminApiQueryOptions,
   validateAdminApiBulkFilterTransformer,
+  validateAdminApiRestrictedOrderFields,
 } from '../../../../../core/server/api/endpoints/utils/api-filter-utils';
 
 describe('API filter utils', function () {
@@ -254,6 +256,131 @@ describe('API filter utils', function () {
           $and: [{ status: 'published' }],
         },
       );
+    });
+
+    it('removes every withheld column, not just password', function () {
+      for (const field of ['token', 'invites.token', 'gift_link_token', 'secret']) {
+        assert.deepEqual(
+          rejectAdminApiRestrictedFieldsTransformer({
+            $and: [{ [field]: { $regex: '^guess' } }, { status: 'sent' }],
+          }),
+          {
+            $and: [{ status: 'sent' }],
+          },
+        );
+      }
+    });
+  });
+
+  describe('validateAdminApiRestrictedOrderFields', function () {
+    it('returns falsy and public order values unchanged', function () {
+      assert.equal(validateAdminApiRestrictedOrderFields(undefined), undefined);
+      assert.equal(validateAdminApiRestrictedOrderFields(''), '');
+      assert.equal(validateAdminApiRestrictedOrderFields('name ASC'), 'name ASC');
+      assert.equal(
+        validateAdminApiRestrictedOrderFields('count.posts desc,name asc'),
+        'count.posts desc,name asc',
+      );
+    });
+
+    it('rejects a restricted field in any clause, direction or table prefix', function () {
+      for (const order of [
+        'password',
+        'password ASC',
+        'users.password DESC',
+        'name asc,password desc',
+        'invites.token ASC',
+        'gift_link_token desc',
+        'secret',
+      ]) {
+        assert.throws(() => validateAdminApiRestrictedOrderFields(order), {
+          name: 'BadRequestError',
+          message: 'Restricted fields cannot be used in order.',
+        });
+      }
+    });
+
+    it('matches restricted field names case-insensitively', function () {
+      assert.throws(() => validateAdminApiRestrictedOrderFields('Users.Password DESC'), {
+        name: 'BadRequestError',
+      });
+    });
+
+    it('rejects suffix aliases that bookshelf-order resolves to a restricted column', function () {
+      for (const order of [
+        'word asc',
+        'ssword desc',
+        'oken asc',
+        'en desc',
+        'ecret asc',
+        'link_token asc',
+        '.token asc',
+        'name asc,word desc',
+      ]) {
+        assert.throws(() => validateAdminApiRestrictedOrderFields(order), {
+          name: 'BadRequestError',
+          message: 'Restricted fields cannot be used in order.',
+        });
+      }
+    });
+
+    it('does not treat public columns as suffix aliases', function () {
+      for (const order of [
+        'id asc',
+        'name asc',
+        'slug desc',
+        'email asc',
+        'status asc',
+        'role_id asc',
+        'expires desc',
+        'created_at desc',
+        'users.name asc',
+      ]) {
+        assert.equal(validateAdminApiRestrictedOrderFields(order), order);
+      }
+    });
+
+    it('rejects a restricted field supplied as a repeated order option', function () {
+      assert.throws(() => validateAdminApiRestrictedOrderFields(['name asc', 'password desc']), {
+        name: 'BadRequestError',
+      });
+    });
+  });
+
+  describe('restrictAdminApiQueryOptions', function () {
+    it('adds the restricted-fields transformer to the query options', function () {
+      const options = restrictAdminApiQueryOptions({ limit: 5 });
+
+      assert.equal(options.limit, 5);
+      assert.deepEqual(
+        options.mongoTransformer({
+          $and: [{ token: 'guess' }, { status: 'sent' }],
+        }),
+        { $and: [{ status: 'sent' }] },
+      );
+    });
+
+    it('chains onto a transformer an input serializer already set', function () {
+      const existing = (input: unknown) => ({ ...(input as object), tagged: true });
+      const options = restrictAdminApiQueryOptions({ mongoTransformer: existing });
+
+      assert.deepEqual(
+        options.mongoTransformer({
+          $and: [{ password: 'guess' }, { status: 'active' }],
+        }),
+        { $and: [{ status: 'active' }], tagged: true },
+      );
+    });
+
+    it('throws before querying when order references a restricted field', function () {
+      assert.throws(() => restrictAdminApiQueryOptions({ order: 'password ASC' }), {
+        name: 'BadRequestError',
+        message: 'Restricted fields cannot be used in order.',
+      });
+    });
+
+    it('leaves a public order clause untouched', function () {
+      assert.equal(restrictAdminApiQueryOptions({ order: 'name ASC' }).order, 'name ASC');
     });
   });
 
