@@ -13,7 +13,7 @@ import {
   LoadingIndicator,
   Textarea,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
 import {
   ADDRESS_PARTS,
@@ -49,10 +49,11 @@ const ErrorMessage: React.FC<{ message?: string }> = ({ message }) => {
   ) : null;
 };
 
-// The address composite: one input per sub-field, paired into a two-column
-// sub-grid. Country is a plain two-letter code input for now; the shared
-// AddressValue schema only shape-checks it, and a proper country select is a
-// follow-up.
+// The address composite: one input per sub-field in a two-column sub-grid. The
+// street lines take a full row, since they are the long parts, and the short
+// parts pair up, the same way Portal's account settings lay an address out.
+// Country is a plain two-letter code input for now; the shared AddressValue
+// schema only shape-checks it, and a proper country select is a follow-up.
 const AddressInput: React.FC<{
   inputId: string;
   value: EditableAddressValue;
@@ -67,7 +68,13 @@ const AddressInput: React.FC<{
         const subfieldId = `${inputId}-${subfield}`;
         const error = errors?.[subfield];
         return (
-          <div key={subfield} className="flex flex-col gap-1.5">
+          <div
+            key={subfield}
+            className={cn(
+              'flex flex-col gap-1.5',
+              (subfield === 'line1' || subfield === 'line2') && 'md:col-span-2',
+            )}
+          >
             <Label htmlFor={subfieldId}>{label}</Label>
             <Input
               aria-invalid={error ? true : undefined}

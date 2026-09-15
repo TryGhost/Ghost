@@ -274,12 +274,38 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    /**
+     * The custom fields the publisher has opened to members, in the publisher's order.
+     *
+     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
+     * a field that does not say what the member may do with it — reads as no fields.
+     */
+    customFields() {
+      const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
+      return makeRequest({
+        url,
+        credentials: 'same-origin',
+      }).then(function (res) {
+        if (!res.ok) {
+          return [];
+        }
+        return res
+          .json()
+          .then((data) =>
+            data.members_metafields.filter((field) =>
+              ['read', 'write'].includes(field.access?.member),
+            ),
+          );
+      });
+    },
+
     update({
       name,
       subscribed,
       newsletters,
       enableCommentNotifications,
       enableUpdatesAndAnnouncements,
+      metafields,
     }) {
       const url = endpointFor({ type: 'members', resource: 'member' });
       const body = {
@@ -287,6 +313,9 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         subscribed,
         newsletters,
       };
+      if (metafields !== undefined) {
+        body.metafields = metafields;
+      }
       if (enableCommentNotifications !== undefined) {
         body.enable_comment_notifications = enableCommentNotifications;
       }
@@ -302,9 +331,11 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         },
         credentials: 'same-origin',
         body: JSON.stringify(body),
-      }).then(function (res) {
+      }).then(async function (res) {
         if (!res.ok) {
-          return null;
+          throw (
+            (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to update member')
+          );
         }
         return res.json();
       });

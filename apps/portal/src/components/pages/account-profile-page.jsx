@@ -7,25 +7,36 @@ import BackButton from '../common/back-button';
 import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
+import { hasCustomFieldsEnabled } from '../../utils/helpers';
+import MemberCustomFields from '../common/member-custom-fields';
+import { changedCustomFields, drawableCustomFields } from '../../utils/custom-fields';
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
 
   constructor(props, context) {
     super(props, context);
-    const { name = '', email = '' } = context.member || {};
+    const { name = '', email = '', metafields } = context.member || {};
     this.state = {
       name,
       email,
+      metafields: metafields?.custom || {},
     };
   }
 
   componentDidMount() {
-    const { member } = this.context;
+    const { member, site, customFields } = this.context;
     if (!member) {
       this.context.doAction('switchPage', {
         page: 'signin',
       });
+      return;
+    }
+    // Loaded with the member, so this only covers a member who signed in after that:
+    // they were not there to be asked about. Guarded on the site having the feature as
+    // well, because without it the answer is always nothing and the asking never ends.
+    if (hasCustomFieldsEnabled({ site }) && customFields === null) {
+      this.context.doAction('loadCustomFields');
     }
   }
 
@@ -51,7 +62,16 @@ export default class AccountProfilePage extends React.Component {
         const hasFormErrors = errors && Object.values(errors).filter((d) => !!d).length > 0;
         if (!hasFormErrors) {
           this.context.doAction('clearPopupNotification');
-          this.context.doAction('updateProfile', { email, name });
+          const metafields = changedCustomFields(
+            this.customFields(),
+            this.state.metafields,
+            this.context.member.metafields?.custom || {},
+          );
+          this.context.doAction('updateProfile', {
+            email,
+            name,
+            ...(metafields ? { metafields } : {}),
+          });
         }
       },
     );
@@ -130,10 +150,23 @@ export default class AccountProfilePage extends React.Component {
   }
 
   handleInputChange(e, field) {
-    const fieldName = field.name;
     this.setState({
-      [fieldName]: e.target.value,
+      [field.name]: e.target.value,
     });
+  }
+
+  handleCustomFieldChange(field, part, value) {
+    this.setState(({ metafields }) => ({
+      metafields: {
+        ...metafields,
+        [field.key]: part ? { ...(metafields[field.key] || {}), [part]: value } : value,
+      },
+    }));
+  }
+
+  /** The opened fields this build can draw. */
+  customFields() {
+    return drawableCustomFields(this.context.customFields);
   }
 
   getInputFields({ state, fieldNames }) {
@@ -173,6 +206,18 @@ export default class AccountProfilePage extends React.Component {
     }
   }
 
+  renderCustomFields() {
+    return (
+      <MemberCustomFields
+        fields={this.customFields()}
+        values={this.state.metafields}
+        errors={this.context.fieldErrors || {}}
+        onChange={(field, part, value) => this.handleCustomFieldChange(field, part, value)}
+        onKeyDown={(e) => this.onKeyDown(e)}
+      />
+    );
+  }
+
   renderProfileData() {
     return (
       <div className="gh-portal-section">
@@ -181,6 +226,7 @@ export default class AccountProfilePage extends React.Component {
           onChange={(e, field) => this.handleInputChange(e, field)}
           onKeyDown={(e, field) => this.onKeyDown(e, field)}
         />
+        {this.renderCustomFields()}
       </div>
     );
   }

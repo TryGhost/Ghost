@@ -13,6 +13,8 @@ import {
   removePortalLinkFromUrl,
   getRefDomain,
 } from './utils/helpers';
+import { subFieldsOf } from '@tryghost/metafield-types/structure';
+import { fetchMemberCustomFields } from './utils/custom-fields';
 import { t } from './utils/i18n';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
@@ -23,6 +25,10 @@ function switchPage({ data, state }) {
   return {
     page: data.page,
     popupNotification: null,
+    // Cleared with the notification, and for the same reason: leaving the page discards
+    // what was typed, so a refusal of it would otherwise come back to mark a value the
+    // member never sees again.
+    fieldErrors: {},
     lastPage: data.lastPage || null,
     pageData: data.pageData || state.pageData,
   };
@@ -52,6 +58,7 @@ function back({ state }) {
   if (state.lastPage) {
     return {
       page: state.lastPage,
+      fieldErrors: {},
     };
   } else {
     return closePopup({ state });
@@ -78,6 +85,7 @@ function closePopup({ state }) {
     lastPage: null,
     pageQuery: '',
     popupNotification: null,
+    fieldErrors: {},
     page: state.page === 'magiclink' ? '' : state.page,
     pageData,
   };
@@ -803,11 +811,12 @@ async function updateMemberEmail({ data, state, api }) {
 
 async function updateMemberData({ data, state, api }) {
   const name = data?.name?.trim();
+  const metafields = data?.metafields;
   const originalName = getMemberName({ member: state.member });
 
-  if (originalName !== name) {
+  if (originalName !== name || metafields) {
     try {
-      const member = await api.member.update({ name });
+      const member = await api.member.update({ name, metafields });
       if (!member) {
         throw new Error('Failed to update member');
       }
@@ -848,13 +857,78 @@ async function refreshMemberData({ state, api }) {
   return null;
 }
 
+/**
+ * The custom fields the publisher has opened to members, loaded once the account
+ * popup opens so the settings page has them before it is drawn.
+ */
+async function loadCustomFields({ state, api }) {
+  const customFields = await fetchMemberCustomFields({
+    api,
+    site: state.site,
+    member: state.member,
+  });
+
+  if (customFields === null) {
+    return null;
+  }
+
+  return { customFields, action: 'loadCustomFields:success' };
+}
+
+/**
+ * Where the site's refusal of a value belongs: on the input that holds it, or, when no
+ * one input does, in the notification.
+ *
+ * A composite is drawn as several inputs under one name, so a refusal that named only
+ * the field would leave a member reading that their address is wrong against six boxes
+ * with nothing saying which. A refusal that names a part is keyed by the name the page
+ * gives that part's input, so the box itself carries the message, the way a malformed
+ * email address does.
+ */
+function refusalOf(error, state, fallback) {
+  // The server names a refused value as `metafields.custom.<key>[.<part>]`.
+  const [qualifier, , key, ...partPath] = error?.property?.split('.') ?? [];
+  if (qualifier !== 'metafields') {
+    return { fieldErrors: {}, message: fallback };
+  }
+
+  const message = chooseBestErrorMessage(error);
+  const field = state.customFields?.find((f) => f.key === key);
+
+  // A refusal of the write rather than of a value — too many fields at once, say — names
+  // no field, and this build may not know the one it does name. Either way there is no
+  // input to mark, and the server's sentence is the only thing that says what happened.
+  if (!field) {
+    return { fieldErrors: {}, message };
+  }
+
+  const part = partPath.join('.');
+
+  // A refusal of the whole of a composite — the field archived, or closed to members,
+  // while the page was open — belongs to no one box, and there is no box named for the
+  // field itself to put it in. It stays in the notification, with the field named:
+  // nothing the member retypes would fix it anyway.
+  if (!part && subFieldsOf(field.type)) {
+    return {
+      fieldErrors: {},
+      message: t('{field}: {message}', { field: field.name, message }),
+    };
+  }
+
+  const name = part ? `custom:${field.key}:${part}` : `custom:${field.key}`;
+  return { fieldErrors: { [name]: message }, message: fallback };
+}
+
 async function updateProfile({ data, state, api }) {
   const [dataUpdate, emailUpdate] = await Promise.all([
     updateMemberData({ data, state, api }),
     updateMemberEmail({ data, state, api }),
   ]);
   if (dataUpdate && emailUpdate) {
-    if (emailUpdate.success) {
+    // Both halves, not just the email: a verification mail going out says nothing about
+    // whether the values saved, and reporting success for a refused write both loses
+    // what the member typed and leaves the page before they could see why.
+    if (emailUpdate.success && dataUpdate.success) {
       return {
         action: 'updateProfile:success',
         ...(dataUpdate.success ? { member: dataUpdate.member } : {}),
@@ -870,11 +944,13 @@ async function updateProfile({ data, state, api }) {
       };
     }
 
-    const message = !dataUpdate.success
-      ? t('Failed to update account data')
-      : t('Failed to send verification email');
+    const refusal = dataUpdate.success
+      ? { fieldErrors: {}, message: t('Failed to send verification email') }
+      : refusalOf(dataUpdate.error, state, t('Failed to update account data'));
+    const message = refusal.message;
     return {
       action: 'updateProfile:failed',
+      fieldErrors: refusal.fieldErrors,
       ...(dataUpdate.success ? { member: dataUpdate.member } : {}),
       popupNotification: createPopupNotification({
         type: 'updateProfile:failed',
@@ -888,11 +964,13 @@ async function updateProfile({ data, state, api }) {
   } else if (dataUpdate) {
     const action = dataUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
     const status = dataUpdate.success ? 'success' : 'error';
-    const message = !dataUpdate.success
-      ? t('Failed to update account details')
-      : t('Account details updated successfully');
+    const refusal = dataUpdate.success
+      ? { fieldErrors: {}, message: t('Account details updated successfully') }
+      : refusalOf(dataUpdate.error, state, t('Failed to update account details'));
+    const message = refusal.message;
     return {
       action,
+      fieldErrors: refusal.fieldErrors,
       ...(dataUpdate.success ? { member: dataUpdate.member } : {}),
       ...(dataUpdate.success ? { page: 'accountHome' } : {}),
       popupNotification: createPopupNotification({
@@ -908,6 +986,7 @@ async function updateProfile({ data, state, api }) {
     const action = emailUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
     const status = emailUpdate.success ? 'success' : 'error';
     let message = '';
+    const fieldErrors = {};
 
     if (emailUpdate.error) {
       message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'));
@@ -917,6 +996,7 @@ async function updateProfile({ data, state, api }) {
 
     return {
       action,
+      fieldErrors,
       ...(emailUpdate.success ? { page: 'accountHome' } : {}),
       popupNotification: createPopupNotification({
         type: action,
@@ -1024,6 +1104,7 @@ const Actions = {
   updateNewsletter,
   updateProfile,
   refreshMemberData,
+  loadCustomFields,
   clearPopupNotification,
   editBilling,
   manageBilling,
