@@ -136,39 +136,64 @@ async function signout({ api, state }) {
   }
 }
 
-async function signin({ data, api, state }) {
-  try {
-    const integrityToken = await api.member.getIntegrityToken();
-    const payload = {
-      ...data,
-      emailType: 'signin',
-      integrityToken,
-      includeOTC: true,
-    };
-    const { otc_ref: otcRef, inboxLinks } = await api.member.sendMagicLink(payload);
-    return {
-      page: 'magiclink',
-      lastPage: 'signin',
-      ...(otcRef ? { otcRef } : {}),
-      inboxLinks,
-      pageData: {
-        ...(state.pageData || {}),
-        email: (data?.email || '').trim(),
-      },
-    };
-  } catch (e) {
-    return {
-      action: 'signin:failed',
-      popupNotification: createPopupNotification({
-        type: 'signin:failed',
-        autoHide: false,
-        closeable: true,
-        state,
-        status: 'error',
-        message: chooseBestErrorMessage(e, t('Failed to log in, please try again')),
-      }),
-    };
-  }
+async function signin({data, api, state}) {
+    try {
+        const integrityToken = await api.member.getIntegrityToken();
+        const payload = {
+            ...data,
+            emailType: 'signin',
+            integrityToken,
+            includeOTC: true
+        };
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink(payload);
+        return {
+            page: 'magiclink',
+            lastPage: 'signin',
+            ...(otcRef ? {otcRef} : {}),
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (data?.email || '').trim()
+            }
+        };
+    } catch (e) {
+        return {
+            action: 'signin:failed',
+            popupNotification: createPopupNotification({
+                type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'))
+            })
+        };
+    }
+}
+
+/**
+ * Redirect the browser to the Ghost ATProto authorize endpoint.
+ * The full OAuth round-trip is handled server-side; Portal re-initialises
+ * normally after the callback sets the session cookie.
+ */
+function signinWithAtproto({data, state}) {
+    const handle = (data?.handle || '').trim();
+    if (!handle) {
+        return {action: 'signinWithAtproto:failed'};
+    }
+
+    try {
+        const siteUrl = new URL(state?.site?.url || window.location.href);
+        // Validate redirect is same-origin before passing it
+        const redirect = siteUrl.origin === new URL(window.location.href).origin
+            ? window.location.href
+            : siteUrl.href;
+
+        const authorizeUrl = new URL(`${siteUrl.origin}/members/atproto/authorize`);
+        authorizeUrl.searchParams.set('handle', handle);
+        authorizeUrl.searchParams.set('redirect', redirect);
+
+        window.location.href = authorizeUrl.toString();
+    } catch (e) {
+        return {action: 'signinWithAtproto:failed'};
+    }
+    return {action: 'signinWithAtproto:running'};
 }
 
 function startSigninOTCFromCustomForm({ data, state }) {
@@ -1013,6 +1038,7 @@ const Actions = {
   back,
   signout,
   signin,
+    signinWithAtproto,
   startSigninOTCFromCustomForm,
   verifyOTC,
   signup,

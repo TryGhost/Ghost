@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "İstediğiniz zaman ücretli aboneliğe devam edin. Kalan hediye süreniz ücretsiz deneme olarak eklenecektir.",
+    "Continue with Bluesky": "",
     "Copied": "Kopyalandı",
     "Copy": "Kopyala",
     "Copy link": "Bağlantıyı kopyala",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "Proton Mail'i aç",
     "Open Yahoo Mail": "Yahoo Mail'i aç",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Kalıcı hata (geri dönme)",
     "Phone number": "Telefon numarası",
     "Plan": "Plan",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Plan yükseltme iptal edildi.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Ücretsiz aboneliğinizi ayarlamak için lütfen {supportAddress} ile iletişime geçin.",
     "Please enter {fieldName}": "Lütfen {fieldName} girin",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Lütfen gerekli alanları doldurunuz",
     "Podcasts": "Podcastler",
     "Re-enable emails": "E-postaları yeniden etkinleştir",
@@ -215,6 +218,7 @@
     "Recommendations": "Tavsiyeler",
     "Redeem your gift": "",
     "Redeeming...": "Kullanıma sunuluyor...",
+    "Redirecting...": "",
     "Renews at {price}.": "{price} karşılığında yenilenir.",
     "Resume subscription": "Aboneliği devam ettir",
     "Retry": "Tekrar dene",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Aboneliğin iptal edildi ve {expiryDate} tarihinde sona erecek.",
     "Your subscription will expire on {expiryDate}": "Aboneliğiniz {expiryDate} tarihinde sona erecek",
     "Your subscription will renew on {renewalDate}": "Aboneliğiniz {renewalDate} tarihinde yenilenecek",
-    "Your subscription will start on {subscriptionStart}": "Aboneliğiniz {subscriptionStart} tarihinde başlayacak"
+    "Your subscription will start on {subscriptionStart}": "Aboneliğiniz {subscriptionStart} tarihinde başlayacak",
+    "your.handle.bsky.social": ""
 }

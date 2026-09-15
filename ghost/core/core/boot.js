@@ -130,6 +130,12 @@ async function initCore({ ghostServer, config }) {
   giftLinksService.init();
   debug('End: Gift Links Service');
 
+  // ATProto auth service (no-op when atproto.enabled is false)
+  debug('Begin: ATProto Auth');
+  const atprotoAuth = require('./server/services/atproto-auth');
+  atprotoAuth.init();
+  debug('End: ATProto Auth');
+
   // Member metafields service: knex-backed, wired once the DB is ready.
   debug('Begin: Member Metafields Service');
   const memberMetafieldsService = require('./server/services/members-metafields');

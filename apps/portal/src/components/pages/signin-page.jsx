@@ -119,41 +119,96 @@ export default class SigninPage extends React.Component {
     );
   }
 
-  renderSignupMessage() {
-    const { brandColor } = this.context;
-    return (
-      <div className="gh-portal-signup-message">
-        <div>{t("Don't have an account?")}</div>
-        <button
-          data-test-button="signup-switch"
-          className="gh-portal-btn gh-portal-btn-link"
-          style={{ color: brandColor }}
-          onClick={() => this.context.doAction('switchPage', { page: 'signup' })}
-        >
-          <span>{t('Sign up')}</span>
-        </button>
-      </div>
-    );
-  }
-
-  renderForm() {
-    const { site } = this.context;
-    const isSignupAvailable = isSignupAllowed({ site }) && hasAvailablePrices({ site });
-
-    if (!isSigninAllowed({ site })) {
-      return (
-        <section>
-          <div className="gh-portal-section">
-            <p
-              className="gh-portal-members-disabled-notification"
-              data-testid="members-disabled-notification-text"
-            >
-              {t('Memberships unavailable, contact the owner for access.')}
-            </p>
-          </div>
-        </section>
-      );
+    renderSignupMessage() {
+        const {brandColor} = this.context;
+        return (
+            <div className='gh-portal-signup-message'>
+                <div>{t('Don\'t have an account?')}</div>
+                <button
+                    data-test-button='signup-switch'
+                    className='gh-portal-btn gh-portal-btn-link'
+                    style={{color: brandColor}}
+                    onClick={() => this.context.doAction('switchPage', {page: 'signup'})}
+                >
+                    <span>{t('Sign up')}</span>
+                </button>
+            </div>
+        );
     }
+
+    handleAtprotoSignin(e) {
+        e.preventDefault();
+        const {handle} = this.state;
+        if (!handle || !handle.trim()) {
+            this.setState({atprotoError: t('Please enter your Bluesky handle')});
+            return;
+        }
+        this.context.doAction('signinWithAtproto', {handle: handle.trim()});
+    }
+
+    renderAtprotoButton() {
+        const {brandColor, action} = this.context;
+        const isRunning = action === 'signinWithAtproto:running';
+        const {atprotoError} = this.state;
+        return (
+            <div className='gh-portal-atproto-signin'>
+                <div className='gh-portal-atproto-handle-row'>
+                    <input
+                        className='gh-portal-input'
+                        data-testid='atproto-handle-input'
+                        type='text'
+                        placeholder={t('your.handle.bsky.social')}
+                        value={this.state.handle || ''}
+                        onChange={e => this.setState({handle: e.target.value, atprotoError: null})}
+                        onKeyDown={e => e.keyCode === 13 && this.handleAtprotoSignin(e)}
+                        autoComplete='username'
+                    />
+                    <ActionButton
+                        dataTestId='atproto-signin'
+                        style={{flexShrink: 0}}
+                        onClick={e => this.handleAtprotoSignin(e)}
+                        disabled={isRunning}
+                        brandColor={brandColor}
+                        label={isRunning ? t('Redirecting...') : t('Continue with Bluesky')}
+                        isRunning={isRunning}
+                    />
+                </div>
+                {atprotoError && <p className='gh-portal-error'>{atprotoError}</p>}
+            </div>
+        );
+    }
+
+    renderForm() {
+        const {site} = this.context;
+        const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
+        const atprotoEnabled = site?.atproto_login_enabled;
+        const atprotoExclusive = site?.atproto_login_exclusive;
+
+        if (!isSigninAllowed({site})) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        <p
+                            className='gh-portal-members-disabled-notification'
+                            data-testid="members-disabled-notification-text"
+                        >
+                            {t('Memberships unavailable, contact the owner for access.')}
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
+        // Exclusive mode: only show Bluesky signin
+        if (atprotoExclusive) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        {this.renderAtprotoButton()}
+                    </div>
+                </section>
+            );
+        }
 
     return (
       <section>
@@ -168,6 +223,12 @@ export default class SigninPage extends React.Component {
           {this.renderSubmitButton()}
           {isSignupAvailable && this.renderSignupMessage()}
         </footer>
+                {atprotoEnabled && (
+                    <div className='gh-portal-atproto-divider'>
+                        <span>{t('Or')}</span>
+                    </div>
+                )}
+                {atprotoEnabled && this.renderAtprotoButton()}
       </section>
     );
   }

@@ -230,7 +230,802 @@ export default class App extends React.Component {
             token: pageData.token,
           });
 
-          if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+    // User for adding trailing margin to prevent layout shift when popup appears
+    getScrollbarWidth() {
+        // Create a temporary div
+        const div = document.createElement('div');
+        div.style.visibility = 'hidden';
+        div.style.overflow = 'scroll'; // forcing scrollbar to appear
+        document.body.appendChild(div);
+
+        // Create an inner div
+        // const inner = document.createElement('div');
+        document.body.appendChild(div);
+
+        // Calculate the width difference
+        const scrollbarWidth = div.offsetWidth - div.clientWidth;
+
+        // Clean up
+        document.body.removeChild(div);
+
+        return scrollbarWidth;
+    }
+
+    /** Setup custom trigger buttons handling on page */
+    setupCustomTriggerButton() {
+        // Handler for custom buttons
+        this.clickHandler = async (event) => {
+            event.preventDefault();
+            const target = event.currentTarget;
+            const pagePath = (target && target.dataset.portal);
+            const linkData = this.getPageFromLinkPath(pagePath);
+            if (!linkData) {
+                return;
+            }
+            const {page, pageQuery, pageData} = linkData;
+            if (this.state.initStatus === 'success') {
+                if (page === 'gift' && !arePaidMembersEnabled({site: this.state.site})) {
+                    this.invalidateGiftRedemptionRequest();
+                    removePortalLinkFromUrl();
+
+                    return;
+                }
+                if (page === 'giftRedemption' && pageData?.token) {
+                    const redemptionRequest = this.startGiftRedemptionRequest(pageData.token);
+                    const giftLinkData = await this.fetchGiftRedemptionData({
+                        token: pageData.token
+                    });
+
+                    if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                        return;
+                    }
+
+                    this.setState(giftLinkData);
+                    return;
+                }
+
+                this.invalidateGiftRedemptionRequest();
+                if (pageQuery && pageQuery !== 'free') {
+                    this.handleSignupQuery({site: this.state.site, pageQuery});
+                } else {
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
+                }
+            }
+        };
+        const customTriggerSelector = '[data-portal]';
+        const popupCloseClass = 'gh-portal-close';
+        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
+        this.customTriggerButtons.forEach((customTriggerButton) => {
+            customTriggerButton.classList.add(popupCloseClass);
+            // Remove any existing event listener
+            customTriggerButton.removeEventListener('click', this.clickHandler);
+            customTriggerButton.addEventListener('click', this.clickHandler);
+        });
+    }
+
+    /** Handle portal class set on custom trigger buttons */
+    handleCustomTriggerClassUpdate() {
+        const popupOpenClass = 'gh-portal-open';
+        const popupCloseClass = 'gh-portal-close';
+        this.customTriggerButtons?.forEach((customButton) => {
+            const elAddClass = this.state.showPopup ? popupOpenClass : popupCloseClass;
+            const elRemoveClass = this.state.showPopup ? popupCloseClass : popupOpenClass;
+            customButton.classList.add(elAddClass);
+            customButton.classList.remove(elRemoveClass);
+        });
+    }
+
+    startGiftRedemptionRequest(token) {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = token;
+
+        return {
+            requestId: this._redemptionRequestId,
+            token
+        };
+    }
+
+    invalidateGiftRedemptionRequest() {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = null;
+    }
+
+    isCurrentGiftRedemptionRequest({requestId, token}) {
+        return this._redemptionRequestId === requestId && this.currentRedemptionToken === token;
+    }
+
+    /** Initialize portal setup on load, fetch data and setup state*/
+    async initSetup() {
+        try {
+            // Fetch data from API, links, preview, dev sources
+            const {site, member, offers, page, showPopup, popupNotification, notification, notificationSequence, lastPage, pageQuery, pageData} = await this.fetchData();
+            const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
+            i18n.changeLanguage(i18nLanguage);
+
+            const state = {
+                site,
+                member,
+                offers,
+                page,
+                lastPage,
+                pageQuery,
+                showPopup,
+                pageData,
+                popupNotification,
+                notification,
+                notificationSequence,
+                dir: i18n.dir() || 'ltr',
+                action: 'init:success',
+                initStatus: 'success',
+                locale: i18nLanguage
+            };
+
+            this.setState(state, () => {
+                this.handleSignupQuery({site, pageQuery, member});
+            });
+
+            // Listen to preview mode changes
+            this.hashHandler = () => {
+                this.updateStateForPreviewLinks();
+            };
+            window.addEventListener('hashchange', this.hashHandler, false);
+
+            // the signup card will ship hidden by default,
+            // so we need to show it if the member is not logged in
+            if (!member) {
+                const formElements = document.querySelectorAll('[data-lexical-signup-form]');
+                if (formElements.length > 0){
+                    formElements.forEach((element) => {
+                        element.style.display = '';
+                    });
+                }
+            }
+
+            this.setupRecommendationButtons();
+
+            // avoid portal links switching to homepage (e.g. from absolute link copy/pasted from Admin)
+            this.transformPortalLinksToRelative();
+        } catch (e) {
+            /* eslint-disable no-console */
+            console.error(`[Portal] Failed to initialize:`, e);
+            /* eslint-enable no-console */
+            this.setState({
+                action: 'init:failed',
+                initStatus: 'failed'
+            });
+        }
+    }
+
+    /** Fetch state data from all available sources */
+    async fetchData() {
+        const {site: apiSiteData, member, offers} = await this.fetchApiData();
+        const {site: devSiteData, ...restDevData} = this.fetchDevData();
+        const linkData = await this.fetchLinkData(apiSiteData, member);
+        const {site: linkSiteData, ...restLinkData} = linkData?.staleGiftRedemptionRequest ? {} : linkData;
+        const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
+        const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
+        let page = '';
+        return {
+            member,
+            offers,
+            page,
+            site: {
+                ...apiSiteData,
+                ...linkSiteData,
+                ...previewSiteData,
+                ...notificationSiteData,
+                ...devSiteData,
+                plans: {
+                    ...(devSiteData || {}).plans,
+                    ...(apiSiteData || {}).plans,
+                    ...(previewSiteData || {}).plans
+                }
+            },
+            ...restDevData,
+            ...restLinkData,
+            ...restNotificationData,
+            ...restPreviewData
+        };
+    }
+
+    /** Fetch state for Dev mode */
+    fetchDevData() {
+        // Setup custom dev mode data from fixtures
+        if (hasMode(['dev']) && !this.state.customSiteUrl) {
+            return DEV_MODE_DATA;
+        }
+
+        // Setup test mode data
+        if (hasMode(['test'])) {
+            return {
+                showPopup: this.props.showPopup !== undefined ? this.props.showPopup : true
+            };
+        }
+        return {};
+    }
+
+    /**Fetch state from Offer Preview mode query string*/
+    fetchOfferQueryStrData(qs = '') {
+        const qsParams = new URLSearchParams(qs);
+        const data = {};
+        // Handle the query params key/value pairs
+        for (let pair of qsParams.entries()) {
+            const key = pair[0];
+            const value = decodeURIComponent(pair[1]);
+            if (key === 'name') {
+                data.name = value || '';
+            } else if (key === 'code') {
+                data.code = value || '';
+            } else if (key === 'display_title') {
+                data.display_title = value || '';
+            } else if (key === 'display_description') {
+                data.display_description = value || '';
+            } else if (key === 'type') {
+                data.type = value || '';
+            } else if (key === 'cadence') {
+                data.cadence = value || '';
+            } else if (key === 'duration') {
+                data.duration = value || '';
+            } else if (key === 'duration_in_months' && !isNaN(Number(value))) {
+                data.duration_in_months = Number(value);
+            } else if (key === 'amount' && !isNaN(Number(value))) {
+                data.amount = Number(value);
+            } else if (key === 'currency') {
+                data.currency = value || '';
+            } else if (key === 'status') {
+                data.status = value || '';
+            } else if (key === 'tier_id') {
+                data.tier = {
+                    id: value || Fixtures.offer.tier.id
+                };
+            } else if (key === 'redemption_type') {
+                data.redemption_type = value || 'signup';
+            }
+        }
+
+        if (data.redemption_type === 'retention') {
+            const previewSubscriptionId = Fixtures.member.preview?.subscriptions?.[0]?.id;
+
+            return {
+                page: 'accountPlan',
+                offers: [data],
+                pageData: {
+                    action: 'cancel',
+                    subscriptionId: previewSubscriptionId
+                }
+            };
+        }
+
+        return {
+            page: 'offer',
+            pageData: data
+        };
+    }
+
+    /** Fetch state from Preview mode Query String */
+    fetchQueryStrData(qs = '') {
+        const qsParams = new URLSearchParams(qs);
+        const data = {
+            site: {
+                plans: {}
+            }
+        };
+
+        const allowedPlans = [];
+        let portalPrices;
+        let portalProducts = null;
+        let monthlyPrice, yearlyPrice, currency;
+        // Handle the query params key/value pairs
+        for (let pair of qsParams.entries()) {
+            const key = pair[0];
+
+            // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
+            const value = decodeURIComponent(pair[1]);
+
+            if (key === 'button') {
+                data.site.portal_button = JSON.parse(value);
+            } else if (key === 'name') {
+                data.site.portal_name = JSON.parse(value);
+            } else if (key === 'isFree' && JSON.parse(value)) {
+                allowedPlans.push('free');
+            } else if (key === 'isMonthly' && JSON.parse(value)) {
+                allowedPlans.push('monthly');
+            } else if (key === 'isYearly' && JSON.parse(value)) {
+                allowedPlans.push('yearly');
+            } else if (key === 'portalPrices') {
+                portalPrices = value ? value.split(',') : [];
+            } else if (key === 'portalProducts') {
+                portalProducts = value ? value.split(',') : [];
+            } else if (key === 'page' && value) {
+                data.page = value;
+            } else if (key === 'accentColor' && (value === '' || value)) {
+                data.site.accent_color = value;
+            } else if (key === 'buttonIcon' && value) {
+                data.site.portal_button_icon = value;
+            } else if (key === 'signupButtonText') {
+                data.site.portal_button_signup_text = value || '';
+            } else if (key === 'signupTermsHtml') {
+                data.site.portal_signup_terms_html = value || '';
+            } else if (key === 'signupCheckboxRequired') {
+                data.site.portal_signup_checkbox_required = JSON.parse(value);
+            } else if (key === 'buttonStyle' && value) {
+                data.site.portal_button_style = value;
+            } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
+                data.site.plans.monthly = Number(value);
+                monthlyPrice = Number(value);
+            } else if (key === 'yearlyPrice' && !isNaN(Number(value))) {
+                data.site.plans.yearly = Number(value);
+                yearlyPrice = Number(value);
+            } else if (key === 'currency' && value) {
+                const currencyValue = value.toUpperCase();
+                data.site.plans.currency = currencyValue;
+                data.site.plans.currency_symbol = getCurrencySymbol(currencyValue);
+                currency = currencyValue;
+            } else if (key === 'disableBackground') {
+                data.site.disableBackground = JSON.parse(value);
+            } else if (key === 'previewTheme') {
+                data.site.preview_theme = value;
+            } else if (key === 'membersSignupAccess' && value) {
+                data.site.members_signup_access = value;
+            } else if (key === 'portalDefaultPlan' && value) {
+                data.site.portal_default_plan = value;
+            } else if (key === 'transistorPortalSettings' && value) {
+                data.site.transistor_portal_settings = JSON.parse(value);
+            }
+        }
+        data.site.portal_plans = allowedPlans;
+        data.site.portal_products = portalProducts;
+        if (portalPrices) {
+            data.site.portal_plans = portalPrices;
+        } else if (monthlyPrice && yearlyPrice && currency) {
+            data.site.prices = [
+                {
+                    id: 'monthly',
+                    stripe_price_id: 'dummy_stripe_monthly',
+                    stripe_product_id: 'dummy_stripe_product',
+                    active: 1,
+                    nickname: 'Monthly',
+                    currency: currency,
+                    amount: monthlyPrice,
+                    type: 'recurring',
+                    interval: 'month'
+                },
+                {
+                    id: 'yearly',
+                    stripe_price_id: 'dummy_stripe_yearly',
+                    stripe_product_id: 'dummy_stripe_product',
+                    active: 1,
+                    nickname: 'Yearly',
+                    currency: currency,
+                    amount: yearlyPrice,
+                    type: 'recurring',
+                    interval: 'year'
+                }
+            ];
+        }
+
+        return data;
+    }
+
+    /**Fetch state data for billing notification */
+    fetchNotificationData() {
+        const {type, status, duration, autoHide, closeable} = NotificationParser({billingOnly: true}) || {};
+        if (['stripe:billing-update'].includes(type)) {
+            if (status === 'success') {
+                const popupNotification = createPopupNotification({
+                    type, status, duration, closeable, autoHide, state: this.state,
+                    message: status === 'success' ? 'Billing info updated successfully' : ''
+                });
+                return {
+                    showPopup: true,
+                    popupNotification
+                };
+            }
+            return {
+                showPopup: true
+            };
+        }
+        return {};
+    }
+
+    /** Fetch state from Portal Links */
+    async fetchGiftRedemptionData({token}) {
+        try {
+            const response = await this.GhostApi.gift.fetchRedemptionData({token});
+
+            return {
+                showPopup: true,
+                notification: null,
+                page: 'giftRedemption',
+                pageData: {
+                    token,
+                    gift: response?.gifts?.[0] || null
+                }
+            };
+        } catch (error) {
+            removePortalLinkFromUrl();
+
+            const notification = createNotification({
+                type: 'giftRedemption:failed',
+                status: 'error',
+                autoHide: false,
+                closeable: true,
+                state: this.state,
+                message: getGiftRedemptionErrorMessage(error)
+            });
+
+            return {
+                showPopup: false,
+                pageData: null,
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+    }
+
+    async fetchLinkData(site, member) {
+        this.invalidateGiftRedemptionRequest();
+
+        const qParams = new URLSearchParams(window.location.search);
+
+        if (qParams.get('stripe') === 'gift-purchase-success') {
+            const token = qParams.get('gift_token');
+            const tierId = qParams.get('gift_tier');
+            const cadence = qParams.get('gift_cadence');
+            const duration = Number(qParams.get('gift_duration'));
+            const deliveryMethod = qParams.get('gift_delivery');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration', 'gift_delivery']);
+            if (token) {
+                return {
+                    showPopup: true,
+                    page: 'giftSuccess',
+                    pageData: {
+                        token,
+                        tierId,
+                        cadence,
+                        duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
+                        deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link'
+                    }
+                };
+            }
+        }
+
+        if (qParams.get('action') === 'unsubscribe') {
+            // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
+            if (qParams.get('key') && qParams.get('uuid')) {
+                return {
+                    showPopup: true,
+                    page: 'unsubscribe',
+                    pageData: {
+                        uuid: qParams.get('uuid'),
+                        key: qParams.get('key'),
+                        newsletterUuid: qParams.get('newsletter'),
+                        comments: qParams.get('comments'),
+                        updatesAndAnnouncements: qParams.get('updatesandannouncements')
+                    }
+                };
+            } else { // any malformed unsubscribe links should simply go to email prefs
+                return {
+                    showPopup: true,
+                    page: 'accountEmail',
+                    pageData: {
+                        newsletterUuid: qParams.get('newsletter'),
+                        action: 'unsubscribe',
+                        redirect: site.url + '#/portal/account/newsletters'
+                    }
+                };
+            }
+        }
+
+        if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
+            // After a successful signup, we show the recommendations if they are enabled
+            return {
+                showPopup: true,
+                page: 'recommendations',
+                pageData: {
+                    signup: true
+                }
+            };
+        }
+
+        const [path, hashQueryString] = window.location.hash.substr(1).split('?');
+        const hashQuery = new URLSearchParams(hashQueryString ?? '');
+        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
+        const offersRegex = /^offers\/(\w+?)\/?$/;
+        const giftRedemptionRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
+        const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const shareRegex = /^\/share\/?$/;
+        const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
+
+        if (path && feedbackRegex.test(path)) {
+            const [, postId, scoreString] = path.match(feedbackRegex);
+            const score = parseInt(scoreString);
+            if (score === 1 || score === 0) {
+                // if logged in, submit feedback
+                if (member || (hashQuery.get('uuid') && hashQuery.get('key'))) {
+                    return {
+                        showPopup: true,
+                        page: 'feedback',
+                        pageData: {
+                            uuid: hashQuery.get('uuid'),
+                            key: hashQuery.get('key'),
+                            postId,
+                            score
+                        }
+                    };
+                } else {
+                    return {
+                        showPopup: true,
+                        page: 'signin',
+                        pageData: {
+                            redirect: site.url + `#/feedback/${postId}/${score}/`
+                        }
+                    };
+                }
+            }
+        }
+        if (path && giftRedemptionRegex.test(path)) {
+            const [, token] = path.match(giftRedemptionRegex);
+            const decodedToken = safeDecodeURIComponent(token);
+            if (!decodedToken) {
+                return {};
+            }
+
+            const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
+            const giftLinkData = await this.fetchGiftRedemptionData({
+                token: decodedToken
+            });
+
+            if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                return staleGiftRedemptionRequestResult;
+            }
+
+            return giftLinkData;
+        }
+        if (path && shareRegex.test(path)) {
+            return {
+                showPopup: true,
+                page: 'share'
+            };
+        }
+
+        if (path && linkRegex.test(path)) {
+            const [,pagePath] = path.match(linkRegex);
+
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
+
+            // Handle ATProto email collection page with pending token from query string
+            if (page === 'atprotoNeedsEmail' && hashQuery.has('pending')) {
+                return {
+                    showPopup: true,
+                    page: 'atprotoNeedsEmail',
+                    pageData: {
+                        pending: hashQuery.get('pending')
+                    }
+                };
+            }
+
+            // If user is not logged in and trying to access an account page,
+            // redirect to signin with a redirect URL back to the intended page
+            if (!member && page && isAccountPage({page})) {
+                return {
+                    showPopup: true,
+                    page: 'signin',
+                    pageData: {
+                        redirect: site.url + `#/portal/${pagePath}/`
+                    }
+                };
+            }
+
+            if (page === 'gift' && !arePaidMembersEnabled({site})) {
+                removePortalLinkFromUrl();
+
+                return {};
+            }
+
+            const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
+            const showPopup = (
+                ['monthly', 'yearly'].includes(pageQuery) ||
+                productMonthlyPriceQueryRegex.test(pageQuery) ||
+                productYearlyPriceQueryRegex.test(pageQuery) ||
+                offersRegex.test(pageQuery)
+            ) ? false : true;
+
+            // External callers (e.g. comments-ui) can request a post-sign-in redirect
+            // via #/portal/signin?redirect=<url>. Passed through unvalidated — the
+            // members middleware only honours same-site redirects at magic-link exchange.
+            const requestedRedirect = hashQuery.get('redirect');
+            const resolvedPageData = (page === 'signin' && requestedRedirect)
+                ? {...(pageData || {}), redirect: requestedRedirect}
+                : pageData;
+
+            return {
+                showPopup,
+                ...(page ? {page} : {}),
+                ...(pageQuery ? {pageQuery} : {}),
+                ...(resolvedPageData ? {pageData: resolvedPageData} : {}),
+                ...(lastPage ? {lastPage} : {})
+            };
+        }
+        return {};
+    }
+
+    /** Fetch state from Preview mode */
+    fetchPreviewData() {
+        const [, qs] = window.location.hash.substr(1).split('?');
+        if (hasMode(['preview'])) {
+            let data = {};
+            try {
+                if (hasMode(['offerPreview'])) {
+                    data = this.fetchOfferQueryStrData(qs);
+                } else {
+                    data = this.fetchQueryStrData(qs);
+                }
+            } catch (error) {
+                Sentry.captureException(error);
+                return {};
+            }
+            return {
+                ...data,
+                showPopup: true
+            };
+        }
+        return {};
+    }
+
+    /* Get the accent color from data attributes */
+    getColorOverride() {
+        const scriptTag = document.querySelector('script[data-ghost]');
+        if (scriptTag && scriptTag.dataset.accentColor) {
+            return scriptTag.dataset.accentColor;
+        }
+        return false;
+    }
+
+    /** Fetch site, member session data and member offers with Ghost Apis  */
+    async fetchApiData() {
+        const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
+        try {
+            this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
+            const {site, member, offers} = await this.GhostApi.init();
+
+            const colorOverride = this.getColorOverride();
+            if (colorOverride) {
+                site.accent_color = colorOverride;
+            }
+
+            this.setupFirstPromoter({site, member});
+            this.setupSentry({site});
+            return {site, member, offers};
+        } catch (e) {
+            if (hasMode(['dev', 'test'], {customSiteUrl})) {
+                return {};
+            }
+
+            throw e;
+        }
+    }
+
+    /** Setup Sentry */
+    setupSentry({site}) {
+        if (hasMode(['test'])) {
+            return null;
+        }
+        const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
+        // eslint-disable-next-line no-undef
+        const appVersion = REACT_APP_VERSION || portalVersion;
+        const releaseTag = `portal@${appVersion}|ghost@${ghostVersion}`;
+        if (portalSentry && portalSentry.dsn) {
+            Sentry.init({
+                dsn: portalSentry.dsn,
+                environment: portalSentry.env || 'development',
+                release: releaseTag,
+                beforeSend: (event) => {
+                    if (isSentryEventAllowed({event})) {
+                        return event;
+                    }
+                    return null;
+                },
+                allowUrls: [
+                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/portal/
+                ]
+            });
+        }
+    }
+
+    /** Setup Firstpromoter script */
+    setupFirstPromoter({site, member}) {
+        if (hasMode(['test'])) {
+            return null;
+        }
+        const firstPromoterId = getFirstpromoterId({site});
+        let siteDomain = getSiteDomain({site});
+        // Replace any leading subdomain and prefix the siteDomain with
+        // a `.` to allow the FPROM cookie to be accessible across all subdomains
+        // or the root.
+        siteDomain = siteDomain?.replace(/^(\S*\.)?(\S*\.\S*)$/i, '.$2');
+
+        if (firstPromoterId && siteDomain) {
+            const fpScript = document.createElement('script');
+            fpScript.type = 'text/javascript';
+            fpScript.async = !0;
+            fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
+            fpScript.onload = fpScript.onreadystatechange = function () {
+                let _t = this.readyState;
+                if (!_t || 'complete' === _t || 'loaded' === _t) {
+                    try {
+                        window.$FPROM.init(firstPromoterId, siteDomain);
+                        if (isRecentMember({member})) {
+                            const email = member.email;
+                            const uid = member.uuid;
+                            if (window.$FPROM) {
+                                window.$FPROM.trackSignup({email: email, uid: uid});
+                            } else {
+                                const _fprom = window._fprom || [];
+                                window._fprom = _fprom;
+                                _fprom.push(['event', 'signup']);
+                                _fprom.push(['email', email]);
+                                _fprom.push(['uid', uid]);
+                            }
+                        }
+                    } catch (err) {
+                        // Log FP tracking failure
+                    }
+                }
+            };
+            const firstScript = document.getElementsByTagName('script')[0];
+            firstScript.parentNode.insertBefore(fpScript, firstScript);
+        }
+    }
+
+    /** Handle actions from across App and update App state */
+    async dispatchAction(action, data) {
+        clearTimeout(this.timeoutId);
+        this.setState({
+            action: `${action}:running`,
+            actionErrorMessage: null
+        });
+        try {
+            const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi});
+            this.setState(updatedState);
+
+            /** Reset action state after short timeout if not failed*/
+            if (updatedState && updatedState.action && !updatedState.action.includes(':failed')) {
+                this.timeoutId = setTimeout(() => {
+                    this.setState({
+                        action: ''
+                    });
+                }, 2000);
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`[Portal] Failed to dispatch action: ${action}`, error);
+
+            if (data && data.throwErrors) {
+                throw error;
+            }
+
+            const popupNotification = createPopupNotification({
+                type: `${action}:failed`,
+                autoHide: true, closeable: true, status: 'error', state: this.state,
+                meta: {
+                    error
+                }
+            });
+            this.setState({
+                action: `${action}:failed`,
+                actionErrorMessage: chooseBestErrorMessage(error, t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')),
+                popupNotification
+            });
+        }
+    }
+
+    /**Handle state update for preview url and Portal Link changes */
+    async updateStateForPreviewLinks() {
+        const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
+        const linkData = await this.fetchLinkData(this.state.site, this.state.member);
+        if (linkData?.staleGiftRedemptionRequest) {
             return;
           }
 
@@ -1285,6 +2080,10 @@ export default class App extends React.Component {
         pageData: {
           direct: true,
         },
+      };
+    } else if (path === 'atprotoNeedsEmail') {
+      return {
+        page: 'atprotoNeedsEmail',
       };
     }
 

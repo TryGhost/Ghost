@@ -95,6 +95,7 @@ export interface GhostConfig {
   // limit is just configuration and a test wanting a new one should not also need a new
   // field here.
   [key: `hostSettings__${string}`]: string | undefined;
+  [key: `atproto__${string}`]: string | undefined;
 }
 
 export interface GhostInstanceFixture {

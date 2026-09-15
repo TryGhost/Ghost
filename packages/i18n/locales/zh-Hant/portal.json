@@ -75,6 +75,7 @@
     "Continue to delivery details": "繼續填寫送達資訊",
     "Continue to payment": "繼續進行付款",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "您可以隨時續訂付費方案。您剩餘的贈送期間將轉換為免費試用天數。",
+    "Continue with Bluesky": "",
     "Copied": "已複製",
     "Copy": "複製",
     "Copy link": "複製連結",
@@ -198,7 +199,12 @@
     "Open Outlook": "開啟 Outlook",
     "Open Proton Mail": "開啟 Proton Mail",
     "Open Yahoo Mail": "開啟 Yahoo Mail",
+<<<<<<< HEAD
     "Optional message": "自訂訊息（選填）",
+=======
+    "Optional message": "",
+    "Or": "",
+>>>>>>> 85d4bd0008 (First draft of implementing login with ATProto)
     "Permanent failure (bounce)": "永久錯誤 (郵件遭到退回)",
     "Phone number": "電話號碼",
     "Plan": "訂閱方案",
@@ -206,6 +212,7 @@
     "Plan upgrade was cancelled.": "訂閱升級已取消。",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "請聯絡 {supportAddress} 來調整你的免費的訂閱。",
     "Please enter {fieldName}": "請輸入{fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "請填寫必填項目",
     "Podcasts": "播客",
     "Re-enable emails": "重新啟用電子郵件",
@@ -214,6 +221,7 @@
     "Recommendations": "所有推薦",
     "Redeem your gift": "兌換您的禮物",
     "Redeeming...": "正在兌換...",
+    "Redirecting...": "",
     "Renews at {price}.": "以 {price} 的價格續費。",
     "Resume subscription": "恢復訂閱",
     "Retry": "重試",
@@ -338,5 +346,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "您的訂閱已取消，將於 {expiryDate} 到期。",
     "Your subscription will expire on {expiryDate}": "您的訂閱將於 {expiryDate} 到期",
     "Your subscription will renew on {renewalDate}": "您的訂閱將於 {renewalDate} 自動續訂",
-    "Your subscription will start on {subscriptionStart}": "您的訂閱將於 {subscriptionStart} 開始"
+    "Your subscription will start on {subscriptionStart}": "您的訂閱將於 {subscriptionStart} 開始",
+    "your.handle.bsky.social": ""
 }

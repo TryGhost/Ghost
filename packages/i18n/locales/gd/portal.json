@@ -78,6 +78,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -202,6 +203,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Fàilleadh maireannach",
     "Phone number": "Àireamh-fòn",
     "Plan": "Plana",
@@ -209,6 +211,7 @@
     "Plan upgrade was cancelled.": "Chaidh an t-àrdachadh a chur dheth.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Leig fios gu {supportAddress} gus am fo-sgrìobhadh an-asgaidh a atharrachadh.",
     "Please enter {fieldName}": "Lìon a-steach an roinn seo: {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Lìon a-steach na raointean riatanach",
     "Podcasts": "",
     "Re-enable emails": "Cuir an comas puist-d a-rithist",
@@ -217,6 +220,7 @@
     "Recommendations": "Mòlaidhean",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Prìs ath-nuadhachaidh: {price}",
     "Resume subscription": "",
     "Retry": "Feuch a-rithist",
@@ -347,5 +351,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Falbhaidh an ùine air am fo-sgrìobhadh agad: {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Ath-nuadhaichidh am fo-sgrìobhadh agad: {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Tòisichidh am fo-sgrìobhadh agad: {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Tòisichidh am fo-sgrìobhadh agad: {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

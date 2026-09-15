@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "هر زمان که یک اشتراک ویژه تهیه کنید. مدت زمان باقی\u200cمانده دوره هدیه شما به عنوان دوره آزمایشی رایگان به اشتراکتان اضافه خواهد شد.",
+    "Continue with Bluesky": "",
     "Copied": "کپی شد",
     "Copy": "کپی",
     "Copy link": "کپی پیوند",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "باز کردن Proton Mail",
     "Open Yahoo Mail": "باز کردن Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "خطای دائمی (bounce)",
     "Phone number": "شماره تلفن",
     "Plan": "بسته",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "ارتقای بسته لغو شد.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "لطفاً برای تنظیم اشتراک رایگان خود با {supportAddress} تماس بگیرید.",
     "Please enter {fieldName}": "لطفاً {fieldName} را وارد کنید",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "لطفاً فیلدهای الزامی را پر کنید",
     "Podcasts": "پادکست\u200cها",
     "Re-enable emails": "فعال\u200cسازی مجدد ایمیل\u200cها",
@@ -215,6 +218,7 @@
     "Recommendations": "پیشنهادها",
     "Redeem your gift": "",
     "Redeeming...": "در حال فعال\u200cسازی...",
+    "Redirecting...": "",
     "Renews at {price}.": "با قیمت {price} تمدید می\u200cشود.",
     "Resume subscription": "ازسرگیری اشتراک",
     "Retry": "تلاش دوباره",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "اشتراک شما لغو شده است و در {expiryDate} منقضی خواهد شد.",
     "Your subscription will expire on {expiryDate}": "اشتراک شما در {expiryDate} منقضی خواهد شد",
     "Your subscription will renew on {renewalDate}": "اشتراک شما در {renewalDate} تمدید خواهد شد",
-    "Your subscription will start on {subscriptionStart}": "اشتراک شما از {subscriptionStart} شروع خواهد شد"
+    "Your subscription will start on {subscriptionStart}": "اشتراک شما از {subscriptionStart} شروع خواهد شد",
+    "your.handle.bsky.social": ""
 }

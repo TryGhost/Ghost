@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Pastāvīga kļūme (bounce)",
     "Phone number": "Tālruņa numurs",
     "Plan": "Plāns",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "Plāna jaunināšana tika atcelta.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Lūdzu, sazinieties ar {supportAddress}, lai pielāgotu savu bezmaksas abonementu.",
     "Please enter {fieldName}": "Lūdzu, ievadiet {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Lūdzu, aizpildiet obligātos laukus",
     "Podcasts": "",
     "Re-enable emails": "Atkārtoti iespējot e-pastus",
@@ -216,6 +219,7 @@
     "Recommendations": "Ieteikumi",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Atjauno par {price}",
     "Resume subscription": "",
     "Retry": "Mēģiniet vēlreiz",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Jūsu abonementa derīguma termiņš beigsies {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Jūsu abonements tiks atjaunots šādā datumā: {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Jūsu abonements sāksies šādā datumā: {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Jūsu abonements sāksies šādā datumā: {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

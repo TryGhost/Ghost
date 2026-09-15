@@ -15,6 +15,7 @@ const accountRoutes = require('./account');
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
 const corsMiddleware = require('./middleware/cors');
+const {exclusiveModeGuard} = require('../atproto/app');
 
 /**
  * @returns {import('express').Application}
@@ -83,6 +84,7 @@ module.exports = function setupMembersApp() {
 
   membersApp.post(
     '/api/send-magic-link',
+    exclusiveModeGuard,
     bodyParser.json(),
     middleware.verifyIntegrityToken,
     // Prevent brute forcing email addresses (user enumeration)
@@ -96,6 +98,7 @@ module.exports = function setupMembersApp() {
   );
   membersApp.post(
     '/api/verify-otc',
+    exclusiveModeGuard,
     bodyParser.json(),
     middleware.verifyIntegrityToken,
     shared.middleware.brute.otcVerificationEnumeration,

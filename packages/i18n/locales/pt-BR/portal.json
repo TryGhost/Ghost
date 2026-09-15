@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Continue com uma assinatura paga quando quiser. O período restante do seu presente será adicionado como teste grátis.",
+    "Continue with Bluesky": "",
     "Copied": "Copiado",
     "Copy": "Copiar",
     "Copy link": "Copiar link",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "Abrir Proton Mail",
     "Open Yahoo Mail": "Abrir Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Falha permanente (bounce)",
     "Phone number": "Número de telefone",
     "Plan": "Plano",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "O upgrade de plano foi cancelado.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Entre em contato com {supportAddress} para ajustar sua assinatura de cortesia.",
     "Please enter {fieldName}": "Por favor, insira {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Por favor, preencha os campos obrigatórios",
     "Podcasts": "Podcasts",
     "Re-enable emails": "Reativar e-mails",
@@ -216,6 +219,7 @@
     "Recommendations": "Recomendações",
     "Redeem your gift": "",
     "Redeeming...": "Resgatando...",
+    "Redirecting...": "",
     "Renews at {price}.": "Renova por {price}",
     "Resume subscription": "Retomar assinatura",
     "Retry": "Tentar novamente",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Sua assinatura foi cancelada e expirará em {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Sua assinatura expirará em {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Sua assinatura será renovada em {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Sua assinatura começará em {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Sua assinatura começará em {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

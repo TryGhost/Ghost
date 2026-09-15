@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "",
     "Phone number": "",
     "Plan": "",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "",
     "Podcasts": "",
     "Re-enable emails": "Reŝalti retpoŝtojn",
@@ -215,6 +218,7 @@
     "Recommendations": "",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "",
     "Resume subscription": "",
     "Retry": "Reprovu",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "",
     "Your subscription will renew on {renewalDate}": "",
-    "Your subscription will start on {subscriptionStart}": ""
+    "Your subscription will start on {subscriptionStart}": "",
+    "your.handle.bsky.social": ""
 }

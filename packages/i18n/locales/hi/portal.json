@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "स्थायी विफलता (बाउंस)",
     "Phone number": "फ़ोन नंबर",
     "Plan": "योजना",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "योजना उन्नयन रद्द कर दिया गया।",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "अपनी नि:शुल्क सदस्यता को समायोजित करने के लिए कृपया {supportAddress} से संपर्क करें।",
     "Please enter {fieldName}": "कृपया {fieldName} दर्ज करें",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "कृपया आवश्यक फ़ील्ड भरें",
     "Podcasts": "",
     "Re-enable emails": "ईमेल पुनः सक्षम करें",
@@ -215,6 +218,7 @@
     "Recommendations": "सिफारिशें",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price} पर नवीनीकृत होता है।",
     "Resume subscription": "",
     "Retry": "पुनः प्रयास करें",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "आपकी सदस्यता {expiryDate} को समाप्त हो जाएगी",
     "Your subscription will renew on {renewalDate}": "आपकी सदस्यता {renewalDate} को नवीनीकृत होगी",
-    "Your subscription will start on {subscriptionStart}": "आपकी सदस्यता {subscriptionStart} को शुरू होगी"
+    "Your subscription will start on {subscriptionStart}": "आपकी सदस्यता {subscriptionStart} को शुरू होगी",
+    "your.handle.bsky.social": ""
 }

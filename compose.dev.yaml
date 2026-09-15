@@ -117,6 +117,9 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
+      atproto__enabled: true
+      url: https://elf-subpar-antiviral.ngrok-free.dev
+      GHOST_URL: https://elf-subpar-antiviral.ngrok-free.dev
     depends_on:
       mysql:
         condition: service_healthy

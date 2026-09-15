@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Deshtim i perhershem (kercim)",
     "Phone number": "",
     "Plan": "Plani",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Përmirësimi i planit u anullua.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Ju lutem plotesoni fushat e kerkuara",
     "Podcasts": "",
     "Re-enable emails": "Ri-aktivizo emailet",
@@ -215,6 +218,7 @@
     "Recommendations": "",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Rinovohet per {price} ",
     "Resume subscription": "",
     "Retry": "Provo perseri",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Abonimi juaj do te skadoje ne {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Abonimi juaj to te rinovohet ne {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Abonimi juaj do te filloje ne {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Abonimi juaj do te filloje ne {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

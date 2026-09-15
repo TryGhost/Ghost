@@ -78,6 +78,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -202,6 +203,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Trvalá chyba (bounce)",
     "Phone number": "Telefónne číslo",
     "Plan": "Plán",
@@ -209,6 +211,7 @@
     "Plan upgrade was cancelled.": "Upgrade plánu bol zrušený",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Prosím kontaktujte {supportAddress} pre upravenie vášho bezplatného predplatného.",
     "Please enter {fieldName}": "Prosím zadajte {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Prosím vyplňte požadované polia.",
     "Podcasts": "",
     "Re-enable emails": "Obnoviť emaily",
@@ -217,6 +220,7 @@
     "Recommendations": "Odporúčania",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Obnoviť za {price}.",
     "Resume subscription": "",
     "Retry": "Skúsiť znovu",
@@ -347,5 +351,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Váše predplatné expiruje {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Váše predplatné bude obnovené {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Váše predplatné začína {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Váše predplatné začína {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

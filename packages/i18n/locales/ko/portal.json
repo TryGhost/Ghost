@@ -75,6 +75,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "언제든지 유료 구독으로 전환할 수 있어요. 남은 선물 기간은 무료 체험으로 추가돼요.",
+    "Continue with Bluesky": "",
     "Copied": "복사됨",
     "Copy": "복사",
     "Copy link": "링크 복사",
@@ -199,6 +200,7 @@
     "Open Proton Mail": "Proton Mail 열기",
     "Open Yahoo Mail": "Yahoo Mail 열기",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "영구적인 실패(바운스)",
     "Phone number": "전화번호",
     "Plan": "플랜",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "플랜 업그레이드가 취소되었어요.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "무료 구독 조정을 위해 {supportAddress}로 문의해 주세요.",
     "Please enter {fieldName}": "{fieldName}을(를) 입력해 주세요",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "필수 항목을 입력해 주세요",
     "Podcasts": "팟캐스트",
     "Re-enable emails": "이메일 재활성화",
@@ -214,6 +217,7 @@
     "Recommendations": "추천",
     "Redeem your gift": "",
     "Redeeming...": "사용 중...",
+    "Redirecting...": "",
     "Renews at {price}.": "{price}에 갱신돼요.",
     "Resume subscription": "구독 재개",
     "Retry": "다시 시도",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "구독이 취소되었으며 {expiryDate}에 만료돼요.",
     "Your subscription will expire on {expiryDate}": "회원님의 구독은 {expiryDate}에 만료돼요",
     "Your subscription will renew on {renewalDate}": "회원님의 구독은 {renewalDate}에 갱신돼요",
-    "Your subscription will start on {subscriptionStart}": "회원님의 구독은 {subscriptionStart}에 시작돼요"
+    "Your subscription will start on {subscriptionStart}": "회원님의 구독은 {subscriptionStart}에 시작돼요",
+    "your.handle.bsky.social": ""
 }

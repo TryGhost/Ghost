@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Passez à un abonnement payant à tout moment. La durée restante de votre abonnement offert sera ajoutée sous forme d’essai gratuit.",
+    "Continue with Bluesky": "",
     "Copied": "Copié",
     "Copy": "Copier",
     "Copy link": "Copier le lien",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "Ouvrir Proton Mail",
     "Open Yahoo Mail": "Ouvrir Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Erreur persistante (renvoi)",
     "Phone number": "Numéro de téléphone",
     "Plan": "Abonnement",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "La mise à niveau de l'abonnement a été annulée.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Veuillez écrire à {supportAddress} pour rectifier votre abonnement gratuit.",
     "Please enter {fieldName}": "Veuillez saisir votre {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Veuillez remplir les champs requis",
     "Podcasts": "Podcasts",
     "Re-enable emails": "Réactiver les e-mails",
@@ -216,6 +219,7 @@
     "Recommendations": "Suggestions",
     "Redeem your gift": "",
     "Redeeming...": "Activation...",
+    "Redirecting...": "",
     "Renews at {price}.": "Renouvellement pour {price}.",
     "Resume subscription": "Réactiver l’abonnement",
     "Retry": "Réessayer",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Votre abonnement a été résilié et expirera le {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Votre abonnement expirera le {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Votre abonnement sera renouvelé le {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Votre abonnement débutera le {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Votre abonnement débutera le {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

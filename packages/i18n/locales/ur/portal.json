@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "ہمیشہ کے لئے ناکامی (باؤنس)",
     "Phone number": "",
     "Plan": "پلان",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "پلان اپگریڈ منسوخ ہوگیا تھا۔",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "براہ کرم مطلوبہ شعبے بھریں",
     "Podcasts": "",
     "Re-enable emails": "ای میلز کو دوبارہ چالو کریں",
@@ -215,6 +218,7 @@
     "Recommendations": "",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "نیا کرتا ہے {price} پر۔",
     "Resume subscription": "",
     "Retry": "مزید کوشش",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "آپ کی ہوشیاری {expiryDate} تک چلے گی",
     "Your subscription will renew on {renewalDate}": "آپ کی ہوشیاری {renewalDate} تک تجدید ہوگی",
-    "Your subscription will start on {subscriptionStart}": "آپ کی ہوشیاری {subscriptionStart} پر شروع ہوگی"
+    "Your subscription will start on {subscriptionStart}": "آپ کی ہوشیاری {subscriptionStart} پر شروع ہوگی",
+    "your.handle.bsky.social": ""
 }

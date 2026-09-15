@@ -18,6 +18,7 @@ module.exports = (routerConfig) => {
   frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
 
   frontendApp.lazyUse('/members', require('../members'));
+  frontendApp.lazyUse('/', require('../atproto'));
   frontendApp.lazyUse('/webmentions', require('../webmentions'));
   frontendApp.lazyUse('/gift', require('../gift-preview'));
   frontendApp.use('/', require('../../../frontend/web')(routerConfig));

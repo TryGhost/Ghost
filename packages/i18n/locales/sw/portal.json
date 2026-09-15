@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Hitilafu ya kudumu (bounce)",
     "Phone number": "",
     "Plan": "Mpango",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Uboreshaji wa mpango ulighairiwa.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Tafadhali wasiliana na {supportAddress} kurekebisha usajili wako wa bure.",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Tafadhali jaza sehemu zinazohitajika",
     "Podcasts": "",
     "Re-enable emails": "Washa tena barua pepe",
@@ -215,6 +218,7 @@
     "Recommendations": "Mapendekezo",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Inajirudia kwa bei ya {price}.",
     "Resume subscription": "",
     "Retry": "Jaribu tena",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Usajili wako utaisha tarehe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Usajili wako utaongezwa tarehe {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Usajili wako utaanza tarehe {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Usajili wako utaanza tarehe {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

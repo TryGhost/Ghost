@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "תקלה קבועה (הקפצה)",
     "Phone number": "מספר טלפון",
     "Plan": "תוכנית",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "שדרוג התוכנית בוטל.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "צרו קשר עם {supportAddress} כדי להתאים את המנוי החינמי שלכם.",
     "Please enter {fieldName}": "בבקשה הזינו {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "אנא מלאו את השדות הנדרשים",
     "Podcasts": "",
     "Re-enable emails": "אפשרו שוב מיילים",
@@ -216,6 +219,7 @@
     "Recommendations": "המלצות",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "מתחדש ב {price}.",
     "Resume subscription": "",
     "Retry": "נסו שנית",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "המינוי שלכם יפוג ב {expiryDate}",
     "Your subscription will renew on {renewalDate}": "המנוי שלכם יתחדש ב {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "המנוי שלכם יתחיל ב {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "המנוי שלכם יתחיל ב {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

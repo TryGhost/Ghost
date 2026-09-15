@@ -2,6 +2,8 @@
 const BACKUP_TABLES = [
   'actions',
   'api_keys',
+  'atproto_oauth_states',
+  'atproto_pending_email',
   'automated_email_recipients',
   'brute',
   'donation_payment_events',

@@ -453,6 +453,7 @@ module.exports = class MemberRepository {
       'newsletters',
       'email_disabled',
       'status',
+      'atproto_did',
     ]);
 
     // Generate a random transient_id
@@ -694,6 +695,7 @@ module.exports = class MemberRepository {
       'expertise',
       'email_disabled',
       'transient_id',
+      'atproto_did',
     ]);
 
     // Trim whitespaces from expertise

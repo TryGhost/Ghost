@@ -75,6 +75,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -199,6 +200,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "ความล้มเหลวอย่างถาวร (อีเมลถูกตีกลับ)",
     "Phone number": "",
     "Plan": "แผน",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "การอัปเกรดแผนถูกยกเลิก",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "โปรดติดต่อ {supportAddress} เพื่อปรับเปลี่ยนการรับสมัครข้อมูลฟรีของคุณ",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "กรุณากรอกข้อมูลในช่องให้ครบถ้วน",
     "Podcasts": "",
     "Re-enable emails": "เปิดใช้งานอีเมลนี้อีกครั้ง",
@@ -214,6 +217,7 @@
     "Recommendations": "รายการแนะนำ",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "ต่ออายุที่ {price}",
     "Resume subscription": "",
     "Retry": "ลองอีกครั้ง",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "การรับสมัครข้อมูลของคุณจะหมดอายุในวันที่ {expiryDate}",
     "Your subscription will renew on {renewalDate}": "การรับสมัครข้อมูลของคุณจะต่ออายุในวันที่ {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "การรับสมัครข้อมูลของคุณจะเริ่มในวันที่ {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "การรับสมัครข้อมูลของคุณจะเริ่มในวันที่ {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

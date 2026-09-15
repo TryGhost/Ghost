@@ -78,6 +78,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -202,6 +203,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Nuolatinis atmetimas",
     "Phone number": "",
     "Plan": "Planas",
@@ -209,6 +211,7 @@
     "Plan upgrade was cancelled.": "Plano pagerinimas buvo atšauktas.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Prašome susisiekti {supportAddress}, norėdami koreguoti savo nemokamą prenumeratą.",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Užpildykite visus privalomus laukus",
     "Podcasts": "",
     "Re-enable emails": "Iš naujo įjungti el. laiškus",
@@ -217,6 +220,7 @@
     "Recommendations": "Rekomendacijos",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Atsinaujins už",
     "Resume subscription": "",
     "Retry": "Kartoti",
@@ -347,5 +351,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Jūsų prenumerata baigsis {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Jūsų prenumerata atsinaujins {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Jūsų prenumerata prasidės {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Jūsų prenumerata prasidės {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

@@ -78,6 +78,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -202,6 +203,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Trwała awaria (odesłanie emaila)",
     "Phone number": "Numer telefonu",
     "Plan": "Plan",
@@ -209,6 +211,7 @@
     "Plan upgrade was cancelled.": "Aktualizacja planu została anulowana.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Wyślij maila pod adres {supportAddress}, aby dostosować bezpłatną subskrypcję.",
     "Please enter {fieldName}": "Proszę wypełnić {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Wypełnij wymagane pola",
     "Podcasts": "",
     "Re-enable emails": "Włącz ponownie emaile",
@@ -217,6 +220,7 @@
     "Recommendations": "Rekomendacje",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Odnowi się w cenie {price}.",
     "Resume subscription": "",
     "Retry": "Powtórz",
@@ -347,5 +351,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Subskrypcja wygaśnie w dniu {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Subskrypcja zostanie odnowiona w dniu {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Subskrypcja rozpocznie się w dniu {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Subskrypcja rozpocznie się w dniu {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

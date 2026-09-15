@@ -75,6 +75,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Bạn có thể tiếp tục sử dụng gói trả phí bất cứ lúc nào. Thời gian sử dụng còn lại sẽ được tính là thời gian đọc thử miễn phí.",
+    "Continue with Bluesky": "",
     "Copied": "Đã sao chép",
     "Copy": "Sao chép",
     "Copy link": "Sao chép liên kết",
@@ -199,6 +200,7 @@
     "Open Proton Mail": "Mở Proton Mail",
     "Open Yahoo Mail": "Mở Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Thất bại vĩnh viễn (thư bị trả lại)",
     "Phone number": "Số điện thoại",
     "Plan": "Gói thành viên",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "Đã hủy nâng cấp gói.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Vui lòng liên hệ {supportAddress} để điều chỉnh gói thành viên của bạn.",
     "Please enter {fieldName}": "Xin nhập {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Vui lòng điền các mục bắt buộc",
     "Podcasts": "Podcast",
     "Re-enable emails": "Kích hoạt lại email",
@@ -214,6 +217,7 @@
     "Recommendations": "Đề xuất",
     "Redeem your gift": "",
     "Redeeming...": "Đang đổi...",
+    "Redirecting...": "",
     "Renews at {price}.": "Phí gia hạn {price}.",
     "Resume subscription": "Tiếp tục gói",
     "Retry": "Thử lại",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Gói thành viên của bạn đã bị hủy và sẽ hết hạn vào {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Gói thành viên của bạn sẽ hết hạn vào {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Gói thành viên của bạn sẽ tự động gia hạn vào {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Gói thành viên của bạn bắt đầu có hiệu lực vào {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Gói thành viên của bạn bắt đầu có hiệu lực vào {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

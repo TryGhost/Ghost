@@ -77,6 +77,11 @@
   "scheduling": {
     "active": "scheduling-default"
   },
+  "atproto": {
+    "enabled": false,
+    "exclusive": false,
+    "plcDirectory": "https://plc.directory"
+},
   "members": {
     "contentApiAccess": [],
     "paymentProcessors": [],

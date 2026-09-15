@@ -75,6 +75,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -199,6 +200,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "永続的な障害",
     "Phone number": "電話番号",
     "Plan": "プラン",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "プランのアップグレードがキャンセルされました。",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "無料購読を調整するためには、{supportAddress}に連絡してください。",
     "Please enter {fieldName}": "{fieldName}を入力してください",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "必須項目に入力してください",
     "Podcasts": "",
     "Re-enable emails": "メールを再有効化する",
@@ -214,6 +217,7 @@
     "Recommendations": "おすすめ",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price}で更新されます。",
     "Resume subscription": "",
     "Retry": "再試行",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "あなたの購読は{expiryDate}に期限切れになります。",
     "Your subscription will renew on {renewalDate}": "あなたの購読は{renewalDate}に更新されます。",
-    "Your subscription will start on {subscriptionStart}": "あなたの購読は{subscriptionStart}に開始されます。"
+    "Your subscription will start on {subscriptionStart}": "あなたの購読は{subscriptionStart}に開始されます。",
+    "your.handle.bsky.social": ""
 }

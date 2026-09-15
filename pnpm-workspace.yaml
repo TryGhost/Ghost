@@ -28,6 +28,7 @@ allowBuilds:
   '@sentry/cli': false
   '@swc/core@1.15.43': true
   'better-sqlite3@12.11.1': true
+  core-js: true
   'core-js@2.6.12': true
   cpu-features: false
   'dtrace-provider@0.8.8': true
@@ -230,6 +231,8 @@ catalog:
   '@breejs/later': 4.2.0
   fastq: ^1.20.1
   cron-validate: 1.4.5
+  '@atproto/oauth-client-node': ^0.5.7
+  '@atproto/jwk-jose': ^0.2.4
   '@types/stoppable': 1.1.3
   '@types/express-brute': 1.0.6
   '@tryghost/validator': 3.2.14

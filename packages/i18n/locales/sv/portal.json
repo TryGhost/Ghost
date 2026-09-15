@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Fortsätt med en betald prenumeration när du vill. Din kvarvarande gåvoperiod läggs till som en fri prövoperiod.",
+    "Continue with Bluesky": "",
     "Copied": "Kopierad",
     "Copy": "Kopiera",
     "Copy link": "Kopiera länk",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "Öppna Proton Mail",
     "Open Yahoo Mail": "Öppna Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Permanent fel vid e-postutskick (studs)",
     "Phone number": "Telefonnummer",
     "Plan": "Plan",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Uppgradering av prenumeration avbruten.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Kontakta {supportAddress} för att ändra din gratisprenumeration.",
     "Please enter {fieldName}": "Vänligen ange {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Vänligen fyll i alla obligatoriska fält",
     "Podcasts": "Podcasts",
     "Re-enable emails": "Återaktivera e-post",
@@ -215,6 +218,7 @@
     "Recommendations": "Rekommendationer",
     "Redeem your gift": "",
     "Redeeming...": "Löser in...",
+    "Redirecting...": "",
     "Renews at {price}.": "Förnyas till priset {price}.",
     "Resume subscription": "Återuppta prenumeration",
     "Retry": "Försök igen",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Din prenumeration är uppsagd och löper ut {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Din prenumeration avslutas {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Din prenumeration förnyas {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Din prenumeration startar {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Din prenumeration startar {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

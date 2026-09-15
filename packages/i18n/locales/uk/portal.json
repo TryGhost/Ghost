@@ -78,6 +78,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -202,6 +203,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Постійний збій (відмова)",
     "Phone number": "Номер телефона",
     "Plan": "План",
@@ -209,6 +211,7 @@
     "Plan upgrade was cancelled.": "Оновлення плану скасовано.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Будь ласка, зв’яжіться з {supportAddress}, щоб налаштувати безкоштовну підписку.",
     "Please enter {fieldName}": "Будь ласка, введіть {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Будь ласка, заповніть обов'язкові поля",
     "Podcasts": "",
     "Re-enable emails": "Знову включити пошту",
@@ -217,6 +220,7 @@
     "Recommendations": "Рекомендації",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Поновлення за {price}.",
     "Resume subscription": "",
     "Retry": "Повтори спробу",
@@ -347,5 +351,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Термін дії вашої підписки закінчується {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Ваша підписка буде продовжена {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Ваша підписка почне діяти {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Ваша підписка почне діяти {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

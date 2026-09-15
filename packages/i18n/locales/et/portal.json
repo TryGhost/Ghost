@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Püsiv tõrge (tagasipõrge)",
     "Phone number": "Telefoninumber",
     "Plan": "Pakett",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Paketi uuendamine tühistati.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Palun võtke ühendust {supportAddress}, et kohandada oma tasuta tellimust.",
     "Please enter {fieldName}": "Palun sisestage {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Palun täitke kohustuslikud väljad",
     "Podcasts": "",
     "Re-enable emails": "Luba e-kirjad uuesti",
@@ -215,6 +218,7 @@
     "Recommendations": "Soovitused",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Uueneb hinnaga {price}.",
     "Resume subscription": "",
     "Retry": "Proovi uuesti",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Teie tellimus aegub {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Teie tellimus uueneb {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Teie tellimus algab {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Teie tellimus algab {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

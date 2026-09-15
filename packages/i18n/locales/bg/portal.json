@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Можете да преминете към платен абонамент по всяко време. Оставащият период от подаръка ще бъде добавен като безплатен пробен период.",
+    "Continue with Bluesky": "",
     "Copied": "Копирано",
     "Copy": "Копиране",
     "Copy link": "Копирай линка",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "Отворете Proton Mail",
     "Open Yahoo Mail": "Отворете Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Постоянен проблем (отказ)",
     "Phone number": "Телефонен номер",
     "Plan": "План",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Надграждането на плана е прекъснато.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Моля, свържете се с {supportAddress}, за корекции относно безплатния ви абонамент.",
     "Please enter {fieldName}": "Моля, попълнете {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Моля, попълнете задължителните полета",
     "Podcasts": "Подкасти",
     "Re-enable emails": "Възобновете изпращането на писма",
@@ -215,6 +218,7 @@
     "Recommendations": "Препоръки",
     "Redeem your gift": "",
     "Redeeming...": "Активиране...",
+    "Redirecting...": "",
     "Renews at {price}.": "Подновяване за {price}.",
     "Resume subscription": "Възобнови абонамента",
     "Retry": "Отново",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Абонаментът ви е прекратен и ще изтече на {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Абонаментът ви ще изтече на {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Абонаментът ви ще се поднови на {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Абонаментът ви ще започне на {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Абонаментът ви ще започне на {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

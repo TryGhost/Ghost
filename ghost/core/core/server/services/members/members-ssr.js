@@ -282,6 +282,16 @@ class MembersSSR {
   }
 
   /**
+   * Set a session cookie directly from a transient_id, used by ATProto auth.
+   * @param {Request} req
+   * @param {Response} res
+   * @param {string} transientId
+   */
+  setSessionFromTransientId(req, res, transientId) {
+    this._setSessionCookie(req, res, transientId);
+  }
+
+  /**
    * @method deleteSession
    * @param {Request} req
    * @param {Response} res

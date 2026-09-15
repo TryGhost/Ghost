@@ -304,6 +304,26 @@ module.exports = {
       }),
     );
 
+    // ATProto login (config-driven, not DB-driven; dependents is empty)
+    fields.push(
+      new CalculatedField({
+        key: 'atproto_login_enabled',
+        type: 'boolean',
+        group: 'members',
+        fn: () => config.get('atproto:enabled') === true,
+        dependents: []
+      })
+    );
+    fields.push(
+      new CalculatedField({
+        key: 'atproto_login_exclusive',
+        type: 'boolean',
+        group: 'members',
+        fn: () => config.get('atproto:exclusive') === true,
+        dependents: []
+      })
+    );
+
     return fields;
   },
 

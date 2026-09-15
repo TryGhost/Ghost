@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Etengabeko hutsegitea (bounce)",
     "Phone number": "Telefono zenbakia",
     "Plan": "Plana",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Planaren aldaketa ezeztatu da.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Jarri harremanetan {supportAddress} zure harpidetza osagarria moldatzeko.",
     "Please enter {fieldName}": "Sartu {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Bete derrigorrezko eremuak",
     "Podcasts": "",
     "Re-enable emails": "Gaitu berriro ePostak",
@@ -215,6 +218,7 @@
     "Recommendations": "Gomendioak",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price}(r)en truke berrituko da.",
     "Resume subscription": "",
     "Retry": "Saiatu berriro",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Zure harpidetza {expiryDate}(e)an iraungiko da",
     "Your subscription will renew on {renewalDate}": "Zure harpidetza {renewalDate}(e)an berrituko da",
-    "Your subscription will start on {subscriptionStart}": "Zure harpidetza {subscriptionStart}(e)an hasiko da"
+    "Your subscription will start on {subscriptionStart}": "Zure harpidetza {subscriptionStart}(e)an hasiko da",
+    "your.handle.bsky.social": ""
 }

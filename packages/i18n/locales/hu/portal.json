@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Tartós hiba (visszapattanás)",
     "Phone number": "Telefonszám",
     "Plan": "Csomag",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "A csomag frissítése törölve lett",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Az ingyenes (ajándék) csomagod módosításáért kérjük, lépj velünk kapcsolatba az alábbi e-mail-címen: {supportAddress}",
     "Please enter {fieldName}": "Kérjük, add meg {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Kérjük, töltsd ki az összes mezőt",
     "Podcasts": "",
     "Re-enable emails": "E-mailek aktiválása",
@@ -215,6 +218,7 @@
     "Recommendations": "Ajánlott oldalak",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Megújul {price} áron",
     "Resume subscription": "",
     "Retry": "Újra",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Az előfizetésed lejár ekkor: {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Az előfizetésed megújul ekkor: {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Az előfizetésed ekkor indul: {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Az előfizetésed ekkor indul: {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

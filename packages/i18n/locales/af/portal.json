@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Permanente fout (bounce)",
     "Phone number": "",
     "Plan": "Plan",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Plan opgradering is gekanselleer.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Kontak {supportAddress} om jou komplimentêre intekening aan te pas.",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Vul asseblief die verpligte velde in",
     "Podcasts": "",
     "Re-enable emails": "Her-aktiveer eposse",
@@ -215,6 +218,7 @@
     "Recommendations": "Aanbevelings",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Hernu teen {price}.",
     "Resume subscription": "",
     "Retry": "Probeer weer",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "U intekening sal verval op {expiryDate}",
     "Your subscription will renew on {renewalDate}": "U intekening sal hernu op {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "U intekening sal begin op {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "U intekening sal begin op {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

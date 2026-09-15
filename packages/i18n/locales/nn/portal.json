@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Permanent feil",
     "Phone number": "",
     "Plan": "Abonnement",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Oppgradering kansellert.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Ver gilde og fyll inn dei obligatoriske felta",
     "Podcasts": "",
     "Re-enable emails": "Aktiver e-postar på ny",
@@ -215,6 +218,7 @@
     "Recommendations": "",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Forynast til {price}.",
     "Resume subscription": "",
     "Retry": "Prøv på ny",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Ditt abonnement går ut den {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Ditt abonnement vil fornyast den {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Ditt abonnement vil byrja den {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Ditt abonnement vil byrja den {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "நிரந்தர தோல்வி (பவுன்ஸ்)",
     "Phone number": "தொலைபேசி எண்",
     "Plan": "திட்டம்",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "திட்ட மேம்படுத்தல் ரத்து செய்யப்பட்டது.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "உங்கள் இலவச சந்தாவை சரிசெய்ய {supportAddress} ஐத் தொடர்பு கொள்ளவும்.",
     "Please enter {fieldName}": "{fieldName} ஐ உள்ளிடவும்",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "தேவையான புலங்களை நிரப்பவும்",
     "Podcasts": "",
     "Re-enable emails": "மின்னஞ்சல்களை மீண்டும் இயக்கு",
@@ -215,6 +218,7 @@
     "Recommendations": "பரிந்துரைகள்",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price}க்கு புதுப்பிக்கப்படுகிறது.",
     "Resume subscription": "",
     "Retry": "மீண்டும் முயற்சி",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "உங்கள் சந்தா {expiryDate} அன்று காலாவதியாகும்",
     "Your subscription will renew on {renewalDate}": "உங்கள் சந்தா {renewalDate} அன்று புதுப்பிக்கப்படும்",
-    "Your subscription will start on {subscriptionStart}": "உங்கள் சந்தா {subscriptionStart} அன்று தொடங்கும்"
+    "Your subscription will start on {subscriptionStart}": "உங்கள் சந்தா {subscriptionStart} அன்று தொடங்கும்",
+    "your.handle.bsky.social": ""
 }

@@ -77,6 +77,8 @@
     "lint": "pnpm run '/^lint:(server|shared|frontend|test)$/'"
   },
   "dependencies": {
+    "@atproto/jwk-jose": "catalog:",
+    "@atproto/oauth-client-node": "catalog:",
     "@aws-sdk/client-s3": "3.1079.0",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "3.2.1",

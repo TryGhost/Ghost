@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Pysyvä virhe (bounce)",
     "Phone number": "Puhelinnumero",
     "Plan": "Tilaus",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Tilauksen korotus on peruttu",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Voit tehdä muutoksia maksuttomaan tilaukseesi ottamalla yhteyttä osoitteeseen {supportAddress}.",
     "Please enter {fieldName}": "Täytä kenttä {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Täytä tarvittavat kentät",
     "Podcasts": "",
     "Re-enable emails": "Hyväksy sähköpostit uudelleen",
@@ -215,6 +218,7 @@
     "Recommendations": "Suositukset",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Tilaus uusiutuu hinnalla {price}.",
     "Resume subscription": "",
     "Retry": "Kokeile uudestaan",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Tilauksesi päättyy {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Tilauksesi uusiutuu {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Tilauksesi alkaa {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Tilauksesi alkaa {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

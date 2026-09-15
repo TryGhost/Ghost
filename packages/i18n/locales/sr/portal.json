@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "Nastavite sa plaćenom pretplatom u bilo kom trenutku. Ostatak Vašeg poklon perioda biće dodat kao besplatan probni period.",
+    "Continue with Bluesky": "",
     "Copied": "Kopirano",
     "Copy": "Kopirajte",
     "Copy link": "Kopirajte link",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "Otvorite Proton Mail",
     "Open Yahoo Mail": "Otvorite Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Trajni neuspeh (odbijeno)",
     "Phone number": "Broj telefona",
     "Plan": "Plan",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "Nadogradnja plana je otkazana.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Kontaktirajte {supportAddress} da podesite Vašu besplatnu pretplatu.",
     "Please enter {fieldName}": "Molimo Vas unesite {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Molimo Vas popunite obavezna polja",
     "Podcasts": "Podkasti",
     "Re-enable emails": "Ponovo omogućite email-ove",
@@ -216,6 +219,7 @@
     "Recommendations": "Preporuke",
     "Redeem your gift": "",
     "Redeeming...": "Preuzimanje...",
+    "Redirecting...": "",
     "Renews at {price}.": "Obnavlja se po ceni od {price}.",
     "Resume subscription": "Ponovo aktivirajte pretplatu",
     "Retry": "Pokušajte ponovo",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "Vaša pretplata je otkazana i isteći će {expiryDate}.",
     "Your subscription will expire on {expiryDate}": "Vaša pretplata ističe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Vaša pretplata će biti obnovljena {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Vaša pretplata će početi {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Vaša pretplata će početi {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

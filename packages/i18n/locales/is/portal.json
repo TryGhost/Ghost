@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Varanleg villa",
     "Phone number": "",
     "Plan": "Áskriftarleið",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "Hætt var við breytingu á áskriftarleið",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Vinsamlegast hafið samband við {supportAddress} til að breyta kaupbætisáskrift.",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Vinsamlegast fyllið í nauðsynlega reiti",
     "Podcasts": "",
     "Re-enable emails": "Fá tölvupósta að nýju",
@@ -215,6 +218,7 @@
     "Recommendations": "",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Endurnýjast á verðinu {price}",
     "Resume subscription": "",
     "Retry": "Reyna aftur",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Áskrift þinni lýkur {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Áskrift þín verður endurnýjuð {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Áskrift þín hefst {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Áskrift þín hefst {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

@@ -75,6 +75,7 @@
     "Continue to delivery details": "继续填写送达信息",
     "Continue to payment": "继续进行支付",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "您可以随时转换为付费订阅。您剩余的赠送时长将作为免费试用期累加。",
+    "Continue with Bluesky": "",
     "Copied": "已复制",
     "Copy": "复制",
     "Copy link": "复制链接",
@@ -198,7 +199,8 @@
     "Open Outlook": "打开 Outlook",
     "Open Proton Mail": "打开 Proton Mail",
     "Open Yahoo Mail": "打开 Yahoo Mail",
-    "Optional message": "自定义消息（可选）",
+    "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "永久错误 (bounce)",
     "Phone number": "电话号码",
     "Plan": "订阅方案",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "订阅升级已取消。",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "请联系 {supportAddress} 调整您的免费订阅。",
     "Please enter {fieldName}": "请输入{fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "请填写必须项目",
     "Podcasts": "播客",
     "Re-enable emails": "重新启用电子邮件",
@@ -214,6 +217,7 @@
     "Recommendations": "推荐",
     "Redeem your gift": "兑换您的礼物",
     "Redeeming...": "正在兑换...",
+    "Redirecting...": "",
     "Renews at {price}.": "以{price}的价格续费。",
     "Resume subscription": "恢复订阅",
     "Retry": "重试",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "您的订阅已取消，将于 {expiryDate} 到期。",
     "Your subscription will expire on {expiryDate}": "您的订阅将在{expiryDate}到期",
     "Your subscription will renew on {renewalDate}": "您的订阅将在{renewalDate}续费",
-    "Your subscription will start on {subscriptionStart}": "您的订阅将于{subscriptionStart}开始"
+    "Your subscription will start on {subscriptionStart}": "您的订阅将于{subscriptionStart}开始",
+    "your.handle.bsky.social": ""
 }

@@ -80,6 +80,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -204,6 +205,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "(bounce)فشل دائم ",
     "Phone number": "رقم الهاتف",
     "Plan": "الخطة",
@@ -211,6 +213,7 @@
     "Plan upgrade was cancelled.": ".تم إلغاء ترقية الخطة",
     "Please contact {supportAddress} to adjust your complimentary subscription.": ".لتعديل اشتراكك المجاني {supportAddress} يرجى الاتصال ب ",
     "Please enter {fieldName}": "{fieldName} يرجى إدخال ",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "يرجى ملء الحقول المطلوبة",
     "Podcasts": "",
     "Re-enable emails": "إعادة تفعيل رسائل البريد الالكتروني",
@@ -219,6 +222,7 @@
     "Recommendations": "التوصيات",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price} سيتم التجديد بسعر ",
     "Resume subscription": "",
     "Retry": "اعد المحاولة",
@@ -353,5 +357,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "{expiryDate} اشتراكك سوف ينتهي في",
     "Your subscription will renew on {renewalDate}": "{renewalDate} اشتراكك سوف يتجدد في",
-    "Your subscription will start on {subscriptionStart}": "{subscriptionStart} اشتراك سوف يبدأ في"
+    "Your subscription will start on {subscriptionStart}": "{subscriptionStart} اشتراك سوف يبدأ في",
+    "your.handle.bsky.social": ""
 }

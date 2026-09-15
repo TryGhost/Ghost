@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "Отворите Proton Mail",
     "Open Yahoo Mail": "Отворите Yahoo Mail",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Трајни неуспех (одбијено)",
     "Phone number": "Број телефона",
     "Plan": "План",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "Надоградња плана је отказана.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Контактирајте {supportAddress} да подесите Вашу бесплатну претплату.",
     "Please enter {fieldName}": "Молимо Вас унесите {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Молимо Вас попуните обавезна поља",
     "Podcasts": "",
     "Re-enable emails": "Поново омогућите email-ове",
@@ -216,6 +219,7 @@
     "Recommendations": "Препоруке",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Обнавља се по цени од {price}.",
     "Resume subscription": "",
     "Retry": "Покушајте поново",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Ваша претплата истиче {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Ваша претплата ће бити обновљена {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Ваша претплата ће почети {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Ваша претплата ће почети {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

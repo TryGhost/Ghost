@@ -75,6 +75,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -199,6 +200,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Kegagalan permanen (bounce)",
     "Phone number": "Nomor telepon",
     "Plan": "Paket",
@@ -206,6 +208,7 @@
     "Plan upgrade was cancelled.": "Peningkatan paket dibatalkan.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Harap hubungi {supportAddress} untuk mengubah langganan gratis Anda.",
     "Please enter {fieldName}": "Silakan masukkan {fieldName}",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Harap isi kolom yang wajib diisi",
     "Podcasts": "",
     "Re-enable emails": "Aktifkan kembali email",
@@ -214,6 +217,7 @@
     "Recommendations": "Rekomendasi",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Perpanjang dengan harga {price}",
     "Resume subscription": "",
     "Retry": "Coba lagi",
@@ -338,5 +342,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Langganan Anda akan berakhir pada {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Langganan Anda akan diperpanjang pada {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Langganan Anda akan dimulai pada {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Langganan Anda akan dimulai pada {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }

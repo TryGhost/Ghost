@@ -76,6 +76,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -200,6 +201,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "ਸਥਾਈ ਅਸਫਲਤਾ (ਬਾਊਂਸ)",
     "Phone number": "ਫ਼ੋਨ ਨੰਬਰ",
     "Plan": "ਯੋਜਨਾ",
@@ -207,6 +209,7 @@
     "Plan upgrade was cancelled.": "ਯੋਜਨਾ ਅੱਪਗਰੇਡ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਸੀ।",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "ਆਪਣੀ ਮੁਫ਼ਤ ਸਦੱਸਤਾ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ {supportAddress} 'ਤੇ ਸੰਪਰਕ ਕਰੋ।",
     "Please enter {fieldName}": "ਕਿਰਪਾ ਕਰਕੇ {fieldName} ਦਾਖਲ ਕਰੋ",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "ਕਿਰਪਾ ਕਰਕੇ ਲੋੜੀਂਦੇ ਖੇਤਰ ਭਰੋ",
     "Podcasts": "",
     "Re-enable emails": "ਈਮੇਲਾਂ ਨੂੰ ਮੁੜ-ਸਮਰੱਥ ਕਰੋ",
@@ -215,6 +218,7 @@
     "Recommendations": "ਸਿਫ਼ਾਰਸ਼ਾਂ",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "{price} 'ਤੇ ਨਵਿਆਇਆ ਜਾਵੇਗਾ।",
     "Resume subscription": "",
     "Retry": "ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
@@ -341,5 +345,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "ਤੁਹਾਡੀ ਸਦੱਸਤਾ {expiryDate} ਨੂੰ ਮਿਆਦ ਪੁੱਗ ਜਾਵੇਗੀ।",
     "Your subscription will renew on {renewalDate}": "ਤੁਹਾਡੀ ਸਦੱਸਤਾ {renewalDate} ਨੂੰ ਨਵਿਆਈ ਜਾਵੇਗੀ।",
-    "Your subscription will start on {subscriptionStart}": "ਤੁਹਾਡੀ ਸਦੱਸਤਾ {subscriptionStart} ਨੂੰ ਸ਼ੁਰੂ ਹੋਵੇਗੀ।"
+    "Your subscription will start on {subscriptionStart}": "ਤੁਹਾਡੀ ਸਦੱਸਤਾ {subscriptionStart} ਨੂੰ ਸ਼ੁਰੂ ਹੋਵੇਗੀ।",
+    "your.handle.bsky.social": ""
 }

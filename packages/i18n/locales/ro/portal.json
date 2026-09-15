@@ -77,6 +77,7 @@
     "Continue to delivery details": "",
     "Continue to payment": "",
     "Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.": "",
+    "Continue with Bluesky": "",
     "Copied": "",
     "Copy": "",
     "Copy link": "",
@@ -201,6 +202,7 @@
     "Open Proton Mail": "",
     "Open Yahoo Mail": "",
     "Optional message": "",
+    "Or": "",
     "Permanent failure (bounce)": "Eroare permanentă (respins)",
     "Phone number": "",
     "Plan": "Plan",
@@ -208,6 +210,7 @@
     "Plan upgrade was cancelled.": "Actualizarea planului a fost anulată.",
     "Please contact {supportAddress} to adjust your complimentary subscription.": "Vă rugăm să contactați {supportAddress} pentru a ajusta abonamentul dvs. gratuit.",
     "Please enter {fieldName}": "",
+    "Please enter your Bluesky handle": "",
     "Please fill in required fields": "Vă rugăm să completați câmpurile necesare",
     "Podcasts": "",
     "Re-enable emails": "Activează din nou emailurile",
@@ -216,6 +219,7 @@
     "Recommendations": "Recomandări",
     "Redeem your gift": "",
     "Redeeming...": "",
+    "Redirecting...": "",
     "Renews at {price}.": "Se reînnoiește la {price}.",
     "Resume subscription": "",
     "Retry": "Reîncearcă",
@@ -344,5 +348,6 @@
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Abonamentul tău va expira pe {expiryDate}",
     "Your subscription will renew on {renewalDate}": "Abonamentul tău se va reînnoi pe {renewalDate}",
-    "Your subscription will start on {subscriptionStart}": "Abonamentul tău va începe pe {subscriptionStart}"
+    "Your subscription will start on {subscriptionStart}": "Abonamentul tău va începe pe {subscriptionStart}",
+    "your.handle.bsky.social": ""
 }
