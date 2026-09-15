@@ -2,6 +2,7 @@ import type {
   AutomationRunHistory,
   AutomationRunPlan,
 } from '@tryghost/admin-x-framework/api/automation-run-history';
+import { historyEmailPreview } from './history-email-preview';
 import { waitDuration, type HistoryCardData } from './run-history';
 
 export const mapUpcomingRunSteps = (
@@ -66,6 +67,10 @@ export const mapUpcomingRunSteps = (
           }
         : undefined,
       details: next.type === 'wait' && !duration ? ['Wait duration unavailable.'] : [],
+      email:
+        next.type === 'send_email'
+          ? historyEmailPreview(next.data.email_subject, next.data.email_lexical)
+          : undefined,
     });
     current = next.id;
   }

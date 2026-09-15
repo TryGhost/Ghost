@@ -7,6 +7,7 @@ import { mapRunHistory } from '@/automations/utils/run-history';
 import { mapUpcomingRunSteps } from '@/automations/utils/upcoming-run-steps';
 import type { useAutomationRunHistory } from '@/automations/hooks/use-automation-run-history';
 import { HistoryCard } from './history-card';
+import { HistoryEmailContent } from './history-email-content';
 
 export const HistoryFlow: React.FC<{
   history: AutomationRunHistory;
@@ -52,7 +53,11 @@ export const HistoryFlow: React.FC<{
                 )}
               </Stack>
             )}
-          <HistoryCard card={card} />
+          <HistoryCard card={card}>
+            {card.email && (
+              <HistoryEmailContent email={card.email} planned={card.state === 'planned'} />
+            )}
+          </HistoryCard>
         </Stack>
       ))}
     </Stack>
