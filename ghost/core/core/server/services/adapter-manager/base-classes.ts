@@ -4,6 +4,7 @@ import { SSOBase } from '@tryghost/adapter-base-sso';
 import { CacheBase } from '@tryghost/adapter-base-cache';
 import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
 import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
+import { ImportFileStoreBase } from '@tryghost/adapter-base-import-files';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 
 import type { BaseClassMap } from './adapter-manager';
@@ -19,6 +20,7 @@ export const baseClasses = {
   cache: CacheBase,
   redirects: RedirectsStoreBase,
   'route-settings': RouteSettingsStoreBase,
+  'import-files': ImportFileStoreBase,
   jobs: JobsBackendBase,
 } satisfies BaseClassMap;
 
@@ -39,5 +41,6 @@ export const baseClassPackages = {
   cache: '@tryghost/adapter-base-cache',
   redirects: '@tryghost/adapter-base-redirects',
   'route-settings': '@tryghost/adapter-base-route-settings',
+  'import-files': '@tryghost/adapter-base-import-files',
   jobs: '@tryghost/adapter-base-jobs',
 } satisfies Record<keyof typeof baseClasses, string>;

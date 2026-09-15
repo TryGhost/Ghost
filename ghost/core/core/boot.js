@@ -355,6 +355,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
+  const importFiles = require('./server/services/import-files');
   const donationService = require('./server/services/donations');
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
@@ -394,6 +395,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       await stripe.shutdown();
     }, 'Stripe');
   }
+
+  // The import file store is wired into the members and content imports below,
+  // so it is resolved first.
+  debug('Begin: Import files');
+  importFiles.init();
+  debug('End: Import files');
 
   await Promise.all([
     identityTokens.init(),

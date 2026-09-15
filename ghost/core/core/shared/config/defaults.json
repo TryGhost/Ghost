@@ -60,6 +60,10 @@
       "FileStore": {},
       "S3RouteSettingsStore": {}
     },
+    "import-files": {
+      "active": "FileStore",
+      "FileStore": {}
+    },
     "jobs": {
       "active": "InMemoryJobsBackend",
       "InMemoryJobsBackend": {
