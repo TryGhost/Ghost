@@ -113,7 +113,7 @@ describe('Unit | Service | limit', function () {
             expect(limitService.limiter.isLimited('customThemes')).to.be.true;
         });
 
-        it('keeps the limits it has when the configuration is gone', function () {
+        it('is limited by nothing when the configuration is gone', function () {
             limitService.config.hostSettings = {
                 limits: {staff: {max: 1}}
             };
@@ -122,7 +122,9 @@ describe('Unit | Service | limit', function () {
             limitService.config.hostSettings = {};
             limitService.reload();
 
-            expect(limitService.limiter.isLimited('staff')).to.be.true;
+            // The limits a site has are the limits it was last told about, so limits that
+            // are no longer configured are no longer applied.
+            expect(limitService.limiter.isLimited('staff')).to.be.false;
         });
     });
 });

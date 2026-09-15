@@ -340,6 +340,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const indexnow = require('./server/services/indexnow-ping').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
+  const limits = require('./server/services/limits');
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments');
   const staffService = require('./server/services/staff');
@@ -410,7 +411,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     slack.init(),
     audienceFeedback.init(),
-    emailService.init({ ghostServer }),
+    emailService.init({ ghostServer, limitService: limits.service }),
     emailAnalytics.init({
       automationsApi,
       config,
@@ -424,7 +425,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       prometheusClient,
       settingsCache,
     }),
-    webhooks.listen(),
+    webhooks.listen({ limitService: limits.service }),
     comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),

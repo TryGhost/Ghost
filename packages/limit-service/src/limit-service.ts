@@ -4,33 +4,42 @@ import has from 'lodash/has.js';
 
 import config from './config.ts';
 import { AllowlistLimit, FlagLimit, type Limit, MaxLimit, MaxPeriodicLimit } from './limits.ts';
-import type { CheckOptions, ErrorsModule, LimitConfig, LoadLimitsOptions } from './types.ts';
+import type {
+  CheckOptions,
+  ErrorsModule,
+  Limits,
+  LimitConfig,
+  LoadLimitsOptions,
+} from './types.ts';
 
 const messages = {
   missingErrorsConfig: `Config Missing: 'errors' is required.`,
   noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription',
 };
 
-export class LimitService {
-  limits: Record<string, Limit>;
-  errors!: ErrorsModule;
+export class LimitService implements Limits {
+  limits: Record<string, Limit> = {};
+  errors: ErrorsModule;
 
-  constructor() {
-    this.limits = {};
+  /**
+   * A site limited by nothing, which is what a self-hosted site has and what any site has
+   * before its host has said otherwise. It is an ordinary service that was given no limits,
+   * because there is nothing else for one to be.
+   */
+  static unlimited(errorsModule: ErrorsModule): LimitService {
+    return new LimitService({ limits: {}, errors: errorsModule });
   }
 
-  /** Initializes the limits based on configuration */
-  loadLimits({ limits = {}, subscription, helpLink, db, errors: errorsModule }: LoadLimitsOptions): void {
+  constructor({ limits = {}, subscription, helpLink, db, errors: errorsModule }: LoadLimitsOptions) {
     if (!errorsModule) {
+      // The one error a caller cannot be given in its own currency: the complaint is that
+      // it supplied no error classes to raise this with.
       throw new errors.IncorrectUsageError({
         message: messages.missingErrorsConfig,
       });
     }
 
     this.errors = errorsModule;
-
-    // CASE: reset internal limits state in case load is called multiple times
-    this.limits = {};
 
     Object.keys(limits).forEach((rawName) => {
       const name = camelCase(rawName);
@@ -61,7 +70,7 @@ export class LimitService {
           });
         } else if (has(limitConfig, 'maxPeriodic')) {
           if (subscription === undefined) {
-            throw new errors.IncorrectUsageError({
+            throw new errorsModule.IncorrectUsageError({
               message: messages.noSubscriptionParameter,
             });
           }
@@ -94,16 +103,16 @@ export class LimitService {
    * Check if a limit is disabled, applicable only to limits that support the disabled flag
    * (e.g. FlagLimit). Undefined if the limit is not configured.
    */
-  isDisabled(limitName: string): boolean | undefined {
+  isDisabled(limitName: string): boolean {
     // The same lookup isLimited makes, kept as one read so the limit is narrowed by it.
     const limit = this.limits[camelCase(limitName)];
 
     if (!limit) {
-      return;
+      return false;
     }
 
     if (typeof limit.isDisabled !== 'function') {
-      throw new errors.IncorrectUsageError({
+      throw new this.errors.IncorrectUsageError({
         message: `Limit ${limitName} does not support .isDisabled()`,
       });
     }
@@ -111,9 +120,9 @@ export class LimitService {
     return limit.isDisabled();
   }
 
-  async checkIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
+  async checkIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean> {
     if (!this.isLimited(limitName)) {
-      return;
+      return false;
     }
 
     try {
@@ -131,9 +140,9 @@ export class LimitService {
     }
   }
 
-  async checkWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean | undefined> {
+  async checkWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean> {
     if (!this.isLimited(limitName)) {
-      return;
+      return false;
     }
 
     try {

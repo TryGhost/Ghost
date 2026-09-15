@@ -21,9 +21,6 @@ import knex from 'knex';
 import errors from '@tryghost/errors';
 import { LimitService } from '@tryghost/limit-service';
 
-// create a LimitService instance
-const limitService = new LimitService();
-
 // setup limit configuration
 // currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads,
 // limitStripeConnect, limitAnalytics, and limitSocialWeb
@@ -101,8 +98,8 @@ const db = {
     });
 };
 
-// finish initializing the limits service
-limitService.loadLimits({limits, subscription, db, helpLink, errors});
+// create the limit service with the limits it applies
+const limitService = new LimitService({limits, subscription, db, helpLink, errors});
 
 // perform limit checks
 
@@ -174,7 +171,7 @@ db.transaction((transacting) => {
 At the moment there are four different types of limits that limit service allows to define. These types are:
 1. `flag` - is an "on/off" switch for certain feature. Example use case: "disable all emails". It's identified by a `disabled: true` property in the "limits" configuration.
 2. `max` - checks if the maximum amount of the resource has been used up.Example use case: "disable creating a staff user when maximum of 5 has been reached". To configure this limit add `max: NUMBER` to the configuration. The limits that support max checks are: `members`, and `staff`
-3. `maxPeriodic` - it's a variation of `max` type with a difference that the check is done over certain period of time. Example use case: "disable sending emails when the sent emails count has acceded a limit for last billing period". To enable this limit define `maxPeriodic: NUMBER` in the limit configuration and provide a subscription configuration when initializing the limit service instance. The subscription object comes as a separate parameter and has to contain two properties: `startDate` and `interval`, where `startDate` is a date in  ISO 8601 format and period is `'month'` (other values like `'year'` are not supported yet)
+3. `maxPeriodic` - it's a variation of `max` type with a difference that the check is done over certain period of time. Example use case: "disable sending emails when the sent emails count has acceded a limit for last billing period". To enable this limit define `maxPeriodic: NUMBER` in the limit configuration and provide a subscription configuration when constructing the limit service. The subscription object comes as a separate parameter and has to contain two properties: `startDate` and `interval`, where `startDate` is a date in  ISO 8601 format and period is `'month'` (other values like `'year'` are not supported yet)
 4. `allowList` - checks if provided value is defined in configured "allowlist". Example use case: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter.
 
 ### Supported limits
@@ -186,8 +183,6 @@ All limits can act as `flag` or `allowList` types. Only certain (`members`, `sta
 In case the limit check is run without direct access to the database you can override `currentCountQuery` functions for each "max" or "maxPeriodic" type of limit. An example use case would be a frontend client running in a browser. A browser client can check the limit data through HTTP request and then provide that data to the limit service. Example code to do exactly that:
 
 ```js
-const limitService = new LimitService();
-
 let limits = {
     staff: {
         max: 2,
@@ -195,7 +190,7 @@ let limits = {
     }
 };
 
-limitService.loadLimits({limits, errors});
+const limitService = new LimitService({limits, errors});
 
 if (await limitService.checkIsOverLimit('staff')) {
     // do something as "staff" limit has been reached
@@ -203,7 +198,7 @@ if (await limitService.checkIsOverLimit('staff')) {
 ```
 
 ### Custom error messages
-Errors returned by the limit service can be customized. When configuring the limit service through `loadLimits` method `limits` objects can specify an `error` property that is a template string. Additionally, "MaxLimit" limit type supports following variables- {{count}} and {{max}}.
+Errors returned by the limit service can be customized. The `limits` the service is constructed with can specify an `error` property that is a template string. Additionally, "MaxLimit" limit type supports following variables- {{count}} and {{max}}.
 
 An example configuration for "MaxLimit" limit using an error template can look like following:
 ```json

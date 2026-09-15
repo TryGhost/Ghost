@@ -3,7 +3,8 @@ const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
-const limitService = require('../limits');
+const { service: limitService } = require('../limits');
+
 const labs = require('../../../shared/labs');
 const emailAddressService = require('../email-address');
 
@@ -22,7 +23,7 @@ module.exports = new NewslettersService({
     maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
   }),
   urlUtils,
-  limitService: limitService.service,
+  limitService,
   labs,
   emailAddressService: emailAddressService,
 });

@@ -38,6 +38,17 @@ describe('Limit Service Init', function () {
     sinon.assert.called(loggerStub.warn);
   });
 
+  it('does not keep the limits a failed configuration was meant to replace', function () {
+    limits.init(options({ limits: { staff: { max: 1 } } }));
+    assert.equal(limits.service.isLimited('staff'), true);
+
+    // A limit that resets needs a subscription, so this configuration cannot be built.
+    limits.init(options({ limits: { emails: { maxPeriodic: 1 } } }));
+
+    assert.equal(limits.service.isLimited('staff'), false);
+    sinon.assert.called(loggerStub.warn);
+  });
+
   it('handles limit-service other errors with exit', function () {
     // Anything that is not a misconfiguration is the caller's problem, not the site's.
     assert.throws(() => limits.init(options({ limits: null })));

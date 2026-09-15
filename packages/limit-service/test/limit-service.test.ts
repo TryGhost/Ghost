@@ -16,6 +16,8 @@ import '../src/limits.ts';
 import LimitServiceFromIndex from '../src/index.ts';
 import _ from 'lodash';
 
+const noLimits = LimitService.unlimited(errors);
+
 describe('Limit Service', function () {
     it('is exported via the package index', function () {
         assert.equal(LimitServiceFromIndex, LimitService);
@@ -71,12 +73,10 @@ describe('Limit Service', function () {
 
     describe('Loader', function () {
         it('throws if errors configuration is not specified', function () {
-            const limitService = new LimitService();
-
             const limits = {staff: {max: 2}};
 
             try {
-                limitService.loadLimits({ limits } as unknown as LoadLimitsOptions);
+                new LimitService({ limits } as unknown as LoadLimitsOptions);
                 assert.fail('Should have errored');
             } catch (err) {
                 assertThrownError(err);
@@ -86,11 +86,9 @@ describe('Limit Service', function () {
         });
 
         it('can load a max limit', function () {
-            const limitService = new LimitService();
-
             const limits = {staff: {max: 2}};
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assertHasLimits(limitService.limits, ['staff']);
             assertExists(limitService.limits.staff);
@@ -100,8 +98,6 @@ describe('Limit Service', function () {
         });
 
         it('can load a periodic max limit', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 emails: {
                     maxPeriodic: 3
@@ -113,7 +109,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, subscription, errors});
+            const limitService = new LimitService({limits, subscription, errors});
 
             assertHasLimits(limitService.limits, ['emails']);
             assertExists(limitService.limits.emails);
@@ -123,8 +119,6 @@ describe('Limit Service', function () {
         });
 
         it('throws when loadding a periodic max limit without a subscription', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 emails: {
                     maxPeriodic: 3
@@ -132,7 +126,7 @@ describe('Limit Service', function () {
             };
 
             try {
-                limitService.loadLimits({limits, errors});
+                new LimitService({limits, errors});
                 throw new Error('Should have failed earlier...');
             } catch (error) {
                 assertThrownError(error);
@@ -142,8 +136,6 @@ describe('Limit Service', function () {
         });
 
         it('can load multiple limits', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {max: 2},
                 members: {max: 100},
@@ -152,7 +144,7 @@ describe('Limit Service', function () {
                 limitSocialWeb: {disabled: true}
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assertHasLimits(limitService.limits, ['staff', 'members', 'emails', 'limitStripeConnect', 'limitSocialWeb']);
             assertExists(limitService.limits.staff);
@@ -173,11 +165,9 @@ describe('Limit Service', function () {
         });
 
         it('can load publicSiteAccess flag limit', function () {
-            const limitService = new LimitService();
-
             const limits = {publicSiteAccess: {disabled: true}};
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assertHasLimits(limitService.limits, ['publicSiteAccess']);
             assertExists(limitService.limits.publicSiteAccess);
@@ -187,11 +177,9 @@ describe('Limit Service', function () {
         });
 
         it('can load camel cased limits', function () {
-            const limitService = new LimitService();
-
             const limits = {customThemes: {disabled: true}};
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assertHasLimits(limitService.limits, ['customThemes']);
             assertExists(limitService.limits.customThemes);
@@ -203,11 +191,9 @@ describe('Limit Service', function () {
         });
 
         it('can load incorrectly cased limits', function () {
-            const limitService = new LimitService();
-
             const limits = {custom_themes: {disabled: true}};
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assertHasLimits(limitService.limits, ['customThemes']);
             assertExists(limitService.limits.customThemes);
@@ -219,11 +205,9 @@ describe('Limit Service', function () {
         });
 
         it('answers correctly when no limits are provided', function () {
-            const limitService = new LimitService();
-
             const limits = {};
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assert.equal(limitService.isLimited('staff'), false);
             assert.equal(limitService.isLimited('members'), false);
@@ -232,12 +216,10 @@ describe('Limit Service', function () {
             assert.equal(limitService.isLimited('emails'), false);
         });
 
-        it('populates new limits if called multiple times', function () {
-            const limitService = new LimitService();
-
+        it('carries only the limits it was built with', function () {
             const staffLimit = {staff: {max: 2}};
 
-            limitService.loadLimits({limits: staffLimit, errors});
+            const limitService = new LimitService({limits: staffLimit, errors});
 
             assertHasLimits(limitService.limits, ['staff']);
             assertExists(limitService.limits.staff);
@@ -247,20 +229,18 @@ describe('Limit Service', function () {
 
             const membersLimit = {members: {max: 3}};
 
-            limitService.loadLimits({limits: membersLimit, errors});
+            const rebuilt = new LimitService({limits: membersLimit, errors});
 
-            assertHasLimits(limitService.limits, ['members']);
-            assertExists(limitService.limits.members);
-            assert.ok(limitService.limits.members instanceof MaxLimit);
-            assert.equal(limitService.isLimited('staff'), false);
-            assert.equal(limitService.isLimited('members'), true);
+            assertHasLimits(rebuilt.limits, ['members']);
+            assertExists(rebuilt.limits.members);
+            assert.ok(rebuilt.limits.members instanceof MaxLimit);
+            assert.equal(rebuilt.isLimited('staff'), false);
+            assert.equal(rebuilt.isLimited('members'), true);
         });
     });
 
     describe('Custom limit count query configuration', function () {
         it('can use a custom implementation of max limit query', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -272,7 +252,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             assert.equal(await limitService.checkIsOverLimit('staff'), true);
             assert.equal(await limitService.checkWouldGoOverLimit('staff'), true);
@@ -284,8 +264,6 @@ describe('Limit Service', function () {
 
     describe('Check if any of configured limits are acceded', function () {
         it('Confirms an acceded limit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -315,14 +293,12 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             assert.equal((await limitService.checkIfAnyOverLimit()), true);
         });
 
         it('Does not check flag limits when checking if any are over limit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -359,31 +335,27 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             // Should return false because flag limits' errorIfIsOverLimit does not throw
             assert.equal((await limitService.checkIfAnyOverLimit()), false);
         });
 
         it('Returns nothing if limit is not configured', async function () {
-            const limitService = new LimitService();
+            const isOverLimitResult = await noLimits.checkIsOverLimit('unlimited');
+            assert.equal(isOverLimitResult, false);
 
-            const isOverLimitResult = await limitService.checkIsOverLimit('unlimited');
-            assert.equal(isOverLimitResult, undefined);
+            const wouldGoOverLimitResult = await noLimits.checkWouldGoOverLimit('unlimited');
+            assert.equal(wouldGoOverLimitResult, false);
 
-            const wouldGoOverLimitResult = await limitService.checkWouldGoOverLimit('unlimited');
-            assert.equal(wouldGoOverLimitResult, undefined);
-
-            const errorIfIsOverLimitResult = await limitService.errorIfIsOverLimit('unlimited');
+            const errorIfIsOverLimitResult = await noLimits.errorIfIsOverLimit('unlimited');
             assert.equal(errorIfIsOverLimitResult, undefined);
 
-            const errorIfWouldGoOverLimitResult = await limitService.errorIfWouldGoOverLimit('unlimited');
+            const errorIfWouldGoOverLimitResult = await noLimits.errorIfWouldGoOverLimit('unlimited');
             assert.equal(errorIfWouldGoOverLimitResult, undefined);
         });
 
         it('Throws an error when an allowlist limit is checked', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 // TODO: allowlist type of limits doesn't have "checkIsOverLimit" implemented yet!
                 customThemes: {
@@ -391,7 +363,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             try {
                 await limitService.checkIfAnyOverLimit();
@@ -405,15 +377,13 @@ describe('Limit Service', function () {
 
     describe('checkWouldGoOverLimit', function () {
         it('rethrows non-HostLimitError from errorIfWouldGoOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 customThemes: {
                     allowlist: ['casper', 'dawn', 'lyra']
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             try {
                 await limitService.checkWouldGoOverLimit('customThemes', {});
@@ -432,8 +402,6 @@ describe('Limit Service', function () {
         });
 
         it('passes options for checkIsOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -448,7 +416,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -461,8 +429,6 @@ describe('Limit Service', function () {
         });
 
         it('passes options for checkWouldGoOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -477,7 +443,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -490,8 +456,6 @@ describe('Limit Service', function () {
         });
 
         it('passes options for errorIfIsOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -506,7 +470,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -519,8 +483,6 @@ describe('Limit Service', function () {
         });
 
         it('passes options for errorIfWouldGoOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -535,7 +497,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -548,8 +510,6 @@ describe('Limit Service', function () {
         });
 
         it('passes options for checkIfAnyOverLimit', async function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -588,7 +548,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            limitService.loadLimits({limits, errors, subscription});
+            const limitService = new LimitService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -610,15 +570,11 @@ describe('Limit Service', function () {
     });
 
     describe('isDisabled', function () {
-        it('returns undefined if limit is not configured', function () {
-            const limitService = new LimitService();
-
-            assert.equal(limitService.isDisabled('test'), undefined);
+        it('is not disabled if the limit is not configured', function () {
+            assert.equal(noLimits.isDisabled('test'), false);
         });
 
         it('throws if the limit does not implement .isDisabled()', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 staff: {
                     max: 2,
@@ -626,7 +582,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
 
             try {
                 limitService.isDisabled('staff');
@@ -638,29 +594,52 @@ describe('Limit Service', function () {
         });
 
         it('returns true if the limit is disabled', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 limitSocialWeb: {
                     disabled: true
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
             assert.equal(limitService.isDisabled('limitSocialWeb'), true);
         });
 
         it('returns false if the limit is not disabled', function () {
-            const limitService = new LimitService();
-
             const limits = {
                 limitSocialWeb: {
                     disabled: false
                 }
             };
 
-            limitService.loadLimits({limits, errors});
+            const limitService = new LimitService({limits, errors});
             assert.equal(limitService.isDisabled('limitSocialWeb'), false);
         });
+    });
+});
+
+/**
+ * A site can be limited in one way and not another, so every check has to answer for a
+ * limit its host never configured. That is a different question to a site with no limits
+ * at all, which an unlimited service answers.
+ */
+describe('A limit its host did not configure', function () {
+    const limitService = new LimitService({limits: {staff: {max: 2}}, errors});
+
+    it('is not limited', function () {
+        assert.equal(limitService.isLimited('members'), false);
+    });
+
+    it('is not switched off', function () {
+        assert.equal(limitService.isDisabled('members'), false);
+    });
+
+    it('answers the checks rather than refusing them', async function () {
+        assert.equal(await limitService.checkIsOverLimit('members'), false);
+        assert.equal(await limitService.checkWouldGoOverLimit('members'), false);
+    });
+
+    it('raises nothing', async function () {
+        await limitService.errorIfIsOverLimit('members');
+        await limitService.errorIfWouldGoOverLimit('members');
     });
 });

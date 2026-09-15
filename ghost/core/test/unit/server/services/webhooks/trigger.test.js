@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const { LimitService } = require('@tryghost/limit-service');
+const errors = require('@tryghost/errors');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/webhook-trigger');
 const configUtils = require('../../../../utils/config-utils');
@@ -37,8 +38,8 @@ describe('Webhook Service', function () {
     payload = sinon.stub();
     request = sinon.stub().resolves({});
 
-    const realLimitService = new LimitService();
-    limitService = sinon.stub(realLimitService);
+    // A site limited by nothing, with the answers this suite needs stubbed onto it.
+    limitService = sinon.stub(LimitService.unlimited(errors));
     limitService.isLimited.withArgs('customIntegrations').returns(false);
     limitService.checkWouldGoOverLimit.withArgs('customIntegrations').resolves(false);
 
