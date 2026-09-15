@@ -1662,43 +1662,65 @@ describe('GiftService', function () {
       assert.equal(giftEmailService.sendReminder.callCount, 2);
       assert.equal(giftRepository.update.callCount, 2);
     });
-  });
 
-  describe('sendReminders', function () {
-    it('runs the reminder poll once and logs a structured completion event with its counts', async function () {
+    it('logs a structured completion event with its counts', async function () {
       const infoLog = sinon.stub(logging, 'info');
+      // Two reminders are sent and one redeemer has email disabled: 2 sent, 1 not due, 0 rejected.
+      const gift1 = buildRedeemedGift({ token: 'gift-1', redeemerMemberId: 'member_1' });
+      const gift2 = buildRedeemedGift({ token: 'gift-2', redeemerMemberId: 'member_2' });
+      const gift3 = buildRedeemedGift({ token: 'gift-3', redeemerMemberId: 'member_3' });
+      const disabledRedeemer = buildRedeemer('member_3');
+      disabledRedeemer.get.withArgs('email_disabled').returns(true);
+
+      giftRepository.findPendingReminder.resolves([gift1, gift2, gift3]);
+      giftRepository.getByToken
+        .withArgs('gift-1')
+        .resolves(gift1)
+        .withArgs('gift-1', sinon.match.any)
+        .resolves(gift1)
+        .withArgs('gift-2')
+        .resolves(gift2)
+        .withArgs('gift-2', sinon.match.any)
+        .resolves(gift2)
+        .withArgs('gift-3')
+        .resolves(gift3)
+        .withArgs('gift-3', sinon.match.any)
+        .resolves(gift3);
+      memberRepository.get
+        .withArgs({ id: 'member_1' }, sinon.match.any)
+        .resolves(buildRedeemer('member_1'))
+        .withArgs({ id: 'member_2' }, sinon.match.any)
+        .resolves(buildRedeemer('member_2'))
+        .withArgs({ id: 'member_3' }, sinon.match.any)
+        .resolves(disabledRedeemer);
+
       const service = createService();
-      const processReminders = sinon
-        .stub(service, 'processReminders')
-        .resolves({ remindedCount: 2, skippedCount: 1, failedCount: 3 });
+      await service.processReminders();
 
-      await service.sendReminders();
-
-      sinon.assert.calledOnce(processReminders);
       const completionLog = infoLog
         .getCalls()
         .find((call) => (call.args[0] as any)?.system?.event === 'send_gift_reminders.completed');
-      assert.ok(completionLog, 'the job logs a structured send_gift_reminders.completed event');
+      assert.ok(completionLog, 'the poll logs a structured send_gift_reminders.completed event');
       const { system } = completionLog!.args[0] as any;
       assert.equal(system.reminded_count, 2);
       assert.equal(system.skipped_count, 1);
-      assert.equal(system.failed_count, 3);
+      assert.equal(system.failed_count, 0);
       assert.equal(typeof system.duration_ms, 'number');
       assert.equal(
         completionLog!.args[1],
-        '[Background Job] send-gift-reminders processed reminders: 2 sent, 1 not due, 3 rejected',
+        '[Background Job] send-gift-reminders processed reminders: 2 sent, 1 not due, 0 rejected',
       );
     });
 
     // Only a failed poll query escapes processReminders (per-gift failures are
-    // counted there), and a run that never polled must reach the jobs service
-    // as a failure rather than look like an idle completion.
+    // counted), and a run that never polled must reach the jobs service as a
+    // failure rather than look like an idle completion.
     it('propagates a failed reminder poll and logs no completion', async function () {
       const infoLog = sinon.stub(logging, 'info');
-      const service = createService();
-      sinon.stub(service, 'processReminders').rejects(new Error('reminder poll is broken'));
+      giftRepository.findPendingReminder.rejects(new Error('reminder poll is broken'));
 
-      await assert.rejects(() => service.sendReminders(), /reminder poll is broken/);
+      const service = createService();
+      await assert.rejects(() => service.processReminders(), /reminder poll is broken/);
 
       assert.ok(
         infoLog

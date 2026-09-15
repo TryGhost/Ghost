@@ -58,7 +58,7 @@ export default function registerJobHandlers({
   });
 
   jobsService.handle(SendGiftRemindersJob, async () => {
-    await giftService.sendReminders();
+    await giftService.processReminders();
   });
 
   jobsService.handle(ExternalMediaInlinerJob, async (job) => {
