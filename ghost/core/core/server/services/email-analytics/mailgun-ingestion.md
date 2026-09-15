@@ -65,7 +65,9 @@ retries, the Logs adapter stops the run as throttled instead of failing it:
 pages already processed are kept, the cursor rests on the latest record the
 domain covered, later domains keep the whole window, and the next polling cycle
 resumes once the cooldown has passed. A run that had covered nothing keeps its
-window. Other errors fail immediately. Cancellation removes any pending wait
+window. Sustained throttling within the budget lengthens a run rather than
+failing it: there is no whole-run deadline, and the opened-event lag warning is
+the operator signal. Other errors fail immediately. Cancellation removes any pending wait
 timer. The retry boundary contains only the provider read; processor callbacks
 are never retried by this policy.
 
