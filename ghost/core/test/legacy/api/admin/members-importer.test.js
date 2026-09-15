@@ -4,7 +4,7 @@ const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 const settingsCache = require('../../../../core/shared/settings-cache');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
+const membersService = require('../../../../core/server/services/members');
 
 const { mockManager } = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
@@ -220,8 +220,8 @@ describe('Members Importer API', function () {
       });
   });
 
-  it('Runs imports with stripe_customer_id as background job', function () {
-    return request
+  it('Runs imports with stripe_customer_id as background job', async function () {
+    const res = await request
       .post(localUtils.API.getApiQuery(`members/upload/`))
       .attach(
         'membersfile',
@@ -230,15 +230,16 @@ describe('Members Importer API', function () {
       .set('Origin', config.get('url'))
       .expect('Content-Type', /json/)
       .expect('Cache-Control', testUtils.cacheRules.private)
-      .expect(202)
-      .then((res) => {
-        assert.equal(res.headers['x-cache-invalidate'], undefined);
-        const jsonResponse = res.body;
+      .expect(202);
 
-        assertExists(jsonResponse);
-        assertExists(jsonResponse.meta);
-        assert.equal(jsonResponse.meta.stats, undefined);
-      });
+    assert.equal(res.headers['x-cache-invalidate'], undefined);
+    const jsonResponse = res.body;
+
+    assertExists(jsonResponse);
+    assertExists(jsonResponse.meta);
+    assert.equal(jsonResponse.meta.stats, undefined);
+
+    await membersService.allImportsSettled();
   });
 
   it('Fails to import member with invalid values', function () {
@@ -288,8 +289,6 @@ describe('Members Importer API', function () {
         'Email verification should not be required',
       );
 
-      const awaitCompletion = jobManager.awaitCompletion('members-import');
-
       const res = await request
         .post(localUtils.API.getApiQuery(`members/upload/`))
         .field('labels', ['new-global-label'])
@@ -308,7 +307,7 @@ describe('Members Importer API', function () {
       assertExists(jsonResponse.meta);
 
       // Wait for the job to finish
-      await awaitCompletion;
+      await membersService.allImportsSettled();
 
       assert.equal(
         settingsCache.get('email_verification_required'),
@@ -371,8 +370,6 @@ describe('Members Importer API', function () {
         'Email verification should not be required',
       );
 
-      const awaitCompletion = jobManager.awaitCompletion('members-import');
-
       const res = await request
         .post(localUtils.API.getApiQuery(`members/upload/`))
         .field('labels', ['new-global-label'])
@@ -391,7 +388,7 @@ describe('Members Importer API', function () {
       assertExists(jsonResponse.meta);
 
       // Wait for the job to finish
-      await awaitCompletion;
+      await membersService.allImportsSettled();
 
       assert.equal(
         settingsCache.get('email_verification_required'),

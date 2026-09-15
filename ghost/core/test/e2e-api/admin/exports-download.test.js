@@ -6,6 +6,7 @@ const supertest = require('supertest');
 const { extract } = require('@tryghost/zip');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const membersService = require('../../../core/server/services/members');
 const localUtils = require('./utils');
 
 // These tests make real HTTP requests (like the theme download tests) instead
@@ -162,6 +163,8 @@ describe('Exports API — download', function () {
       .expect((response) => {
         assert.ok([201, 202].includes(response.status), `expected 201/202, got ${response.status}`);
       });
+    // a deferred import finishes in the background, so let it land before moving on
+    await membersService.allImportsSettled();
 
     // themes/{name}.zip → theme upload (test-theme rather than casper:
     // overriding default themes is blocked by design)
