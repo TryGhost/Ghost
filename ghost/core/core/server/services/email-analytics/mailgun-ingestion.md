@@ -31,7 +31,7 @@ sending domain hosted in a subaccount returns no events.
 
 The Logs endpoint is derived from the configured base URL by replacing its
 trailing `/v3` with `/v1/analytics/logs`, so a proxy prefix is preserved. The
-adapter requests 100 records per page; the provider's maximum is undocumented.
+adapter requests 100 records per page, the provider's maximum.
 Opaque pagination tokens stay in request bodies with the original filters and
 window; they are never followed as URLs. A page with no records but a token is
 followed. Records the provider returns count toward the per-domain budget even
