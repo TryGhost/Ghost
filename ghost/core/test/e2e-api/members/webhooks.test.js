@@ -4232,5 +4232,148 @@ describe('Members API', function () {
           );
         });
     });
+
+    describe('incomplete subscription conversions', function () {
+      let memberId;
+      let postId;
+      let initialConversions;
+
+      beforeEach(async function () {
+        postId = fixtureManager.get('posts', 0).id;
+        const postResponse = await adminAgent
+          .get(`/posts/${postId}/?include=count.paid_conversions`)
+          .expectStatus(200);
+        initialConversions = postResponse.body.posts[0].count.paid_conversions;
+
+        const customerId = createStripeID('cus');
+        const response = await adminAgent
+          .post('/members/')
+          .body({
+            members: [{ email: `${customerId}@example.com`, subscribed: false }],
+          })
+          .expectStatus(201);
+        memberId = response.body.members[0].id;
+        await models.MemberStripeCustomer.add({
+          member_id: memberId,
+          customer_id: customerId,
+        });
+        set(customer, { id: customerId, invoice_settings: {}, subscriptions: { data: [] } });
+        set(subscription, {
+          id: createStripeID('sub'),
+          customer: customerId,
+          status: 'incomplete',
+          cancel_at_period_end: false,
+          start_date: beforeNow / 1000,
+          current_period_end: beforeNow / 1000 + 86400 * 31,
+          items: {
+            data: [
+              {
+                price: {
+                  id: 'price_123',
+                  product: 'product_123',
+                  active: true,
+                  nickname: 'month',
+                  currency: 'usd',
+                  recurring: { interval: 'month' },
+                  unit_amount: 150,
+                  type: 'recurring',
+                },
+              },
+            ],
+          },
+          metadata: {
+            attribution_id: postId,
+            attribution_type: 'post',
+            attribution_url: '/original-post/',
+            referrer_source: 'Google',
+            utm_campaign: 'summer',
+          },
+        });
+      });
+
+      async function deliver(type, payloadSubscription = subscription) {
+        const payload = JSON.stringify({ type, data: { object: payloadSubscription } });
+        const signature = stripe.webhooks.generateTestHeaderString({
+          payload,
+          secret: process.env.WEBHOOK_SECRET,
+        });
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(payload)
+          .header('content-type', 'application/json')
+          .header('stripe-signature', signature)
+          .expectStatus(200);
+        await DomainEvents.allSettled();
+      }
+
+      async function assertConversions(expected) {
+        const response = await adminAgent
+          .get(`/posts/${postId}/?include=count.paid_conversions`)
+          .expectStatus(200);
+        assert.equal(response.body.posts[0].count.paid_conversions, initialConversions + expected);
+        const events = await models.SubscriptionCreatedEvent.where(
+          'member_id',
+          memberId,
+        ).fetchAll();
+        assert.equal(events.length, expected);
+        if (expected) {
+          assert.equal(events.at(0).get('attribution_id'), postId);
+          assert.equal(events.at(0).get('referrer_source'), 'Google');
+          assert.equal(events.at(0).get('utm_campaign'), 'summer');
+        }
+      }
+
+      it('keeps incomplete and expired attempts out of paid conversions and activity', async function () {
+        await deliver('customer.subscription.created');
+        await assertConversions(0);
+        subscription.status = 'incomplete_expired';
+        await deliver('customer.subscription.updated');
+        await deliver('customer.subscription.updated');
+
+        await assertConversions(0);
+        await assertSubscription(subscription.id, { status: 'incomplete_expired', mrr: 0 });
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [],
+        });
+        const response = await adminAgent.get(`/members/${memberId}/`).expectStatus(200);
+        assert.equal(response.body.members[0].status, 'free');
+        assert.equal(response.body.members[0].subscriptions.length, 0);
+      });
+
+      it('counts successful checkout once and retains it after cancellation', async function () {
+        const originalWebhook = structuredClone(subscription);
+        await deliver('customer.subscription.created');
+        await assertConversions(0);
+        subscription.status = 'active';
+        await deliver('customer.subscription.updated');
+        // A delayed creation webhook must use the current Stripe state and not duplicate the conversion.
+        await deliver('customer.subscription.created', originalWebhook);
+        await deliver('customer.subscription.updated');
+
+        await assertConversions(1);
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [{ type: 'created', from_plan: null, to_plan: 'price_123', mrr_delta: 150 }],
+        });
+        const response = await adminAgent.get(`/members/${memberId}/`).expectStatus(200);
+        assert.equal(response.body.members[0].status, 'paid');
+
+        subscription.status = 'canceled';
+        subscription.canceled_at = Math.floor(Date.now() / 1000);
+        await deliver('customer.subscription.deleted');
+        await assertConversions(1);
+        await assertMemberEvents({
+          eventType: 'MemberPaidSubscriptionEvent',
+          memberId,
+          asserts: [
+            { type: 'created', mrr_delta: 150 },
+            { type: 'expired', mrr_delta: -150 },
+          ],
+        });
+      });
+    });
   });
 });
