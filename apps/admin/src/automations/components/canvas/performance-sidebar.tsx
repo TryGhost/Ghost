@@ -12,8 +12,23 @@ import {
   PERFORMANCE_RANGES,
 } from '@/automations/utils/performance-date-range';
 
-export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automationId }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const PerformanceSidebar: React.FC<{
+  automationId: string;
+  isOpen: boolean;
+  isHistoryOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string, memberName: string) => void;
+  isRunSelectionDisabled: boolean;
+}> = ({
+  automationId,
+  isOpen,
+  isHistoryOpen,
+  onOpenChange,
+  selectedRunId,
+  onSelectRun,
+  isRunSelectionDisabled,
+}) => {
   const [hasOpened, setHasOpened] = useState(false);
   const [status, setStatus] = useState<AutomationRunStatusFilter | null>(null);
   const [requestRevision, setRequestRevision] = useState(0);
@@ -29,13 +44,13 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide performance' : 'Show performance'}
-        className="absolute top-4 left-4 z-10"
+        className="absolute top-4 left-4 z-20"
         size="icon"
         type="button"
         variant="ghost"
         onClick={() => {
           setHasOpened(true);
-          setIsOpen((open) => !open);
+          onOpenChange(!isOpen);
         }}
       >
         <LucideIcon.PanelLeft strokeWidth={2} />
@@ -50,12 +65,25 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
         aria-labelledby={headingId}
         className={cn(
           'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
-          isOpen ? 'w-[min(480px,calc(100cqw-6rem))]' : 'w-0',
+          isHistoryOpen
+            ? '@max-[640px]/automation:absolute @max-[640px]/automation:inset-y-0 @max-[640px]/automation:left-0 @max-[640px]/automation:z-10'
+            : '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
+          isOpen
+            ? cn(
+                'w-[480px]',
+                isHistoryOpen ? '@max-[640px]/automation:w-full' : '@max-[960px]/automation:w-full',
+              )
+            : 'w-0',
         )}
         id={panelId}
       >
         {/* Size the content against the canvas, not the animated clipping panel. */}
-        <Box className="h-full w-[min(480px,calc(100cqw-6rem))] overflow-y-auto border-r border-border-default px-6 py-4">
+        <Box className={cn(
+            'h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4',
+            isHistoryOpen
+              ? '@max-[640px]/automation:w-[100cqw]'
+              : '@max-[960px]/automation:w-[100cqw]',
+          )}>
           <Inline className="h-9 pl-10" gap="none" justify="between">
             <Text as="h2" id={headingId} size="md" weight="semibold">
               Performance
@@ -93,7 +121,14 @@ export const PerformanceSidebar: React.FC<{ automationId: string }> = ({ automat
                   setRequestRevision((revision) => revision + 1);
                 }}
               />
-              <RunList automationId={automationId} requestId={requestId} status={status} />
+              <RunList
+                automationId={automationId}
+                isSelectionDisabled={isRunSelectionDisabled}
+                requestId={requestId}
+                selectedRunId={selectedRunId}
+                status={status}
+                onSelectRun={onSelectRun}
+              />
             </Stack>
           )}
         </Box>

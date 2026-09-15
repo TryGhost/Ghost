@@ -69,6 +69,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
 
   const editMutation = useEditAutomation();
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
+  const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
   const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
   const isEmailModalDirtyRef = React.useRef(false);
@@ -421,9 +422,9 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
       <AutomationHeader
         automation={draft}
         isLoadingAutomation={isEditorLoading}
-        isPublishButtonEnabled={isPublishButtonEnabled}
-        isSaveButtonEnabled={isSaveButtonEnabled}
-        isTurnOffButtonEnabled={isTurnOffButtonEnabled}
+        isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
+        isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
+        isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
         publishButtonChildren={publishButtonChildren}
         publishButtonVariant={publishButtonVariant}
         saveButtonChildren={saveButtonChildren}
@@ -439,6 +440,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        selectedRunId={selectedRunId}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -457,6 +459,7 @@ const AutomationEditorContent: React.FC<{ automationId: string }> = ({ automatio
           isBlockedEmailNavigationLeavingEditorRef.current = false;
           interceptedNavigation.reset();
         }}
+        onSelectRun={setSelectedRunId}
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />
