@@ -175,7 +175,7 @@ catalog:
   semver: 7.8.5
   should: 13.2.3
   sinon: 22.0.0
-  sonner: 2.0.7
+  sonner: 2.0.8
   storybook: 10.4.6
   stylelint: 17.14.1
   supertest: 7.2.2
