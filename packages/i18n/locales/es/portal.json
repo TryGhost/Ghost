@@ -11,6 +11,7 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% de descuento",
     "{duration} membership": "",
+    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} ya no recibirá boletines de {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} ya no recibirá correos electrónicos cuando alguien responde a tus comentarios.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} ya no recibirá este boletín.",

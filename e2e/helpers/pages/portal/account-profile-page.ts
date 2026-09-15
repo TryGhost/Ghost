@@ -8,14 +8,12 @@ import { PortalPage } from './portal-page';
 export class PortalAccountProfilePage extends PortalPage {
   readonly title: Locator;
   readonly saveButton: Locator;
-  readonly notificationFrame: ReturnType<Page['frameLocator']>;
 
   constructor(page: Page) {
     super(page);
 
     this.title = this.portalFrame.getByRole('heading', { name: 'Account settings' });
     this.saveButton = this.portalFrame.getByRole('button', { name: 'Save' });
-    this.notificationFrame = page.frameLocator('[data-testid="portal-notification-frame"]');
   }
 
   /** A scalar field's single input, named for the field it holds. */

@@ -10,6 +10,7 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "punguzo la {discount}%",
     "{duration} membership": "",
+    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} haitapokea jarida la {newsletterName} tena.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} haitapokea barua pepe tena wakati mtu anapojibu maoni yako.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} haitapokea jarida hili tena.",

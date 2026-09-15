@@ -149,6 +149,84 @@ describe('updateProfile action', () => {
     expect(result.popupNotification.message).toBe('Failed to update account details');
   });
 
+  // A verification mail going out says nothing about whether the values saved. Reporting
+  // success here lost what the member typed and left the page before they could see why.
+  test('does not call a save successful when the email sent but the values were refused', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+    });
+    const mockApi = {
+      member: {
+        update: vi.fn(() => Promise.reject(refusal)),
+        updateEmailAddress: vi.fn(() => Promise.resolve({ success: true })),
+      },
+    };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'new@example.com',
+        metafields: { custom: { nickname: 'x' } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+    // Still on the page, so the marked input is there to be seen and fixed.
+    expect(result.page).toBeUndefined();
+  });
+
+  // The whole of a composite can be refused — archived, or closed to members, while the
+  // page was open — and no one box is named for the field, so the notification keeps it.
+  test('names the field when the whole of a composite is refused', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Cannot set custom field: custom.shipping_address', {
+      property: 'metafields.custom.shipping_address',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe(
+      'Shipping address: Cannot set custom field: custom.shipping_address',
+    );
+  });
+
+  // Leaving the page discards what was typed, so a refusal of it must not come back to
+  // mark a value the member never sees again.
+  test('forgets a refusal when the member leaves the page', async () => {
+    const result = await ActionHandler({
+      action: 'switchPage',
+      data: { page: 'accountHome' },
+      state: { fieldErrors: { 'custom:nickname': 'Keep it under 255 characters.' } },
+      api: {},
+    });
+
+    expect(result.fieldErrors).toEqual({});
+  });
+
   test('keeps the usual message when a failure names no field', async () => {
     const mockApi = { member: { update: vi.fn(() => Promise.reject(new Error('offline'))) } };
     const state = { member: { name: 'Jamie', email: 'jamie@example.com' }, customFields: [] };

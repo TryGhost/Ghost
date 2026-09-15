@@ -11,6 +11,7 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% popusta",
     "{duration} membership": "",
+    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} više neće dobijati {newsletterName} bilten.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} više neće dobijati email-ove kada neko odgovori na Vaše komentare.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} više neće dobijati ovaj bilten.",
