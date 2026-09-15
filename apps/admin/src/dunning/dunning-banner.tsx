@@ -1,4 +1,5 @@
 import { Button } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
@@ -38,7 +39,7 @@ export function DunningBanner() {
       data-testid="dunning-banner"
       role="alert"
     >
-      <div className="flex items-center gap-2.5 text-sm">
+      <Inline align="center" className="text-sm" gap="sm">
         <LucideIcon.TriangleAlert
           className={cn(
             'size-4 shrink-0',
@@ -49,7 +50,7 @@ export function DunningBanner() {
           <span className="font-semibold">{bannerTitle(state, isOwner)}</span>{' '}
           {bannerMessage(state, isOwner)}
         </span>
-      </div>
+      </Inline>
       {isOwner && (
         <Button size="sm" asChild>
           {/* Following the CTA counts as seeing the message: the locked
