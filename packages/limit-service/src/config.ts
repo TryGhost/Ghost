@@ -4,7 +4,7 @@ import type { Knex, LimitConfig } from './types.ts';
 // Each type of limit has it's own structure:
 // 1. FlagLimit and AllowlistLimit types are empty objects paired with a key, e.g.: `customThemes: {}`
 // 2. MaxLimit should contain a `currentCountQuery` function which would count the resources under limit
-const config: Record<string, LimitConfig> = {
+const config = {
     members: {
         currentCountQuery: async (knex: Knex) => {
             const result = await knex('members').count('id', {as: 'count'}).first();
@@ -53,7 +53,9 @@ const config: Record<string, LimitConfig> = {
         // NOTE: this function should not ever be used as for uploads we compare the size
         //       of the uploaded file with the configured limit. Noop is here to keep the
         //       MaxLimit constructor happy
-        currentCountQuery: () => undefined,
+        // Takes the connection it is handed and ignores it, so that it is called the way
+        // every other count query is.
+        currentCountQuery: (_knex?: Knex) => undefined,
         // NOTE: the uploads limit is based on file sizes provided in Bytes
         //       a custom formatter is here for more user-friendly formatting when forming an error
         formatter: count => `${Number(count) / 1000000}MB`
@@ -63,6 +65,13 @@ const config: Record<string, LimitConfig> = {
     limitSocialWeb: {},
     limitCustomFields: {},
     publicSiteAccess: {}
-};
+} satisfies Record<string, LimitConfig>;
+
+/**
+ * Every limit this package supports, as a type. The manifest above is the allowlist the
+ * loader already applies, so deriving the names from it means a limit cannot be asked
+ * about unless it has been declared here first.
+ */
+export type LimitName = keyof typeof config;
 
 export default config;

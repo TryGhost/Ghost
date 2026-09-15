@@ -7,7 +7,12 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
-import { LimitService, type LimitConfig, type Limits } from '@tryghost/limit-service';
+import {
+  LimitService,
+  type LimitConfig,
+  type LimitName,
+  type Limits,
+} from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -16,9 +21,9 @@ class IncorrectUsageError extends Error {
   }
 }
 
-// What answers a question about limits, re-exported so Admin can name it without depending
-// on the limit service directly.
-export type { Limits };
+// The set of limits callers may ask about, and what answers them, re-exported so Admin can
+// name either without depending on the limit service directly.
+export type { LimitName, Limits };
 
 export const useLimiter = (): Limits => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
