@@ -134,6 +134,11 @@ class MailgunEmailProvider {
         messageData.deliveryTime = options.deliveryTime;
       }
 
+      // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
+      if (this.#config.get('bulkEmail:perRecipientMessageId') === true) {
+        messageData.perRecipientMessageId = true;
+      }
+
       // create recipient data for Mailgun using replacement definitions
       const htmlEscapedIds = new Set(
         replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id),

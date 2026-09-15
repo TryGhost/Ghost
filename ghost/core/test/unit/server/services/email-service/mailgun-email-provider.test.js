@@ -163,6 +163,56 @@ describe('Mailgun Email Provider', function () {
       });
     });
 
+    describe('per-recipient Message-Id', function () {
+      const buildEmailData = () => ({
+        subject: 'Hi',
+        html: '<html><body>Hi {{name}}</body></html>',
+        plaintext: 'Hi',
+        from: 'ghost@example.com',
+        replyTo: 'ghost@example.com',
+        emailId: '123',
+        domainOverride: undefined,
+        recipients: [
+          {
+            email: 'member@example.com',
+            replacements: [{ id: 'name', token: '{{name}}', value: 'John' }],
+          },
+        ],
+        replacementDefinitions: [{ id: 'name', token: '{{name}}', getValue: () => 'John' }],
+      });
+
+      const sendOptions = { clickTrackingEnabled: false, openTrackingEnabled: false };
+
+      it('requests per-recipient Message-Ids when enabled in config', async function () {
+        config.get.withArgs('bulkEmail:perRecipientMessageId').returns(true);
+        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
+
+        await mailgunEmailProvider.send(buildEmailData(), sendOptions);
+
+        const [messageData] = sendStub.firstCall.args;
+        assert.equal(messageData.perRecipientMessageId, true);
+      });
+
+      it('does not request per-recipient Message-Ids by default', async function () {
+        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
+
+        await mailgunEmailProvider.send(buildEmailData(), sendOptions);
+
+        const [messageData] = sendStub.firstCall.args;
+        assert.equal('perRecipientMessageId' in messageData, false);
+      });
+
+      it('only honours a boolean true from config', async function () {
+        config.get.withArgs('bulkEmail:perRecipientMessageId').returns('true');
+        const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
+
+        await mailgunEmailProvider.send(buildEmailData(), sendOptions);
+
+        const [messageData] = sendStub.firstCall.args;
+        assert.equal('perRecipientMessageId' in messageData, false);
+      });
+    });
+
     it('handles mailgun client error correctly', async function () {
       const mailgunErr = new Error('Bad Request');
       mailgunErr.details = 'Invalid domain';
