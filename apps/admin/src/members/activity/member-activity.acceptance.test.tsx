@@ -354,7 +354,9 @@ describe('Member activity', () => {
       .element(screen.preview().getByText('Daily sender', { exact: false }))
       .toBeVisible();
     await page.getByRole('radio', { name: 'Mobile', exact: true }).click();
-    await expect.element(screen.preview().getByText('Subject', { exact: true })).toBeVisible();
+    await expect
+      .element(screen.preview().getByText('Original newsletter', { exact: true }))
+      .toBeVisible();
     await page.viewport(375, 720);
     await expect
       .poll(() => screen.preview().element().scrollWidth - screen.preview().element().clientWidth)
