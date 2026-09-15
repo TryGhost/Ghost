@@ -487,6 +487,27 @@ describe('Limit', function () {
                 }
             });
 
+            it('throws if initialized with a start date it cannot read', function () {
+                // A period is counted from this date. One nobody can read would leave the
+                // limit counting a site's whole history against one period's allowance.
+                const config = {
+                    maxPeriodic: 100,
+                    currentCountQuery: (() => {}) as unknown as CurrentCountQuery,
+                    interval: 'month' as const,
+                    startDate: 'not a date'
+                };
+
+                assert.throws(
+                    () => new MaxPeriodicLimit({name: 'unreadable!', config, errors}),
+                    (err: unknown) => {
+                        assertThrownError(err);
+                        assert.equal(err.errorType, 'IncorrectUsageError');
+                        assert.match(err.message, /unreadable start date/i);
+                        return true;
+                    }
+                );
+            });
+
             it('throws if initialized without interval', function () {
                 const config = {
                     maxPeriodic: 100,

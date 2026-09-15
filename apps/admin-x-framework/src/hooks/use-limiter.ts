@@ -9,7 +9,7 @@ import { HostLimitError } from '../utils/errors';
 
 import {
   LimitService,
-  type LimitConfig,
+  readHostSettings,
   type LimitName,
   type Limits,
 } from '@tryghost/limit-service';
@@ -57,42 +57,43 @@ export const useLimiter = (): Limits => {
       return LimitService.unlimited({ HostLimitError, IncorrectUsageError });
     }
 
-    const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
-
-    if (limits.staff) {
-      limits.staff.currentCountQuery = () => {
-        // Keep the existing first-page behavior for this move. Full pagination is tracked in
-        // PLA-369 because excluded users/invites can push countable staff onto later pages.
-        const staffUsers = users.filter(
-          (user) =>
-            user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
-        );
-        const staffInvites = invites.filter((invite) => {
-          const role = roles?.find(({ id }) => id === invite.role_id);
-          return role?.name !== 'Contributor';
-        });
-
-        return Promise.resolve(staffUsers.length + staffInvites.length);
-      };
-    }
-
-    if (limits.members) {
-      limits.members.currentCountQuery = async () => {
-        const { data: members } = await fetchMembers();
-        return members?.meta?.pagination?.total || 0;
-      };
-    }
-
-    if (limits.newsletters) {
-      limits.newsletters.currentCountQuery = async () => {
-        const { data: { pages } = { pages: [] } } = await fetchNewsletters();
-        return pages[0].meta?.pagination.total || 0;
-      };
-    }
+    // Host settings arrive as whatever the API sent, so they are read rather than assumed,
+    // and a limit that cannot be used is set aside rather than thrown: Admin would
+    // otherwise go blank over a limit a publisher cannot do anything about. What was set
+    // aside is not reported here, because the server reads the same host settings and logs
+    // every one of them where it can be alerted on.
+    const { settings } = readHostSettings(config.hostSettings);
 
     return new LimitService({
-      limits,
+      settings,
       helpLink,
+      // How to count is behaviour, not configuration: a browser asks the API for a number
+      // the server would have asked the database for.
+      currentCountQueries: {
+        staff: () => {
+          // Keep the existing first-page behavior for this move. Full pagination is tracked
+          // in PLA-369 because excluded users/invites can push countable staff onto later
+          // pages.
+          const staffUsers = users.filter(
+            (user) =>
+              user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
+          );
+          const staffInvites = invites.filter((invite) => {
+            const role = roles?.find(({ id }) => id === invite.role_id);
+            return role?.name !== 'Contributor';
+          });
+
+          return Promise.resolve(staffUsers.length + staffInvites.length);
+        },
+        members: async () => {
+          const { data: members } = await fetchMembers();
+          return members?.meta?.pagination?.total || 0;
+        },
+        newsletters: async () => {
+          const { data: { pages } = { pages: [] } } = await fetchNewsletters();
+          return pages[0].meta?.pagination.total || 0;
+        },
+      },
       errors: { HostLimitError, IncorrectUsageError },
     });
   }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);

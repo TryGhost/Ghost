@@ -2,14 +2,17 @@ import { strict as assert } from 'node:assert';
 
 
 import errors from './fixtures/errors.ts';
+import { buildService } from './utils/build-service.ts';
 import { assertAlwaysCalledWith, assertExists, assertHasLimits, assertThrownCountedError, assertThrownError } from './utils/assertions.ts';
 
-import type { CurrentCountQuery, LoadLimitsOptions } from '../src/types.ts';
+import type { CurrentCountQuery, LimitServiceOptions } from '../src/types.ts';
 import type { LimitName } from '../src/index.ts';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LimitService } from '../src/limit-service.ts';
+import { readHostSettings } from '../src/host-limits.ts';
+import type { ParsedHostSettings } from '../src/host-limits.ts';
 import { FlagLimit, MaxLimit, MaxPeriodicLimit } from '../src/limits.ts';
 // Imported for the side effect the assertion below is about: this package uses a custom
 // template interpolation and must not leave it applied to everyone else's lodash.
@@ -77,31 +80,25 @@ describe('Limit Service', function () {
     });
 
     describe('Loader', function () {
-        it('refuses a periodic limit whose start date cannot be read', function () {
+        it('sets aside a periodic limit whose start date cannot be read', function () {
             // A period is counted from the start date. A limit that cannot say where its
             // period begins would otherwise count the whole history against an allowance
             // meant for one period, which reaches a publisher as a send they cannot make.
-            assert.throws(
-                () =>
-                    new LimitService({
-                        limits: {emails: {maxPeriodic: 1}},
-                        subscription: {startDate: 'not a date', interval: 'month'},
-                        errors
-                    }),
-                (err: unknown) => {
-                    assertThrownError(err);
-                    assert.equal(err.errorType, 'IncorrectUsageError');
-                    assert.match(err.message, /unreadable start date/);
-                    return true;
-                }
-            );
+            const {settings, rejected} = readHostSettings({
+                limits: {emails: {maxPeriodic: 1}},
+                subscription: {start: 'not a date'}
+            });
+            const limitService = new LimitService({settings, errors});
+
+            assert.equal(limitService.isLimited('emails'), false);
+            assert.deepEqual(rejected.map(limit => limit.name), ['subscription', 'emails']);
         });
 
         it('throws if errors configuration is not specified', function () {
             const limits = {staff: {max: 2}};
 
             try {
-                new LimitService({ limits } as unknown as LoadLimitsOptions);
+                new LimitService({ limits } as unknown as LimitServiceOptions);
                 assert.fail('Should have errored');
             } catch (err) {
                 // A plain error, because what the caller failed to supply is the classes
@@ -114,7 +111,7 @@ describe('Limit Service', function () {
         it('can load a max limit', function () {
             const limits = {staff: {max: 2}};
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assertHasLimits(limitService.limits, ['staff']);
             assertExists(limitService.limits.staff);
@@ -135,7 +132,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, subscription, errors});
+            const limitService = buildService({limits, subscription, errors});
 
             assertHasLimits(limitService.limits, ['emails']);
             assertExists(limitService.limits.emails);
@@ -144,21 +141,13 @@ describe('Limit Service', function () {
             assert.equal(limitService.isLimited('staff'), false);
         });
 
-        it('throws when loadding a periodic max limit without a subscription', function () {
-            const limits = {
-                emails: {
-                    maxPeriodic: 3
-                }
-            };
+        it('sets aside a periodic max limit configured without a subscription', function () {
+            // This used to throw, taking every other limit with it.
+            const {settings, rejected} = readHostSettings({limits: {emails: {maxPeriodic: 3}}});
+            const limitService = new LimitService({settings, errors});
 
-            try {
-                new LimitService({limits, errors});
-                throw new Error('Should have failed earlier...');
-            } catch (error) {
-                assertThrownError(error);
-                assert.equal(error.errorType, 'IncorrectUsageError');
-                assert.match(error.message, /periodic max limit without a subscription/);
-            }
+            assert.equal(limitService.isLimited('emails'), false);
+            assert.match(String(rejected[0]?.reason), /needs a subscription/);
         });
 
         it('can load multiple limits', function () {
@@ -170,7 +159,7 @@ describe('Limit Service', function () {
                 limitSocialWeb: {disabled: true}
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assertHasLimits(limitService.limits, ['staff', 'members', 'emails', 'limitStripeConnect', 'limitSocialWeb']);
             assertExists(limitService.limits.staff);
@@ -193,7 +182,7 @@ describe('Limit Service', function () {
         it('can load publicSiteAccess flag limit', function () {
             const limits = {publicSiteAccess: {disabled: true}};
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assertHasLimits(limitService.limits, ['publicSiteAccess']);
             assertExists(limitService.limits.publicSiteAccess);
@@ -205,7 +194,7 @@ describe('Limit Service', function () {
         it('can load camel cased limits', function () {
             const limits = {customThemes: {disabled: true}};
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assertHasLimits(limitService.limits, ['customThemes']);
             assertExists(limitService.limits.customThemes);
@@ -219,7 +208,7 @@ describe('Limit Service', function () {
             // Loading reads the host's settings under the key the host wrote and stores the
             // limit under its own name. Before, loading looked for those settings under the
             // name it had normalised, found none, and built a limit that refused nothing.
-            const limitService = new LimitService({limits: {custom_themes: {disabled: true}}, errors});
+            const limitService = buildService({limits: {custom_themes: {disabled: true}}, errors});
 
             assert.equal(limitService.isLimited('customThemes'), true);
             assert.equal(await limitService.checkWouldGoOverLimit('customThemes'), true);
@@ -234,7 +223,7 @@ describe('Limit Service', function () {
 
             const limits = {custom_themes: {disabled: true}};
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assertHasLimits(limitService.limits, ['customThemes']);
             assertExists(limitService.limits.customThemes);
@@ -251,7 +240,7 @@ describe('Limit Service', function () {
         it('answers correctly when no limits are provided', function () {
             const limits = {};
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assert.equal(limitService.isLimited('staff'), false);
             assert.equal(limitService.isLimited('members'), false);
@@ -263,7 +252,7 @@ describe('Limit Service', function () {
         it('carries only the limits it was built with', function () {
             const staffLimit = {staff: {max: 2}};
 
-            const limitService = new LimitService({limits: staffLimit, errors});
+            const limitService = buildService({limits: staffLimit, errors});
 
             assertHasLimits(limitService.limits, ['staff']);
             assertExists(limitService.limits.staff);
@@ -273,7 +262,7 @@ describe('Limit Service', function () {
 
             const membersLimit = {members: {max: 3}};
 
-            const rebuilt = new LimitService({limits: membersLimit, errors});
+            const rebuilt = buildService({limits: membersLimit, errors});
 
             assertHasLimits(rebuilt.limits, ['members']);
             assertExists(rebuilt.limits.members);
@@ -296,7 +285,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             assert.equal(await limitService.checkIsOverLimit('staff'), true);
             assert.equal(await limitService.checkWouldGoOverLimit('staff'), true);
@@ -337,7 +326,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             assert.equal((await limitService.checkIfAnyOverLimit()), true);
         });
@@ -379,7 +368,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             // Should return false because flag limits' errorIfIsOverLimit does not throw
             assert.equal((await limitService.checkIfAnyOverLimit()), false);
@@ -402,7 +391,7 @@ describe('Limit Service', function () {
         it('rethrows non-HostLimitError from errorIfIsOverLimit', async function () {
             // Naming the limit reaches the check directly, where asking an allowlist limit
             // without a value no longer does now that the sweep passes over them.
-            const limitService = new LimitService({
+            const limitService = buildService({
                 limits: {customThemes: {allowlist: ['casper', 'dawn', 'lyra']}},
                 errors
             });
@@ -425,7 +414,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             // This used to raise `Attempted to check an allowlist limit without a value`,
             // which escaped and left the site unable to answer the question at all.
@@ -441,7 +430,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             try {
                 await limitService.checkWouldGoOverLimit('customThemes', {});
@@ -474,7 +463,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -501,7 +490,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -528,7 +517,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -555,7 +544,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -606,7 +595,7 @@ describe('Limit Service', function () {
                 startDate: '2021-09-18T19:00:52Z'
             };
 
-            const limitService = new LimitService({limits, errors, subscription});
+            const limitService = buildService({limits, errors, subscription});
 
             const options = {
                 testData: 'true'
@@ -640,7 +629,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
 
             try {
                 limitService.isDisabled('staff');
@@ -658,7 +647,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
             assert.equal(limitService.isDisabled('limitSocialWeb'), true);
         });
 
@@ -669,7 +658,7 @@ describe('Limit Service', function () {
                 }
             };
 
-            const limitService = new LimitService({limits, errors});
+            const limitService = buildService({limits, errors});
             assert.equal(limitService.isDisabled('limitSocialWeb'), false);
         });
     });
@@ -681,7 +670,7 @@ describe('Limit Service', function () {
  * at all, which an unlimited service answers.
  */
 describe('A limit its host did not configure', function () {
-    const limitService = new LimitService({limits: {staff: {max: 2}}, errors});
+    const limitService = buildService({limits: {staff: {max: 2}}, errors});
 
     it('is not limited', function () {
         assert.equal(limitService.isLimited('members'), false);
@@ -709,7 +698,7 @@ describe('A limit its host did not configure', function () {
  */
 describe('Checking every limit at once', function () {
     it('answers for a site that has an allowlist limit', async function () {
-        const limitService = new LimitService({
+        const limitService = buildService({
             limits: {
                 customThemes: {allowlist: ['casper']},
                 staff: {max: 100, currentCountQuery: () => 1}
@@ -721,7 +710,7 @@ describe('Checking every limit at once', function () {
     });
 
     it('still reports a site that is over a limit it can answer for', async function () {
-        const limitService = new LimitService({
+        const limitService = buildService({
             limits: {
                 customThemes: {allowlist: ['casper']},
                 staff: {max: 0, currentCountQuery: () => 5}
@@ -738,28 +727,37 @@ describe('Checking every limit at once', function () {
  * Ghost, and are recorded here because they are the package's behaviour, not Ghost's.
  */
 describe('Limits a host configures that cannot be built', function () {
-    it('stops at the one it cannot build, losing the limits configured alongside it', function () {
-        // An allowlist limit with an empty list cannot be built, and building stops there,
-        // so a site ends up unlimited in ways nobody asked for.
-        assert.throws(
-            () => new LimitService({
-                limits: {
-                    customThemes: {allowlist: []},
-                    limitStripeConnect: {disabled: true}
-                },
-                errors
-            }),
-            (err) => {
-                assertThrownError(err);
-                assert.equal(err.errorType, 'IncorrectUsageError');
-                assert.match(err.message, /allowlist limit without an allowlist/);
-                return true;
+    it('passes over a name it does not know, for callers with no types to stop them', function () {
+        // Ember is plain JavaScript, so the type that says these settings have been read
+        // buys it nothing. The service still declines to build a limit it cannot name.
+        const settings = {
+            limits: {aLimitNobodyShipped: {disabled: true}}
+        } as unknown as ParsedHostSettings;
+        const limitService = new LimitService({settings, errors});
+
+        assert.deepEqual(Object.keys(limitService.limits), []);
+    });
+
+    it('sets aside the one it cannot build and keeps the rest', function () {
+        // An allowlist limit with an empty list cannot be built. Building used to stop
+        // there, so the limits configured alongside it never loaded and a site ended up
+        // unlimited in ways nobody asked for.
+        const {settings, rejected} = readHostSettings({
+            limits: {
+                customThemes: {allowlist: []},
+                limitStripeConnect: {disabled: true}
             }
-        );
+        });
+        const limitService = new LimitService({settings, errors});
+
+        assert.equal(limitService.isLimited('customThemes'), false);
+        assert.equal(limitService.isLimited('limitStripeConnect'), true);
+        assert.deepEqual(rejected.map(limit => limit.name), ['customThemes']);
+        assert.match(String(rejected[0]?.reason), /allowlist is empty/);
     });
 
     it('ignores a name it has never heard of, leaving the feature available', function () {
-        const limitService = new LimitService({
+        const limitService = buildService({
             limits: {aLimitNobodyShipped: {disabled: true}},
             errors
         });

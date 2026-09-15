@@ -1,14 +1,15 @@
-import camelCase from 'lodash/camelCase.js';
 import has from 'lodash/has.js';
 
 import config, { type LimitName } from './config.ts';
+import { readHostSettings } from './host-limits.ts';
 import { AllowlistLimit, FlagLimit, type Limit, MaxLimit, MaxPeriodicLimit } from './limits.ts';
 import type {
   CheckOptions,
+  Db,
   ErrorsModule,
-  Limits,
   LimitConfig,
-  LoadLimitsOptions,
+  Limits,
+  LimitServiceOptions,
 } from './types.ts';
 
 /** The manifest is the allowlist, so membership of it is what makes a name a limit name. */
@@ -16,12 +17,13 @@ const isLimitName = (name: string): name is LimitName => Object.hasOwn(config, n
 
 const messages = {
   missingErrorsConfig: `Config Missing: 'errors' is required.`,
-  noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription',
 };
 
 export class LimitService implements Limits {
   limits: Partial<Record<LimitName, Limit>> = {};
   errors: ErrorsModule;
+  private readonly helpLink?: string;
+  private readonly db?: Db;
 
   /**
    * A site limited by nothing, which is what a self-hosted site has and what any site has
@@ -29,10 +31,16 @@ export class LimitService implements Limits {
    * because there is nothing else for one to be.
    */
   static unlimited(errorsModule: ErrorsModule): LimitService {
-    return new LimitService({ limits: {}, errors: errorsModule });
+    return new LimitService({ settings: readHostSettings({}).settings, errors: errorsModule });
   }
 
-  constructor({ limits = {}, subscription, helpLink, db, errors: errorsModule }: LoadLimitsOptions) {
+  constructor({
+    settings,
+    currentCountQueries,
+    helpLink,
+    db,
+    errors: errorsModule,
+  }: LimitServiceOptions) {
     if (!errorsModule) {
       // new Error is allowed here, as this package runs in browsers and should not depend
       // on @tryghost/errors. It is also the one complaint a caller cannot be given in its
@@ -42,58 +50,46 @@ export class LimitService implements Limits {
     }
 
     this.errors = errorsModule;
+    this.helpLink = helpLink;
+    this.db = db;
 
-    Object.keys(limits).forEach((rawName) => {
-      const name = camelCase(rawName);
-
-      // NOTE: config module acts as an allowlist of supported config names, where each key
-      // is a name of supported config
-      if (isLimitName(name)) {
-        // Read under the key the host wrote, and store under the normalised one. Reading
-        // under the normalised name found nothing whenever the host spelled it another
-        // way, and built a limit that limited nothing.
-        const limitConfig: LimitConfig = Object.assign({}, config[name], limits[rawName]);
-
-        if (has(limitConfig, 'allowlist')) {
-          this.limits[name] = new AllowlistLimit({
-            name,
-            config: limitConfig,
-            helpLink,
-            errors: errorsModule,
-          });
-        } else if (has(limitConfig, 'max')) {
-          this.limits[name] = new MaxLimit({
-            name,
-            config: limitConfig,
-            helpLink,
-            db,
-            errors: errorsModule,
-          });
-        } else if (has(limitConfig, 'maxPeriodic')) {
-          if (subscription === undefined) {
-            throw new errorsModule.IncorrectUsageError({
-              message: messages.noSubscriptionParameter,
-            });
-          }
-
-          const maxPeriodicLimitConfig = Object.assign({}, limitConfig, subscription);
-          this.limits[name] = new MaxPeriodicLimit({
-            name,
-            config: maxPeriodicLimitConfig,
-            helpLink,
-            db,
-            errors: errorsModule,
-          });
-        } else {
-          this.limits[name] = new FlagLimit({
-            name,
-            config: limitConfig,
-            helpLink,
-            errors: errorsModule,
-          });
-        }
+    // Every limit here has already been read, so each one can be built. What makes a limit
+    // usable is decided when a host's settings are read, not here.
+    for (const [name, limit] of Object.entries(settings.limits)) {
+      if (!isLimitName(name)) {
+        continue;
       }
-    });
+
+      this.limits[name] = this.build(name, {
+        ...config[name],
+        ...limit,
+        ...(currentCountQueries?.[name] ? { currentCountQuery: currentCountQueries[name] } : {}),
+        ...(settings.subscription ?? {}),
+      });
+    }
+  }
+
+  /**
+   * The limit a piece of configuration describes. A limit's type is not declared, it is
+   * read from which threshold the host sent: a list makes an allowlist, a maximum makes a
+   * counted limit, a periodic maximum makes one that resets, and none of them makes a flag.
+   */
+  private build(name: LimitName, limitConfig: LimitConfig): Limit {
+    const shared = { name, config: limitConfig, helpLink: this.helpLink, errors: this.errors };
+
+    if (has(limitConfig, 'allowlist')) {
+      return new AllowlistLimit(shared);
+    }
+
+    if (has(limitConfig, 'max')) {
+      return new MaxLimit({ ...shared, db: this.db });
+    }
+
+    if (has(limitConfig, 'maxPeriodic')) {
+      return new MaxPeriodicLimit({ ...shared, db: this.db });
+    }
+
+    return new FlagLimit(shared);
   }
 
   isLimited(limitName: LimitName): boolean {

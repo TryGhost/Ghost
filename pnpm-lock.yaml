@@ -4397,6 +4397,9 @@ importers:
       luxon:
         specifier: 'catalog:'
         version: 3.7.2
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

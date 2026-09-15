@@ -210,6 +210,30 @@ An example configuration for "MaxLimit" limit using an error template can look l
 }
 ```
 
+### Reading a host's settings
+
+A host does not send the shapes above. Ghost(Pro) keeps its settings in a single string
+column and hands them over untouched, so a maximum arrives as `'5'` and a flag as `'true'`.
+`parseHostLimits` reads that into the `limits` the service is constructed with, and
+`parseHostSubscription` does the same for the subscription a periodic limit counts within.
+
+```js
+import { LimitService, parseHostLimits, parseHostSubscription } from '@tryghost/limit-service';
+
+const limitService = new LimitService({
+    limits: parseHostLimits(hostSettings.limits, errors),
+    subscription: parseHostSubscription(hostSettings.subscription, errors),
+    db,
+    helpLink,
+    errors
+});
+```
+
+Both refuse anything they cannot read, rather than skipping it. A maximum that is not a
+number compares false against every count, so the limit would read as configured and never
+apply, with nothing in a log to say so. Failing at the point the settings are read turns
+that into an immediate error for whoever configured it.
+
 ## Develop
 
 This is a mono repository, managed with [lerna](https://lernajs.io/).

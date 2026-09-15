@@ -1,6 +1,6 @@
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
-import {LimitService} from '@tryghost/limit-service';
+import {LimitService, readHostSettings} from '@tryghost/limit-service';
 import {bind} from '@ember/runloop';
 import {inject} from 'ghost-admin/decorators/inject';
 
@@ -59,21 +59,23 @@ export default class LimitsService extends Service {
             helpLink = 'https://ghost.org/help/';
         }
 
-        let subscription;
+        const {settings, rejected} = readHostSettings(this.config.hostSettings);
 
-        // A subscription without a start can't anchor a period, so it's treated as
-        // absent rather than built into one that throws on the way to the count query
-        if (this.config.hostSettings?.subscription?.start) {
-            subscription = {
-                startDate: this.config.hostSettings.subscription.start,
-                interval: 'month'
-            };
+        for (const limit of rejected) {
+            console.warn(`Skipping ${limit.name} limit: ${limit.reason}`); // eslint-disable-line no-console
         }
 
         this.limiter = new LimitService({
-            limits: this.decorateWithCountQueries(this.usableLimits(limits, subscription)),
-            subscription,
+            settings,
             helpLink,
+            // How to count is behaviour rather than configuration, so it is passed apart
+            // from what the host configured.
+            currentCountQueries: {
+                staff: bind(this, this.getStaffUsersCount),
+                members: bind(this, this.getMembersCount),
+                newsletters: bind(this, this.getNewslettersCount),
+                emails: bind(this, this.getEmailsCount)
+            },
             errors: {
                 HostLimitError,
                 IncorrectUsageError
@@ -81,45 +83,8 @@ export default class LimitsService extends Service {
         });
     }
 
-    // Periodic limits need a subscription to build. Registration stops at the first
-    // limit that throws, so passing one through would drop every limit after it
-    usableLimits(limits, subscription) {
-        if (subscription) {
-            return limits;
-        }
-
-        return Object.fromEntries(Object.entries(limits).filter(([name, limit]) => {
-            if (limit && Object.prototype.hasOwnProperty.call(limit, 'maxPeriodic')) {
-                console.warn(`Skipping ${name} limit: periodic limits need hostSettings.subscription`); // eslint-disable-line no-console
-                return false;
-            }
-
-            return true;
-        }));
-    }
-
     reload() {
         this.loadLimits();
-    }
-
-    decorateWithCountQueries(limits) {
-        if (limits.staff) {
-            limits.staff.currentCountQuery = bind(this, this.getStaffUsersCount);
-        }
-
-        if (limits.members) {
-            limits.members.currentCountQuery = bind(this, this.getMembersCount);
-        }
-
-        if (limits.newsletters) {
-            limits.newsletters.currentCountQuery = bind(this, this.getNewslettersCount);
-        }
-
-        if (limits.emails) {
-            limits.emails.currentCountQuery = bind(this, this.getEmailsCount);
-        }
-
-        return limits;
     }
 
     async getStaffUsersCount() {

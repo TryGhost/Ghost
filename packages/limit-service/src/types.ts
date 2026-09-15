@@ -92,13 +92,34 @@ export interface ErrorsModule {
   IncorrectUsageError: new (options: { message: string }) => Error;
 }
 
+/** A limit a host configured that could not be used, and why it was set aside. */
+export interface RejectedLimit {
+  name: string;
+  reason: string;
+}
+
 /** The billing period a periodic limit counts within. */
 export interface Subscription {
   interval: Interval;
   startDate: string;
 }
 
-/** Everything the service needs to build a site's limits. */
+/**
+ * Everything the service needs to build a site's limits.
+ *
+ * The limits themselves arrive already read, because what makes a limit usable is decided
+ * when a host's settings are read. How to count what a limit measures is passed separately:
+ * it is behaviour rather than configuration, and a browser counts differently to a server.
+ */
+export interface LimitServiceOptions {
+  settings: import('./host-limits.ts').ParsedHostSettings;
+  currentCountQueries?: Partial<Record<import('./config.ts').LimitName, CurrentCountQuery>>;
+  helpLink?: string;
+  db?: Db;
+  errors: ErrorsModule;
+}
+
+/** @deprecated the shape a limit is configured with, kept for the limit classes. */
 export interface LoadLimitsOptions {
   limits?: Record<string, LimitConfig>;
   subscription?: Subscription;

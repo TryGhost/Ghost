@@ -6,11 +6,11 @@ it('loads the source export with the native Node loader', () => {
     '--conditions=source',
     '--input-type=module',
     '-e',
-    `import LimitService, {LimitService as NamedLimitService} from '@tryghost/limit-service';
+    `import LimitService, {LimitService as NamedLimitService, readHostSettings} from '@tryghost/limit-service';
      if (LimitService !== NamedLimitService) process.exit(1);
      // Printed as a string: console.log colours an inspected boolean whenever the
      // environment forces colour, and this inherits the caller's environment.
-     const service = new LimitService({limits: {}, errors: {HostLimitError: Error, IncorrectUsageError: Error}});
+     const service = new LimitService({settings: readHostSettings({}).settings, errors: {HostLimitError: Error, IncorrectUsageError: Error}});
      console.log(String(service.isLimited('staff')));`,
   ], {
     cwd: new URL('..', import.meta.url),

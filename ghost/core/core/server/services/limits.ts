@@ -1,13 +1,16 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
-import type { Db, LimitConfig, LimitName, Limits, Subscription } from '@tryghost/limit-service';
 
+import type { Db, LimitName, Limits, ParsedHostSettings } from '@tryghost/limit-service';
+
+/**
+ * What a site's limits are built from. The settings arrive already read, because only
+ * something that has read a host's settings can produce them.
+ */
 export interface LimitServiceInitOptions {
-  limits: Record<string, LimitConfig>;
-  subscription?: Subscription;
+  settings: ParsedHostSettings;
   helpLink: string;
   db: Db;
 }
@@ -19,19 +22,9 @@ export interface LimitServiceInitOptions {
 let current: Limits = LimitService.unlimited(errors);
 
 export function init(options: LimitServiceInitOptions): void {
-  try {
-    current = new LimitService({ ...options, errors });
-  } catch (error) {
-    // A misconfigured host should not stop Ghost starting. The site runs unlimited, which
-    // has to be said rather than assumed: a site that was limited before this was called
-    // would otherwise keep the limits the failed configuration was meant to replace.
-    if (!(error instanceof errors.IncorrectUsageError)) {
-      throw error;
-    }
-
-    current = LimitService.unlimited(errors);
-    logging.warn(error);
-  }
+  // Nothing a host can configure reaches here unread, so building cannot fail on account
+  // of it. What a host got wrong was set aside and reported when its settings were read.
+  current = new LimitService({ ...options, errors });
 }
 
 /**

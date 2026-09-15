@@ -45,7 +45,8 @@
     },
     "dependencies": {
         "lodash": "catalog:",
-        "luxon": "catalog:"
+        "luxon": "catalog:",
+        "zod": "catalog:"
     },
     "private": true,
     "ghostPackage": {

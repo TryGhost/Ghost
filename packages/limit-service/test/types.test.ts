@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { expectTypeOf, it } from 'vitest';
-import { LimitService } from '../src/index.ts';
+import { readHostSettings, LimitService } from '../src/index.ts';
 import type { CheckOptions, ErrorsModule, CurrentCountQuery, Db, LimitName, MaxLimit, MaxPeriodicLimit } from '../src/index.ts';
 
 it('accepts real Knex connections and transactions', () => {
@@ -16,7 +16,7 @@ it('requires callers to handle nonnumeric count results', () => {
 });
 
 it('only accepts limit names the manifest declares', () => {
-  const service = new LimitService({ limits: {}, errors: {} as ErrorsModule });
+  const service = new LimitService({ settings: readHostSettings({}).settings, errors: {} as ErrorsModule });
 
   expectTypeOf(service.isLimited).parameter(0).toEqualTypeOf<LimitName>();
   expectTypeOf<'customThemes'>().toExtend<LimitName>();
