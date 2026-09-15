@@ -1,6 +1,12 @@
-const WordCount = ({wordCount, tkCount}) => {
+const WordCount = ({wordCount, selectionWordCount, tkCount}) => {
     return (
         <div className="absolute left-6 top-4 z-20 block cursor-pointer rounded bg-white px-2 py-1 font-mono text-sm tracking-tight text-grey-600 dark:bg-transparent">
+            {selectionWordCount !== null && (
+                <>
+                    <span data-testid="selection-word-count">{selectionWordCount}</span>
+                    {' of '}
+                </>
+            )}
             <span data-testid="word-count">{wordCount}</span> words
             {tkCount > 0 && (
                 <>
