@@ -64,6 +64,7 @@ function NavMenuCollapsibleItem({ ariaLabel, children }: NavMenuCollapsibleItemP
         aria-expanded={expanded}
         aria-label={ariaLabel}
         className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+        shape="rounded"
         size="icon"
         variant="ghost"
         onClick={() => void onExpandedChange(!expanded)}

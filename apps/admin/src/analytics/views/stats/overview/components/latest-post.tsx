@@ -189,7 +189,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   )}
                   <Button
                     className={latestPostStats.email_only ? 'w-full' : ''}
-                    variant="outline"
+                    variant={shouldGoToEditor ? 'outline' : 'subtle'}
                     onClick={() => {
                       navigate(postDestination, { crossApp: destinationIsEmberOwned });
                     }}
