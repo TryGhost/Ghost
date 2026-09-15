@@ -2,7 +2,6 @@ import { strict as assert } from 'node:assert';
 
 import { DateTime } from 'luxon';
 
-import { assertThrownError } from './utils/assertions.ts';
 
 import type { Interval } from '../src/types.ts';
 
@@ -78,11 +77,13 @@ describe('Date Utils', function () {
             assert.equal(lastPeriodStartDate, '2021-02-28T01:59:42.000Z');
         });
 
-        it('throws IncorrectUsageError for unsupported interval', function () {
+        it('refuses an unsupported interval', function () {
             assert.throws(() => {
                 lastPeriodStart('2021-01-01T00:00:00Z', 'week' as unknown as Interval);
             }, (err) => {
-                assertThrownError(err);
+                // A plain error: this is reached without a service, so without the error
+                // classes a caller would recognise.
+                assert.ok(err instanceof Error);
                 assert.equal(err.message, 'Invalid interval specified. Only "month" value is accepted.');
                 return true;
             });

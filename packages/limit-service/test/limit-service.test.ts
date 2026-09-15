@@ -79,8 +79,9 @@ describe('Limit Service', function () {
                 new LimitService({ limits } as unknown as LoadLimitsOptions);
                 assert.fail('Should have errored');
             } catch (err) {
-                assertThrownError(err);
-                assert.ok(err);
+                // A plain error, because what the caller failed to supply is the classes
+                // this would otherwise be raised with.
+                assert.ok(err instanceof Error);
                 assert.deepEqual(err.message, `Config Missing: 'errors' is required.`);
             }
         });

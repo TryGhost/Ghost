@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import { DateTime } from 'luxon';
 
 import type { Interval } from './types.ts';
@@ -28,7 +27,9 @@ export const lastPeriodStart = (startDate: string, interval: Interval): string =
     return lastPeriodStartDate.toISO() as string;
   }
 
-  throw new errors.IncorrectUsageError({
-    message: messages.invalidInterval,
-  });
+  // new Error is allowed here, as this package runs in browsers and should not depend on
+  // @tryghost/errors. Every periodic limit checks its interval before calling this, so only
+  // a caller using the function directly arrives here, and that is a programming error.
+  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  throw new Error(messages.invalidInterval);
 };
