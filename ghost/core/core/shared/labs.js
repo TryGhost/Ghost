@@ -61,6 +61,7 @@ const PRIVATE_FEATURES = [
   'selfServeArchives',
   'machinePayments',
   'postsListReact',
+  'membersActivityReact',
   'editorReact',
 ];
 

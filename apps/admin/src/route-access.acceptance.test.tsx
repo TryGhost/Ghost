@@ -6,6 +6,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeTags,
+  fakeAdminEndpoint,
   renderAdminApp,
   staffRole,
   type RenderAdminAppOptions,
@@ -61,6 +62,22 @@ describe('Route access', () => {
     await renderAdminApp('/members', asRole('Editor'));
 
     await expect.poll(currentRoute).toBe('/');
+  });
+
+  describe.each([true, false])('member activity with React flag %s', (enabled) => {
+    it.each(['Editor', 'Author', 'Contributor'] as const)(
+      'denies %s access before loading events',
+      async (role) => {
+        const events = fakeAdminEndpoint('GET', /^\/members\/events\//, { events: [] });
+        await renderAdminApp('/members-activity?member=abcdef123456abcdef123456', {
+          ...asRole(role),
+          labs: { membersActivityReact: enabled },
+        });
+
+        await expect.poll(currentRoute).toBe('/');
+        expect(events.requests).toHaveLength(0);
+      },
+    );
   });
 
   it('redirects members to billing during a force upgrade', async () => {
