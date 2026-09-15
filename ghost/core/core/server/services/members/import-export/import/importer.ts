@@ -4,7 +4,7 @@ import { stripFormulaGuard } from '../csv';
 import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-types/csv';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
-import type { RowSpool, SpooledRows } from './spool';
+import type { RowSpool } from './spool';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -304,7 +304,7 @@ class MembersCSVImporter {
     // Resolved here, not at the API boundary, so the owner lookup only runs when
     // a request without a user actually reaches the deferred path.
     const emailRecipient: string = requestUserEmail ?? (await this._email.getDefaultRecipient());
-    const spooled = await this._spool.write(rows);
+    const spoolKey = await this._spool.write(rows);
 
     logging.info(
       { event: { name: 'members.import.queued' }, rows: rows.length },
@@ -312,7 +312,11 @@ class MembersCSVImporter {
     );
     this._addJob({
       job: () =>
-        this.runImportJob(spooled, { labelName, extraLabels, emailRecipient }, verificationTrigger),
+        this.runImportJob(
+          spoolKey,
+          { labelName, extraLabels, emailRecipient },
+          verificationTrigger,
+        ),
       offloaded: false,
       name: 'members-import',
     });
@@ -321,7 +325,7 @@ class MembersCSVImporter {
   // Must resolve in every case: the job manager reads a rejected inline job as a defect
   // in the job itself, and there is no retry behind it.
   private async runImportJob(
-    spooled: SpooledRows,
+    spoolKey: string,
     {
       labelName,
       extraLabels,
@@ -335,13 +339,13 @@ class MembersCSVImporter {
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      const spooledRows = await spooled.read();
+      const spooledRows = await this._spool.read(spoolKey);
       result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
     } catch (error) {
       // importRows only throws before its write loop, so nothing was written.
       this._report(error);
     } finally {
-      await this.settle(() => spooled.remove());
+      await this.settle(() => this._spool.remove(spoolKey));
     }
 
     // Whatever became of it, the publisher hears exactly once. If this is what fails,

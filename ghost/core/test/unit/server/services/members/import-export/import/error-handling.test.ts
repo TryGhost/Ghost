@@ -53,6 +53,9 @@ function harness(
   const createFailures = new Map<string, unknown>();
   const archivedPrices: string[] = [];
   const jobs: Array<{ name: string; job: () => Promise<void> }> = [];
+  const spooled = new Map<string, MemberImportRow[]>();
+  const removedKeys: string[] = [];
+  let spoolWrites = 0;
   let spoolRemoved = false;
   // The importer reads knex once, at construction, so a test cannot swap it afterwards.
   let rollback: () => Promise<void> = async () => {};
@@ -64,15 +67,24 @@ function harness(
     } as unknown as Knex,
     readRows: async () => rows,
     spool: {
-      write: async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        remove: async () => {
-          spoolRemoved = true;
-          if (removalFailure) {
-            throw removalFailure;
-          }
-        },
-      }),
+      write: async (spooledRows: MemberImportRow[]) => {
+        spoolWrites += 1;
+        const key = `members-import-${spoolWrites}.json`;
+        spooled.set(key, spooledRows);
+        return key;
+      },
+      read: async (key: string): Promise<MemberImportRow[]> => {
+        const spooledRows = spooled.get(key);
+        assert.ok(spooledRows, `expected rows spooled under ${key}`);
+        return spooledRows;
+      },
+      remove: async (key: string) => {
+        spoolRemoved = true;
+        removedKeys.push(key);
+        if (removalFailure) {
+          throw removalFailure;
+        }
+      },
     },
     members: {
       get: async () => null,
@@ -316,12 +328,9 @@ describe('members import error handling', function () {
 
     it('tells the publisher when the spooled rows cannot be read back', async function () {
       const h = harness();
-      h.deps.spool.write = async () => ({
-        read: async (): Promise<MemberImportRow[]> => {
-          throw new Error('ENOENT: no such file or directory');
-        },
-        remove: async () => {},
-      });
+      h.deps.spool.read = async (): Promise<MemberImportRow[]> => {
+        throw new Error('ENOENT: no such file or directory');
+      };
 
       await h.run();
 
@@ -450,13 +459,10 @@ describe('members import error handling', function () {
 
     it('survives a spool that throws before it returns a promise', async function () {
       const h = harness();
-      h.deps.spool.write = async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        // Synchronous, so .catch() on the returned promise would never see it.
-        remove: (() => {
-          throw new Error('EACCES: permission denied');
-        }) as unknown as () => Promise<void>,
-      });
+      // Synchronous, so .catch() on the returned promise would never see it.
+      h.deps.spool.remove = (() => {
+        throw new Error('EACCES: permission denied');
+      }) as unknown as (key: string) => Promise<void>;
 
       await h.run();
 
