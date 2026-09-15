@@ -11,6 +11,7 @@ export type {
   GhostErrorOptions,
   Interval,
   LimitConfig,
+  Limits,
   LoadLimitsOptions,
   Subscription,
 } from './types.ts';

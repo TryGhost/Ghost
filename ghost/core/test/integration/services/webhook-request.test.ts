@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { promises as dnsPromises } from 'node:dns';
 import nock from 'nock';
 import sinon from 'sinon';
+import errors from '@tryghost/errors';
 import { LimitService } from '@tryghost/limit-service';
 
 // @ts-expect-error This module lacks type definitions.
@@ -40,7 +41,7 @@ describe('Webhook delivery', function () {
     models = createModels();
     payload = createPayload();
 
-    const realLimitService = new LimitService();
+    const realLimitService = LimitService.unlimited(errors);
     limitService = sinon.stub(realLimitService);
     limitService.isLimited.withArgs('customIntegrations').returns(false);
 

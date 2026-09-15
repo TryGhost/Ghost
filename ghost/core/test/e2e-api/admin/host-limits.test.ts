@@ -435,7 +435,9 @@ describe('Host limits', function () {
       const { LimitService } = require('@tryghost/limit-service');
 
       assert.equal(typeof LimitService, 'function');
-      assert.doesNotThrow(() => new LimitService());
+      assert.doesNotThrow(
+        () => new LimitService({ limits: {}, errors: require('@tryghost/errors') }),
+      );
     });
   });
 

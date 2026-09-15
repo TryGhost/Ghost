@@ -14,7 +14,7 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, limitService } = {}) {
     if (this.service) {
       return;
     }
@@ -41,7 +41,6 @@ class EmailServiceWrapper {
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
     const membersRepository = membersService.api.members;
-    const limitService = require('../limits');
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
     const i18nLib = require('@tryghost/i18n').default;
@@ -156,7 +155,7 @@ class EmailServiceWrapper {
       settingsCache,
       emailRenderer,
       emailSegmenter,
-      limitService: limitService.service,
+      limitService,
       membersRepository,
       verificationTrigger: membersService.verificationTrigger,
       emailAnalyticsJobs,

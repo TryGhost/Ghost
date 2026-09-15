@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
-import type { Db, LimitConfig, Subscription } from '@tryghost/limit-service';
+import type { Db, LimitConfig, Limits, Subscription } from '@tryghost/limit-service';
 
 export interface LimitServiceInitOptions {
   limits: Record<string, LimitConfig>;
@@ -13,24 +13,50 @@ export interface LimitServiceInitOptions {
 }
 
 /**
- * The limits this site has. Read it where you need it rather than taking a reference as
- * your module loads: boot decides what a site's limits are after most of Ghost has been
- * loaded, and tests describe a host and decide again.
+ * The limits in force. A site starts limited by nothing, which is what a self-hosted site
+ * stays for the life of the process; boot replaces this when a host says otherwise.
  */
-export const service = new LimitService();
+let current: Limits = LimitService.unlimited(errors);
 
 export function init(options: LimitServiceInitOptions): void {
   try {
-    service.loadLimits({ ...options, errors });
+    current = new LimitService({ ...options, errors });
   } catch (error) {
-    // A misconfigured host should not stop Ghost starting. The site runs unlimited.
+    // A misconfigured host should not stop Ghost starting. The site runs unlimited, which
+    // has to be said rather than assumed: a site that was limited before this was called
+    // would otherwise keep the limits the failed configuration was meant to replace.
     if (!(error instanceof errors.IncorrectUsageError)) {
       throw error;
     }
 
+    current = LimitService.unlimited(errors);
     logging.warn(error);
   }
 }
+
+/**
+ * This site's limits.
+ *
+ * One object for the life of the process, so that it can be taken as a dependency in the
+ * ordinary way. Boot decides a site's limits after much of Ghost has been constructed, and
+ * services that were handed the limits before that decision still have to see it; holding
+ * the answer rather than the answerer is what makes that work.
+ */
+export const service: Limits = {
+  get limits() {
+    return current.limits;
+  },
+  set limits(value) {
+    current.limits = value;
+  },
+  isLimited: (name) => current.isLimited(name),
+  isDisabled: (name) => current.isDisabled(name),
+  checkIsOverLimit: (name, options) => current.checkIsOverLimit(name, options),
+  checkWouldGoOverLimit: (name, options) => current.checkWouldGoOverLimit(name, options),
+  checkIfAnyOverLimit: (options) => current.checkIfAnyOverLimit(options),
+  errorIfIsOverLimit: (name, options) => current.errorIfIsOverLimit(name, options),
+  errorIfWouldGoOverLimit: (name, options) => current.errorIfWouldGoOverLimit(name, options),
+};
 
 /**
  * Route guard for a feature a host can switch off, for the routes that exist only to

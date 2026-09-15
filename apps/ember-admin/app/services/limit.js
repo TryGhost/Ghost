@@ -34,7 +34,6 @@ export default class LimitsService extends Service {
     constructor() {
         super(...arguments);
 
-        this.limiter = new LimitService();
         this.loadLimits();
     }
 
@@ -45,7 +44,10 @@ export default class LimitsService extends Service {
     loadLimits() {
         let limits = this.config.hostSettings?.limits;
 
+        // A site whose host sends no limits is limited by nothing, including one that used
+        // to be: the limits a site has are the limits it was last told about.
         if (!limits) {
+            this.limiter = LimitService.unlimited({HostLimitError, IncorrectUsageError});
             return;
         }
 
@@ -68,7 +70,7 @@ export default class LimitsService extends Service {
             };
         }
 
-        this.limiter.loadLimits({
+        this.limiter = new LimitService({
             limits: this.decorateWithCountQueries(this.usableLimits(limits, subscription)),
             subscription,
             helpLink,
