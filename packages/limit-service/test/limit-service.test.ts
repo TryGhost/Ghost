@@ -5,6 +5,7 @@ import errors from './fixtures/errors.ts';
 import { assertAlwaysCalledWith, assertExists, assertHasLimits, assertThrownCountedError, assertThrownError } from './utils/assertions.ts';
 
 import type { CurrentCountQuery, LoadLimitsOptions } from '../src/types.ts';
+import type { LimitName } from '../src/index.ts';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,6 +16,10 @@ import { FlagLimit, MaxLimit, MaxPeriodicLimit } from '../src/limits.ts';
 import '../src/limits.ts';
 import LimitServiceFromIndex from '../src/index.ts';
 import _ from 'lodash';
+
+// Deliberately naming something the manifest does not declare. The type forbids it, which
+// is the point: these tests prove the service answers such a question rather than failing.
+const undeclared = (name: string) => name as LimitName;
 
 describe('Limit Service', function () {
     it('is exported via the package index', function () {
@@ -234,7 +239,7 @@ describe('Limit Service', function () {
             // Spelling is tolerated when the limits are loaded, and nowhere else. The limit
             // is known by one name afterwards, whichever name it arrived under.
             assert.equal(limitService.isLimited('customThemes'), true);
-            assert.equal(limitService.isLimited('custom_themes'), false);
+            assert.equal(limitService.isLimited(undeclared('custom_themes')), false);
         });
 
         it('answers correctly when no limits are provided', function () {
@@ -246,7 +251,7 @@ describe('Limit Service', function () {
 
             assert.equal(limitService.isLimited('staff'), false);
             assert.equal(limitService.isLimited('members'), false);
-            assert.equal(limitService.isLimited('custom_themes'), false);
+            assert.equal(limitService.isLimited(undeclared('custom_themes')), false);
             assert.equal(limitService.isLimited('customThemes'), false);
             assert.equal(limitService.isLimited('emails'), false);
         });
@@ -387,16 +392,16 @@ describe('Limit Service', function () {
         it('Returns nothing if limit is not configured', async function () {
             const limitService = new LimitService();
 
-            const isOverLimitResult = await limitService.checkIsOverLimit('unlimited');
+            const isOverLimitResult = await limitService.checkIsOverLimit(undeclared('unlimited'));
             assert.equal(isOverLimitResult, undefined);
 
-            const wouldGoOverLimitResult = await limitService.checkWouldGoOverLimit('unlimited');
+            const wouldGoOverLimitResult = await limitService.checkWouldGoOverLimit(undeclared('unlimited'));
             assert.equal(wouldGoOverLimitResult, undefined);
 
-            const errorIfIsOverLimitResult = await limitService.errorIfIsOverLimit('unlimited');
+            const errorIfIsOverLimitResult = await limitService.errorIfIsOverLimit(undeclared('unlimited'));
             assert.equal(errorIfIsOverLimitResult, undefined);
 
-            const errorIfWouldGoOverLimitResult = await limitService.errorIfWouldGoOverLimit('unlimited');
+            const errorIfWouldGoOverLimitResult = await limitService.errorIfWouldGoOverLimit(undeclared('unlimited'));
             assert.equal(errorIfWouldGoOverLimitResult, undefined);
         });
 
@@ -632,7 +637,7 @@ describe('Limit Service', function () {
         it('returns undefined if limit is not configured', function () {
             const limitService = new LimitService();
 
-            assert.equal(limitService.isDisabled('test'), undefined);
+            assert.equal(limitService.isDisabled(undeclared('test')), undefined);
         });
 
         it('throws if the limit does not implement .isDisabled()', function () {

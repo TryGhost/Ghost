@@ -7,7 +7,7 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
-import { LimitService, type LimitConfig } from '@tryghost/limit-service';
+import { LimitService, type LimitConfig, type LimitName } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
@@ -16,12 +16,19 @@ class IncorrectUsageError extends Error {
   }
 }
 
+// The set of limits callers may ask about, re-exported so Admin can name one without
+// depending on the limit service directly.
+export type { LimitName };
+
 export interface Limiter {
-  isLimited: (limitName: string) => boolean;
-  isDisabled: (limitName: string) => boolean;
-  checkWouldGoOverLimit: (limitName: string) => Promise<boolean>;
-  errorIfWouldGoOverLimit: (limitName: string, metadata?: Record<string, unknown>) => Promise<void>;
-  errorIfIsOverLimit: (limitName: string) => Promise<void>;
+  isLimited: (limitName: LimitName) => boolean;
+  isDisabled: (limitName: LimitName) => boolean;
+  checkWouldGoOverLimit: (limitName: LimitName) => Promise<boolean>;
+  errorIfWouldGoOverLimit: (
+    limitName: LimitName,
+    metadata?: Record<string, unknown>,
+  ) => Promise<void>;
+  errorIfIsOverLimit: (limitName: LimitName) => Promise<void>;
 }
 
 export const useLimiter = (): Limiter => {
@@ -107,15 +114,15 @@ export const useLimiter = (): Limiter => {
     });
 
     return {
-      isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
-      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
-      checkWouldGoOverLimit: async (limitName: string): Promise<boolean> =>
+      isLimited: (limitName: LimitName): boolean => limiter.isLimited(limitName),
+      isDisabled: (limitName: LimitName): boolean => limiter.isDisabled(limitName) ?? false,
+      checkWouldGoOverLimit: async (limitName: LimitName): Promise<boolean> =>
         (await limiter.checkWouldGoOverLimit(limitName)) ?? false,
       errorIfWouldGoOverLimit: (
-        limitName: string,
+        limitName: LimitName,
         metadata: Record<string, unknown> = {},
       ): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
-      errorIfIsOverLimit: (limitName: string): Promise<void> =>
+      errorIfIsOverLimit: (limitName: LimitName): Promise<void> =>
         limiter.errorIfIsOverLimit(limitName),
     };
   }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);
