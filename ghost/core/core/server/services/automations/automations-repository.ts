@@ -155,6 +155,12 @@ export type AutomationStatusStats = {
   unclassified_run_count: number;
 };
 
+export type AutomationRunMember = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
 export type BrowseOptions = Readonly<{
   /**
    * Should stats be included?
@@ -170,6 +176,10 @@ export type AutomationsRepository = {
   getById(id: string): Promise<Automation | null>;
   getEntryStats(id: string, window: EntryStatsWindow): Promise<EntryStatsData>;
   getStatusStats(id: string): Promise<AutomationStatusStats>;
+  getRunMembers(
+    automationId: string,
+    runIds: string[],
+  ): Promise<Map<string, AutomationRunMember | null>>;
   getAutomationActionLinks(
     automationId: string,
     actionId: string,

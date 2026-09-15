@@ -37,3 +37,5 @@
 {"site_uuid":"15840000-0000-4000-8000-000000000000","id":"case-unknown_exit-1","updated_at":"2020-01-01T02:00:00.000Z","inserted_at":"2020-01-01T02:00:00.000Z","payload":{"automation_run_id":"case-unknown_exit","status":"failed"}}
 {"site_uuid":"15840000-0000-4000-8000-000000000000","id":"case-finished_only-0","updated_at":"2020-01-01T02:00:00.000Z","inserted_at":"2020-01-01T02:00:00.000Z","payload":{"automation_run_id":"case-finished_only","status":"finished"}}
 {"site_uuid":"15840000-0000-4000-8000-000000000000","id":"case-finished_only-1","updated_at":"2020-01-01T02:00:00.000Z","inserted_at":"2020-01-01T02:00:00.000Z","payload":{"automation_run_id":"case-finished_only","status":"finished"}}
+{"site_uuid":"15840000-0000-4000-8000-000000000000","id":"case-recovered_step-0","updated_at":"2020-01-01T01:00:00.000Z","inserted_at":"2020-01-01T01:00:00.000Z","payload":{"automation_run_id":"case-recovered_step","status":"failed"}}
+{"site_uuid":"15840000-0000-4000-8000-000000000000","id":"case-recovered_step-0","updated_at":"2020-01-01T02:00:00.000Z","inserted_at":"2020-01-01T02:00:00.000Z","payload":{"automation_run_id":"case-recovered_step","status":"finished"}}

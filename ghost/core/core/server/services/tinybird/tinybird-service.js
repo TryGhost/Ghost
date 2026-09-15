@@ -61,6 +61,7 @@ const TINYBIRD_PIPES = [
   'api_automation_browse_stats',
   'api_automation_entry_stats',
   'api_automation_status_stats',
+  'api_automation_runs',
   // v2 pipes (materialized view optimization)
   'api_kpis_v2',
   'api_active_visitors_v2',
