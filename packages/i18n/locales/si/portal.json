@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% ක වට්ටමක්",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} වෙත තවදුරටත් {newsletterName} newsletter නොලැබෙනු ඇත.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "ඔබගේ comments සඳහා කිසිවෙකු reply කළ විට {memberEmail} වෙත තවදුරටත් email මඟින් දැනුම්දීමක් නොකෙරෙනු ඇත.",
     "{memberEmail} will no longer receive this newsletter.": "මෙම newsletter එක {memberEmail} වෙත තවදුරටත් නොලැබෙනු ඇත.",

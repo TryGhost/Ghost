@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% жеңілдік",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} енді {newsletterName} ақпараттық бюллетенін алмайды.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "Пікірлеріңізге жауап берген кезде {memberEmail} хаттар алмайды.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} енді бұл ақпараттық бюллетенді алмайды.",

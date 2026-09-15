@@ -9,7 +9,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "ส่วนลด {discount}%",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} นี้จะไม่ได้รับจดหมายข่าวจาก {newsletterName} อีกต่อไป",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} จะไม่ได้รับอีเมลอีกต่อไป เมื่อมีคนตอบกลับความคิดเห็นของคุณ",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} จะไม่ได้รับจดหมายข่าวนี้อีกต่อไป",

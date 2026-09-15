@@ -90,7 +90,7 @@ describe('updateProfile action', () => {
     expect(mockApi.member.update).toHaveBeenCalledWith({ name: 'John Doe' });
   });
 
-  test('names the custom field the site refused', async () => {
+  test('marks the custom field the site refused', async () => {
     const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
     const refusal = new HumanReadableError('Keep it under 255 characters.', {
       property: 'metafields.custom.nickname',
@@ -113,7 +113,40 @@ describe('updateProfile action', () => {
     });
 
     expect(result.action).toBe('updateProfile:failed');
-    expect(result.popupNotification.message).toBe('Nickname: Keep it under 255 characters.');
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+  });
+
+  // An address is drawn as several inputs under one name, so a refusal that named only
+  // the field would leave a member looking at six boxes with no idea which one to fix.
+  // The refusal is keyed by the input so the box itself carries it.
+  test('marks the part of a composite the site refused', async () => {
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Use 255 characters or fewer.', {
+      property: 'metafields.custom.shipping_address.line1',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({
+      'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+    });
+    // The notification stays generic: the specific complaint belongs on the input.
+    expect(result.popupNotification.message).toBe('Failed to update account details');
   });
 
   test('keeps the usual message when a failure names no field', async () => {

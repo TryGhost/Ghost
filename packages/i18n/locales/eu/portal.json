@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "%{discount} merkeago",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail}(e)k ez du {newsletterName} buletin gehiagorik jasoko.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail}(e)k ez du ePosta gehiagorik jasoko norbaitek iruzkinei erantzuten dienean.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail}(e)k ez du buletin hau jasoko.",

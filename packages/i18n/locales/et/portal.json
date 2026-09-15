@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% allahindlus",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} ei saa enam {newsletterName} uudiskirja.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} ei saa enam e-kirju, kui keegi vastab teie kommentaaridele.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} ei saa enam seda uudiskirja.",

@@ -869,17 +869,23 @@ async function loadCustomFields({ state, api }) {
 }
 
 /**
- * What a member is told when the site refuses their save. A refused custom field is
- * named, so they know which of their answers to fix; anything else keeps the fallback.
+ * The refusal of a custom field, against the input that holds it.
+ *
+ * A composite is drawn as several inputs under one name, so a refusal that named only
+ * the field would leave a member reading that their address is wrong against six boxes
+ * with nothing saying which. Keyed by the name the page gives the input, so the box
+ * itself carries the message, the way a malformed email address does.
  */
-function updateFailureMessage(error, state, fallback) {
+function refusedCustomFields(error, state) {
   // The server names a refused value as `metafields.custom.<key>[.<part>]`.
-  const [qualifier, , key] = error?.property?.split('.') ?? [];
+  const [qualifier, , key, ...partPath] = error?.property?.split('.') ?? [];
   const field = qualifier === 'metafields' && state.customFields?.find((f) => f.key === key);
   if (!field) {
-    return fallback;
+    return {};
   }
-  return t('{field}: {message}', { field: field.name, message: chooseBestErrorMessage(error) });
+  const part = partPath.join('.');
+  const name = part ? `custom:${field.key}:${part}` : `custom:${field.key}`;
+  return { [name]: chooseBestErrorMessage(error) };
 }
 
 async function updateProfile({ data, state, api }) {
@@ -905,10 +911,11 @@ async function updateProfile({ data, state, api }) {
     }
 
     const message = !dataUpdate.success
-      ? updateFailureMessage(dataUpdate.error, state, t('Failed to update account data'))
+      ? t('Failed to update account data')
       : t('Failed to send verification email');
     return {
       action: 'updateProfile:failed',
+      fieldErrors: dataUpdate.success ? {} : refusedCustomFields(dataUpdate.error, state),
       ...(dataUpdate.success ? { member: dataUpdate.member } : {}),
       popupNotification: createPopupNotification({
         type: 'updateProfile:failed',
@@ -923,10 +930,11 @@ async function updateProfile({ data, state, api }) {
     const action = dataUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
     const status = dataUpdate.success ? 'success' : 'error';
     const message = !dataUpdate.success
-      ? updateFailureMessage(dataUpdate.error, state, t('Failed to update account details'))
+      ? t('Failed to update account details')
       : t('Account details updated successfully');
     return {
       action,
+      fieldErrors: dataUpdate.success ? {} : refusedCustomFields(dataUpdate.error, state),
       ...(dataUpdate.success ? { member: dataUpdate.member } : {}),
       ...(dataUpdate.success ? { page: 'accountHome' } : {}),
       popupNotification: createPopupNotification({

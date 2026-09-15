@@ -12,7 +12,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "Знижка {discount}%",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} більше не отримуватиме розсилку {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} більше не отримуватиме електронні листи, коли хтось відповідає на ваші коментарі.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} більше не отримуватиме цю розсилку.",

@@ -220,13 +220,18 @@ export default class AccountProfilePage extends React.Component {
     const readOnly = field.access.member !== 'write';
     const value = this.state.metafields[field.key];
     const parts = subFieldsOf(field.type);
+    // What the site refused last time it was asked, against the input it refused. Held
+    // until the next save, as the errors on name and email are.
+    const refused = this.context.fieldErrors || {};
     if (!parts) {
+      const name = `custom:${field.key}`;
       return [
         {
           type: field.type === 'long_text' ? 'textarea' : 'text',
           value: value ?? '',
           label: field.name,
-          name: `custom:${field.key}`,
+          name,
+          errorMessage: refused[name] || '',
           readOnly,
           customField: field,
         },
@@ -234,6 +239,7 @@ export default class AccountProfilePage extends React.Component {
     }
     return parts.map((part) => {
       const label = customFieldPartLabel(part);
+      const name = `custom:${field.key}:${part}`;
       return {
         type: 'text',
         value: value?.[part] ?? '',
@@ -242,7 +248,8 @@ export default class AccountProfilePage extends React.Component {
         label,
         hideLabel: true,
         placeholder: label,
-        name: `custom:${field.key}:${part}`,
+        name,
+        errorMessage: refused[name] || '',
         readOnly,
         customField: field,
         part,

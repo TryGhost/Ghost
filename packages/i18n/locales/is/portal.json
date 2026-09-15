@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% afsláttur",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} fær framvegis ekki fréttabréf frá {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} fær framvegis ekki tölvupóst þegar einhver svarar ummælum þínum.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} fær framvegis ekki þetta fréttabréf.",

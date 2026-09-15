@@ -10,7 +10,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "",
     "{discount}% discount": "{discount}% отстъпка",
     "{duration} membership": "",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} повече няма да получава бюлетина {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} повече няма да получава имейли, когато някой отговаря на ваш коментар.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} повече няма да получава този бюлетин.",

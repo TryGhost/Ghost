@@ -137,6 +137,25 @@ describe('Account Profile Page', () => {
       );
     });
 
+    // The site refuses a value against the input that holds it, and an address holds
+    // six. Marking the field alone would leave a member checking every box to find the
+    // one that was refused, which is not what a malformed email address does to them.
+    test('marks the part of an address the site refused, not the whole field', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText } = setup({
+        site,
+        member,
+        customFields: [editable],
+        fieldErrors: {
+          'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+        },
+      });
+
+      const refused = getByLabelText('Address line 1');
+      expect(refused).toHaveClass('error');
+      expect(getByLabelText('City')).not.toHaveClass('error');
+    });
+
     test('never sends a field the member may only read, even when its input changed', () => {
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({
         site,

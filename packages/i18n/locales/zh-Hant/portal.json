@@ -9,7 +9,6 @@
     "{buyerName} has gifted you a <strong>{duration}-year</strong> {tierName} membership to {siteTitle}": "{buyerName} 贈送了您 {siteTitle} 的 <strong>{duration} 年</strong> {tierName} 會員資格",
     "{discount}% discount": "{discount}% 折扣",
     "{duration} membership": "{duration} 會員資格",
-    "{field}: {message}": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} 將不再收到{newsletterName}的電子報。",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} 將不會再收到評論回覆提醒郵件。",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} 將不會再收到該電子報。",
