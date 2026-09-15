@@ -9,6 +9,7 @@ const GeolocationService = require('./services/geolocation-service');
 const MemberBREADService = require('./services/member-bread-service');
 const metafields = require('../../members-metafields');
 const { MemberAccountService } = require('../account-service');
+const { TierChangeCollection } = require('../tier-change-collection');
 const MemberRepository = require('./repositories/member-repository');
 const NextPaymentCalculator = require('./services/next-payment-calculator');
 
@@ -187,6 +188,14 @@ module.exports = function MembersAPI({
     labsService,
   });
 
+  // What a tier asks of a member arriving on it. Built here rather than reached for,
+  // so the controller states what it needs and the collaborators stay swappable.
+  const tierChangeCollection = new TierChangeCollection({
+    tiersService,
+    values: metafields.values,
+    bindings: metafields.bindings,
+  });
+
   const memberController = new MemberController({
     memberRepository,
     productRepository,
@@ -196,6 +205,7 @@ module.exports = function MembersAPI({
     tokenService,
     sendEmailWithMagicLink,
     settingsCache,
+    tierChangeCollection,
   });
 
   const routerController = new RouterController({
