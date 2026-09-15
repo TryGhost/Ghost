@@ -7,7 +7,7 @@ import BackButton from '../common/back-button';
 import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
-import { customFieldPartLabel } from '../../utils/helpers';
+import { customFieldPartLabel, hasCustomFieldsEnabled } from '../../utils/helpers';
 import { FIELD_TYPE_IDS, subFieldsOf } from '@tryghost/metafield-types/structure';
 
 /**
@@ -43,16 +43,17 @@ export default class AccountProfilePage extends React.Component {
   }
 
   componentDidMount() {
-    const { member, customFields } = this.context;
+    const { member, site, customFields } = this.context;
     if (!member) {
       this.context.doAction('switchPage', {
         page: 'signin',
       });
       return;
     }
-    // The account page asks for these on the way here; a link straight to this page
-    // arrives without them.
-    if (customFields === null) {
+    // Loaded with the member, so this only covers a member who signed in after that:
+    // they were not there to be asked about. Guarded on the site having the feature as
+    // well, because without it the answer is always nothing and the asking never ends.
+    if (hasCustomFieldsEnabled({ site }) && customFields === null) {
       this.context.doAction('loadCustomFields');
     }
   }
@@ -208,9 +209,11 @@ export default class AccountProfilePage extends React.Component {
         if (changed.length === 0) {
           return;
         }
-        custom[field.key] = parts.some((part) => value?.[part])
-          ? Object.fromEntries(changed.map((part) => [part, value[part]]))
-          : null;
+        // The parts that changed, emptied ones included, and never `null`: that clears
+        // the field whole, and this build only knows the parts it draws. A part added
+        // to the type after this bundle shipped would be deleted along with them by a
+        // member who only meant to empty the ones in front of them.
+        custom[field.key] = Object.fromEntries(changed.map((part) => [part, value?.[part] ?? '']));
       });
     return Object.keys(custom).length > 0 ? { custom } : undefined;
   }

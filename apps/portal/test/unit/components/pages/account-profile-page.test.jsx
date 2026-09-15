@@ -191,7 +191,11 @@ describe('Account Profile Page', () => {
       );
     });
 
-    test('clears an address the member emptied rather than sending it empty', () => {
+    // Emptying every part this build draws still names those parts rather than the
+    // field. Naming the field clears it whole, and a build only knows the parts it
+    // draws: a part added to the type after it shipped would go too, deleted by a
+    // member who only meant to empty what was in front of them.
+    test('clears the parts of an address the member emptied, not the field', () => {
       const editable = { ...address, access: { member: 'write' } };
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({
         site,
@@ -204,7 +208,7 @@ describe('Account Profile Page', () => {
 
       expect(mockDoActionFn).toHaveBeenCalledWith(
         'updateProfile',
-        expect.objectContaining({ metafields: { custom: { shipping_address: null } } }),
+        expect.objectContaining({ metafields: { custom: { shipping_address: { city: '' } } } }),
       );
     });
 
