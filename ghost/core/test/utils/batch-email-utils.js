@@ -299,6 +299,7 @@ async function matchEmailSnapshot() {
 
 module.exports = {
   getDefaultNewsletter,
+  createPublishedPostEmail,
   sendEmail,
   sendFailedEmail,
   retryEmail,

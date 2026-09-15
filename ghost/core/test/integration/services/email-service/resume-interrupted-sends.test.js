@@ -5,7 +5,12 @@ const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
-const { sendEmail, waitForEmailStatus } = require('../../../utils/batch-email-utils');
+const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
+const {
+  sendEmail,
+  createPublishedPostEmail,
+  waitForEmailStatus,
+} = require('../../../utils/batch-email-utils');
 
 describe('Resume interrupted sends', function () {
   let agent;
@@ -97,6 +102,42 @@ describe('Resume interrupted sends', function () {
 
     // Mailgun called exactly once (for batchB only — batchA was short-circuited).
     sinon.assert.calledOnce(mailgunStub);
+  });
+
+  it('resumes an email left pending before its job started', async function () {
+    // The lost-job shape: dispatch never happens, so the row lands `pending` with no
+    // batches and no recipients behind it. Recovery has to build the send from scratch,
+    // which is what makes this different from resuming a `submitting` row.
+    const scheduleEmail = sinon.stub(BatchSendingService.prototype, 'scheduleEmail');
+    const emailModel = await createPublishedPostEmail(agent);
+    sinon.assert.called(scheduleEmail);
+    scheduleEmail.restore();
+
+    assert.equal(emailModel.get('status'), 'pending');
+    assert.equal(
+      (await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` })).models.length,
+      0,
+      'expected no batches for an email whose job never ran',
+    );
+
+    const mailgunStub = mockManager.getMailgunCreateMessageStub();
+    mailgunStub.resetHistory();
+
+    await emailService.service.resumeInterruptedSends();
+    await waitForEmailStatus(emailModel.id);
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'submitted');
+
+    // Batches and recipients were created by the resumed job, not by the original send.
+    const batches = (await models.EmailBatch.findAll({ filter: `email_id:'${emailModel.id}'` }))
+      .models;
+    assert.equal(batches.length, 2);
+    const recipients = await models.EmailRecipient.findAll({
+      filter: `email_id:'${emailModel.id}'`,
+    });
+    assert.equal(recipients.models.length, 4);
+    sinon.assert.calledTwice(mailgunStub);
   });
 
   it('marks email as failed when an orphan submitting batch is encountered', async function () {
