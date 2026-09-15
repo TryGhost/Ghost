@@ -92,6 +92,16 @@ export const InputFieldStyles = `
     .gh-portal-input-group-row .gh-portal-input-section {
         flex: 1;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* The label is hidden in a row, so its container carries only the error. Ordered
+       after the input, because above it the message would push its own input down and
+       leave the pair beside it out of line — in exactly the state the message exists to
+       report. Below, the row grows downwards and the two inputs stay level. */
+    .gh-portal-input-group-row .gh-portal-input-labelcontainer {
+        order: 1;
     }
 
     .gh-portal-input-group-row .gh-portal-input-section + .gh-portal-input-section {
