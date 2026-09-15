@@ -31,9 +31,4 @@ export class PortalAccountProfilePage extends PortalPage {
   async save(): Promise<void> {
     await this.saveButton.click();
   }
-
-  /** The error a part is carrying, or null when it carries none. */
-  partError(key: string, part: string): Locator {
-    return this.portalFrame.locator(`[name="custom:${key}:${part}"]`);
-  }
 }
