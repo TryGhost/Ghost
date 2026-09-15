@@ -144,13 +144,9 @@ class EmailServiceWrapper {
       getRequiredUrlRelations,
       batchCreationConcurrency,
       memberCounterPreparation,
-      memberCounters: new NewsletterMemberCounters(db.knex, {
-        // Sending never reads the mode today; keep it consistent with analytics.
-        mode:
-          configService.get('emailAnalytics:memberCounterMode') === 'incremental'
-            ? 'incremental'
-            : 'compare',
-      }),
+      // Sending only applies prepared batches; the counter mode is resolved
+      // once, by analytics, for the instance that reads it.
+      memberCounters: new NewsletterMemberCounters(db.knex),
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 

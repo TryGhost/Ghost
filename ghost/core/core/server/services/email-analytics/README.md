@@ -198,7 +198,9 @@ jobs service still logs each delivery. Use the checkpoint row's
 and its `updated_at` to track progress. The jobs service records invocation timing
 and failures; member drift observations identify corrections after commit.
 
-Legacy sequential/batched recomputation and compare mode remain supported and
-covered. Their eventual retirement, fleet/Core defaults and rollback window remain
-explicit pre-merge decisions for this reconciliation PR. No scheduling-lane priority
-or production flag changes are included here.
+Incremental mode is the target for every site. Legacy sequential/batched
+recomputation and compare mode are transitional: they stay supported and covered
+only until incremental mode has been verified in production, then a follow-up
+removes them and makes incremental the default. When that happens is decided at
+rollout time rather than by a criterion written here. No scheduling-lane priority
+or production flag changes are included in this change.
