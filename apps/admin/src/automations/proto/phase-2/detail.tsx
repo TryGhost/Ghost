@@ -633,18 +633,17 @@ const AutomationFloat: React.FC = () => {
             <LucideIcon.Save /> Save
           </DropdownMenuItem>
         )}
-        {/* A verb, like every other row here. It was "Settings" — the one noun in a
-                    list of things you do, which read as somewhere to go rather than
-                    something to perform — and then "Edit details", which is a verb but
-                    names no particular thing: you can't tell from it which details, or
-                    that the name is one of them.
+        {/* A verb, like every other row here — "Settings" was the one noun in a list
+                    of things you do, which read as somewhere to go rather than something to
+                    perform.
 
-                    "Rename" says the thing you came for. The description rides along in
-                    the same dialog, the way it does from the list's row menu, because the
-                    two are what an automation is filed under and fixing one usually means
-                    fixing the other. */}
+                    "Edit details" rather than "Rename", which this was briefly. Rename is
+                    the sharper word for the name alone, and the dialog behind it edits the
+                    description too — so it promised less than it did, and someone looking
+                    for the description had no reason to open it. "Details" is vaguer on
+                    purpose: it covers both of the things in there. */}
         <DropdownMenuItem onClick={openSettings}>
-          <LucideIcon.PenLine /> Rename
+          <LucideIcon.PenLine /> Edit details
         </DropdownMenuItem>
         {/* Archive, where Delete used to be, and no longer coloured — nothing is
                     destroyed, so the red was claiming a weight this doesn't have.
@@ -1003,7 +1002,7 @@ const AutomationFloat: React.FC = () => {
       <DetailsDialog
         blurb="Shown on your automations list. Members never see either of these."
         confirmLabel="Save"
-        heading="Rename automation"
+        heading="Automation details"
         open={settingsOpen}
         values={settingsDraft}
         onChange={setSettingsDraft}

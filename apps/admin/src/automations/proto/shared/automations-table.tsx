@@ -110,15 +110,15 @@ const AutomationRow: React.FC<{
     <>
       {onRename && (
         <Item onSelect={() => onRename(entry)}>
-          <LucideIcon.PenLine /> Rename
+          <LucideIcon.PenLine /> Edit details
         </Item>
       )}
       {/* No dialog. It used to ask for a name first, on the reasoning that creating a
                 second automation deserves a deliberate act — but the name it offered was
                 always the one you'd accept, so the dialog was a confirmation step wearing
                 a form. The posts list duplicates instantly and so does this; the copy is
-                named "… (copy)", it's off, and it's one press from being renamed by the
-                row above. */}
+                named "… (copy)", it's off, and its name is one press away in the row
+                above. */}
       {onDuplicate && (
         <Item onSelect={() => onDuplicate(entry)}>
           <LucideIcon.Copy /> Duplicate

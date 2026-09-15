@@ -116,12 +116,13 @@ const AutomationsList: React.FC = () => {
     });
   };
 
-  // Rename, not "Edit details". The menu is a list of verbs and this is what you came
-  // to do; "Edit details" names a place rather than an act, and leaves you guessing
-  // which details. The description comes along because it's the line under the name
-  // in this very table — the two are what you're organising by, and splitting them
-  // across two actions would mean opening one dialog to fix a row and another to
-  // finish the job.
+  // "Edit details", not "Rename". Rename is the sharper word, and it was wrong: the
+  // dialog behind it edits the description as well, so the label promised less than it
+  // delivered and anyone looking for the description had no reason to open it.
+  //
+  // The description belongs in there because it's the line under the name in this very
+  // table — the two are what you're organising by, and splitting them across two
+  // actions would mean opening one dialog to fix a row and another to finish the job.
   const openRename = (entry: ProtoAutomation) => {
     setRenameDraft({ name: entry.automation.name, description: entry.description });
     setPendingRename(entry);
@@ -285,7 +286,7 @@ const AutomationsList: React.FC = () => {
       <DetailsDialog
         blurb="Only you and your team can see this — members never do."
         confirmLabel="Save"
-        heading="Rename automation"
+        heading="Automation details"
         open={Boolean(pendingRename)}
         values={renameDraft}
         onChange={setRenameDraft}
