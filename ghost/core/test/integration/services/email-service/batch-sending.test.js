@@ -794,6 +794,47 @@ describe('Batch sending tests', function () {
     });
   });
 
+  describe('Per-recipient Message-Id', function () {
+    it('sends a Message-Id header and a unique message_id variable per recipient when enabled', async function () {
+      configUtils.set('bulkEmail:perRecipientMessageId', true);
+      const { emailModel } = await sendEmail(agent);
+
+      // batchSize is 100 (see beforeEach), so all recipients go out in a single Mailgun call
+      sinon.assert.callCount(stubbedSend, 1);
+      const [, messageData] = stubbedSend.firstCall.args;
+      assert.equal(messageData['h:Message-Id'], '<%recipient.message_id%>');
+
+      const recipientVariables = JSON.parse(messageData['recipient-variables']);
+      const recipients = Object.keys(recipientVariables);
+      assert.equal(recipients.length, 4);
+
+      const messageIds = recipients.map((email) => recipientVariables[email].message_id);
+      for (const messageId of messageIds) {
+        assert.ok(messageId.startsWith(`${emailModel.id}.`), `unexpected prefix in ${messageId}`);
+        assert.match(messageId.slice(emailModel.id.length + 1), /^[a-f0-9]{32}@example\.com$/);
+      }
+      assert.equal(_.uniq(messageIds).length, recipients.length);
+
+      for (const email of recipients) {
+        assert.ok(recipientVariables[email].list_unsubscribe);
+      }
+    });
+
+    it('does not send a Message-Id header or message_id variable by default', async function () {
+      await sendEmail(agent);
+
+      sinon.assert.callCount(stubbedSend, 1);
+      const [, messageData] = stubbedSend.firstCall.args;
+      assert.equal('h:Message-Id' in messageData, false);
+
+      const recipientVariables = JSON.parse(messageData['recipient-variables']);
+      assert.equal(Object.keys(recipientVariables).length, 4);
+      for (const variables of Object.values(recipientVariables)) {
+        assert.equal('message_id' in variables, false);
+      }
+    });
+  });
+
   describe('Analytics', function () {
     it('Adds link tracking to all links in a post', async function () {
       const { emailModel, html, plaintext, recipientData } = await sendEmail(agent);
