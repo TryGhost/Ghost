@@ -91,7 +91,6 @@ test.describe('Ghost Public - Portal Donations', () => {
 
     await completeDonationViaFakeCheckout(page, stripe!, {
       email: `member-donation-fixed-${Date.now()}@ghost.org`,
-      name: 'Fixed Amount Donor',
     });
 
     const supportSuccessPage = new SupportSuccessPage(page);
