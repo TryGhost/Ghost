@@ -91,6 +91,9 @@ export function createTinybirdSyncService({
     }
 
     started = true;
+
+    logging.info({ system: { event: 'tinybird.sync.started' } }, '[Tinybird sync] Started');
+
     void runLoop(ingest)
       .then(() => {
         logging.error('[Tinybird sync] Loop stopped unexpectedly');
