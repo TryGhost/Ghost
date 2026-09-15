@@ -361,15 +361,24 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
-# juice's lib/cheerio.js imports cheerio's main entry, which eagerly loads
-# parse5, undici and the whatwg encoding stack that juice never uses (~20MB RSS
-# per process). The patch redirects that one import to cheerio/slim; juice
-# already parses via htmlparser2, so output is unchanged. Re-create the patch
-# with `pnpm patch juice@<version>` when juice is bumped - and note juice 12+ is
-# ESM, so a major bump also needs the `require('juice')` call sites updated.
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The
   # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
   '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
+  # The juice patch makes three changes:
+  # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,
+  #   undici and the whatwg encoding stack that juice never uses (~20MB RSS per
+  #   process). The patch redirects that one import to cheerio/slim; juice
+  #   already parses via htmlparser2, so output is unchanged.
+  # - juice 11 drops CSS rules with no declarations, so inlining throws on a
+  #   style attribute that has none (e.g. `style=";"`). The patch skips those
+  #   attributes, as juice 9 did.
+  # - mensch parses input like `a{b}` (or a `{placeholder}` in a style
+  #   attribute once replacement strings are wrapped) into a declaration with
+  #   no value, and inlining throws on it. This predates juice 11; the patch
+  #   skips those declarations.
+  # Re-create the patch with `pnpm patch juice@<version>` when juice is bumped -
+  # and note juice 12+ is ESM, so a major bump also needs the `require('juice')`
+  # call sites updated. The malformed CSS email tests cover all three crashes.
   juice@11.1.1: patches/juice@11.1.1.patch
