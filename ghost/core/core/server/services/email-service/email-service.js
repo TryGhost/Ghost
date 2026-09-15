@@ -49,6 +49,7 @@ class EmailService {
   #membersRepository;
   #verificationTrigger;
   #emailAnalyticsJobs;
+  #jobsService;
   #domainWarmingService;
   #config;
 
@@ -67,6 +68,7 @@ class EmailService {
    * @param {object} dependencies.membersRepository
    * @param {VerificationTrigger} dependencies.verificationTrigger
    * @param {object} dependencies.emailAnalyticsJobs
+   * @param {import('../jobs-service/jobs-service').JobsService} dependencies.jobsService
    * @param {DomainWarmingService} dependencies.domainWarmingService
    * @param {object} [dependencies.config] - Config service for reading host settings
    */
@@ -81,6 +83,7 @@ class EmailService {
     membersRepository,
     verificationTrigger,
     emailAnalyticsJobs,
+    jobsService,
     domainWarmingService,
     config,
   }) {
@@ -94,6 +97,7 @@ class EmailService {
     this.#sendingService = sendingService;
     this.#verificationTrigger = verificationTrigger;
     this.#emailAnalyticsJobs = emailAnalyticsJobs;
+    this.#jobsService = jobsService;
     this.#domainWarmingService = domainWarmingService;
     this.#config = config;
   }

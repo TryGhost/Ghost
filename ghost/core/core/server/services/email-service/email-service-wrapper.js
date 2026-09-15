@@ -14,7 +14,7 @@ class EmailServiceWrapper {
     return jsonModel.url;
   }
 
-  init({ ghostServer } = {}) {
+  init({ ghostServer, jobsService } = {}) {
     if (this.service) {
       return;
     }
@@ -36,7 +36,7 @@ class EmailServiceWrapper {
     const configService = require('../../../shared/config');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const jobsService = require('../jobs');
+    const legacyJobsService = require('../jobs');
     const membersService = require('../members');
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
@@ -120,7 +120,7 @@ class EmailServiceWrapper {
         Email,
         Member,
       },
-      jobsService,
+      jobsService: legacyJobsService,
       emailSegmenter,
       emailRenderer,
       domainWarmingService,
@@ -160,6 +160,7 @@ class EmailServiceWrapper {
       membersRepository,
       verificationTrigger: membersService.verificationTrigger,
       emailAnalyticsJobs,
+      jobsService,
       domainWarmingService,
       config: configService,
     });
