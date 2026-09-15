@@ -641,33 +641,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Two different empties, and they want different words. Nothing
-                          has entered yet is a fact about the automation and there's
-                          nothing to do about it; nothing MATCHED is a fact about the
-                          filters, and the way out is to change them. Saying "no members
-                          match" to someone whose automation has never run would send
-                          them hunting for a filter that isn't set. */}
-                {sorted.length === 0 && (
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell className="py-10" colSpan={3}>
-                      {noData ? (
-                        <EmptyIndicator
-                          description="Members will appear here as they enter this automation."
-                          title="No members yet"
-                        >
-                          <LucideIcon.Users />
-                        </EmptyIndicator>
-                      ) : (
-                        <EmptyIndicator
-                          description="Try adjusting your filters or clearing them to see all members."
-                          title="No members match"
-                        >
-                          <LucideIcon.Search />
-                        </EmptyIndicator>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )}
                 {sorted.map(({ run, status }) => {
                   const isSelected = run.id === selectedMemberId;
                   return (
@@ -725,6 +698,31 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 })}
               </TableBody>
             </Table>
+            {/* The empty state lives OUTSIDE the table, not as a full-width row
+                        inside it. As a row it inherited row chrome — the bottom border
+                        and the hover fill — and both said "this is an entry" about the
+                        one thing here that isn't one. A sibling under the header keeps
+                        the columns readable above it and owes the table nothing.
+
+                        Title only, no subcopy. "Members will appear here as they
+                        enter" was restating what an empty table under a Member column
+                        already says. Two empties still get their own words: nothing
+                        has ENTERED is a fact about the automation, nothing MATCHED is
+                        a fact about the filters — "no member entries" at someone whose
+                        filters are the problem would hide the way out. */}
+            {sorted.length === 0 && (
+              <div className="py-12">
+                {noData ? (
+                  <EmptyIndicator title="No member entries">
+                    <LucideIcon.Users />
+                  </EmptyIndicator>
+                ) : (
+                  <EmptyIndicator title="No members match">
+                    <LucideIcon.Search />
+                  </EmptyIndicator>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

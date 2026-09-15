@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { AUTOMATION_DESCRIPTIONS, mockAutomations } from './mock';
-import { DEFAULT_TRIGGER_CONFIG, type TriggerConfig } from './trigger-config';
+import { type TriggerConfig, triggerConfigFor } from './trigger-config';
 
 // ---------------------------------------------------------------------------
 // The prototype's automation store.
@@ -93,7 +93,9 @@ interface StoreState {
 // 17: seeded emails carry a written paragraph in email_lexical, so the canvas's
 // new empty state (keyed on lexical having children) doesn't fire on fixtures
 // that are meant to read as established emails.
-const VERSION = 17;
+// 18: the paid welcome flow seeds the paid trigger — both automations seeded the
+// free-signup default, so phase 1's paid flow was titled "Free member signs up".
+const VERSION = 18;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({
@@ -104,7 +106,14 @@ const seed = (): StoreState => ({
     // The fixture map is the seed now, not the lookup — once a description can be
     // edited, the record has to own it.
     description: AUTOMATION_DESCRIPTIONS[automation.slug] ?? '',
-    trigger: DEFAULT_TRIGGER_CONFIG,
+    // By slug, because which member a production flow is for IS its slug (see
+    // mock/automations). Both used to seed the free-signup default, which put
+    // "Free member signs up" on the PAID welcome flow's trigger card.
+    trigger: triggerConfigFor(
+      automation.slug === 'member-welcome-email-paid'
+        ? 'paid_subscription_starts'
+        : 'member_subscribes',
+    ),
   })),
 });
 

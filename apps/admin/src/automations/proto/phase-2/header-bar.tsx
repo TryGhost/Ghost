@@ -65,7 +65,11 @@ const StatusSwitch: React.FC<{
   status: 'active' | 'inactive';
   canGoLive: boolean;
   onChange: (next: boolean) => void;
-}> = ({ status, canGoLive, onChange }) => {
+  // A blocked turn-on, reported upward alongside the popover: pressing the
+  // switch is asking "can this run?", and the screen uses the moment to make
+  // the canvas show every warning it holds — grace periods included.
+  onBlockedAttempt?: () => void;
+}> = ({ status, canGoLive, onChange, onBlockedAttempt }) => {
   const on = status === 'active';
   // The switch is NEVER disabled. It used to grey out while the automation
   // couldn't go live, and a disabled control is a dead end — it says no without
@@ -90,6 +94,7 @@ const StatusSwitch: React.FC<{
           onClick={() => {
             if (!on && !canGoLive) {
               setBlockedOpen(true);
+              onBlockedAttempt?.();
               return;
             }
             onChange(!on);
@@ -147,8 +152,10 @@ interface HeaderBarProps {
   // directions confirm first — so the switch renders `status` and never its own
   // guess: one that flips before the answer is one that can be wrong.
   onStatusChange: (next: boolean) => void;
-  // Nothing to turn on yet — an automation with no trigger has nothing to run.
+  // Nothing to turn on yet — no trigger, no Stripe, or a blank email.
   canGoLive: boolean;
+  // Fired when the switch is pressed while blocked — see StatusSwitch.
+  onBlockedGoLive?: () => void;
   /**
    * A transient message about the automation as a whole. Currently unused: the
    * Stripe warning that lived here moved onto the trigger card (see triggerWarning
@@ -174,14 +181,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onEditTitle,
   onStatusChange,
   canGoLive,
+  onBlockedGoLive,
   notice,
 }) => (
   // A column, not a row: the bar is one 64px row wide enough for the notice to
   // sit in, and two rows when it isn't. shrink-0 without a fixed height, so it
   // grows and everything below moves down rather than being covered.
   <header
+    // group/header: the pencil beside the title reveals on hover over the WHOLE
+    // bar, not just the title — see the note on the title button.
     className={cn(
-      'relative z-30 flex shrink-0 flex-col',
+      'group/header relative z-30 flex shrink-0 flex-col',
       'border-b border-border-default bg-surface-elevated',
     )}
   >
@@ -230,15 +240,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 the hierarchy — the region label outranking the thing it reports on.
 
                 Editable, it becomes a button carrying a pencil — a hover fill, a
-                pointer, and a glyph that says so at rest.
+                pointer, and a glyph that says so.
 
-                The pencil used to fade in on hover, and came out on the grounds that an
-                invisible affordance still reserving its width pays rent twice. That was
-                right about the FADE and wrong about the pencil: the fix is to show it
-                always, which costs the same 16px and actually advertises something. It
-                mattered less when the ⋯ carried an Edit details row that did the
-                discovering; with the menu gone this is the only way in, so it has to
-                say so.
+                The pencil has now been through three rounds. Faded in on TITLE hover
+                (cut: an invisible affordance still reserving its width pays rent
+                twice); always visible (worked, but a permanent glyph beside the
+                screen's subject was chrome the title carried everywhere); and now
+                revealed on hover over the whole HEADER — a target the size of the
+                bar, so it's on screen the moment the cursor is anywhere near the
+                thing it labels, while the title reads clean in a screenshot or at
+                rest. The width stays reserved either way, so nothing shifts.
+                Keyboard focus on the button also reveals it — an affordance that
+                only mouse users can discover isn't one.
 
                 Muted, and it doesn't brighten on hover — the title is the target and
                 the pencil is a label for it, not a second thing to aim at.
@@ -256,13 +269,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 type scale moved. */}
         {onEditTitle ? (
           <button
-            className="-ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+            className="group/title -ml-2 flex h-9 min-w-0 items-center gap-1.5 rounded-md px-2 transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
             title="Edit details"
             type="button"
             onClick={onEditTitle}
           >
             <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
-            <LucideIcon.Pen className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+            <LucideIcon.Pen
+              className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/header:opacity-100 group-focus-visible/title:opacity-100 motion-reduce:transition-none"
+              strokeWidth={2}
+            />
           </button>
         ) : (
           <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
@@ -278,7 +294,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <Separator className="h-5" orientation="vertical" />
         {/* Ends the row. It's the only control here that changes what the automation
                     DOES rather than what you're looking at, so it gets the far edge. */}
-        <StatusSwitch canGoLive={canGoLive} status={status} onChange={onStatusChange} />
+        <StatusSwitch
+          canGoLive={canGoLive}
+          status={status}
+          onBlockedAttempt={onBlockedGoLive}
+          onChange={onStatusChange}
+        />
       </Inline>
     </div>
 

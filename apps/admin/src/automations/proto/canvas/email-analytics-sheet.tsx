@@ -55,6 +55,14 @@ export const EmailAnalyticsSheet: React.FC<EmailAnalyticsSheetProps> = ({ email,
     // it and close the sheet the instant it opened. The opening pointerdown has
     // already been and gone.
     const onPointerDown = (event: PointerEvent) => {
+      // The card's analytics toggle is "outside" too, but it manages this sheet
+      // itself — arming opens, disarming closes. Closing here on its pointerdown
+      // meant the toggle's own click then re-opened the sheet: press to close,
+      // and it blinked shut and open again. Its presses are its own.
+      const target = event.target as Element | null;
+      if (target?.closest?.('[data-email-analytics-toggle]')) {
+        return;
+      }
       if (!sheetRef.current?.contains(event.target as Node)) {
         onClose();
       }

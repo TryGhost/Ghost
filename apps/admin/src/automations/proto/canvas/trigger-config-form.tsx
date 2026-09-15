@@ -105,16 +105,18 @@ export const TriggerEmptyState: React.FC<{
 interface TriggerConfigFormProps {
   config: TriggerConfig;
   onChange: (next: TriggerConfig) => void;
-  // Phase-1 lock (see float/trigger-card-model): the select stays visible but
-  // disabled — the card still says what starts the flow — and the disclosed
-  // tier fields don't render at all rather than stacking disabled controls.
-  locked?: boolean;
+  // Off in phase 1 (simple triggers): the exit sentence belongs to the
+  // general-model lanes, where exits are part of what's being explored. A
+  // `locked` prop lived here too — phase 1's saved trigger, fields hidden —
+  // and went when locked cards stopped rendering this form at all (the canvas
+  // draws them header-only; see triggerBodyEmpty there).
+  showExits?: boolean;
 }
 
 export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
-  locked = false,
+  showExits = true,
 }) => {
   const tierIds = config.tierIds;
   // Every tier is "any tier"; none is the error state.
@@ -133,9 +135,10 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
     <Stack gap="xl">
       {/* No trigger control here: the card's header carries the trigger's name
                 once one is chosen, so a select repeating it would be the same fact
-                twice on one card. Changing a trigger after the fact is its own
-                question and hasn't been designed yet — a locked card says so with
-                the lock in its header, and an unlocked one currently just can't.
+                twice on one card. Changing a trigger goes through the header's ⋯;
+                a locked card (phase 1) simply doesn't offer one — the lock icon
+                that used to mark this is retired, since with no fields on the card
+                there's no invitation to edit for it to answer.
 
       {/* No audience block. There was one — a membership scope on every trigger,
                 with tiers under it — and it's gone with the model behind it (see
@@ -172,7 +175,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 its own thing rather than per-field, so this reads as unanswered — see
                 `Select` in the trigger — and the objection is raised somewhere that can
                 speak for the whole card. */}
-      {!locked && showTiers && (
+      {showTiers && (
         <Stack gap="sm">
           <Label className="text-muted-foreground">Tiers</Label>
           <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
@@ -224,8 +227,8 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 So it's a sentence, and it moves on its own as the tiers above it change.
                 Muted and unlabelled: a Label would file it with the fields and invite a
                 press. See shared/trigger-config for what it costs to drop the one real
-                choice. */}
-      <p className="text-sm text-muted-foreground">{exitSentence(config)}</p>
+                choice. Not in phase 1 — see showExits. */}
+      {showExits && <p className="text-sm text-muted-foreground">{exitSentence(config)}</p>}
     </Stack>
   );
 };

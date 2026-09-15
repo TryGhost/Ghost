@@ -69,6 +69,7 @@ import {
   TRIGGER_PICKER_OPTIONS,
   type TriggerConfig,
   type TriggerType,
+  hasTiers,
   triggerConfigFor,
   triggerIcon,
   triggerLabel,
@@ -180,8 +181,11 @@ type StepNodeData = {
   // an email wears one for a blank subject — nothing here is shaped to either, so
   // whatever card next has a fault takes the same treatment.
   warning?: NodeWarning;
-  // Email only: opens the right-hand analytics sheet.
-  onOpenAnalytics?: () => void;
+  // Email only: whether this card's analytics sheet is open, and the toggle
+  // that opens or closes it — one handler, because the button is a toggle and
+  // splitting open/close across two would let them disagree.
+  analyticsOpen?: boolean;
+  onToggleAnalytics?: () => void;
   // Trigger node. Without onTriggerConfigChange the summary is read-only — the
   // read canvas passes no handler, since it shows what's running rather than
   // what's being edited.
@@ -320,7 +324,10 @@ const INTRO_EXIT_CLASS = `transition-[opacity,translate] duration-180 [transitio
 const StepNode: React.FC<NodeProps> = ({ data }) => {
   const d = data as StepNodeData;
   const isTrigger = d.kind === 'trigger';
-  const clickable = !isTrigger;
+  // A step (wait / email), as opposed to the trigger. Was `clickable`, back when
+  // clicking a step selected it — the blue border with no follow-up. Selection is
+  // gone (see the ReactFlow props below); every card's controls are on the card.
+  const isAction = !isTrigger;
   const isEmail = d.kind === 'email';
   const triggerConfig = d.triggerConfig ?? DEFAULT_TRIGGER_CONFIG;
   const configurable = isTrigger && Boolean(d.onTriggerConfigChange);
@@ -368,6 +375,15 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   }, [focusOnMount]);
   const triggerLocked = isTrigger && Boolean(d.triggerLocked);
   const triggerUnset = isTrigger && Boolean(d.triggerUnset);
+  // A configured trigger with nothing to say renders header-only — no body, no
+  // second block of padding under the first. Locked (phase 1's saved state) has
+  // no fields and, simple, no exit sentence; unlocked-but-simple has fields only
+  // when the paid trigger discloses tiers. Everywhere else the exit sentence
+  // keeps the body occupied.
+  const triggerBodyEmpty =
+    isTrigger &&
+    !triggerUnset &&
+    (triggerLocked || (Boolean(d.simpleTriggerNames) && !hasTiers(triggerConfig)));
   // Captured at mount: a card that STARTED life asking the question is the one
   // being created, and it's the only one that fades in. Read live, this would also
   // fire on the card returning from a "Change trigger".
@@ -407,23 +423,13 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   }, [phase]);
   // Set by the "Change trigger" item, read once the menu has finished closing.
   const openPickerOnClose = useRef(false);
-  // Locked trigger: a lock where other cards put their overflow menu. A button,
-  // not a static glyph — clicking it answers "why can't I change this?" in a
-  // popover instead of leaving the disabled select to explain itself.
-  const lockAction = triggerLocked ? (
-    <Popover modal={false}>
-      <PopoverTrigger asChild>
-        <Button aria-label="Why the trigger is locked" size="icon" variant="ghost">
-          <LucideIcon.Lock />
-        </Button>
-      </PopoverTrigger>
-      {/* "always" so the popover tracks its card when the canvas pans — same
-                reason as the overflow menu below. */}
-      <PopoverContent align="end" className="w-72" updatePositionStrategy="always">
-        <p className="text-sm">This trigger is set for now, with more options on the way.</p>
-      </PopoverContent>
-    </Popover>
-  ) : undefined;
+  // A locked trigger (phase 1) carries NO control in the slot. It carried a lock
+  // for a while — a button whose popover answered "why can't I change this?" —
+  // and the lock earned its place when the card below it held disabled fields
+  // that looked like they should work. Phase 1's triggers have no fields at all
+  // now, so there's nothing on the card that invites an edit, and a lock was
+  // announcing a restriction nobody had run into. The absent ⋯ is the whole
+  // message.
   // The trigger's own ⋯, in the slot every other card puts one. Changing the
   // trigger opens the picker as a popover rather than returning the card to its
   // asking state — the card is showing a configured trigger, and reverting it to a
@@ -500,23 +506,34 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
   // Email cards raise their analytics from the header, beside the overflow, so
   // the way in is a control that names itself rather than a hover state buried
   // in the metrics.
+  // A toggle, not a launcher: pressed while its sheet is open, and pressing it
+  // again closes the sheet. The pressed fill is the same bg-muted every other
+  // open-state control in the proto takes (the lane switcher, an open menu's
+  // trigger), so "this button's panel is open" reads the same everywhere.
   const analyticsAction =
     isEmail && d.stats ? (
       <Button
-        aria-label="View email analytics"
+        aria-label={d.analyticsOpen ? 'Hide email analytics' : 'View email analytics'}
+        aria-pressed={d.analyticsOpen}
+        className={cn(d.analyticsOpen && 'bg-muted')}
+        // The sheet dismisses itself on any pointerdown outside its own panel,
+        // and this button is outside it — so pressing the armed toggle closed
+        // the sheet on pointerdown and the click then re-opened it. The sheet's
+        // dismiss listener skips this attribute: the toggle owns its presses.
         size="icon"
         type="button"
         variant="ghost"
-        onClick={d.onOpenAnalytics}
+        data-email-analytics-toggle
+        onClick={d.onToggleAnalytics}
       >
         <LucideIcon.ChartNoAxesColumn />
       </Button>
     ) : null;
-  // Header action slot: overflow menu for editable steps. The trigger has no
-  // action unless locked — its fields are in the card.
-  // The trigger's slot holds the lock when it's fixed, the ⋯ when it isn't.
-  const triggerAction = lockAction ?? changeTriggerAction;
-  const overflowAction = clickable ? (
+  // Header action slot: overflow menu for editable steps. The trigger's slot
+  // holds the ⋯ when it can be changed, and nothing when it's fixed — see the
+  // note on the retired lock above.
+  const triggerAction = changeTriggerAction;
+  const overflowAction = isAction ? (
     // modal={false} — the default wraps the menu in RemoveScroll and kills
     // outside pointer events, which freezes the canvas underneath it. The
     // menu is a small aside on one card, not something worth trapping the
@@ -575,61 +592,66 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       style={d.enterDelay === undefined ? undefined : { animationDelay: `${d.enterDelay}ms` }}
     >
       <NodeHeader action={action} icon={headerIcon} title={d.title} />
-      {isTrigger && (
-        // The trigger's own fields sit in the card, like every other step's
-        // form — nothing about the trigger is behind a popover any more.
-        // nodrag/nopan + stopPropagation so using them doesn't pan the canvas.
-        //
-        // Two elements rather than one: the outer holds the animated height and
-        // clips what overflows it mid-resize, the inner carries the padding so
-        // measuring it gives the height the card actually wants.
-        <div
-          className={cn(
-            'nodrag nopan cursor-default',
-            bodyHeight !== null && `overflow-hidden ${INTRO_GROW_CLASS}`,
-          )}
-          style={bodyHeight === null ? undefined : { height: bodyHeight }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div ref={bodyContentRef} className={NODE_BODY_PADDING}>
-            {triggerUnset && d.onTriggerConfigChange ? (
-              // Fades out in place, the card holding its size, so the options leave
-              // before anything replaces them rather than dissolving into the fields.
-              <div
-                className={cn(
-                  phase === 'leaving' &&
-                    'animate-out duration-120 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
-                )}
-              >
-                <TriggerEmptyState
-                  simpleNames={d.simpleTriggerNames}
-                  onSelect={d.onTriggerConfigChange}
-                />
-              </div>
-            ) : configurable && d.onTriggerConfigChange ? (
-              // Fades in over the list it replaces, alongside the card resizing
-              // around it. Without this the configured fields blink into place where
-              // the options were.
-              //
-              // The same recipe the shipping canvas uses for a newly inserted node
-              // (components/canvas/nodes) — including motion-reduce, since this is
-              // decoration and nobody needs it to understand what happened.
-              <div
-                className={`animate-in duration-240 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
-              >
-                <TriggerFieldsForm
-                  config={triggerConfig}
-                  locked={triggerLocked}
-                  onChange={d.onTriggerConfigChange}
-                />
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
+      {isTrigger &&
+        !triggerBodyEmpty && (
+          // The trigger's own fields sit in the card, like every other step's
+          // form — nothing about the trigger is behind a popover any more.
+          // nodrag/nopan + stopPropagation so using them doesn't pan the canvas.
+          //
+          // Two elements rather than one: the outer holds the animated height and
+          // clips what overflows it mid-resize, the inner carries the padding so
+          // measuring it gives the height the card actually wants.
+          <div
+            className={cn(
+              'nodrag nopan cursor-default',
+              bodyHeight !== null && `overflow-hidden ${INTRO_GROW_CLASS}`,
             )}
+            style={bodyHeight === null ? undefined : { height: bodyHeight }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div ref={bodyContentRef} className={NODE_BODY_PADDING}>
+              {triggerUnset && d.onTriggerConfigChange ? (
+                // Fades out in place, the card holding its size, so the options leave
+                // before anything replaces them rather than dissolving into the fields.
+                <div
+                  className={cn(
+                    phase === 'leaving' &&
+                      'animate-out duration-120 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
+                  )}
+                >
+                  <TriggerEmptyState
+                    simpleNames={d.simpleTriggerNames}
+                    onSelect={d.onTriggerConfigChange}
+                  />
+                </div>
+              ) : configurable && d.onTriggerConfigChange ? (
+                // Fades in over the list it replaces, alongside the card resizing
+                // around it. Without this the configured fields blink into place where
+                // the options were.
+                //
+                // The same recipe the shipping canvas uses for a newly inserted node
+                // (components/canvas/nodes) — including motion-reduce, since this is
+                // decoration and nobody needs it to understand what happened.
+                <div
+                  className={`animate-in duration-240 ${INTRO_EASE} fade-in-0 motion-reduce:animate-none`}
+                >
+                  <TriggerFieldsForm
+                    config={triggerConfig}
+                    // Phase 1's triggers stay simple: the exit sentence belongs to
+                    // the general-model lanes, where exits are part of what's being
+                    // explored. Phase 1 shows what ships, and production has no
+                    // exit configuration to speak of.
+                    showExits={!d.simpleTriggerNames}
+                    onChange={d.onTriggerConfigChange}
+                  />
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">{triggerSummary(triggerConfig)}</div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-      {clickable && (
+        )}
+      {isAction && (
         // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
         // and selecting don't pan the canvas or re-fire node selection.
         <div
@@ -912,6 +934,10 @@ interface EditCanvasProps {
   // Phase 1's plainer trigger names, with no descriptions — see
   // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
   simpleTriggerNames?: boolean;
+  // Bumped by the screen when a blocked publish should make the canvas show its
+  // whole hand — every warning, grace periods included. A counter rather than a
+  // boolean so consecutive blocked presses each land; the canvas never resets it.
+  revealWarningsSignal?: number;
 }
 
 export const EditCanvas: React.FC<EditCanvasProps> = ({
@@ -922,9 +948,9 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerWarning,
   triggerLocked = false,
   simpleTriggerNames = false,
+  revealWarningsSignal,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   // Which email the right-hand analytics sheet is reporting on.
   const [analyticsActionId, setAnalyticsActionId] = useState<string | null>(null);
   // Email-content dialog, opened from a card's inline "Edit email content" button.
@@ -974,6 +1000,17 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   // under useMemo and would otherwise close over a stale value.
   const settleOthers = (actionId: string) =>
     setGraceStepId((current) => (current !== null && current !== actionId ? null : current));
+  // The screen asked for full disclosure — a blocked publish. Grace is a
+  // display nicety and validation already ignores it (the screen validates the
+  // draft directly); this makes the DISPLAY catch up, so the popover's "fix all
+  // issues" has every issue visibly on a card. Skipped on mount: the signal
+  // starts at whatever the screen initialised, and only a change means a press.
+  const firstSignal = useRef(revealWarningsSignal);
+  useEffect(() => {
+    if (revealWarningsSignal !== firstSignal.current) {
+      setGraceStepId(null);
+    }
+  }, [revealWarningsSignal]);
 
   // No trigger chosen yet — a created automation, before its first decision.
   // `triggerConfig === undefined` is the read canvas passing none and means the
@@ -1218,9 +1255,12 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           subtitle: isEmail
             ? action.data.email_subject || 'Untitled'
             : formatWait(action.data.wait_hours),
-          // Also blue while its analytics sheet is open, so the sheet is
-          // visibly tied to the card it's reporting on.
-          selected: action.id === selectedId || action.id === analyticsActionId,
+          // Blue only while its analytics sheet is open, so the sheet is
+          // visibly tied to the card it's reporting on. Click-selection is gone:
+          // it painted the same blue border with nothing behind it — every
+          // control a card offers is already on the card, so selecting one
+          // promised a follow-up that didn't exist.
+          selected: action.id === analyticsActionId,
           // Inline-form values + per-node handlers (each edits its own action).
           subject: action.type === 'send_email' ? action.data.email_subject : undefined,
           emailHasContent:
@@ -1258,15 +1298,18 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
             // went, or attention was demonstrably on another card.
             setGraceStepId(null);
             onChange(removeAction({ detail: draft, actionId: action.id }));
-            setSelectedId(null);
           },
           onEditContent: () => {
             settleOthers(action.id);
             setEmailDialogActionId(action.id);
           },
-          onOpenAnalytics: () => {
+          analyticsOpen: action.id === analyticsActionId,
+          onToggleAnalytics: () => {
             settleOthers(action.id);
-            setAnalyticsActionId(action.id);
+            // Functional, not a read of analyticsActionId: this closure lives in
+            // node data built under useMemo, and a stale read would re-open the
+            // sheet on the press that should close it.
+            setAnalyticsActionId((current) => (current === action.id ? null : action.id));
           },
         },
         draggable: false,
@@ -1322,7 +1365,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   }, [
     draft,
     ordered,
-    selectedId,
     analyticsActionId,
     triggerConfig,
     onTriggerConfigChange,
@@ -1401,20 +1443,20 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
           panOnDrag
           panOnScroll
           onInit={onInit}
-          onNodeClick={(_, node) => {
-            if (node.type !== 'step') {
-              return;
-            }
-            // The trigger's fields live in its card, so a bare card click does nothing.
-            if (node.id === '__trigger__') {
-              return;
-            }
-            setSelectedId(node.id);
-          }}
+          // A deliberate no-op, NOT a leftover. A bare card click does nothing
+          // on any card now, the way it always did on the trigger: every card's
+          // fields and controls are on the card itself, so selection had no
+          // follow-up to offer — just a blue border promising one. (The
+          // analytics sheet still ties itself to its card by that border, from
+          // its own open state.)
+          //
+          // The handler can't simply be removed, though. React Flow puts
+          // pointer-events: none on any node that is not selectable, not
+          // draggable, and has no click handler (hasPointerEvents, NodeWrapper)
+          // — done cleanly, that froze every input, menu and popover on every
+          // card, and all that was left working was the pan.
+          onNodeClick={() => {}}
           onNodesChange={onNodesChange}
-          // Doesn't dismiss the analytics sheet — that's a deliberate read,
-          // closed from its own control or Escape.
-          onPaneClick={() => setSelectedId(null)}
         >
           <Background variant={BackgroundVariant.Dots} />
           {/* The shipping canvas's own controls, imported rather than

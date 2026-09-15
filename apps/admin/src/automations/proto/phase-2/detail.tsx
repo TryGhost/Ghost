@@ -11,6 +11,9 @@ import {
   Button,
   EmptyIndicator,
   LoadingIndicator,
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -225,6 +228,17 @@ const AutomationFloat: React.FC = () => {
   const [publishOpen, setPublishOpen] = useState(false);
   // Whether a publish is in flight — see runPublish, below the not-found guard.
   const [publishing, setPublishing] = useState(false);
+  // A blocked attempt to publish makes the canvas show its whole hand. The
+  // canvas grants a just-added card a grace period before it wears its warning
+  // (see graceStepId there), but pressing Publish IS full validation — the
+  // moment someone asks "can this run?", every reason it can't has to be on
+  // screen, grace included. Bumping the signal ends any grace; the canvas owns
+  // what that reveals.
+  const [revealSignal, setRevealSignal] = useState(0);
+  const revealWarnings = () => setRevealSignal((s) => s + 1);
+  // The Update button's blocked popover — same message and dress as the
+  // switch's, because it's the same refusal from a second control.
+  const [updateBlockedOpen, setUpdateBlockedOpen] = useState(false);
   const stripeConnected = useStripeConnected();
   // Set when the screen is deliberately navigating away — Delete, and the first
   // Save of a new automation, which swaps /new for a real id.
@@ -406,10 +420,19 @@ const AutomationFloat: React.FC = () => {
 
   const stripeMissing = !stripeConnected && triggerConfig !== null && needsStripe(triggerConfig);
 
-  // Nothing can go live without something to start it, or without the payments
-  // it depends on. An automation with no trigger isn't half-configured, it's an
-  // automation that cannot run — and neither is one waiting on Stripe.
-  const canGoLive = triggerConfig !== null && !stripeMissing;
+  // A blank email in the draft that would be committed. Validated on the DRAFT,
+  // not on what the canvas is currently warning about: the canvas grants a
+  // just-added card a grace period before it wears its warning, and grace is a
+  // display nicety — it must never mean a blank email slips through a publish.
+  const blankEmails = draftFlow.actions.some(
+    (action) => action.type === 'send_email' && !action.data.email_subject.trim(),
+  );
+
+  // Nothing can go live without something to start it, without the payments it
+  // depends on, or with an email that can't be sent. An automation with no
+  // trigger isn't half-configured, it's an automation that cannot run — and
+  // neither is one waiting on Stripe or carrying a blank email.
+  const canGoLive = triggerConfig !== null && !stripeMissing && !blankEmails;
   const paneHidden = paneCollapsed;
   // What's running (read canvas) vs what's being edited (edit canvas).
 
@@ -512,8 +535,17 @@ const AutomationFloat: React.FC = () => {
   };
 
   // A stopped automation has nobody mid-flow, so there's nothing to confirm and
-  // it publishes straight away. A live one confirms first.
+  // it publishes straight away. A live one confirms first — and, live, the edits
+  // take effect the moment they land, so a draft that fails validation is
+  // blocked here the same way going live is blocked at the switch: popover, and
+  // the canvas showing every warning. (Save, while off, stays ungated — a draft
+  // is allowed to be unfinished; publishing is where it has to hold up.)
   const handlePublishClick = () => {
+    if (!canGoLive) {
+      revealWarnings();
+      setUpdateBlockedOpen(true);
+      return;
+    }
     if (liveStatus === 'inactive') {
       publishChanges();
       return;
@@ -620,13 +652,20 @@ const AutomationFloat: React.FC = () => {
   // the draft down with no ceremony, while committing to something live confirms
   // first. Exploration routes both through one because publishing is its only write.
   const chromeActions = (
-    <Button
-      disabled={!hasChanges}
-      variant="ghost"
-      onClick={liveStatus === 'active' ? handlePublishClick : handleSave}
-    >
-      {liveStatus === 'active' ? 'Update' : 'Save'}
-    </Button>
+    <Popover open={updateBlockedOpen} onOpenChange={setUpdateBlockedOpen}>
+      <PopoverAnchor asChild>
+        <Button
+          disabled={!hasChanges}
+          variant="ghost"
+          onClick={liveStatus === 'active' ? handlePublishClick : handleSave}
+        >
+          {liveStatus === 'active' ? 'Update' : 'Save'}
+        </Button>
+      </PopoverAnchor>
+      <PopoverContent align="end" className="w-72">
+        <p className="text-md">Fix all issues to publish this automation.</p>
+      </PopoverContent>
+    </Popover>
   );
 
   // The switch never flips itself: both directions open their confirm, and the status
@@ -661,6 +700,7 @@ const AutomationFloat: React.FC = () => {
         status={liveStatus}
         title={automation.name}
         onBack={goBack}
+        onBlockedGoLive={revealWarnings}
         onEditTitle={openSettings}
         onStatusChange={handleStatusToggle}
       />
@@ -856,6 +896,7 @@ const AutomationFloat: React.FC = () => {
           >
             <EditCanvas
               draft={draftFlow}
+              revealWarningsSignal={revealSignal}
               triggerConfig={triggerConfig}
               // The Stripe problem, worn by the card that has it. The message
               // states the fix rather than the failure — one sentence, the same
