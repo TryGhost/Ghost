@@ -348,6 +348,56 @@ describe('Member Custom Fields Members API', function () {
       );
     });
 
+    // A write names several values, and a composite is several again. Refusing at the
+    // first would have someone correcting one part per round trip to find out what was
+    // wrong with the rest, so every refusal is reported from one attempt.
+    it('reports every value it refuses, not only the first', async function () {
+      const addressKey = await defineField('Shipping address', { type: 'address' });
+      const tooLong = 'x'.repeat(256);
+
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({
+          metafields: {
+            custom: {
+              [addressKey]: { line1: tooLong, line2: tooLong, country: 'nope' },
+              [fieldKey]: tooLong,
+            },
+          },
+        })
+        .expectStatus(422);
+
+      // The first still fills the error itself, so a client reading only that sees
+      // exactly what it saw before.
+      const [error] = body.errors;
+      assert.equal(error.property, `metafields.custom.${addressKey}.line1`);
+
+      // And the whole set rides alongside, each naming the value it belongs to.
+      const refused = (error.details as Array<{ property: string }>).map(
+        (detail) => detail.property,
+      );
+      assert.deepEqual(refused.sort(), [
+        `metafields.custom.${addressKey}.country`,
+        `metafields.custom.${addressKey}.line1`,
+        `metafields.custom.${addressKey}.line2`,
+        `metafields.custom.${fieldKey}`,
+      ]);
+
+      const stored = await readMemberAsStaff();
+      assert.deepEqual(stored.metafields.custom, { [fieldKey]: '9' }, 'and nothing was written');
+    });
+
+    // One refusal keeps the shape it has always had, rather than growing a list of one.
+    it('leaves details empty when only one value is refused', async function () {
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { custom: { [fieldKey]: 'x'.repeat(256) } } })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].property, `metafields.custom.${fieldKey}`);
+      assert.equal(body.errors[0].details, null);
+    });
+
     it('will not let a member change a field they may only read', async function () {
       const readOnlyKey = await defineField('Membership number', { access: 'read' });
       await setValuesAsStaff({ [readOnlyKey]: 'M-001' });

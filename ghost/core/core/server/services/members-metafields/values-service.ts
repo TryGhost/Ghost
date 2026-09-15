@@ -43,6 +43,31 @@ const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join('.');
 
+/** One value the site will not accept, against the name the write gave it. */
+interface Refusal {
+  message: string;
+  property: string;
+}
+
+/**
+ * Every refusal in one error.
+ *
+ * The API renders a single error, so the first still fills `message` and `property` and
+ * a client that reads only those sees exactly what it saw before. The whole set rides in
+ * `errorDetails`, which the renderer already passes through as `details`, so a client
+ * that wants to mark every refused input can have them all from one attempt.
+ */
+function refusalError(refusals: Refusal[]): errors.ValidationError {
+  const [first, ...rest] = refusals as [Refusal, ...Refusal[]];
+  return new errors.ValidationError({
+    message: first.message,
+    property: first.property,
+    // Omitted when there is nothing more to say, so the common single refusal keeps the
+    // shape it has always had rather than growing a one-element list.
+    ...(rest.length > 0 ? { errorDetails: refusals } : {}),
+  });
+}
+
 interface AllowedField {
   id: string;
   namespace: string;
@@ -229,23 +254,29 @@ export class MetafieldValuesService {
 
     const byIdentity = await this.allowedFieldsByIdentity(identities, audience);
     const writes: PlannedWrite[] = [];
+    // Gathered rather than thrown as they are found. A write names several values, and
+    // a composite is several again, so refusing at the first leaves someone correcting
+    // one part per round trip to learn what was wrong with the rest.
+    const refusals: Refusal[] = [];
 
     for (const [identity, raw] of Object.entries(values)) {
       const field = byIdentity.get(identity);
       if (!field) {
-        throw new errors.ValidationError({
+        refusals.push({
           message: `Unknown custom field: ${identity}`,
           property: wireProperty(identity),
         });
+        continue;
       }
 
       // A different refusal from the unknown-field one above: this audience can
       // already see the field, so naming it discloses nothing.
       if (!canWrite(audience, field)) {
-        throw new errors.ValidationError({
+        refusals.push({
           message: `Cannot set custom field: ${identity}`,
           property: wireProperty(identity),
         });
+        continue;
       }
 
       // `null` clears any field, and `''` clears one with no parts. For a value
@@ -262,13 +293,21 @@ export class MetafieldValuesService {
       // Which field failed rides in `property`.
       const value = FIELD_TYPES[field.type].value.safeParse(raw);
       if (!value.success) {
-        const issue = value.error.issues[0];
-        throw new errors.ValidationError({
-          message: issue.message,
-          property: [wireProperty(identity), ...issue.path].join('.'),
-        });
+        // Every issue, not the first: a value with parts fails once per part, and each
+        // names the part it belongs to, which is what lets a client mark them all.
+        for (const issue of value.error.issues) {
+          refusals.push({
+            message: issue.message,
+            property: [wireProperty(identity), ...issue.path].join('.'),
+          });
+        }
+        continue;
       }
       writes.push({ field, value: value.data });
+    }
+
+    if (refusals.length > 0) {
+      throw refusalError(refusals);
     }
 
     return writes;
