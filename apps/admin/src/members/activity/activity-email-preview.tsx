@@ -10,8 +10,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Grid, Inline, Stack } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useEmailPreview } from '@tryghost/admin-x-framework/api/email-previews';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
@@ -89,39 +89,50 @@ export default function ActivityEmailPreview({ email, onClose }: ActivityEmailPr
         }}
         onInteractOutside={(event) => event.preventDefault()}
       >
-        <Inline className="border-b border-border-default p-4" gap="md" justify="between" wrap>
+        <Grid align="center" className="border-b border-border-default p-4" columns={3} gap="md">
           <DialogTitle>Email preview</DialogTitle>
-          <Inline gap="md">
-            <ToggleGroup
-              type="single"
-              value={device}
-              onValueChange={(value) => {
-                if (value === 'desktop' || value === 'mobile') {
-                  setDevice(value);
-                }
-              }}
-            >
-              <ToggleGroupItem aria-label="Desktop" value="desktop">
-                <LucideIcon.Laptop />
-              </ToggleGroupItem>
-              <ToggleGroupItem aria-label="Mobile" value="mobile">
-                <LucideIcon.Smartphone />
-              </ToggleGroupItem>
-            </ToggleGroup>
-            <Button onClick={onClose}>Close</Button>
-          </Inline>
-        </Inline>
+          <ToggleGroup
+            className="justify-self-center"
+            type="single"
+            value={device}
+            onValueChange={(value) => {
+              if (value === 'desktop' || value === 'mobile') {
+                setDevice(value);
+              }
+            }}
+          >
+            <ToggleGroupItem aria-label="Desktop" value="desktop">
+              <LucideIcon.Laptop />
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Mobile" value="mobile">
+              <LucideIcon.Smartphone />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          <Button className="justify-self-end" onClick={onClose}>
+            Close
+          </Button>
+        </Grid>
         <Inline
           align="start"
-          className="min-h-0 overflow-auto bg-surface-panel p-3 sm:p-6"
+          className="min-h-0 overflow-auto bg-muted p-3 sm:p-6"
           gap="none"
           justify="center"
         >
-          <PreviewChrome className="max-w-full shrink-0" data-device={device} device={device}>
+          <PreviewChrome
+            className={cn(
+              'max-w-full shrink-0',
+              device === 'desktop'
+                ? 'max-w-[740px] px-0 [&>div]:rounded-2xl [&>div]:shadow-2xl'
+                : 'shadow-2xl',
+            )}
+            data-device={device}
+            device={device}
+          >
             <Stack className="size-full bg-background" gap="none">
-              <Stack className="border-b border-border-default p-4 text-sm" gap="sm">
+              <Stack className="border-b border-border-default p-4 text-[13px]" gap="xs">
+                <p className="font-semibold break-words">{preview?.subject}</p>
                 <p>
-                  <span className="text-muted-foreground">From </span>
+                  <span className="text-muted-foreground">From: </span>
                   {metadataLoading ? (
                     'Loading sender…'
                   ) : metadataError ? (
@@ -134,12 +145,8 @@ export default function ActivityEmailPreview({ email, onClose }: ActivityEmailPr
                   )}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">To </span>Jamie Larson
+                  <span className="text-muted-foreground">To: </span>Jamie Larson
                   &lt;jamie@example.com&gt;
-                </p>
-                <p className="break-words">
-                  <span className="text-muted-foreground">Subject </span>
-                  {preview?.subject}
                 </p>
                 {metadataError && (
                   <Inline gap="sm">
