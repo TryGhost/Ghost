@@ -49,9 +49,38 @@ describe('adapter-manager import-files wiring', function () {
     assert.equal(store.basePath, '/var/lib/ghost/import-files');
   });
 
-  it('registers FileStore as the default in the shipped config', function () {
+  it('registers FileStore as the default and S3ImportFileStore as selectable in the shipped config', function () {
     assert.equal(defaults.adapters['import-files'].active, 'FileStore');
     assert.ok(defaults.adapters['import-files'].FileStore);
+    assert.ok(defaults.adapters['import-files'].S3ImportFileStore);
+  });
+
+  it('returns an S3ImportFileStore instance when it is the active adapter', function () {
+    configUtils.set('adapters:import-files:active', 'S3ImportFileStore');
+    configUtils.set('adapters:import-files:S3ImportFileStore', { bucket: 'a-bucket' });
+    adapterManager.clearCache();
+
+    const store = adapterManager.getAdapter('import-files');
+
+    assert.ok(store instanceof ImportFileStoreBase);
+    assert.equal(store.constructor.name, 'S3ImportFileStore');
+  });
+
+  it('rejects a misconfigured S3 store at boot with a clear error', function () {
+    configUtils.set('adapters:import-files:active', 'S3ImportFileStore');
+    configUtils.set('adapters:import-files:S3ImportFileStore', {});
+    adapterManager.clearCache();
+
+    assert.throws(
+      () => {
+        adapterManager.init();
+      },
+      (err: Error & { errorType?: string }) => {
+        assert.equal(err.errorType, 'IncorrectUsageError');
+        assert.match(err.message, /import-files: .*requires a bucket name/);
+        return true;
+      },
+    );
   });
 
   it('rejects a misconfigured FileStore at boot with a clear error', function () {

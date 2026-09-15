@@ -62,7 +62,8 @@
     },
     "import-files": {
       "active": "FileStore",
-      "FileStore": {}
+      "FileStore": {},
+      "S3ImportFileStore": {}
     },
     "jobs": {
       "active": "InMemoryJobsBackend",
