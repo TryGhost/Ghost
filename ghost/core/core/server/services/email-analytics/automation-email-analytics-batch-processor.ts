@@ -16,6 +16,7 @@ type EmailAnalyticsEvent = {
   type: string;
   providerId: string;
   timestamp: Date;
+  bot?: string | null;
 };
 
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
@@ -113,7 +114,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
         }
         case 'opened': {
           const recipient = getRecipient();
-          if (recipient) {
+          if (recipient && !event.bot) {
             trackEarliest(
               eventsByAutomatedEmailRecipientId,
               recipient,

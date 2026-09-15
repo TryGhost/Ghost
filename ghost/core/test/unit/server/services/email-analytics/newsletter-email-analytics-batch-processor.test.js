@@ -184,6 +184,45 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
             });
           });
 
+          it('ignores opened events with bot flag', async function () {
+            const processor = new NewsletterEmailAnalyticsBatchProcessor({
+              config: createMockConfig(),
+              emailEventProcessor,
+            });
+            const result = new EventProcessingResult();
+            const fetchData = {};
+
+            await processor.processBatch(
+              [
+                {
+                  type: 'opened',
+                  emailId: 1,
+                  timestamp: new Date(1),
+                  bot: 'generic',
+                },
+              ],
+              result,
+              fetchData,
+            );
+
+            sinon.assert.notCalled(emailEventProcessor.handleOpened);
+
+            assert.deepEqual(
+              result,
+              new EventProcessingResult({
+                delivered: 0,
+                opened: 0,
+                unprocessable: 1,
+                emailIds: [],
+                memberIds: [],
+              }),
+            );
+
+            assert.deepEqual(fetchData, {
+              lastEventTimestamp: new Date(1),
+            });
+          });
+
           it('handles delivered', async function () {
             const processor = new NewsletterEmailAnalyticsBatchProcessor({
               config: createMockConfig(),
@@ -753,9 +792,11 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         const processor = new NewsletterEmailAnalyticsBatchProcessor({
           config: createMockConfig(),
           emailEventProcessor: {
-            handleDelivered: sinon
-              .stub()
-              .resolves({ emailId: 'e-1', emailRecipientId: 'r-1', memberId: 'm-1' }),
+            handleDelivered: sinon.stub().resolves({
+              emailId: 'e-1',
+              emailRecipientId: 'r-1',
+              memberId: 'm-1',
+            }),
           },
           queries,
         });

@@ -91,6 +91,31 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
     });
 
+    it('ignores opened events with bot flag', async function () {
+      const automationsApi = buildAutomationsApi([buildRecipient()]);
+      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+
+      const result = new EventProcessingResult();
+      const fetchData: { lastEventTimestamp?: Date } = {};
+      await processor.processBatch(
+        [
+          {
+            type: 'opened',
+            providerId: 'message-1',
+            timestamp: new Date(1),
+            bot: 'generic',
+          },
+        ],
+        result,
+        fetchData,
+      );
+
+      assert.deepEqual(result, new EventProcessingResult({ unprocessable: 1 }));
+      assert.deepEqual(fetchData, { lastEventTimestamp: new Date(1) });
+
+      sinon.assert.calledOnceWithExactly(automationsApi.trackEmailDeliveredAndOpened, new Map());
+    });
+
     it('handles a mix of events for several recipients', async function () {
       const automationsApi = buildAutomationsApi([
         buildRecipient({ id: 'recipient-1', mailgun_message_id: 'message-1' }),
