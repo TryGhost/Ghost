@@ -37,12 +37,11 @@ describe('storage: index_spec', function () {
     adapterManager.clearCache();
   });
 
-  it('keeps import files on the private local store by default', function () {
+  it('keeps import files on a local store in the OS temp directory by default', function () {
     const chosenStorage = adapterManager.getAdapter('storage:imports');
 
     assert.equal(chosenStorage.constructor, LocalStorageBase);
     assert.equal(chosenStorage.storagePath, os.tmpdir());
-    assert.equal((chosenStorage as InstanceType<typeof LocalStorageBase>).fileMode, 0o600);
   });
 
   it('default image storage is local file storage', function () {

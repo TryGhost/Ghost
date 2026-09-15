@@ -13,7 +13,7 @@ export interface RowSpool {
   write(rows: MemberImportRow[]): Promise<SpooledRows>;
 }
 
-// Spools import rows to a private JSON file in the imports storage adapter, so a deferred
+// Spools import rows to a JSON file in the imports storage adapter, so a deferred
 // import can hand them to a background job and read them back after the request has
 // already returned. The rows go in and come out as MemberImportRow, so nothing but
 // the import's own row shape crosses this boundary.

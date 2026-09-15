@@ -1,6 +1,7 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
 import fs from 'fs-extra';
+import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import type express from 'express';
@@ -27,12 +28,11 @@ export interface LocalStorageBaseErrorMessages {
 }
 
 export interface LocalStorageBaseOptions {
-  storagePath: string;
+  // Unset, files go in the OS temp directory, which the imports store in defaults.json relies on.
+  storagePath?: string;
   siteUrl?: string;
   staticFileURLPrefix?: string;
   errorMessages?: LocalStorageBaseErrorMessages;
-  // Unset, files keep the filesystem's default mode, which the images, media and files stores rely on.
-  fileMode?: number;
 }
 
 /**
@@ -53,23 +53,19 @@ class LocalStorageBase extends StorageBase {
 
   readonly errorMessages: LocalStorageBaseErrorMessages;
 
-  readonly fileMode: number | undefined;
-
   constructor({
     storagePath,
     staticFileURLPrefix,
     siteUrl,
     errorMessages,
-    fileMode,
   }: LocalStorageBaseOptions) {
     super();
 
-    this.storagePath = storagePath;
+    this.storagePath = storagePath ?? os.tmpdir();
     this.staticFileURLPrefix = staticFileURLPrefix;
     this.siteUrl = siteUrl;
     this.staticFileUrl = `${siteUrl}${staticFileURLPrefix}`;
     this.errorMessages = errorMessages || messages;
-    this.fileMode = fileMode;
   }
 
   /**
@@ -169,15 +165,7 @@ class LocalStorageBase extends StorageBase {
 
     try {
       await fs.copy(file.path, targetFilename);
-      if (this.fileMode !== undefined) {
-        await fs.chmod(targetFilename, this.fileMode);
-      }
     } catch (err) {
-      // A store with its own mode never leaves a partial or unrestricted copy behind.
-      if (this.fileMode !== undefined) {
-        await fs.remove(targetFilename).catch(() => {});
-      }
-
       if ((err as NodeJS.ErrnoException).code === 'ENAMETOOLONG') {
         throw new errors.BadRequestError({ err: errify(err) });
       }
@@ -211,7 +199,7 @@ class LocalStorageBase extends StorageBase {
     const targetDir = path.dirname(storagePath);
 
     await fs.mkdirs(targetDir);
-    await fs.writeFile(storagePath, buffer, { mode: this.fileMode });
+    await fs.writeFile(storagePath, buffer);
 
     // For local file system storage can use relative path so add a slash
     const fullUrl = urlUtils

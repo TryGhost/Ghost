@@ -18,12 +18,15 @@ export function createImportFileStager(getStorage: () => StorageBase): ImportFil
   return {
     async stage({ filePath, fileName }) {
       const storage = getStorage();
-      const url = await storage.save(
-        { name: `content-csv-import-${crypto.randomUUID()}`, path: filePath },
-        storage.storagePath,
-      );
+      const name = `content-csv-import-${crypto.randomUUID()}`;
 
-      return { path: path.join(storage.storagePath, storage.urlToPath(url)), name: fileName };
+      try {
+        const url = await storage.save({ name, path: filePath }, storage.storagePath);
+        return { path: path.join(storage.storagePath, storage.urlToPath(url)), name: fileName };
+      } catch (error) {
+        await storage.delete(name).catch(() => {});
+        throw error;
+      }
     },
 
     async remove(file) {

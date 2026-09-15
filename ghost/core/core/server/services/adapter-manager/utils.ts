@@ -1,4 +1,3 @@
-import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -227,35 +226,21 @@ function normalizeAdapterPaths(
   return normalized;
 }
 
-// Import files hold member and post data, so an unconfigured `storage:imports` must not
-// fall back to the active store that serves images. It keeps them where the imports
-// always have: private files in the OS temp directory, on a local store nothing serves.
-function withImportsStorage(storage: any) {
-  if (!storage || storage.imports) {
-    return storage;
-  }
-
-  return {
-    ...storage,
-    imports: {
-      adapter: 'LocalStorageBase',
-      storagePath: os.tmpdir(),
-      staticFileURLPrefix: 'content/imports',
-      fileMode: 0o600,
-    },
-  };
-}
-
 /**
  * Normalize adapter config by ensuring that feature-specific adapter configs
  * are populated from top-level config if not explicitly provided.
  */
 export function normalizeAdapterConfig(config: ConfigInstance) {
   const adapterConfig = config.get('adapters');
+  const storage = adapterConfig?.storage ?? config.get('storage');
 
   return {
     ...adapterConfig,
-    storage: withImportsStorage(adapterConfig?.storage ?? config.get('storage')),
+    // adapters.storage replaces the top-level storage config, defaults included, so carry
+    // storage:imports over: import files must never fall back to the store that serves images.
+    storage: adapterConfig?.storage
+      ? { imports: config.get('storage:imports'), ...storage }
+      : storage,
     scheduling: getSchedulingConfig(config),
     redirects: normalizeAdapterPaths(config, 'redirects', {
       FileStore: {

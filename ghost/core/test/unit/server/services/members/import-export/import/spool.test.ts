@@ -25,7 +25,7 @@ describe('members import row spool', function () {
   let storagePath: string;
   // Configured the way storage:imports is by default.
   const importsStore = () =>
-    new LocalStorageBase({ storagePath, staticFileURLPrefix: 'content/imports', fileMode: 0o600 });
+    new LocalStorageBase({ storagePath, staticFileURLPrefix: 'content/imports' });
 
   beforeEach(async function () {
     storagePath = await fs.mkdtemp(path.join(os.tmpdir(), 'members-spool-test-'));
@@ -35,7 +35,7 @@ describe('members import row spool', function () {
     await fs.remove(storagePath);
   });
 
-  it('writes the rows as one private JSON file at the root of the imports store', async function () {
+  it('writes the rows as one JSON file at the root of the imports store', async function () {
     const rows = [row('first@example.com'), row('second@example.com')];
 
     await createRowSpool(importsStore).write(rows);
@@ -45,7 +45,6 @@ describe('members import row spool', function () {
     assert.match(files[0], /^members-import-[0-9a-f-]{36}\.json$/);
     const filePath = path.join(storagePath, files[0]);
     assert.equal(await fs.readFile(filePath, 'utf8'), JSON.stringify(rows));
-    assert.equal((await fs.stat(filePath)).mode & 0o777, 0o600);
   });
 
   it('reads the rows back and removes the file', async function () {
