@@ -159,13 +159,21 @@ const AutomationStatusStatsResponseSchema = z.object({
 
 export type AutomationStatusStats = z.infer<typeof AutomationStatusStatsSchema>;
 
-export const useReadAutomationStatusStats = createQueryWithId<
-  z.infer<typeof AutomationStatusStatsResponseSchema>
->({
-  dataType: 'AutomationStatusStatsResponseType',
-  path: (id) => `/automations/${id}/status-stats/`,
-  parseResponse: (data) => AutomationStatusStatsResponseSchema.parse(data),
-});
+export const useReadAutomationStatusStats = (
+  id: string,
+  requestId: string,
+  options: Parameters<
+    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationStatusStatsResponseSchema>>>
+  >[1],
+) => {
+  // A new list interaction fetches fresh data even if an earlier request is still pending.
+  const useQuery = createQueryWithId<z.infer<typeof AutomationStatusStatsResponseSchema>>({
+    dataType: `AutomationStatusStatsResponseType:${requestId}`,
+    path: (automationId) => `/automations/${automationId}/status-stats/`,
+    parseResponse: (data) => AutomationStatusStatsResponseSchema.parse(data),
+  });
+  return useQuery(id, options);
+};
 
 export const AutomationRunSchema = z
   .object({
@@ -196,14 +204,23 @@ export const AutomationRunsResponseSchema = z.object({
 });
 
 export type AutomationRun = z.infer<typeof AutomationRunSchema>;
+export type AutomationRunStatusFilter = Exclude<AutomationRun['status'], 'unclassified'>;
 
-export const useBrowseAutomationRuns = createQueryWithId<
-  z.infer<typeof AutomationRunsResponseSchema>
->({
-  dataType: 'AutomationRunsResponseType',
-  path: (id) => `/automations/${id}/runs/`,
-  parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
-});
+export const useBrowseAutomationRuns = (
+  id: string,
+  requestId: string,
+  options: Parameters<
+    ReturnType<typeof createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>>
+  >[1],
+) => {
+  // A new list interaction fetches fresh data even if an earlier request is still pending.
+  const useQuery = createQueryWithId<z.infer<typeof AutomationRunsResponseSchema>>({
+    dataType: `AutomationRunsResponseType:${requestId}`,
+    path: (automationId) => `/automations/${automationId}/runs/`,
+    parseResponse: (data) => AutomationRunsResponseSchema.parse(data),
+  });
+  return useQuery(id, options);
+};
 
 const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
   dataType: 'AutomationActionLinksResponseType',

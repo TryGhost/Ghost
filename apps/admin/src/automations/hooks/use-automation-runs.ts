@@ -1,15 +1,20 @@
 import { useMemo } from 'react';
-import { usePerformanceQueryVisit } from './use-performance-query-visit';
 import { APIError } from '@tryghost/admin-x-framework/errors';
-import { useBrowseAutomationRuns } from '@tryghost/admin-x-framework/api/automations';
+import {
+  useBrowseAutomationRuns,
+  type AutomationRunStatusFilter,
+} from '@tryghost/admin-x-framework/api/automations';
 import { performanceQueryOptions } from './performance-query-options';
 import { mapAutomationRuns } from '@/automations/utils/automation-runs';
 
-export const useAutomationRuns = (automationId: string) => {
-  const meta = usePerformanceQueryVisit(automationId);
-  const query = useBrowseAutomationRuns(automationId, {
+export const useAutomationRuns = (
+  automationId: string,
+  status: AutomationRunStatusFilter | null,
+  requestId: string,
+) => {
+  const query = useBrowseAutomationRuns(automationId, requestId, {
     ...performanceQueryOptions,
-    meta,
+    searchParams: status ? { status } : undefined,
   });
   const runs = query.data?.automation_runs;
   const data = useMemo(() => runs && mapAutomationRuns(runs), [runs]);
