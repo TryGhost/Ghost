@@ -4,6 +4,7 @@ import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-u
 import * as localUtils from './utils';
 import { loadSecretsFromEnv, isSecretFileRef } from './secrets';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
+import { bindFreeze, type ConfigFreeze } from './freeze';
 
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
@@ -13,7 +14,7 @@ interface LoadNconfOptions {
   customConfigPath?: string;
 }
 
-export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers & ConfigFreeze;
 
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   debug('config start');
@@ -65,6 +66,8 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   bindUrlHelpers(nconf);
   bindHelpers(nconf);
 
+  bindFreeze(nconf);
+
   // ## Sanitization
 
   // transform all relative paths to absolute paths
@@ -88,6 +91,19 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // To output this, use DEBUG=ghost:*,ghost-config
   if (_debug.enabled('ghost-config')) {
     debug(nconf.get());
+  }
+
+  // ## Freeze
+
+  // Everything is loaded, so make config read-only for the rest of the
+  // process' life. From here a lookup is answered from a cache instead of
+  // walking (and deep-merging) all nine nconf stores on every call, and a
+  // write is a bug - it throws rather than silently applying.
+  //
+  // Skipped under test, where the suites rewrite config between cases on
+  // purpose via configUtils.
+  if (!nconf.isTestEnv()) {
+    nconf.freeze();
   }
 
   debug('config end');

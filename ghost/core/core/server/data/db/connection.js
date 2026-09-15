@@ -15,7 +15,11 @@ let knexInstance;
 // - if you require this file before config file was loaded,
 // - then this file is cached and you have no chance to connect to the db anymore
 // - bring dynamic into this file (db.connect())
-function configure(dbConfig) {
+function configure(rawDbConfig) {
+  // Knex config is assembled by mutating this object, so work on a copy: the
+  // value comes straight from config, which is read-only once loaded (and hands
+  // back the same frozen object on every read).
+  const dbConfig = _.cloneDeep(rawDbConfig);
   let client = dbConfig.client;
 
   // Alias sqlite3 to better-sqlite3 for backwards compatibility
