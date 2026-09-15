@@ -140,6 +140,8 @@ const post = (attrs, frame) => {
   delete attrs.author;
   delete attrs.type;
   delete attrs.newsletter_id;
+  // Internal stored metadata — not part of the public Posts/Pages API yet
+  delete attrs.auto_excerpt;
 
   return attrs;
 };

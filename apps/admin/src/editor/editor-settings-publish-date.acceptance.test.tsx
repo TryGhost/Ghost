@@ -14,20 +14,19 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // What a real publish stamps: seconds the minute-granular fields cannot show.
 const STAMPED_AT = '2025-12-01T10:00:37.000Z';
 const SYDNEY = 'Australia/Sydney';
 
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -40,11 +39,24 @@ function middayTimezone(): string {
   return `Etc/GMT${offset >= 0 ? '-' : '+'}${Math.abs(offset)}`;
 }
 
+// The settings groups the editor's settings hook asks for, which every editor
+// reader shares; a narrower list would drop keys another surface reads.
+const SETTINGS_GROUPS =
+  'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor';
+
+let settingsRequestUrl: string | null = null;
+
 function withTimezone(timezone: string) {
+  settingsRequestUrl = null;
   return {
     ...FLAG_ON,
     boot: {
-      browseSettings: { response: settingsResponse({ settings: { timezone } }) },
+      browseSettings: {
+        response: (request: Request) => {
+          settingsRequestUrl = request.url;
+          return settingsResponse({ settings: { timezone } });
+        },
+      },
     },
   };
 }
@@ -115,203 +127,170 @@ describe('Post settings publish date', () => {
       await expect.poll(() => submittedPost(saveApi).title, POLL).toBe('Changed title');
       expect(submittedPost(saveApi).published_at).toBeNull();
     },
-    SLOW,
   );
 
-  it(
-    'shows a published post’s publish time in the site’s timezone',
-    async () => {
-      fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-      await openPublishDate();
+  it('shows a published post’s publish time in the site’s timezone', async () => {
+    fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
 
-      // 10:00 UTC is 21:00 the same day in Sydney, not 10:00.
-      await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
-      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
-      await expect
-        .element(editorScreen.settingsPublishDateLabel())
-        .toHaveTextContent('Publish date');
-    },
-    SLOW,
-  );
+    // 10:00 UTC is 21:00 the same day in Sydney, not 10:00.
+    await expect.element(editorScreen.settingsPublishDate()).toHaveValue('2025-12-01');
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+    await expect.element(editorScreen.settingsPublishDateLabel()).toHaveTextContent('Publish date');
+    expect(new URL(settingsRequestUrl ?? '', 'http://localhost').searchParams.get('group')).toBe(
+      SETTINGS_GROUPS,
+    );
+  });
 
-  it(
-    'persists a draft’s publish time on its own, as a UTC instant',
-    async () => {
-      const timezone = middayTimezone();
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
-      await openPublishDate();
+  it('persists a draft’s publish time on its own, as a UTC instant', async () => {
+    const timezone = middayTimezone();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
+    await openPublishDate();
 
-      // A draft carries no publish time, so the field stands at today in site time.
-      // With the clock around midday, midnight is always a different, past time.
-      const chosen = (editorScreen.settingsPublishDate().element() as HTMLInputElement).value;
+    // A draft carries no publish time, so the field stands at today in site time.
+    // With the clock around midday, midnight is always a different, past time.
+    const chosen = (editorScreen.settingsPublishDate().element() as HTMLInputElement).value;
 
-      await setTime('00:00');
+    await setTime('00:00');
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // Site-local midnight is the same instant as the ISO string the payload carries.
-      expect(submittedPost(saveApi)).toMatchObject({
-        published_at: moment.tz(`${chosen} 00:00`, timezone).toISOString(),
-        status: 'draft',
-      });
-      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('00:00');
-    },
-    SLOW,
-  );
+    // Site-local midnight is the same instant as the ISO string the payload carries.
+    await expect(saveApi).toHaveSavedFields({
+      published_at: moment.tz(`${chosen} 00:00`, timezone).toISOString(),
+      status: 'draft',
+    });
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('00:00');
+  });
 
-  it(
-    'leaves the seconds a publish stamped alone while the minute stands',
-    async () => {
-      const saveApi = fakeSavablePost({ status: 'published', published_at: STAMPED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-      await openPublishDate();
+  it('leaves the seconds a publish stamped alone while the minute stands', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: STAMPED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
 
-      await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
 
-      // Tabbing through the field leaves the stored timestamp alone.
-      await editorScreen.settingsPublishTime().click();
-      await userEvent.tab();
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    // Tabbing through the field leaves the stored timestamp alone.
+    await editorScreen.settingsPublishTime().click();
+    await userEvent.tab();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
-      // A move away and back lands on that minute again, seconds intact.
-      await setTime('21:05');
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await setTime('21:00');
+    // A move away and back lands on that minute again, seconds intact.
+    await setTime('21:05');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await setTime('21:00');
 
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
-      expect(unsavedChangesGuarded()).toBe(false);
-      expect(saveApi.requests).toHaveLength(0);
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+    expect(unsavedChangesGuarded()).toBe(false);
+    expect(saveApi.requests).toHaveLength(0);
+  });
 
-  it(
-    'stages a published post’s backdate until Update',
-    async () => {
-      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-      await openPublishDate();
+  it('stages a published post’s backdate until Update', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
 
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
-      await setTime('08:15');
+    await setTime('08:15');
 
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
-        status: 'published',
-      });
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
+      status: 'published',
+    });
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
 
-  it(
-    'refuses a published post a publish time that has not passed',
-    async () => {
-      const timezone = middayTimezone();
-      // Published an hour ago, so the field already shows today in that zone.
-      const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const saveApi = fakeSavablePost({ status: 'published', published_at: anHourAgo });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
-      await openPublishDate();
+  it('refuses a published post a publish time that has not passed', async () => {
+    const timezone = middayTimezone();
+    // Published an hour ago, so the field already shows today in that zone.
+    const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const saveApi = fakeSavablePost({ status: 'published', published_at: anHourAgo });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(timezone));
+    await openPublishDate();
 
-      await expect
-        .element(editorScreen.settingsPublishDate())
-        .toHaveValue(moment.tz(timezone).format('YYYY-MM-DD'));
+    await expect
+      .element(editorScreen.settingsPublishDate())
+      .toHaveValue(moment.tz(timezone).format('YYYY-MM-DD'));
 
-      // The same day, but an hour still to come.
-      await setTime('23:59');
+    // The same day, but an hour still to come.
+    await setTime('23:59');
 
-      await expect
-        .element(editorScreen.settingsPublishDateError())
-        .toHaveTextContent('Please choose a past date and time.');
-      await expect.element(editorScreen.settingsPublishTime()).toHaveAttribute('aria-invalid');
-      expect(saveApi.requests).toHaveLength(0);
+    await expect
+      .element(editorScreen.settingsPublishDateError())
+      .toHaveTextContent('Please choose a past date and time.');
+    await expect.element(editorScreen.settingsPublishTime()).toHaveAttribute('aria-invalid');
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect
-        .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Please choose a past date and time.');
-      expect(saveApi.requests).toHaveLength(0);
+    await expect
+      .element(editorScreen.saveErrorBanner())
+      .toHaveTextContent('Please choose a past date and time.');
+    expect(saveApi.requests).toHaveLength(0);
 
-      // The banner outlives the panel: closing it does not hide the reason.
-      await editorScreen.settingsToggle().click();
-      await expect(editorScreen.settingsPublishDateError()).toHaveCount(0);
-      await expect
-        .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Please choose a past date and time.');
-    },
-    SLOW,
-  );
+    // The banner outlives the panel: closing it does not hide the reason.
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsPublishDateError()).toHaveCount(0);
+    await expect
+      .element(editorScreen.saveErrorBanner())
+      .toHaveTextContent('Please choose a past date and time.');
+  });
 
-  it(
-    'sends a scheduled post to the publish menu to be re-timed',
-    async () => {
-      const scheduledAt = moment().add(2, 'days').toISOString();
-      fakeSavablePost({ status: 'scheduled', published_at: scheduledAt });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-      await openPublishDate();
+  it('sends a scheduled post to the publish menu to be re-timed', async () => {
+    const scheduledAt = moment().add(2, 'days').toISOString();
+    fakeSavablePost({ status: 'scheduled', published_at: scheduledAt });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
 
-      await expect
-        .element(editorScreen.settingsPublishDateLabel())
-        .toHaveTextContent('Scheduled date');
-      await expect.element(editorScreen.settingsPublishDate()).toBeDisabled();
-      await expect.element(editorScreen.settingsPublishTime()).toBeDisabled();
-      await expect
-        .element(editorScreen.settingsPublishDateNote())
-        .toHaveTextContent('Use the publish menu to re-schedule');
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsPublishDateLabel())
+      .toHaveTextContent('Scheduled date');
+    await expect.element(editorScreen.settingsPublishDate()).toBeDisabled();
+    await expect.element(editorScreen.settingsPublishTime()).toBeDisabled();
+    await expect
+      .element(editorScreen.settingsPublishDateNote())
+      .toHaveTextContent('Use the publish menu to re-schedule');
+  });
 
-  it(
-    'lets a sent post be re-timed, as every other published one is',
-    async () => {
-      const saveApi = fakeSavablePost({ status: 'sent', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
-      await openPublishDate();
+  it('lets a sent post be re-timed, as every other published one is', async () => {
+    const saveApi = fakeSavablePost({ status: 'sent', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
 
-      await expect.element(editorScreen.settingsPublishDate()).not.toBeDisabled();
-      await expect(editorScreen.settingsPublishDateNote()).toHaveCount(0);
+    await expect.element(editorScreen.settingsPublishDate()).not.toBeDisabled();
+    await expect(editorScreen.settingsPublishDateNote()).toHaveCount(0);
 
-      await setTime('07:45');
+    await setTime('07:45');
 
-      // A sent post stages like a published one, so nothing is sent until Update.
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    // A sent post stages like a published one, so nothing is sent until Update.
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        published_at: moment.tz('2025-12-01 07:45', SYDNEY).toISOString(),
-        status: 'sent',
-      });
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      published_at: moment.tz('2025-12-01 07:45', SYDNEY).toISOString(),
+      status: 'sent',
+    });
+  });
 
-  it(
-    'offers the publish date to a role that cannot set the other fields',
-    async () => {
-      fakeSavablePost({ authors: [{ id: '1' }] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
-      await editorScreen.settingsToggle().click();
-      await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  it('offers the publish date to a role that cannot set the other fields', async () => {
+    fakeSavablePost({ authors: [{ id: '1' }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
+    await editorScreen.settingsToggle().click();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
 
-      // Access is an Owner/Administrator/Editor field; the publish date is not.
-      await expect(editorScreen.settingsVisibility()).toHaveCount(0);
-      await expect.element(editorScreen.settingsPublishDate()).toBeVisible();
-      await expect.element(editorScreen.settingsPublishDate()).not.toBeDisabled();
-    },
-    SLOW,
-  );
+    // Access is an Owner/Administrator/Editor field; the publish date is not.
+    await expect(editorScreen.settingsVisibility()).toHaveCount(0);
+    await expect.element(editorScreen.settingsPublishDate()).toBeVisible();
+    await expect.element(editorScreen.settingsPublishDate()).not.toBeDisabled();
+  });
 });

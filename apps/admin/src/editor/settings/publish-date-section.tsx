@@ -1,15 +1,14 @@
 import { useId } from 'react';
 import { FieldError, Label } from '@tryghost/shade/components';
 import { Text } from '@tryghost/shade/primitives';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import {
   settingsPublishDate,
   settingsPublishDateError,
   settingsPublishDateNote,
   settingsPublishTime,
 } from '@tryghost/test-data/selectors/editor';
-import { DateTimePicker } from '@/editor/publish/components/date-time-picker';
-import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { DateTimePicker } from '@/editor/date-time-picker';
+import { useSiteTimezone } from '@/editor/use-editor-settings';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { SettingsSection } from './settings-section';
@@ -28,11 +27,7 @@ export interface PublishDateSectionProps {
 export function PublishDateSection({ session }: PublishDateSectionProps) {
   const errorId = useId();
   const labelId = useId();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  const timezone = getSettingValue<string>(settingsData?.settings ?? null, 'timezone') ?? 'Etc/UTC';
+  const timezone = useSiteTimezone();
 
   const { status, publishedAt } = session.publishTime;
   // Read per render: a value fixed at mount goes stale, and the calendar's cap

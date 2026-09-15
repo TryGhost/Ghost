@@ -17,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Brief, non-interactive labels for hover or keyboard focus. TooltipContent supports default and white variants; white uses the elevated surface token and a shadow, adapting to dark mode. Set TooltipProvider delayDuration (milliseconds, default 700) for the first hover and skipDelayDuration (default 300) for moving between triggers without waiting again. Tooltip delayDuration overrides its provider; keyboard focus opens immediately. Returning focus after a pointer selection does not reopen the tooltip.',
+          'Brief, non-interactive labels for hover or keyboard focus. TooltipContent supports default and white variants; white uses the elevated surface token and a shadow, adapting to dark mode. Set TooltipProvider delayDuration (milliseconds, default 1000 with Admin 7 enabled and 700 otherwise) for the first hover and skipDelayDuration (default 300) for moving between triggers without waiting again. Tooltip delayDuration overrides its provider; keyboard focus opens immediately. Returning focus after a pointer selection does not reopen the tooltip.',
       },
     },
   },

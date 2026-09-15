@@ -243,7 +243,8 @@ export const Textarea: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Textarea with block-aligned addons for multi-line inputs.',
+        story:
+          'Textarea and block-aligned addons keep rounded corners in both designs; pill shapes apply to single-line groups.',
       },
     },
   },

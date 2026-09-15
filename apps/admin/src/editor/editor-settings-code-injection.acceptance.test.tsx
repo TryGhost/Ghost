@@ -20,13 +20,14 @@ import {
   staffRole,
   submittedPost,
   unsavedChangesGuarded,
+  withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${POST_ID}/\\?`);
@@ -36,11 +37,7 @@ const WIDE_PANEL_WIDTH = 500;
 const BACK_LABEL = 'Close code injection panel';
 const ROW_LABEL = 'Code injection';
 
-// A settings save waits on the engine's queue, so these journeys outlast the default timeout.
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -132,198 +129,161 @@ async function typeInto(editor: ReturnType<typeof headEditor>, code: string) {
  * to the page it renders on.
  */
 describe('Post settings code injection', () => {
-  it(
-    'opens the pane over the section list and comes back from it',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('opens the pane over the section list and comes back from it', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      // The pane replaces the list it was opened from, in a widened panel.
-      await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
-      expect(sidebarWidthPx()).toBe(WIDE_PANEL_WIDTH);
+    // The pane replaces the list it was opened from, in a widened panel.
+    await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
+    expect(sidebarWidthPx()).toBe(WIDE_PANEL_WIDTH);
 
-      await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
 
-      await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-      await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-      await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
-      // The panel goes back to the width the section list is shown at.
-      await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
-    },
-    SLOW,
-  );
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+    // The panel goes back to the width the section list is shown at.
+    await expect.poll(sidebarWidthPx).toBe(PANEL_WIDTH);
+  });
 
-  it(
-    'closes the pane on Escape from outside the editors',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('closes the pane on Escape from outside the editors', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      // Opening a pane leaves the writer on its back button.
-      await expect.element(editorScreen.settingsSubviewBack(BACK_LABEL)).toHaveFocus();
-      await userEvent.keyboard('{Escape}');
+    // Opening a pane leaves the writer on its back button.
+    await expect.element(editorScreen.settingsSubviewBack(BACK_LABEL)).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
 
-      await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-      await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
-    },
-    SLOW,
-  );
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect.element(editorScreen.settingsSubviewRow(ROW_LABEL)).toBeVisible();
+  });
 
-  it(
-    'keeps the pane open on Escape inside an editor',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('keeps the pane open on Escape inside an editor', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await headEditor().click();
-      await userEvent.keyboard('{Escape}');
+    await headEditor().click();
+    await userEvent.keyboard('{Escape}');
 
-      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
-      await expect.element(headEditor()).toBeVisible();
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+    await expect.element(headEditor()).toBeVisible();
+  });
 
-  it(
-    'moves between the editors on the Tab that follows Escape',
-    async () => {
-      fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('moves between the editors on the Tab that follows Escape', async () => {
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await headEditor().click();
-      await expect.element(headEditor()).toHaveFocus();
+    await headEditor().click();
+    await expect.element(headEditor()).toHaveFocus();
 
-      // Without Escape first, Tab indents the code rather than leaving.
-      await userEvent.keyboard('{Escape}');
-      await userEvent.tab();
-      await expect.element(footEditor()).toHaveFocus();
+    // Without Escape first, Tab indents the code rather than leaving.
+    await userEvent.keyboard('{Escape}');
+    await userEvent.tab();
+    await expect.element(footEditor()).toHaveFocus();
 
-      await userEvent.keyboard('{Escape}');
-      await userEvent.tab({ shift: true });
-      await expect.element(headEditor()).toHaveFocus();
-      await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
-    },
-    SLOW,
-  );
+    await userEvent.keyboard('{Escape}');
+    await userEvent.tab({ shift: true });
+    await expect.element(headEditor()).toHaveFocus();
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+  });
 
-  it(
-    'names a page’s editors for a page',
-    async () => {
-      fakeSavablePage();
-      await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
-      await editorScreen.settingsToggle().click();
-      await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-      await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+  it('names a page’s editors for a page', async () => {
+    fakeSavablePage();
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await editorScreen.settingsToggle().click();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
 
-      await expect
-        .element(editorScreen.settingsCodeInjection(codeInjectionPageHeadLabel))
-        .toBeVisible();
-      await expect
-        .element(editorScreen.settingsCodeInjection(codeInjectionPageFootLabel))
-        .toBeVisible();
-      await expect(editorScreen.settingsCodeInjection(codeInjectionHeadLabel)).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect
+      .element(editorScreen.settingsCodeInjection(codeInjectionPageHeadLabel))
+      .toBeVisible();
+    await expect
+      .element(editorScreen.settingsCodeInjection(codeInjectionPageFootLabel))
+      .toBeVisible();
+    await expect(editorScreen.settingsCodeInjection(codeInjectionHeadLabel)).toHaveCount(0);
+  });
 
-  it(
-    'shows the code the post was saved with',
-    async () => {
-      const head = '<script>\n    head();\n</script>';
-      const foot = '<style>\n    .footer { display: block; }\n</style>';
-      fakeSavablePost({ codeinjection_head: head, codeinjection_foot: foot });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('shows the code the post was saved with', async () => {
+    const head = '<script>\n    head();\n</script>';
+    const foot = '<style>\n    .footer { display: block; }\n</style>';
+    fakeSavablePost({ codeinjection_head: head, codeinjection_foot: foot });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await expect.poll(() => (headEditor().element() as HTMLElement).innerText).toBe(head);
-      await expect.poll(() => (footEditor().element() as HTMLElement).innerText).toBe(foot);
-    },
-    SLOW,
-  );
+    await expect.poll(() => (headEditor().element() as HTMLElement).innerText).toBe(head);
+    await expect.poll(() => (footEditor().element() as HTMLElement).innerText).toBe(foot);
+  });
 
-  it(
-    'persists a draft’s header and footer code on the blur that ends each edit',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('persists a draft’s header and footer code on the blur that ends each edit', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await typeInto(headEditor(), '<script>head();</script>');
-      await footEditor().click();
+    await typeInto(headEditor(), '<script>head();</script>');
+    await footEditor().click();
 
-      // A field save has no debounce, so it lands well inside the autosave's 3s.
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        codeinjection_head: '<script>head();</script>',
-      });
+    await expect(saveApi).toHaveSavedFields({
+      codeinjection_head: '<script>head();</script>',
+    });
 
-      await typeInto(footEditor(), '<script>foot();</script>');
-      await headEditor().click();
+    await typeInto(footEditor(), '<script>foot();</script>');
+    await headEditor().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
-      expect(submittedPost(saveApi)).toMatchObject({
-        codeinjection_foot: '<script>foot();</script>',
-      });
-      // The editors keep what the writer typed once the save is answered.
-      await expect
-        .poll(() => (headEditor().element() as HTMLElement).innerText)
-        .toBe('<script>head();</script>');
-      await expect
-        .poll(() => (footEditor().element() as HTMLElement).innerText)
-        .toBe('<script>foot();</script>');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(2);
+    expect(submittedPost(saveApi)).toMatchObject({
+      codeinjection_foot: '<script>foot();</script>',
+    });
+    // The editors keep what the writer typed once the save is answered.
+    await expect
+      .poll(() => (headEditor().element() as HTMLElement).innerText)
+      .toBe('<script>head();</script>');
+    await expect
+      .poll(() => (footEditor().element() as HTMLElement).innerText)
+      .toBe('<script>foot();</script>');
+  });
 
-  it(
-    'stages a published post’s header code until Update',
-    async () => {
-      const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('stages a published post’s header code until Update', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await typeInto(headEditor(), '<script>staged();</script>');
-      await footEditor().click();
+    await typeInto(headEditor(), '<script>staged();</script>');
+    await footEditor().click();
 
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedPost(saveApi)).toMatchObject({
-        codeinjection_head: '<script>staged();</script>',
-        status: 'published',
-      });
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({
+      codeinjection_head: '<script>staged();</script>',
+      status: 'published',
+    });
+  });
 
-  it(
-    'persists the focused editor when the writer closes the pane',
-    async () => {
-      const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openCodeInjection();
+  it('persists the focused editor when the writer closes the pane', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openCodeInjection();
 
-      await typeInto(headEditor(), '<script>onClose();</script>');
-      await expect.element(headEditor()).toHaveFocus();
-      await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await typeInto(headEditor(), '<script>onClose();</script>');
+    await expect.element(headEditor()).toHaveFocus();
+    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
 
-      await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi).codeinjection_head).toBe('<script>onClose();</script>');
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect(saveApi).toHaveSavedFields({
+      codeinjection_head: '<script>onClose();</script>',
+    });
 
-      await editorScreen.settingsSubviewRow(ROW_LABEL).click();
-      await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
-    },
-    SLOW,
-  );
+    await editorScreen.settingsSubviewRow(ROW_LABEL).click();
+    await expect.element(headEditor()).toHaveTextContent('<script>onClose();</script>');
+  });
 
   it.each(['codeinjection_head', 'codeinjection_foot'] as const)(
     'clears saved %s code to null on blur',
@@ -340,28 +300,22 @@ describe('Post settings code injection', () => {
       await typeInto(editor, '');
       await otherEditor.click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedPost(saveApi)[field]).toBeNull();
+      await expect(saveApi).toHaveSavedFields({ [field]: null });
       await expect.poll(() => editor.element().textContent).toBe('');
     },
-    SLOW,
   );
 
-  it(
-    'gives a contributor the pane their role can write',
-    async () => {
-      // A contributor may only open a draft they authored.
-      const saveApi = fakeSavablePost({ authors: [{ id: CURRENT_USER_ID }] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
-      await openCodeInjection();
+  it('gives a contributor the pane their role can write', async () => {
+    // A contributor may only open a draft they authored.
+    const saveApi = fakeSavablePost({ authors: [{ id: CURRENT_USER_ID }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+    await openCodeInjection();
 
-      await typeInto(headEditor(), '<script>contributor();</script>');
-      await footEditor().click();
+    await typeInto(headEditor(), '<script>contributor();</script>');
+    await footEditor().click();
 
-      await expect
-        .poll(() => submittedPost(saveApi).codeinjection_head, POLL)
-        .toBe('<script>contributor();</script>');
-    },
-    SLOW,
-  );
+    await expect
+      .poll(() => submittedPost(saveApi).codeinjection_head, POLL)
+      .toBe('<script>contributor();</script>');
+  });
 });

@@ -5,7 +5,7 @@ const permissionsService = require('../../services/permissions');
 const auth = require('../../services/auth');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const UsersService = require('../../services/users');
 const userService = new UsersService({ models, auth, apiMail, apiSettings });
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
@@ -121,11 +121,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      const options = {
-        ...frame.options,
-        mongoTransformer: rejectAdminApiRestrictedFieldsTransformer,
-      };
-      return models.User.findPage(options);
+      return models.User.findPage(restrictAdminApiQueryOptions(frame.options));
     },
   },
 

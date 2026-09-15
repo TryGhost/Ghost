@@ -13,6 +13,7 @@ import {
   submittedPost,
   tag,
   unsavedChangesGuarded,
+  withoutAutosave,
   type EndpointCapture,
   type StaffRoleName,
 } from '@test-utils/acceptance';
@@ -20,16 +21,12 @@ import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = { labs: { editorReact: true } };
+const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
 
-// A settings save waits on the engine's queue, so these journeys outlast the default timeout.
-const SLOW = 20_000;
 const POLL = { timeout: 10_000 };
-// Under the 3s autosave debounce, so only an undebounced field save can satisfy it.
-const FIELD_POLL = { timeout: 2_000 };
 
 type SavedPost = ReturnType<typeof post>;
 type SavedTag = ReturnType<typeof tag>;
@@ -122,298 +119,241 @@ async function openTagList() {
  * the order shown, through the same save policy as every other settings field.
  */
 describe('Post settings tags', () => {
-  it(
-    'adds an existing tag to a draft and saves the relation in order',
-    async () => {
-      const { saveApi } = fakeTaggablePost({ tags: [NEWS] });
-      const tagsApi = fakeTags([NEWS, SPORT]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('adds an existing tag to a draft and saves the relation in order', async () => {
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS] });
+    const tagsApi = fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await expect.poll(() => tagsApi.lastRequest?.url, POLL).toBeDefined();
-      // Ghost rejects an explicitly empty include instead of treating it as absent.
-      expect(new URL(tagsApi.lastRequest!.url).searchParams.get('include')).not.toBe('');
+    await expect.poll(() => tagsApi.lastRequest?.url, POLL).toBeDefined();
+    // Ghost rejects an explicitly empty include instead of treating it as absent.
+    expect(new URL(tagsApi.lastRequest!.url).searchParams.get('include')).not.toBe('');
 
-      await editorScreen.settingsTagOption('Sport').click();
+    await editorScreen.settingsTagOption('Sport').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // Identity only, the tag already on the post included. Order is `sort_order`.
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag1' }, { id: 'tag2' }]);
-    },
-    SLOW,
-  );
+    // Identity only, the tag already on the post included. Order is `sort_order`.
+    await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag1' }, { id: 'tag2' }] });
+  });
 
-  it(
-    'sends a tag the post was read with by id, leaving a rename elsewhere standing',
-    async () => {
-      const renamed = tag({ id: 'tag1', name: 'Breaking News', slug: 'news' });
-      const { saveApi } = fakeTaggablePost({ tags: [NEWS] }, [renamed, SPORT]);
-      fakeTags([renamed, SPORT]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('sends a tag the post was read with by id, leaving a rename elsewhere standing', async () => {
+    const renamed = tag({ id: 'tag1', name: 'Breaking News', slug: 'news' });
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS] }, [renamed, SPORT]);
+    fakeTags([renamed, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await editorScreen.settingsTagOption('Sport').click();
+    await editorScreen.settingsTagOption('Sport').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      // A name in the payload is written onto the tag row, reverting the rename.
-      expect(submittedTags(saveApi)[0]).toEqual({ id: 'tag1' });
-      await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Breaking News');
-    },
-    SLOW,
-  );
+    // The added tag carries the write; the tag the post was read with is the subject.
+    await expect(saveApi).toHaveSavedFields({ tags: expect.arrayContaining([{ id: 'tag2' }]) });
+    // Identity only: a name here is written onto the tag row, reverting the rename.
+    expect(submittedTags(saveApi)[0]).toEqual({ id: 'tag1' });
+    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Breaking News');
+  });
 
-  it(
-    'reads a tag swapped for a same-named one as a change',
-    async () => {
-      const { saveApi } = fakeTaggablePost({
-        status: 'published',
-        published_at: PUBLISHED_AT,
-        tags: [NEWS],
-      });
-      fakeTags([NEWS, NEWS_2]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('reads a tag swapped for a same-named one as a change', async () => {
+    const { saveApi } = fakeTaggablePost({
+      status: 'published',
+      published_at: PUBLISHED_AT,
+      tags: [NEWS],
+    });
+    fakeTags([NEWS, NEWS_2]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.removeSettingsTag('News').click();
-      await openTagList();
-      await editorScreen.settingsTagOption(/news-2/).click();
+    await editorScreen.removeSettingsTag('News').click();
+    await openTagList();
+    await editorScreen.settingsTagOption(/news-2/).click();
 
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag4' }]);
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedTags(saveApi)).toEqual([{ id: 'tag4' }]);
+  });
 
-  it(
-    'creates a tag from a typed name through the post’s own save',
-    async () => {
-      const { saveApi } = fakeTaggablePost();
-      fakeTags([NEWS]);
-      const tagsApi = fakeAdminEndpoint('POST', '/tags/', { tags: [] });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('creates a tag from a typed name through the post’s own save', async () => {
+    const { saveApi } = fakeTaggablePost();
+    fakeTags([NEWS]);
+    const tagsApi = fakeAdminEndpoint('POST', '/tags/', { tags: [] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await editorScreen.settingsTagsInput().fill('Culture');
-      await editorScreen.settingsTagOption('Create “Culture”').click();
+    await editorScreen.settingsTagsInput().fill('Culture');
+    await editorScreen.settingsTagOption('Create “Culture”').click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      // Named, not created first: an abandoned edit leaves no stray tag behind.
-      expect(submittedTags(saveApi)).toEqual([{ name: 'Culture' }]);
-      expect(tagsApi.requests).toHaveLength(0);
-      await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Culture');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    // Named, not created first: an abandoned edit leaves no stray tag behind.
+    expect(submittedTags(saveApi)).toEqual([{ name: 'Culture' }]);
+    expect(tagsApi.requests).toHaveLength(0);
+    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Culture');
+  });
 
-  it(
-    'drops an uncommitted term when the list closes',
-    async () => {
-      fakeTaggablePost();
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('drops an uncommitted term when the list closes', async () => {
+    fakeTaggablePost();
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await editorScreen.settingsTagsInput().fill('Culture');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsTagsInput().fill('Culture');
+    await editorScreen.titleInput().click();
 
-      // Left behind, the term reads as an edit nothing will ever commit.
-      await expect.element(editorScreen.settingsTagsInput()).toHaveValue('');
-    },
-    SLOW,
-  );
+    // Left behind, the term reads as an edit nothing will ever commit.
+    await expect.element(editorScreen.settingsTagsInput()).toHaveValue('');
+  });
 
-  it(
-    'drops an uncommitted term when leaving the field after Escape',
-    async () => {
-      const { saveApi } = fakeTaggablePost();
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('drops an uncommitted term when leaving the field after Escape', async () => {
+    const { saveApi } = fakeTaggablePost();
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await editorScreen.settingsTagsInput().fill('Culture');
-      await userEvent.keyboard('{Escape}');
-      await expect.element(editorScreen.settingsTagsInput()).toHaveValue('Culture');
-      await editorScreen.titleInput().click();
+    await editorScreen.settingsTagsInput().fill('Culture');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(editorScreen.settingsTagsInput()).toHaveValue('Culture');
+    await editorScreen.titleInput().click();
 
-      await expect.element(editorScreen.settingsTagsInput()).toHaveValue('');
-      expect(saveApi.requests).toHaveLength(0);
-    },
-    SLOW,
-  );
+    await expect.element(editorScreen.settingsTagsInput()).toHaveValue('');
+    expect(saveApi.requests).toHaveLength(0);
+  });
 
-  it(
-    'commits the highlighted row on Tab, comma and all',
-    async () => {
-      const { saveApi } = fakeTaggablePost();
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('commits the highlighted row on Tab, comma and all', async () => {
+    const { saveApi } = fakeTaggablePost();
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      // A comma is an ordinary character in a tag name, not a separator.
-      await editorScreen.settingsTagsInput().fill('Arts, Culture');
-      await expect.element(editorScreen.settingsTagOption(/Create/)).toBeVisible();
-      await userEvent.keyboard('{Tab}');
+    // A comma is an ordinary character in a tag name, not a separator.
+    await editorScreen.settingsTagsInput().fill('Arts, Culture');
+    await expect.element(editorScreen.settingsTagOption(/Create/)).toBeVisible();
+    await userEvent.keyboard('{Tab}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedTags(saveApi)).toEqual([{ name: 'Arts, Culture' }]);
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedTags(saveApi)).toEqual([{ name: 'Arts, Culture' }]);
+  });
 
-  it(
-    'lets Tab out of an empty field without taking a tag',
-    async () => {
-      fakeTaggablePost();
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
-      await expect.element(editorScreen.settingsTagOption('News')).toBeVisible();
+  it('lets Tab out of an empty field without taking a tag', async () => {
+    fakeTaggablePost();
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+    await expect.element(editorScreen.settingsTagOption('News')).toBeVisible();
 
-      await userEvent.keyboard('{Tab}');
+    await userEvent.keyboard('{Tab}');
 
-      // Nothing was typed, so there is nothing to commit and nothing to lose.
-      await expect(editorScreen.settingsTagsTokens()).toHaveCount(0);
-      await expect.element(editorScreen.settingsTagsInput()).not.toHaveFocus();
-      await expect
-        .element(editorScreen.settingsTagsInput())
-        .toHaveAttribute('aria-expanded', 'false');
-    },
-    SLOW,
-  );
+    // Nothing was typed, so there is nothing to commit and nothing to lose.
+    await expect(editorScreen.settingsTagsTokens()).toHaveCount(0);
+    await expect.element(editorScreen.settingsTagsInput()).not.toHaveFocus();
+    await expect
+      .element(editorScreen.settingsTagsInput())
+      .toHaveAttribute('aria-expanded', 'false');
+  });
 
-  it(
-    'points the field at the row the keyboard is on',
-    async () => {
-      fakeTaggablePost();
-      fakeTags([NEWS, SPORT]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
-      await expect.element(editorScreen.settingsTagOption('News')).toBeVisible();
+  it('points the field at the row the keyboard is on', async () => {
+    fakeTaggablePost();
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+    await expect.element(editorScreen.settingsTagOption('News')).toBeVisible();
 
-      await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard('{ArrowDown}');
 
-      await expect
-        .poll(() => {
-          const active = editorScreen
-            .settingsTagsInput()
-            .element()
-            .getAttribute('aria-activedescendant');
-          return active ? document.getElementById(active)?.textContent : null;
-        }, POLL)
-        .toContain('Sport');
-    },
-    SLOW,
-  );
+    await expect
+      .poll(() => {
+        const active = editorScreen
+          .settingsTagsInput()
+          .element()
+          .getAttribute('aria-activedescendant');
+        return active ? document.getElementById(active)?.textContent : null;
+      }, POLL)
+      .toContain('Sport');
+  });
 
-  it(
-    'takes the row under the highlight after a pick has shortened the list',
-    async () => {
-      fakeTaggablePost();
-      fakeTags([NEWS, SPORT]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
-      await expect.element(editorScreen.settingsTagOption('Sport')).toBeVisible();
+  it('takes the row under the highlight after a pick has shortened the list', async () => {
+    fakeTaggablePost();
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
+    await expect.element(editorScreen.settingsTagOption('Sport')).toBeVisible();
 
-      // The last row: taking it leaves one fewer row than the highlight points at.
-      await userEvent.keyboard('{ArrowDown}{Enter}');
-      await expect(editorScreen.settingsTagOption('Sport')).toHaveCount(0);
-      await userEvent.keyboard('{Enter}');
+    // The last row: taking it leaves one fewer row than the highlight points at.
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect(editorScreen.settingsTagOption('Sport')).toHaveCount(0);
+    await userEvent.keyboard('{Enter}');
 
-      // Two chips: the second Enter took the row it was on, not nothing.
-      await expect(editorScreen.settingsTagsTokens()).toHaveCount(2);
-    },
-    SLOW,
-  );
+    // Two chips: the second Enter took the row it was on, not nothing.
+    await expect(editorScreen.settingsTagsTokens()).toHaveCount(2);
+  });
 
-  it(
-    'removes a tag and saves what is left',
-    async () => {
-      const { saveApi } = fakeTaggablePost({ tags: [NEWS, SPORT] });
-      fakeTags([NEWS, SPORT]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('removes a tag and saves what is left', async () => {
+    const { saveApi } = fakeTaggablePost({ tags: [NEWS, SPORT] });
+    fakeTags([NEWS, SPORT]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      await editorScreen.removeSettingsTag('News').click();
+    await editorScreen.removeSettingsTag('News').click();
 
-      await expect.poll(() => saveApi.requests.length, FIELD_POLL).toBe(1);
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag2' }]);
-    },
-    SLOW,
-  );
+    await expect(saveApi).toHaveSavedFields({ tags: [{ id: 'tag2' }] });
+  });
 
-  it(
-    'stages a published post’s tags until Update',
-    async () => {
-      const { saveApi } = fakeTaggablePost({ status: 'published', published_at: PUBLISHED_AT });
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
-      await openTagList();
+  it('stages a published post’s tags until Update', async () => {
+    const { saveApi } = fakeTaggablePost({ status: 'published', published_at: PUBLISHED_AT });
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await openTagList();
 
-      await expect.element(editorScreen.updateButton()).toBeDisabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
-      await editorScreen.settingsTagOption('News').click();
+    await editorScreen.settingsTagOption('News').click();
 
-      await expect.element(editorScreen.updateButton()).toBeEnabled();
-      await expect.poll(unsavedChangesGuarded).toBe(true);
-      expect(saveApi.requests).toHaveLength(0);
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    expect(saveApi.requests).toHaveLength(0);
 
-      await userEvent.keyboard('{Meta>}s{/Meta}');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      expect(submittedTags(saveApi)).toEqual([{ id: 'tag1' }]);
-      expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedTags(saveApi)).toEqual([{ id: 'tag1' }]);
+    expect(submittedPost(saveApi)).toMatchObject({ status: 'published' });
+  });
 
-  it(
-    'adopts a tag added elsewhere while the writer has not touched tags',
-    async () => {
-      const { saveApi, addTagElsewhere } = fakeTaggablePost({ tags: [NEWS] });
-      fakeTags([NEWS, NOTICE]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-      await openSidebar();
+  it('adopts a tag added elsewhere while the writer has not touched tags', async () => {
+    const { saveApi, addTagElsewhere } = fakeTaggablePost({ tags: [NEWS] });
+    fakeTags([NEWS, NOTICE]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
 
-      addTagElsewhere(NOTICE);
+    addTagElsewhere(NOTICE);
 
-      // Any save refetches the post; the writer's own field is the excerpt here.
-      await editorScreen.settingsExcerpt().fill('From the sidebar');
-      await editorScreen.titleInput().click();
+    // Any save refetches the post; the writer's own field is the excerpt here.
+    await editorScreen.settingsExcerpt().fill('From the sidebar');
+    await editorScreen.titleInput().click();
 
-      await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
-      // Untouched, so it was never in the payload — and the server's copy wins.
-      expect(submittedPost(saveApi)).not.toHaveProperty('tags');
-      await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Notice');
-    },
-    SLOW,
-  );
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    // Untouched, so it was never in the payload — and the server's copy wins.
+    expect(submittedPost(saveApi)).not.toHaveProperty('tags');
+    await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('Notice');
+  });
 
-  it(
-    'leaves the Tags section out for a contributor',
-    async () => {
-      // A contributor may only open a draft they authored.
-      fakeTaggablePost({ authors: [{ id: CURRENT_USER_ID }] });
-      fakeTags([NEWS]);
-      await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
-      await openSidebar();
+  it('leaves the Tags section out for a contributor', async () => {
+    // A contributor may only open a draft they authored.
+    fakeTaggablePost({ authors: [{ id: CURRENT_USER_ID }] });
+    fakeTags([NEWS]);
+    await renderAdminApp(`/editor/post/${POST_ID}`, asRole('Contributor'));
+    await openSidebar();
 
-      await expect(editorScreen.settingsTagsField()).toHaveCount(0);
-    },
-    SLOW,
-  );
+    await expect(editorScreen.settingsTagsField()).toHaveCount(0);
+  });
 });

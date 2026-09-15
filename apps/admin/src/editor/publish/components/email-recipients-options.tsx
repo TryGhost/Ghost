@@ -7,14 +7,14 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getNewsletterRecipientFilter } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { publishNewsletterSelect } from '@tryghost/test-data/selectors/editor';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { useEffect, useMemo } from 'react';
+import { useEditorSettings } from '@/editor/use-editor-settings';
+import { useEffect, useId, useMemo } from 'react';
 import { z } from 'zod';
 import { parseRecipientSegments } from './email-recipients-boundary';
 import { RecipientSelect, type SegmentOption } from './recipient-select';
@@ -37,10 +37,8 @@ export function EmailRecipientsOptions({
   onSetNewsletter,
   onSetRecipientFilter,
 }: EmailRecipientsOptionsProps) {
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const newsletterId = useId();
+  const { data: settingsData } = useEditorSettings();
   const { data: configData } = useBrowseConfig({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -152,14 +150,14 @@ export function EmailRecipientsOptions({
 
       {state.newsletters.length > 1 ? (
         <Stack gap="sm">
-          <Label htmlFor="publish-newsletter">Newsletter</Label>
+          <Label htmlFor={newsletterId}>Newsletter</Label>
           <Select
             value={state.newsletter?.slug ?? ''}
             onValueChange={(slug) =>
               onSetNewsletter(state.newsletters.find((option) => option.slug === slug) ?? null)
             }
           >
-            <SelectTrigger data-testid={publishNewsletterSelect} id="publish-newsletter">
+            <SelectTrigger data-testid={publishNewsletterSelect} id={newsletterId}>
               <SelectValue placeholder="Select a newsletter" />
             </SelectTrigger>
             <SelectContent>

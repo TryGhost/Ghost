@@ -2882,8 +2882,6 @@ export function Filters<T = unknown>({
   onActiveFieldChange,
 }: FiltersProps<T>) {
   const { controlShape, isAdmin7 } = useShade();
-  const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && isAdmin7;
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -3195,7 +3193,6 @@ export function Filters<T = unknown>({
       <div
         className={cn(
           filtersContainerVariants({ variant, size }),
-          isPillFilterBar && 'static',
           filters.length > 0 && 'w-full',
           showClearButton && filters.length > 0 && 'sm:pr-24',
           className,
@@ -3398,8 +3395,7 @@ export function Filters<T = unknown>({
                 isAdmin7 && 'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
                 isAdmin7 && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
-                'sm:absolute',
-                isPillFilterBar ? 'sm:top-2 sm:right-2' : 'sm:top-0 sm:right-0',
+                'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
               data-control-shape={controlShape}

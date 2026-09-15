@@ -115,17 +115,18 @@ Sign in to the VersityGW WebUI with access key `s3-user` and secret key
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling:
 
-| Command                    | Use it when working on                                                                        |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                  |
-| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                          |
-| `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                    |
-| `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service  |
-| `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service |
-| `pnpm dev:storage`         | S3-compatible storage through VersityGW, with its WebUI on port `9001`                        |
-| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)  |
-| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                   |
-| `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                       |
+| Command                    | Use it when working on                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
+| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
+| `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
+| `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
+| `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service                   |
+| `pnpm dev:storage`         | S3-compatible storage through VersityGW, with its WebUI on port `9001`                                          |
+| `pnpm dev:stripe`          | Stripe webhooks exactly as production receives them; see [Stripe testing](testing-stripe.md)                    |
+| `pnpm dev:mailgun`         | Mailgun API delivery; see [email testing](testing-email.md)                                                     |
+| `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
+| `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.

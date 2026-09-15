@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
 import {
@@ -17,6 +17,7 @@ import { UpdateFlowModal } from './publish/update-flow-modal';
 import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
 import { describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { useEditorSettings } from './use-editor-settings';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
@@ -58,7 +59,7 @@ export function EditorHeaderActions({
   siteUrl,
   tkCount,
 }: EditorHeaderActionsProps) {
-  const snapshot = session.getSaveSnapshot();
+  const { persistedId, publishTime, title } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -67,7 +68,12 @@ export function EditorHeaderActions({
   const closePreview = useCallback(() => setPreviewOpen(false), []);
 
   const post = buildPublishFlowPost({
-    snapshot,
+    snapshot: {
+      id: persistedId,
+      status: publishTime.status,
+      publishedAt: publishTime.publishedAt,
+      title,
+    },
     record,
     displayName: postType,
     lexical: session.getLiveLexical(),
@@ -78,12 +84,12 @@ export function EditorHeaderActions({
 
   usePreviewShortcut(
     useCallback(() => setPreviewOpen((open) => !open), []),
-    isDraft && snapshot.id !== null,
+    isDraft && persistedId !== null,
   );
 
   // Ember saves a dirty draft before previewing it and leaves every other post as it is.
   const saveBeforePreview = useCallback(async () => {
-    if (session.getSaveSnapshot().status !== 'draft' || !session.isDirty()) {
+    if (session.publishTime.status !== 'draft' || !session.isDirty()) {
       return;
     }
     await requireSaved(session.saveExplicit());
@@ -93,7 +99,7 @@ export function EditorHeaderActions({
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
   // A post the server has never seen can be neither published nor previewed.
-  if (!snapshot.id) {
+  if (!persistedId) {
     return null;
   }
 
@@ -126,7 +132,7 @@ export function EditorHeaderActions({
           isPost={postType === 'post'}
           newsletterSlug={post.newsletter ?? undefined}
           open={previewOpen}
-          postId={snapshot.id}
+          postId={persistedId}
           previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
           onBeforeOpen={saveBeforePreview}
           onOpenChange={setPreviewOpen}
@@ -165,10 +171,7 @@ function PublishActions({
   onPreview,
 }: PublishActionsProps) {
   const inputs = usePublishInputs();
-  const { data: settingsData } = useBrowseSettings({
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
+  const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
     defaultErrorHandler: false,
