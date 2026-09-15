@@ -132,6 +132,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         ) : (
           <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
         )}
+        {/* Beside the name, which is where the list puts it and where you look to
+                    answer "what am I looking at".
+
+                    It was tried at the far right, after the actions, on the argument that a
+                    badge matters most when it CHANGES — and publishing flips it at the
+                    opposite end of the header from the button you pressed, the dialog
+                    lifting and the toast. Moving it there did put the change under the
+                    cursor, and it read as a control: a pill at the end of a row of buttons
+                    looks pressable, doubly so when the same position is genuinely a switch
+                    in the exploration lanes. A readout has to look like one first. */}
         <StatusBadge status={status} />
       </Inline>
 

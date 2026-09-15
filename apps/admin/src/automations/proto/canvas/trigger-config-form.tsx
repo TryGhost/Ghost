@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Combobox,
   ComboboxContent,
@@ -13,12 +13,43 @@ import {
   type TriggerConfig,
   hasTiers,
   tierNames,
+  SIMPLE_TRIGGER_OPTIONS,
   TRIGGER_PICKER_OPTIONS,
   triggerConfigFor,
   exitSentence,
 } from '@/automations/proto/shared/trigger-config';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
 import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
+
+// Closes a popover opened from inside a node when the canvas BACKGROUND is pressed.
+//
+// Radix dismisses on a document-level `pointerdown` in the bubble phase, and on the
+// React Flow pane that press doesn't arrive: the pane is wired to d3-zoom, whose
+// handlers call d3's `nopropagation` (stopImmediatePropagation) so a drag can start
+// without the rest of the page reacting. The result is a dropdown you can only close
+// by pressing the field that opened it, which is the one thing nobody tries.
+//
+// Capture runs top-down from the document, ahead of anything on the pane, so it's the
+// one phase that still hears the press.
+//
+// Deliberately scoped to `.react-flow__pane` — the background itself, not "outside".
+// Radix already handles every other target correctly, and a broader listener would
+// race its trigger: our handler would close on pointerdown and the trigger's own
+// click would reopen it, so pressing the field would stop working.
+const useDismissOnPanePress = (open: boolean, onDismiss: () => void) => {
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handle = (event: PointerEvent) => {
+      if ((event.target as HTMLElement | null)?.closest('.react-flow__pane')) {
+        onDismiss();
+      }
+    };
+    document.addEventListener('pointerdown', handle, true);
+    return () => document.removeEventListener('pointerdown', handle, true);
+  }, [open, onDismiss]);
+};
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -54,11 +85,13 @@ import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-l
  * fields. Pulling the row's padding back into the card's puts the last option 24px
  * off the edge, which is what every other card does.
  */
-export const TriggerEmptyState: React.FC<{ onSelect: (config: TriggerConfig) => void }> = ({
-  onSelect,
-}) => (
+export const TriggerEmptyState: React.FC<{
+  onSelect: (config: TriggerConfig) => void;
+  // Phase 1's shorter names, with no second line — see SIMPLE_TRIGGER_OPTIONS.
+  simpleNames?: boolean;
+}> = ({ onSelect, simpleNames = false }) => (
   <div className="-mx-4 -mb-4">
-    {TRIGGER_PICKER_OPTIONS.map((option) => (
+    {(simpleNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS).map((option) => (
       <PickerRow
         key={option.value}
         option={option}
@@ -89,6 +122,7 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const noTier = tierIds.length === 0;
   const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
+  useDismissOnPanePress(tiersOpen, () => setTiersOpen(false));
 
   const setTiers = (next: string[]) => onChange({ ...config, tierIds: next });
 

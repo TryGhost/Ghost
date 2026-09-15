@@ -22,7 +22,6 @@ import {
   duplicateAutomation,
   insertAutomation,
   setAutomationArchived,
-  setAutomationStatus,
   suggestCopyName,
   updateAutomationDetails,
   useProtoAutomations,
@@ -107,13 +106,11 @@ const AutomationsList: React.FC = () => {
   // Copies the SAVED record — there's no draft on this screen to prefer.
   const handleDuplicate = (entry: ProtoAutomation) => {
     const name = suggestCopyName(entry.automation.name);
-    const copyId = duplicateAutomation(entry.automation, entry.trigger, entry.description, name);
-    toast.success(`“${name}” created`, {
-      action: {
-        label: 'View',
-        onClick: () => navigate(toVersioned(`${lanePath(LANE)}/${copyId}`)),
-      },
-    });
+    duplicateAutomation(entry.automation, entry.trigger, entry.description, name);
+    // The copy appears in the list you're already looking at, at the top, under the
+    // name this names. A "View" action was offering a trip to something already on
+    // screen.
+    toast.success(`“${name}” created`);
   };
 
   // "Edit details", not "Rename". Rename is the sharper word, and it was wrong: the
@@ -161,24 +158,17 @@ const AutomationsList: React.FC = () => {
     if (!pendingArchive) {
       return;
     }
-    const { id, name, status } = pendingArchive.automation;
     setPendingArchive(null);
-    setAutomationArchived(id, true);
-    toast.success(
-      status === 'active' ? `“${name}” archived and turned off` : `“${name}” archived`,
-      {
-        action: {
-          label: 'Undo',
-          // Puts the status back too. Unarchiving on its own always returns an
-          // automation OFF, which is right when a publisher asks for it deliberately
-          // — but Undo means "as it was", and for a live one that included running.
-          onClick: () => {
-            setAutomationArchived(id, false);
-            setAutomationStatus(id, status);
-          },
-        },
-      },
-    );
+    setAutomationArchived(pendingArchive.automation.id, true);
+    // Four words. It named the automation and, for a live one, added "and turned off"
+    // — accurate, and by then nobody is reading it: the dialog just said both of those
+    // things, and the row is visibly gone from the list behind the toast.
+    //
+    // No Undo either. It was the argument for archiving without a confirm; there IS a
+    // confirm now, so the toast was offering to reverse a decision that had already
+    // been checked once. Unarchive is in the row's own menu under the Archived view,
+    // which is where someone who changes their mind an hour later has to go anyway.
+    toast.success('Automation archived');
   };
 
   const visible = automations.filter((entry) =>

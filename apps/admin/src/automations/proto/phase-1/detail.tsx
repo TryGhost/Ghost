@@ -154,7 +154,7 @@ const AutomationFloat: React.FC = () => {
   // The automation itself comes from the store, so one that was created in this
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
-  // `cancellationSurvey` already designs for.
+  // `emptyScenarioId` already designs for.
   const record = useProtoAutomation(id);
   const scenario = record
     ? { automation: record.automation, ...getRunData(record.automation.id) }
@@ -461,6 +461,7 @@ const AutomationFloat: React.FC = () => {
               automation={publishedFlow}
               selectedRun={selectedRun}
               triggerConfig={savedTrigger ?? undefined}
+              simpleTriggerNames
             />
           </div>
           {/* One top-left cluster, not two things at the same coordinates: the
@@ -547,6 +548,7 @@ const AutomationFloat: React.FC = () => {
               draft={draftFlow}
               triggerConfig={triggerConfig}
               triggerLocked={triggerLocked}
+              simpleTriggerNames
               onChange={handleDraftChange}
               onTriggerConfigChange={handleTriggerConfigChange}
             />

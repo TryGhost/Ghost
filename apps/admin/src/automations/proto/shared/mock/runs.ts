@@ -1,10 +1,5 @@
 import type { AutomationRun, AutomationRunMetrics, EnrollmentPoint, RunStep } from './types';
-import {
-  cancellationSurvey,
-  inactiveWinback,
-  paidUpgradeNudge,
-  welcomeSeries,
-} from './automations';
+import { paidUpgradeNudge, welcomeSeries } from './automations';
 
 // ---------------------------------------------------------------------------
 // Run + metrics data — OWNED (net-new) shapes. Each automation gets an
@@ -377,133 +372,6 @@ const welcomeRunsBase: AutomationRun[] = [
   },
 ];
 
-// --- Inactive win-back (early drop-off) -----------------------------------
-
-const winbackMetrics: AutomationRunMetrics = {
-  automation_id: inactiveWinback.id,
-  enrollments: 640,
-  in_progress: 40,
-  completed: 210,
-  exited_early: 390,
-  last_enrolled_at: '2026-07-20T22:41:00Z',
-  enrollments_by_day: daysSeries(
-    '2026-07-21',
-    [
-      30, 29, 27, 26, 24, 23, 21, 20, 19, 17, 16, 16, 15, 14, 13, 13, 12, 11, 11, 10, 10, 9, 9, 8,
-      8, 8, 7, 7, 8, 7,
-    ],
-  ),
-};
-
-const winbackRunsBase: AutomationRun[] = [
-  {
-    id: 'run_ivy',
-    automation_id: inactiveWinback.id,
-    member: { id: 'mem_ivy', name: 'Ivy Sanders', email: 'ivy.sanders@example.com' },
-    // The one failure case in the fixtures: the send itself broke, so the run
-    // ended without the member doing anything. Still exited_early — they're out
-    // of the flow — with an exit_reason that names the system, not them.
-    status: 'exited_early',
-    enrolled_at: '2026-07-14T09:00:00Z',
-    completed_at: null,
-    current_action_id: null,
-    exit_reason: 'failed',
-    steps: [
-      {
-        action_id: 'act_wb_hey',
-        state: 'done',
-        occurred_at: '2026-07-14T09:00:00Z',
-        detail: 'Member inbox is full',
-        failed: true,
-      },
-      { action_id: 'act_wb_wait', state: 'skipped', occurred_at: null, detail: null },
-      { action_id: 'act_wb_offer', state: 'skipped', occurred_at: null, detail: null },
-    ],
-  },
-  {
-    id: 'run_leo',
-    automation_id: inactiveWinback.id,
-    member: { id: 'mem_leo', name: 'Leo Martins', email: 'leo.martins@example.com' },
-    status: 'completed',
-    enrolled_at: '2026-07-05T12:30:00Z',
-    completed_at: '2026-07-13T12:35:00Z',
-    current_action_id: null,
-    exit_reason: null,
-    steps: [
-      {
-        action_id: 'act_wb_hey',
-        state: 'done',
-        occurred_at: '2026-07-05T12:30:00Z',
-        detail: 'Opened',
-      },
-      {
-        action_id: 'act_wb_wait',
-        state: 'done',
-        occurred_at: '2026-07-05T12:31:00Z',
-        detail: 'Waited 7 days',
-      },
-      {
-        action_id: 'act_wb_offer',
-        state: 'done',
-        occurred_at: '2026-07-12T12:31:00Z',
-        detail: 'Opened (1 link)',
-      },
-    ],
-  },
-  {
-    // Enrolled minutes ago — the fresh end of the range.
-    id: 'run_ada',
-    automation_id: inactiveWinback.id,
-    member: { id: 'mem_ada', name: 'Ada Flores', email: 'ada.flores@example.com' },
-    status: 'in_progress',
-    enrolled_at: '2026-07-21T08:32:00Z',
-    completed_at: null,
-    current_action_id: 'act_wb_wait',
-    exit_reason: null,
-    steps: [
-      {
-        action_id: 'act_wb_hey',
-        state: 'done',
-        occurred_at: '2026-07-21T08:32:00Z',
-        detail: 'Delivered, not opened',
-      },
-      {
-        action_id: 'act_wb_wait',
-        state: 'current',
-        occurred_at: '2026-07-21T08:33:00Z',
-        detail: 'Resumes Jul 28',
-      },
-      { action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null },
-    ],
-  },
-  {
-    // Enrolled a few hours ago — the middle of the range.
-    id: 'run_omar',
-    automation_id: inactiveWinback.id,
-    member: { id: 'mem_omar', name: 'Omar Haddad', email: 'omar.haddad@example.com' },
-    status: 'in_progress',
-    enrolled_at: '2026-07-21T03:45:00Z',
-    completed_at: null,
-    current_action_id: 'act_wb_wait',
-    exit_reason: null,
-    steps: [
-      {
-        action_id: 'act_wb_hey',
-        state: 'done',
-        occurred_at: '2026-07-21T03:45:00Z',
-        detail: 'Opened',
-      },
-      {
-        action_id: 'act_wb_wait',
-        state: 'current',
-        occurred_at: '2026-07-21T03:46:00Z',
-        detail: 'Resumes Jul 28',
-      },
-      { action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null },
-    ],
-  },
-];
-
 // --- Paid upgrade nudge (steady state) ------------------------------------
 
 const upgradeMetrics: AutomationRunMetrics = {
@@ -628,16 +496,13 @@ const upgradeRunsBase: AutomationRun[] = [
 ];
 
 const welcomeRuns = expandRuns(welcomeSeries.id, welcomeRunsBase, RUNS_PER_SCENARIO);
-const winbackRuns = expandRuns(inactiveWinback.id, winbackRunsBase, RUNS_PER_SCENARIO);
 const upgradeRuns = expandRuns(paidUpgradeNudge.id, upgradeRunsBase, RUNS_PER_SCENARIO);
 
 // --- Registry + accessor ---------------------------------------------------
 
 const runData: Record<string, RunData> = {
   [welcomeSeries.id]: { metrics: welcomeMetrics, runs: welcomeRuns },
-  [inactiveWinback.id]: { metrics: winbackMetrics, runs: winbackRuns },
   [paidUpgradeNudge.id]: { metrics: upgradeMetrics, runs: upgradeRuns },
-  // cancellationSurvey intentionally absent → empty state
 };
 
 function emptyMetrics(automationId: string): AutomationRunMetrics {
@@ -658,9 +523,9 @@ function emptyMetrics(automationId: string): AutomationRunMetrics {
 /**
  * The runs and metrics for an automation.
  *
- * Never undefined: an automation with no fixtures — a brand-new one you just
- * created, or `cancellationSurvey` — gets a zeroed funnel and an empty run list,
- * which is a designed state rather than a missing one. This used to return the
+ * Never undefined: an automation with no fixtures — which today means any one you
+ * just created — gets a zeroed funnel and an empty run list, which is a designed
+ * state rather than a missing one. This used to return the
  * whole scenario including the automation itself, but automations now come from
  * the store (which can hold ones that were never fixtures), so this owns only the
  * half that is still hand-authored.
@@ -669,5 +534,11 @@ export function getRunData(id: string): { metrics: AutomationRunMetrics; runs: A
   return runData[id] ?? { metrics: emptyMetrics(id), runs: [] };
 }
 
-// Referenced so the empty-state scenario reads as intentional, not forgotten.
-export const emptyScenarioId = cancellationSurvey.id;
+// An id that is deliberately absent from the registry above, so the empty state can
+// be reached on purpose rather than only by making a new automation.
+//
+// It used to be a fixture — a "Cancellation survey" that was published with nobody
+// enrolled. That automation is gone (see mockAutomations), and the empty state it
+// existed to demonstrate is not: getRunData zeroes anything it doesn't recognise, so
+// a bare id is all it ever needed to be.
+export const emptyScenarioId = 'auto_empty';

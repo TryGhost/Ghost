@@ -151,7 +151,7 @@ const AutomationFloat: React.FC = () => {
   // The automation itself comes from the store, so one that was created in this
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
-  // `cancellationSurvey` already designs for.
+  // `emptyScenarioId` already designs for.
   const record = useProtoAutomation(id);
   const scenario = record
     ? { automation: record.automation, ...getRunData(record.automation.id) }
@@ -263,21 +263,13 @@ const AutomationFloat: React.FC = () => {
     if (!id || !savedAutomation) {
       return;
     }
-    const status = savedAutomation.status;
     // Flagged before the navigate: the store is external, so this re-renders the
     // screen synchronously and the route change lands after it.
     leaving.current = true;
     setAutomationArchived(id, true);
     navigate(toVersioned(lanePath(LANE)));
-    toast.success(status === 'active' ? 'Archived and turned off' : 'Automation archived', {
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          setAutomationArchived(id, false);
-          setAutomationStatus(id, status);
-        },
-      },
-    });
+    // Four words, and no Undo — see the same toast on the list for why.
+    toast.success('Automation archived');
   };
 
   if (!scenario || !record || !id) {

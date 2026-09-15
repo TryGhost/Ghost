@@ -25,7 +25,14 @@ export interface PickerOption<Value extends string> {
   value: Value;
   icon: React.ElementType;
   title: string;
-  description: string;
+  /**
+   * Optional. Without one the row is a single line of title.
+   *
+   * Every picker in the proto carries one except phase 1's triggers, where the
+   * titles were rewritten to be self-explanatory and the second line then had
+   * nothing left to add — see SIMPLE_TRIGGER_OPTIONS.
+   */
+  description?: string;
 }
 
 // Exported so a card can render the same rows inline. A new automation opens on
@@ -58,7 +65,12 @@ export const PickerRow = <Value extends string>({
       </span>
       <div className="flex min-w-0 flex-col">
         <span className="text-md font-medium">{option.title}</span>
-        <span className="text-sm text-muted-foreground">{option.description}</span>
+        {/* Rendered only when there is one. An empty span still takes a line's
+                    height, which would leave a one-line row as tall as a two-line one and
+                    the icon floating above its own label. */}
+        {option.description && (
+          <span className="text-sm text-muted-foreground">{option.description}</span>
+        )}
       </div>
       {selected && <LucideIcon.Check className="ml-auto size-4 shrink-0" />}
     </button>

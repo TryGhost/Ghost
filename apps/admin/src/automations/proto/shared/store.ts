@@ -22,7 +22,7 @@ import { DEFAULT_TRIGGER_CONFIG, type TriggerConfig } from './trigger-config';
 //
 // Run data is deliberately NOT here. Runs and metrics are hand-authored fixtures
 // keyed by automation id (see mock/runs), and a created automation simply has
-// none — which is already a designed state, the one `cancellationSurvey` covers.
+// none — which is already a designed state, the one `emptyScenarioId` covers.
 // ---------------------------------------------------------------------------
 
 /**
@@ -90,7 +90,7 @@ interface StoreState {
 // migrate it. This is fixture data behind a Labs flag — a reseed is the correct
 // response to a shape change, and a migration path would be ceremony around data
 // nobody is going to miss.
-const VERSION = 14;
+const VERSION = 16;
 const STORAGE_KEY = 'ghost-automations-proto-store';
 
 const seed = (): StoreState => ({

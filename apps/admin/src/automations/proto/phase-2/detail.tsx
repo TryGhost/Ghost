@@ -33,6 +33,7 @@ import {
 } from '@/automations/proto/shared/store';
 import { ArchiveAutomationDialog } from '@/automations/proto/shared/archive-dialog';
 import { changeSummary } from '@/automations/proto/shared/change-summary';
+import { useToasterInset } from '@/automations/proto/shared/use-toaster-inset';
 import { HeaderBar } from './header-bar';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import { LeftPanel } from './left-panel';
@@ -195,7 +196,7 @@ const AutomationFloat: React.FC = () => {
   // The automation itself comes from the store, so one that was created in this
   // session is as real as a seeded fixture. Runs and metrics stay hand-authored
   // and keyed by id — a created automation has none, which is the empty state
-  // `cancellationSurvey` already designs for.
+  // `emptyScenarioId` already designs for.
   // Every automation this screen opens exists. There is no half-made one.
   //
   // There used to be: `new` was a sentinel id (Ghost's tag detail still works that
@@ -244,6 +245,8 @@ const AutomationFloat: React.FC = () => {
   // A ref rather than state because both are read during the same render that
   // removes or replaces the automation, and a setState wouldn't have landed yet.
   const leaving = useRef(false);
+  // The canvas region, measured by useToasterInset.
+  const canvasRef = useRef<HTMLDivElement>(null);
   // Name and description, edited in their own dialog. Held as draft fields while
   // it's open and written on Save — nothing is committed by typing, so Cancel is a
   // real cancel rather than an undo of writes that already landed.
@@ -277,8 +280,9 @@ const AutomationFloat: React.FC = () => {
   // Status rather than "does it have runs": an automation that's live but hasn't
   // enrolled anyone yet still wants its pane open, because the empty state is
   // exactly the thing worth seeing then — it says where the numbers will appear.
-  // That also makes this agree with what publishing does (see handleStart), so
-  // the pane has one rule rather than two that happen to overlap.
+  // This is an ARRIVAL rule, and the only one: publishing no longer opens the pane
+  // (see handleStart). Opening an automation that's live shows its numbers; what you
+  // do with the pane after that is yours for the rest of the session.
   //
   // Stopping does NOT close it again. Someone turning an automation off is very
   // often turning it off BECAUSE of what the numbers say, and hiding them at that
@@ -296,6 +300,10 @@ const AutomationFloat: React.FC = () => {
   // width it draws, while every change after that — publishing, the toggle — still
   // animates. Cheaper and more reliable than working out which of the mount's style
   // recalculations was firing the transition.
+  // Toasts sit over the canvas rather than over the pane. Measured from the canvas
+  // region itself, so it tracks the pane opening and closing without this screen
+  // knowing how wide the pane is — see useToasterInset.
+  useToasterInset(canvasRef);
   const [paneAnimated, setPaneAnimated] = useState(false);
   useEffect(() => {
     setPaneAnimated(true);
@@ -470,22 +478,25 @@ const AutomationFloat: React.FC = () => {
         // becomes the published version in the same move — there's no separate
         // "publish" step to remember for something that was never running.
         promoteDraft('active');
-        // Open the performance pane on the way live, so the screen ends up in the
-        // state it would open in from now on (see paneCollapsed): the pane tracks the
-        // lifecycle, and this is the lifecycle changing.
+        // The pane does NOT open here.
         //
-        // It also means someone can't create, build and publish an automation without
-        // ever learning this screen has analytics — going live is when they start to
-        // matter, so it's when to show them.
+        // It used to, on the argument that the pane tracks the lifecycle and this is
+        // the lifecycle changing — and that someone could otherwise create, build and
+        // publish an automation without ever learning this screen has analytics. Both
+        // still true. What they were buying was a 480px panel sliding in at the same
+        // moment the dialog lifts, the canvas recentres around its new width, the
+        // status badge flips and a toast arrives, and the team's read was that too
+        // much happens at once to follow any of it.
         //
-        // It opens onto the empty state, deliberately: "Members will appear here as
-        // they enter this automation" is a better introduction than a chart would be,
-        // because it says where to come back to and what will be here.
+        // So the pane stays where the reader left it. Publishing is about the flow;
+        // what the pane holds doesn't exist yet at the moment you press it, and the
+        // toggle is 24px from where their eyes already are.
         //
-        // Only on the transition to live — publishing CHANGES to something already
-        // running leaves the pane as the reader left it, since by then they've made
-        // their own choice about it.
-        setPaneCollapsed(false);
+        // The arrival rule is untouched: open this automation again and the pane is
+        // open, because it's live (see paneCollapsed). Which reads as a rule rather
+        // than an inconsistency — on arrival the pane follows the lifecycle, and
+        // within a session it's yours.
+        //
         // Title only — the start-confirmation dialog already explained what
         // turning it on means, so the toast just confirms it happened.
         toast.success('Automation is live');
@@ -568,7 +579,6 @@ const AutomationFloat: React.FC = () => {
   // reversible action still asks.
   const handleArchive = () => {
     setArchiveOpen(false);
-    const status = automation.status;
     // Flagged before the navigate for the same reason Delete needed it: the store is
     // external, so archiving re-renders this screen synchronously and the route change
     // lands after it. The screen filters archived automations out of nothing, but the
@@ -576,16 +586,8 @@ const AutomationFloat: React.FC = () => {
     leaving.current = true;
     setAutomationArchived(id, true);
     navigate(toVersioned(lanePath(LANE)));
-    toast.success(status === 'active' ? 'Archived and turned off' : 'Automation archived', {
-      action: {
-        label: 'Undo',
-        // Status too — see the same note on the list's handler.
-        onClick: () => {
-          setAutomationArchived(id, false);
-          setAutomationStatus(id, status);
-        },
-      },
-    });
+    // Four words, and no Undo — see the same toast on the list for why.
+    toast.success('Automation archived');
   };
 
   const handleStop = () => {
@@ -811,6 +813,7 @@ const AutomationFloat: React.FC = () => {
                 REACT_FLOW_THEME paints inside it, so the region and the flow's own
                 background can't disagree at the edges. */}
         <div
+          ref={canvasRef}
           className={cn(
             'relative min-w-0 flex-1 overflow-hidden',
             // This region owns the canvas palette. Everything inside it — both

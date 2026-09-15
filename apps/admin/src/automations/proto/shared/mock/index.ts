@@ -4,8 +4,10 @@
 //   admin-x-framework), so they port to real API data 1:1.
 // - Runs + metrics use net-new shapes we're designing (see ./types).
 //
-// Scenarios: welcome-series (healthy), inactive-winback (early drop-off),
-// paid-upgrade-nudge (steady state), cancellation-survey (empty / brand-new).
+// Scenarios: member-welcome-email-free (healthy) and member-welcome-email-paid
+// (steady state) — production's two real defaults, and the only automations a Ghost
+// site has. The empty state is reached through emptyScenarioId rather than a fixture
+// of its own.
 
 export type {
   AutomationRun,
@@ -20,6 +22,11 @@ export type {
   RunStepState,
 } from './types';
 
-export { AUTOMATION_DESCRIPTIONS, getAutomation, mockAutomations } from './automations';
+export {
+  AUTOMATION_DESCRIPTIONS,
+  PHASE_1_SLUGS,
+  getAutomation,
+  mockAutomations,
+} from './automations';
 export { metricSeries } from './metric-series';
 export { emptyScenarioId, getRunData } from './runs';

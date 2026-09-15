@@ -127,6 +127,35 @@ export const TRIGGER_PICKER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIO
   }),
 );
 
+// PHASE 1 ONLY — the same two triggers under simpler names, with no second line.
+//
+// That lane is the one being built, and it isn't trying to model the difference
+// between becoming a member and starting to pay: it runs one welcome for free
+// signups and one for paid. So the names say who arrives rather than what happened
+// to them, and once they do, the descriptions have nothing left to add — "The first
+// time someone becomes a member" under "Free member signs up" is the same sentence
+// twice.
+//
+// It's a deliberate NARROWING, not just wording. "Member signs up" covers anyone
+// arriving; "Free member signs up" excludes a paid arrival, and the paid trigger
+// picks those up. The other lanes keep the general names because they're exploring a
+// model where the audience is a separate question — see the block at the top.
+//
+// Kept beside the real vocabulary rather than in phase-1/, so anyone changing one
+// can see the other.
+export const SIMPLE_TRIGGER_LABELS: Record<TriggerType, string> = {
+  member_subscribes: 'Free member signs up',
+  paid_subscription_starts: 'Paid member signs up',
+};
+
+export const SIMPLE_TRIGGER_OPTIONS: PickerOption<TriggerType>[] = TRIGGER_OPTIONS.map(
+  (option) => ({
+    value: option.value,
+    icon: option.icon,
+    title: SIMPLE_TRIGGER_LABELS[option.value],
+  }),
+);
+
 // Proto-only tier fixtures — the mock scenarios carry no tiers. All three are
 // paid: tiers only exist on the paid trigger, so a "Free" tier here would be a
 // contradiction.
@@ -273,8 +302,11 @@ export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string 
 
 // Takes just the type, so it can label a bare choice as readily as a full config
 // — the trigger picker shows a label before there's a config to show it from.
-export const triggerLabel = (config: Pick<TriggerConfig, 'type'>): string =>
-  TRIGGER_OPTIONS.find((option) => option.value === config.type)?.label ?? TRIGGER_OPTIONS[0].label;
+export const triggerLabel = (config: Pick<TriggerConfig, 'type'>, simple = false): string =>
+  simple
+    ? SIMPLE_TRIGGER_LABELS[config.type]
+    : (TRIGGER_OPTIONS.find((option) => option.value === config.type)?.label ??
+      TRIGGER_OPTIONS[0].label);
 
 // The trigger's title while reviewing a member's run, where every card narrates
 // what THIS member did — "Subscribed", not the configuration-voice "Member

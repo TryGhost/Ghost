@@ -1,7 +1,17 @@
-import React from 'react';
-import { Button, Input, Label, Switch, Textarea } from '@tryghost/shade/components';
+import React, { useState } from 'react';
+import {
+  Button,
+  Combobox,
+  ComboboxContent,
+  Input,
+  Label,
+  PopoverAnchor,
+  Switch,
+  Textarea,
+  inputSurface,
+} from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 
 /**
  * EXPLORATION — the automation's settings as a column, rather than as a dialog and
@@ -32,6 +42,12 @@ import { LucideIcon } from '@tryghost/shade/utils';
 // it belongs in Shade's shared input surface rather than here.
 const FIELD_HOVER = 'transition-colors hover:border-border-strong';
 
+// The options the specimen field offers. Hardcoded strings, not a model — see the
+// field itself for why it isn't wired to anything. They're the three the trigger
+// card's sentence names, so the specimen at least says something true while it's
+// standing there.
+const EXIT_SPECIMEN = ['Unsubscribes', 'Cancels subscription', 'Leaves selected tiers'];
+
 // Re-entry has no model behind it yet. It's here because the question is real — can
 // a member go through this twice — and answering it in the panel is how we find out
 // whether it belongs here or on the trigger.
@@ -53,6 +69,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onAllowReentryChange,
   onArchive,
 }) => {
+  // Local, and it goes when the panel unmounts. Nothing else on this screen can see
+  // it, which is the point — see the field.
+  const [chosenExits, setChosenExits] = useState<string[]>(EXIT_SPECIMEN);
+  const [exitsOpen, setExitsOpen] = useState(false);
   return (
     <Stack className="px-6 pb-8" gap="xl">
       <Stack gap="md">
@@ -76,16 +96,115 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         />
       </Stack>
 
-      {/* No exit conditions here any more. This panel held a token field for them —
-                chips in the field, a list of the unchosen ones behind it — on the reasoning
-                that what ENDS an automation belongs with its settings rather than on the
-                trigger card.
+      {/* EXIT CONDITIONS — a design specimen, not a setting. Nothing here writes
+                anywhere, and nothing reads it back.
 
-                There's nothing left to hold. Exits are derived from the trigger and its
-                tiers now and stated as a sentence on the card itself, which is the one
-                place that can keep them honest: they change when the thing they follow
-                from changes, in view, while you're changing it. See
-                shared/trigger-config. */}
+                The model behind this field is gone: exits are derived from the trigger and
+                its tiers now, and stated as a sentence on the trigger card (see
+                shared/trigger-config). That decision stands. What went with it was the one
+                control in this proto that demonstrates the token-field pattern — chips in
+                a field, the field opening a list of what's left — which is still an open
+                question for the design lead and had nowhere else to be looked at.
+
+                So it's kept, deliberately inert, on its own local state. It is NOT a
+                half-wired feature: if the pattern is adopted it gets rebuilt against
+                whatever it's actually editing, and if it isn't, this goes. Anyone reading
+                the screen should take the trigger card's sentence as the truth about what
+                ends a run.
+
+                Post settings — which is what this imitates — isn't Shade; it's the Ember
+                admin on ember-power-select, so there was nothing to import, only a
+                behaviour to match. Two things make it read like that control rather than
+                like a multi-select wearing chips: an option LEAVES the list once it's in
+                the field, so the list is always "what's left to add" rather than a set of
+                ticks to reconcile against the chips above it; and the chips are Buttons
+                with a trailing X, which is the shape Shade's Filters pattern gives a chip.
+
+                Secondary rather than outline. A token sits INSIDE a bordered field, and an
+                outlined chip put a second border a few pixels inside the first — two edges
+                describing one thing. A filled chip reads as contents of the field rather
+                than as controls parked in it, which is the difference between this and the
+                filter bar, where chips stand on the page alone. */}
+      <Stack gap="md">
+        <Label>Exit conditions</Label>
+        {/* A div rather than ComboboxTrigger's button: the chips are buttons, and a
+                    button inside a button is invalid and unreachable by keyboard. The surface
+                    is still that trigger's — inputSurface('within') is Shade's own base for a
+                    field whose focusable content lives INSIDE it, and text-control is its type
+                    size.
+
+                    No caret. A caret says the field has one value and pressing it swaps that
+                    value; this one holds several and pressing it adds another. The
+                    placeholder says "Add", which is the actual promise. */}
+        <Combobox open={exitsOpen} onOpenChange={setExitsOpen}>
+          <PopoverAnchor asChild>
+            <div
+              className={cn(
+                inputSurface('within'),
+                FIELD_HOVER,
+                'flex min-h-(--control-height) w-full cursor-pointer items-center gap-2',
+                'p-1.5 text-control',
+              )}
+              role="presentation"
+              onClick={() => setExitsOpen(true)}
+            >
+              {/* The chips wrap; nothing else is in the row to be carried down with a
+                                second line of them. */}
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+                {chosenExits.map((label) => (
+                  <Button
+                    key={label}
+                    aria-label={`Remove ${label}`}
+                    // sm — Shade's one step down: 28px with 12px text and a 12px X. At the
+                    // default size each chip was as tall as the field's own controls, so
+                    // two of them read as two stacked fields rather than as the contents
+                    // of one.
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                    onClick={(event) => {
+                      // The field's own click would reopen the list under the chip that
+                      // just went.
+                      event.stopPropagation();
+                      setChosenExits(chosenExits.filter((entry) => entry !== label));
+                    }}
+                  >
+                    {label}
+                    <LucideIcon.X strokeWidth={2} />
+                  </Button>
+                ))}
+                {chosenExits.length === 0 && (
+                  <span className="px-1.5 text-muted-foreground">Add</span>
+                )}
+              </div>
+            </div>
+          </PopoverAnchor>
+          {/* p-1 and the row metrics below are SelectContent's and SelectItem's, so an
+                    option here is the same object as an option in any Shade select — 13px
+                    text-control rather than 12px, rounded-xs, py-1.5 px-2. */}
+          <ComboboxContent className="p-1" updatePositionStrategy="always">
+            <div className="flex flex-col">
+              {EXIT_SPECIMEN.filter((label) => !chosenExits.includes(label)).map((label) => (
+                <button
+                  key={label}
+                  className="flex w-full cursor-default items-center rounded-xs px-2 py-1.5 text-left text-control transition-colors hover:bg-interactive-hover focus-visible:bg-interactive-hover focus-visible:outline-hidden"
+                  type="button"
+                  onClick={() => setChosenExits([...chosenExits, label])}
+                >
+                  {label}
+                </button>
+              ))}
+              {/* The list can empty, unlike a set of checkboxes — so it has to say so
+                            rather than opening onto nothing. */}
+              {chosenExits.length === EXIT_SPECIMEN.length && (
+                <p className="px-2 py-1.5 text-control text-muted-foreground">
+                  All conditions added
+                </p>
+              )}
+            </div>
+          </ComboboxContent>
+        </Combobox>
+      </Stack>
 
       {/* A switch, not a two-option select. The question is yes or no — can someone
                 enter twice — and a select made it look like there were more answers than

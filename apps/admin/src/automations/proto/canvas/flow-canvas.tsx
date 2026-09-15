@@ -318,6 +318,10 @@ interface FlowCanvasProps {
   leftInset?: number;
   // Read-only here — the trigger is configured on the edit canvas.
   triggerConfig?: TriggerConfig;
+  // Phase 1's plainer trigger names — see SIMPLE_TRIGGER_OPTIONS. Passed here as
+  // well as to the edit canvas so a lane names its trigger the same way on the card
+  // you build and the card you read; one of each would be two names for one thing.
+  simpleTriggerNames?: boolean;
 }
 
 export const FlowCanvas: React.FC<FlowCanvasProps> = ({
@@ -325,6 +329,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
   selectedRun,
   leftInset = 0,
   triggerConfig = DEFAULT_TRIGGER_CONFIG,
+  simpleTriggerNames = false,
 }) => {
   const { canvasRef, onInit, size } = useCenteredColumn(leftInset);
   // Same source the shipping analytics header reads; falls back to Etc/UTC when
@@ -372,7 +377,7 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
         kind: 'trigger',
         title: 'Trigger',
         icon: triggerIcon(triggerConfig),
-        subtitle: triggerLabel(triggerConfig),
+        subtitle: triggerLabel(triggerConfig, simpleTriggerNames),
         summary: triggerSummary(triggerConfig),
         reviewLabel: triggerReviewLabel(triggerConfig ?? DEFAULT_TRIGGER_CONFIG),
         focused,

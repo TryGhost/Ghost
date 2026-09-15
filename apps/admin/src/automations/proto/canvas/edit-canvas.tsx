@@ -64,6 +64,7 @@ import { OptionPicker, type PickerOption } from '@/automations/proto/shared/opti
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
 import {
   DEFAULT_TRIGGER_CONFIG,
+  SIMPLE_TRIGGER_OPTIONS,
   TRIGGER_PICKER_OPTIONS,
   type TriggerConfig,
   type TriggerType,
@@ -156,6 +157,9 @@ type StepNodeData = {
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   // Phase-1 concept: trigger fixed after creation (see float/trigger-card-model).
   triggerLocked?: boolean;
+  // Phase 1 names its triggers more plainly and drops their descriptions — see
+  // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
+  simpleTriggerNames?: boolean;
   // Nothing chosen to start this automation yet. Its own flag rather than an
   // absent triggerConfig, because the read canvas also passes no config and means
   // something entirely different by it — "don't offer to edit this", not "this
@@ -406,7 +410,7 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
       <OptionPicker
         align="end"
         open={changeTriggerOpen}
-        options={TRIGGER_PICKER_OPTIONS}
+        options={d.simpleTriggerNames ? SIMPLE_TRIGGER_OPTIONS : TRIGGER_PICKER_OPTIONS}
         value={triggerConfig.type}
         externalAnchor
         onOpenChange={setChangeTriggerOpen}
@@ -547,7 +551,10 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                     'animate-out duration-120 ease-in fade-out-0 fill-mode-forwards motion-reduce:animate-none',
                 )}
               >
-                <TriggerEmptyState onSelect={d.onTriggerConfigChange} />
+                <TriggerEmptyState
+                  simpleNames={d.simpleTriggerNames}
+                  onSelect={d.onTriggerConfigChange}
+                />
               </div>
             ) : configurable && d.onTriggerConfigChange ? (
               // Fades in over the list it replaces, alongside the card resizing
@@ -857,7 +864,9 @@ interface EditCanvasProps {
   triggerConfig?: TriggerConfig | null;
   onTriggerConfigChange?: (next: TriggerConfig) => void;
   triggerLocked?: boolean;
-  // The screen edits exit conditions itself, so the trigger card doesn't offer them.
+  // Phase 1's plainer trigger names, with no descriptions — see
+  // SIMPLE_TRIGGER_OPTIONS. Off everywhere else.
+  simpleTriggerNames?: boolean;
   inlineAnalytics?: boolean;
 }
 
@@ -867,6 +876,7 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   triggerConfig,
   onTriggerConfigChange,
   triggerLocked = false,
+  simpleTriggerNames = false,
   inlineAnalytics = false,
 }) => {
   const { canvasRef, onInit, size, centerOn, contentHeightRef, recenter } = useCenteredColumn();
@@ -1081,12 +1091,16 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         // titles it and the way every step card names its own subject. Before that
         // the header is the question the card is asking, since the body is the list
         // of answers.
-        title: showOptions || !triggerConfig ? 'Select a trigger' : triggerLabel(triggerConfig),
+        title:
+          showOptions || !triggerConfig
+            ? 'Select a trigger'
+            : triggerLabel(triggerConfig, simpleTriggerNames),
         subtitle: '',
         selected: false,
         triggerConfig: triggerConfig ?? undefined,
         onTriggerConfigChange,
         triggerLocked,
+        simpleTriggerNames,
         triggerUnset: showOptions,
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),

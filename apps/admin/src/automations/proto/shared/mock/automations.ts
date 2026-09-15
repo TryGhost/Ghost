@@ -15,21 +15,41 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 // ---------------------------------------------------------------------------
 
 export const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
-  'welcome-series': 'Greet new members with a short onboarding sequence.',
-  'inactive-winback': 'Re-engage members who have gone quiet.',
-  'paid-upgrade-nudge': 'Nudge engaged free members toward a paid plan.',
-  'cancellation-survey': 'Ask departing members why they cancelled.',
+  'member-welcome-email-free': 'Greet new free members with a short onboarding sequence.',
+  'member-welcome-email-paid': 'Welcome members who have just started paying.',
 };
+
+// What phase 1 lists.
+//
+// Every fixture qualifies today — the invented ones are gone and only production's
+// real two are left, so this filters nothing. It stays because phase 2 and the
+// explorations are where new trigger types get tried, and the first one added will be
+// an automation a real site can't have. Phase 1 is the lane being built; it shows
+// what ships.
+//
+// Names and slugs are production's own (see ghost/core member-welcome-emails/
+// constants and the 6.46 rename migration). A site has exactly these two and no way
+// to make a third — there's no trigger column in the schema, so which member a flow
+// is for IS its slug.
+export const PHASE_1_SLUGS: readonly string[] = [
+  'member-welcome-email-free',
+  'member-welcome-email-paid',
+];
 
 const EMPTY_LEXICAL =
   '{"root":{"children":[],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 const DESIGN = 'ds_default';
 
 // Healthy scenario — strong completion, a mix of run states.
+//
+// Production's free welcome flow, by its real name and slug. Left ACTIVE despite
+// production shipping both defaults inactive: an off automation has no runs, and a
+// list where nothing has run is a poor way to look at run analytics. The status a
+// site starts with is a fact about onboarding; this fixture is here to be read.
 export const welcomeSeries: AutomationDetail = {
   id: 'auto_welcome',
-  name: 'Welcome series',
-  slug: 'welcome-series',
+  name: 'Free member welcome flow',
+  slug: 'member-welcome-email-free',
   status: 'active',
   created_at: '2026-06-01T09:00:00Z',
   updated_at: '2026-07-18T14:12:00Z',
@@ -91,60 +111,18 @@ export const welcomeSeries: AutomationDetail = {
   ],
 };
 
-// Early drop-off scenario — high exit rate, weak engagement.
-export const inactiveWinback: AutomationDetail = {
-  id: 'auto_winback',
-  name: 'Inactive win-back',
-  slug: 'inactive-winback',
-  status: 'active',
-  created_at: '2026-05-12T10:00:00Z',
-  updated_at: '2026-07-09T11:30:00Z',
-  actions: [
-    {
-      id: 'act_wb_hey',
-      type: 'send_email',
-      data: {
-        email_subject: 'We miss you',
-        email_lexical: EMPTY_LEXICAL,
-        email_design_setting_id: DESIGN,
-      },
-      stats: {
-        email_sent_count: 640,
-        email_opened_count: 205,
-        email_clicked_count: 38,
-        opened_rate: 32,
-        clicked_rate: 6,
-      },
-    },
-    { id: 'act_wb_wait', type: 'wait', data: { wait_hours: 168 } },
-    {
-      id: 'act_wb_offer',
-      type: 'send_email',
-      data: {
-        email_subject: 'Here’s 20% off to come back',
-        email_lexical: EMPTY_LEXICAL,
-        email_design_setting_id: DESIGN,
-      },
-      stats: {
-        email_sent_count: 250,
-        email_opened_count: 88,
-        email_clicked_count: 22,
-        opened_rate: 35,
-        clicked_rate: 9,
-      },
-    },
-  ],
-  edges: [
-    { source_action_id: 'act_wb_hey', target_action_id: 'act_wb_wait' },
-    { source_action_id: 'act_wb_wait', target_action_id: 'act_wb_offer' },
-  ],
-};
-
 // Steady-state scenario — moderate, healthy-ish numbers.
+//
+// Production's paid welcome flow. The export keeps its old name so the run fixtures
+// and scenario map don't all have to move for a relabel; the id is what those key on.
+//
+// Worth knowing what this one glosses over: production's paid flow fires for members
+// whose status is `paid` OR `gift` (MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES), and the
+// proto has no notion of a gifted membership anywhere.
 export const paidUpgradeNudge: AutomationDetail = {
   id: 'auto_upgrade',
-  name: 'Paid upgrade nudge',
-  slug: 'paid-upgrade-nudge',
+  name: 'Paid member welcome flow',
+  slug: 'member-welcome-email-paid',
   status: 'active',
   created_at: '2026-06-20T08:00:00Z',
   updated_at: '2026-07-15T16:45:00Z',
@@ -189,35 +167,14 @@ export const paidUpgradeNudge: AutomationDetail = {
   ],
 };
 
-// Empty / brand-new scenario — published, but nobody has enrolled yet. Stats
-// omitted (no data). Powers the empty-state design.
-export const cancellationSurvey: AutomationDetail = {
-  id: 'auto_cancellation',
-  name: 'Cancellation survey',
-  slug: 'cancellation-survey',
-  status: 'inactive',
-  created_at: '2026-07-20T13:00:00Z',
-  updated_at: '2026-07-20T13:00:00Z',
-  actions: [
-    {
-      id: 'act_cs_email',
-      type: 'send_email',
-      data: {
-        email_subject: 'Sorry to see you go',
-        email_lexical: EMPTY_LEXICAL,
-        email_design_setting_id: DESIGN,
-      },
-    },
-  ],
-  edges: [],
-};
-
-export const mockAutomations: AutomationDetail[] = [
-  welcomeSeries,
-  inactiveWinback,
-  paidUpgradeNudge,
-  cancellationSurvey,
-];
+// The whole fixture set: production's two real automations and nothing else.
+//
+// There were two more — an "Inactive win-back" and a "Cancellation survey" — invented
+// to give the analytics something varied to chew on. They went because a prototype
+// that shows automations nobody can make is answering questions about a product we
+// haven't designed, and every screen had to be read twice to work out which rows were
+// real.
+export const mockAutomations: AutomationDetail[] = [welcomeSeries, paidUpgradeNudge];
 
 export function getAutomation(id: string): AutomationDetail | undefined {
   return mockAutomations.find((a) => a.id === id);
