@@ -3,13 +3,13 @@ import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
-import { useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useLimiter, type LimitName } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
   title: string;
   description: string;
   flag: string;
-  limitName?: string;
+  limitName?: LimitName;
 };
 
 const features: Feature[] = [

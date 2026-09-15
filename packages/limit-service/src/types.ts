@@ -1,3 +1,4 @@
+import type { LimitName } from './config.ts';
 import type { Limit } from './limits.ts';
 
 import type { Knex as KnexConnection } from 'knex';
@@ -111,12 +112,12 @@ export interface LoadLimitsOptions {
  * both answer these, so a caller never has to know which it has.
  */
 export interface Limits {
-  limits: Record<string, Limit>;
-  isLimited(limitName: string): boolean;
-  isDisabled(limitName: string): boolean;
-  checkIsOverLimit(limitName: string, options?: CheckOptions): Promise<boolean>;
-  checkWouldGoOverLimit(limitName: string, options?: CheckOptions): Promise<boolean>;
+  limits: Partial<Record<LimitName, Limit>>;
+  isLimited(limitName: LimitName): boolean;
+  isDisabled(limitName: LimitName): boolean;
+  checkIsOverLimit(limitName: LimitName, options?: CheckOptions): Promise<boolean>;
+  checkWouldGoOverLimit(limitName: LimitName, options?: CheckOptions): Promise<boolean>;
   checkIfAnyOverLimit(options?: CheckOptions): Promise<boolean>;
-  errorIfIsOverLimit(limitName: string, options?: CheckOptions): Promise<void>;
-  errorIfWouldGoOverLimit(limitName: string, options?: CheckOptions): Promise<void>;
+  errorIfIsOverLimit(limitName: LimitName, options?: CheckOptions): Promise<void>;
+  errorIfWouldGoOverLimit(limitName: LimitName, options?: CheckOptions): Promise<void>;
 }

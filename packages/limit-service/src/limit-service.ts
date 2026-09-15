@@ -1,7 +1,7 @@
 import camelCase from 'lodash/camelCase.js';
 import has from 'lodash/has.js';
 
-import config from './config.ts';
+import config, { type LimitName } from './config.ts';
 import { AllowlistLimit, FlagLimit, type Limit, MaxLimit, MaxPeriodicLimit } from './limits.ts';
 import type {
   CheckOptions,
@@ -11,13 +11,16 @@ import type {
   LoadLimitsOptions,
 } from './types.ts';
 
+/** The manifest is the allowlist, so membership of it is what makes a name a limit name. */
+const isLimitName = (name: string): name is LimitName => Object.hasOwn(config, name);
+
 const messages = {
   missingErrorsConfig: `Config Missing: 'errors' is required.`,
   noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription',
 };
 
 export class LimitService implements Limits {
-  limits: Record<string, Limit> = {};
+  limits: Partial<Record<LimitName, Limit>> = {};
   errors: ErrorsModule;
 
   /**
@@ -45,7 +48,7 @@ export class LimitService implements Limits {
 
       // NOTE: config module acts as an allowlist of supported config names, where each key
       // is a name of supported config
-      if (config[name]) {
+      if (isLimitName(name)) {
         // Read under the key the host wrote, and store under the normalised one. Reading
         // under the normalised name found nothing whenever the host spelled it another
         // way, and built a limit that limited nothing.
@@ -93,7 +96,7 @@ export class LimitService implements Limits {
     });
   }
 
-  isLimited(limitName: string): boolean {
+  isLimited(limitName: LimitName): boolean {
     return !!this.limits[limitName];
   }
 
@@ -101,7 +104,7 @@ export class LimitService implements Limits {
    * Check if a limit is disabled, applicable only to limits that support the disabled flag
    * (e.g. FlagLimit). Undefined if the limit is not configured.
    */
-  isDisabled(limitName: string): boolean {
+  isDisabled(limitName: LimitName): boolean {
     // The same lookup isLimited makes, kept as one read so the limit is narrowed by it.
     const limit = this.limits[limitName];
 
@@ -118,13 +121,18 @@ export class LimitService implements Limits {
     return limit.isDisabled();
   }
 
-  async checkIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean> {
+  async checkIsOverLimit(limitName: LimitName, options: CheckOptions = {}): Promise<boolean> {
     const limit = this.limits[limitName];
 
     if (!limit) {
       return false;
     }
 
+    return this.isOver(limit, options);
+  }
+
+  /** Whether one limit reports itself as over, letting anything else it raises through. */
+  private async isOver(limit: Limit, options: CheckOptions): Promise<boolean> {
     try {
       await limit.errorIfIsOverLimit(options);
       return false;
@@ -137,7 +145,7 @@ export class LimitService implements Limits {
     }
   }
 
-  async checkWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<boolean> {
+  async checkWouldGoOverLimit(limitName: LimitName, options: CheckOptions = {}): Promise<boolean> {
     const limit = this.limits[limitName];
 
     if (!limit) {
@@ -156,7 +164,7 @@ export class LimitService implements Limits {
     }
   }
 
-  async errorIfIsOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
+  async errorIfIsOverLimit(limitName: LimitName, options: CheckOptions = {}): Promise<void> {
     const limit = this.limits[limitName];
 
     if (!limit) {
@@ -166,7 +174,7 @@ export class LimitService implements Limits {
     await limit.errorIfIsOverLimit(options);
   }
 
-  async errorIfWouldGoOverLimit(limitName: string, options: CheckOptions = {}): Promise<void> {
+  async errorIfWouldGoOverLimit(limitName: LimitName, options: CheckOptions = {}): Promise<void> {
     const limit = this.limits[limitName];
 
     if (!limit) {
@@ -178,8 +186,8 @@ export class LimitService implements Limits {
 
   /** Checks if any of the configured limits acceded */
   async checkIfAnyOverLimit(options: CheckOptions = {}): Promise<boolean> {
-    for (const limit in this.limits) {
-      if (await this.checkIsOverLimit(limit, options)) {
+    for (const limit of Object.values(this.limits)) {
+      if (await this.isOver(limit, options)) {
         return true;
       }
     }

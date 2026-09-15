@@ -22,8 +22,7 @@ import errors from '@tryghost/errors';
 import { LimitService } from '@tryghost/limit-service';
 
 // setup limit configuration
-// currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads,
-// limitStripeConnect, limitAnalytics, and limitSocialWeb
+// the limit keys the package supports are the ones named in its config module
 // all limit configs support custom "error" configuration that is a template string
 const limits = {
     // staff and member are "max" type of limits accepting "max" configuration
@@ -175,7 +174,10 @@ At the moment there are four different types of limits that limit service allows
 4. `allowList` - checks if provided value is defined in configured "allowlist". Example use case: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter.
 
 ### Supported limits
-There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`, `limitStripeConnect`, `limitAnalytics`, and `limitSocialWeb`.
+A limit has to be declared before it can be asked about. The `config` module names every
+one the package supports, and the `LimitName` type is taken from it, so a name that is not
+in there does not compile. Read that module for the current set rather than a list here,
+which is a copy that goes stale the first time a limit is added.
 
 All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
 
