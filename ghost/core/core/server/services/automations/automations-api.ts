@@ -11,6 +11,7 @@ import {
   fetchAutomationStats,
   fetchAutomationEntryStats,
   fetchAutomationStatusStats,
+  fetchAutomationRuns,
 } from './tinybird-automation-stats';
 import {
   fillEntryStats,
@@ -193,6 +194,20 @@ export async function readStatusStats(automationId: string, options: unknown = {
     ...stats,
     ...(dates.window ? { entry_window: dates.window } : {}),
   };
+}
+
+export async function browseRuns(automationId: string) {
+  await requireAutomation(automationId);
+  const runs = await fetchAutomationRuns(getTinybirdClient(), automationId);
+  if (runs === null) {
+    throw new errors.InternalServerError({ message: 'Could not load Tinybird automation runs.' });
+  }
+  // Keep member details in Core; a deleted member must not remove a run from this page.
+  const members = await repository.getRunMembers(
+    automationId,
+    runs.map((run) => run.id),
+  );
+  return runs.map((run) => ({ ...run, member: members.get(run.id) ?? null }));
 }
 
 export async function browseActionLinks(automationId: string, actionId: string) {

@@ -15,6 +15,10 @@ module.exports = {
     return apiFramework.pipeline(require('./automation-status-stats'), localUtils);
   },
 
+  get automationRuns() {
+    return apiFramework.pipeline(require('./automation-runs'), localUtils);
+  },
+
   get automationEntryStats() {
     return apiFramework.pipeline(require('./automation-entry-stats'), localUtils);
   },
