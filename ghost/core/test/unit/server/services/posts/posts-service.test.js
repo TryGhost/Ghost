@@ -257,12 +257,14 @@ describe('Posts Service', function () {
     let mockModels;
     let mockEmailService;
     let postEmailHandlerStub;
+    const transacting = {};
 
     beforeEach(function () {
       mockModels = {
         Post: {
           findOne: sinon.stub(),
           edit: sinon.stub(),
+          transaction: sinon.stub().callsFake(async (save) => save(transacting)),
         },
         Member: {
           findPage: sinon.stub(),
@@ -348,6 +350,7 @@ describe('Posts Service', function () {
 
       sinon.assert.calledOnceWithExactly(postEmailHandlerStub.createOrRetryEmail, model, {
         preflight,
+        transacting,
       });
     });
 
