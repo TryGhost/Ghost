@@ -123,6 +123,11 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
+    title: 'React member activity',
+    description: 'Preview the new member activity screen.',
+    flag: 'membersActivityReact',
+  },
+  {
     title: 'Self-serve archives',
     description:
       'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',

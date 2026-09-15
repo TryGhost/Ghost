@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { EmailAnalyticsServiceWrapper } from '../../../../../core/server/services/email-analytics/email-analytics-service-wrapper';
+import type { EmailAnalyticsFetchResult } from '../../../../../core/server/services/email-analytics/email-analytics-service';
 import { EventProcessingResult } from '../../../../../core/server/services/email-analytics/event-processing-result';
 import { Queries } from '../../../../../core/server/services/email-analytics/lib/queries';
 
@@ -21,20 +22,11 @@ describe('EmailAnalyticsServiceWrapper', function () {
     sinon.restore();
   });
 
-  function logLatestOpenedJob(logName: string) {
+  function initWrapper(logName: string, configOverrides: Record<string, unknown> = {}) {
     const wrapper = new EmailAnalyticsServiceWrapper({ logName });
     wrapper.init({
       config: {
-        get: (key) => {
-          switch (key) {
-            case 'emailAnalytics:metrics:openThroughput:enabled':
-              return true;
-            case 'emailAnalytics:metrics:openThroughput:threshold':
-              return 0;
-            default:
-              return undefined;
-          }
-        },
+        get: (key?: string) => (key ? configOverrides[key] : undefined),
       },
       domainEvents: {
         subscribe: sinon.stub(),
@@ -66,19 +58,28 @@ describe('EmailAnalyticsServiceWrapper', function () {
         metric: metricStub,
       },
     });
-    wrapper._logJobCompletion(
-      'latest-opened',
-      {
-        eventCount: 10,
-        apiPollingTimeMs: 500,
-        processingTimeMs: 1000,
-        aggregationTimeMs: 500,
-        emailAggregationTimeMs: 300,
-        memberAggregationTimeMs: 200,
-        result: new EventProcessingResult(),
-      },
-      2000,
-    );
+    return wrapper;
+  }
+
+  function createFetchResult(overrides: Partial<EmailAnalyticsFetchResult> = {}) {
+    return {
+      eventCount: 10,
+      apiPollingTimeMs: 500,
+      processingTimeMs: 1000,
+      aggregationTimeMs: 500,
+      emailAggregationTimeMs: 300,
+      memberAggregationTimeMs: 200,
+      result: new EventProcessingResult(),
+      ...overrides,
+    };
+  }
+
+  function logLatestOpenedJob(logName: string) {
+    const wrapper = initWrapper(logName, {
+      'emailAnalytics:metrics:openThroughput:enabled': true,
+      'emailAnalytics:metrics:openThroughput:threshold': 0,
+    });
+    wrapper._logJobCompletion('latest-opened', createFetchResult(), 2000);
 
     return wrapper;
   }
@@ -173,6 +174,80 @@ describe('EmailAnalyticsServiceWrapper', function () {
       completions[0][0] as string,
       /^\[Background Job\] email-analytics-fetch-latest completed in \d+ms with 1 events /,
     );
+  });
+
+  function jobCompletionLogs(infoLog: sinon.SinonStub) {
+    return infoLog.args.filter(
+      ([payload]) =>
+        (payload as { system?: { event?: string } })?.system?.event === 'job.completed',
+    );
+  }
+
+  it('includes the pipeline lag in job completion logs', function () {
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = initWrapper('newsletters');
+
+    wrapper._logJobCompletion('latest', createFetchResult(), 2000, 330);
+
+    sinon.assert.calledWith(
+      infoLog,
+      sinon.match({
+        system: sinon.match({ event: 'job.completed', task: 'latest', lag_seconds: 330 }),
+      }),
+      sinon.match(' | Lag: 5.5m | '),
+    );
+  });
+
+  it('leaves lag out of job completion logs when it is not known', function () {
+    const infoLog = sinon.stub(logging, 'info');
+
+    logLatestOpenedJob('newsletters');
+
+    const [payload, message] = jobCompletionLogs(infoLog)[0];
+    assert.equal('lag_seconds' in payload.system, false);
+    assert.doesNotMatch(message, /Lag:/);
+  });
+
+  it('logs the opened and delivery pipelines with the lag measured after their fetch', async function () {
+    const infoLog = sinon.stub(logging, 'info');
+    const wrapper = initWrapper('newsletters');
+    const fetchResult = createFetchResult({ eventCount: 1 });
+    const fetchStubs = [
+      sinon.stub(wrapper.service, 'fetchLatestOpenedEvents').resolves(fetchResult),
+      sinon.stub(wrapper.service, 'fetchLatestNonOpenedEvents').resolves(fetchResult),
+      sinon.stub(wrapper.service, 'fetchMissing').resolves(fetchResult),
+    ];
+    const pipeline = (jobName: string, lagSeconds: number) => ({
+      running: false,
+      jobName,
+      fetchedThrough: null,
+      lagSeconds,
+    });
+    const statusStub = sinon.stub(wrapper.service, 'getStatus').returns({
+      latestOpened: pipeline('email-analytics-latest-opened', 60),
+      latest: pipeline('email-analytics-latest-others', 120),
+      missing: pipeline('email-analytics-missing', 1800),
+      scheduled: { running: false, jobName: 'email-analytics-scheduled' },
+    });
+
+    await wrapper.fetchLatestOpenedEvents();
+    await wrapper.fetchLatestNonOpenedEvents();
+    await wrapper.fetchMissing();
+
+    const completions = jobCompletionLogs(infoLog).map(([payload]) => [
+      payload.system.task,
+      payload.system.lag_seconds,
+    ]);
+    // The missing-events sweep trails the delivery pipeline by design, so its lag is not logged
+    assert.deepEqual(completions, [
+      ['latest-opened', 60],
+      ['latest', 120],
+      ['missing', undefined],
+    ]);
+    // Read after each fetch, so a clean run counts as caught up
+    sinon.assert.calledTwice(statusStub);
+    assert.ok(statusStub.firstCall.calledAfter(fetchStubs[0].firstCall));
+    assert.ok(statusStub.secondCall.calledAfter(fetchStubs[1].firstCall));
   });
 
   it('skips opened event polling when the cursor seed has no opened column', async function () {

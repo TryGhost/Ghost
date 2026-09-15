@@ -207,6 +207,22 @@ describe('EmailAnalyticsService', function () {
       assert.equal(service.getStatus().latest.lagSeconds, 120);
     });
 
+    it('keeps progress unknown when the first fetch after a restart fails', async function () {
+      const service = createService({
+        queries: {
+          getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() - 2 * 24 * 60 * 60_000)),
+        },
+        fetchEvents: sinon.stub().rejects(new Error('Mailgun unavailable')),
+      });
+
+      await assert.rejects(service.fetchLatestNonOpenedEvents(), /Mailgun unavailable/);
+
+      // The restored cursor is the last processed event, which can be days old on a quiet
+      // site, so it is not treated as progress
+      assert.equal(service.getStatus().latest.fetchedThrough, null);
+      assert.equal(service.getStatus().latest.lagSeconds, null);
+    });
+
     it('does not publish progress before processing and final aggregation succeed', async function () {
       const processor = createStubEventProcessor();
       const fetchEvents = sinon.stub().callsFake(async () => {
