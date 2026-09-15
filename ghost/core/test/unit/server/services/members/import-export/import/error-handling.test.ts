@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { Readable } from 'node:stream';
 import type { Knex } from 'knex';
+import type { ImportFileStore, PutOptions } from '@tryghost/adapter-base-import-files';
 import MembersCSVImporter from '../../../../../../../core/server/services/members/import-export/import/importer';
 import type { MemberImportRow } from '../../../../../../../core/server/services/members/import-export/import/row';
 
@@ -53,27 +55,45 @@ function harness(
   const createFailures = new Map<string, unknown>();
   const archivedPrices: string[] = [];
   const jobs: Array<{ name: string; job: () => Promise<void> }> = [];
-  let spoolRemoved = false;
+  // A map-backed store: bytes go in and come out, so the rows really cross the
+  // serialisation boundary rather than being handed over as objects.
+  const stored = new Map<string, { bytes: Buffer; options: PutOptions }>();
+  const deletedKeys: string[] = [];
   // The importer reads knex once, at construction, so a test cannot swap it afterwards.
   let rollback: () => Promise<void> = async () => {};
-  let removalFailure: Error | undefined;
+  let deleteFailure: Error | undefined;
 
   const deps = {
     knex: {
       transaction: async () => ({ commit: async () => {}, rollback: () => rollback() }),
     } as unknown as Knex,
     readRows: async () => rows,
-    spool: {
-      write: async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        remove: async () => {
-          spoolRemoved = true;
-          if (removalFailure) {
-            throw removalFailure;
-          }
-        },
-      }),
-    },
+    importFiles: {
+      put: async (key: string, body: Buffer | Readable, options: PutOptions) => {
+        assert.ok(Buffer.isBuffer(body), 'the members import stores its rows as one buffer');
+        stored.set(key, { bytes: body, options });
+        return { size: body.length, contentType: options.contentType };
+      },
+      get: async (key: string) => {
+        const file = stored.get(key);
+        if (!file) {
+          throw new Error(`ENOENT: no such file or directory, open '${key}'`);
+        }
+        return Readable.from([file.bytes]);
+      },
+      head: async (key: string) => {
+        const file = stored.get(key);
+        return file ? { size: file.bytes.length, contentType: file.options.contentType } : null;
+      },
+      delete: async (key: string) => {
+        deletedKeys.push(key);
+        if (deleteFailure) {
+          throw deleteFailure;
+        }
+        stored.delete(key);
+      },
+    } as ImportFileStore,
+    newImportId: () => 'run_test',
     members: {
       get: async () => null,
       create: async (values: { email?: string; name?: string; note?: string }) => {
@@ -169,14 +189,15 @@ function harness(
       assert.equal(reported.length, 1, `expected exactly one report, got ${reported.length}`);
       return reported[0] as Error;
     },
-    spoolRemoved: () => spoolRemoved,
+    stored,
+    deletedKeys,
     failRollbackWith: (error: Error) => {
       rollback = async () => {
         throw error;
       };
     },
-    failSpoolRemovalWith: (error: Error) => {
-      removalFailure = error;
+    failDeleteWith: (error: Error) => {
+      deleteFailure = error;
     },
     failCreateFor: (email: string, error: unknown) => {
       createFailures.set(email, error);
@@ -314,14 +335,11 @@ describe('members import error handling', function () {
       assert.equal(h.onlyEmail().subject, COULD_NOT_COMPLETE);
     });
 
-    it('tells the publisher when the spooled rows cannot be read back', async function () {
+    it('tells the publisher when the stored rows cannot be read back', async function () {
       const h = harness();
-      h.deps.spool.write = async () => ({
-        read: async (): Promise<MemberImportRow[]> => {
-          throw new Error('ENOENT: no such file or directory');
-        },
-        remove: async () => {},
-      });
+      h.deps.importFiles.get = async () => {
+        throw new Error('ENOENT: no such file or directory');
+      };
 
       await h.run();
 
@@ -426,8 +444,70 @@ describe('members import error handling', function () {
     });
   });
 
+  describe('the stored rows', function () {
+    it('are kept under the import id and deleted once the import has run', async function () {
+      const h = harness();
+
+      await h.run();
+
+      assert.equal(h.stored.size, 0, 'the rows are deleted once the import has run');
+      assert.deepEqual(h.deletedKeys, ['members-import/run_test/rows.ndjson']);
+      assert.deepEqual(h.created, ['first@example.com', 'second@example.com']);
+    });
+
+    it('are read back whatever the line endings, ignoring blank lines', async function () {
+      const h = harness();
+      const rows = [row('first@example.com'), row('second@example.com')];
+      h.deps.importFiles.get = async () =>
+        Readable.from([Buffer.from(`${rows.map((r) => JSON.stringify(r)).join('\r\n')}\r\n\r\n`)]);
+
+      await h.run();
+
+      assert.deepEqual(h.created, ['first@example.com', 'second@example.com']);
+    });
+
+    it('cannot be stored: the request is rejected and nothing is queued', async function () {
+      const h = harness();
+      h.deps.importFiles.put = async () => {
+        throw new Error('EACCES: permission denied');
+      };
+
+      await assert.rejects(
+        h.importer.importCSV(
+          { filePath: 'members.csv', requestUserEmail: 'importer@example.com' },
+          { testImportThreshold: async () => {} },
+        ),
+        /EACCES/,
+      );
+
+      assert.deepEqual(h.sent, []);
+      assert.deepEqual(h.reported, []);
+      assert.deepEqual(h.created, []);
+    });
+
+    it('carry the ndjson content type and one line per row', async function () {
+      const h = harness();
+      let written: { key: string; bytes: Buffer; options: PutOptions } | undefined;
+      const put = h.deps.importFiles.put;
+      h.deps.importFiles.put = async (key, body, options) => {
+        written = { key, bytes: body as Buffer, options };
+        return put(key, body, options);
+      };
+
+      await h.run();
+
+      assert.equal(written?.options.contentType, 'application/x-ndjson');
+      const lines = written!.bytes.toString('utf8').split('\n');
+      assert.equal(lines.at(-1), '', 'the file ends with a newline');
+      assert.deepEqual(
+        lines.slice(0, -1).map((line) => JSON.parse(line).email),
+        ['first@example.com', 'second@example.com'],
+      );
+    });
+  });
+
   describe('whatever else fails', function () {
-    it('always removes the spooled rows', async function () {
+    it('always deletes the stored rows', async function () {
       const h = harness();
       h.deps.tiers.getDefault = async () => {
         throw new Error('Database is gone');
@@ -435,12 +515,13 @@ describe('members import error handling', function () {
 
       await h.run();
 
-      assert.equal(h.spoolRemoved(), true);
+      assert.equal(h.deletedKeys.length, 1);
+      assert.equal(h.stored.size, 0);
     });
 
-    it('reports rows left on disk without silencing the publisher', async function () {
+    it('reports rows left in the store without silencing the publisher', async function () {
       const h = harness();
-      h.failSpoolRemovalWith(new Error('EACCES: permission denied'));
+      h.failDeleteWith(new Error('EACCES: permission denied'));
 
       await h.run();
 
@@ -448,15 +529,12 @@ describe('members import error handling', function () {
       assert.match(h.onlyReport().message, /EACCES/);
     });
 
-    it('survives a spool that throws before it returns a promise', async function () {
+    it('survives a store that throws before it returns a promise', async function () {
       const h = harness();
-      h.deps.spool.write = async (spooledRows: MemberImportRow[]) => ({
-        read: async () => spooledRows,
-        // Synchronous, so .catch() on the returned promise would never see it.
-        remove: (() => {
-          throw new Error('EACCES: permission denied');
-        }) as unknown as () => Promise<void>,
-      });
+      // Synchronous, so .catch() on the returned promise would never see it.
+      h.deps.importFiles.delete = (() => {
+        throw new Error('EACCES: permission denied');
+      }) as unknown as ImportFileStore['delete'];
 
       await h.run();
 

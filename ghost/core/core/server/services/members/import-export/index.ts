@@ -10,13 +10,14 @@ import MembersCSVImporter, {
   type FailureReporter,
 } from './import/importer';
 import readMemberRows from './import/reader';
-import { createRowSpool } from './import/spool';
+import { getStore as getImportFileStore } from '../../import-files';
 import MembersCSVExporter, {
   type ExportOptions,
   type MetafieldDefinition,
 } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
+const ObjectID = require('bson-objectid').default;
 const db = require('../../../data/db');
 const models = require('../../../models');
 const logging = require('@tryghost/logging');
@@ -151,7 +152,10 @@ export function makeImporter(deps: ImporterServices) {
   return new MembersCSVImporter({
     knex: deps.knex,
     readRows: readMemberRows,
-    spool: createRowSpool(),
+    // Resolved at boot before this root is built, so the deferred rows go wherever
+    // the operator's import-files adapter puts them.
+    importFiles: getImportFileStore(),
+    newImportId: () => new ObjectID().toHexString(),
     members,
     tiers: {
       getDefault: deps.getDefaultTier,

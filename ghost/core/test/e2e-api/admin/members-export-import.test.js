@@ -325,9 +325,9 @@ describe('Members export -> import round-trip', function () {
     );
   });
 
-  // A row with a Stripe customer id is not imported inline; the importer spools it to a
-  // background job as JSON first. This case proves the custom-field columns survive that
-  // spool, which the inline path never exercises.
+  // A row with a Stripe customer id is not imported inline; the importer stores the rows
+  // for a background job as JSON first. This case proves the custom-field columns survive
+  // that round trip, which the inline path never exercises.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
     mockManager.mockLabsEnabled('membersCustomFields');
 
@@ -388,7 +388,7 @@ describe('Members export -> import round-trip', function () {
     // Re-import the addressed and plain members under fresh emails so they are created
     // from the CSV -- the address must come from the import, not the setup PUT above.
     // The other seeded members keep their emails (the Stripe column still defers, so the
-    // JSON spool carrying the columns is exercised too).
+    // stored JSON rows carrying the columns are exercised too).
     const freshCore = 'rtaddr-fresh-core@example.com';
     const freshPlain = 'rtaddr-fresh-plain@example.com';
     await reimport(csv.replace(emails.core, freshCore).replace(plainEmail, freshPlain));
@@ -411,7 +411,7 @@ describe('Members export -> import round-trip', function () {
         postal_code: 'E1 6AN',
         country: 'GB',
       },
-      'the address is written from the import, through the spool',
+      'the address is written from the import, through the stored rows',
     );
 
     // A member whose address cells are all blank gets no address written.
