@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { editorScheduleCountdown, editorStatus } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
+import { EDITOR_REQUEST_OPTIONS } from './request-options';
+import { useSiteTimezone } from './use-editor-settings';
 import type { SaveEngineState } from './engine/save-engine';
 import {
   type EditorStatusRecord,
@@ -19,7 +21,7 @@ function members(count: number): string {
 
 /** The send's audience, counted the way the publish flow counts it. */
 export function RecipientCount({ filter, segment }: { filter: string; segment: string }) {
-  const { count } = useMembersCount(filter);
+  const { count } = useMembersCount(filter, { requestOptions: EDITOR_REQUEST_OPTIONS });
   return <>{typeof count === 'number' ? members(count) : membersCountString(segment, { count })}</>;
 }
 
@@ -39,7 +41,7 @@ function ScheduleCountdown({
   return (
     <time
       className="text-state-success"
-      data-testid="editor-schedule-countdown"
+      data-testid={editorScheduleCountdown}
       dateTime={publishedAt ?? undefined}
     >
       {emailOnly ? 'to be sent' : 'to be published'}
@@ -65,7 +67,7 @@ function StatusBody({
 }) {
   switch (view.kind) {
     case 'problem':
-      return <Text className="text-state-danger">{view.message}</Text>;
+      return <Text className="text-destructive">{view.message}</Text>;
     case 'saving':
       return <Text tone="secondary">Saving…</Text>;
     case 'new':
@@ -127,8 +129,7 @@ export interface EditorStatusProps {
 
 /** Where the post stands: its status, the newsletter, and the last save. */
 export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
-  const { data: settingsData } = useBrowseSettings();
-  const timezone = getSettingValue<string>(settingsData?.settings ?? null, 'timezone') ?? 'Etc/UTC';
+  const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
   const [, setTick] = useState(0);
@@ -151,7 +152,7 @@ export function EditorStatus({ state, record, isDirty }: EditorStatusProps) {
     <Inline
       align="center"
       className="text-sm"
-      data-testid="editor-status"
+      data-testid={editorStatus}
       gap="xs"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

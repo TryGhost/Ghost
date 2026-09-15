@@ -502,6 +502,17 @@ async function initBackgroundServices({ config }) {
   }
 
   // Runs before activitypub.init for the same reason as the gift cleanup
+  // above: reminders would otherwise go unsent for the life of the process
+  // if an unrelated background service fails.
+  try {
+    const giftJobs = require('./server/services/gifts/jobs');
+    await giftJobs.scheduleGiftReminderJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  // Runs before activitypub.init for the same reason as the gift cleanup
   // above: tokens and expired comped subscriptions would otherwise go
   // uncleaned for the life of the process if an unrelated background
   // service fails.
@@ -531,6 +542,12 @@ async function initBackgroundServices({ config }) {
       emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
       emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
     ]);
+  }
+
+  const labs = require('./shared/labs');
+  if (labs.isSet('automationsTinybirdSync')) {
+    const tinybirdSync = require('./server/services/tinybird-sync');
+    tinybirdSync.start();
   }
 
   try {
@@ -569,7 +586,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   // We need access to these variables in both the try and catch block
   let bootLogger;
   let config;
-  let flushLogs;
+  let flushLogsAndMetrics;
   let ghostServer;
   let logging;
   let metrics;
@@ -592,7 +609,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('Begin: Load logging');
     logging = require('@tryghost/logging');
     metrics = require('@tryghost/metrics');
-    flushLogs = require('./shared/flush-logs').flushLogs;
+    flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
     bootLogger = new BootLogger(logging, metrics, startTime);
     debug('End: Load logging');
 
@@ -719,7 +736,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // If we pass the env var, kill Ghost
     if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
-      await flushLogs();
+      await flushLogsAndMetrics();
       process.exit(0);
     }
 
@@ -753,7 +770,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       ghostServer.shutdown(2);
     } else {
       // Ghost server failed to start, drain the log transports before exiting
-      await flushLogs();
+      await flushLogsAndMetrics();
       process.exit(2);
     }
   }

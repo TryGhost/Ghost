@@ -63,7 +63,7 @@ module.exports = class MentionDiscoveryService {
       return null;
     }
 
-    const cheerio = require('cheerio');
+    const cheerio = require('cheerio/slim');
     const $ = cheerio.load(response.body);
 
     // must be first <link> OR <a> element with rel=webmention

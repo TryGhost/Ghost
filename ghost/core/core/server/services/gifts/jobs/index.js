@@ -1,7 +1,6 @@
-const path = require('path');
 const logging = require('@tryghost/logging');
-const jobManager = require('../../jobs');
 const CleanGiftsJob = require('./clean-gifts-job').default;
+const SendGiftRemindersJob = require('./send-gift-reminders-job').default;
 
 let hasScheduled = {
   cleanup: false,
@@ -23,25 +22,6 @@ function randomOffPeakDailyCron() {
   return `${s} ${m} ${h} * * *`;
 }
 
-function scheduleJob(key, name, jobFile) {
-  if (alreadyScheduledOrTest(key)) {
-    return hasScheduled[key];
-  }
-
-  const at = randomOffPeakDailyCron();
-
-  logging.info(`[Background Job] ${name} scheduled at ${at}`);
-  jobManager.addJob({
-    at,
-    job: path.resolve(__dirname, jobFile),
-    name,
-  });
-
-  hasScheduled[key] = true;
-
-  return true;
-}
-
 module.exports = {
   async scheduleGiftCleanupJob(jobsService) {
     if (alreadyScheduledOrTest('cleanup')) {
@@ -55,7 +35,15 @@ module.exports = {
     hasScheduled.cleanup = true;
   },
 
-  scheduleGiftReminderJob() {
-    return scheduleJob('reminders', 'send-gift-reminders', 'send-gift-reminders-job.js');
+  async scheduleGiftReminderJob(jobsService) {
+    if (alreadyScheduledOrTest('reminders')) {
+      return;
+    }
+
+    const cron = randomOffPeakDailyCron();
+    logging.info(`[Background Job] send-gift-reminders scheduled at ${cron}`);
+    await jobsService.scheduleRecurring(new SendGiftRemindersJob(), { cron });
+
+    hasScheduled.reminders = true;
   },
 };

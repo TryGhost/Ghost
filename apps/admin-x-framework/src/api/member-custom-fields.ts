@@ -1,6 +1,7 @@
 import {
   FIELD_TYPES,
   FIELD_TYPE_IDS,
+  type MemberAccess,
   partTypesOf,
   subFieldsOf,
   type FieldKind,
@@ -37,9 +38,47 @@ export type MemberCustomField = {
   // Browse hides archived fields by default (most surfaces only want active
   // ones); Settings opts in via filter and splits on this.
   status: 'active' | 'archived';
+  access: { member: MemberCustomFieldAccess };
   created_at: string;
   updated_at: string | null;
 };
+
+// The levels themselves are the shared vocabulary; what a publisher is told they mean
+// is presentation, and stays below.
+export type MemberCustomFieldAccess = MemberAccess;
+
+export const MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS: {
+  value: MemberCustomFieldAccess;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: 'none',
+    label: 'Only staff',
+    description: 'Members never see this field or what you record in it',
+  },
+  {
+    value: 'read',
+    label: 'Members can view',
+    description: 'Shown in their account, but only staff can change it',
+  },
+  {
+    value: 'write',
+    label: 'Members can edit',
+    description: 'Members fill this in and keep it up to date themselves',
+  },
+];
+
+/**
+ * The words a publisher reads for a level.
+ *
+ * A level this build does not know shows as itself rather than falling back to the
+ * closed label: the fallback would tell a publisher a field is staff-only when the
+ * server may be treating it as open, and a label that reassures is worse than one
+ * that reads oddly. Reachable only from a Core newer than this Admin.
+ */
+export const memberAccessLabel = (access: MemberCustomFieldAccess): string =>
+  MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS.find((option) => option.value === access)?.label ?? access;
 
 /**
  * The user-type catalog: the presentation layer over the shared field types.
@@ -323,10 +362,16 @@ export const useBrowseMemberCustomFieldsIncludingArchived = (
 ) =>
   useBrowseMemberCustomFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });
 
-// The backend mints the key from the name, so create takes just a name and a type.
+/** Everything a new field is created from. The backend mints the key from the name. */
+export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'>;
+
+/** A change to one field, addressed by key. Anything omitted is left as it is. */
+export type MemberCustomFieldEdit = Pick<MemberCustomField, 'key'> &
+  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>>;
+
 export const useCreateMemberCustomField = createMutation<
   MemberCustomFieldsResponseType,
-  Pick<MemberCustomField, 'name' | 'type'>
+  NewMemberCustomField
 >({
   method: 'POST',
   path: () => '/members/metafields/custom/',
@@ -357,12 +402,12 @@ export const useCreateMemberCustomField = createMutation<
   },
 });
 
-// Keys are immutable after creation (the API rejects changes); `name` and
-// `status` are the editable surface — a status flip to 'active' is how an
-// archived field is reactivated.
+// Keys are immutable after creation (the API rejects changes); `name`, `status` and
+// `access` are the editable surface — a status flip to 'active' is how an archived
+// field is reactivated, and an access change is what opens a field to members.
 export const useEditMemberCustomField = createMutation<
   MemberCustomFieldsResponseType,
-  Pick<MemberCustomField, 'key'> & Partial<Pick<MemberCustomField, 'name' | 'status'>>
+  MemberCustomFieldEdit
 >({
   method: 'PUT',
   path: (field) => `/members/metafields/custom/${field.key}/`,

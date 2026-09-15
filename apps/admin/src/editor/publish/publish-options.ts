@@ -9,6 +9,7 @@ import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type {
   PublishOptions as PublishCommandOptions,
   ScheduleOptions as ScheduleCommandOptions,
+  SaveCompletion,
 } from '@/editor/engine/save-engine';
 
 /** The server rejects a schedule in the past; the picker floor sits just ahead of now. */
@@ -151,6 +152,8 @@ export interface PublishOptionsState {
   readonly canPublish: boolean;
   readonly isDirty: boolean;
 }
+
+export type PublishDispatcher = (dispatch: PublishDispatch) => Promise<SaveCompletion>;
 
 export type PublishDispatch =
   | { kind: 'publish'; options: PublishCommandOptions }

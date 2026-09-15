@@ -20,9 +20,19 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Automations per tier',
+    description: 'Allow automations to be configured for individual tiers.',
+    flag: 'automationsPerTier',
+  },
+  {
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',
+  },
+  {
+    title: 'Automations Tinybird sync',
+    description: 'Sync automations data to Tinybird.',
+    flag: 'automationsTinybirdSync',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -43,11 +53,6 @@ const features: Feature[] = [
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Admin 7 page chrome',
-    description: 'Enable the new Admin page chrome on desktop in light mode.',
-    flag: 'admin7PageChrome',
   },
   {
     title: 'Tags X',
@@ -116,6 +121,11 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
+  },
+  {
+    title: 'React member activity',
+    description: 'Preview the new member activity screen.',
+    flag: 'membersActivityReact',
   },
   {
     title: 'Self-serve archives',

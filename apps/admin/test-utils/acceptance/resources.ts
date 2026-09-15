@@ -24,6 +24,7 @@ import {
   type Tier,
 } from '@tryghost/test-data';
 
+import { MEMBER_COUNT_PROBE_PATH } from './boot';
 import {
   fakeAdminEndpoint,
   record418,
@@ -240,15 +241,12 @@ export const fakeComments = defineResource<Comment>({
   semantics: { kind: 'passthrough' },
 });
 
-/** The sidebar's global member-count probe — shell chrome, served by the boot table. */
-const MEMBER_COUNT_PROBE_PATH = '/members/?limit=1';
-
 const membersResource = defineResource<Member>({
   resource: 'members',
   semantics: { kind: 'passthrough' },
-  // Leave the sidebar count probe to the boot table so it never pollutes
+  // Leave the site-wide count probe to the boot table so it never pollutes
   // `lastRequest` assertions.
-  skip: (apiPath) => apiPath === MEMBER_COUNT_PROBE_PATH,
+  skip: (apiPath) => MEMBER_COUNT_PROBE_PATH.test(apiPath),
 });
 
 /**

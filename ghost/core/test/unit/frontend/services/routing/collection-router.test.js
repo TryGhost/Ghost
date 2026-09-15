@@ -7,7 +7,7 @@ const controllers = require('../../../../../core/frontend/services/routing/contr
 const CollectionRouter = require('../../../../../core/frontend/services/routing/collection-router');
 const RESOURCE_CONFIG = { QUERY: { post: { controller: 'postsPublic', resource: 'posts' } } };
 
-describe('UNIT - services/routing/CollectionRouter', function () {
+describe('services/routing/CollectionRouter', function () {
   let req;
   let res;
   let next;

@@ -22,6 +22,7 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
+  BrowseOptions,
   EditAutomationData,
   Page,
 } from './automations-repository';
@@ -53,29 +54,29 @@ const messages = {
 
 const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
-interface AutomationRow {
+type AutomationRow = {
   id: string;
   slug: string;
   name: string;
   status: string;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
-}
+};
 
-interface AutomationBrowseRow extends AutomationRow {
+type AutomationBrowseRow = AutomationRow & {
   last_run_created_at: DatabaseDate | null;
   total_run_count: string | number | null;
   in_progress_run_count: string | number | null;
-}
+};
 
-interface ActionRow {
+type ActionRow = {
   id: string;
   type: 'wait' | 'send_email';
   wait_hours: number | null;
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
-}
+};
 
 type ActionStatsRow = {
   action_id: string;
@@ -98,10 +99,10 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-interface EdgeRow {
+type EdgeRow = {
   source_action_id: string;
   target_action_id: string;
-}
+};
 
 type NextActionRevisionRow = {
   automation_id: string;
@@ -160,14 +161,16 @@ export function createDatabaseAutomationsRepository({
   fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
   return {
-    async browse(): Promise<Page<AutomationBrowseResult>> {
+    async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
       return await knex.transaction(async (trx) => {
         await ensureDefaultAutomations(trx);
-        const rows = await loadAutomations(trx);
+        const data = includeStats
+          ? (await loadAutomationsWithStats(trx)).map((row) => buildAutomationBrowseResult(row))
+          : (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
         return {
-          data: rows.map((row) => buildAutomationBrowseResult(row)),
+          data,
           meta: {
-            pagination: buildPagination(rows.length),
+            pagination: buildPagination(data.length),
           },
         };
       });
@@ -1070,7 +1073,13 @@ async function loadAutomationBySlug(
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+  return await trx('automations')
+    .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+    .orderBy('name');
+}
+
+async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
   const inProgressRuns = trx('automation_run_steps')
     .distinct('automation_run_id')
     .where('status', 'pending')

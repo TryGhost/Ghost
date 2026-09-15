@@ -942,7 +942,10 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         body.cadence = cadence;
       }
 
-      return makeRequest({
+      // Thrown rather than returned: `fetch` treats a refusal as a response, so a
+      // caller that only awaits this would carry on and tell the member their plan
+      // changed when it did not.
+      const res = await makeRequest({
         url,
         method: 'PUT',
         headers: {
@@ -950,6 +953,12 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         },
         body: JSON.stringify(body),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to update subscription');
+      }
+
+      return res;
     },
 
     async offers() {

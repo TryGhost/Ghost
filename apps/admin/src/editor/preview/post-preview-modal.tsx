@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   EmptyIndicator,
   LoadingIndicator,
   Select,
@@ -22,7 +18,6 @@ import {
 } from '@tryghost/shade/components';
 import {
   getSettingValue,
-  useBrowseSettings,
   useNewslettersEnabled,
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
@@ -41,6 +36,9 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
+import { useEditorSettings } from '@/editor/use-editor-settings';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
 import {
@@ -70,6 +68,8 @@ interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Awaited before the preview renders, so the caller can save the draft first. */
   onBeforeOpen?: () => Promise<void>;
+  /** Supplied while a publish flow is open behind the preview, which this returns to. */
+  onReturnToPublish?: () => void;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -80,6 +80,7 @@ export function PostPreviewModal({
   isPost = true,
   newsletterSlug,
   onBeforeOpen,
+  onReturnToPublish,
   onOpenChange,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
@@ -93,10 +94,10 @@ export function PostPreviewModal({
   const [wasOpen, setWasOpen] = useState(open);
 
   const handleError = useHandleError();
-  const { data: currentUser } = useCurrentUser();
-  const { data: settingsData } = useBrowseSettings();
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const newslettersEnabled = useNewslettersEnabled();
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
+  const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
   const membersEnabled =
     getSettingValue<boolean>(settingsData?.settings ?? [], 'members_enabled') === true;
   const emailAvailable =
@@ -275,14 +276,11 @@ export function PostPreviewModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="top-0 left-0 grid h-dvh w-dvw max-w-none translate-x-0 grid-rows-[auto_1fr] gap-0 rounded-none p-0"
-        data-testid="post-preview-modal"
-      >
-        <DialogHeader className="flex-row items-center justify-between gap-4 border-b border-border-default p-4">
-          <DialogTitle className="text-lg">Preview</DialogTitle>
+    <FullscreenDialog
+      aria-describedby={undefined}
+      data-testid={postPreviewModal}
+      headerActions={
+        <>
           <Inline gap="md">
             {emailAvailable && (
               <Tabs
@@ -381,54 +379,65 @@ export function PostPreviewModal({
                 Open in new tab
               </Button>
             )}
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
-          </Inline>
-        </DialogHeader>
-        <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
-          {prepareState === 'preparing' ? (
-            <Inline align="center" className="grow" gap="none" justify="center">
-              <LoadingIndicator size="lg" />
-            </Inline>
-          ) : prepareState === 'failed' ? (
-            <EmptyIndicator
-              actions={
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    preparePromise.current = null;
-                    setPrepareState('preparing');
-                  }}
-                >
-                  Retry
-                </Button>
-              }
-              className="grow justify-center"
-              data-testid="post-preview-save-failed"
-              description="Saving the post failed, so there is nothing new to preview."
-              title="Couldn’t preview this post"
+            <Button
+              variant={onReturnToPublish ? 'outline' : 'default'}
+              onClick={() => onOpenChange(false)}
             >
-              <LucideIcon.TriangleAlert />
-            </EmptyIndicator>
-          ) : showEmail ? (
-            <EmailPreview
-              audience={audience}
-              canSendTestEmail={testEmailAvailable}
-              device={device}
-              newsletterLookupError={newsletterLookupError}
-              newsletterLookupPending={newsletterLookupPending}
-              newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
-              newsletters={newsletters}
-              newsletterSlug={selectedNewsletterSlug}
-              postId={postId}
-              tierName={selectedTier?.name}
-              onNewsletterChange={setPickedNewsletterSlug}
-              onRetryNewsletterLookup={retryNewsletterLookup}
-            />
-          ) : (
-            <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
-          )}
-        </Inline>
-      </DialogContent>
-    </Dialog>
+              Close
+            </Button>
+            {onReturnToPublish ? <Button onClick={onReturnToPublish}>Publish</Button> : null}
+          </Inline>
+        </>
+      }
+      layout="header"
+      open={open}
+      title="Preview"
+      onOpenChange={onOpenChange}
+    >
+      <Inline className="min-h-0 overflow-auto bg-surface-panel p-6" gap="none" justify="center">
+        {prepareState === 'preparing' ? (
+          <Inline align="center" className="grow" gap="none" justify="center">
+            <LoadingIndicator size="lg" />
+          </Inline>
+        ) : prepareState === 'failed' ? (
+          <EmptyIndicator
+            actions={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  preparePromise.current = null;
+                  setPrepareState('preparing');
+                }}
+              >
+                Retry
+              </Button>
+            }
+            className="grow justify-center"
+            data-testid={postPreviewSaveFailed}
+            description="Saving the post failed, so there is nothing new to preview."
+            title="Couldn’t preview this post"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : showEmail ? (
+          <EmailPreview
+            audience={audience}
+            canSendTestEmail={testEmailAvailable}
+            device={device}
+            newsletterLookupError={newsletterLookupError}
+            newsletterLookupPending={newsletterLookupPending}
+            newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
+            newsletters={newsletters}
+            newsletterSlug={selectedNewsletterSlug}
+            postId={postId}
+            tierName={selectedTier?.name}
+            onNewsletterChange={setPickedNewsletterSlug}
+            onRetryNewsletterLookup={retryNewsletterLookup}
+          />
+        ) : (
+          <BrowserPreview audience={audience} device={device} previewUrl={previewUrl} />
+        )}
+      </Inline>
+    </FullscreenDialog>
   );
 }

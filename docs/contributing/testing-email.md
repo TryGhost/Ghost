@@ -16,6 +16,25 @@ Use Mailpit for ordinary local work. It is quick, keeps test messages on your
 machine, and does not require provider credentials. It does not exercise the
 Mailgun API used for newsletters and other bulk email.
 
+## Capture bulk email in Mailpit
+
+To capture newsletters and other bulk email locally, run:
+
+```bash
+pnpm dev:fake-mailgun
+```
+
+This starts the full development environment, including the Admin and Portal
+watchers, plus the E2E fake Mailgun server running in Docker. Ghost sends bulk email to the fake
+Mailgun API, which personalizes each recipient's message and forwards it to
+[Mailpit](http://localhost:8025). Transactional email continues to use Mailpit
+over SMTP. No Mailgun credentials or local configuration files are needed.
+
+The fake server is only exposed on the internal Docker network. Compose waits
+for Mailpit and fake Mailgun to be healthy before starting Ghost. Press `Ctrl+C`
+to stop the development environment; database and content volumes are preserved.
+Run one development variant at a time.
+
 ## Test with Mailgun
 
 Use the Mailgun development variant when the provider interaction is part of

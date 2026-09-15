@@ -1,29 +1,73 @@
 import type { Knex } from 'knex';
+import { readableLevels, type Audience } from './access';
 import { FIELD_STATUS } from './schema';
 
 const FIELDS_TABLE = 'members_metafields';
 
-// Archived fields must stay out of every read and write, and nothing in the database
-// enforces that — no constraint stops a value row referencing an archived field. A query
-// that forgets the filter is a silent bug, so the filter lives in one place.
+// Nothing in the database keeps an archived or hidden field out of a read: no
+// constraint stops a value row referencing one. Both filters are therefore applied in
+// code, and a query that forgets either is a silent bug.
 
-/** Takes the executor so the same query runs standalone or inside a write's transaction. */
-export function activeFields(db: Knex) {
-  return db(FIELDS_TABLE).where('status', FIELD_STATUS.active);
+export function readableBy<T extends Knex.QueryBuilder>(query: T, audience: Audience): T {
+  query.whereIn(`${FIELDS_TABLE}.member_access`, readableLevels(audience));
+  return query;
 }
 
 /**
- * A narrowed query against the definitions table, whatever it has narrowed by.
+ * Whether a read includes definitions the publisher has archived.
  *
- * Named rather than inferred from `activeFields`, so a caller that narrows some other way —
- * one key, a publisher's filter — states the same type instead of asserting its way back to
- * it.
+ * A member is never offered an archived field. Staff managing the list are always
+ * shown one, since an archived field is still theirs to rename, restore or delete.
  */
-export type DefinitionQuery = ReturnType<typeof activeFields>;
+export const ACTIVE_ONLY = 'active-only';
+export const ANY_STATUS = 'any-status';
+export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
-/** One field by key, as the same kind of query the rest of this reads through. */
-export function fieldByKey(db: Knex, key: string): DefinitionQuery {
-  return db(FIELDS_TABLE).where(`${FIELDS_TABLE}.key`, key);
+declare const scoped: unique symbol;
+
+// Unannotated so the builder keeps the row type knex derives from the table
+// registration; naming a type here would both lose that and make the alias below
+// refer to itself.
+function metafieldsTable(db: Knex) {
+  return db(FIELDS_TABLE);
+}
+
+/**
+ * A query built by `definitions()`, carrying both filters.
+ *
+ * knex's builder methods return an unbranded type, so chaining anything onto one of
+ * these drops the mark and it stops satisfying this type. Narrow by passing what you
+ * need to `definitions()` instead.
+ */
+export type DefinitionQuery = ReturnType<typeof metafieldsTable> & { readonly [scoped]: true };
+
+export function definitions(
+  db: Knex,
+  scope: {
+    audience: Audience;
+    status: StatusScope;
+    key?: string;
+    /** A publisher's NQL filter, applied under the two filters below rather than over them. */
+    filter?: (query: Knex.QueryBuilder) => Knex.QueryBuilder;
+    limit?: number;
+  },
+): DefinitionQuery {
+  let query = metafieldsTable(db);
+
+  if (scope.filter) {
+    query = scope.filter(query);
+  }
+  if (scope.key !== undefined) {
+    query = query.where(`${FIELDS_TABLE}.key`, scope.key);
+  }
+  if (scope.status === ACTIVE_ONLY) {
+    query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
+  }
+  if (scope.limit !== undefined) {
+    query = query.limit(scope.limit);
+  }
+
+  return readableBy(query, scope.audience) as DefinitionQuery;
 }
 
 /**

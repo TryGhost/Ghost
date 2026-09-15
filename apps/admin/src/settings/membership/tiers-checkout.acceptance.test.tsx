@@ -26,6 +26,7 @@ const addressField: MemberCustomField = {
   name: 'Shipping Address',
   type: 'address',
   status: 'active',
+  access: { member: 'none' },
   created_at: '2026-07-13T00:00:00.000Z',
   updated_at: null,
 };
@@ -301,8 +302,10 @@ describe('Tier checkout collection', () => {
     await expect
       .element(modal.getByLabelText('Save recipient name as'))
       .toHaveTextContent(created.name);
+    // Closed, like any other field a publisher makes by hand. The picker only appears
+    // when the setting for opening one to members does too.
     expect(createApi.lastRequest?.body).toEqual({
-      members_metafields: [{ name: created.name, type: 'short_text' }],
+      members_metafields: [{ name: created.name, type: 'short_text', access: { member: 'none' } }],
     });
   });
 

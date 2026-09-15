@@ -2,14 +2,15 @@
 
 `<PostPreviewModal>` shows a post as its readers will get it: rendered by the site (Web) or rendered as the newsletter it would be sent as (Email). It is self-contained — the caller supplies the post's identity and preview URL, and the modal reads everything else (settings, tiers, newsletters, the current user, the email preview) from the Admin API.
 
-| Prop             | Meaning                                                                          |
-| ---------------- | -------------------------------------------------------------------------------- |
-| `open`           | Whether the modal is shown; `onOpenChange` reports closing                       |
-| `postId`         | Identifies the post for the email preview and test-send endpoints                |
-| `previewUrl`     | The post's public preview URL; empty until the post has a uuid                   |
-| `isPost`         | Pages have no email preview                                                      |
-| `newsletterSlug` | The post's own newsletter, preselected in the email preview                      |
-| `onBeforeOpen`   | Awaited before the preview renders, so the caller can save the draft it previews |
+| Prop                | Meaning                                                                                |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `open`              | Whether the modal is shown; `onOpenChange` reports closing                             |
+| `postId`            | Identifies the post for the email preview and test-send endpoints                      |
+| `previewUrl`        | The post's public preview URL; empty until the post has a uuid                         |
+| `isPost`            | Pages have no email preview                                                            |
+| `newsletterSlug`    | The post's own newsletter, preselected in the email preview                            |
+| `onBeforeOpen`      | Awaited before the preview renders, so the caller can save the draft it previews       |
+| `onReturnToPublish` | Renders a Publish button; supplied while a publish flow stands open behind the preview |
 
 The modal never writes to the post. `onBeforeOpen` exists because a draft must be persisted before the site or the email renderer can see the latest content; what that means — dirty checks, a save in flight — belongs to the caller.
 

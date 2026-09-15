@@ -6,7 +6,7 @@ import {
   getNewsletterRecipientFilter,
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
-import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
 import type { SaveEngineState } from './engine/save-engine';
 
 /** How long "Saving…" stays on screen once a save starts, so it is noticeable. */
@@ -14,17 +14,12 @@ export const SAVING_MIN_DISPLAY_MS = 3000;
 
 export type EmailDeliveryStatus = 'pending' | 'submitting' | 'submitted' | 'failed';
 
-export interface EditorStatusNewsletter {
-  slug: string;
-  visibility?: string;
-}
-
 export interface EditorStatusRecord {
   status?: PostStatus;
   publishedAt?: string | null;
   url?: string;
   emailOnly?: boolean;
-  newsletter?: EditorStatusNewsletter | null;
+  newsletter?: Pick<PostNewsletter, 'slug' | 'visibility'> | null;
   emailSegment?: string | null;
   /** An email record exists, so the send has already been handed over. */
   hasEmail?: boolean;

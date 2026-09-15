@@ -184,6 +184,12 @@ module.exports = {
       nullable: true,
       validations: { isLength: { max: 300 } },
     },
+    auto_excerpt: {
+      type: 'string',
+      maxlength: 500,
+      nullable: true,
+    },
+    reading_time: { type: 'integer', unsigned: true, nullable: true },
     codeinjection_head: { type: 'text', maxlength: 65535, nullable: true },
     codeinjection_foot: { type: 'text', maxlength: 65535, nullable: true },
     custom_template: { type: 'string', maxlength: 100, nullable: true },
@@ -1053,6 +1059,18 @@ module.exports = {
       nullable: false,
       defaultTo: 'active',
       validations: { isIn: [['active', 'archived']] },
+    },
+    // These validations never run: they are applied by Bookshelf's onValidate hook,
+    // and this table has no Bookshelf model — the metafields service writes it through
+    // knex, validating with MEMBER_ACCESS in that service instead. Recorded here to
+    // describe the column, and duplicated because this static schema cannot import
+    // TypeScript.
+    member_access: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      defaultTo: 'none',
+      validations: { isIn: [['none', 'read', 'write']] },
     },
     // The publisher's order for the list, rewritten across every row whenever the
     // list is reordered. Only the relative order carries meaning: creates append past
@@ -2258,7 +2276,7 @@ module.exports = {
       nullable: false,
       validations: { isEmail: true },
     },
-    '@@INDEXES@@': [['automation_id', 'created_at']],
+    '@@INDEXES@@': [['automation_id', 'created_at'], ['updated_at']],
   },
   automation_run_steps: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2302,7 +2320,7 @@ module.exports = {
     },
     locked_by: { type: 'string', maxlength: 191, nullable: true },
     locked_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id']],
+    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id'], ['updated_at']],
   },
   welcome_email_automated_emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2564,5 +2582,13 @@ module.exports = {
       ['status', 'scheduled_at'],
       { columns: ['email_provider_message_id'], length: 31 },
     ],
+  },
+  tinybird_syncs: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    table_name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    last_synced_updated_at: { type: 'dateTime', nullable: false },
+    last_synced_id: { type: 'string', maxlength: 24, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
   },
 };

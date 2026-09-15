@@ -8,7 +8,8 @@ import { Checkbox, Label } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useState } from 'react';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useId, useState } from 'react';
 import {
   publishRecipientFree,
   publishRecipientPaid,
@@ -32,7 +33,7 @@ export interface RecipientSelectProps {
 }
 
 function SegmentCount({ filter }: { filter: string | null }) {
-  const { count } = useMembersCount(filter);
+  const { count } = useMembersCount(filter, { requestOptions: EDITOR_REQUEST_OPTIONS });
 
   if (count === null) {
     return null;
@@ -57,6 +58,7 @@ export function RecipientSelect({
   segmentOptions,
   onChange,
 }: RecipientSelectProps) {
+  const id = useId();
   const segments = parseRecipientFilter(filter);
   // Remembers a selection across an off/on toggle, and keeps the picker open
   // when "Specific people" is checked with nothing selected yet.
@@ -122,10 +124,10 @@ export function RecipientSelect({
           <Checkbox
             checked={segments.free}
             data-testid={publishRecipientFree}
-            id="recipients-free"
+            id={`${id}-free`}
             onCheckedChange={() => toggleBase(FREE_SEGMENT)}
           />
-          <Label htmlFor="recipients-free">
+          <Label htmlFor={`${id}-free`}>
             Free <SegmentCount filter={scopedFilter(FREE_SEGMENT)} />
           </Label>
         </Inline>
@@ -135,10 +137,10 @@ export function RecipientSelect({
             <Checkbox
               checked={segments.paid}
               data-testid={publishRecipientPaid}
-              id="recipients-paid"
+              id={`${id}-paid`}
               onCheckedChange={() => toggleBase(PAID_SEGMENT)}
             />
-            <Label htmlFor="recipients-paid">
+            <Label htmlFor={`${id}-paid`}>
               Paid <SegmentCount filter={scopedFilter(PAID_SEGMENT)} />
             </Label>
           </Inline>
@@ -149,10 +151,10 @@ export function RecipientSelect({
             <Checkbox
               checked={specificChecked}
               data-testid={publishRecipientSpecific}
-              id="recipients-specific"
+              id={`${id}-specific`}
               onCheckedChange={toggleSpecific}
             />
-            <Label htmlFor="recipients-specific">Specific people</Label>
+            <Label htmlFor={`${id}-specific`}>Specific people</Label>
           </Inline>
         ) : null}
       </Stack>
@@ -166,10 +168,10 @@ export function RecipientSelect({
             <Inline key={option.segment} gap="sm">
               <Checkbox
                 checked={segments.specific.includes(option.segment)}
-                id={`recipients-${option.segment}`}
+                id={`${id}-${option.segment}`}
                 onCheckedChange={() => toggleSegment(option.segment)}
               />
-              <Label htmlFor={`recipients-${option.segment}`}>{option.name}</Label>
+              <Label htmlFor={`${id}-${option.segment}`}>{option.name}</Label>
             </Inline>
           ))}
         </Stack>

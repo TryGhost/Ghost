@@ -348,7 +348,7 @@ const Newsletter: React.FC = () => {
               <CardTitle>Newsletters</CardTitle>
               <CardDescription>How did this post perform</CardDescription>
             </CardHeader>
-            {isLoading ? (
+            {isLoading && !isNewsletterDataHidden ? (
               <CardContent className="h-[25vw] p-6">
                 <BarChartLoadingIndicator />
               </CardContent>
@@ -358,14 +358,15 @@ const Newsletter: React.FC = () => {
                   className={`grid ${chartHeaderClass} items-stretch border-b ${isNewsletterDataHidden ? 'pointer-events-none opacity-40' : ''}`}
                 >
                   <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
-                    <KpiCardMoreButton
-                      disabled={isNewsletterDataHidden}
-                      onClick={() => {
-                        navigateToMembers(`emails.post_id:${postId}`);
-                      }}
-                    >
-                      View members &rarr;
-                    </KpiCardMoreButton>
+                    {!isNewsletterDataHidden && (
+                      <KpiCardMoreButton
+                        onClick={() => {
+                          navigateToMembers(`emails.post_id:${postId}`);
+                        }}
+                      >
+                        View members &rarr;
+                      </KpiCardMoreButton>
+                    )}
                     <KpiCardLabel
                       onClick={() => {
                         navigateToMembers(`emails.post_id:${postId}`);
@@ -383,14 +384,15 @@ const Newsletter: React.FC = () => {
 
                   {emailTrackOpensEnabled && (
                     <KpiCard className="p-3 md:px-6 md:py-5">
-                      <KpiCardMoreButton
-                        disabled={isNewsletterDataHidden}
-                        onClick={() => {
-                          navigateToMembers(`opened_emails.post_id:${postId}`);
-                        }}
-                      >
-                        View members &rarr;
-                      </KpiCardMoreButton>
+                      {!isNewsletterDataHidden && (
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`opened_emails.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                      )}
                       <KpiCardLabel
                         onClick={() => {
                           navigateToMembers(`opened_emails.post_id:${postId}`);
@@ -409,14 +411,15 @@ const Newsletter: React.FC = () => {
 
                   {emailTrackClicksEnabled && (
                     <KpiCard className="group relative isolate grow p-3 md:px-6 md:py-5">
-                      <KpiCardMoreButton
-                        disabled={isNewsletterDataHidden}
-                        onClick={() => {
-                          navigateToMembers(`clicked_links.post_id:${postId}`);
-                        }}
-                      >
-                        View members &rarr;
-                      </KpiCardMoreButton>
+                      {!isNewsletterDataHidden && (
+                        <KpiCardMoreButton
+                          onClick={() => {
+                            navigateToMembers(`clicked_links.post_id:${postId}`);
+                          }}
+                        >
+                          View members &rarr;
+                        </KpiCardMoreButton>
+                      )}
                       <KpiCardLabel
                         onClick={() => {
                           navigateToMembers(`clicked_links.post_id:${postId}`);
@@ -435,7 +438,7 @@ const Newsletter: React.FC = () => {
                 </div>
                 <PendingSendEmpty
                   description="Sends, opens and clicks will appear once every email has been sent"
-                  title="This newsletter is still sending"
+                  title="Your newsletter is being sent"
                 >
                   <div
                     className={`mx-auto grid grid-cols-1 items-center justify-center gap-4 transition-all md:gap-0 ${chartHeaderClass === 'grid-cols-2' && 'md:grid-cols-2'} ${chartHeaderClass === 'grid-cols-3' && 'md:grid-cols-3'}`}

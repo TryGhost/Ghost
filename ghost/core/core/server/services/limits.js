@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
 const db = require('../data/db');
 const logging = require('@tryghost/logging');
-const LimitService = require('@tryghost/limit-service');
+const { LimitService } = require('@tryghost/limit-service');
 let limitService = new LimitService();
 
 const init = () => {
@@ -47,6 +47,22 @@ const init = () => {
   }
 };
 
+/**
+ * Route guard for a feature a host can switch off, for the routes that exist only to
+ * change it. Answers 403 with the host's own wording, which is a different thing to tell a
+ * caller than the 404 a labs flag gives: the feature exists, this plan does not include it.
+ */
+const requireFeature = (limitName) =>
+  async function requireFeatureMw(req, res, next) {
+    try {
+      await limitService.errorIfWouldGoOverLimit(limitName);
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+
 module.exports = limitService;
 
 module.exports.init = init;
+module.exports.requireFeature = requireFeature;

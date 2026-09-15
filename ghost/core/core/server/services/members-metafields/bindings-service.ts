@@ -3,7 +3,7 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { FieldType } from '@tryghost/metafield-types';
 import { INTERNAL } from './access';
-import { DbBoundField, FIELD_STATUS } from './schema';
+import { DbBoundField, FIELD_STATUS, type WrittenBy } from './schema';
 import type { MetafieldValuesService, PlannedWrite } from './values-service';
 
 const FIELDS_TABLE = 'members_metafields';
@@ -16,6 +16,9 @@ export interface BoundField {
   key: string;
   type: FieldType;
 }
+
+/** What a value's provenance is, once the port it came through has been resolved. */
+type Attribution = (binding: BoundField) => WrittenBy;
 
 /**
  * Where a source sends what it collected: a `port` is the name that source uses for a
@@ -64,62 +67,98 @@ export class MetafieldBindingsService {
   }
 
   /**
-   * Values arrive in the order they are to be applied: where two land in one field, the
-   * last of them is what the field holds.
+   * Values a processor collected on Ghost's behalf and sent back.
+   *
+   * Nobody supplied these in a sense the site can name — a payment page asked, and a
+   * machine reported the answers — so what is recorded against them is the binding that
+   * routed each one. That resolves back to the tier that asked, what it was collected
+   * as, and the field it landed in, which is everything worth knowing about how the
+   * value arrived.
    */
   async writeCollected(
     memberId: string,
     productId: string,
     collected: Array<{ port: string; value: unknown }>,
   ): Promise<void> {
-    for (const { port, value } of collected) {
-      const destination = await this.resolve(productId, port);
-      if (!destination) {
-        continue;
+    return this.writeThrough(memberId, productId, collected, (binding) => ({
+      type: 'binding',
+      id: binding.bindingId,
+    }));
+  }
+
+  /**
+   * Values a member supplied about themselves, through the same ports a checkout uses.
+   *
+   * A member typing their own address into a form is answerable for it in a way no
+   * routing is, and a record saying a binding wrote it would be wrong. The member is the
+   * one whose record this is, so there is nobody else it could be.
+   */
+  async writeSuppliedByMember(
+    memberId: string,
+    productId: string,
+    supplied: Array<{ port: string; value: unknown }>,
+  ): Promise<void> {
+    return this.writeThrough(memberId, productId, supplied, () => ({
+      type: 'member',
+      id: memberId,
+    }));
+  }
+
+  /**
+   * Values arrive in the order they are to be applied: where two land in one field, the
+   * last of them is what the field holds.
+   *
+   * Every value is attempted, and then the first failure is raised. Attempting them all
+   * is this method's business: one refused answer must not cost a publisher the address
+   * a courier needs, and the values have nothing to do with each other beyond arriving
+   * together. Whether the failure is worth acting on is the caller's, which is why it
+   * leaves here rather than being logged and forgotten — a checkout webhook has already
+   * taken the money and must never fail, while a member filling in a form is owed the
+   * news.
+   */
+  private async writeThrough(
+    memberId: string,
+    productId: string,
+    values: Array<{ port: string; value: unknown }>,
+    attribute: Attribution,
+  ): Promise<void> {
+    let failure: unknown;
+
+    for (const { port, value } of values) {
+      try {
+        // Inside, because working out where a value goes can fail the same way storing
+        // it can, and a value nobody could place is no more reason to abandon the rest
+        // than one nobody could store.
+        const destination = await this.resolve(productId, port);
+        if (!destination) {
+          continue;
+        }
+        await this.writeOne(memberId, destination, value, attribute);
+      } catch (err) {
+        failure = failure ?? err;
       }
-      await this.writeOne(memberId, destination, value);
+    }
+
+    if (failure) {
+      throw failure;
     }
   }
 
-  private async writeOne(memberId: string, into: BoundField, value: unknown): Promise<void> {
-    let planned: PlannedWrite[];
-    try {
-      // Internal: a value collected by Stripe at checkout is written on nobody's
-      // behalf, and what may be set is bounded by the binding rather than by who
-      // is looking.
-      planned = await this.values.planWrite(
-        { [`${CUSTOM_NAMESPACE}.${into.key}`]: value },
-        INTERNAL,
-      );
-    } catch (err) {
-      logging.warn(
-        {
-          event: { name: 'members.metafields.collected_value_rejected' },
-          err,
-          memberId,
-          metafieldKey: into.key,
-        },
-        'A collected value could not be saved',
-      );
-      return;
-    }
+  private async writeOne(
+    memberId: string,
+    into: BoundField,
+    value: unknown,
+    attribute: Attribution,
+  ): Promise<void> {
+    // Internal: what may be set is bounded by the binding rather than by who is
+    // looking. A port exists because a publisher pointed it at a field, and that
+    // decision is what admits the value, whoever supplied it.
+    const planned: PlannedWrite[] = await this.values.planWrite(
+      { [`${CUSTOM_NAMESPACE}.${into.key}`]: value },
+      INTERNAL,
+    );
 
-    try {
-      await this.values.applyWrite(memberId, planned, {
-        writtenBy: { type: 'binding', id: into.bindingId },
-      });
-    } catch (err) {
-      logging.error(
-        {
-          event: { name: 'members.metafields.collected_value_write_failed' },
-          err,
-          memberId,
-          metafieldKey: into.key,
-          bindingId: into.bindingId,
-        },
-        'Failed to store a collected metafield value',
-      );
-    }
+    await this.values.applyWrite(memberId, planned, { writtenBy: attribute(into) });
   }
 
   private async resolve(productId: string, port: string): Promise<BoundField | null> {

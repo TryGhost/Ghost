@@ -5,6 +5,7 @@ const { settingsHelpers } = proxy;
 const urlUtils = require('../../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
+const { timingSafeStringEqual } = require('../../../../shared/timing-safe-string-equal');
 
 module.exports = async function unsubscribeController(req, res) {
   debug('unsubscribeController');
@@ -42,7 +43,7 @@ module.exports = async function unsubscribeController(req, res) {
       }
       const membersKey = settingsHelpers.getMembersValidationKey();
       const memberHmac = crypto.createHmac('sha256', membersKey).update(query.uuid).digest('hex');
-      if (memberHmac !== query.key) {
+      if (!timingSafeStringEqual(memberHmac, query.key)) {
         logging.warn('[List-Unsubscribe] Unsubscribe failed due to invalid key for ' + query.uuid);
         return res.status(400).end();
       }

@@ -8,8 +8,20 @@ import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { metafieldCodec } from './codec';
 import { assertDefinable } from './namespaces';
 import { FIELD_STATUS, FieldStatusSchema } from './schema';
-import { ADMIN, readableFields, type Audience } from './access';
-import { activeFields, fieldByKey, inFieldOrder, type DefinitionQuery } from './queries';
+import {
+  ADMIN,
+  MEMBER_ACCESS,
+  MemberAccessSchema,
+  type Audience,
+  type MemberAccess,
+} from './access';
+import {
+  ACTIVE_ONLY,
+  ANY_STATUS,
+  definitions,
+  inFieldOrder,
+  type DefinitionQuery,
+} from './queries';
 import { KEY_CHARACTERS, mintableKey } from './key';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
 
@@ -56,10 +68,14 @@ const FieldName = z
   .min(1, { message: 'Custom field name is required.' })
   .max(MAX_NAME_LENGTH, { message: 'Custom field name is too long.' });
 
-// The backend mints the key from the name, so create takes just a name and type.
+const FieldAccess = z.object({ member: MemberAccessSchema });
+
+// No key: the backend mints it from the name.
+
 const AddFieldInput = z.object({
   name: FieldName,
   type: FieldTypeSchema,
+  access: FieldAccess.optional(),
 });
 
 // A bound on the work one request can ask for, separate from how many definitions
@@ -88,11 +104,12 @@ const ReorderInput = z
   )
   .min(1, { message: 'The order must name every custom field.' });
 
-// Name and status are mutable. `key` and `type` are accepted so the immutability
-// rules can reject a change loudly; they are never persisted.
+// Name, status and access are mutable. `key` and `type` are accepted so the
+// immutability rules can reject a change loudly; they are never persisted.
 const EditFieldInput = z.object({
   name: FieldName.optional(),
   status: FieldStatusSchema.optional(),
+  access: FieldAccess.optional(),
   key: z.string().optional(),
   type: FieldTypeSchema.optional(),
 });
@@ -121,8 +138,10 @@ export class MetafieldDefinitionsService {
     this.getMaxDefinitions = getMaxDefinitions;
   }
 
-  async hasAnyActive(): Promise<boolean> {
-    const [field] = await this.list(activeFields(this.knex).limit(1));
+  async hasAnyReadable(audience: Audience): Promise<boolean> {
+    const [field] = await this.list(
+      definitions(this.knex, { audience, status: ACTIVE_ONLY, limit: 1 }),
+    );
     return Boolean(field);
   }
 
@@ -135,38 +154,41 @@ export class MetafieldDefinitionsService {
   }
 
   async browse(
-    options: { namespace?: string; filter?: string } = {},
-    audience: Audience = ADMIN,
+    options: { namespace?: string; filter?: string },
+    audience: Audience,
   ): Promise<Metafield[]> {
     if (options.namespace !== undefined && !this.isStored(options.namespace)) {
       return [];
     }
-    // Archived fields are hidden by default: most surfaces (member details, the
-    // filter picker, the importer) only ever want active fields. A caller-
-    // supplied `filter` can widen that — Settings pulls active and archived
-    // together in one request (`filter=status:[active,archived]`).
-    //
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
-    const query = options.filter
-      ? applyFilter(this.knex(TABLE), options.filter)
-      : activeFields(this.knex);
-    return readableFields(audience, await this.list(query));
+    const { filter } = options;
+    if (filter) {
+      // A filter naming `status` decides the statuses itself, which is how Settings
+      // pulls active and archived together in one request
+      // (`filter=status:[active,archived]`). One that does not gets the same active-only
+      // scope as an unfiltered read.
+      const parsed = parseFilter(filter);
+      return this.list(
+        definitions(this.knex, {
+          audience,
+          status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
+          filter: (query) => knexify(query, parsed, { tableName: TABLE }),
+        }),
+      );
+    }
+    return this.list(definitions(this.knex, { audience, status: ACTIVE_ONLY }));
   }
 
-  /**
-   * Decode a definition query into the domain, in the publisher's order.
-   *
-   * Typed off `activeFields` so the builder keeps the table's row type: every caller
-   * hands over a query against the definitions table, whatever it has narrowed.
-   */
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
     const rows = await inFieldOrder(query).select('*');
     return rows.map((row) => z.decode(metafieldCodec, row));
   }
 
-  async read(namespace: string, key: string): Promise<Metafield> {
-    const [field] = this.isStored(namespace) ? await this.list(fieldByKey(this.knex, key)) : [];
+  async read(namespace: string, key: string, audience: Audience): Promise<Metafield> {
+    const [field] = this.isStored(namespace)
+      ? await this.list(definitions(this.knex, { audience, status: ANY_STATUS, key }))
+      : [];
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
     }
@@ -230,6 +252,7 @@ export class MetafieldDefinitionsService {
             key,
             name: field.name,
             type: field.type,
+            memberAccess: field.access?.member ?? MEMBER_ACCESS.none,
             sortOrder: firstSortOrder + index,
           });
           keys.push(key);
@@ -265,7 +288,7 @@ export class MetafieldDefinitionsService {
    * which a single-connection pool would deadlock against an open transaction.
    */
   async addOne(
-    wanted: { key: string; name: string; type: FieldType },
+    wanted: { key: string; name: string; type: FieldType; access: z.infer<typeof FieldAccess> },
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
     // Before any database access, the way `add` mints before opening its transaction:
@@ -281,6 +304,7 @@ export class MetafieldDefinitionsService {
         key: wanted.key,
         name: wanted.name,
         type: wanted.type,
+        memberAccess: wanted.access.member,
         sortOrder: await this.nextSortOrder(db),
       });
       const [created] = await this.readMany(db, [wanted.key]);
@@ -307,13 +331,20 @@ export class MetafieldDefinitionsService {
 
   private async insertField(
     db: Knex,
-    field: { key: string; name: string; type: FieldType; sortOrder: number },
+    field: {
+      key: string;
+      name: string;
+      type: FieldType;
+      memberAccess: MemberAccess;
+      sortOrder: number;
+    },
   ): Promise<void> {
     await db(TABLE).insert({
       id: new ObjectID().toHexString(),
       key: field.key,
       name: field.name,
       type: field.type,
+      member_access: field.memberAccess,
       sort_order: field.sortOrder,
       created_at: new Date(),
     });
@@ -416,7 +447,8 @@ export class MetafieldDefinitionsService {
           .update({ sort_order: ranks.get(key)! });
       }
 
-      return this.list(trx(TABLE));
+      // An order covers the whole list, archived definitions included.
+      return this.list(definitions(trx, { audience: ADMIN, status: ANY_STATUS }));
     });
 
     await this.recordAction({
@@ -541,7 +573,7 @@ export class MetafieldDefinitionsService {
     }
     const patch = parsed.data;
 
-    const existing = await this.read(CUSTOM_NAMESPACE, key);
+    const existing = await this.read(CUSTOM_NAMESPACE, key, ADMIN);
 
     // Key and type are immutable after creation: values are addressed by key
     // and interpreted by type, so changing either would silently orphan or
@@ -583,6 +615,23 @@ export class MetafieldDefinitionsService {
       });
     }
 
+    if (patch.access !== undefined && patch.access.member !== existing.access.member) {
+      await this.knex(TABLE)
+        .where('key', key)
+        .update({ member_access: patch.access.member, updated_at: new Date() });
+      await this.recordAction({
+        context,
+        verb: 'changeAccess',
+        subject: existing.id,
+        details: {
+          primary_name: patch.name ?? existing.name,
+          key,
+          member_access: patch.access.member,
+          previous_member_access: existing.access.member,
+        },
+      });
+    }
+
     // A status change is the archive/restore transition. Only write (and log)
     // when it actually flips, so re-sending the current status is a no-op.
     if (patch.status !== undefined && patch.status !== existing.status) {
@@ -598,7 +647,7 @@ export class MetafieldDefinitionsService {
       });
     }
 
-    return this.read(CUSTOM_NAMESPACE, key);
+    return this.read(CUSTOM_NAMESPACE, key, ADMIN);
   }
 
   /**
@@ -686,12 +735,11 @@ function isUniqueConstraintViolation(error: unknown): boolean {
   return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
 }
 
-// Apply a caller-supplied NQL filter to the definition query. A malformed filter
-// is a client error (400), not a 500. The active-only default is preserved unless
-// the filter itself constrains status, so a filter on another field (e.g. type)
-// can never surface archived fields — this is the invariant queries.ts centralises,
-// held here as the per-field default override Bookshelf's filter plugin does.
-function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
+// Parse a caller-supplied NQL filter, without applying it. A malformed filter is a
+// client error (400), not a 500. Whether the result widens the statuses is decided by
+// the caller, which reads it with `filterReferencesStatus` and says so when building
+// the query; nothing here narrows anything.
+function parseFilter(filter: string): Record<string, unknown> {
   let mongoQuery: Record<string, unknown>;
   try {
     mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
@@ -711,19 +759,7 @@ function applyFilter<T extends Knex.QueryBuilder>(query: T, filter: string): T {
       property: 'filter',
     });
   }
-  try {
-    knexify(query, mongoQuery, { tableName: TABLE });
-  } catch (err) {
-    throw new errors.BadRequestError({
-      message: 'Could not parse the filter parameter.',
-      property: 'filter',
-      err: err as Error,
-    });
-  }
-  if (!filterReferencesStatus(mongoQuery)) {
-    query.where('status', FIELD_STATUS.active);
-  }
-  return query;
+  return mongoQuery;
 }
 
 // Whether an NQL-parsed filter constrains `status` anywhere, including inside the

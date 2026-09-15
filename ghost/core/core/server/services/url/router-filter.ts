@@ -1,5 +1,5 @@
-const nql = require('@tryghost/nql');
-const logging = require('@tryghost/logging');
+import nql from '@tryghost/nql';
+import logging from '@tryghost/logging';
 
 // NQL evaluation for routes.yaml collection filters, kept in one place so the
 // forward lookup, ownership check and reverse lookup all decide membership the
@@ -75,9 +75,3 @@ export function filterMatches(
     return false;
   }
 }
-
-module.exports = { EXPANSIONS, routerTypeOf, buildFilter, filterMatches };
-module.exports.EXPANSIONS = EXPANSIONS;
-module.exports.routerTypeOf = routerTypeOf;
-module.exports.buildFilter = buildFilter;
-module.exports.filterMatches = filterMatches;

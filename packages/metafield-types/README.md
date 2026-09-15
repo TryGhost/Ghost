@@ -21,6 +21,19 @@ imports in `src/` must carry an explicit extension; write the real `.ts` one —
 `import {x} from './x.ts'` — and `tsc` rewrites it to `.js` on emit
 (`rewriteRelativeImportExtensions`).
 
+`./structure` is the half of the catalog a renderer needs — which parts a field type
+has, and what each holds — and it stands apart from `./index` so that importing it
+costs a bundle almost nothing. The rules in `./index` are built on zod, some
+seventeen kilobytes gzipped that a renderer never runs. Portal imports `./structure`
+and loads on every page view of every themed site, so the difference reaches every
+visitor of every Ghost site.
+
+That holds only while `./structure` depends on nothing, and no bundler enforces it: an
+import added here would ship to every one of those visitors with every check still
+green. So **`src/structure.ts` must not import anything** — an ESLint rule enforces
+it, relative imports included, since anything reached through one is bundled too.
+Whatever needs an import belongs in `./index`, which is free to use them.
+
 `ghost/core` is CommonJS but consumes this package via `require()`, which works
 on Ghost's Node version (22.13+/24) through Node's `require(esm)` support. That
 support has one hard constraint: **no top-level `await`** anywhere in this

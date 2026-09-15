@@ -1,12 +1,15 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
+const dbBackup = require('../../../core/server/data/db/backup');
 const {
   agentProvider,
   fixtureManager,
   matchers,
   assertions,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 const {
   anyContentVersion,
@@ -146,6 +149,16 @@ describe('User API', function () {
     } finally {
       await db.knex('users').where('id', userId).del();
     }
+  });
+
+  it('Can not order users by password', async function () {
+    await agent
+      .get('users/?order=password%20ASC')
+      .expectStatus(400)
+      .expect(({ body }) => {
+        assert.equal(body.errors[0].type, 'BadRequestError');
+        assert.equal(body.errors[0].context, 'Restricted fields cannot be used in order.');
+      });
   });
 
   it('Can retrieve a user by id', async function () {
@@ -488,7 +501,7 @@ describe('User API', function () {
       .expect(cacheInvalidateHeaderNotSet());
   });
 
-  it('Can destroy an active user and transfer posts to the owner', async function () {
+  it('Can destroy an active user without a backup and transfer posts to the owner', async function () {
     // Use slimer-mcectoplasm user (index 3) who has a post in the fixtures
     const { id: userId, slug: userSlug } = fixtureManager.get('users', 3);
     const ownerId = fixtureManager.get('users', 0).id;
@@ -532,16 +545,14 @@ describe('User API', function () {
       .select();
     const initialUserPostCount = userPostsAuthorsModels.length;
 
-    // Delete the user
-    const deleteRes = await agent
-      .delete(`users/${userId}/`)
-      .expectStatus(200)
-      .expect(({ body }) => {
-        assert.ok(body.meta.filename);
-      });
-
-    // Check the backup file was created
-    await agent.get(`db/?filename=${deleteRes.body.meta.filename}`).expectStatus(200);
+    // Delete the user without creating a database backup
+    const backupStub = sinon.stub(dbBackup, 'backup');
+    try {
+      await agent.delete(`users/${userId}/`).expectStatus(204).expectEmptyBody();
+      sinon.assert.notCalled(backupStub);
+    } finally {
+      backupStub.restore();
+    }
 
     // Verify user was deleted
     await agent.get(`users/${userId}/`).expectStatus(404);
@@ -738,5 +749,127 @@ describe('User API', function () {
 
     assert.equal(originalId, newId, 'Token id should remain the same');
     assert.notEqual(originalSecret, newSecret, 'Token secret should have changed');
+  });
+});
+
+describe('User API: role assignment', function () {
+  /** @type {import('../../utils/agents').AdminAPITestAgent} */
+  let agent;
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+  });
+
+  async function roleIdByName(name) {
+    const role = await models.Role.findOne({ name });
+    return role.id;
+  }
+
+  async function userIdByRole(name) {
+    const users = await models.User.findAll({ withRelated: ['roles'] });
+    const match = users.find((user) => user.related('roles').at(0).get('name') === name);
+    return match.id;
+  }
+
+  async function roleNameForUser(userId) {
+    const user = await models.User.findOne({ id: userId }, { withRelated: ['roles'] });
+    return user.related('roles').at(0).get('name');
+  }
+
+  it('editor cannot promote an author to editor', async function () {
+    await agent.loginAsEditor();
+
+    const authorId = await userIdByRole('Author');
+    const editorRoleId = await roleIdByName('Editor');
+
+    await agent
+      .put(`users/${authorId}/`)
+      .body({ users: [{ id: authorId, roles: [editorRoleId] }] })
+      .expectStatus(403);
+
+    assert.equal(await roleNameForUser(authorId), 'Author');
+  });
+
+  it('editor cannot promote a contributor to editor', async function () {
+    await agent.loginAsEditor();
+
+    const contributorId = await userIdByRole('Contributor');
+    const editorRoleId = await roleIdByName('Editor');
+
+    await agent
+      .put(`users/${contributorId}/`)
+      .body({ users: [{ id: contributorId, roles: [editorRoleId] }] })
+      .expectStatus(403);
+
+    assert.equal(await roleNameForUser(contributorId), 'Contributor');
+  });
+
+  it('editor can promote a contributor to author', async function () {
+    await agent.loginAsEditor();
+
+    const contributorId = await userIdByRole('Contributor');
+    const authorRoleId = await roleIdByName('Author');
+
+    await agent
+      .put(`users/${contributorId}/`)
+      .body({ users: [{ id: contributorId, roles: [authorRoleId] }] })
+      .expectStatus(200);
+
+    assert.equal(await roleNameForUser(contributorId), 'Author');
+  });
+
+  it('editor can edit their own profile while echoing back their unchanged role', async function () {
+    await agent.loginAsEditor();
+
+    const editorId = await userIdByRole('Editor');
+    const editorRoleId = await roleIdByName('Editor');
+
+    await agent
+      .put(`users/${editorId}/`)
+      .body({ users: [{ id: editorId, name: 'Edited Editor', roles: [editorRoleId] }] })
+      .expectStatus(200);
+
+    assert.equal(await roleNameForUser(editorId), 'Editor');
+  });
+
+  it("editor cannot change another editor's role, even to the same role", async function () {
+    // Two logins in one test tips the suite's cumulative login count over the
+    // spam-prevention threshold; reset it first.
+    await resetRateLimits();
+    await agent.loginAsAdmin();
+
+    const otherEditorId = await userIdByRole('Super Editor');
+    const editorRoleId = await roleIdByName('Editor');
+
+    await agent
+      .put(`users/${otherEditorId}/`)
+      .body({ users: [{ id: otherEditorId, roles: [editorRoleId] }] })
+      .expectStatus(200);
+
+    await agent.loginAsEditor();
+
+    await agent
+      .put(`users/${otherEditorId}/`)
+      .body({ users: [{ id: otherEditorId, roles: [editorRoleId] }] })
+      .expectStatus(403);
+
+    assert.equal(await roleNameForUser(otherEditorId), 'Editor');
+  });
+
+  // An admin assigning their *own* role to another user is the same shape as the
+  // editor escalation above, but it is legitimate: the role hierarchy permits it.
+  it('admin can promote an author to administrator', async function () {
+    await agent.loginAsAdmin();
+
+    const authorId = await userIdByRole('Author');
+    const adminRoleId = await roleIdByName('Administrator');
+
+    await agent
+      .put(`users/${authorId}/`)
+      .body({ users: [{ id: authorId, roles: [adminRoleId] }] })
+      .expectStatus(200);
+
+    assert.equal(await roleNameForUser(authorId), 'Administrator');
   });
 });

@@ -1,5 +1,5 @@
 import { act, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { currentUserQueryKey } from '../../../src/api/current-user';
 import type { UserRoleType } from '../../../src/api/roles';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
@@ -28,6 +28,13 @@ import type {
 import { withMockFetch } from '../../utils/mock-fetch';
 
 const memberCountKey = getMemberCountQueryKey();
+
+const unauthorizedResponse = {
+  json: { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
+  headers: { 'content-type': 'application/json' },
+  status: 401,
+  ok: false,
+};
 
 function membersResponse(total: number, limit: number | 'all' = 1): MembersResponseType {
   return {
@@ -404,7 +411,9 @@ describe('members api', () => {
       });
     });
 
-    it('resolves request errors to a count of 0 while preserving retry state', async () => {
+    // An audience that could not be counted is not an audience of none: a 0
+    // here would render "sent to 0 members" over a send with real recipients.
+    it('resolves request errors to a null count while preserving retry state', async () => {
       const queryClient = createQueryClientWithCurrentUser([
         { id: 'role-1', name: 'Administrator' },
       ]);
@@ -417,10 +426,122 @@ describe('members api', () => {
           });
 
           await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
-          expect(result.current).toMatchObject({ count: 0, isLoading: false });
+          expect(result.current).toMatchObject({ count: null, isLoading: false });
           expect(result.current.refetch).toBeTypeOf('function');
         },
       );
+    });
+
+    // The hook reads the current user as well as the count, and mounts a fresh
+    // observer of it per call site - so a stale entry refetches here, under the
+    // caller's options. The redirect fires at most once per page load, so the
+    // opt-out case has to run before the case that spends it.
+    describe('session expiry', () => {
+      let originalLocation: Location;
+
+      beforeEach(() => {
+        originalLocation = window.location;
+        delete (window as unknown as { location?: Location }).location;
+        (window as unknown as { location: unknown }).location = {
+          href: 'http://localhost:3000/ghost/',
+          hash: '#/posts',
+          origin: 'http://localhost:3000',
+          pathname: '/ghost/',
+          replace: vi.fn(),
+        };
+      });
+
+      afterEach(() => {
+        (window as unknown as { location: Location }).location = originalLocation;
+      });
+
+      it('carries the caller options onto the current-user read', async () => {
+        const queryClient = createTestQueryClient();
+
+        await withMockFetch(unauthorizedResponse, async () => {
+          const { result } = renderHookWithProviders(
+            () =>
+              useMembersCount('status:free', { requestOptions: { sessionExpiryRedirect: false } }),
+            { queryClient },
+          );
+
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expect(result.current).toMatchObject({ count: null, isLoading: false });
+          expect(result.current.refetch).toBeTypeOf('function');
+          expect(queryClient.getQueryState(currentUserQueryKey)?.status).toBe('error');
+          expect(window.location.replace).not.toHaveBeenCalled();
+        });
+      });
+
+      it('retries both requests when stale user data lets them fail together', async () => {
+        const queryClient = createTestQueryClient();
+        queryClient.setQueryData(
+          currentUserQueryKey,
+          {
+            users: [
+              {
+                id: 'user-1',
+                name: 'Test User',
+                email: 'test@example.com',
+                roles: [{ id: 'role-1', name: 'Administrator' }],
+              },
+            ],
+          },
+          { updatedAt: 0 },
+        );
+        let expired = true;
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = vi.fn<typeof globalThis.fetch>((input) => {
+          const url = String(input);
+          const json = expired
+            ? unauthorizedResponse.json
+            : url.includes('/users/me/')
+              ? queryClient.getQueryData(currentUserQueryKey)
+              : membersResponse(23);
+
+          return Promise.resolve({
+            url,
+            json: () => Promise.resolve(json),
+            text: () => Promise.resolve(JSON.stringify(json)),
+            headers: new Headers({ 'content-type': 'application/json' }),
+            status: expired ? 401 : 200,
+            ok: !expired,
+          } as Response);
+        });
+
+        try {
+          const { result } = renderHookWithProviders(
+            () =>
+              useMembersCount('status:free', { requestOptions: { sessionExpiryRedirect: false } }),
+            { queryClient },
+          );
+
+          await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+          expired = false;
+          await act(async () => {
+            await result.current.refetch();
+          });
+
+          await waitFor(() => expect(result.current.count).toBe(23));
+          expect(result.current.error).toBeNull();
+          expect(window.location.replace).not.toHaveBeenCalled();
+        } finally {
+          globalThis.fetch = originalFetch;
+        }
+      });
+
+      it('redirects on the current-user read when the caller passes no options', async () => {
+        const queryClient = createTestQueryClient();
+
+        await withMockFetch(unauthorizedResponse, async () => {
+          renderHookWithProviders(() => useMembersCount('status:free'), { queryClient });
+
+          await waitFor(() =>
+            expect(queryClient.getQueryState(currentUserQueryKey)?.status).toBe('error'),
+          );
+          expect(window.location.replace).toHaveBeenCalledWith('/ghost/');
+        });
+      });
     });
   });
 

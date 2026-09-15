@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type { MemberAccess } from './access';
 
 export interface Actor {
   id: string;
@@ -39,6 +40,7 @@ const COMMANDS = {
   create: 'added',
   rename: 'edited',
   reorder: 'edited',
+  changeAccess: 'edited',
   archive: 'archived',
   restore: 'restored',
   delete: 'deleted',
@@ -56,7 +58,13 @@ export type MetafieldVerb = keyof typeof COMMANDS;
 //
 // A reorder names no field: it carries the count and the word the feed reads it by.
 export type MetafieldActionDetails =
-  | { primary_name: string; key: string; previous_name?: string }
+  | {
+      primary_name: string;
+      key: string;
+      previous_name?: string;
+      member_access?: MemberAccess;
+      previous_member_access?: MemberAccess;
+    }
   | { action_name: 'reordered'; count: number };
 
 // `subject` is the field's row id, or null for an act that belongs to no single field.

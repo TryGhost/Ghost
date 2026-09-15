@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useBrowseConfig } from '../api/config';
 import { useBrowseInvites } from '../api/invites';
 import { useBrowseMembers } from '../api/members';
@@ -7,31 +7,13 @@ import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
 import { HostLimitError } from '../utils/errors';
 
-const limitServiceImport = import('@tryghost/limit-service');
+import { LimitService, type LimitConfig } from '@tryghost/limit-service';
 
 // limit-service constructs its misconfiguration error with a single options object
 class IncorrectUsageError extends Error {
   constructor({ message }: { message: string }) {
     super(message);
   }
-}
-
-interface LimiterLimits {
-  staff?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  members?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
-  newsletters?: {
-    max?: number;
-    error?: string;
-    currentCountQuery?: () => Promise<number>;
-  };
 }
 
 export interface Limiter {
@@ -45,14 +27,6 @@ export interface Limiter {
 export const useLimiter = (): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const [LimitService, setLimitService] = useState<
-    typeof import('@tryghost/limit-service').default | null
-  >(null);
-
-  useEffect(() => {
-    void limitServiceImport.then((exports) => setLimitService(() => exports.default));
-  }, []);
-
   const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
   const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites();
   const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles();
@@ -85,11 +59,11 @@ export const useLimiter = (): Limiter => {
       errorIfIsOverLimit: (): Promise<void> => Promise.resolve(),
     };
 
-    if (!LimitService || !config?.hostSettings?.limits || isStaffLoading) {
+    if (!config?.hostSettings?.limits || isStaffLoading) {
       return noOpLimiter;
     }
 
-    const limits = { ...config.hostSettings.limits } as LimiterLimits;
+    const limits = { ...config.hostSettings.limits } as Record<string, LimitConfig>;
     const limiter = new LimitService();
 
     if (limits.staff) {
@@ -134,9 +108,9 @@ export const useLimiter = (): Limiter => {
 
     return {
       isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
-      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName),
-      checkWouldGoOverLimit: (limitName: string): Promise<boolean> =>
-        limiter.checkWouldGoOverLimit(limitName),
+      isDisabled: (limitName: string): boolean => limiter.isDisabled(limitName) ?? false,
+      checkWouldGoOverLimit: async (limitName: string): Promise<boolean> =>
+        (await limiter.checkWouldGoOverLimit(limitName)) ?? false,
       errorIfWouldGoOverLimit: (
         limitName: string,
         metadata: Record<string, unknown> = {},
@@ -144,15 +118,5 @@ export const useLimiter = (): Limiter => {
       errorIfIsOverLimit: (limitName: string): Promise<void> =>
         limiter.errorIfIsOverLimit(limitName),
     };
-  }, [
-    LimitService,
-    config,
-    fetchMembers,
-    fetchNewsletters,
-    helpLink,
-    invites,
-    isStaffLoading,
-    roles,
-    users,
-  ]);
+  }, [config, fetchMembers, fetchNewsletters, helpLink, invites, isStaffLoading, roles, users]);
 };

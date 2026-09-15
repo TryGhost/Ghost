@@ -71,6 +71,10 @@
     "active": "LocalImagesStorage",
     "media": "LocalMediaStorage",
     "files": "LocalFilesStorage",
+    "imports": {
+      "adapter": "LocalStorageBase",
+      "staticFileURLPrefix": "content/imports"
+    },
     "LocalMediaStorage": {},
     "LocalFilesStorage": {}
   },
@@ -305,8 +309,7 @@
         "enabled": false,
         "threshold": 500
       }
-    },
-    "openedJobLagWarningMinutes": 30
+    }
   },
   "linkClickTrackingCacheMemberUuid": false,
   "backgroundJobs": {

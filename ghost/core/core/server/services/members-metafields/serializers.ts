@@ -8,6 +8,7 @@ const MetafieldResource = z.object({
   name: z.string(),
   type: z.string(),
   status: z.string(),
+  access: z.object({ member: z.string() }),
   created_at: z.date(),
   updated_at: z.date().nullable(),
 });

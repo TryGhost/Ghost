@@ -133,7 +133,7 @@ describe('SendingStatusService', function () {
       id: 'email-id',
       sending: {
         status: 'submitting',
-        progress: { completed: 20, total: 25, estimatedSecondsRemaining: 5 },
+        progress: { completed: 20, total: 25, estimatedSecondsRemaining: null },
       },
     });
   });

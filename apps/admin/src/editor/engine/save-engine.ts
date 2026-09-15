@@ -130,6 +130,9 @@ export type SaveOutcome<R extends SaveResult = SaveResult> =
   | { ok: true; result: R }
   | { ok: false; error: SaveError };
 
+/** A prepare failure is typed like an execute failure, so its kind drives the same handling. */
+export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: SaveError };
+
 export type DropReason = 'not-draft' | 'clean' | 'suppressed' | 'conflict' | 'halted' | 'disposed';
 
 export type SaveCompletion =
@@ -177,12 +180,15 @@ export interface SaveEnginePorts<
 > {
   getSnapshot: () => S;
   slug: SlugPort;
-  /** Builds and validates the candidate; runs inside the single-flight unit, before any IO. */
-  prepare: (request: SaveRequest<S>, signal: AbortSignal) => Promise<P>;
+  /** Builds and validates the candidate; runs inside the single-flight unit, before any IO.
+   * A typed failure skips execute; a rejected promise is treated as an `unknown` error. */
+  prepare: (request: SaveRequest<S>, signal: AbortSignal) => Promise<PrepareOutcome<P>>;
   /** IO only. A rejected promise is treated as an `unknown` error. */
   execute: (prepared: P, signal: AbortSignal) => Promise<SaveOutcome<R>>;
   /** Awaited before the pending slot drains. Must not throw: adopt the acknowledged id/status/updated_at before any work that can fail. */
   reconcile: (prepared: P, result: R) => Promise<void> | void;
+  /** The autosave debounce in milliseconds, read at each restart; defaults to `AUTOSAVE_DEBOUNCE_MS`. */
+  autosaveDebounceMs?: () => number | undefined;
   setTimeout?: (fn: () => void, ms: number) => unknown;
   clearTimeout?: (handle: unknown) => void;
   onStateChange?: (state: SaveEngineState) => void;
@@ -198,6 +204,8 @@ export interface SaveEngine {
   subscribe(listener: (state: SaveEngineState) => void): () => void;
   reauthSucceeded(): void;
   reauthAbandoned(): void;
+  /** Leaves `conflict` once the caller has a document past the rejected `updated_at`. */
+  contentReloaded(updatedAt?: string): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -332,6 +340,10 @@ function toSaveError(cause: unknown): SaveError {
   return { kind: 'unknown', message, cause };
 }
 
+export function isCollisionToken(value: string | null | undefined): value is string {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
 function sameState(a: SaveEngineState, b: SaveEngineState): boolean {
   if (a.kind !== b.kind) {
     return false;
@@ -354,6 +366,7 @@ export function createSaveEngine<
   P extends SaveRequest<S> = SaveRequest<S>,
   R extends SaveResult = SaveResult,
 >(ports: SaveEnginePorts<S, P, R>): SaveEngine {
+  const autosaveDebounceMs = (): number => ports.autosaveDebounceMs?.() ?? AUTOSAVE_DEBOUNCE_MS;
   const schedule = ports.setTimeout ?? ((fn, ms) => globalThis.setTimeout(fn, ms));
   const cancel = ports.clearTimeout ?? ((handle) => globalThis.clearTimeout(handle as number));
   const reportListenerError = ports.onListenerError ?? rethrowAsync;
@@ -400,7 +413,7 @@ export function createSaveEngine<
   }
 
   // Errors persist until a save actually starts; timers arming or dropping do not clear them.
-  function deriveState(): SaveEngineState {
+  function deriveState({ keepHalt = true } = {}): SaveEngineState {
     if (frozen || isTerminal() || disposed) {
       return state;
     }
@@ -413,7 +426,7 @@ export function createSaveEngine<
           }
         : { kind: 'saving', intent: inFlight.command.kind };
     }
-    if (state.kind === 'error' || state.kind === 'conflict') {
+    if (keepHalt && (state.kind === 'error' || state.kind === 'conflict')) {
       return state;
     }
     if (debounce || timedCycle) {
@@ -467,7 +480,7 @@ export function createSaveEngine<
     const handle = schedule(() => {
       debounce = null;
       enqueue(AUTOSAVE, waiters);
-    }, AUTOSAVE_DEBOUNCE_MS);
+    }, autosaveDebounceMs());
     debounce = { handle, waiters };
     setState(deriveState());
   }
@@ -628,19 +641,23 @@ export function createSaveEngine<
           return;
         }
       }
-      const prepared = await ports.prepare(
+      const preparation = await ports.prepare(
         buildRequest(slot.command, snapshot, proposal),
         abort.signal,
       );
       if (disposed) {
         return;
       }
-      outcome = await ports.execute(prepared, abort.signal);
-      if (disposed) {
-        return;
-      }
-      if (outcome.ok) {
-        await ports.reconcile(prepared, outcome.result);
+      if (!preparation.ok) {
+        outcome = { ok: false, error: preparation.error };
+      } else {
+        outcome = await ports.execute(preparation.prepared, abort.signal);
+        if (disposed) {
+          return;
+        }
+        if (outcome.ok) {
+          await ports.reconcile(preparation.prepared, outcome.result);
+        }
       }
     } catch (cause) {
       outcome = { ok: false, error: toSaveError(cause) };
@@ -853,6 +870,23 @@ export function createSaveEngine<
     setState({ kind: 'error', intent: slot.command.kind, error });
   }
 
+  // A server document that no longer carries the rejected updated_at ends the
+  // halt the collision caused. A candidate lets the caller check before replacing it.
+  function contentReloaded(updatedAt?: string): boolean {
+    const candidate = updatedAt ?? readSnapshot()?.updatedAt;
+    if (
+      disposed ||
+      state.kind !== 'conflict' ||
+      !isCollisionToken(candidate) ||
+      (staleUpdatedAt !== null && candidate === staleUpdatedAt)
+    ) {
+      return false;
+    }
+    staleUpdatedAt = null;
+    setState(deriveState({ keepHalt: false }));
+    return true;
+  }
+
   function queueSettled(): Promise<void> {
     return new Promise<void>((resolve) => {
       const check = () => {
@@ -887,7 +921,12 @@ export function createSaveEngine<
       if (!snapshot) {
         return 'confirm';
       }
-      if (isTerminal() || frozen) {
+      // A frozen command has not completed even when its input snapshot is
+      // clean (for example, publishing an otherwise unchanged draft).
+      if (frozen) {
+        return 'confirm';
+      }
+      if (isTerminal()) {
         return snapshot.isDirty ? 'confirm' : 'proceed';
       }
       const canSaveOnLeave =
@@ -951,6 +990,7 @@ export function createSaveEngine<
     subscribe,
     reauthSucceeded,
     reauthAbandoned,
+    contentReloaded,
     leaveRequested,
     dispose,
   };

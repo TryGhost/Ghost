@@ -18,7 +18,7 @@ function createCacheManager(settingsOverrides = {}) {
   return cache;
 }
 
-describe('UNIT: settings cache', function () {
+describe('settings cache', function () {
   let cache;
 
   beforeEach(function () {

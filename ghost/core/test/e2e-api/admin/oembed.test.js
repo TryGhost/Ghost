@@ -377,6 +377,46 @@ describe('Oembed API', function () {
     assert.equal(res.body.metadata.thumbnail, 'http://127.0.0.1:5555/secret-thumbnail');
   });
 
+  it('does not store bookmark images that are not images', async function () {
+    const html = '<!doctype html><html><body><script>alert(1)</script></body></html>';
+
+    const pageMock = nock('http://attacker.example.com')
+      .get('/')
+      .reply(
+        200,
+        '<html><head><title>Totally normal article</title><meta property="og:image" content="http://attacker.example.com/cover.html"><link rel="icon" href="http://attacker.example.com/brandicon.html"></head><body></body></html>',
+        { 'content-type': 'text/html' },
+      );
+
+    // Served as images to show the response's Content-Type isn't trusted either
+    const thumbnailMock = nock('http://attacker.example.com')
+      .get('/cover.html')
+      .reply(200, html, { 'content-type': 'image/png' });
+
+    const iconMock = nock('http://attacker.example.com')
+      .get('/brandicon.html')
+      .reply(200, html, { 'content-type': 'image/png' });
+
+    processImageFromUrlStub.restore();
+
+    const url = encodeURIComponent('http://attacker.example.com');
+
+    const res = await request
+      .get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+      .set('Origin', config.get('url'))
+      .expect('Content-Type', /json/)
+      .expect('Cache-Control', testUtils.cacheRules.private)
+      .expect(200);
+
+    assert.equal(pageMock.isDone(), true);
+    assert.equal(thumbnailMock.isDone(), true);
+    assert.equal(iconMock.isDone(), true);
+
+    // Neither file was stored on the site, so the card keeps the fallbacks
+    assert.equal(res.body.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    assert.equal(res.body.metadata.thumbnail, 'http://attacker.example.com/cover.html');
+  });
+
   describe('with unknown provider', function () {
     it('fetches url and follows redirects', async function () {
       const redirectMock = nock('http://test.com/')
@@ -567,11 +607,9 @@ describe('Oembed API', function () {
       assert.equal(oembedMock.isDone(), true);
     });
 
-    it('strips unknown response fields', async function () {
-      // Uses `photo` because unknown providers returning rich/video are
-      // rejected outright as a security measure (ONC-1648); see the next
-      // test. `photo` still passes through so we can verify the legacy
-      // field-stripping behaviour.
+    it('rejects photo responses from non-allowlisted providers', async function () {
+      // `photo` responses can carry an `html` field too, so they get the
+      // same treatment as rich/video below.
       const pageMock = nock('http://test.com')
         .get('/')
         .reply(
@@ -583,30 +621,21 @@ describe('Oembed API', function () {
         version: '1.0',
         type: 'photo',
         url: 'http://test.com/photo.jpg',
+        html: '<img src=x onerror="alert(1)">',
         width: 200,
         height: 100,
-        unknown: 'test',
       });
 
       const url = encodeURIComponent('http://test.com');
-      const res = await request
+      await request
         .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
         .set('Origin', config.get('url'))
         .expect('Content-Type', /json/)
         .expect('Cache-Control', testUtils.cacheRules.private)
-        .expect(200);
+        .expect(422);
 
       assert.equal(pageMock.isDone(), true);
       assert.equal(oembedMock.isDone(), true);
-
-      assert.deepEqual(res.body, {
-        version: '1.0',
-        type: 'photo',
-        url: 'http://test.com/photo.jpg',
-        width: 200,
-        height: 100,
-      });
-      assert.equal(res.body.unknown, undefined);
     });
 
     it('rejects rich/video responses from non-allowlisted providers (ONC-1648)', async function () {

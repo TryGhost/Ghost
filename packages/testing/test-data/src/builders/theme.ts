@@ -19,11 +19,19 @@ export interface ThemePackage {
   };
 }
 
+/** A custom template the theme service derives from a `custom-*`/`post-*`/`page-*` file. */
+export interface ThemeTemplate {
+  filename: string;
+  name: string;
+  for?: string[];
+  slug?: string | null;
+}
+
 export interface Theme {
   name: string;
   package: ThemePackage;
   active: boolean;
-  templates: unknown[];
+  templates: ThemeTemplate[];
   /** gscan problems surfaced by install/activate flows and the admin sidebar's theme-error banner. */
   errors: unknown[];
   warnings: unknown[];
