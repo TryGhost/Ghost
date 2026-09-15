@@ -82,7 +82,8 @@ The limit-service is a centralized limit enforcement system for Ghost that follo
 
 ### Error Handling
 
-- Uses `@tryghost/errors` for consistent error formatting
+- Raises the error classes its caller supplies rather than importing any, so the same code
+  raises Ghost's errors on the server and Admin's own in a browser
 - Supports template variables in error messages: `{{max}}`, `{{count}}`, `{{name}}`
 - All limits have fallback error messages
 - Counts in error messages are formatted with `Intl.NumberFormat`, or a limit's own formatter

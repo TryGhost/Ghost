@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import camelCase from 'lodash/camelCase.js';
 import has from 'lodash/has.js';
 
@@ -32,11 +31,11 @@ export class LimitService implements Limits {
 
   constructor({ limits = {}, subscription, helpLink, db, errors: errorsModule }: LoadLimitsOptions) {
     if (!errorsModule) {
-      // The one error a caller cannot be given in its own currency: the complaint is that
-      // it supplied no error classes to raise this with.
-      throw new errors.IncorrectUsageError({
-        message: messages.missingErrorsConfig,
-      });
+      // new Error is allowed here, as this package runs in browsers and should not depend
+      // on @tryghost/errors. It is also the one complaint a caller cannot be given in its
+      // own currency: what it failed to supply is the error classes to raise it with.
+      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      throw new Error(messages.missingErrorsConfig);
     }
 
     this.errors = errorsModule;
