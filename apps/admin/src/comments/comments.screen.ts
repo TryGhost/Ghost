@@ -51,6 +51,7 @@ export const commentsScreen = {
   threadRows: () => page.getByTestId(new RegExp(`^${commentThreadRowPrefix}`)),
   loadMoreRepliesButton: () =>
     commentsScreen.threadSidebar().getByRole('button', { name: loadMoreRepliesButton }),
+  analytics: () => page.getByTestId('comments-analytics'),
 
   async closeThreadSidebar(): Promise<void> {
     await commentsScreen.threadSidebar().getByRole('button', { name: 'Close' }).click();
