@@ -1,5 +1,6 @@
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
+import { historyEmailPreview, type HistoryEmailPreview } from './history-email-preview';
 
 export type HistoryCardState = 'occurred' | 'pending' | 'planned' | 'exited' | 'failed' | 'unknown';
 export type HistoryTimestamp = {
@@ -16,6 +17,7 @@ export type HistoryCardData = {
   statusLabel: string;
   timestamp?: HistoryTimestamp;
   details: string[];
+  email?: HistoryEmailPreview;
   executionTimestamp?: HistoryTimestamp;
 };
 
@@ -116,6 +118,10 @@ const mapStep = (
     timestamp,
     executionTimestamp,
     details,
+    email:
+      step.action?.type === 'send_email'
+        ? historyEmailPreview(step.action.data.email_subject, step.action.data.email_lexical)
+        : undefined,
     statusLabel:
       state === 'occurred'
         ? 'Completed'

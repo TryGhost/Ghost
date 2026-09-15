@@ -164,7 +164,7 @@ function renderedTextOf(node: Node, preserveWhitespace = false): string {
 }
 
 /** Reads an authored HTML fragment back as the text it renders to. */
-function htmlToText(html: string): string {
+export function htmlToText(html: string): string {
   const { body } = new DOMParser().parseFromString(html, 'text/html');
   return renderedTextOf(body)
     .replace(new RegExp(`${HTML_BLOCK_BREAK}(?: *${HTML_BLOCK_BREAK})+`, 'g'), HTML_BLOCK_BREAK)
