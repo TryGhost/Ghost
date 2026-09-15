@@ -1055,7 +1055,10 @@ describe('AutomationEditor', () => {
     expect(controls).toHaveAttribute('data-show-interactive', 'false');
     expect(controls).toHaveAttribute('data-show-fit-view', 'false');
     expect(controls).toHaveAttribute('data-show-zoom', 'false');
-    expect(controls).toHaveStyle({ bottom: '24px', left: '24px' });
+    // The inset is a caller's prop now, and the panel's own 15px margin is
+    // zeroed rather than added to it — so the number here is the whole distance
+    // from the corner, where it used to be 24 on top of that margin.
+    expect(controls).toHaveStyle({ margin: '0px', bottom: '40px', left: '40px' });
     expect(controls).toHaveClass('overflow-hidden', 'rounded-md');
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Zoom level 100%' })).toHaveTextContent('100%');
