@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import {
   Avatar,
@@ -11,40 +11,59 @@ import {
   LoadingIndicator,
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverAnchor,
+  InputGroup,
 } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { formatMemberName, memberAvatarProps } from '@/members/member-format';
 
 export default function ActivityMemberSearch({ onSelect }: { onSelect: (id: string) => void }) {
   const [open, setOpen] = useState(false);
+  const anchor = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 300);
   const { data, isFetching, isError, refetch } = useBrowseMembers({
-    enabled: open,
+    enabled: open && !!debouncedSearch.trim(),
     searchParams: { search: debouncedSearch, limit: '20' },
     defaultErrorHandler: false,
   });
   const loading = isFetching || search !== debouncedSearch;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <LucideIcon.Search className="size-4" />
-          Search members
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-2rem)] p-0">
-        <Command shouldFilter={false}>
-          <CommandInput
-            aria-label="Search members"
-            placeholder="Search members"
-            value={search}
-            onValueChange={setSearch}
-          />
+    <Command className="h-auto w-60 max-w-full min-w-0 overflow-visible" shouldFilter={false}>
+      <Popover open={open && !!search.trim()} onOpenChange={setOpen}>
+        <PopoverAnchor asChild>
+          <Box ref={anchor}>
+            <InputGroup className="[&_[cmdk-input-wrapper]]:w-full [&_[cmdk-input-wrapper]]:border-0">
+              <CommandInput
+                aria-expanded={open && !!search.trim()}
+                aria-label="Search members"
+                className="h-(--control-height) min-w-0 py-0"
+                data-slot="input-group-control"
+                placeholder="Search members..."
+                value={search}
+                onClick={() => setOpen(!!search.trim())}
+                onFocus={() => setOpen(!!search.trim())}
+                onValueChange={(value) => {
+                  setSearch(value);
+                  setOpen(!!value.trim());
+                }}
+              />
+            </InputGroup>
+          </Box>
+        </PopoverAnchor>
+        <PopoverContent
+          align="end"
+          className="w-(--radix-popover-trigger-width) max-w-[calc(100vw-2rem)] p-0"
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          onInteractOutside={(event) => {
+            if (anchor.current?.contains(event.target as Node)) {
+              event.preventDefault();
+            }
+          }}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
           <CommandList>
             {loading ? (
               <Inline aria-label="Loading members" className="p-4" justify="center" role="status">
@@ -74,9 +93,14 @@ export default function ActivityMemberSearch({ onSelect }: { onSelect: (id: stri
                   >
                     <Avatar {...memberAvatarProps(member)} src={member.avatar_image} />
                     <Stack className="min-w-0" gap="none">
-                      <span className="truncate font-medium">{formatMemberName(member)}</span>
+                      <span className="truncate font-medium" title={formatMemberName(member)}>
+                        {formatMemberName(member)}
+                      </span>
                       {member.name?.trim() && (
-                        <span className="truncate text-sm text-muted-foreground">
+                        <span
+                          className="truncate text-sm text-muted-foreground"
+                          title={member.email}
+                        >
                           {member.email}
                         </span>
                       )}
@@ -86,8 +110,8 @@ export default function ActivityMemberSearch({ onSelect }: { onSelect: (id: stri
               </>
             )}
           </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </Command>
   );
 }

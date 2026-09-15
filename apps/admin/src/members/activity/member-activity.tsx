@@ -1,12 +1,18 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Avatar,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
   Button,
   DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
   EmptyIndicator,
   LoadingIndicator,
   Table,
@@ -18,7 +24,7 @@ import {
 import { Box, Container, Inline, Stack } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { LucideIcon, cn, getScrollParent } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber, getScrollParent } from '@tryghost/shade/utils';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseMemberActivityFeed, useMember } from '@tryghost/admin-x-framework/api/members';
@@ -30,6 +36,7 @@ import { parseActivityEvent } from './activity-event';
 import ActivityEmailPreview from './activity-email-preview';
 import ActivityMemberSearch from './activity-member-search';
 import ActivityRow from './activity-row';
+import { EventIcon } from '@/members/detail/member-activity-feed';
 import {
   availableActivityTypes,
   activityQueryOptions,
@@ -77,6 +84,15 @@ function ActivityPage() {
   const events = feed.data?.events ?? [];
   const eventTypes = availableActivityTypes(activitySettings, memberId);
   const excludedTypes = excludedActivityEvents(excluded);
+  const selectedEventTypes = eventTypes.filter(({ event }) => !excludedTypes.includes(event));
+  const eventFilterLabel =
+    selectedEventTypes.length === eventTypes.length
+      ? 'All events'
+      : selectedEventTypes.length === 1
+        ? selectedEventTypes[0].name
+        : selectedEventTypes.length === 0
+          ? 'No events selected'
+          : `${formatNumber(selectedEventTypes.length)} events`;
   const loading =
     settingsQuery.isLoading || (!!memberId && memberQuery.isLoading) || feed.isLoading;
 
@@ -117,30 +133,46 @@ function ActivityPage() {
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
                 {memberId ? (
-                  <PageHeader.Breadcrumb>
-                    <Link className="hover:underline" to="/members-activity">
-                      Member activity
-                    </Link>
-                    <LucideIcon.ChevronRight className="size-4" />
-                    <span>{member ? formatMemberName(member) : 'Member'}</span>
-                  </PageHeader.Breadcrumb>
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/members-activity">Member activity</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage className="truncate">
+                          {member ? formatMemberName(member) : 'Member'}
+                        </BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
                 ) : (
                   <PageHeader.Title>Member activity</PageHeader.Title>
                 )}
               </PageHeader.Left>
               <PageHeader.Actions className="max-w-full min-w-0">
-                <Inline gap="lg" wrap>
+                <Inline className="max-w-full min-w-0" gap="md" wrap>
+                  {memberId ? (
+                    <Button variant="outline" onClick={() => updateParam('member')}>
+                      Clear member <LucideIcon.X className="size-4" />
+                    </Button>
+                  ) : (
+                    <ActivityMemberSearch onSelect={(id) => updateParam('member', id)} />
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        className={cn(excludedTypes.length > 0 && 'bg-interactive-hover')}
-                        variant="outline"
-                      >
+                      <Button aria-label="Filter events" variant="outline">
                         <LucideIcon.ListFilter className="size-4" />
-                        Filter events
+                        {eventFilterLabel}
+                        <LucideIcon.ChevronDown className="size-4 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-h-[70vh] overflow-y-auto">
+                    <DropdownMenuContent
+                      align="end"
+                      className="max-h-[70vh] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto"
+                    >
                       {eventTypes.map((type, index) => (
                         <Fragment key={type.event}>
                           {index > 0 && type.group !== eventTypes[index - 1].group && (
@@ -148,6 +180,7 @@ function ActivityPage() {
                           )}
                           <DropdownMenuCheckboxItem
                             checked={!excludedTypes.includes(type.event)}
+                            className="gap-2 pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
                             onCheckedChange={() =>
                               updateParam(
                                 'excludedEvents',
@@ -156,19 +189,13 @@ function ActivityPage() {
                             }
                             onSelect={(event) => event.preventDefault()}
                           >
+                            <EventIcon iconName={type.icon} />
                             {type.name}
                           </DropdownMenuCheckboxItem>
                         </Fragment>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  {memberId ? (
-                    <Button variant="outline" onClick={() => updateParam('member')}>
-                      Clear member <LucideIcon.X className="size-4" />
-                    </Button>
-                  ) : (
-                    <ActivityMemberSearch onSelect={(id) => updateParam('member', id)} />
-                  )}
                 </Inline>
               </PageHeader.Actions>
             </PageHeader>

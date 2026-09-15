@@ -24,7 +24,6 @@ export const activityScreen = {
   text: (text: string) => page.getByText(text, { exact: true }),
   filterButton: () => page.getByRole('button', { name: filterEventsButton }),
   eventType: (name: string) => page.getByRole('menuitemcheckbox', { name, exact: true }),
-  searchButton: () => page.getByRole('button', { name: searchMembersLabel }),
   search: () => page.getByRole('combobox', { name: searchMembersLabel }),
   memberOption: (name: string | RegExp) => page.getByRole('option', { name }),
   clearMember: () => page.getByRole('button', { name: clearMemberButton }).first(),

@@ -90,13 +90,17 @@ describe('Member activity', () => {
   });
 
   it('searches the real members endpoint with a debounce and selects a member', async () => {
-    const { membersApi } = world();
+    world();
+    const membersApi = fakeMembers(({ search }) => (search === 'Grace' ? [grace] : []));
     await renderAdminApp('/members-activity', { labs });
-    await screen.searchButton().click();
+    await expect.element(screen.search()).toBeVisible();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
     await screen.search().fill('Grace');
     await expect(membersApi).toHaveSentSearch('Grace');
     await expect.poll(() => membersApi.lastRequest?.limit).toBe(20);
-    await screen.memberOption(/Grace Hopper/).click();
+    await expect.element(screen.memberOption(/Grace Hopper/)).toBeVisible();
+    await expect.element(screen.memberOption(/Ada Lovelace/)).not.toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
     await expect.element(screen.heading('Grace Hopper')).toBeVisible();
     await expect.poll(currentRoute).toBe('/members-activity?member=grace');
   });
@@ -110,11 +114,22 @@ describe('Member activity', () => {
     }));
     await renderAdminApp('/members-activity?member=ada', { labs });
     await expect.element(screen.text('Signed up')).toBeVisible();
+    await expect.element(screen.filterButton()).toHaveTextContent('All events');
     await screen.filterButton().click();
     await expect.element(screen.eventType('Email opened')).toBeVisible();
+    const eventNames = () =>
+      page
+        .getByRole('menuitemcheckbox')
+        .elements()
+        .map((item) => item.textContent);
+    const originalOrder = eventNames();
     await screen.eventType('Payments').click();
     await expect.element(screen.eventType('Payments')).toHaveAttribute('aria-checked', 'false');
+    expect(eventNames()).toEqual(originalOrder);
     await userEvent.keyboard('{Escape}');
+    await expect
+      .element(screen.filterButton())
+      .toHaveTextContent(`${originalOrder.length - 1} events`);
     await expect.element(screen.heading('No activities match the current filter')).toBeVisible();
     await expect
       .poll(currentRoute)
@@ -359,7 +374,6 @@ describe('Member activity', () => {
     await screen.filterButton().click();
     await expect.element(screen.eventType('Signups')).toBeVisible();
     await userEvent.keyboard('{Escape}');
-    await screen.searchButton().click();
     await expect.element(screen.search()).toBeVisible();
   });
 });

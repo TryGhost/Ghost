@@ -13,18 +13,58 @@ const EMAIL_EVENTS = [
 ];
 
 const EVENT_TYPES = [
-  { event: 'signup_event', name: 'Signups', group: 'auth' },
-  { event: 'login_event', name: 'Logins', group: 'auth' },
-  { event: 'subscription_event', name: 'Paid subscriptions', group: 'payments' },
-  { event: 'payment_event', name: 'Payments', group: 'payments' },
-  { event: 'newsletter_event', name: 'Email subscriptions', group: 'emails' },
-  { event: 'email_opened_event', name: 'Email opened', group: 'emails' },
-  { event: 'email_delivered_event', name: 'Email received', group: 'emails' },
-  { event: 'email_complaint_event', name: 'Email flagged as spam', group: 'emails' },
-  { event: 'email_failed_event', name: 'Email bounced', group: 'emails' },
-  { event: 'email_change_event', name: 'Email address changed', group: 'emails' },
-  { event: 'automated_email_sent_event', name: 'Welcome email received', group: 'emails' },
-  { event: 'feedback_event', name: 'Feedback', group: 'others' },
+  { event: 'signup_event', name: 'Signups', group: 'auth', icon: 'event-signed-up' },
+  { event: 'login_event', name: 'Logins', group: 'auth', icon: 'event-logged-in' },
+  {
+    event: 'subscription_event',
+    name: 'Paid subscriptions',
+    group: 'payments',
+    icon: 'event-subscriptions',
+  },
+  { event: 'payment_event', name: 'Payments', group: 'payments', icon: 'event-subscriptions' },
+  {
+    event: 'newsletter_event',
+    name: 'Email subscriptions',
+    group: 'emails',
+    icon: 'event-subscribed-to-email',
+  },
+  {
+    event: 'email_opened_event',
+    name: 'Email opened',
+    group: 'emails',
+    icon: 'event-opened-email',
+  },
+  {
+    event: 'email_delivered_event',
+    name: 'Email received',
+    group: 'emails',
+    icon: 'event-received-email',
+  },
+  {
+    event: 'email_complaint_event',
+    name: 'Email flagged as spam',
+    group: 'emails',
+    icon: 'event-email-delivery-spam',
+  },
+  {
+    event: 'email_failed_event',
+    name: 'Email bounced',
+    group: 'emails',
+    icon: 'event-email-delivery-failed',
+  },
+  {
+    event: 'email_change_event',
+    name: 'Email address changed',
+    group: 'emails',
+    icon: 'event-email-changed',
+  },
+  {
+    event: 'automated_email_sent_event',
+    name: 'Welcome email received',
+    group: 'emails',
+    icon: 'event-sent-email',
+  },
+  { event: 'feedback_event', name: 'Feedback', group: 'others', icon: 'event-more-like-this' },
 ];
 
 export function excludedActivityEvents(value: string | null): string[] {
@@ -47,10 +87,20 @@ function hiddenActivityEvents(settings: ActivitySettings, memberId?: string): st
 export function availableActivityTypes(settings: ActivitySettings, memberId?: string) {
   const types = [...EVENT_TYPES];
   if (settings.commentsEnabled !== 'off') {
-    types.push({ event: 'comment_event', name: 'Comments', group: 'others' });
+    types.push({
+      event: 'comment_event',
+      name: 'Comments',
+      group: 'others',
+      icon: 'event-comment',
+    });
   }
   if (settings.emailTrackClicks) {
-    types.push({ event: 'click_event', name: 'Clicked link in email', group: 'others' });
+    types.push({
+      event: 'click_event',
+      name: 'Clicked link in email',
+      group: 'others',
+      icon: 'event-click',
+    });
   }
   const hidden = new Set(hiddenActivityEvents(settings, memberId));
   return types.filter(({ event }) => !hidden.has(event));
