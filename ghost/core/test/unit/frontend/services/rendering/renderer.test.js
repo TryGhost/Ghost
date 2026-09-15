@@ -38,6 +38,31 @@ describe('Renderer', function () {
     sinon.assert.notCalled(res.set);
   });
 
+  it('renders theme templates by their full filename', function () {
+    renderer(req, res, {});
+
+    sinon.assert.calledOnce(res.render);
+    assert.equal(res.render.firstCall.args[0], 'index.hbs');
+  });
+
+  it('renders a template whose name ends in .hbs from its .hbs.hbs file', function () {
+    res._template = 'custom-roman.hbs';
+
+    renderer(req, res, {});
+
+    sinon.assert.calledOnce(res.render);
+    assert.equal(res.render.firstCall.args[0], 'custom-roman.hbs.hbs');
+  });
+
+  it('renders an absolute template path unchanged', function () {
+    res._template = '/ghost/core/frontend/views/error.hbs';
+
+    renderer(req, res, {});
+
+    sinon.assert.calledOnce(res.render);
+    assert.equal(res.render.firstCall.args[0], '/ghost/core/frontend/views/error.hbs');
+  });
+
   it('caps public caching at 60s when the render was degraded', function () {
     res.locals.degradedRender = true;
     res.get.withArgs('Cache-Control').returns('public, max-age=600');

@@ -39,8 +39,12 @@ module.exports = function renderer(req, res, data) {
     }
   }
 
+  // CASE: pass the full filename, otherwise Express reads a dot in the template name as its
+  // extension (e.g. custom_template "custom-roman.hbs" for the file custom-roman.hbs.hbs)
+  const view = path.isAbsolute(res._template) ? res._template : `${res._template}.hbs`;
+
   // Render Call
-  res.render(res._template, data, function (err, html) {
+  res.render(view, data, function (err, html) {
     if (err) {
       if (err.code === 'ENOENT') {
         return req.next(
