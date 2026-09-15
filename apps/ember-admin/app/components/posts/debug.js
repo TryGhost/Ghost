@@ -244,9 +244,9 @@ export default class Debug extends Component {
     async fetchAnalyticsStatus() {
         try {
             if (this._fetchAnalyticsStatus.isRunning) {
-                return this._fetchAnalyticsStatus.last;
+                return await this._fetchAnalyticsStatus.last;
             }
-            return this._fetchAnalyticsStatus.perform();
+            return await this._fetchAnalyticsStatus.perform();
         } catch (e) {
             // Skip
         }
